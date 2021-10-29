@@ -95,12 +95,12 @@ dataset:
 
 Typically we'll trigger a retrieval with one or at most a few pieces of user provided data, say, an email and a user_id. What we'll need to do is 
 
-- identify which collections have data we can search with using a piece of provided user data
-- find those related records
-- use that data to find any connected data
-- continue until we've found all related data.
+1. Identify which collections have data we can search with using a piece of provided user data
+2. Find those related records
+3. Use that data to find any connected data
+4. Continue until we've found all related data.
 
-For the first step, we use the concept of an _identity_. In the Fidesops dataset specification, you many notice that any field may be marked with an _identity_ notation:
+For the first step, we use the concept of an `identity`. In the Fidesops dataset specification, you may notice that any field may be marked with an `identity` notation:
 ``` yaml
 collection:
   - name: foo
@@ -111,12 +111,12 @@ collection:
 ```
 
 What this means is that we will _start_ the data retrieval process with provided data that looks like 
-`{"email": "someone@somewhere.com", "username": "someone"}` by looking for any values in the collection _foo_ where bar == "someone@somewhere.com".  Note that the names of the provided starter data do not need to match the field names we're going to use this data to search. Also note that in this case, since we're providing two pieces of data,  we can also choose to start a search using the username provided value. In the above diagram, this means we have enough data to search in both `postgres_1.users.email` and `mongo_1.users.user_name`. 
+`{"email": "someone@somewhere.com", "username": "someone"}` by looking for any values in the collection `foo` where `bar == someone@somewhere.com`.  Note that the names of the provided starter data do not need to match the field names we're going to use this data to search. Also note that in this case, since we're providing two pieces of data,  we can also choose to start a search using the username provided value. In the above diagram, this means we have enough data to search in both `postgres_1.users.email` and `mongo_1.users.user_name`. 
 
 
 ## How does Fidesops execute queries?
 
-The next step is to follow any links provided in field relationship information. In the (abbrebviated) dataset declarations below, you can see that, for example, since we know that mongo\_1.accounts data contains data related to mongo\_1.users, we can retrieve data from mongo_1.accounts by running queries in sequence. We will generate and run queries that are appropriate to the type of datastore specified. Currently, MongoDB, PostgreSQL, and MySQL are supported, although more are planned.
+The next step is to follow any links provided in field relationship information. In the (abbreviated) dataset declarations below, you can see that, for example, since we know that `mongo_1.accounts` data contains data related to `mongo_1.users`, we can retrieve data from `mongo_1.accounts` by running queries in sequence. We will generate and run queries that are appropriate to the type of datastore specified. Currently, MongoDB, PostgreSQL, and MySQL are supported, although more are planned.
 
 This will generate a set of queries that look like:
 
@@ -139,12 +139,12 @@ Logically, we are creating a linked graph using the connections you've specified
 
 ![Example graph](../img/traversal_graph.png "Example graph")
 
-## Some notes about Dataset traversals 
+## Notes about Dataset traversals 
 
 - You can define multiple links between collections, which will generate OR queries like `SELECT a,b,c from TABLE_1 where name in  (values from TABLE\_2)  OR email in (values from TABLE\_3)`. 
 	
-- If some collections in your dataset are not theoretically reachable from the relations you've specified, fidesops will _not_ run queries, but treats this as a configuration error. It is not an error if there are relations specified but there's just no data found to continue querying. In this case Fidesops will just return empty sets of data for collections where nothing was found.
+- If some collections in your dataset are not theoretically reachable from the relations you've specified, Fidesops will _not_ run queries, but treats this as a configuration error. It is not an error if there are relations specified but there's just no data found to continue querying. In this case Fidesops will just return empty sets of data for collections where nothing was found.
 	
-- Fidesops first uses your datasets and your input data to "solve" the graph of your collections and how it is traversed. If your dataset has multiple identity values, you can create a situation where the query behavior depends on the values you input. In the example above,staring the graph traversal with `{"email":"value1", "username":"value2"}`  works fine, but starting with  `{"email":"value1"}` fails, since mongo_1.users is no longer reachable.
+- Fidesops first uses your datasets and your input data to "solve" the graph of your collections and how it is traversed. If your dataset has multiple identity values, you can create a situation where the query behavior depends on the values you input. In the example above,staring the graph traversal with `{"email":"value1", "username":"value2"}`  works fine, but starting with  `{"email":"value1"}` fails, since `mongo_1.users` is no longer reachable.
 	
-- There is no restriction on links between datasets. As in the example above, it's perfectly fine to query across datastores.
+- There is no restriction on links between datasets. As in the example above, it's perfectly fine to query across datasets.

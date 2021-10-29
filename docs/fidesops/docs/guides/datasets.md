@@ -7,7 +7,7 @@ A Fidesops _Dataset_ is the configuration you provide for a database or other qu
 Beyond collection and field names, Fidesops needs some additional information to fully configure a Dataset. Let's look at a simple example database, and how it would be translated into a configuration in Fidesops.
 
 #### An example database
-Here we have a simple database of customers and addresses (note the example is a bit simplified from an actual SQL schema) . We have a table of customers, a table of addresses, and customers have an address that is found by following the related address\_id:
+Here we have a simple database of customers and addresses (note the example is a bit simplified from an actual SQL schema) . We have a `customer` table that has a foreign key of `address_id` to an `address` table:
 ``` sql
 CREATE TABLE CUSTOMER (
   id INT PRIMARY KEY,
@@ -86,10 +86,8 @@ dataset:
 - `data_categories`: Annotating data\_categories connects fields to policy rules, and determines which actions apply to each field. For more information see [Policies](policies.md)
 - `fidesops_meta`: The fidesops\_meta section specifies some additional fields that control how Fidesops manages your data: 
 	- `references`: _references_ are how you declare relationships between collections. A reference creates a relationship with another collection. Where the configuration declares a reference to `mydatabase:address:id` it means Fidesops will use the values from `mydatabase.address.id` to search for related values in `customer`. Unlike the SQL declaration, this is not an enforceable relationship, but simply a statement of which values are connected.  In the example above, the references from the `customer` field to `mydatabase.address.id` is analogous to the SQL statement id _references_ `address.id`, with the exception that any dataset and collection can be referenced. The relationship requires you to specify the dataset as well as the collection for relationships, because you may declare a configuration with multiple datasets, where values in one collection in the first dataset are searched using values found in the second dataset.
-
-
-     - `field`: The specified linked field, using the syntax `[dataset name].[collection name ].[field name]`. 
-	 - `identity`: Signifies the starting value to find related data [See graph traversal]
+ 	- `field`: The specified linked field, using the syntax `[dataset name].[collection name ].[field name]`. 
+	 - `identity`: Signifies the starting value to find related data [See graph traversal](query_execution.md)
 	 - `direction` (_Optional_): Accepted values are `from` or `to`. This determines how Fidesops uses the relationships to discover data. If the direction is `to`, FidesOps will only use data in the _source_ collection to discover data in the _referenced_ collection. If the direction is `from`, Fidesops will only use data in the _referenced_ collection to discover data in the _source_ collection. If the direction is omitted, Fidesops will traverse the relation in whatever direction works to discover all related data.
 	 - `primary_key` (_Optional_): A boolean value that means that Fidesops will treat this field as a unique row identifier for generating update statements. If multiple fields are marked as primary keys they will be treated as a combined key - that is, the unique combination of all values of that key will determine a unique row. If no primary key is specified for any field on a collection, no updates will be generated against that collection.
 	 - `data_type` (_Optional_): An indication of data type. Data types are necessary to support erasure policies. Available datatypes are `string`, `integer`, `number`, `boolean`, and `mongo_object_id`. 	 
