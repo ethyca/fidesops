@@ -21,6 +21,7 @@ Our list is growing but currently we support:
 
 - PostgreSQL
 - MongoDB
+- MySQL
 
 
 ## Configuring a connection 
@@ -61,6 +62,22 @@ Issue a PUT request to [/api/v1/connection](http://0.0.0.0:8080/docs#/Connection
     }
 ]
 ``` 
+
+#### Sample request for a MySQL database:
+
+`PUT api/v1/connection`
+
+```json 
+[
+    { 
+        "name": "My MySQL DB",
+        "key": "app-mysql-db",
+        "connection_type": "mysql",
+        "access": "write"
+    }
+]
+``` 
+
 #### Note:
   - `name` should be a human-readable name for your database.
   - Give your database connection a unique dasherized identity `key`. If no key is supplied, we'll dasherize the `name`.
