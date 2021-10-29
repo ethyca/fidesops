@@ -1,6 +1,12 @@
 # Query Execution
 
-## How does Fidesops generate traversals?
+## Graphs and Traversals
+
+Fidesops uses the datasets you provide to generate a _graph_ of the resources. Based on the identity data you provide, Fidesops then generates a specific _traversal_, which is the order of steps that will be taken to fulfill the specific request. If no traversal can be generated that reaches all declared collections, Fidesops will generate an error.
+
+The graph supports both directed and non-directed edges using the optional `direction` parameter on the relation (non-directional edges may be traversed in either direction). You can always preview the queries that will be generated or manually control the order of operations by making relations explicitly directional and with the `after` dataset and collection parameters. 
+
+## An example graph
 
 Let's look at a slightly larger example. In this example there are 3 separate databases, a mysql database that stores users and their comments, a postgres DB that stores purchase information, and a mongoDB that stores user accounts. Each of them may have related data that we'd like to retrieve.
 
@@ -17,10 +23,10 @@ dataset:
 	      - name: _id
             fidesops_meta:
               primary_key: True
-          - name: user_name
+	      - name: user_name
             fidesops_meta:
               identity: username
-		  - name: full_name
+	       - name: full_name
 
       - name: accounts
         fields:
@@ -111,12 +117,12 @@ collection:
 ```
 
 What this means is that we will _start_ the data retrieval process with provided data that looks like 
-`{"email": "someone@somewhere.com", "username": "someone"}` by looking for any values in the collection `foo` where `bar == someone@somewhere.com`.  Note that the names of the provided starter data do not need to match the field names we're going to use this data to search. Also note that in this case, since we're providing two pieces of data,  we can also choose to start a search using the username provided value. In the above diagram, this means we have enough data to search in both `postgres_1.users.email` and `mongo_1.users.user_name`. 
+`{"email": "user@example.com", "username": "someone"}` by looking for any values in the collection `users` where `email == user@example.com`.  Note that the names of the provided starter data do not need to match the field names we're going to use this data to search. Also note that in this case, since we're providing two pieces of data,  we can also choose to start a search using the username provided value. In the above diagram, this means we have enough data to search in both `postgres_1.users.email` and `mongo_1.users.user_name`. 
 
 
 ## How does Fidesops execute queries?
 
-The next step is to follow any links provided in field relationship information. In the (abbreviated) dataset declarations below, you can see that, for example, since we know that `mongo_1.accounts` data contains data related to `mongo_1.users`, we can retrieve data from `mongo_1.accounts` by running queries in sequence. We will generate and run queries that are appropriate to the type of datastore specified. Currently, MongoDB, PostgreSQL, and MySQL are supported, although more are planned.
+() The next step is to follow any links provided in field relationship information. In the (abbreviated) dataset declarations below, you can see that, for example, since we know that `mongo_1.accounts` data contains data related to `mongo_1.users`, we can retrieve data from `mongo_1.accounts` by running queries in sequence. We will generate and run queries that are appropriate to the type of datastore specified. Currently, MongoDB, PostgreSQL, and MySQL are supported, although more are planned.
 
 This will generate a set of queries that look like:
 
@@ -126,7 +132,7 @@ This will generate a set of queries that look like:
 2. db.accounts.find({"name":{"$in":[  <full_name value from (1) > ]}},{"_id":1, "comments":1})
 
 # postgres_1
-3. select id, address_id from users where email = 'someone@somewhere.com';
+3. select id, address_id from users where email = 'user@example.com';
 4. select id, amount from purchases where user_id in [ <id values from (3) >] 
 5. select id, amount, rating from purchase_items where purchase_id in [ <id values from (4)> ]
 
