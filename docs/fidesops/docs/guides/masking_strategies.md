@@ -19,8 +19,14 @@ For example, if a customer requests that your remove all information associated 
 `test@example.com`, you might choose to "mask" that email with a random string, `xgoi4301nkyi79fjfdopvyjc5lnbr9`, and 
 their associated address with another random string `2ab6jghdg37uhkaz3hpyavpss1dvg2`.
 
-In fidesops, your options to pseudonymize data are captured in masking strategies. Currently the only option to pseudonymize 
-data is with a null value, but other masking strategies are coming in the next release.
+It's important to remember that masking != anonymization. Since records are not deleted, a masked dataset is (at best)
+pseudonymized in most cases, and (at worst) may still be identifiable if the masking is reversible or easy to predict,
+which is a common mistake!
+
+In fidesops, your options to pseudonymize data are captured in "masking strategies". Fidesops supports a wide variety
+of masking strategies for different purposes when used directly as an API including HMAC, hashing, encryption, and 
+randomization. However, note that fidesops only supports the "null" strategy when processing privacy requests right now,
+but we'll be adding support for all masking strategies in an upcoming release!
 
 
 ### Why mask instead of delete?
