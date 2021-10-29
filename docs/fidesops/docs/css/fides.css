@@ -152,6 +152,13 @@ li code {
     color: var(--md-code-hl-comment-color);
 }
 
+.highlighttable .linenos,
+.highlighttable .code,
+.highlighttable .code,
+.md-typeset .highlighttable code .nv{
+    color: var(--md-code-hl-comment-color);
+}
+
 .highlight .il,
 .highlight .m,
 .highlight .mb,
