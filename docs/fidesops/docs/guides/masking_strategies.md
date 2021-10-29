@@ -2,7 +2,7 @@
 
 In this section we'll cover:
 
-- What is  data masking?
+- What is data masking?
 - Why might you want to mask personally identifiable information rather than delete?
 - How do you use fidesops as a masking service only?
 - What are the currently-supported masking strategies in fidesops?
@@ -13,7 +13,7 @@ In this section we'll cover:
 ## Data masking basics 
 
 Data masking is the process of obfuscating data in client systems, so it is no longer recognizable as PII (personally 
-identifiable information.)  
+identifiable information.)
 
 For example, if a customer requests that your remove all information associated with their email,
 `test@example.com`, you might choose to "mask" that email with a random string, `xgoi4301nkyi79fjfdopvyjc5lnbr9`, and 
@@ -29,7 +29,7 @@ Deleting customer data may involve entirely deleting a whole record (all attribu
 irreversible anonymization of the record by updating specific fields within a record with masked values.
 
 Using a masking strategy instead of straight deletion to obscure PII helps ensure referential integrity in your 
-database.  For example, you might have an `orders` table with a foreign key to `user` without cascade delete. Say you first 
+database. For example, you might have an `orders` table with a foreign key to `user` without cascade delete. Say you first 
 deleted a user with email `test@example.com` without addressing their orders, you could potentially 
 have lingering orphans in the `orders` table. Using masking as a "soft delete" might be a safer strategy 
 depending on how your tables are defined.
@@ -37,7 +37,7 @@ depending on how your tables are defined.
 In order to ensure referential integrity is retained, any values that represent foreign keys must be consistently 
 updated with the same masked values across all sources.
 
-Other reasons to mask instead of delete include legal requirements that have you retain certain data for a certain length of time.  
+Other reasons to mask instead of delete include legal requirements that have you retain certain data for a certain length of time.
 
 
 ## Using fidesops as a masking service
