@@ -124,6 +124,20 @@ If you just want to save the secrets for now, and bypass attempting to connect, 
 }
 ```
 
+#### Sample request to add MySQL secrets:
+
+`PUT /api/v1/connection/app-mysql-db/secret`
+
+```json
+    {
+       "host": "mysql_example",
+       "port": 3306,
+       "dbname": "mysql_example",
+       "username": "mysql_user",
+       "password": "mysql_pw"
+    }
+```
+
 ### Testing your connection 
 
 If at any time, you want to verify that your connection secrets are valid, simply issue a GET request 
