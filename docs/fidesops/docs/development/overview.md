@@ -2,20 +2,28 @@
 
 ---
 
-Thanks for contributing to Fides! This section of the docs is designed to help you become familiar with how we work, the standards we apply, and how to ensure your contribution is successful.
+Thanks for contributing to Fidesops! This section of the docs is designed to help you become familiar with how we work, the standards we apply, and how to ensure your contribution is successful.
 
-If you're stuck, don't be shy about asking for help [on GitHub](https://github.com/ethyca/solon/issues).
+If you're stuck, don't be shy about asking for help [on GitHub](https://github.com/ethyca/fidesops/issues).
 
 ## Getting Started
 
-### Clone Fides
+### Clone Fidesops
 
-To clone Fides for development, run `git clone https://github.com/ethyca/solon`.
+To clone fidesops for development, run `git clone https://github.com/ethyca/fidesops.git`.
 
-Once that is complete, there are a few different ways to spin up the project and get coding!
+- Install Docker: https://docs.docker.com/desktop/#download-and-install
+- Install Make: `brew install make`
+- run `make server` - this spins up the Fastapi server and supporting resources, which you can visit at `http://0.0.0.0:8080`. Check out the docs at `http://0.0.0.0:8000/fidesops/`
+- run `make integration-env` to spin up additional postgres, mongo, and mysql databases with test data that you can use to execute privacy requests against
+    - Try this out locally with our [Fidesops Postman Collection](../postman/Fidesops.postman_collection.json)
+- use `make black`, `make mypy`, and `make pylint` to auto-format code
+- use `make check-all` to run the CI checks locally and verify that your code meets project standards
+- use `make server-shell` to open a shell on the Docker container, from here you can run useful commands like:
+- `ipython` to open a Python shell
+- `pytest` to run the tests directly
+- `mypy` to run typechecking directly
 
-* __Recommended__: If you're using VS Code, the recommended way to work on Fides is by leveraginng the Dev Container feature. The repo has a `.devcontainer/devcontainer.json` file already included that will set up a complete environment in VS Code, including the suggested VS Code extensions and settings.
-* If you're using an editor besides VS Code, then the next best way to work on Fides is by utilizing the `Makefile` commands. See the guide [here](https://github.com/ethyca/solon/blob/main/docs/solon/docs/getting_started/docker.md) for more information on getting setting up via the `Makefile`.
 
 ### Write your code
 
@@ -28,9 +36,9 @@ We have no doubt you can write amazing code! However, we want to help you ensure
 
 ### Submit your code
 
-In order to submit code to Fides, please:
+In order to submit code to Fidesops, please:
 
-* [Fork the Fides repository](https://help.github.com/en/articles/fork-a-repo)
+* [Fork the Fidesops repository](https://help.github.com/en/articles/fork-a-repo)
 * [Create a new branch](https://help.github.com/en/desktop/contributing-to-projects/creating-a-branch-for-your-work) on your fork
 * [Open a Pull Request](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork) once your work is ready for review
 * Once automated tests have passed, a maintainer will review your PR and provide feedback on any changes it requires to be approved. Once approved, your PR will be merged into Fides.
