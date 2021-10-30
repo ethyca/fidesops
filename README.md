@@ -36,23 +36,22 @@ requests against your system by making a series of API requests to fidesops.
 
 Follow these five easy steps:
 
-1. First, you'll start with setting up some basic configuration (press `[enter]` to make each API request):
+### Step One: Set up basic configuration (press `[enter]` to make each API request)
 
 - Authenticate by creating an Access Token
 - Connect to your application's postgres and mongo databases with ConnectionConfigs 
 - Describe the types of data you have and their relationships with Datasets 
 - Dictate where to upload your results with StorageConfigs (a local folder for now)
 
+### Step Two: Define an Access Policy
 
-2. Next you'll define a Policy to describe what data you care about and how you want to manage it.
-
-- In this example, you'll create an `access` Policy,`example-request-policy`, to get all data with the data category: `user.provided.identifiable`.
+Policies help describe what data you care about and how you want to manage it.  In this example, you'll create an `access` 
+Policy,`example-request-policy`, to get all data with the data category: `user.provided.identifiable`.
   
+### Step Three: Run a Privacy Request to Access Data
 
-3. Finally, you can issue a Privacy Request using Policy `example-request-policy` across your test databases for `jane@example.com`:
-
-
-- The following response was sent to a local folder for this quickstart.  We've collected identifiable user-provided
+Finally, you can issue a Privacy Request using Policy `example-request-policy` across your test databases for `jane@example.com`.
+The following response should be uploaded to a local folder (for demo purposes). We've collected identifiable user-provided
 information for Jane across tables in both the postgres and mongo databases.
 
 ```json
@@ -88,13 +87,15 @@ information for Jane across tables in both the postgres and mongo databases.
 }
 ```
 
+### Step Four: Create an Erasure Policy
 
-4. Now you'll create another Policy, `example-erasure-policy`, that describes how to `erase` data with the same category, by replacing values with null.
+Now you'll create another Policy, `example-erasure-policy`, that describes how to `erase` data with the same category, by replacing values with null.
 
 
-5. The last step is to issue a Privacy Request using `example-erasure-policy` to remove identifiable user-provided data related to "jane@example.com".
+### Step Five: Issue a Privacy Request to erase data and verify
 
-- We'll re-run step #3 again to see what data is remaining for data category `user.provided.identifiable`:
+The last step is to issue a Privacy Request using `example-erasure-policy` to remove identifiable user-provided data 
+related to "jane@example.com". Then we'll re-run step #3 again to see what data is remaining for data category `user.provided.identifiable`:
 
 ```json
 {}
