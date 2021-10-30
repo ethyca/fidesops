@@ -33,8 +33,9 @@ dataset:
       - name: address
         fields:
 	      - name: id
-            fidesops_meta:
-              primary_key: True
+          data_categories: [system.operations]
+          fidesops_meta:
+            primary_key: True
         - name: street
           data_categories: [user.provided.identifiable.contact.street]
         - name: city
