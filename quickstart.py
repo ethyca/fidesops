@@ -1,11 +1,5 @@
 """
-Utility script to configure fidesops with:
-1. A `client` for OAuth authentication and executing API calls
-2. `Connection`s to the postgres_example PostgreSQL database, and the mongo_test MongoDB database
-2. `Dataset`s that annotates the postgres_example and the mongo_test dbs.
-3. A `policy` to fetch all user identifiable data
-4. A `storage` to upload results
-5. Executes a Privacy Request against the system
+A five-step fidesops quickstart
 """
 import json
 import logging
@@ -99,7 +93,7 @@ def create_oauth_client():
 
 def create_connection(key: str, connection_type: ConnectionType):
     """
-    Create a connection in fidesops for our PostgreSQL database
+    Create a connection in fidesops for your PostgreSQL database
     Returns the response JSON if successful, or throws an error otherwise.
     See http://localhost:8000/docs#/Connections/put_connections_api_v1_connection_put
     """
@@ -134,7 +128,7 @@ def configure_postgres_connection(
     key: str, host: str, port: int, dbname: str, username: str, password: str
 ):
     """
-    Configure the connection with the given `key` in fidesops with our PostgreSQL database credentials.
+    Configure the connection with the given `key` in fidesops with your PostgreSQL database credentials.
     Returns the response JSON if successful, or throws an error otherwise.
     See http://localhost:8000/docs#/Connections/put_connection_config_secrets_api_v1_connection__connection_key__secret_put
     """
@@ -167,7 +161,7 @@ def configure_mongo_connection(
     key: str, host: str, port: int, dbname: str, username: str, password: str
 ):
     """
-    Configure the connection with the given `key` in fidesops with our PostgreSQL database credentials.
+    Configure the connection with the given `key` in fidesops with your PostgreSQL database credentials.
     Returns the response JSON if successful, or throws an error otherwise.
     See http://localhost:8000/docs#/Connections/put_connection_config_secrets_api_v1_connection__connection_key__secret_put
     """
@@ -471,9 +465,17 @@ def print_results(request_id: str) -> None:
 
 
 if __name__ == "__main__":
-    print()
-    print("Waiting for fidesops containers to start...")
     sleep(10)
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    print(
+        """
+    ┌┬┐┬ ┬┌─┐  ┌─┐┬┌┬┐┌─┐┌─┐┌─┐┌─┐┌─┐  ┌─┐ ┬ ┬┬┌─┐┬┌─┌─┐┌┬┐┌─┐┬─┐┌┬┐
+     │ ├─┤├┤   ├┤ │ ││├┤ └─┐│ │├─┘└─┐  │─┼┐│ │││  ├┴┐└─┐ │ ├─┤├┬┘ │ 
+     ┴ ┴ ┴└─┘  └  ┴ ┴┘└─┘└─┘└─┘┴  └─┘  └─┘└└─┘┴└─┘┴ ┴└─┘ ┴ ┴ ┴┴└─ ┴ 
+    """
+    )
 
     # NOTE: In a real application, these secrets and config values would be provided
     # via ENV vars or similar, but we've inlined everything here for simplicity
@@ -492,9 +494,11 @@ if __name__ == "__main__":
     MONGO_PASSWORD = "mongo_pass"
     MONGO_PORT = 27017
     MONGO_DB = "mongo_test"
-    print()
 
-    print("Setting up fideops environment with the following test configuration:")
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    print("Setting up the fidesops environment with the following test configuration:")
     print(f"  FIDESOPS_URL = {FIDESOPS_URL}")
     print(f"  ROOT_CLIENT_ID = {ROOT_CLIENT_ID}")
     print(f"  ROOT_CLIENT_SECRET = {ROOT_CLIENT_SECRET}")
@@ -508,10 +512,23 @@ if __name__ == "__main__":
     print(f"  MONGO_PASSWORD = {MONGO_PASSWORD}")
     print(f"  MONGO_PORT = {MONGO_PORT}")
     print(f"  MONGO_DB = {MONGO_DB}")
-    print()
 
-    # Create a new OAuth client to use for our app
-    print("Press [enter] to continue...")
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    print(
+        """
+    ┌─┐┌┬┐┌─┐┌─┐  ┌─┐┌┐┌┌─┐
+    └─┐ │ ├┤ ├─┘  │ ││││├┤     ...  Set up basic configuration
+    └─┘ ┴ └─┘┴    └─┘┘└┘└─┘  
+    """
+    )
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+
+    # Create a new OAuth client to use for your app
+    print("Press [enter] to create an Oauth Token...")
     input()
 
     root_token = get_access_token(
@@ -526,8 +543,11 @@ if __name__ == "__main__":
     # In scope for all the methods below to use
     oauth_header = {"Authorization": f"Bearer {access_token}"}
 
-    # Connect to our PostgreSQL database
-    print("Press [enter] to continue...")
+    # Connect to your PostgreSQL database
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    print("Press [enter] to connect fidesops to your test PostgreSQL database...")
     input()
 
     create_connection(
@@ -542,8 +562,11 @@ if __name__ == "__main__":
         password=POSTGRES_PASSWORD,
     )
 
-    # Connect to our Mongo database
-    print("Press [enter] to continue...")
+    # Connect to your Mongo database
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    print("Press [enter] to connect fidesops to your test Mongo database...")
     input()
 
     create_connection(
@@ -559,17 +582,11 @@ if __name__ == "__main__":
         password=MONGO_PASSWORD,
     )
 
-    # Configure a storage config to upload the results
-    print("Press [enter] to continue...")
-    input()
-
-    create_local_storage(
-        key="example-storage",
-        file_format="json",
+    # Upload the dataset YAML for your PostgreSQL schema
+    print(
+        "-------------------------------------------------------------------------------------"
     )
-
-    # Upload the dataset YAML for our PostgreSQL schema
-    print("Press [enter] to continue...")
+    print("Press [enter] to define the data categories and relationships in your Postgres tables...")
     input()
 
     validate_dataset(
@@ -581,8 +598,11 @@ if __name__ == "__main__":
         yaml_path="data/dataset/postgres_example_test_dataset.yml",
     )
 
-    # Upload the dataset YAML for our PostgreSQL schema
-    print("Press [enter] to continue...")
+    # Upload the dataset YAML for your MongoDB schema
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    print("Press [enter] to define the data categories and relationships in your Mongo collections......")
     input()
 
     mongo_dataset = create_dataset(
@@ -590,122 +610,161 @@ if __name__ == "__main__":
         yaml_path="data/dataset/mongo_example_test_dataset.yml",
     )
 
-    while True:
-        # Create a policy that returns all user data
-        print("\n\nEnter a list of target data categories for request policy " "[user]")
-        data_categories = [e.strip() for e in str(input() or "user").split(",")]
-        create_policy(
-            key="example-request-policy",
-        )
-        # Delete any existing policy rule so we can reconfigure it based on input
-        delete_policy_rule(
-            policy_key="example-request-policy",
-            key="access-user-data",
-        )
-        create_policy_rule(
-            policy_key="example-request-policy",
-            key="access-user-data",
-            action_type=ActionType.access,
-            storage_destination_key="example-storage",
-        )
-        for data_category in data_categories:
-            create_policy_rule_target(
-                policy_key="example-request-policy",
-                rule_key="access-user-data",
-                data_cat=data_category,
-            )
+    # Configure a storage config to upload the results
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    print(
+        "Press [enter] to configure a storage destination to upload your final results (just local for now)..."
+    )
+    input()
 
-        # Execute a privacy request for user@example.com
-        print(
-            "\n\nEnter an email address to create a privacy request [customer-1@example.com]:"
-        )
-        email = str(input() or "customer-1@example.com")
-        print("Please wait...")
-        privacy_requests = create_privacy_request(
-            user_email=email,
-            policy_key="example-request-policy",
-        )
-        privacy_request_id = privacy_requests["succeeded"][0]["id"]
-        print_results(request_id=privacy_request_id)
+    create_local_storage(
+        key="example-storage",
+        file_format="json",
+    )
 
-        print(
-            "Complete! Press [y] to execute another access request, otherwise let's look at erasures:"
-        )
-        should_continue = input() == "y"
-        if not should_continue:
-            break
+    # Create a policy that returns all user identifiable contact data
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    print("""
+    ┌─┐┌┬┐┌─┐┌─┐  ┌┬┐┬ ┬┌─┐
+    └─┐ │ ├┤ ├─┘   │ ││││ │  ...  Create an access policy 
+    └─┘ ┴ └─┘┴     ┴ └┴┘└─┘
+    """)
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    data_category = 'user.provided.identifiable'
+    print(
+        f"Press [enter] to create a Policy that accesses information with the data category '{data_category}':"
+    )
+    input()
 
-    print("****************************************")
+    create_policy(
+        key="example-request-policy",
+    )
+    # Delete any existing policy rule so we can reconfigure it based on input
+    delete_policy_rule(
+        policy_key="example-request-policy",
+        key="access-user-data",
+    )
+    create_policy_rule(
+        policy_key="example-request-policy",
+        key="access-user-data",
+        action_type=ActionType.access,
+        storage_destination_key="example-storage",
+    )
+    create_policy_rule_target(
+        policy_key="example-request-policy",
+        rule_key="access-user-data",
+        data_cat=data_category,
+    )
+
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    print("""
+    ┌─┐┌┬┐┌─┐┌─┐  ┌┬┐┬ ┬┬─┐┌─┐┌─┐
+    └─┐ │ ├┤ ├─┘   │ ├─┤├┬┘├┤ ├┤    ...  Run an access privacy request
+    └─┘ ┴ └─┘┴     ┴ ┴ ┴┴└─└─┘└─┘
+    """)
+
+    # Execute a privacy request
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    email = "jane@example.com"
+    print(f"Press [enter] to run an access request for {email} with Policy `example-request-policy`:")
+    input()
+    print("Please wait...")
+    privacy_requests = create_privacy_request(
+        user_email=email,
+        policy_key="example-request-policy",
+    )
+    privacy_request_id = privacy_requests["succeeded"][0]["id"]
+    print_results(request_id=privacy_request_id)
+
     sleep(2)
 
-    print("Let's see an erasure request in action:")
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    print(
+    """
+    ┌─┐┌┬┐┌─┐┌─┐  ┌─┐┌─┐┬ ┬┬─┐
+    └─┐ │ ├┤ ├─┘  ├┤ │ ││ │├┬┘   ...  Create an erasure policy
+    └─┘ ┴ └─┘┴    └  └─┘└─┘┴└─    
+    """
+    )
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
 
-    while True:
-        # Create a policy that returns all user data
-        print("\n\nEnter a list of target data categories for erasure policy " "[user]")
-        data_categories = [e.strip() for e in str(input() or "user").split(",")]
-        create_policy(
-            key="example-erasure-policy",
-        )
-        # Delete any existing policy rule so we can reconfigure it based on input
-        delete_policy_rule(
-            policy_key="example-erasure-policy",
-            key="erase-user-data",
-        )
-        create_policy_rule(
-            policy_key="example-erasure-policy",
-            key="erase-user-data",
-            action_type=ActionType.erasure,
-        )
-        for data_category in data_categories:
-            create_policy_rule_target(
-                policy_key="example-erasure-policy",
-                rule_key="erase-user-data",
-                data_cat=data_category,
-            )
+    # Create a policy that erases all user data
+    print(
+        f"Press [enter] to create a Policy describing how to erase information with the data category `{data_category}`:"
+    )
+    input()
 
-        # Execute a privacy request for user@example.com
-        print(
-            "\n\nEnter an email address to issue an erasure request, removing associated data [customer-1@example.com]:"
-        )
-        email = str(input() or "customer-1@example.com")
-        print("Please wait...")
-        privacy_requests = create_privacy_request(
-            user_email=email,
-            policy_key="example-erasure-policy",
-        )
-        erasure_privacy_request_id = privacy_requests["succeeded"][0]["id"]
+    create_policy(
+        key="example-erasure-policy",
+    )
+    # Delete any existing policy rule so we can reconfigure it based on input
+    delete_policy_rule(
+        policy_key="example-erasure-policy",
+        key="erase-user-data",
+    )
+    create_policy_rule(
+        policy_key="example-erasure-policy",
+        key="erase-user-data",
+        action_type=ActionType.erasure,
+    )
+    create_policy_rule_target(
+        policy_key="example-erasure-policy",
+        rule_key="erase-user-data",
+        data_cat=data_category,
+    )
 
-        print("Issuing an access request to confirm data has been removed:")
-        create_policy(
-            key="followup-access-policy",
-        )
-        delete_policy_rule(
-            policy_key="followup-access-policy",
-            key="followup-access-user-data",
-        )
-        create_policy_rule(
-            policy_key="followup-access-policy",
-            key="followup-access-user-data",
-            action_type=ActionType.access,
-            storage_destination_key="example-storage",
-        )
-        for data_category in data_categories:
-            create_policy_rule_target(
-                policy_key="followup-access-policy",
-                rule_key="followup-access-user-data",
-                data_cat=data_category,
-            )
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    print(
+        """
+    ┌─┐┌┬┐┌─┐┌─┐  ┌─┐┬┬  ┬┌─┐
+    └─┐ │ ├┤ ├─┘  ├┤ │└┐┌┘├┤     ...  Issue an erasure privacy request and verify
+    └─┘ ┴ └─┘┴    └  ┴ └┘ └─┘   
+    """
+    )
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
 
-        print("Please wait...")
-        privacy_requests = create_privacy_request(
-            user_email=email,
-            policy_key="followup-access-policy",
-        )
-        access_result_id = privacy_requests["succeeded"][0]["id"]
-        print_results(request_id=access_result_id)
+    # Execute a privacy request for jane@example.com
+    email = "jane@example.com"
+    print(f"Press [enter] to issue an erasure request for email {email}: with policy `example-erasure-policy`")
+    input()
+    print("Please wait...")
+    privacy_requests = create_privacy_request(
+        user_email=email,
+        policy_key="example-erasure-policy",
+    )
+    erasure_privacy_request_id = privacy_requests["succeeded"][0]["id"]
 
-        print("Complete! Press [y] to execute another erasure request:")
-        should_continue = input() == "y"
-        if not should_continue:
-            exit(0)
+    print(
+        f"Press [enter] to issue a follow-up access request to confirm removal of user data for {email}:"
+    )
+    input()
+    print("Please wait...")
+    privacy_requests = create_privacy_request(
+        user_email=email,
+        policy_key="example-request-policy",
+    )
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    access_result_id = privacy_requests["succeeded"][0]["id"]
+    print_results(request_id=access_result_id)
+    print(f"Jane's data has been removed for data category `{data_category}`.")
+    exit(0)

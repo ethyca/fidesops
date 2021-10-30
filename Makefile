@@ -50,9 +50,9 @@ integration-shell: compose-build
 integration-env: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up
 
-demo: compose-build
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-demo.yml up -d
-	@docker exec -it fidesops_fidesops_1 python demo.py
+quickstart: compose-build
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-quickstart.yml up -d
+	@docker exec -it fidesops_fidesops_1 python quickstart.py $(access_type)
 
 ####################
 # Docker
