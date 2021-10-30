@@ -35,15 +35,14 @@ dataset:
 	      - name: id
             fidesops_meta:
               primary_key: True
-          - name: street
-            data_categories: [user.provided.identifiable.contact.street]			  
-          - name: city
-            data_categories: [user.provided.identifiable.contact.city]
-          - name: state
-            data_categories: [user.provided.identifiable.contact.state]
-
-          - name: zip
-            data_categories: [user.provided.identifiable.contact.postal_code]
+        - name: street
+          data_categories: [user.provided.identifiable.contact.street]
+        - name: city
+          data_categories: [user.provided.identifiable.contact.city]
+        - name: state
+          data_categories: [user.provided.identifiable.contact.state]
+        - name: zip
+          data_categories: [user.provided.identifiable.contact.postal_code]
 
       - name: customer
         after: mydatabase.address
