@@ -15,8 +15,90 @@ _A part of the [greater Fides ecosystem](https://github.com/ethyca/fides)._
 
 ![Fidesops overview](docs/fidesops/docs/img/fidesops-overview-diagram.png "Fidesops overview")
 ## :rocket: Quick Start
+If you're looking for a more detailed introduction to Fidesops, we recommend following [our tutorial here](https://ethyca.github.io/fidesops/tutorial/). 
 
-Get started with [our tutorial](docs/fidesops/docs/tutorial/index.md), which can be quickly deployed using Docker. 
+Run the quickstart in your terminal to give Fidesops a test drive:
+
+```bash
+cd fidesops
+make quickstart
+```
+This runs fidesops in docker along with the necessary data stores.  It also spins up a test postgres
+database and a test mongo database to mimic your application.  This quickstart will walk you through executing privacy
+requests against your system by making a series of API requests to fidesops.
+
+Follow these five easy steps:
+
+### Step One: Set up basic configuration (press `[enter]` to make each API request)
+
+- Authenticate by creating an Access Token
+- Connect to your application's postgres and mongo databases with ConnectionConfigs 
+- Describe the types of data you have and their relationships with Datasets 
+- Dictate where to upload your results with StorageConfigs (a local folder for now)
+
+### Step Two: Define an Access Policy
+
+Policies help describe what data you care about and how you want to manage it.  In this example, you'll create an `access` 
+Policy,`example-request-policy`, to get all data with the data category: `user.provided.identifiable`.
+  
+### Step Three: Run a Privacy Request to Access Data
+
+Finally, you can issue a Privacy Request using Policy `example-request-policy` across your test databases for `jane@example.com`.
+The following response will be uploaded to a local folder (for demo purposes). We've collected identifiable user-provided
+information for Jane across tables in both the postgres and mongo databases.
+
+```json
+{
+   "postgres_example_test_dataset:customer": [
+      {
+         "email": "jane@example.com",
+         "name": "Jane Customer"
+      }
+   ],
+   "postgres_example_test_dataset:address": [
+      {
+         "city": "Example Mountain",
+         "house": 1111,
+         "state": "TX",
+         "street": "Example Place",
+         "zip": "54321"
+      }
+   ],
+   "postgres_example_test_dataset:payment_card": [
+      {
+         "ccn": 373719391,
+         "code": 222,
+         "name": "Example Card 3"
+      }
+   ],
+   "mongo_test:customer_details": [
+      {
+         "gender": "female",
+         "birthday": "1990-02-28T00:00:00"
+      }
+   ]
+}
+```
+
+### Step Four: Create an Erasure Policy
+
+Now you'll create another Policy, `example-erasure-policy`, that describes how to `erase` data with the same category, by replacing values with null.
+
+
+### Step Five: Issue a Privacy Request to erase data and verify
+
+The last step is to issue a Privacy Request using `example-erasure-policy` to remove identifiable user-provided data 
+related to "jane@example.com". Then we'll re-run step #3 again to see what data is remaining for data category `user.provided.identifiable`:
+
+```json
+{}
+```
+This returns an empty dictionary confirming Jane's fields with data category `user.provided.identifiable` have been removed.
+
+
+You've learned how to use the Fidesops API to connect a database and a final storage location, define policies that describe
+how to handle user data, and execute access and erasure requests.  But there's a lot more to discover,
+so we'd recommend following [the tutorial](https://ethyca.github.io/fidesops/tutorial/) to keep learning.
 
 ### Documentation
 

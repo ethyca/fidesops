@@ -12,9 +12,9 @@ Take me directly to [API docs](../api/#operations-Storage-upload_data_api_v1_sto
 
 ## Overview
 
-SAR requests will produce a data package upon completion. This data will need to be uploaded to a storage destination (e.g. an S3 bucket). 
+Access requests requests will produce a data package upon completion. This data will need to be uploaded to a storage destination (e.g. an S3 bucket). 
 
-Fidesops never stores privacy request results locally, so you’ll need to configure at least one storage destination if you wish to process SAR requests.
+Fidesops never stores privacy request results locally, so you’ll need to configure at least one storage destination if you wish to process Access requests.
 
 Storage destinations are configured on Rules. 
 
