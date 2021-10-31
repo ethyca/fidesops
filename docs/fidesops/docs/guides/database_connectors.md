@@ -14,12 +14,12 @@ Take me directly to the [ConnectionConfig API documentation](../../api#operation
 
 ## What is a connection?
 
-A _connection_ links your databases to `fidesops` so you can gather and update selected PII 
+A _connection_ links your databases to Fidesops so you can gather and update selected PII 
 categories.  
 
 ## Supported databases
 
-Fidesops supports the following databases
+Fidesops supports connections to the following databases:
 
 * PostgreSQL
 * MongoDB
