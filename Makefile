@@ -52,7 +52,7 @@ integration-env: compose-build
 
 quickstart: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-quickstart.yml up -d
-	@docker exec -it fidesops_fidesops_1 python quickstart.py
+	@docker exec -it fidesops python quickstart.py
 
 ####################
 # Docker
