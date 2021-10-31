@@ -20,13 +20,13 @@ dataset:
     collections:
       - name: users
         fields:
-	      - name: _id
+          - name: _id
             fidesops_meta:
               primary_key: True
-	      - name: user_name
+          - name: user_name
             fidesops_meta:
               identity: username
-	       - name: full_name
+           - name: full_name
 
       - name: accounts
         fields:
@@ -34,11 +34,11 @@ dataset:
             fidesops_meta:
               primary_key: True
           - name: name
-			fidesops_meta:
-				references:
-					- dataset: mongo_1
-					  name: users.full_name
-					  direction: from
+            fidesops_meta:
+                references:
+                    - dataset: mongo_1
+                      name: users.full_name
+                      direction: from
           - name: comments
 ```
 
@@ -48,15 +48,15 @@ dataset:
     collections:
       - name: users
         fields:
-	      - name: id
+          - name: id
             fidesops_meta:
               primary_key: True
               references:
                 - dataset: postgres_1
                   field: users.id
-				  direction: from
+                  direction: from
           - name: internal_id
-		  - name: comment
+          - name: comment
 ```
 
 ``` yaml
@@ -65,7 +65,7 @@ dataset:
     collections:
       - name: purchase_items
         fields:
-	      - name: id
+          - name: id
             fidesops_meta:
               primary_key: True
           - name: purchase_id
@@ -73,9 +73,9 @@ dataset:
               references:
                 - dataset: postgres_1
                   field: purchases.id
-				  direction: from
-		  - name: amount
-		  - name: rating
+                  direction: from
+          - name: amount
+          - name: rating
 
       - name: purchases
         fields:
@@ -83,7 +83,7 @@ dataset:
             fidesops_meta:
               primary_key: True
           - name: user_id
-			fidesops_meta:
+            fidesops_meta:
               references:
                 - dataset: postgres_1
                   field: users.id
@@ -94,8 +94,8 @@ dataset:
             fidesops_meta:
               primary_key: True
           - name: email
-		      fidesops_meta:
-				identity: email
+              fidesops_meta:
+                identity: email
           - name: address_id
 ```
 
@@ -110,10 +110,10 @@ For the first step, we use the concept of an `identity`. In the Fidesops dataset
 ``` yaml
 collection:
   - name: foo
-	fields:
-	- name: bar
+    fields:
+    - name: bar
         fidesop_meta:
-		   identity: email 
+           identity: email 
 ```
 
 What this means is that we will _start_ the data retrieval process with provided data that looks like 
