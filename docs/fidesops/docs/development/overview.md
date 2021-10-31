@@ -39,7 +39,7 @@ see [Makefile](../../../../Makefile) for more options.
 
 #### Issues 
 When running `make server`, if you get a `importlib.metadata.PackageNotFoundError: fidesops`, do `make server-shell`,
-and then run `pip install - e.`. Verify Fidesops is installed with `pip list`. 
+and then run `pip install -e .`. Verify Fidesops is installed with `pip list`. 
 
 
 ### Write your code
