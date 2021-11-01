@@ -1,19 +1,25 @@
 # How-To: Authenticate with OAuth
 
+In this section we'll cover:
 
-When you invoke a Fidesops API, you must pass an _access token_ as the value of the `Authorization` header. Furthermore, the token must included a _scope_ that gives you permission to do whatever-it-is that the API does. For example, let's say you want to create a new Policy by calling `PUT /api/v1/policy`. The token that you pass to the `Authorization` header must include the `policy:create_or_update` scope.
+- How to use the root client
+- Creating additional OAuth clients using the root client
+- Authorizing your client with scopes
+- Creating OAuth tokens
+
+When you invoke a Fidesops API, you must pass an _access token_ as the value of the `Authorization` header. Furthermore, the token must included a _scope_ that gives you permission to do take an action on the API. For example, let's say you want to create a new Policy by calling `PUT /api/v1/policy`. The token that you pass to the `Authorization` header must include the `policy:create_or_update` scope.
 
 This document explains how to craft a properly-scoped access token.
 
-## Bootstrap
+## Getting Started
 
-The first thing you must do is create an access token for the "root" client. The root client's token is all-powerful: It contains all scopes so it can call any of the Fidesops APIs.
+First, create an access token for the "root" client, included in the deployment by default. The root client's token is all-powerful: It contains all scopes so it can call any of the Fidesops APIs.
 
 To create the root token, you pass the `OAUTH_ROOT_CLIENT_ID` and `OAUTH_ROOT_CLIENT_SECRET` environment variables (which are automatically defined in your system) to the `POST /api/v1/oauth/token` endpoint. You also set the `grant_type` parameter to `client_credentials`:
 
 ```
 curl \
-  -X POST 'http://api/v1/oauth/token' \
+  -X POST 'http://<HOST>:8080/api/v1/oauth/token' \
   -d client_id=$OAUTH_ROOT_CLIENT_ID \
   -d client_secret=$OAUTH_ROOT_CLIENT_SECRET \
   -d grant_type=client_credentials
@@ -33,27 +39,31 @@ Content-Type: application/json
 }
 ```
 
-## Creating Other Clients
+## Creating Additional Clients
 
-As mentioned before, the root client's token is all-powerful. One of the services it can perform is create new clients (or new client ID/client secret pairs) that can be used to create additional access tokens. 
+Because the root client's token is all-powerful, it can create new clients and new client ID/client secret pairs which can be used to create additional access tokens. 
 
-To create the ID/secret pair, you call `POST /api/v1/oauth/client`:
+!!! Note "Pro Tip"
+    For general best practices, we recommend creating a client with scope `CLIENT_CREATE` to create any new clients. This will help to reduce the utilization of the all-scopes root client.
+
+To create the client ID/secret pair, call `POST /api/v1/oauth/client`:
 
 ```
 curl \
-  -X POST 'http://api/v1/oauth/client' \
+  -X POST 'http://<HOST>:8080/api/v1/oauth/client' \
   -H 'Authorization: Bearer <root_access_token>'
   -H 'Content-Type: application/json'
   -d '{ "scopes": ["policy:read", "rule:read"]}'
 ```
 
-* For this call, we have to populate the `Authorization` header. Notice that the header's value is formed  as `Bearer <token>`.
+For this call, we have to populate the `Authorization` header. Notice that the header's value is formed  as `Bearer <token>`. We also have to declare the request's `Content-Type` to be `application/json`.
+### Authorize your Client with Scopes
 
-* We're going to add some scopes to the client by adding a body that contains an array of scope tokens. You can retrieve the scope tokens by calling `GET /api/v1/oauth/scopes`, or you can look in [the scope registry file](https://github.com/ethyca/solon/blob/main/src/fidesops/api/v1/scope_registry.py).
+To add scopes to the client, the body of your request must contain an array of scope tokens. 
 
-* We also have to declare the request's `Content-Type` to be `application/json`
+You can retrieve the available scopes by calling [`GET /api/v1/oauth/scopes`](/api#operations-OAuth-read_scopes_api_v1_oauth_scope_get), or you can look in [the scope registry file](https://github.com/ethyca/solon/blob/main/src/fidesops/api/v1/scope_registry.py).
 
-If the call is successful, it returns a new client ID/client secret pair:
+If the call is successful, Fidesapi responds with a new client ID/client secret pair:
 
 ```
 HTTP/1.1 200 OK
@@ -64,8 +74,10 @@ Content-Type: application/json
   "client_secret" : "<new_client_secret>",
 }
 ```
+## Create an Access Token
+You then create a new access token by calling [`POST /api/v1/oauth/token`](/api#operations-OAuth-acquire_access_token_api_v1_oauth_token_post) with the new credentials. 
 
-You then create a new access token by calling `POST /api/v1/oauth/token` with the new credentials. The new access token lets the client read policies and rules, but that's all -- the client can't create other clients, or write policies, or anything else that the the Fidesops API provides.
+In the above example, your new access token only lets the client read policies and rules -- the client nor create other clients, nor write policies, nor perform other operations using Fidesops APIs.
 
 ### Access Token Expiration
 
@@ -76,6 +88,6 @@ If you call a Fidesops API with an expired token, the call returns `401`.
 
 ### Other OAuth Calls
 
-Fidesops defines OAuth operations that let you delete a client, and read and write a client's scopes. See the **OAuth** section of the **API** documentation for details. 
+Fidesops defines OAuth operations that let you delete a client, and read and write a client's scopes. See the [**OAuth** section of the **API** documentation](/api#operations-tag-OAuth) for details. 
 
 
