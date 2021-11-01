@@ -15,7 +15,7 @@ Take me directly to the [ConnectionConfig API documentation](/api#operations-tag
 ## What is a connection?
 
 A _connection_ links your databases to Fidesops so you can gather and update selected PII 
-categories.  
+categories.
 
 ## Supported databases
 
@@ -33,7 +33,7 @@ The connection between Fidesops and your database is represented by a _Connectio
 
 * `name`  is a  a human-readable name for your database.
 
-* `key`  is a string token that uniquely identifies your ConnectionConfig object.  If you don't supply a `key`, the `name` value, converted to kebab-case (slugified), is used. For example, if the `name` is `Application PostgreSQL DB`, the converted key is `application-postgresql-db`.
+* `key`  is a string token that uniquely identifies your ConnectionConfig object. If you don't supply a `key`, the `name` value, converted to kebab-case (slugified), is used. For example, if the `name` is `Application PostgreSQL DB`, the converted key is `application-postgresql-db`.
 
 * `connection-type` specifies the type of database. Valid values are `postgres`, `mongodb`, and `mysql`.
 
@@ -138,7 +138,7 @@ You can verify that a ConnectionConfig's secrets are valid at any time by callin
 GET /api/v1/connection/application-postgresql-db/test
 ```
 
-Once again, the `test_status` and `failure_reason` properties describe the success or failure of the test.  If the test failed,
+Once again, the `test_status` and `failure_reason` properties describe the success or failure of the test. If the test failed,
 you should adjust the ConnectionConfig Secrets properties through additional calls to [Set a ConnectionConfig's Secrets](/api#operations-ConnectionConfigs-put_connection_config_secrets_api_v1_connection__connection_key__secret_put)
 
 
@@ -165,8 +165,7 @@ you should adjust the ConnectionConfig Secrets properties through additional cal
 
 ## How do ConnectionConfigs differ from Datasets?
 
-A Dataset is an annotation of your database schema; it describes the PII category (or Data Categories) for each field that the database contains. A ConnectionConfig holds the secrets to connect 
-to the database.  Each Dataset has a foreign key to a ConnectionConfig. 
+A Dataset is an annotation of your database schema; it describes the PII category (or Data Categories) for each field that the database contains. A ConnectionConfig holds the secrets to connect to the database. Each Dataset has a foreign key to a ConnectionConfig.
 
 After Fidesops connects to your database, it generates valid queries by consulting the annotations in the Dataset.
 
