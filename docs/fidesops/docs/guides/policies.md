@@ -124,7 +124,7 @@ This policy, `user_email_address_polcy`, will now do the following:
 
 ### A Note About Erasing Data
 
-When a Policy Rule erases data, it erases the _entire_ branch given by the Target. For example, if we created an `erasure` rule with a Target of `user.provided.identifiable.contact`, _all_ of the information within the `contact` node -- including `email` -- would be erased.
+When a Policy Rule erases data, it erases the _entire_ branch given by the Target. For example, if we created an `erasure` rule with a Target of `user.provided.identifiable.contact`, _all_ of the information within the `contact` node -- including `user.provided.identifiable.contact.email` -- would be erased.
 
 It's illegal to erase the same data twice within a Policy, so you should take care when you add Targets to a Rule. For example, you can't add `user.provided.identifiable.contact` _and_ `user.provided.identifiable.contact.email`
 "data_category". 
