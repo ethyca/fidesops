@@ -33,7 +33,7 @@ The connection between Fidesops and your database is represented by a _Connectio
 
 * `name`  is a  a human-readable name for your database.
 
-* `key`  is a string token that uniquely identifies your ConnectionConfig object.  If you don't supply a `key`, the `name` value, converted to kebab-case, is used. For example, if the `name` is `Application PostgreSQL DB`, the converted key is `application-postgresql-db`.
+* `key`  is a string token that uniquely identifies your ConnectionConfig object.  If you don't supply a `key`, the `name` value, converted to kebab-case (slugified), is used. For example, if the `name` is `Application PostgreSQL DB`, the converted key is `application-postgresql-db`.
 
 * `connection-type` specifies the type of database. Valid values are `postgres`, `mongodb`, and `mysql`.
 
