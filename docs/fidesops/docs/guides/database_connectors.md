@@ -37,7 +37,7 @@ The connection between Fidesops and your database is represented by a _Connectio
 
 * `connection-type` specifies the type of database. Valid values are `postgres`, `mongodb`, and `mysql`.
 
-* `access` sets the connection's permissions, one of "read" (Fidesops may only read from your database) or "write" (Fidesops can read from and write to your database). 
+* `access` sets the connection's permissions, one of "read" (Fidesops may only read from your database) or "write" (Fidesops can read from and write to your database).
 
 While the ConnectionConfig object contains meta information about the database, you'll notice that it doesn't actually identify the database itself. We'll get to that when we set the ConnectionConfig's "secrets".
 
