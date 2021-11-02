@@ -2,11 +2,17 @@
 
 Fidesops (fee-dez-äps, combination of the Latin term "Fidēs" + "operations") is an open-source, extensible, deployed engine that fulfills any privacy request (e.g. access request, erasure request) by connecting directly to your disparate databases.
 
+<<<<<<< HEAD
 <iframe width="560" height="315" src="https://www.youtube.com/embed/-BgvyAwXWAc" title="Introduction to Fides Ops with Cillian Kieran" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 ## Key Features
 ---
 
 ### Programmable Data Privacy
+=======
+<iframe width="560" height="315" src="https://www.youtube.com/embed/-BgvyAwXWAc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+## Programmable Data Privacy
+>>>>>>> 3826811178e37b197648e496ca0c3a8e8fe053d3
 Fidesops connects and orchestrates calls to all of your databases in order to access, update and delete sensitive data per your policy configuration written in [Fideslang](https://github.com/ethyca/privacy-taxonomy).
 
 ### Handle Dependencies Between Datastores
