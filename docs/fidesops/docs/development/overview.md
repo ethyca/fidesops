@@ -58,7 +58,9 @@ In order to submit code to Fidesops, please:
 
 * [Fork the Fidesops repository](https://help.github.com/en/articles/fork-a-repo)
 * Add the original as a remote (I'm naming it `upstream`), to keep your fork in sync
-  * `git remote add upstream https://github.com/ethyca/fidesops.git`
+  ```bash
+  git remote add upstream https://github.com/ethyca/fidesops.git
+  ```
 * [Create a new branch](https://help.github.com/en/desktop/contributing-to-projects/creating-a-branch-for-your-work) on your fork
   ```bash
     git checkout main 
