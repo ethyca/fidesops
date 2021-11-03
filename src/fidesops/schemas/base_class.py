@@ -2,8 +2,6 @@ from typing import List, Any
 
 from pydantic import BaseModel
 
-from fidesops.common_exceptions import ValidationError
-
 
 class FidesopsSchema(BaseModel):
     """
