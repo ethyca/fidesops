@@ -222,8 +222,8 @@ def erasure_policy(
             "name": "Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": "hash",
-                "configuration": {"algorithm": "SHA-512"},
+                "strategy": "null_rewrite",
+                "configuration": {},
             },
         },
     )
@@ -243,6 +243,46 @@ def erasure_policy(
         pass
     try:
         erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def erasure_policy_two_rules(db: Session, oauth_client: ClientDetail, erasure_policy: Policy) -> Generator:
+
+    second_erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "Second Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": "string_rewrite",
+                "configuration": {"rewrite_value": "*****"},
+            },
+        },
+    )
+
+    second_rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.provided.identifiable.contact.email").value,
+            "rule_id": second_erasure_rule.id,
+        },
+    )
+    yield erasure_policy
+    try:
+        second_rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        second_erasure_rule.delete(db)
     except ObjectDeletedError:
         pass
     try:
