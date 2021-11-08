@@ -39,6 +39,8 @@ from fidesops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
+from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
+from fidesops.service.masking.strategy.masking_strategy_string_rewrite import STRING_REWRITE
 from fidesops.util.cache import FidesopsRedis
 
 logging.getLogger("faker").setLevel(logging.ERROR)
@@ -261,12 +263,15 @@ def erasure_policy_two_rules(db: Session, oauth_client: ClientDetail, erasure_po
             "client_id": oauth_client.id,
             "name": "Second Erasure Rule",
             "policy_id": erasure_policy.id,
-            "masking_strategy": {
-                "strategy": "string_rewrite",
-                "configuration": {"rewrite_value": "*****"},
-            },
+            "masking_strategy": {"strategy": NULL_REWRITE, "configuration": {}},
         },
     )
+
+    # TODO set masking strategy in Rule.create() call above, once more masking strategies beyond NULL_REWRITE are supported.
+    second_erasure_rule.masking_strategy = {
+        "strategy": STRING_REWRITE,
+        "configuration": {"rewrite_value": "*****"}
+    }
 
     second_rule_target = RuleTarget.create(
         db=db,
