@@ -125,7 +125,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def can_write_data(self) -> bool:
         """Checks if the relevant ConnectionConfig has been granted "write" access to its data"""
-        connection_config = self.connector.configuration
+        connection_config: ConnectionConfig = self.connector.configuration
         return connection_config.access == AccessLevel.write
 
     def to_dask_input_data(self, *data: List[Row]) -> Dict[str, List[Any]]:
