@@ -13,7 +13,9 @@ from fastapi_pagination import Params
 import pytest
 from starlette.testclient import TestClient
 
-from fidesops.api.v1.endpoints.privacy_request_endpoints import EMBEDDED_EXECUTION_LOG_LIMIT
+from fidesops.api.v1.endpoints.privacy_request_endpoints import (
+    EMBEDDED_EXECUTION_LOG_LIMIT,
+)
 from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUESTS,
     V1_URL_PREFIX,
@@ -29,7 +31,11 @@ from fidesops.db.session import (
     get_db_session,
 )
 from fidesops.models.client import ClientDetail
-from fidesops.models.privacy_request import PrivacyRequest, ExecutionLog, ExecutionLogStatus
+from fidesops.models.privacy_request import (
+    PrivacyRequest,
+    ExecutionLog,
+    ExecutionLogStatus,
+)
 from fidesops.models.policy import DataCategory, ActionType
 from fidesops.schemas.dataset import DryRunDatasetResponse
 from fidesops.util.cache import get_identity_cache_key
@@ -255,7 +261,9 @@ class TestCreatePrivacyRequest:
             assert results[key] is not None
             assert results[key] != {}
 
-        result_key_prefix = f"EN_{pr.id}__access_request__postgres_example_test_dataset:"
+        result_key_prefix = (
+            f"EN_{pr.id}__access_request__postgres_example_test_dataset:"
+        )
         customer_key = result_key_prefix + "customer"
         assert results[customer_key][0]["email"] == customer_email
 
@@ -750,12 +758,12 @@ class TestGetPrivacyRequests:
         assert resp == expected_resp
 
     def test_verbose_privacy_request_embed_limit(
-            self,
-            db,
-            api_client: TestClient,
-            generate_auth_header,
-            privacy_request: PrivacyRequest,
-            url,
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_request: PrivacyRequest,
+        url,
     ):
         for i in range(0, EMBEDDED_EXECUTION_LOG_LIMIT + 10):
             ExecutionLog.create(
@@ -775,8 +783,13 @@ class TestGetPrivacyRequests:
         assert 200 == response.status_code
 
         resp = response.json()
-        assert len(resp["items"][0]["results"]["my-postgres-db"]) == EMBEDDED_EXECUTION_LOG_LIMIT
-        db.query(ExecutionLog).filter(ExecutionLog.privacy_request_id==privacy_request.id).delete()
+        assert (
+            len(resp["items"][0]["results"]["my-postgres-db"])
+            == EMBEDDED_EXECUTION_LOG_LIMIT
+        )
+        db.query(ExecutionLog).filter(
+            ExecutionLog.privacy_request_id == privacy_request.id
+        ).delete()
 
 
 class TestGetExecutionLogs:
