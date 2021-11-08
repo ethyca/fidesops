@@ -220,9 +220,9 @@ def load_toml(file_name: str) -> MutableMapping[str, Any]:
 def get_config() -> FidesopsConfig:
     """
     Attempt to read config file from:
-    a) passed in configuration, if it exists
-    b) env var FIDESOPS_CONFIG_PATH
-    c) local directory
+    a) env var FIDESOPS_CONFIG_PATH
+    b) local directory
+    c) parent directory
     d) home directory
     This will fail on the first encountered bad conf file.
     """
