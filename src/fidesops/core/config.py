@@ -196,11 +196,11 @@ def load_file(file_name: str) -> str:
         os.path.expanduser("~"),
     ]
 
-    directories = [d for d in possible_directories if d]
+    directories: List[str] = [d for d in possible_directories if d]
 
     for dir_str in directories:
         possible_location = os.path.join(dir_str, file_name)
-        if possible_location != "" and os.path.isfile(possible_location):
+        if possible_location and os.path.isfile(possible_location):
             logger.info("Loading file %s from %s", file_name, dir_str)
             return possible_location
         logger.debug("%s not found at %s", file_name, dir_str)
