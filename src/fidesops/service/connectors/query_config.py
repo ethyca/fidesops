@@ -38,7 +38,11 @@ class QueryConfig(Generic[T], ABC):
         return [f.name for f in self.node.node.collection.fields]
 
     def build_rule_target_fields(self, policy: Policy) -> Dict[Rule, List[str]]:
-        """Return dictionary of rules mapped to update-able field names on a given collection"""
+        """
+        Return dictionary of rules mapped to update-able field names on a given collection
+        Example:
+        {<fidesops.models.policy.Rule object at 0xffff9160e190>: ['name', 'code', 'ccn']}
+        """
         rule_updates: Dict[Rule, List[str]] = {}
         for rule in policy.rules:
             if rule.action_type != ActionType.erasure:
@@ -48,7 +52,7 @@ class QueryConfig(Generic[T], ABC):
                 continue
 
             targeted_fields = []
-            collection_categories = self.node.node.collection.categories_to_fields
+            collection_categories = self.node.node.collection.fields_by_category
             for rule_cat in rule_categories:
                 for collection_cat, fields in collection_categories.items():
                     if collection_cat.startswith(rule_cat):
@@ -114,7 +118,14 @@ class QueryConfig(Generic[T], ABC):
         return data
 
     def update_value_map(self, row: Row, policy: Policy) -> Dict[str, Any]:
-        """Map the relevant fields to be updated on the row with their masked values from Policy Rules"""
+        """Map the relevant fields to be updated on the row with their masked values from Policy Rules
+
+        Example return:  {'name': None, 'ccn': None, 'code': None}
+
+        In this example, a Null Masking Strategy was used to determine that the name/ccn/code fields
+        for a given customer_id will be replaced with null values.
+
+        """
         rule_to_collection_fields = self.build_rule_target_fields(policy)
 
         value_map: Dict[str, Any] = {}

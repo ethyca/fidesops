@@ -226,7 +226,7 @@ class Collection(BaseModel):
         return {f.name: f.identity for f in flds_w_ident}
 
     @property
-    def categories_to_fields(self) -> Dict[str, List]:
+    def fields_by_category(self) -> Dict[str, List]:
         """Returns mapping of data categories to fields, flips fields -> categories
         to be categories -> fields.
 
