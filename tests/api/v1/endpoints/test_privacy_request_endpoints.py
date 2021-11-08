@@ -368,6 +368,7 @@ class TestCreatePrivacyRequest:
         stmt = select(
             column("id"),
             column("email"),
+            column("name"),
         ).select_from(table("customer"))
         res = integration_db.execute(stmt).all()
 
@@ -379,6 +380,7 @@ class TestCreatePrivacyRequest:
                 # ("user.provided.identifiable.contact.email") has been erased by the parent
                 # category ("user.provided.identifiable.contact")
                 assert row[1] is None
+                assert row[2] is not None
             else:
                 # There are two rows other rows, and they should not have been erased
                 assert row[1] in ["customer-1@example.com", "jane@example.com"]
@@ -455,8 +457,8 @@ class TestCreatePrivacyRequest:
         generate_auth_header,
         erasure_policy,
     ):
-        customer_email = "customer-1@example.com"
-        customer_id = 1
+        customer_email = "customer-2@example.com"
+        customer_id = 2
         data = [
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
