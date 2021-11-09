@@ -11,11 +11,14 @@ In this section we'll cover:
 Take me directly to [API docs](/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
 
 ## What is a Privacy Request?
-A Privacy Request in its simplest form describes a request by a user, to process data pertaining to their identity. Privacy Requests are currently supported in two forms, `access` and `erasure`. For more information on action types, please see [How-To: Configure Request Policies](policies.md#rule-attributes).
 
+A Privacy Request object represents a request to retrieve or erase a user's identity data. The Request object itself identifies the user; the data that will be affected and how it's affected (retrieved or erased) is described in a Policy object that's associated with the Request.
+
+For more information on Policies, see [How-To: Configure Policies](policies.md#rule-attributes).
 
 #### How does a Privacy Request work in conjunction with a Policy?
-A Privacy Request must always be associated with a pre-configured `Policy`. While a Privacy Request describes _whose_ data to process, a `Policy` describes _how_ to process that data.
+
+A Privacy Request is associated with a Policy object. While the Privacy Request describes _whose_ data to process, the Policy describes _how_ to process that data. 
 
 
 ## How can I execute a Privacy Request?
