@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 
 from fastapi import APIRouter, Body, Depends, Security
 from fastapi_pagination import Params, Page
@@ -93,13 +93,13 @@ def upload_data(
     return DataUpload(location=data_location)
 
 
-@router.put(
+@router.patch(
     STORAGE_CONFIG,
     status_code=200,
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_CREATE_OR_UPDATE])],
     response_model=BulkPutStorageConfigResponse,
 )
-def put_config(
+def patch_config(
     *,
     db: Session = Depends(deps.get_db),
     storage_configs: conlist(StorageDestination, max_items=50),  # type: ignore
