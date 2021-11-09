@@ -57,7 +57,7 @@ class TestCreatePrivacyRequest:
         resp = api_client.post(url, json={}, headers=auth_header)
         assert resp.status_code == 403
 
-    @mock.patch("fidesops.task.graph_task.run_access_request")
+    @mock.patch("fidesops.service.privacy_request.request_runner_service.run_access_request")
     def test_create_privacy_request(
         self,
         run_access_request_mock,
@@ -83,7 +83,7 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
         assert run_access_request_mock.called
 
-    @mock.patch("fidesops.task.graph_task.run_access_request")
+    @mock.patch("fidesops.service.privacy_request.request_runner_service.run_access_request")
     def test_create_privacy_request_limit_exceeded(
         self,
         _,
@@ -112,7 +112,7 @@ class TestCreatePrivacyRequest:
             == "ensure this value has at most 50 items"
         )
 
-    @mock.patch("fidesops.models.privacy_request.PrivacyRequest.start_processing")
+    @mock.patch("fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.start_processing")
     def test_create_privacy_request_starts_processing(
         self,
         start_processing_mock,
@@ -138,7 +138,7 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
 
-    @mock.patch("fidesops.task.graph_task.run_access_request")
+    @mock.patch("fidesops.service.privacy_request.request_runner_service.run_access_request")
     def test_create_privacy_request_with_external_id(
         self,
         run_access_request_mock,
@@ -170,7 +170,7 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
         assert run_access_request_mock.called
 
-    @mock.patch("fidesops.task.graph_task.run_access_request")
+    @mock.patch("fidesops.service.privacy_request.request_runner_service.run_access_request")
     def test_create_privacy_request_caches_identity(
         self,
         run_access_request_mock,
