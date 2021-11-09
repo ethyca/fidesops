@@ -9,7 +9,7 @@ from sqlalchemy.exc import OperationalError, InternalError
 from fidesops.common_exceptions import ConnectionException
 from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.policy import Policy
-from fidesops.schemas.connection_configuration import PostgreSQLSchema
+from fidesops.schemas.connection_configuration import PostgreSQLSchema, RedshiftSchema
 from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
@@ -149,5 +149,24 @@ class MySQLConnector(SQLConnector):
     def client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a MySQL database"""
         config = MySQLSchema(**self.configuration.secrets or {})
+        uri = config.url or self.build_uri()
+        return create_engine(uri, hide_parameters=True)
+
+
+class RedshiftConnector(SQLConnector):
+    """Connector specific to Amazon Redshift"""
+
+    def build_uri(self) -> str:
+        """Build URI of format redshift+psycopg2://user:password@[host][:port][/database]"""
+        config = RedshiftSchema(**self.configuration.secrets or {})
+
+        port = f":{config.port}" if config.port else ""
+        database = f"/{config.database}" if config.database else ""
+        url = f"redshift+psycopg2://{config.user}:{config.password}@{config.host}{port}{database}"
+        return url
+
+    def client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with an Amazon Redshift cluster"""
+        config = RedshiftSchema(**self.configuration.secrets or {})
         uri = config.url or self.build_uri()
         return create_engine(uri, hide_parameters=True)
