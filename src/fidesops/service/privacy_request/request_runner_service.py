@@ -123,18 +123,10 @@ class PrivacyRequestRunner:
 
         except BaseException as exc:
             logging.debug(exc)
-            if (
-                self.third_party_service is not None
-                and self.third_party_context is not None
-            ):
-                self.on_error()
+            self.on_error()
             raise
         else:
-            if (
-                self.third_party_service is not None
-                and self.third_party_context is not None
-            ):
-                self.on_success()
+            self.on_success()
 
         self.privacy_request.finished_processing_at = datetime.utcnow()
         self.privacy_request.save(db=self.db)
@@ -144,15 +136,23 @@ class PrivacyRequestRunner:
 
     def on_success(self) -> None:
         """A callback to be called on privacy request processing success"""
-        self.third_party_service.notify_request(
-            success=True, context=self.third_party_context
-        )
+        if (
+            self.third_party_service is not None
+            and self.third_party_context is not None
+        ):
+            self.third_party_service.notify_request(
+                success=True, context=self.third_party_context
+            )
 
     def on_error(self) -> None:
         """A callback to be called on privacy request processing error"""
-        self.third_party_service.notify_request(
-            success=False, context=self.third_party_context
-        )
+        if (
+            self.third_party_service is not None
+            and self.third_party_context is not None
+        ):
+            self.third_party_service.notify_request(
+                success=False, context=self.third_party_context
+            )
 
     def start_processing(self, db: Session) -> None:
         """Dispatches this PrivacyRequest throughout the Fidesops System"""
