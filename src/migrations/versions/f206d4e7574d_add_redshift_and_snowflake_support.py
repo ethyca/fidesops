@@ -21,7 +21,9 @@ def upgrade():
 
 
 def downgrade():
-    op.execute("delete from connectionconfig where connection_type in ('snowflake', 'redshift')")
+    op.execute(
+        "delete from connectionconfig where connection_type in ('snowflake', 'redshift')"
+    )
     op.execute("alter type connectiontype rename to connectiontype_old")
     op.execute(
         "create type connectiontype as enum('postgres', 'mongodb', 'mysql', 'https')"
