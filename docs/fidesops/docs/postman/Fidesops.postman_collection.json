@@ -412,7 +412,7 @@
 					"response": []
 				},
 				{
-					"name": "Update Connection Secret: Mongo",
+					"name": "Update Connection Secrets: Mongo",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -574,7 +574,7 @@
 			"name": "Calls to create an Erasure Request (Assume Basic Configs already set up from Access Request section)",
 			"item": [
 				{
-					"name": "Create separate Policy",
+					"name": "Create/Update separate Policy",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -610,7 +610,7 @@
 					"response": []
 				},
 				{
-					"name": "Create an Erasure Rule",
+					"name": "Create/Update an Erasure Rule",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -649,7 +649,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Erasure Rule Targets",
+					"name": "Create/Update Erasure Rule Targets",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1205,7 +1205,7 @@
 					"response": []
 				},
 				{
-					"name": "Create S3 Storage Config",
+					"name": "Create/Update S3 Storage Config",
 					"request": {
 						"auth": {
 							"type": "bearer",
