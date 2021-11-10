@@ -22,6 +22,4 @@ COPY . /fidesops
 WORKDIR /fidesops
 RUN pip install -e .
 
-WORKDIR /fidesops
-
 CMD [ "fidesops", "webserver" ]
