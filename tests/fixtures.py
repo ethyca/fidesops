@@ -11,6 +11,7 @@ import yaml
 import logging
 from faker import Faker
 
+from fidesops.core.config import load_file
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import (
     ConnectionConfig,
@@ -39,6 +40,8 @@ from fidesops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
+from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
+from fidesops.service.masking.strategy.masking_strategy_string_rewrite import STRING_REWRITE
 from fidesops.util.cache import FidesopsRedis
 
 logging.getLogger("faker").setLevel(logging.ERROR)
@@ -122,6 +125,28 @@ def connection_config(db: Session) -> Generator:
             "key": "my-postgres-db-1",
             "connection_type": ConnectionType.postgres,
             "access": AccessLevel.write,
+            "secrets": {
+                "host": "postgres_example",
+                "dbname": "postgres_example",
+                "username": "postgres",
+                "password": "postgres",
+            },
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def read_connection_config(db: Session) -> Generator:
+    name = str(uuid4())
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my-postgres-db-1-read-config",
+            "connection_type": ConnectionType.postgres,
+            "access": AccessLevel.read,
             "secrets": {
                 "host": "postgres_example",
                 "dbname": "postgres_example",
@@ -222,8 +247,8 @@ def erasure_policy(
             "name": "Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": "hash",
-                "configuration": {"algorithm": "SHA-512"},
+                "strategy": "null_rewrite",
+                "configuration": {},
             },
         },
     )
@@ -243,6 +268,49 @@ def erasure_policy(
         pass
     try:
         erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def erasure_policy_two_rules(db: Session, oauth_client: ClientDetail, erasure_policy: Policy) -> Generator:
+
+    second_erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "Second Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {"strategy": NULL_REWRITE, "configuration": {}},
+        },
+    )
+
+    # TODO set masking strategy in Rule.create() call above, once more masking strategies beyond NULL_REWRITE are supported.
+    second_erasure_rule.masking_strategy = {
+        "strategy": STRING_REWRITE,
+        "configuration": {"rewrite_value": "*****"}
+    }
+
+    second_rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.provided.identifiable.contact.email").value,
+            "rule_id": second_erasure_rule.id,
+        },
+    )
+    yield erasure_policy
+    try:
+        second_rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        second_erasure_rule.delete(db)
     except ObjectDeletedError:
         pass
     try:
@@ -408,7 +476,7 @@ def postgres_execution_log(
             "collection_name": "user",
             "fields_affected": [
                 {
-                    "path": "user.email",
+                    "path": "my-postgres-db:user:email",
                     "field_name": "email",
                     "data_categories": ["user.provided.identifiable.contact.email"],
                 }
@@ -433,12 +501,12 @@ def second_postgres_execution_log(
             "collection_name": "address",
             "fields_affected": [
                 {
-                    "path": "address.street",
+                    "path": "my-postgres-db:address:street",
                     "field_name": "street",
                     "data_categories": ["user.provided.identifiable.contact.street"],
                 },
                 {
-                    "path": "address.city",
+                    "path": "my-postgres-db:address:city",
                     "field_name": "city",
                     "data_categories": ["user.provided.identifiable.contact.city"],
                 },
@@ -462,7 +530,7 @@ def mongo_execution_log(db: Session, privacy_request: PrivacyRequest) -> Executi
             "collection_name": "orders",
             "fields_affected": [
                 {
-                    "path": "orders.name",
+                    "path": "my-mongo-db:orders:name",
                     "field_name": "name",
                     "data_categories": ["user.provided.identifiable.contact.name"],
                 }
@@ -606,7 +674,8 @@ def example_datasets() -> List[Dict]:
         "data/dataset/mongo_example_test_dataset.yml",
     ]
     for filename in example_filenames:
-        with open(filename, "r") as file:
+        yaml_file = load_file(filename)
+        with open(yaml_file, "r") as file:
             example_datasets += yaml.safe_load(file).get("dataset", [])
     return example_datasets
 
@@ -626,6 +695,26 @@ def postgres_example_test_dataset_config(
         db=db,
         data={
             "connection_config_id": connection_config.id,
+            "fides_key": fides_key,
+            "dataset": postgres_dataset,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+
+
+@pytest.fixture
+def postgres_example_test_dataset_config_read_access(
+    read_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    postgres_dataset = example_datasets[0]
+    fides_key = postgres_dataset["fides_key"]
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": read_connection_config.id,
             "fides_key": fides_key,
             "dataset": postgres_dataset,
         },
