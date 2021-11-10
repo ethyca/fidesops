@@ -7,6 +7,7 @@ from fidesops.service.connectors.sql_connector import (
     PostgreSQLConnector,
     MySQLConnector,
     RedshiftConnector,
+    SnowflakeConnector,
 )
 
 supported_connectors: Dict[str, Any] = {
@@ -14,6 +15,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.mongodb.value: MongoDBConnector,
     ConnectionType.mysql.value: MySQLConnector,
     ConnectionType.redshift.value: RedshiftConnector,
+    ConnectionType.snowflake.value: SnowflakeConnector,
 }
 
 

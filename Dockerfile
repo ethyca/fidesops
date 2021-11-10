@@ -12,6 +12,8 @@ RUN apt-get install -y \
 
 # Update pip and install requirements
 RUN pip install -U pip
+RUN pip3 install 'cryptography~=3.4.8' \
+    && pip3 install snowflake-connector-python --no-use-pep517
 COPY requirements.txt requirements.txt
 COPY dev-requirements.txt dev-requirements.txt
 RUN pip install -r requirements.txt

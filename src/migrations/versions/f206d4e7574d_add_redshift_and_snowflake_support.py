@@ -1,4 +1,4 @@
-"""add redshift support
+"""add redshift and snowflake support
 
 Revision ID: f206d4e7574d
 Revises: 0210948a8147
@@ -17,6 +17,7 @@ depends_on = None
 
 def upgrade():
     op.execute("alter type connectiontype add value 'redshift'")
+    op.execute("alter type connectiontype add value 'snowflake'")
 
 
 def downgrade():

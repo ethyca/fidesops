@@ -242,6 +242,22 @@ def redshift_connection_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def snowflake_connection_config(db: Session) -> Generator:
+    name = str(uuid4())
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my-snowflake-config",
+            "connection_type": ConnectionType.snowflake,
+            "access": AccessLevel.write,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
 def erasure_policy(
     db: Session,
     oauth_client: ClientDetail,

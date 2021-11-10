@@ -31,6 +31,7 @@ class ConnectionType(enum.Enum):
     mysql = "mysql"
     https = "https"
     redshift = "redshift"
+    snowflake = "snowflake"
 
 
 class AccessLevel(enum.Enum):

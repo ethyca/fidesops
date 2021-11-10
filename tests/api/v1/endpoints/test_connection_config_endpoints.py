@@ -190,6 +190,12 @@ class TestPutConnections:
                 "connection_type": "redshift",
                 "access": "read",
             },
+            {
+                "key": "my-snowflake",
+                "name": "Snowflake Warehouse",
+                "connection_type": "snowflake",
+                "access": "write",
+            },
         ]
 
         response = api_client.put(
@@ -199,7 +205,7 @@ class TestPutConnections:
         assert 200 == response.status_code
         response_body = json.loads(response.text)
         assert len(response_body) == 2
-        assert len(response_body["succeeded"]) == 3
+        assert len(response_body["succeeded"]) == 4
         assert len(response_body["failed"]) == 0
 
         postgres_connection = response_body["succeeded"][0]
@@ -227,9 +233,19 @@ class TestPutConnections:
         assert redshift_resource.access.value == "read"
         assert "secrets" not in redshift_connection
 
+        snowflake_connection = response_body["succeeded"][3]
+        assert snowflake_connection["access"] == "write"
+        assert snowflake_connection["updated_at"] is not None
+        snowflake_resource = (
+            db.query(ConnectionConfig).filter_by(key="my-snowflake").first()
+        )
+        assert snowflake_resource.access.value == "write"
+        assert "secrets" not in snowflake_connection
+
         postgres_resource.delete(db)
         mongo_resource.delete(db)
         redshift_resource.delete(db)
+        snowflake_resource.delete(db)
 
     @mock.patch("fidesops.db.base_class.OrmWrappedFidesopsBase.create_or_update")
     def test_put_connections_failed_response(
@@ -584,3 +600,44 @@ class TestPutConnectionConfigSecrets:
         }
         assert redshift_connection_config.last_test_timestamp is None
         assert redshift_connection_config.last_test_succeeded is None
+
+    def test_put_connection_config_snowflake_secrets(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        snowflake_connection_config,
+    ) -> None:
+        """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{snowflake_connection_config.key}/secret"
+        payload = {
+            "user_login_name": "test_user",
+            "password": "test_password",
+            "account_identifier": "flso2222test",
+            "database_name": "test",
+        }
+
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        assert (
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {snowflake_connection_config.key}."
+        )
+        db.refresh(snowflake_connection_config)
+        assert snowflake_connection_config.secrets == {
+            "user_login_name": "test_user",
+            "password": "test_password",
+            "account_identifier": "flso2222test",
+            "database_name": "test",
+            "schema_name": None,
+            "warehouse_name": None,
+            "role_name": None,
+            "url": None,
+        }
+        assert snowflake_connection_config.last_test_timestamp is None
+        assert snowflake_connection_config.last_test_succeeded is None

@@ -16,6 +16,9 @@ from fidesops.models.connectionconfig import ConnectionType
 from fidesops.schemas.connection_configuration.connection_secrets_redshift import (
     RedshiftSchema,
 )
+from fidesops.schemas.connection_configuration.connection_secrets_snowflake import (
+    SnowflakeSchema,
+)
 from fidesops.schemas.connection_configuration.connections_secrets_https import (
     HttpsSchema,
 )
@@ -26,6 +29,7 @@ secrets_validators: Dict[str, Any] = {
     ConnectionType.mongodb.value: MongoDBSchema,
     ConnectionType.mysql.value: MySQLSchema,
     ConnectionType.redshift.value: RedshiftSchema,
+    ConnectionType.snowflake.value: SnowflakeSchema,
 }
 
 
