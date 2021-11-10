@@ -26,7 +26,7 @@ def downgrade():
     )
     op.execute(
         (
-            "alter table connectionconfig alter column type type connectiontype using "
+            "alter table connectionconfig alter column connection_type type connectiontype using "
             "connection_type::text::connectiontype"
         )
     )
