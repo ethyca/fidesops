@@ -19,14 +19,16 @@ from fidesops.models.policy import (
 )
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.models.storage import StorageConfig
-from fidesops.schemas.third_party.onetrust import OneTrustRequest, OneTrustSubtask
+from fidesops.schemas.third_party.onetrust import OneTrustRequest, OneTrustSubtask, OneTrustSubtaskStatus
 from fidesops.schemas.storage.storage import StorageSecrets, StorageDetails
 from fidesops.service.privacy_request.onetrust_service import (
     ONETRUST_POLICY_KEY,
     FIDES_TASK, OneTrustService,
 )
 
-
+@mock.patch(
+    "fidesops.service.privacy_request.onetrust_service.OneTrustService.transition_status"
+)
 @mock.patch(
     "fidesops.service.privacy_request.onetrust_service.get_onetrust_access_token"
 )
@@ -38,6 +40,7 @@ def test_intake_onetrust_requests_success(
     mock_get_all_subtasks: Mock,
     mock_get_all_requests: Mock,
     mock_get_onetrust_access_token: Mock,
+    mock_transition_status: Mock,
     oauth_client: ClientDetail,
     db: Session,
     storage_config_onetrust,
@@ -65,7 +68,7 @@ def test_intake_onetrust_requests_success(
     mock_subtask_1.subTaskId = "1234"
     mock_subtask_2: OneTrustSubtask = OneTrustSubtask()
     mock_subtask_2.subTaskName = "not for fides"
-    mock_subtask_1.subTaskId = "4444"
+    mock_subtask_2.subTaskId = "4444"
     mock_get_all_subtasks.side_effect = [[mock_subtask_1], [mock_subtask_2]]
 
     # call test function
@@ -93,6 +96,12 @@ def test_intake_onetrust_requests_success(
             ),
         ],
         any_order=True,
+    )
+    mock_transition_status.assert_called_with(
+        status=OneTrustSubtaskStatus.COMPLETED,
+        hostname=hostname,
+        access_token=mock_get_onetrust_access_token.return_value,
+        subtask_id=mock_subtask_1.subTaskId,
     )
     pr = PrivacyRequest.get_by(
         db=db,
@@ -143,7 +152,7 @@ def test_intake_onetrust_requests_no_config(
     mock_subtask_1.subTaskId = "1234"
     mock_subtask_2: OneTrustSubtask = OneTrustSubtask()
     mock_subtask_2.subTaskName = "not for fides"
-    mock_subtask_1.subTaskId = "4444"
+    mock_subtask_2.subTaskId = "4444"
     mock_get_all_subtasks.side_effect = [[mock_subtask_1], [mock_subtask_2]]
 
     with pytest.raises(StorageConfigNotFoundException):
@@ -194,7 +203,7 @@ def test_intake_onetrust_requests_no_policy(
     mock_subtask_1.subTaskId = "1234"
     mock_subtask_2: OneTrustSubtask = OneTrustSubtask()
     mock_subtask_2.subTaskName = "not for fides"
-    mock_subtask_1.subTaskId = "4444"
+    mock_subtask_2.subTaskId = "4444"
     mock_get_all_subtasks.side_effect = [[mock_subtask_1], [mock_subtask_2]]
 
     with pytest.raises(PolicyNotFoundException):
@@ -248,7 +257,7 @@ def test_intake_onetrust_requests_auth_fail(
     mock_subtask_1.subTaskId = "1234"
     mock_subtask_2: OneTrustSubtask = OneTrustSubtask()
     mock_subtask_2.subTaskName = "not for fides"
-    mock_subtask_1.subTaskId = "4444"
+    mock_subtask_2.subTaskId = "4444"
     mock_get_all_subtasks.side_effect = [[mock_subtask_1], [mock_subtask_2]]
 
     with pytest.raises(AuthenticationException):
@@ -304,7 +313,7 @@ def test_intake_onetrust_requests_no_fides_tasks(
     mock_subtask_1.subTaskId = "1234"
     mock_subtask_2: OneTrustSubtask = OneTrustSubtask()
     mock_subtask_2.subTaskName = "not for fides"
-    mock_subtask_1.subTaskId = "4444"
+    mock_subtask_2.subTaskId = "4444"
     mock_get_all_subtasks.side_effect = [[mock_subtask_1], [mock_subtask_2]]
 
     # call test function

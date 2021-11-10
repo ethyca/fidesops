@@ -24,7 +24,6 @@ from fidesops.schemas.third_party.onetrust import (
     OneTrustSubtask,
     OneTrustGetRequestsResponse,
     OneTrustRequest,
-    OneTrustSubtaskContext,
 )
 from fidesops.schemas.storage.storage import StorageDetails, StorageSecrets
 from fidesops.service.outbound_urn_registry import (
@@ -33,7 +32,6 @@ from fidesops.service.outbound_urn_registry import (
     ONETRUST_PUT_SUBTASK_STATUS,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
-from fidesops.service.privacy_request.third_party_base import ThirdPartyBase
 from fidesops.util.cache import get_cache
 from fidesops.util.storage_authenticator import get_onetrust_access_token
 from fidesops.schemas.third_party.onetrust import OneTrustSubtaskStatus
@@ -44,15 +42,8 @@ ONETRUST_POLICY_KEY = "onetrust"
 FIDES_TASK = "fides task"
 
 
-class OneTrustService(ThirdPartyBase):
+class OneTrustService:
     """OneTrust Service for privacy requests"""
-
-    def notify_request(self, success: bool, context: OneTrustSubtaskContext) -> None:
-        """onetrust callback for success / error of privacy request"""
-        status = (
-            OneTrustSubtaskStatus.COMPLETED if success else OneTrustSubtaskStatus.FAILED
-        )
-        self.transition_status(status, onetrust_context=context)
 
     @staticmethod
     def intake_onetrust_requests(config_key: str) -> None:
@@ -120,22 +111,22 @@ class OneTrustService(ThirdPartyBase):
 
     @staticmethod
     def transition_status(
-        status: OneTrustSubtaskStatus, onetrust_context: OneTrustSubtaskContext
+        status: OneTrustSubtaskStatus, access_token: str, hostname: str, subtask_id: str
     ) -> None:
         """Given a new status, and external id, updates status of associated onetrust subtask"""
-        put_subtask_status_data = {"status": status}
-        headers = {"Authorization": f"Bearer {onetrust_context.access_token}"}
+        put_subtask_status_data = {"status": status.value}
+        headers = {"Authorization": f"Bearer {access_token}"}
         api_response: Response = requests.put(
             ONETRUST_PUT_SUBTASK_STATUS.format(
-                hostname=onetrust_context.hostname,
-                subtask_id=onetrust_context.subtask_id,
+                hostname=hostname,
+                subtask_id=subtask_id,
             ),
             data=put_subtask_status_data,
             headers=headers,
         )
         if api_response.status_code != 200:
             logger.error(
-                f"Unable to set status for onetrust subtask with id: {onetrust_context.subtask_id}"
+                f"Unable to set status for onetrust subtask with id: {subtask_id}"
             )
 
     @staticmethod
@@ -162,16 +153,21 @@ class OneTrustService(ThirdPartyBase):
         }
         privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
         privacy_request.cache_identity(identity)
-        onetrust_context = OneTrustSubtaskContext(
-            hostname=hostname, access_token=access_token, subtask_id=subtask_id
+        try:
+            PrivacyRequestRunner(
+                cache=get_cache(),
+                db=db,
+                privacy_request=privacy_request,
+            ).run()
+            request_status = OneTrustSubtaskStatus.COMPLETED
+        except BaseException:  # pylint: disable=W0703
+            request_status = OneTrustSubtaskStatus.FAILED
+        OneTrustService.transition_status(
+            status=request_status,
+            hostname=hostname,
+            access_token=access_token,
+            subtask_id=subtask_id,
         )
-        PrivacyRequestRunner(
-            cache=get_cache(),
-            db=db,
-            privacy_request=privacy_request,
-            third_party_service=OneTrustService,
-            third_party_context=onetrust_context,
-        ).run()
 
     @staticmethod
     def _get_onetrust_policy(db: Session) -> Policy:

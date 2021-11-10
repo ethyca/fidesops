@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Set, Any, Optional
+from typing import Set
 
 from sqlalchemy.orm import Session
 
@@ -25,19 +25,14 @@ class PrivacyRequestRunner:
     """The class responsible for dispatching PrivacyRequests into the execution layer"""
 
     def __init__(
-        # pylint: disable=too-many-arguments
         self,
         cache: FidesopsRedis,
         db: Session,
         privacy_request: PrivacyRequest,
-        third_party_service: Optional[Any] = None,
-        third_party_context: Optional[Any] = None,
     ):
         self.cache = cache
         self.db = db
         self.privacy_request = privacy_request
-        self.third_party_service = third_party_service
-        self.third_party_context = third_party_context
 
     def run(self) -> None:
         # pylint: disable=too-many-locals
@@ -123,36 +118,13 @@ class PrivacyRequestRunner:
 
         except BaseException as exc:
             logging.debug(exc)
-            self.on_error()
             raise
-        else:
-            self.on_success()
 
         self.privacy_request.finished_processing_at = datetime.utcnow()
         self.privacy_request.save(db=self.db)
 
     def dry_run(self, privacy_request: PrivacyRequest) -> None:
         """Pretend to dispatch privacy_request into the execution layer, return the query plan"""
-
-    def on_success(self) -> None:
-        """A callback to be called on privacy request processing success"""
-        if (
-            self.third_party_service is not None
-            and self.third_party_context is not None
-        ):
-            self.third_party_service.notify_request(
-                success=True, context=self.third_party_context
-            )
-
-    def on_error(self) -> None:
-        """A callback to be called on privacy request processing error"""
-        if (
-            self.third_party_service is not None
-            and self.third_party_context is not None
-        ):
-            self.third_party_service.notify_request(
-                success=False, context=self.third_party_context
-            )
 
     def start_processing(self, db: Session) -> None:
         """Dispatches this PrivacyRequest throughout the Fidesops System"""
