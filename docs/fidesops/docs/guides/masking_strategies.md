@@ -219,7 +219,7 @@ from fidesops.service.masking.strategy.masking_strategy_hash import HashMaskingS
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
-from fidesops.common_exceptions import ValidationError as SolonValidationError
+from fidesops.common_exceptions import ValidationError as FidesopsValidationError
 
 from fidesops.schemas.masking.masking_configuration import FormatPreservationConfig
 
@@ -252,7 +252,7 @@ def get_strategy(
         strategy_config = strategy.get_configuration_model()(**configuration)
         return strategy(configuration=strategy_config)
     except ValidationError as e:
-        raise SolonValidationError(message=str(e))
+        raise FidesopsValidationError(message=str(e))
 
 ```
 
