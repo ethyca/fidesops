@@ -9,6 +9,6 @@ def slugify(text: str) -> str:
     """
     text = unidecode.unidecode(text).lower().strip()
     text = re.sub(r"[^\w\s-]", "", text)
-    text = re.sub(r"[\s-]+", "-", text)
+    text = re.sub(r"[\s-]+", "_", text)
     text = re.sub(r"^-+|-+$", "", text)
     return text

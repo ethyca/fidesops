@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
 
 import six
+from fideslang.validation import FidesKey
 from sqlalchemy import Column, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.ext.mutable import MutableDict
@@ -27,12 +28,12 @@ def get_key_from_data(data: Dict[str, Any], cls_name: str) -> str:
 
     Will be used as the URL slug on applicable classes.
     """
-    key = slugify(data.get("key")) if data.get("key") else None
+    key = FidesKey.validate(data.get("key")) if data.get("key") else None
     if key is None:
         name = data.get("name")
         if name is None:
             raise KeyValidationError(f"{cls_name} requires a name.")
-        key = slugify(name)
+        key = slugify(FidesKey.validate(name))
     return key
 
 
