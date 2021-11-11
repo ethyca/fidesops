@@ -95,7 +95,7 @@ Example response:
                 "naming": "request_id",
                 "object_name": "requests"
             },
-            "key": "s3-storage-2"
+            "key": "s3_storage_2"
         }
     ],
     "total": 1,

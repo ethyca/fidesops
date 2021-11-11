@@ -117,21 +117,21 @@ if __name__ == "__main__":
   ...
  # Create a Policy that returns all user data
     policy = create_policy(
-        key="example-request-policy",
+        key="example_request_policy",
         access_token=access_token,
     )
-    delete_policy_rule("example-request-policy", "access-user-data", access_token)
+    delete_policy_rule("example_request_policy", "access-user-data", access_token)
     create_policy_rule(
-        policy_key="example-request-policy",
-        key="access-user-data",
+        policy_key="example_request_policy",
+        key="access_user_data",
         action_type="access",
-        storage_destination_key="example-storage",
+        storage_destination_key="example_storage",
         access_token=access_token,
     )
 
     data_category = "user.provided.identifiable"
     create_policy_rule_target(
-        "example-request-policy", "access-user-data", data_category, access_token
+        "example_request_policy", "access-user-data", data_category, access_token
     )
 
 ```

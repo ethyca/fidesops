@@ -73,10 +73,10 @@ and also attempt to make a test connection to our Flask App's Postgres Database.
 if __name__ == "__main__":
     ...
     # Connect to our PostgreSQL database
-    create_postgres_connection(key="flaskr-postgres", access_token=access_token)
+    create_postgres_connection(key="flask_postgres", access_token=access_token)
 
     configure_postgres_connection(
-        key="flaskr-postgres",
+        key="flaskr_postgres",
         host=POSTGRES_SERVER,
         port=POSTGRES_PORT,
         dbname="flaskr",

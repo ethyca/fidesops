@@ -24,7 +24,7 @@ from fidesops.util.text import slugify
 
 def get_key_from_data(data: Dict[str, Any], cls_name: str) -> str:
     """
-    Extracts key from data and slugifies. If no key, uses a slugified name.
+    Extracts key from data, validates. If no key, uses a slugified name.
 
     Will be used as the URL slug on applicable classes.
     """
@@ -33,7 +33,7 @@ def get_key_from_data(data: Dict[str, Any], cls_name: str) -> str:
         name = data.get("name")
         if name is None:
             raise KeyValidationError(f"{cls_name} requires a name.")
-        key = slugify(FidesKey.validate(name))
+        key = FidesKey.validate(slugify(name))
     return key
 
 
@@ -177,7 +177,7 @@ class OrmWrappedFidesopsBase(FidesopsBase):
         Create an object, or update the existing version. There's an edge case where
         `data["id"]` and `data["key"]` can point at different records, in which case
         this method will attempt to update the fetched record with the key of another,
-        and a `KeyAlreadyExists` error will be thrown. If neither `key`, nor `id` are
+        and a `KeyOrNameAlreadyExists` error will be thrown. If neither `key`, nor `id` are
         passed in, leave `db_obj` as None and assume we are creating a new object.
         """
         db_obj = None

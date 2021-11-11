@@ -40,7 +40,7 @@ def test_policy_wont_override_slug(
     db: Session,
     oauth_client: ClientDetail,
 ) -> None:
-    slug = "something-different"
+    slug = "something_different"
     policy = Policy.create(
         db=db,
         data={
@@ -298,7 +298,7 @@ def test_validate_policy(
         db=db,
         data={
             "name": "example erasure policy",
-            "key": "example-erasure-policy",
+            "key": "example_erasure_policy",
             "client_id": oauth_client.id,
         },
     )

@@ -52,7 +52,7 @@ PATCH api/v1/connection
 [
   { 
     "name": "Application PostgreSQL DB",
-    "key": "application-postgresql-db",
+    "key": "application_postgresql_db",
     "connection_type": "postgres",
     "access": "read"
   }
@@ -69,7 +69,7 @@ PATCH api/v1/connection
 [
   { 
     "name": "My Mongo DB",
-    "key": "my-mongo-db",
+    "key": "my_mongo_db",
     "connection_type": "mongodb",
     "access": "write"
   }
@@ -83,7 +83,7 @@ PATCH api/v1/connection
 [
   { 
     "name": "My MySQL DB",
-    "key": "my-mysql-db",
+    "key": "my_mysql_db",
     "connection_type": "mysql",
     "access": "write"
   }
@@ -124,7 +124,7 @@ This example sets the database secrets as a single `url` property, and skips the
 
 
 ```
-PUT api/v1/connection/my-mongo-db/secret?verify=false`
+PUT api/v1/connection/my_mongo_db/secret?verify=false`
  
 {
     "url": "mongodb://mongo_user:mongo_pass@mongodb_example/mongo_test"
@@ -148,7 +148,7 @@ you should adjust the ConnectionConfig Secrets properties through additional cal
 
 ```json
 {
-    "msg": "Test completed for ConnectionConfig with key: app-postgres-db.",
+    "msg": "Test completed for ConnectionConfig with key: app_postgres_db.",
     "test_status": "succeeded",
     "failure_reason": null
 }
@@ -158,7 +158,7 @@ you should adjust the ConnectionConfig Secrets properties through additional cal
 
 ```json
 {
-    "msg": "Secrets updated for ConnectionConfig with key: app-mongo-db.",
+    "msg": "Secrets updated for ConnectionConfig with key: app_mongo_db.",
     "test_status": "failed",
     "failure_reason": "Operation Failure connecting to MongoDB."
 }

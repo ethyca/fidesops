@@ -89,7 +89,7 @@ if __name__ == "__main__":
     ...
     # Upload the Dataset YAML for our PostgreSQL schema
     datasets = create_dataset(
-        connection_key="flaskr-postgres",
+        connection_key="flaskr_postgres",
         yaml_path="fides_resources/flaskr_postgres_dataset.yml",
         access_token=access_token,
     )
