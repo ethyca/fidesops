@@ -181,7 +181,7 @@ class SnowflakeConnector(SQLConnector):
     """Connector specific to Snowflake"""
 
     def build_uri(self) -> str:
-        """Buildd URI of format 'snowflake://<user_login_name>:<password>@<account_identifier>/<database_name>/
+        """Build URI of format 'snowflake://<user_login_name>:<password>@<account_identifier>/<database_name>/
         <schema_name>?warehouse=<warehouse_name>&role=<role_name>'
         """
         config = SnowflakeSchema(**self.configuration.secrets or {})
