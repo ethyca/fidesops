@@ -76,16 +76,16 @@ Field identities:
 
 """
 from __future__ import annotations
-from collections import defaultdict
 
+from collections import defaultdict
 from typing import List, Optional, Tuple, Set, Dict, Literal, Any
-from pydantic import BaseModel
 
 from fideslang.models import FidesKey
+from pydantic import BaseModel
 
 from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.data_type import DataTypeConverter, DataType
-
+from fidesops.util.querytoken import QueryToken
 
 DatasetAddress = str
 SeedAddress = str
@@ -212,8 +212,11 @@ class Field(BaseModel):
         if not self.data_type:
             return value
 
-        converter: DataTypeConverter = self.data_type.value
-        return converter.to_value(value)
+        if not isinstance(value, QueryToken):
+            converter: DataTypeConverter = self.data_type.value
+            return converter.to_value(value)
+
+        return value
 
 
 class Collection(BaseModel):

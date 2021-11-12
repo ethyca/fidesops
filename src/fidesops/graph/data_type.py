@@ -42,7 +42,7 @@ class IntTypeConverter(DataTypeConverter[int]):
         try:
             return int(other)
 
-        except ValueError:
+        except (ValueError, TypeError):
             return None
 
     def empty_value(self) -> int:
@@ -58,7 +58,7 @@ class FloatTypeConverter(DataTypeConverter[float]):
         try:
             return float(other)
 
-        except ValueError:
+        except (ValueError, TypeError):
             return None
 
     def empty_value(self) -> float:
@@ -67,7 +67,7 @@ class FloatTypeConverter(DataTypeConverter[float]):
 
 
 class BooleanTypeConverter(DataTypeConverter[bool]):
-    """Boolean data type converter."""
+    """Boolean data type converter recognizing the strings True/False, 1,0, and booleans."""
 
     true_vals = {"True", "true", True, 1}
     false_vals = {"False", "false", False, 0}
@@ -95,8 +95,9 @@ class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
             return other
         if t == str and len(other) == 24:
             try:
-                return ObjectId(str)
-            except InvalidId:
+                return ObjectId(other)
+            except (InvalidId, TypeError) as e:
+                print(e)
                 return None
         return None
 
@@ -115,6 +116,6 @@ class DataType(Enum):
 
     string = StringTypeConverter()
     integer = IntTypeConverter()
-    number = FloatTypeConverter()
+    float = FloatTypeConverter()
     boolean = BooleanTypeConverter()
     object_id = ObjectIdTypeConverter()
