@@ -6,7 +6,7 @@ from typing import Dict, Any, List, Set, Optional, Generic, TypeVar, Tuple
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
 
-from fidesops.graph.config import ROOT_COLLECTION_ADDRESS, CollectionAddress
+from fidesops.graph.config import ROOT_COLLECTION_ADDRESS, CollectionAddress, Field
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
 from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
@@ -62,9 +62,9 @@ class QueryConfig(Generic[T], ABC):
         return rule_updates
 
     @property
-    def primary_keys(self) -> List[str]:
+    def primary_key_fields(self) -> List[Field]:
         """List of fields marked as primary keys"""
-        return [f.name for f in self.node.node.collection.fields if f.primary_key]
+        return [f for f in self.node.node.collection.fields if f.primary_key]
 
     @property
     def query_keys(self) -> Set[str]:
@@ -79,14 +79,16 @@ class QueryConfig(Generic[T], ABC):
         Return a filtered list of key/value sets of data items that are both in
         the list of incoming edge fields, and contain data in the input data set
         """
-        return {
-            key: value
-            for (key, value) in input_data.items()
-            if key in self.query_keys
-            and isinstance(value, list)
-            and len(value)
-            and None not in value
-        }
+
+        out = {}
+        for key, values in input_data.items():
+            field = self.node.node.collection.field(key)
+            if field and key in self.query_keys and isinstance(values, list):
+                cast_values = [field.cast(v) for v in values]
+                filtered = list(filter(lambda x: x is not None, cast_values))
+                if filtered:
+                    out[key] = filtered
+        return out
 
     def query_sources(self) -> Dict[str, List[CollectionAddress]]:
         """Display the input sources for each query key"""
@@ -198,10 +200,13 @@ class SQLQueryConfig(QueryConfig[TextClause]):
     def generate_update_stmt(self, row: Row, policy: Policy) -> Optional[TextClause]:
         update_value_map = self.update_value_map(row, policy)
         update_clauses = [f"{k} = :{k}" for k in update_value_map]
-        pk_clauses = [f"{k} = :{k}" for k in self.primary_keys]
+        pk_clauses = [f"{k.name} = :{k.name}" for k in self.primary_key_fields]
 
-        for pk in self.primary_keys:
-            update_value_map[pk] = row[pk]
+        for pk_field in self.primary_key_fields:
+            pk_raw = row[pk_field.name]
+            pk_value = pk_field.cast(pk_raw)
+            if pk_value:
+                update_value_map[pk_field.name] = pk_value
 
         valid = len(pk_clauses) > 0 and len(update_clauses) > 0
         if not valid:
@@ -298,7 +303,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
     ) -> Optional[MongoStatement]:
         """Generate a SQL update statement in the form of Mongo update statement components"""
         update_clauses = self.update_value_map(row, policy)
-        pk_clauses = {k: row[k] for k in self.primary_keys}
+        pk_clauses = {k.name: row[k.name] for k in self.primary_key_fields}
 
         valid = len(pk_clauses) > 0 and len(update_clauses) > 0
         if not valid:
