@@ -1,6 +1,6 @@
 from typing import Union
 
-from fidesops.schemas.base_class import DocsOnlySchema
+from fidesops.schemas.base_class import NoValidationSchema
 from fidesops.schemas.storage.storage import (
     StorageSecretsLocal,
     StorageSecretsS3,
@@ -8,11 +8,11 @@ from fidesops.schemas.storage.storage import (
 )
 
 
-class StorageSecretsS3Docs(StorageSecretsS3, DocsOnlySchema):
+class StorageSecretsS3Docs(StorageSecretsS3, NoValidationSchema):
     """The secrets required to connect to S3, for documentation"""
 
 
-class StorageSecretsOnetrustDocs(StorageSecretsOnetrust, DocsOnlySchema):
+class StorageSecretsOnetrustDocs(StorageSecretsOnetrust, NoValidationSchema):
     """The secrets required to send results to Onetrust, for documentation"""
 
 

@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from fidesops.schemas.base_class import DocsOnlySchema
+from fidesops.schemas.base_class import NoValidationSchema
 from fidesops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
@@ -18,5 +18,5 @@ class MongoDBSchema(ConnectionConfigSecretsSchema):
     _required_components: List[str] = ["host"]
 
 
-class MongoDBDocsSchema(MongoDBSchema, DocsOnlySchema):
+class MongoDBDocsSchema(MongoDBSchema, NoValidationSchema):
     """Mongo DB Secrets Schema for API docs"""

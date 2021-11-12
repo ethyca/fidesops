@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from fidesops.schemas.base_class import DocsOnlySchema
+from fidesops.schemas.base_class import NoValidationSchema
 from fidesops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
@@ -20,5 +20,5 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
     _required_components: List[str] = ["host"]
 
 
-class PostgreSQLDocsSchema(PostgreSQLSchema, DocsOnlySchema):
+class PostgreSQLDocsSchema(PostgreSQLSchema, NoValidationSchema):
     """Postgres Secrets Schema for API Docs"""

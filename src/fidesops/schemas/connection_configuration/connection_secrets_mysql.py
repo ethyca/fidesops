@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from fidesops.schemas.base_class import DocsOnlySchema
+from fidesops.schemas.base_class import NoValidationSchema
 from fidesops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
@@ -20,5 +20,5 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
     _required_components: List[str] = ["host"]
 
 
-class MySQLDocsSchema(MySQLSchema, DocsOnlySchema):
+class MySQLDocsSchema(MySQLSchema, NoValidationSchema):
     """MySQL Secrets Schema for API Docs"""
