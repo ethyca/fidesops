@@ -209,12 +209,12 @@ class Field(BaseModel):
         - If the data_type is None, then it has not been specified, so just return the input value.
         - Return either a cast value or None"""
 
-        if not self.data_type:
-            return value
-
-        if not isinstance(value, QueryToken):
-            converter: DataTypeConverter = self.data_type.value
-            return converter.to_value(value)
+        if self.data_type:
+            # if no data type is specified just return the input value.
+            # Skip conversions for query tokens, which are only for display output
+            if not isinstance(value, QueryToken):
+                converter: DataTypeConverter = self.data_type.value
+                return converter.to_value(value)
 
         return value
 

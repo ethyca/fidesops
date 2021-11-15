@@ -76,10 +76,6 @@ def test_combined_erasure_task(
         {"email": seed_email},
     )
 
-    for k, v in access_request_data.items():
-        print(k)
-        for row in v:
-            print(f"\t{row}")
     x = graph_task.run_erasure(
         privacy_request,
         policy,
@@ -88,9 +84,6 @@ def test_combined_erasure_task(
         {"email": seed_email},
         access_request_data,
     )
-    print("-----")
-    for k, v in x.items():
-        print(f"{k}:{v} updated")
 
     assert x == {
         "postgres_example:customer": 1,
@@ -175,7 +168,7 @@ def test_dask_mongo_task(integration_mongodb_config: ConnectionConfig) -> None:
 
 
 @pytest.mark.integration
-def test_dask_mongo_task_type_conversion(
+def test_access_erasure_type_conversion(
     db,
     integration_mongodb_config: ConnectionConfig,
 ) -> None:
@@ -183,7 +176,7 @@ def test_dask_mongo_task_type_conversion(
     the employee foreign_id field, which is an object_id stored as a string, and
     converting it into an object_id to query against the type_link_test._id field."""
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
-
+    policy = erasure_policy("A")
     employee = Collection(
         name="employee",
         fields=[
@@ -205,7 +198,7 @@ def test_dask_mongo_task_type_conversion(
                     (FieldAddress("mongo_test", "employee", "foreign_id"), "from")
                 ],
             ),
-            Field(name="name", data_type=DataType.string),
+            Field(name="name", data_type=DataType.string, data_categories=["A"]),
             Field(name="key", data_type=DataType.integer),
         ],
     )
@@ -216,7 +209,7 @@ def test_dask_mongo_task_type_conversion(
         connection_key=integration_mongodb_config.key,
     )
 
-    v = graph_task.run_access_request(
+    access_request_data = graph_task.run_access_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -224,11 +217,23 @@ def test_dask_mongo_task_type_conversion(
         {"email": "employee-1@example.com"},
     )
 
-    employee = v["mongo_test:employee"][0]
-    link = v["mongo_test:type_link_test"][0]
+    employee = access_request_data["mongo_test:employee"][0]
+    link = access_request_data["mongo_test:type_link_test"][0]
 
     assert employee["foreign_id"] == "000000000000000000000001"
     assert link["_id"] == ObjectId("000000000000000000000001")
+
+    # erasure
+    erasure = graph_task.run_erasure(
+        privacy_request,
+        policy,
+        DatasetGraph(dataset),
+        [integration_mongodb_config],
+        {"email": "employee-1@example.com"},
+        access_request_data,
+    )
+
+    assert erasure == {"mongo_test:employee": 0, "mongo_test:type_link_test": 1}
 
 
 @pytest.mark.integration

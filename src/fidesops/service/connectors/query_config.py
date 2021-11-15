@@ -192,7 +192,6 @@ class SQLQueryConfig(QueryConfig[TextClause]):
     def generate_update_stmt(self, row: Row, policy: Policy) -> Optional[TextClause]:
         update_value_map = self.update_value_map(row, policy)
         update_clauses = [f"{k} = :{k}" for k in update_value_map]
-
         non_empty_primary_keys = filter_nonempty_values(
             {
                 f.name: f.cast(row[f.name])
