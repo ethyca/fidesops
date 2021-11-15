@@ -77,7 +77,7 @@ Example: `PUT /masking/mask?value=test@example.com`
 
 The email has been replaced with a random string of 20 characters, while still preserving that the value is an email.
 
-See [Masking values API docs](/api#operations-tag-Masking) on how to use fidesops to as a masking service .
+See [Masking values API docs](/fidesops/api#operations-tag-Masking) on how to use fidesops to as a masking service .
 
 
 ## Supported Masking Strategies
@@ -128,7 +128,7 @@ See the [Policy guide](policies.md) for more detailed instructions on creating P
 
 ## Getting masking options
 
-Issue a GET request to [`/api/v1/masking/strategy`](/api#operations-Masking-list_masking_strategies_api_v1_masking_strategy_get) to preview the different masking
+Issue a GET request to [`/api/v1/masking/strategy`](/fidesops/api#operations-Masking-list_masking_strategies_api_v1_masking_strategy_get) to preview the different masking
 strategies available, along with their configuration options. 
 
 
