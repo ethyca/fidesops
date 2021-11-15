@@ -1,3 +1,5 @@
+import math
+
 from datetime import datetime
 
 import os
@@ -19,6 +21,7 @@ from fidesops.models.storage import ResponseFormat
 from fidesops.schemas.storage.storage import StorageSecrets
 from fidesops.util.cache import get_encryption_cache_key, get_cache
 from fidesops.util.encryption.aes_gcm_encryption_scheme import encrypt
+from fidesops.util import cryptographic_util
 
 from fidesops.util.storage_authenticator import (
     get_s3_session,
@@ -38,24 +41,21 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
         privacy_request_id=request_id,
         encryption_attr="key",
     )
-    nonce_cache_key = get_encryption_cache_key(
-        privacy_request_id=request_id,
-        encryption_attr="nonce",
-    )
-
-    encryption_key = cache.get(encryption_cache_key)
-    nonce = cache.get(nonce_cache_key)
-
     if isinstance(data, bytes):
         data = data.decode(config.security.ENCODING)
 
-    if not (encryption_key and nonce):
+    encryption_key = cache.get(encryption_cache_key)
+    if not encryption_key:
         return data
 
     encryption_key = encryption_key.encode(encoding=config.security.ENCODING)
-    nonce = nonce.encode(encoding=config.security.ENCODING)
+    nonce = cryptographic_util.generate_secure_random_string(
+        math.floor(config.security.AES_GCM_NONCE_LENGTH / 2)
+    )
 
-    return encrypt(data, encryption_key, nonce)
+    return nonce + encrypt(
+        data, encryption_key, nonce.encode(encoding=config.security.ENCODING)
+    )
 
 
 def write_to_in_memory_buffer(

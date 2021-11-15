@@ -1,8 +1,9 @@
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 
-from pydantic import Field, root_validator
+from pydantic import Field, validator
 
+from fidesops.core.config import config
 from fidesops.models.policy import ActionType
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
@@ -10,7 +11,6 @@ from fidesops.schemas.base_class import BaseSchema
 from fidesops.models.privacy_request import PrivacyRequestStatus, ExecutionLogStatus
 from fidesops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
-    verify_nonce,
 )
 
 
@@ -24,30 +24,15 @@ class PrivacyRequestCreate(BaseSchema):
     identities: List[PrivacyRequestIdentity]
     policy_key: str
     encryption_key: Optional[str] = None
-    nonce: Optional[str] = None
 
-    @root_validator
-    @classmethod
-    def validate_encryption_key_and_nonce(
-        cls: "PrivacyRequestCreate", values: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """
-        Validate if encryption key or nonce is supplied, both fields must be present
-        and verify values where applicable
-        """
-        encryption_key = values.get("encryption_key")
-        nonce = values.get("nonce")
-        if nonce or encryption_key:
-            if not (nonce and encryption_key):
-                raise ValueError(
-                    "To encrypt access request data, both an encryption key and a nonce must be supplied."
-                )
-
-            # Validate supplied encryption key and nonce are acceptable
-            verify_encryption_key(encryption_key)
-            verify_nonce(nonce)
-
-        return values
+    @validator("encryption_key")
+    def validate_encryption_key(
+        cls: "PrivacyRequestCreate", value: Optional[str] = None
+    ) -> Optional[str]:
+        """Validate encryption key where applicable"""
+        if value:
+            verify_encryption_key(value.encode(config.security.ENCODING))
+        return value
 
 
 class FieldsAffectedResponse(BaseSchema):

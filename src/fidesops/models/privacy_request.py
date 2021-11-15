@@ -97,21 +97,15 @@ class PrivacyRequest(Base):
                     value,
                 )
 
-    def cache_encryption(
-        self, encryption_key: Optional[str] = None, nonce: Optional[str] = None
-    ) -> None:
-        """Sets the encryption key/nonce in the Fidesops app cache if provided"""
-        if not (encryption_key and nonce):
+    def cache_encryption(self, encryption_key: Optional[str] = None) -> None:
+        """Sets the encryption key in the Fidesops app cache if provided"""
+        if not encryption_key:
             return
 
         cache: FidesopsRedis = get_cache()
         cache.set_with_autoexpire(
             get_encryption_cache_key(self.id, "key"),
             encryption_key,
-        )
-        cache.set_with_autoexpire(
-            get_encryption_cache_key(self.id, "nonce"),
-            nonce,
         )
 
     def get_cached_identity_data(self) -> Dict[str, Any]:

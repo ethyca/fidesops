@@ -12,7 +12,7 @@ def hash_with_salt(text: bytes, salt: bytes) -> str:
 
 
 def generate_secure_random_string(length_in_bytes: int) -> str:
-    """Generates a securely random string using Python secrets library"""
+    """Generates a securely random string using Python secrets library. The return data is 2x the length of the input."""
     return secrets.token_hex(length_in_bytes)
 
 

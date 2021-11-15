@@ -7,7 +7,8 @@ In this section we'll cover:
 - How can I execute a Privacy Request?
 - How do I monitor Privacy Requests as they execute?
 - How can I integrate the Privacy Request flow into my existing support tools?
-- Encrypting access request results 
+- Specifying encryption of access request results 
+- Decrypting access request results
 
 Take me directly to [API docs](/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
 
@@ -65,8 +66,9 @@ Alongside generic API interopoerability, Fidesops provides a direct integration 
 
 ## Encryption
 
-You can optionally encrypt your access request results by supplying an `encryption_key` and a `nonce` string in the request body:
-We will use the supplied encryption_key and nonce to encrypt the contents of your JSON and CSV results using an AES algorithm in GCM mode.
+You can optionally encrypt your access request results by supplying an `encryption_key` string in the request body:
+We will use the supplied encryption_key to encrypt the contents of your JSON and CSV results using an AES algorithm in GCM mode.
+When converted to bytes, your encryption_key must be 16 bytes long.
 
 POST /privacy-request
 ```json
@@ -75,9 +77,36 @@ POST /privacy-request
         "requested_at": "2021-08-30T16:09:37.359Z",
         "identities": [{"email": "customer-1@example.com"}],
         "policy_key": "my_access_policy",
-        "encryption_key": "test--encryption",
-        "nonce": "613f0cf4292c"
+        "encryption_key": "test--encryption"
     }
 ]
 
 ```
+
+## Decrypting your access request results
+
+If you specified an encryption key, we encrypted the access result data using your key and an internally-generated `nonce` with an AES 
+algorithm in GCM mode.  The return value is the nonce plus the encrypted data. 
+
+For example, pretend you specified an encryption key of "test--encryption", and the resulting data was uploaded to
+S3 in a JSON file: `d71a5dc3c49d7n7QN+tueapbID9CC48QWX6MoIUdzm6M8aH+VdLagsOm/Wk0Gz+q51tehcgM9DdTFJizA3m+joA=`.  You will
+need to implement something similar to the snippet below on your end to decrypt:
+
+```python
+import json
+from fidesops.util.encryption.aes_gcm_encryption_scheme import decrypt
+
+encrypted = "d71a5dc3c49d7n7QN+tueapbID9CC48QWX6MoIUdzm6M8aH+VdLagsOm/Wk0Gz+q51tehcgM9DdTFJizA3m+joA=" 
+encryption_key = "test--encryption".encode("utf-8")  # Only you know this
+nonce = encrypted[0:12].encode("utf-8")
+encrypted_data = encrypted[12:]
+decrypted = decrypt(encrypted_data, encryption_key, nonce)
+```
+
+```bash
+>>> json.loads(decrypted)
+{'street': 'test street', 'state': 'NY'}
+```
+
+If CSV data was uploaded, each CSV in the zipfile was encrypted using a different nonce so you'll need to follow
+a similar process for each csv file.

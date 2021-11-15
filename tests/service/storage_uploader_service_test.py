@@ -284,11 +284,10 @@ def test_uploader_local_success(
 
 class TestWriteToInMemoryBuffer:
     key = "test--encryption"
-    nonce = "613f0cf4292c"
 
     @pytest.fixture(scope="function")
     def privacy_request_with_encryption_keys(self, privacy_request) -> Generator:
-        privacy_request.cache_encryption(self.key, self.nonce)
+        privacy_request.cache_encryption(self.key)
         return privacy_request
 
     @pytest.fixture(scope="function")
@@ -389,9 +388,9 @@ class TestWriteToInMemoryBuffer:
         encrypted = buff.read()
         data = encrypted.decode(config.security.ENCODING)
         decrypted = decrypt(
-            data,
+            data[12:],
             self.key.encode(config.security.ENCODING),
-            self.nonce.encode(config.security.ENCODING),
+            data[0:12].encode(config.security.ENCODING),
         )
         assert json.loads(decrypted) == original_data
 
@@ -407,9 +406,9 @@ class TestWriteToInMemoryBuffer:
             data = address_csv.read().decode(config.security.ENCODING)
 
             decrypted = decrypt(
-                data,
+                data[12:],
                 self.key.encode(config.security.ENCODING),
-                self.nonce.encode(config.security.ENCODING),
+                data[0:12].encode(config.security.ENCODING),
             )
 
             binary_stream = BytesIO(decrypted.encode(config.security.ENCODING))
@@ -439,23 +438,15 @@ class TestEncryptResultsPackage:
 
         assert ret == data
 
-    def test_key_only_set(self, privacy_request):
-        privacy_request.cache_encryption("afjdkslfjalskdjfk", "")
-
-        data = "test data"
-        ret = encrypt_access_request_results(data, request_id=privacy_request.id)
-
-        assert ret == data
-
     def test_key_and_nonce_set(self, privacy_request):
-        nonce = "ab3020194920"
         key = "abvnfhrke8398398"
-        privacy_request.cache_encryption("abvnfhrke8398398", nonce)
+        privacy_request.cache_encryption("abvnfhrke8398398")
         data = "test data"
         ret = encrypt_access_request_results(data, request_id=privacy_request.id)
-        assert ret == "sA2H3VTiPjogm69kTXGa69Nsblo4HxkNMw=="
+        nonce = ret[0:12]
+        encrypted_data = ret[12:]
         assert data == decrypt(
-            ret,
+            encrypted_data,
             key.encode(config.security.ENCODING),
             nonce.encode(config.security.ENCODING),
         )

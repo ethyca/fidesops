@@ -222,50 +222,15 @@ class TestCreatePrivacyRequest:
     def test_create_privacy_request_invalid_encryption_values(
         self, url, db, api_client: TestClient, generate_auth_header, policy, cache
     ):
-
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": policy.key,
-                "identities": ["test@example.com"],
-                "nonce": "613f0cf4292c",
-            }
-        ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        # Test nonce only
-        resp = api_client.post(url, json=data, headers=auth_header)
-        assert resp.status_code == 422
-        assert (
-            resp.json()["detail"][0]["msg"]
-            == "To encrypt access request data, both an encryption key and a nonce must be supplied."
-        )
-
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": policy.key,
-                "identities": ["test@example.com"],
-                "encryption_key": "test--encryption",
-            }
-        ]
-        # Test encryption key only
-        resp = api_client.post(url, json=data, headers=auth_header)
-        assert resp.status_code == 422
-        assert (
-            resp.json()["detail"][0]["msg"]
-            == "To encrypt access request data, both an encryption key and a nonce must be supplied."
-        )
-
-        # Test invalid key
         data = [
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
                 "policy_key": policy.key,
                 "identities": ["test@example.com"],
                 "encryption_key": "test",
-                "nonce": "613f0cf4292c",
             }
         ]
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
         resp = api_client.post(url, json=data, headers=auth_header)
         assert resp.status_code == 422
         assert resp.json()["detail"][0]["msg"] == "Encryption key must be 16 bytes long"
@@ -290,7 +255,6 @@ class TestCreatePrivacyRequest:
                 "policy_key": policy.key,
                 "identities": [identity],
                 "encryption_key": "test--encryption",
-                "nonce": "613f0cf4292c",
             }
         ]
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
@@ -305,11 +269,6 @@ class TestCreatePrivacyRequest:
         )
         assert cache.get(encryption_key) == "test--encryption"
 
-        nonce = get_encryption_cache_key(
-            privacy_request_id=pr.id,
-            encryption_attr="nonce",
-        )
-        assert cache.get(nonce) == "613f0cf4292c"
         pr.delete(db=db)
         assert run_access_request_mock.called
 
