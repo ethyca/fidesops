@@ -175,9 +175,9 @@ def test_dask_mongo_task(integration_mongodb_config: ConnectionConfig) -> None:
 
 
 @pytest.mark.integration
-def test_dask_mongo_task_type_conversion( db,
+def test_dask_mongo_task_type_conversion(
+    db,
     integration_mongodb_config: ConnectionConfig,
-
 ) -> None:
     """Retrieve data from the type_link table. This requires retrieving data from
     the employee foreign_id field, which is an object_id stored as a string, and
@@ -210,7 +210,6 @@ def test_dask_mongo_task_type_conversion( db,
         ],
     )
 
-
     dataset = Dataset(
         name="mongo_test",
         collections=[employee, type_link],
@@ -225,12 +224,11 @@ def test_dask_mongo_task_type_conversion( db,
         {"email": "employee-1@example.com"},
     )
 
-
     employee = v["mongo_test:employee"][0]
     link = v["mongo_test:type_link_test"][0]
 
-    assert employee["foreign_id"] == '000000000000000000000001'
-    assert link["_id"] == ObjectId('000000000000000000000001' )
+    assert employee["foreign_id"] == "000000000000000000000001"
+    assert link["_id"] == ObjectId("000000000000000000000001")
 
 
 @pytest.mark.integration
