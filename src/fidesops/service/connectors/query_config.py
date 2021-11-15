@@ -286,8 +286,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
                 query_fields, return_fields = (
                     transform_query_pairs(query_pairs),
                     field_list,
-                )
-
+                ) 
                 return query_fields, return_fields
 
         logger.warning(

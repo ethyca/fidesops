@@ -35,13 +35,9 @@ def test_collection_address_to_string():
 
 
 def test_collection_field_map():
-    c= Collection(
+    c = Collection(
         name="t3",
-        fields=[
-            Field(
-                name="f1"
-            )
-        ],
+        fields=[Field(name="f1")],
     )
     assert c.field("f1").name == "f1"
     assert c.field("not found") is None
