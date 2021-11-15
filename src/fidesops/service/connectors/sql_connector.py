@@ -97,6 +97,7 @@ class SQLConnector(BaseConnector):
             update_stmt = query_config.generate_update_stmt(row, policy)
             if update_stmt is not None:
                 with client.connect() as connection:
+                    print(f"\n\n{rows}\n{update_stmt}")
                     results: LegacyCursorResult = connection.execute(update_stmt)
                     update_ct = update_ct + results.rowcount
         return update_ct

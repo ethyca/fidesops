@@ -8,11 +8,12 @@ from unittest.mock import Mock
 import dask
 import pytest
 
-from fidesops.common_exceptions import InsufficientDataException
 from fidesops.core.config import config
-from fidesops.graph.config import FieldAddress
+from fidesops.graph.config import FieldAddress, Collection, Field, Dataset
+from fidesops.graph.data_type import DataType
 from fidesops.graph.graph import DatasetGraph, Edge, Node
 from fidesops.graph.traversal import TraversalNode
+from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.policy import Policy
 from fidesops.models.policy import Rule, RuleTarget, ActionType
@@ -110,6 +111,74 @@ def test_sql_erasure_ignores_collections_without_pk(
         "postgres_example:orders": 0,
         "postgres_example:address": 0,
     }
+@pytest.mark.integration
+def test_composite_key_erasure(
+    db,
+    integration_postgres_config: ConnectionConfig,
+) -> None:
+    """Retrieve data from the type_link table. This requires retrieving data from
+    the employee id field, which is an int, and converting it into a string to query
+    against the type_link_test.id field."""
+    privacy_request = PrivacyRequest(id=f"test_postgtres_task_{random.randint(0,1000)}")
+    policy = erasure_policy("A")
+    customer = Collection(
+        name="customer",
+        fields=[
+            Field(name="id", primary_key=True),
+            Field(name="email", identity="email", data_type=DataType.string),
+        ],
+    )
+
+    composite_pk_test = Collection(
+        name="composite_pk_test",
+        fields=[
+            Field(
+                name="id_a",
+                primary_key=True,
+                data_type=DataType.integer,
+            ),
+            Field(
+                name="id_b",
+                primary_key=True,
+                data_type=DataType.integer,
+            ),
+            Field(name="description", data_type=DataType.string, data_categories=["A"]),
+            Field(name="customer_id", data_type=DataType.integer, references = [
+                               (FieldAddress("postgres_example", "customer", "id"), "from")
+                           ])]
+    )
+
+    dataset = Dataset(
+        name="postgres_example",
+        collections=[customer, composite_pk_test],
+        connection_key=integration_postgres_config.key,
+    )
+
+    access_request_data = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        DatasetGraph(dataset),
+        [integration_postgres_config],
+        {"email": "customer-1@example.com"},
+    )
+    customer = access_request_data["postgres_example:customer"][0]
+    composite_pk_test = access_request_data["postgres_example:composite_pk_test"][0]
+
+    assert customer["id"] == 1
+    assert composite_pk_test["customer_id"] == 1
+
+
+    # erasure
+    erasure = graph_task.run_erasure(
+        privacy_request,
+        policy,
+        DatasetGraph(dataset),
+        [integration_postgres_config],
+        {"email": "employee-1@example.com"},
+        access_request_data,
+    )
+
+    assert erasure == {'postgres_example:customer': 0, 'postgres_example:composite_pk_test': 1}
 
 
 @pytest.mark.integration
