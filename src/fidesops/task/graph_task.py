@@ -249,7 +249,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             return 0
 
         output = self.connector.mask_data(
-            self.traversal_node, self.resources.policy, retrieved_data, True
+            self.traversal_node, self.resources.policy, retrieved_data
         )
         self.log_end(ActionType.erasure)
         return output
