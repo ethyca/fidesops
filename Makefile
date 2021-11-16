@@ -99,7 +99,7 @@ mypy: compose-build
 pytest: compose-build
 	@echo "Running pytest unit tests..."
 	@docker-compose run $(IMAGE_NAME) \
-		pytest $(pytestpath) -m "not integration and not integration_erasure"
+		pytest $(pytestpath) -m "not integration and not integration_erasure and not external_integration"
 
 # Run the pytest integration tests.
 pytest-integration-access: compose-build
