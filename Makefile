@@ -123,6 +123,13 @@ pytest-integration-erasure: compose-build
 		run $(IMAGE_NAME) \
 		pytest $(pytestpath) -m "integration_erasure"
 
+# These tests connect to external third-party test databases
+pytest-external-integration: compose-build
+	@echo "Running tests that connect to external third party test databases"
+	@docker-compose run $(IMAGE_NAME) \
+		pytest $(pytestpath) -m "external_integration"
+
+
 ####################
 # Utils
 ####################
