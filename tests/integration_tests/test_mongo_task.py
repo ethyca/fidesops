@@ -8,7 +8,8 @@ import dask
 import pytest
 
 from fidesops.common_exceptions import InsufficientDataException
-from fidesops.graph.config import FieldAddress
+from fidesops.graph.config import FieldAddress, Collection, Field, Dataset
+from fidesops.graph.data_type import DataType
 from fidesops.graph.graph import DatasetGraph, Node, Edge
 from fidesops.graph.traversal import TraversalNode
 from fidesops.models.connectionconfig import (
@@ -171,6 +172,73 @@ def test_dask_mongo_task(integration_mongodb_config: ConnectionConfig) -> None:
     # links
     assert v["mongo_test:customer"][0]["email"] == "customer-1@example.com"
 
+@pytest.mark.integration
+def test_composite_key_erasure(
+    db, 
+    integration_mongodb_config: ConnectionConfig,
+) -> None:
+
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+    policy = erasure_policy("A")
+    customer = Collection(
+        name="customer",
+        fields=[
+            Field(name="id", primary_key=True),
+            Field(name="email", identity="email", data_type=DataType.string),
+        ],
+    )
+
+    composite_pk_test = Collection(
+        name="composite_pk_test",
+        fields=[
+            Field(
+                name="id_a",
+                primary_key=True,
+                data_type=DataType.integer,
+            ),
+            Field(
+                name="id_b",
+                primary_key=True,
+                data_type=DataType.integer,
+            ),
+            Field(name="description", data_type=DataType.string, data_categories=["A"]),
+            Field(name="customer_id", data_type=DataType.integer, references = [
+                               (FieldAddress("mongo_test", "customer", "id"), "from")
+                           ])]
+    )
+
+    dataset = Dataset(
+        name="mongo_test",
+        collections=[customer, composite_pk_test],
+        connection_key=integration_mongodb_config.key,
+    )
+
+    access_request_data = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        DatasetGraph(dataset),
+        [integration_mongodb_config],
+        {"email": "customer-1@example.com"},
+    )
+
+    customer = access_request_data["mongo_test:customer"][0]
+    composite_pk_test = access_request_data["mongo_test:composite_pk_test"][0]
+
+    assert customer["id"] == "1"
+    assert composite_pk_test["customer_id"] == "1"
+
+
+    # erasure
+    erasure = graph_task.run_erasure(
+        privacy_request,
+        policy,
+        DatasetGraph(dataset),
+        [integration_mongodb_config],
+        {"email": "employee-1@example.com"},
+        access_request_data,
+    )
+
+    assert erasure == {'mongo_test:customer': 0, 'mongo_test:composite_pk_test': 1}
 
 @pytest.mark.integration
 def test_filter_on_data_categories_mongo(

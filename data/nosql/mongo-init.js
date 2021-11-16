@@ -237,3 +237,10 @@ db.reports.insert([
     {"email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 11, "total_visits": 100}
 ])
 
+
+
+db.composite_pk_test.insert([
+    {"id_a":1, "id_b":10, "description":"linked to customer 1", "customer_id":"1"},
+    {"id_a":1, "id_b":11, "description":"linked to customer 2", "customer_id":"2"},
+    {"id_a":2, "id_b":10, "description":"linked to customer 3", "customer_id":"3"}
+    ])

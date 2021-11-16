@@ -116,9 +116,7 @@ def test_composite_key_erasure(
     db,
     integration_postgres_config: ConnectionConfig,
 ) -> None:
-    """Retrieve data from the type_link table. This requires retrieving data from
-    the employee id field, which is an int, and converting it into a string to query
-    against the type_link_test.id field."""
+
     privacy_request = PrivacyRequest(id=f"test_postgtres_task_{random.randint(0,1000)}")
     policy = erasure_policy("A")
     customer = Collection(
