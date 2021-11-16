@@ -32,6 +32,7 @@ def test_mongo_example_data(mongo_example_db):
         "product",
         "reports",
         "customer_details",
+        "composite_pk_test"
     }
     assert db.customer.count() == 3
     assert db.payment_card.count() == 2
