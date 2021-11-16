@@ -8,10 +8,10 @@ from fidesops.schemas.connection_configuration.connection_secrets import (
 class RedshiftSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to an Amazon Redshift cluster"""
 
-    host: str  # Endpoint of the Amazon Redshift server
+    host: Optional[str] = None  # Endpoint of the Amazon Redshift server
     port: Optional[int] = None
     database: Optional[str] = None
-    user: str
-    password: str
+    user: Optional[str] = None
+    password: Optional[str] = None
 
     _required_components: List[str] = ["host", "user", "password"]

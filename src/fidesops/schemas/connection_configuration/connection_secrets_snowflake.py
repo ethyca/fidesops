@@ -8,9 +8,11 @@ from fidesops.schemas.connection_configuration.connection_secrets import (
 class SnowflakeSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to Snowflake"""
 
-    user_login_name: str
-    password: str
-    account_identifier: str  # Do not include the snowflakecomputing.com domain name as part of your account identifier.
+    user_login_name: Optional[str] = None
+    password: Optional[str] = None
+    account_identifier: Optional[
+        str
+    ] = None  # Do not include the snowflakecomputing.com domain name as part of your account identifier.
     database_name: Optional[str] = None
     schema_name: Optional[str] = None
     warehouse_name: Optional[str] = None
