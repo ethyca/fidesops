@@ -19,6 +19,7 @@ from fidesops.graph.config import (
     Dataset,
     CollectionAddress,
 )
+from fidesops.graph.data_type import DataType
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
 
@@ -121,6 +122,7 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
         name=field.name,
         data_categories=field.data_categories,
         identity=identity,
+        data_type=field.data_type and DataType[field.data_type] or None,
         references=references,
         primary_key=is_pk,
     )

@@ -4,7 +4,9 @@ from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesKey
 from fideslang.validation import FidesValidationError
 from pydantic import BaseModel, root_validator, validator, ConstrainedStr
 
+from fidesops.common_exceptions import InvalidDataTypeValidationError
 from fidesops.graph.config import EdgeDirection
+from fidesops.graph.data_type import DataType
 from fidesops.models.policy import _validate_data_category
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
@@ -22,6 +24,21 @@ def _valid_data_categories(
     if data_categories:
         return [dc for dc in data_categories if _validate_data_category(dc)]
     return data_categories
+
+
+def _valid_data_type(data_type_str: Optional[str]) -> Optional[str]:
+    """If the data_type is provided ensure that it is a member of DataType."""
+
+    if data_type_str is not None:
+        try:
+            DataType[data_type_str] # pylint: disable=pointless-statement
+            return data_type_str
+        except KeyError:
+            raise InvalidDataTypeValidationError(
+                f"The data type {data_type_str} is not supported."
+            )
+
+    return None
 
 
 class FidesCollectionKey(ConstrainedStr):
@@ -79,6 +96,7 @@ class FidesopsDatasetField(DatasetField):
     """Extends fideslang DatasetField model with additional Fidesops annotations"""
 
     fidesops_meta: Optional[FidesopsMeta]
+    data_type: Optional[str]
 
     @root_validator(pre=True)
     def prevent_nested_collections(cls, values: Dict) -> Dict:
@@ -96,6 +114,11 @@ class FidesopsDatasetField(DatasetField):
     ) -> Optional[List[FidesKey]]:
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_categories(v)
+
+    @validator("data_type")
+    def valid_data_type(cls, v: Optional[str]) -> Optional[str]:
+        """Validate that all annotated data categories exist in the taxonomy"""
+        return _valid_data_type(v)
 
 
 class FidesopsDatasetCollection(DatasetCollection):
