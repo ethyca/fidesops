@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Any, Mapping, Union, Optional
+from typing import Any, Mapping, Union
 
 MASKED = "MASKED"
 
@@ -24,15 +24,16 @@ def get_fides_log_record_factory() -> Any:
         sinfo: str = None,
     ) -> logging.LogRecord:
         env_log_pii: bool = os.getenv("LOG_PII") == "True"
+        new_args = args
         if not env_log_pii:
-            args: tuple[Any, ...] = tuple(_mask_pii_for_logs(arg) for arg in args)
+            new_args = tuple(_mask_pii_for_logs(arg) for arg in args)
         return logging.LogRecord(
             name=name,
             level=level,
             pathname=fn,
             lineno=lno,
             msg=msg,
-            args=args,
+            args=new_args,
             exc_info=exc_info,
             func=func,
             sinfo=sinfo,

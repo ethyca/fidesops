@@ -192,7 +192,9 @@ def connection_status(
     try:
         connector.test_connection()
     except ConnectionException as exc:
-        logger.warning("Connection test failed on %s: %s", NotPii(connection_config.key), str(exc))
+        logger.warning(
+            "Connection test failed on %s: %s", NotPii(connection_config.key), str(exc)
+        )
         connection_config.update_test_status(succeeded=False, db=db)
         return TestStatusMessage(
             msg=msg,
