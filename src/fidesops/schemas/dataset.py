@@ -85,13 +85,17 @@ class FidesopsMeta(BaseModel):
     references: Optional[List[FidesopsDatasetReference]]
     identity: Optional[str]
     primary_key: Optional[bool]
+    length: Optional[int]
 
+    @validator("length")
+    def valid_length(cls, v: Optional[int]) -> Optional[int]:
+        """Validate that the provided length is valid"""
+        return _valid_data_length(v)
 
 class FidesopsDatasetField(DatasetField):
     """Extends fideslang DatasetField model with additional Fidesops annotations"""
 
     fidesops_meta: Optional[FidesopsMeta]
-    length: Optional[int]
 
     @root_validator(pre=True)
     def prevent_nested_collections(cls, values: Dict) -> Dict:
@@ -110,10 +114,6 @@ class FidesopsDatasetField(DatasetField):
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_categories(v)
 
-    @validator("length")
-    def valid_length(cls, v: Optional[int]) -> Optional[int]:
-        """Validate that the provided length is valid"""
-        return _valid_data_length(v)
 
 
 class FidesopsDatasetCollection(DatasetCollection):
