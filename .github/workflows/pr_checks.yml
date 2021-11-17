@@ -1,10 +1,6 @@
 name: Run CI
 on: [push]
 
-env:
-  REDSHIFT_TEST_URI: ${{ secrets.REDSHIFT_TEST_URI }}
-  SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
-
 jobs:
   Autoformat:
     runs-on: ubuntu-latest
@@ -72,6 +68,9 @@ jobs:
 
   Integration-Tests-External:
     runs-on: ubuntu-latest
+    env:
+      REDSHIFT_TEST_URI: ${{ secrets.REDSHIFT_TEST_URI }}
+      SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
     steps:
       - run: echo "Running CI for branch ${{ github.ref }}."
       - name: Check out repository code
