@@ -4,6 +4,7 @@ from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesKey
 from fideslang.validation import FidesValidationError
 from pydantic import BaseModel, root_validator, validator, ConstrainedStr
 
+from fidesops.common_exceptions import InvalidDataLengthValidationError
 from fidesops.graph.config import EdgeDirection
 from fidesops.models.policy import _validate_data_category
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
@@ -23,7 +24,15 @@ def _valid_data_categories(
         return [dc for dc in data_categories if _validate_data_category(dc)]
     return data_categories
 
+def _valid_data_length(data_length: Optional[int]) -> Optional[int]:
+    """If the data_length is provided ensure that it is a positive non-zero value."""
 
+    if data_length is not None and data_length <= 0:
+        raise InvalidDataLengthValidationError(
+            f"Illegal length ({data_length}). Only positive non-zero values are allowed."
+        )
+
+    return data_length
 class FidesCollectionKey(ConstrainedStr):
     """
     Dataset:Collection name where both dataset and collection names are valid FidesKeys
@@ -79,6 +88,7 @@ class FidesopsDatasetField(DatasetField):
     """Extends fideslang DatasetField model with additional Fidesops annotations"""
 
     fidesops_meta: Optional[FidesopsMeta]
+    length: Optional[int]
 
     @root_validator(pre=True)
     def prevent_nested_collections(cls, values: Dict) -> Dict:
@@ -97,6 +107,10 @@ class FidesopsDatasetField(DatasetField):
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_categories(v)
 
+    @validator("length")
+    def valid_length( cls, v: Optional[int]  ) -> Optional[int]:
+        """Validate that the provided length is valid"""
+        return _valid_data_length(v)
 
 class FidesopsDatasetCollection(DatasetCollection):
     """Overrides fideslang DatasetCollection model with additional Fidesops annotations"""
