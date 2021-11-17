@@ -18,9 +18,11 @@ from fidesops.schemas.connection_configuration.connection_secrets_postgres impor
 from fidesops.models.connectionconfig import ConnectionType
 from fidesops.schemas.connection_configuration.connection_secrets_redshift import (
     RedshiftSchema,
+    RedshiftDocsSchema,
 )
 from fidesops.schemas.connection_configuration.connection_secrets_snowflake import (
     SnowflakeSchema,
+    SnowflakeDocsSchema,
 )
 from fidesops.schemas.connection_configuration.connections_secrets_https import (
     HttpsSchema,
@@ -54,5 +56,9 @@ def get_connection_secrets_validator(
 
 
 connection_secrets_schemas = Union[
-    MongoDBDocsSchema, PostgreSQLDocsSchema, MySQLDocsSchema
+    MongoDBDocsSchema,
+    PostgreSQLDocsSchema,
+    MySQLDocsSchema,
+    RedshiftDocsSchema,
+    SnowflakeDocsSchema,
 ]

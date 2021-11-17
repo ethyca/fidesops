@@ -1,5 +1,6 @@
 from typing import Optional, List
 
+from fidesops.schemas.base_class import NoValidationSchema
 from fidesops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
@@ -15,3 +16,7 @@ class RedshiftSchema(ConnectionConfigSecretsSchema):
     password: Optional[str] = None
 
     _required_components: List[str] = ["host", "user", "password"]
+
+
+class RedshiftDocsSchema(RedshiftSchema, NoValidationSchema):
+    """Redshift Secrets Schema for API Docs"""

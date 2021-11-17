@@ -1,5 +1,6 @@
 from typing import Optional, List
 
+from fidesops.schemas.base_class import NoValidationSchema
 from fidesops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
@@ -23,3 +24,7 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         "password",
         "account_identifier",
     ]
+
+
+class SnowflakeDocsSchema(SnowflakeSchema, NoValidationSchema):
+    """Snowflake Secrets Schema for API Docs"""
