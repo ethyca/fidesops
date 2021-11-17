@@ -2,6 +2,7 @@ import logging
 from typing import Dict, Any, Set
 
 from boto3 import Session
+from fideslang.validation import FidesKey
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -142,7 +143,9 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
     )
 
 
-def convert_dataset_to_graph(dataset: FidesopsDataset, connection_key: str) -> Dataset:
+def convert_dataset_to_graph(
+    dataset: FidesopsDataset, connection_key: FidesKey
+) -> Dataset:
     """
     Converts the given Fides dataset dataset into the concrete graph
     representation needed for query execution

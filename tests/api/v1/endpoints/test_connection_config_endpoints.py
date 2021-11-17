@@ -363,7 +363,7 @@ class TestGetConnection:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
-            f"{V1_URL_PREFIX}{CONNECTIONS}/this-is-a-nonexistant-key",
+            f"{V1_URL_PREFIX}{CONNECTIONS}/this_is_a_nonexistent_key",
             headers=auth_header,
         )
         assert resp.status_code == 404
@@ -418,7 +418,7 @@ class TestDeleteConnection:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
         resp = api_client.delete(
-            f"{V1_URL_PREFIX}{CONNECTIONS}/non-existent-config", headers=auth_header
+            f"{V1_URL_PREFIX}{CONNECTIONS}/non_existent_config", headers=auth_header
         )
         assert resp.status_code == 404
 
@@ -466,7 +466,7 @@ class TestPutConnectionConfigSecrets:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.put(
-            f"{V1_URL_PREFIX}{CONNECTIONS}/this-is-not-a-known-key/secret",
+            f"{V1_URL_PREFIX}{CONNECTIONS}/this_is_not_a_known_key/secret",
             headers=auth_header,
             json={},
         )

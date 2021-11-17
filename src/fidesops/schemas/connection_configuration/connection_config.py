@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional, List
 
+from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra
 
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
@@ -15,7 +16,7 @@ class CreateConnectionConfiguration(BaseModel):
     """
 
     name: str
-    key: Optional[str]
+    key: Optional[FidesKey]
     connection_type: ConnectionType
     access: AccessLevel
 
@@ -35,7 +36,7 @@ class ConnectionConfigurationResponse(BaseModel):
     """
 
     name: str
-    key: str
+    key: FidesKey
     connection_type: ConnectionType
     access: AccessLevel
     created_at: datetime

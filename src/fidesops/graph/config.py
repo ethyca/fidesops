@@ -282,4 +282,4 @@ class Dataset(BaseModel):
     # an optional list of datasets that this dataset must run after
     after: Set[DatasetAddress] = set()
     # ConnectionConfig key
-    connection_key: str
+    connection_key: FidesKey

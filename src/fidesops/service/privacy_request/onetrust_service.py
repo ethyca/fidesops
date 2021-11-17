@@ -4,6 +4,7 @@ from datetime import timedelta, datetime
 from typing import Optional, Final, List, Dict, Union
 
 import requests
+from fideslang.validation import FidesKey
 from requests import Response
 from sqlalchemy.orm import Session
 
@@ -46,7 +47,7 @@ class OneTrustService:
     """OneTrust Service for privacy requests"""
 
     @staticmethod
-    def intake_onetrust_requests(config_key: str) -> None:
+    def intake_onetrust_requests(config_key: FidesKey) -> None:
         """Intake onetrust requests"""
         SessionLocal = get_db_session()
         db = SessionLocal()

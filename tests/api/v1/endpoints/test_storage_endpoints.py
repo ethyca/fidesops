@@ -42,7 +42,7 @@ class TestUploadData:
     @pytest.fixture(scope="function")
     def payload(self, oauth_client: ClientDetail, privacy_request) -> Dict:
         return {
-            "storage_key": "s3 destination key",
+            "storage_key": "s3_destination_key",
             "data": {
                 "email": "email@gmail.com",
                 "address": "123 main ST, Asheville NC",
