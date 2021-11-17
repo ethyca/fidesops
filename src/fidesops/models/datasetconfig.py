@@ -88,6 +88,7 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
     is_pk = False
     references = []
     meta_section = field.fidesops_meta
+    data_type = None
     if meta_section:
         identity = meta_section.identity
         if meta_section.primary_key:
@@ -118,11 +119,13 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
                     reference.dataset, ref_collection, ".".join(ref_fields)
                 )
                 references.append((address, reference.direction))
+        data_type = meta_section.data_type
+
     return Field(
         name=field.name,
         data_categories=field.data_categories,
         identity=identity,
-        data_type=field.data_type and DataType[field.data_type] or None,
+        data_type=DataType[data_type] if data_type else None,
         references=references,
         primary_key=is_pk,
     )

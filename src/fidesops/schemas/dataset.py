@@ -90,13 +90,18 @@ class FidesopsMeta(BaseModel):
     references: Optional[List[FidesopsDatasetReference]]
     identity: Optional[str]
     primary_key: Optional[bool]
+    data_type: Optional[str]
+
+    @validator("data_type")
+    def valid_data_type(cls, v: Optional[str]) -> Optional[str]:
+        """Validate that all annotated data categories exist in the taxonomy"""
+        return _valid_data_type(v)
 
 
 class FidesopsDatasetField(DatasetField):
     """Extends fideslang DatasetField model with additional Fidesops annotations"""
 
     fidesops_meta: Optional[FidesopsMeta]
-    data_type: Optional[str]
 
     @root_validator(pre=True)
     def prevent_nested_collections(cls, values: Dict) -> Dict:
@@ -114,11 +119,6 @@ class FidesopsDatasetField(DatasetField):
     ) -> Optional[List[FidesKey]]:
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_categories(v)
-
-    @validator("data_type")
-    def valid_data_type(cls, v: Optional[str]) -> Optional[str]:
-        """Validate that all annotated data categories exist in the taxonomy"""
-        return _valid_data_type(v)
 
 
 class FidesopsDatasetCollection(DatasetCollection):
