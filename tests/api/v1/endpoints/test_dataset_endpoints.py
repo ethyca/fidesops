@@ -152,9 +152,9 @@ class TestValidateDataset:
         )
         assert response.status_code == 200
         assert (
-            json.loads(response.text)["dataset"]["collections"][0]["fields"][0]["fidesops_meta"][
-                "length"
-            ]
+            json.loads(response.text)["dataset"]["collections"][0]["fields"][0][
+                "fidesops_meta"
+            ]["length"]
             == 123
         )
 

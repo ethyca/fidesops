@@ -92,6 +92,7 @@ class FidesopsMeta(BaseModel):
         """Validate that the provided length is valid"""
         return _valid_data_length(v)
 
+
 class FidesopsDatasetField(DatasetField):
     """Extends fideslang DatasetField model with additional Fidesops annotations"""
 
@@ -113,7 +114,6 @@ class FidesopsDatasetField(DatasetField):
     ) -> Optional[List[FidesKey]]:
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_categories(v)
-
 
 
 class FidesopsDatasetCollection(DatasetCollection):
