@@ -237,7 +237,7 @@ def get_config() -> FidesopsConfig:
         try:
             return FidesopsConfig()
         except ValidationError as exc:
-            logger.error(exc)
+            logger.error("ValidationError: %s", exc)
             # If FidesopsConfig is missing any required values Pydantic will throw
             # an ImportError. This means the config has not been correctly specified
             # so we can throw the missing config error.
