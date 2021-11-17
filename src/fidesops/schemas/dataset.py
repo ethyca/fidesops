@@ -31,7 +31,7 @@ def _valid_data_type(data_type_str: Optional[str]) -> Optional[str]:
 
     if data_type_str is not None:
         try:
-            DataType[data_type_str] # pylint: disable=pointless-statement
+            DataType[data_type_str]  # pylint: disable=pointless-statement
             return data_type_str
         except KeyError:
             raise InvalidDataTypeValidationError(
