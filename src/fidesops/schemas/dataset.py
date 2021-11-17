@@ -24,6 +24,7 @@ def _valid_data_categories(
         return [dc for dc in data_categories if _validate_data_category(dc)]
     return data_categories
 
+
 def _valid_data_length(data_length: Optional[int]) -> Optional[int]:
     """If the data_length is provided ensure that it is a positive non-zero value."""
 
@@ -33,6 +34,8 @@ def _valid_data_length(data_length: Optional[int]) -> Optional[int]:
         )
 
     return data_length
+
+
 class FidesCollectionKey(ConstrainedStr):
     """
     Dataset:Collection name where both dataset and collection names are valid FidesKeys
@@ -108,9 +111,10 @@ class FidesopsDatasetField(DatasetField):
         return _valid_data_categories(v)
 
     @validator("length")
-    def valid_length( cls, v: Optional[int]  ) -> Optional[int]:
+    def valid_length(cls, v: Optional[int]) -> Optional[int]:
         """Validate that the provided length is valid"""
         return _valid_data_length(v)
+
 
 class FidesopsDatasetCollection(DatasetCollection):
     """Overrides fideslang DatasetCollection model with additional Fidesops annotations"""

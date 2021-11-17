@@ -123,7 +123,7 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
         identity=identity,
         references=references,
         primary_key=is_pk,
-        length = field.length
+        length=field.length,
     )
 
 
