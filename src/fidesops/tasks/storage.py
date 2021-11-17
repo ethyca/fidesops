@@ -1,5 +1,3 @@
-import math
-
 from datetime import datetime
 
 import os
@@ -50,7 +48,7 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
 
     encryption_key = encryption_key.encode(encoding=config.security.ENCODING)
     nonce = cryptographic_util.generate_secure_random_string(
-        math.floor(config.security.AES_GCM_NONCE_LENGTH / 2)
+        config.security.AES_GCM_NONCE_LENGTH
     )
 
     return nonce + encrypt(

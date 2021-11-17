@@ -1,3 +1,5 @@
+import math
+
 import hashlib
 import secrets
 import bcrypt
@@ -11,9 +13,13 @@ def hash_with_salt(text: bytes, salt: bytes) -> str:
     return hashlib.sha512(text + salt).hexdigest()
 
 
-def generate_secure_random_string(length_in_bytes: int) -> str:
-    """Generates a securely random string using Python secrets library. The return data is 2x the length of the input."""
-    return secrets.token_hex(length_in_bytes)
+def generate_secure_random_string(length: int) -> str:
+    """Generates a securely random string using Python secrets library that is the length of the specified input
+
+    We halve the input here to create a string of specified length, since token_string returns a string
+    twice as long as nbytes
+    """
+    return secrets.token_hex(math.floor(length / 2))
 
 
 def generate_salt() -> str:

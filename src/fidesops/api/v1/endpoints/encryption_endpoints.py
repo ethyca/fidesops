@@ -53,7 +53,9 @@ def aes_encrypt(encryption_request: AesEncryptionRequest) -> AesEncryptionRespon
         config.security.AES_GCM_NONCE_LENGTH
     )
     encrypted_value = aes_gcm_encrypt(
-        encryption_request.value, encryption_request.key, nonce
+        encryption_request.value,
+        encryption_request.key,
+        nonce.encode(config.security.ENCODING),
     )
     return AesEncryptionResponse(encrypted_value=encrypted_value, nonce=nonce)
 
@@ -66,6 +68,8 @@ def aes_encrypt(encryption_request: AesEncryptionRequest) -> AesEncryptionRespon
 def aes_decrypt(decryption_request: AesDecryptionRequest) -> AesDecryptionResponse:
     logger.info("Starting AES Decryption")
     decrypted_value = aes_gcm_decrypt(
-        decryption_request.value, decryption_request.key, decryption_request.nonce
+        decryption_request.value,
+        decryption_request.key.encode(config.security.ENCODING),
+        decryption_request.nonce.encode(config.security.ENCODING),
     )
     return AesDecryptionResponse(decrypted_value=decrypted_value)
