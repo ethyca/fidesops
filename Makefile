@@ -126,7 +126,7 @@ pytest-integration-erasure: compose-build
 # These tests connect to external third-party test databases
 pytest-external-integration: compose-build
 	@echo "Running tests that connect to external third party test databases"
-	@docker-compose run $(IMAGE_NAME) \
+	@docker-compose run -e REDSHIFT_TEST_URI -e SNOWFLAKE_TEST_URI $(IMAGE_NAME) \
 		pytest $(pytestpath) -m "external_integration"
 
 
