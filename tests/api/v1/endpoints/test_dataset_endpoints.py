@@ -144,20 +144,24 @@ class TestValidateDataset:
         invalid_dataset = example_datasets[0]
 
         # string is properly read:
-        invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {"data_type":"string"}
+        invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
+            "data_type": "string"
+        }
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=invalid_dataset
         )
         assert response.status_code == 200
         assert (
-            json.loads(response.text)["dataset"]["collections"][0]["fields"][0]["fidesops_meta"][
-                "data_type"
-            ]
+            json.loads(response.text)["dataset"]["collections"][0]["fields"][0][
+                "fidesops_meta"
+            ]["data_type"]
             == "string"
         )
 
         # fails with an invalid value
-        invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {"data_type":"stringsssssss"}
+        invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
+            "data_type": "stringsssssss"
+        }
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=invalid_dataset
         )

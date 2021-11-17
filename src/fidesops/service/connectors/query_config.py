@@ -66,10 +66,12 @@ class QueryConfig(Generic[T], ABC):
         """
         return set(map(lambda edge: edge.f2.field, self.node.incoming_edges()))
 
-    def filter_values(self, input_data: Dict[str, List[Any]]) -> Dict[str, Any]:
+    def typed_filtered_values(self, input_data: Dict[str, List[Any]]) -> Dict[str, Any]:
         """
         Return a filtered list of key/value sets of data items that are both in
-        the list of incoming edge fields, and contain data in the input data set
+        the list of incoming edge fields, and contain data in the input data set.
+
+        The values are cast based on field types, if those types are specified.
         """
 
         out = {}
@@ -164,7 +166,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
     ) -> Optional[TextClause]:
         """Generate a retrieval query"""
 
-        filtered_data = self.filter_values(input_data)
+        filtered_data = self.typed_filtered_values(input_data)
 
         if filtered_data:
             clauses = []
@@ -267,7 +269,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
             return {"$or": [dict([(k, v)]) for k, v in pairs.items()]}
 
         if input_data:
-            filtered_data = self.filter_values(input_data)
+            filtered_data = self.typed_filtered_values(input_data)
             if filtered_data:
                 field_list = {field_name: 1 for field_name in self.fields}
                 query_pairs = {}
