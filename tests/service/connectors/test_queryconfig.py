@@ -70,18 +70,17 @@ class TestSQLQueryConfig:
             {"id": ["A"], "customer_id": [], "ignore_me": ["X"]}
         ) == {"id": ["A"]}
 
-        assert config.typed_filtered_values({"id": ["A"], "ignore_me": ["X"]}) == {"id": ["A"]}
+        assert config.typed_filtered_values({"id": ["A"], "ignore_me": ["X"]}) == {
+            "id": ["A"]
+        }
 
         assert config.typed_filtered_values({"id": [], "customer_id": ["V"]}) == {
             "customer_id": ["V"]
         }
         # test for type casting: id has type "string":
-        assert config.typed_filtered_values({"id": [1]}) == {
-            "id":["1"]
-        }
-        assert config.typed_filtered_values({"id": [1, 2]}) == {
-            "id":["1", "2"]
-        }
+        assert config.typed_filtered_values({"id": [1]}) == {"id": ["1"]}
+        assert config.typed_filtered_values({"id": [1, 2]}) == {"id": ["1", "2"]}
+
     def test_generated_sql_query(self):
         """Test that the generated query depends on the input set"""
         assert (

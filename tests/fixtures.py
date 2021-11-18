@@ -31,7 +31,6 @@ from fidesops.models.privacy_request import (
     PrivacyRequestStatus,
     ExecutionLog,
     ExecutionLogStatus,
-    PrivacyRequestRunner,
 )
 from fidesops.models.storage import StorageConfig, ResponseFormat
 from fidesops.schemas.storage.storage import (
@@ -44,6 +43,8 @@ from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWR
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE,
 )
+from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
+
 from fidesops.util.cache import FidesopsRedis
 
 logging.getLogger("faker").setLevel(logging.ERROR)
@@ -221,6 +222,38 @@ def mongo_connection_config(db: Session) -> Generator:
                 "username": "mongo_user",
                 "password": "mongo_pass",
             },
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def redshift_connection_config(db: Session) -> Generator:
+    name = str(uuid4())
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my-redshift-config",
+            "connection_type": ConnectionType.redshift,
+            "access": AccessLevel.write,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def snowflake_connection_config(db: Session) -> Generator:
+    name = str(uuid4())
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my-snowflake-config",
+            "connection_type": ConnectionType.snowflake,
+            "access": AccessLevel.write,
         },
     )
     yield connection_config

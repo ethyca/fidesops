@@ -5,6 +5,7 @@ from fideslang.validation import FidesValidationError
 from pydantic import BaseModel, root_validator, validator, ConstrainedStr
 
 from fidesops.common_exceptions import InvalidDataTypeValidationError
+from fidesops.common_exceptions import InvalidDataLengthValidationError
 from fidesops.graph.config import EdgeDirection
 from fidesops.graph.data_type import DataType
 from fidesops.models.policy import _validate_data_category
@@ -26,6 +27,7 @@ def _valid_data_categories(
     return data_categories
 
 
+
 def _valid_data_type(data_type_str: Optional[str]) -> Optional[str]:
     """If the data_type is provided ensure that it is a member of DataType."""
 
@@ -39,6 +41,17 @@ def _valid_data_type(data_type_str: Optional[str]) -> Optional[str]:
             )
 
     return None
+
+def _valid_data_length(data_length: Optional[int]) -> Optional[int]:
+    """If the data_length is provided ensure that it is a positive non-zero value."""
+
+    if data_length is not None and data_length <= 0:
+        raise InvalidDataLengthValidationError(
+            f"Illegal length ({data_length}). Only positive non-zero values are allowed."
+        )
+
+    return data_length
+
 
 
 class FidesCollectionKey(ConstrainedStr):
@@ -91,12 +104,19 @@ class FidesopsMeta(BaseModel):
     identity: Optional[str]
     primary_key: Optional[bool]
     data_type: Optional[str]
+    """Optionally specify the data type. Fidesops will attempt to cast values to this type when querying."""
+    length: Optional[int]
+    """Optionally specify the allowable field length. Fidesops will not generate values that exceed this size."""
 
     @validator("data_type")
     def valid_data_type(cls, v: Optional[str]) -> Optional[str]:
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_type(v)
 
+    @validator("length")
+    def valid_length(cls, v: Optional[int]) -> Optional[int]:
+        """Validate that the provided length is valid"""
+        return _valid_data_length(v)
 
 class FidesopsDatasetField(DatasetField):
     """Extends fideslang DatasetField model with additional Fidesops annotations"""
@@ -149,7 +169,6 @@ class FidesopsDataset(Dataset):
     ) -> Optional[List[FidesKey]]:
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_categories(v)
-
 
 class DatasetTraversalDetails(BaseSchema):
     """
