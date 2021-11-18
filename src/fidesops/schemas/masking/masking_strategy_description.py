@@ -1,13 +1,12 @@
 from typing import List
 
-from fideslang.validation import FidesKey
 from pydantic import BaseModel
 
 
 class MaskingStrategyConfigurationDescription(BaseModel):
     """The description model for a specific configuration in a masking strategy"""
 
-    key: FidesKey
+    key: str
     optional: bool = True
     description: str
 

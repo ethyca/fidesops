@@ -18,6 +18,7 @@ from pydantic import (
 from pydantic.main import BaseModel
 
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
+from fidesops.schemas.shared_mixins import FidesKeyMixin
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +143,7 @@ class StorageType(Enum):
     local = "local"  # local should be used for testing only, not for processing real-world privacy requests
 
 
-class StorageDestination(BaseModel):
+class StorageDestination(FidesKeyMixin):
     """Storage Destination Schema"""
 
     name: str
@@ -214,13 +215,13 @@ class StorageDestination(BaseModel):
         return values
 
 
-class StorageDestinationResponse(BaseModel):
+class StorageDestinationResponse(FidesKeyMixin):
     """Storage Destination Response Schema"""
 
     name: str
     type: StorageType
     details: Dict[StorageDetails, Any]
-    key: FidesKey
+    key: Optional[FidesKey]
     format: ResponseFormat
 
     class Config:

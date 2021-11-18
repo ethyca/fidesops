@@ -108,7 +108,7 @@ def delete_policy_rule(policy_key, key, access_token):
 For simplicity's sake, let's just create one Policy, one Rule, and one Target.
 
 Our single Policy will have one Rule with type `access`, meaning we just want to *retrieve* user data, not delete it. 
-We also configure on the Rule that any results will be uploaded to our local Storage `example-storage`.
+We also configure on the Rule that any results will be uploaded to our local Storage `example_storage`.
 
 Finally, we create a RuleTarget, that is looking for all data with the category `user.provided.identifiable` (and included subcategories). 
 
@@ -120,7 +120,7 @@ if __name__ == "__main__":
         key="example_request_policy",
         access_token=access_token,
     )
-    delete_policy_rule("example_request_policy", "access-user-data", access_token)
+    delete_policy_rule("example_request_policy", "access_user_data", access_token)
     create_policy_rule(
         policy_key="example_request_policy",
         key="access_user_data",
@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
     data_category = "user.provided.identifiable"
     create_policy_rule_target(
-        "example_request_policy", "access-user-data", data_category, access_token
+        "example_request_policy", "access_user_data", data_category, access_token
     )
 
 ```

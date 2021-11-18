@@ -81,7 +81,7 @@ def create_dataset(connection_key, yaml_path, access_token):
 
 ### Call helper method to create a dataset
 
-Our connection_key is the `flaskr-postgres` ConnectionConfig we created in the previous step,
+Our connection_key is the `flaskr_postgres` ConnectionConfig we created in the previous step,
 and we're also passing in our completed YAML file:
 
 ```python

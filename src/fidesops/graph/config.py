@@ -86,6 +86,7 @@ from pydantic import BaseModel
 from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.data_type import DataTypeConverter, DataType
 from fidesops.util.querytoken import QueryToken
+from fidesops.schemas.shared_mixins import FidesKeyMixin
 
 DatasetAddress = str
 SeedAddress = str
@@ -274,7 +275,7 @@ class Collection(BaseModel):
         arbitrary_types_allowed = True
 
 
-class Dataset(BaseModel):
+class Dataset(FidesKeyMixin):
     """Master collection of collections that are accessed in a common way"""
 
     name: str
@@ -283,3 +284,4 @@ class Dataset(BaseModel):
     after: Set[DatasetAddress] = set()
     # ConnectionConfig key
     connection_key: FidesKey
+    _fides_key_field_names = ["connection_key"]

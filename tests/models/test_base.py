@@ -22,7 +22,7 @@ def test_get_key_from_data_method() -> None:
     assert str(exc.value) == "StorageConfig requires a name."
 
     # Test key not valid
-    with pytest.raises(FidesValidationError) as exc:
+    with pytest.raises(ValueError) as exc:
         get_key_from_data({"key": "test-key", "name": "config name"}, "StorageConfig")
     assert str(exc.value) == "FidesKey must only contain alphanumeric characters, '.' or '_'."
 

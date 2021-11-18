@@ -9,6 +9,7 @@ from fidesops.models.policy import (
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.masking.masking_configuration import FormatPreservationConfig
+from fidesops.schemas.shared_mixins import FidesKeyMixin
 from fidesops.schemas.storage.storage import StorageDestinationResponse
 
 
@@ -29,7 +30,7 @@ class PolicyMaskingSpecResponse(BaseSchema):
     strategy: str
 
 
-class RuleTarget(BaseSchema):
+class RuleTarget(FidesKeyMixin):
     """An external representation of a Rule's target DataCategory within a Fidesops Policy"""
 
     name: Optional[str]
@@ -40,9 +41,10 @@ class RuleTarget(BaseSchema):
         """Populate models with the raw value of enum fields, rather than the enum itself"""
 
         use_enum_values = True
+        orm_mode = True
 
 
-class RuleBase(BaseSchema):
+class RuleBase(FidesKeyMixin):
     """An external representation of a Rule within a Fidesops Policy"""
 
     name: str
@@ -53,6 +55,7 @@ class RuleBase(BaseSchema):
         """Populate models with the raw value of enum fields, rather than the enum itself"""
 
         use_enum_values = True
+        orm_mode = True
 
 
 class RuleCreate(RuleBase):
@@ -61,6 +64,7 @@ class RuleCreate(RuleBase):
     over a composite object.
     """
 
+    _fides_key_field_names = ["key", "storage_destination_key"]
     storage_destination_key: Optional[FidesKey]
     masking_strategy: Optional[PolicyMaskingSpec]
 
@@ -87,6 +91,11 @@ class Policy(BaseSchema):
 
     name: str
     key: Optional[FidesKey]
+
+    class Config:
+        """Allow ORM access"""
+
+        orm_mode = True
 
 
 class PolicyResponse(Policy):

@@ -17,7 +17,7 @@ from fidesops.models.policy import (
 )
 from fidesops.service.masking.strategy.masking_strategy_hash import HASH
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
-from fidesops.util.text import slugify
+from fidesops.util.text import to_snake_case
 
 
 def test_policy_sets_slug(
@@ -32,7 +32,7 @@ def test_policy_sets_slug(
             "client_id": oauth_client.id,
         },
     )
-    assert policy.key == slugify(NAME)
+    assert policy.key == to_snake_case(NAME)
     policy.delete(db=db)
 
 
