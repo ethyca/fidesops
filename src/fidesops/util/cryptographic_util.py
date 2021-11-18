@@ -1,4 +1,5 @@
-import math
+from base64 import b64encode, b64decode
+
 
 import hashlib
 import secrets
@@ -14,14 +15,21 @@ def hash_with_salt(text: bytes, salt: bytes) -> str:
 
 
 def generate_secure_random_string(length: int) -> str:
-    """Generates a securely random string using Python secrets library that is the length of the specified input
-
-    We halve the input here to create a string of specified length, since token_string returns a string
-    twice as long as nbytes
-    """
-    return secrets.token_hex(math.floor(length / 2))
+    """Generates a securely random string using Python secrets library
+    that is twice the length of the specified input"""
+    return secrets.token_hex(length)
 
 
 def generate_salt() -> str:
     """Generates a salt using bcrypt and returns a string using the configured default encoding"""
     return bcrypt.gensalt().decode(config.security.ENCODING)
+
+
+def bytes_to_str(bytestring: bytes) -> str:
+    """Converts random bytes into a utf-8 encoded string"""
+    return b64encode(bytestring).decode(config.security.ENCODING)
+
+
+def str_to_bytes(encoded_str: str) -> bytes:
+    """Converts encoded string into bytes"""
+    return b64decode(encoded_str.encode(config.security.ENCODING))

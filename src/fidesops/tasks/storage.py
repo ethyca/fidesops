@@ -1,3 +1,5 @@
+import secrets
+
 from datetime import datetime
 
 import os
@@ -18,8 +20,8 @@ from fidesops.core.config import config
 from fidesops.models.storage import ResponseFormat
 from fidesops.schemas.storage.storage import StorageSecrets
 from fidesops.util.cache import get_encryption_cache_key, get_cache
-from fidesops.util.encryption.aes_gcm_encryption_scheme import encrypt
-from fidesops.util import cryptographic_util
+from fidesops.util.cryptographic_util import bytes_to_str
+from fidesops.util.encryption.aes_gcm_encryption_scheme import encrypt_to_bytes
 
 from fidesops.util.storage_authenticator import (
     get_s3_session,
@@ -33,7 +35,7 @@ LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 
 
 def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> str:
-    """Encrypt data with encryption key and nonce (if provided) using AES GCM, otherwise return unencrypted data"""
+    """Encrypt data with encryption key if provided, otherwise return unencrypted data"""
     cache = get_cache()
     encryption_cache_key = get_encryption_cache_key(
         privacy_request_id=request_id,
@@ -42,18 +44,16 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
     if isinstance(data, bytes):
         data = data.decode(config.security.ENCODING)
 
-    encryption_key = cache.get(encryption_cache_key)
+    encryption_key: str = cache.get(encryption_cache_key)
     if not encryption_key:
         return data
 
-    encryption_key = encryption_key.encode(encoding=config.security.ENCODING)
-    nonce = cryptographic_util.generate_secure_random_string(
-        config.security.AES_GCM_NONCE_LENGTH
+    bytes_encryption_key: bytes = encryption_key.encode(
+        encoding=config.security.ENCODING
     )
-
-    return nonce + encrypt(
-        data, encryption_key, nonce.encode(encoding=config.security.ENCODING)
-    )
+    nonce: bytes = secrets.token_bytes(config.security.AES_GCM_NONCE_LENGTH)
+    # b64encode the entire nonce and the encrypted message together
+    return bytes_to_str(nonce + encrypt_to_bytes(data, bytes_encryption_key, nonce))
 
 
 def write_to_in_memory_buffer(

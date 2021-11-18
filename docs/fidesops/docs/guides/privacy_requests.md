@@ -68,7 +68,8 @@ Alongside generic API interopoerability, Fidesops provides a direct integration 
 
 You can optionally encrypt your access request results by supplying an `encryption_key` string in the request body:
 We will use the supplied encryption_key to encrypt the contents of your JSON and CSV results using an AES algorithm in GCM mode.
-When converted to bytes, your encryption_key must be 16 bytes long.
+When converted to bytes, your encryption_key must be 16 bytes long.  The data we return will have the nonce concatenated 
+to the encrypted data.
 
 POST /privacy-request
 ```json
@@ -86,26 +87,33 @@ POST /privacy-request
 ## Decrypting your access request results
 
 If you specified an encryption key, we encrypted the access result data using your key and an internally-generated `nonce` with an AES 
-algorithm in GCM mode.  The return value is the nonce plus the encrypted data. 
+algorithm in GCM mode.  The return value is a 12-byte nonce plus the encrypted data that is all b64encoded together.
 
 For example, pretend you specified an encryption key of "test--encryption", and the resulting data was uploaded to
-S3 in a JSON file: `d71a5dc3c49d7n7QN+tueapbID9CC48QWX6MoIUdzm6M8aH+VdLagsOm/Wk0Gz+q51tehcgM9DdTFJizA3m+joA=`.  You will
+S3 in a JSON file: `GPUiK9tq5k/HfBnSN+J+OvLXZ+GCisapdI2KGP7A1WK+dz1XHef+hWb/SjszdqdNVGvziyY6GF5KIrvrXgxjZuaAvgU='`.  You will
 need to implement something similar to the snippet below on your end to decrypt:
 
 ```python
 import json
-from fidesops.util.encryption.aes_gcm_encryption_scheme import decrypt
+import base64
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-encrypted = "d71a5dc3c49d7n7QN+tueapbID9CC48QWX6MoIUdzm6M8aH+VdLagsOm/Wk0Gz+q51tehcgM9DdTFJizA3m+joA=" 
-encryption_key = "test--encryption".encode("utf-8")  # Only you know this
-nonce = encrypted[0:12].encode("utf-8")
-encrypted_data = encrypted[12:]
-decrypted = decrypt(encrypted_data, encryption_key, nonce)
+encrypted: str = "GPUiK9tq5k/HfBnSN+J+OvLXZ+GCisapdI2KGP7A1WK+dz1XHef+hWb/SjszdqdNVGvziyY6GF5KIrvrXgxjZuaAvgU=" 
+encryption_key: str = "test--encryption".encode("utf-8")  # Only you know this
+
+encrypted_combined: bytes = base64.b64decode(encrypted)
+nonce: bytes = encrypted_combined[0:12]
+encrypted_message: bytes = encrypted_combined[12:]
+gcm = AESGCM(encryption_key)
+
+decrypted_bytes: bytes = gcm.decrypt(nonce, encrypted_message, nonce)
+decrypted_str: str = decrypted_bytes.decode('utf-8')
+
+json.loads(decrypted_str)
 ```
 
-```bash
->>> json.loads(decrypted)
-{'street': 'test street', 'state': 'NY'}
+```python
+>>> {'street': 'test street', 'state': 'NY'}
 ```
 
 If CSV data was uploaded, each CSV in the zipfile was encrypted using a different nonce so you'll need to follow

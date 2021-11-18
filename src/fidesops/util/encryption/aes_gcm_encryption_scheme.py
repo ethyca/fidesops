@@ -4,10 +4,12 @@ from typing import Optional
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from fidesops.core.config import config
+from fidesops.util.cryptographic_util import bytes_to_str
 
 
-def encrypt(plain_value: Optional[str], key: bytes, nonce: bytes) -> str:
-    """Encrypts the value using the AES GCM Algorithm. Note that provided nonce must be 12 bytes"""
+def encrypt_to_bytes(plain_value: Optional[str], key: bytes, nonce: bytes) -> bytes:
+    """Encrypts the value using the AES GCM Algorithm. Note that provided nonce must be 12 bytes.
+    Returns encrypted value in bytes"""
     if plain_value is None:
         raise ValueError("plain_value cannot be null")
     verify_encryption_key(key)
@@ -16,8 +18,31 @@ def encrypt(plain_value: Optional[str], key: bytes, nonce: bytes) -> str:
     gcm = AESGCM(key)
     value_bytes = plain_value.encode(config.security.ENCODING)
     encrypted_bytes = gcm.encrypt(nonce, value_bytes, nonce)
-    encrypted_str = base64.b64encode(encrypted_bytes).decode(config.security.ENCODING)
-    return encrypted_str
+    return encrypted_bytes
+
+
+def encrypt(plain_value: Optional[str], key: bytes, nonce: bytes) -> str:
+    """Encrypts the value using the AES GCM Algorithm. Note that provided nonce must be 12 bytes.
+    Returns encrypted value as a string"""
+    encrypted: bytes = encrypt_to_bytes(plain_value, key, nonce)
+    return bytes_to_str(encrypted)
+
+
+def decrypt_combined_nonce_and_message(encrypted_value: str, key: bytes) -> str:
+    """Decrypts a message when the nonce has been packaged together with the message"""
+    verify_encryption_key(key)
+    gcm = AESGCM(key)
+
+    encrypted_combined: bytes = base64.b64decode(encrypted_value)
+    # Separate the nonce out as the first 12 characters of the combined message
+    nonce: bytes = encrypted_combined[0 : config.security.AES_GCM_NONCE_LENGTH]
+    encrypted_message: bytes = encrypted_combined[
+        config.security.AES_GCM_NONCE_LENGTH :
+    ]
+
+    decrypted_bytes: bytes = gcm.decrypt(nonce, encrypted_message, nonce)
+    decrypted_str = decrypted_bytes.decode(config.security.ENCODING)
+    return decrypted_str
 
 
 def decrypt(encrypted_value: str, key: bytes, nonce: bytes) -> str:

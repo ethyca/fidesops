@@ -31,7 +31,7 @@ from fidesops.tasks.storage import (
     encrypt_access_request_results,
 )
 from fidesops.common_exceptions import StorageUploadError
-from fidesops.util.encryption.aes_gcm_encryption_scheme import decrypt
+from fidesops.util.encryption.aes_gcm_encryption_scheme import decrypt, decrypt_combined_nonce_and_message
 
 
 @mock.patch("fidesops.service.storage.storage_uploader_service.upload_to_s3")
@@ -387,11 +387,7 @@ class TestWriteToInMemoryBuffer:
         assert isinstance(buff, BytesIO)
         encrypted = buff.read()
         data = encrypted.decode(config.security.ENCODING)
-        decrypted = decrypt(
-            data[12:],
-            self.key.encode(config.security.ENCODING),
-            data[0:12].encode(config.security.ENCODING),
-        )
+        decrypted = decrypt_combined_nonce_and_message(data, self.key.encode(config.security.ENCODING))
         assert json.loads(decrypted) == original_data
 
     def test_encrypted_csv(self, data, privacy_request_with_encryption_keys):
@@ -405,11 +401,7 @@ class TestWriteToInMemoryBuffer:
         with zipfile.open("mongo:address.csv", "r") as address_csv:
             data = address_csv.read().decode(config.security.ENCODING)
 
-            decrypted = decrypt(
-                data[12:],
-                self.key.encode(config.security.ENCODING),
-                data[0:12].encode(config.security.ENCODING),
-            )
+            decrypted = decrypt_combined_nonce_and_message(data, self.key.encode(config.security.ENCODING))
 
             binary_stream = BytesIO(decrypted.encode(config.security.ENCODING))
             df = pd.read_csv(binary_stream, encoding=config.security.ENCODING)
@@ -443,13 +435,8 @@ class TestEncryptResultsPackage:
         privacy_request.cache_encryption("abvnfhrke8398398")
         data = "test data"
         ret = encrypt_access_request_results(data, request_id=privacy_request.id)
-        nonce = ret[0:12]
-        encrypted_data = ret[12:]
-        assert data == decrypt(
-            encrypted_data,
-            key.encode(config.security.ENCODING),
-            nonce.encode(config.security.ENCODING),
-        )
+        decrypted = decrypt_combined_nonce_and_message(ret, key.encode(config.security.ENCODING))
+        assert data == decrypted
 
 
 def test_get_extension():

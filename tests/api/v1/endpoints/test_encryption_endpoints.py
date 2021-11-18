@@ -13,6 +13,7 @@ from fidesops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.core.config import config
+from fidesops.util.cryptographic_util import str_to_bytes, bytes_to_str
 from fidesops.util.encryption.aes_gcm_encryption_scheme import decrypt, encrypt
 
 
@@ -104,12 +105,13 @@ class TestAESEncrypt:
         )
         response_body = json.loads(response.text)
         encrypted_value = response_body["encrypted_value"]
-        nonce = response_body["nonce"]
+        nonce = str_to_bytes(response_body["nonce"])
+
         assert response.status_code == 200
         decrypted = decrypt(
             encrypted_value,
             key.encode(config.security.ENCODING),
-            nonce.encode(config.security.ENCODING),
+            nonce,
         )
         assert decrypted == plain_val
 
@@ -146,11 +148,11 @@ class TestAESDecrypt:
         generate_auth_header,
     ):
         key = "zfkslapqlwodaqld"
-        nonce = "afldkeidazld"
+        nonce = b'\x18\xf5"+\xdbj\xe6O\xc7|\x19\xd2'
         orig_data = "test_data"
-        encrypted_data = encrypt(orig_data, key.encode(config.security.ENCODING), nonce.encode(config.security.ENCODING))
+        encrypted_data = encrypt(orig_data, key.encode(config.security.ENCODING), nonce)
 
-        request = {"value": encrypted_data, "key": key, "nonce": nonce}
+        request = {"value": encrypted_data, "key": key, "nonce": bytes_to_str(nonce)}
 
         response = api_client.put(
             url,
