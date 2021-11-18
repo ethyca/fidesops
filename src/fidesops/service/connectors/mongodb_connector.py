@@ -14,8 +14,8 @@ from fidesops.service.connectors.base_connector import (
     BaseConnector,
 )
 from fidesops.service.connectors.query_config import QueryConfig, MongoQueryConfig
+from fidesops.util.logger import NotPii
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -45,7 +45,10 @@ class MongoDBConnector(BaseConnector):
         """Returns a client for a MongoDB instance"""
         config = MongoDBSchema(**self.configuration.secrets or {})
         uri = config.url if config.url else self.build_uri()
-        return MongoClient(uri, serverSelectionTimeoutMS=5000)
+        try:
+            return MongoClient(uri, serverSelectionTimeoutMS=5000)
+        except ValueError:
+            raise ConnectionException("Value Error connecting to MongoDB.")
 
     def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
         """Query wrapper corresponding to the input traversal_node."""
@@ -100,13 +103,7 @@ class MongoDBConnector(BaseConnector):
         logger.info(f"Found {len(rows)} on {node.address}")
         return rows
 
-    def mask_data(
-        self,
-        node: TraversalNode,
-        policy: Policy,
-        rows: List[Row],
-        log_queries_with_data: bool = True,
-    ) -> int:
+    def mask_data(self, node: TraversalNode, policy: Policy, rows: List[Row]) -> int:
         # pylint: disable=too-many-locals
         """Execute a masking request"""
         query_config = self.query_config(node)
@@ -121,10 +118,11 @@ class MongoDBConnector(BaseConnector):
                 collection = db[collection_name]
                 update_result = collection.update_one(query, update, upsert=False)
                 update_ct += update_result.modified_count
-
-                if log_queries_with_data:
-                    logger.info(
-                        f"db.{collection_name}.update_one({query}, {update}, upsert=False)"
-                    )
+                logger.info(
+                    "db.%s.update_one(%s, %s, upsert=False)",
+                    NotPii(collection_name),
+                    query,
+                    update,
+                )
 
         return update_ct
