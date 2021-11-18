@@ -4,7 +4,7 @@ from typing import Optional
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from fidesops.core.config import config
-from fidesops.util.cryptographic_util import bytes_to_str
+from fidesops.util.cryptographic_util import bytes_to_b64_str
 
 
 def encrypt_to_bytes(plain_value: Optional[str], key: bytes, nonce: bytes) -> bytes:
@@ -25,7 +25,7 @@ def encrypt(plain_value: Optional[str], key: bytes, nonce: bytes) -> str:
     """Encrypts the value using the AES GCM Algorithm. Note that provided nonce must be 12 bytes.
     Returns encrypted value as a string"""
     encrypted: bytes = encrypt_to_bytes(plain_value, key, nonce)
-    return bytes_to_str(encrypted)
+    return bytes_to_b64_str(encrypted)
 
 
 def decrypt_combined_nonce_and_message(encrypted_value: str, key: bytes) -> str:

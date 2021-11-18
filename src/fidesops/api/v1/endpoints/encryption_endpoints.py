@@ -18,7 +18,7 @@ from fidesops.schemas.encryption_request import (
     AesDecryptionRequest,
 )
 from fidesops.util import cryptographic_util
-from fidesops.util.cryptographic_util import bytes_to_str, str_to_bytes
+from fidesops.util.cryptographic_util import bytes_to_b64_str, b64_str_to_bytes
 from fidesops.util.encryption.aes_gcm_encryption_scheme import (
     encrypt as aes_gcm_encrypt,
 )
@@ -60,7 +60,7 @@ def aes_encrypt(encryption_request: AesEncryptionRequest) -> AesEncryptionRespon
         nonce,
     )
     return AesEncryptionResponse(
-        encrypted_value=encrypted_value, nonce=bytes_to_str(nonce)
+        encrypted_value=encrypted_value, nonce=bytes_to_b64_str(nonce)
     )
 
 
@@ -71,7 +71,7 @@ def aes_encrypt(encryption_request: AesEncryptionRequest) -> AesEncryptionRespon
 )
 def aes_decrypt(decryption_request: AesDecryptionRequest) -> AesDecryptionResponse:
     logger.info("Starting AES Decryption")
-    nonce: bytes = str_to_bytes(decryption_request.nonce)
+    nonce: bytes = b64_str_to_bytes(decryption_request.nonce)
 
     decrypted_value: str = aes_gcm_decrypt(
         decryption_request.value,

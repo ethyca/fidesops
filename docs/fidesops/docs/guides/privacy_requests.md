@@ -67,7 +67,7 @@ Alongside generic API interopoerability, Fidesops provides a direct integration 
 ## Encryption
 
 You can optionally encrypt your access request results by supplying an `encryption_key` string in the request body:
-We will use the supplied encryption_key to encrypt the contents of your JSON and CSV results using an AES algorithm in GCM mode.
+We will use the supplied encryption_key to encrypt the contents of your JSON and CSV results using an AES-256 algorithm in GCM mode.
 When converted to bytes, your encryption_key must be 16 bytes long.  The data we return will have the nonce concatenated 
 to the encrypted data.
 
@@ -87,9 +87,15 @@ POST /privacy-request
 ## Decrypting your access request results
 
 If you specified an encryption key, we encrypted the access result data using your key and an internally-generated `nonce` with an AES 
-algorithm in GCM mode.  The return value is a 12-byte nonce plus the encrypted data that is all b64encoded together.
+256 algorithm in GCM mode.  The return value is a 12-byte nonce plus the encrypted data that is all b64encoded together.
 
-For example, pretend you specified an encryption key of "test--encryption", and the resulting data was uploaded to
+```
++------------------+-------------------+
+| nonce (12 bytes) | message (N bytes) |
++------------------+-------------------+
+```
+
+For example, pretend you specified an encryption key of `test--encryption`, and the resulting data was uploaded to
 S3 in a JSON file: `GPUiK9tq5k/HfBnSN+J+OvLXZ+GCisapdI2KGP7A1WK+dz1XHef+hWb/SjszdqdNVGvziyY6GF5KIrvrXgxjZuaAvgU='`.  You will
 need to implement something similar to the snippet below on your end to decrypt:
 
@@ -107,13 +113,13 @@ encrypted_message: bytes = encrypted_combined[12:]
 gcm = AESGCM(encryption_key)
 
 decrypted_bytes: bytes = gcm.decrypt(nonce, encrypted_message, nonce)
-decrypted_str: str = decrypted_bytes.decode('utf-8')
+decrypted_str: str = decrypted_bytes.decode("utf-8")
 
 json.loads(decrypted_str)
 ```
 
 ```python
->>> {'street': 'test street', 'state': 'NY'}
+>>> {"street": "test street", "state": "NY"}
 ```
 
 If CSV data was uploaded, each CSV in the zipfile was encrypted using a different nonce so you'll need to follow

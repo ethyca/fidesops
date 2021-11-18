@@ -25,11 +25,11 @@ def generate_salt() -> str:
     return bcrypt.gensalt().decode(config.security.ENCODING)
 
 
-def bytes_to_str(bytestring: bytes) -> str:
+def bytes_to_b64_str(bytestring: bytes) -> str:
     """Converts random bytes into a utf-8 encoded string"""
     return b64encode(bytestring).decode(config.security.ENCODING)
 
 
-def str_to_bytes(encoded_str: str) -> bytes:
+def b64_str_to_bytes(encoded_str: str) -> bytes:
     """Converts encoded string into bytes"""
     return b64decode(encoded_str.encode(config.security.ENCODING))
