@@ -119,6 +119,11 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
                 )
                 references.append((address, reference.direction))
         if meta_section.length is not None:
+            # 'if meta_section.length' will not suffice here, we will want to pass through
+            # length for any valid integer if it has been set in the config, including 0.
+            #
+            # Currently 0 is filtered out by validations but better not to filter out 0's
+            # here in case we decide to allow it in the future.
             length = meta_section.length
     return Field(
         name=field.name,
