@@ -235,7 +235,7 @@ def redshift_connection_config(db: Session) -> Generator:
         db=db,
         data={
             "name": name,
-            "key": "my-redshift-config",
+            "key": "my_redshift_config",
             "connection_type": ConnectionType.redshift,
             "access": AccessLevel.write,
         },
@@ -251,7 +251,7 @@ def snowflake_connection_config(db: Session) -> Generator:
         db=db,
         data={
             "name": name,
-            "key": "my-snowflake-config",
+            "key": "my_snowflake_config",
             "connection_type": ConnectionType.snowflake,
             "access": AccessLevel.write,
         },

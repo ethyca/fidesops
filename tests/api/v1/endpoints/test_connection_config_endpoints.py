@@ -184,13 +184,13 @@ class TestPatchConnections:
                 "access": "write",
             },
             {
-                "key": "my-redshift-cluster",
+                "key": "my_redshift_cluster",
                 "name": "My Amazon Redshift",
                 "connection_type": "redshift",
                 "access": "read",
             },
             {
-                "key": "my-snowflake",
+                "key": "my_snowflake",
                 "name": "Snowflake Warehouse",
                 "connection_type": "snowflake",
                 "access": "write",
@@ -227,7 +227,7 @@ class TestPatchConnections:
         assert redshift_connection["access"] == "read"
         assert redshift_connection["updated_at"] is not None
         redshift_resource = (
-            db.query(ConnectionConfig).filter_by(key="my-redshift-cluster").first()
+            db.query(ConnectionConfig).filter_by(key="my_redshift_cluster").first()
         )
         assert redshift_resource.access.value == "read"
         assert "secrets" not in redshift_connection
@@ -236,7 +236,7 @@ class TestPatchConnections:
         assert snowflake_connection["access"] == "write"
         assert snowflake_connection["updated_at"] is not None
         snowflake_resource = (
-            db.query(ConnectionConfig).filter_by(key="my-snowflake").first()
+            db.query(ConnectionConfig).filter_by(key="my_snowflake").first()
         )
         assert snowflake_resource.access.value == "write"
         assert "secrets" not in snowflake_connection

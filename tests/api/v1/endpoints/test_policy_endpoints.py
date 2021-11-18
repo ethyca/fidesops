@@ -315,6 +315,32 @@ class TestCreatePolicies:
         ).first()
         pol.delete(db=db)
 
+    def test_create_policy_with_invalid_key(
+            self,
+            url,
+            db,
+            api_client: TestClient,
+            generate_auth_header,
+            storage_config,
+    ):
+        key = "here-is-an-invalid-key"
+        data = [
+            {
+                "name": "test create policy api",
+                "action_type": "erasure",
+                "data_category": DataCategory("user.provided.identifiable").value,
+                "storage_destination_key": storage_config.key,
+                "key": key,
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
+        resp = api_client.put(url, json=data, headers=auth_header)
+        assert resp.status_code == 422
+        assert (
+                json.loads(resp.text)["detail"][0]["msg"]
+                == "FidesKey must only contain alphanumeric characters, '.' or '_'."
+        )
+
     def test_create_policy_already_exists(
         self,
         url,

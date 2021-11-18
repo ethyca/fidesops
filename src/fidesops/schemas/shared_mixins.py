@@ -13,7 +13,7 @@ class FidesKeyMixin(BaseModel):
 
     _fides_key_field_names: List[str] = ["key"]
 
-    @root_validator()
+    @root_validator(pre=True)
     def validate_keys(cls, fields: Dict[str, Any]) -> Dict[str, Any]:
         """Calls validate function for fields that claim to be a FidesKey"""
         for key, val in fields.items():

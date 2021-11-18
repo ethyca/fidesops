@@ -243,6 +243,16 @@ def create_or_update_rules(
             }
             failed.append(BulkUpdateFailed(**failure))
             continue
+        except ValueError as exc:
+            logger.warning(
+                f"Create/update failed for rule '{schema.key}' on policy {policy_key}: {exc}"
+            )
+            failure = {
+                "message": exc.args[0],
+                "data": dict(schema),
+            }
+            failed.append(BulkUpdateFailed(**failure))
+            continue
         else:
             created_or_updated.append(rule)
 

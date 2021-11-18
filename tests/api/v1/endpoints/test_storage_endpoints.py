@@ -175,7 +175,7 @@ class TestPatchStorageConfig:
     @mock.patch(
         "fidesops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
     )
-    def test_patch_storage_config_with_no_name(
+    def test_patch_storage_config_with_no_key(
         self,
         mock_scheduled_task,
         db: Session,
@@ -194,6 +194,23 @@ class TestPatchStorageConfig:
         assert response_body["succeeded"][0]["key"] == "test_destination"
         storage_config = db.query(StorageConfig).filter_by(key="test_destination")[0]
         storage_config.delete(db)
+
+    def test_put_storage_config_with_invalid_key(
+            self,
+            db: Session,
+            api_client: TestClient,
+            payload,
+            url,
+            generate_auth_header,
+    ):
+        payload[0]["key"] = "*invalid-key"
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 422 == response.status_code
+        assert (
+                json.loads(response.text)["detail"][0]["msg"]
+                == "FidesKey must only contain alphanumeric characters, '.' or '_'."
+        )
 
     @mock.patch(
         "fidesops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
@@ -236,7 +253,7 @@ class TestPatchStorageConfig:
     @mock.patch(
         "fidesops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
     )
-    def test_patch_storage_config(
+    def test_patch_storage_config_with_key(
         self,
         mock_scheduled_task,
         db: Session,
