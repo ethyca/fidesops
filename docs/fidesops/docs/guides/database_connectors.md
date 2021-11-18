@@ -29,7 +29,7 @@ Other platforms will be added in future releases.
 
 ## Creating a ConnectionConfig object 
 
-The connection between Fidesops and your database is represented by a _ConnectionConfig_ object. To create a ConnectionConfig, you issue a request to the [Create a ConnectionConfig](/fidesops/api#operations-Connections-get_connections_api_v1_connection_get) operation, passing a payload that contains the properties listed below. 
+The connection between Fidesops and your database is represented by a _ConnectionConfig_ object. To create a ConnectionConfig, you issue a request to the [Create a ConnectionConfig](/fidesops/api/#operations-Connections-put_connections_api_v1_connection_put) operation, passing a payload that contains the properties listed below. 
 
 * `name`  is a  a human-readable name for your database.
 
@@ -139,7 +139,7 @@ GET /api/v1/connection/application-postgresql-db/test
 ```
 
 Once again, the `test_status` and `failure_reason` properties describe the success or failure of the test. If the test failed,
-you should adjust the ConnectionConfig Secrets properties through additional calls to [Set a ConnectionConfig's Secrets](/fidesops/api#operations-ConnectionConfigs-put_connection_config_secrets_api_v1_connection__connection_key__secret_put)
+you should adjust the ConnectionConfig Secrets properties through additional calls to [Set a ConnectionConfig's Secrets](/fidesops/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put)
 
 
 #### Example 1: Connection Succeeded
