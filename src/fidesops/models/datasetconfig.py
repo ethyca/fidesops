@@ -129,7 +129,6 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
             # here in case we decide to allow it in the future.
             length = meta_section.length
 
-
         data_type = meta_section.data_type
     return Field(
         name=field.name,

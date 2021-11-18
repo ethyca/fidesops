@@ -27,7 +27,6 @@ def _valid_data_categories(
     return data_categories
 
 
-
 def _valid_data_type(data_type_str: Optional[str]) -> Optional[str]:
     """If the data_type is provided ensure that it is a member of DataType."""
 
@@ -42,6 +41,7 @@ def _valid_data_type(data_type_str: Optional[str]) -> Optional[str]:
 
     return None
 
+
 def _valid_data_length(data_length: Optional[int]) -> Optional[int]:
     """If the data_length is provided ensure that it is a positive non-zero value."""
 
@@ -51,7 +51,6 @@ def _valid_data_length(data_length: Optional[int]) -> Optional[int]:
         )
 
     return data_length
-
 
 
 class FidesCollectionKey(ConstrainedStr):
@@ -118,6 +117,7 @@ class FidesopsMeta(BaseModel):
         """Validate that the provided length is valid"""
         return _valid_data_length(v)
 
+
 class FidesopsDatasetField(DatasetField):
     """Extends fideslang DatasetField model with additional Fidesops annotations"""
 
@@ -169,6 +169,7 @@ class FidesopsDataset(Dataset):
     ) -> Optional[List[FidesKey]]:
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_categories(v)
+
 
 class DatasetTraversalDetails(BaseSchema):
     """
