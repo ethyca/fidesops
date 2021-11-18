@@ -19,8 +19,10 @@ from fidesops.graph.config import (
     Dataset,
     CollectionAddress,
 )
+from fidesops.graph.data_type import DataType
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
+from fidesops.util.logger import NotPii
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +89,8 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
     is_pk = False
     references = []
     meta_section = field.fidesops_meta
+    data_type = None
+    length = None
     if meta_section:
         identity = meta_section.identity
         if meta_section.primary_key:
@@ -117,12 +121,24 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
                     reference.dataset, ref_collection, ".".join(ref_fields)
                 )
                 references.append((address, reference.direction))
+
+        if meta_section.length is not None:
+            # 'if meta_section.length' will not suffice here, we will want to pass through
+            # length for any valid integer if it has been set in the config, including 0.
+            #
+            # Currently 0 is filtered out by validations but better not to filter out 0's
+            # here in case we decide to allow it in the future.
+            length = meta_section.length
+
+        data_type = meta_section.data_type
     return Field(
         name=field.name,
         data_categories=field.data_categories,
         identity=identity,
+        data_type=DataType[data_type] if data_type else None,
         references=references,
         primary_key=is_pk,
+        length=length,
     )
 
 
@@ -144,9 +160,9 @@ def convert_dataset_to_graph(dataset: FidesopsDataset, connection_key: str) -> D
         ]
         logger.debug(
             "Parsing dataset %s: parsed collection %s with %s fields",
-            dataset_name,
-            collection.name,
-            len(graph_fields),
+            NotPii(dataset_name),
+            NotPii(collection.name),
+            NotPii(len(graph_fields)),
         )
         collection_after: Set[CollectionAddress] = set()
         if collection.fidesops_meta and collection.fidesops_meta.after:
@@ -160,8 +176,8 @@ def convert_dataset_to_graph(dataset: FidesopsDataset, connection_key: str) -> D
         graph_collections.append(graph_collection)
     logger.debug(
         "Finished parsing dataset %s with %s collections",
-        dataset_name,
-        len(graph_collections),
+        NotPii(dataset_name),
+        NotPii(len(graph_collections)),
     )
 
     return Dataset(

@@ -51,8 +51,16 @@ class PolicyValidationError(ValueError):
     """The policy you are trying to create has invalid data"""
 
 
+class InvalidDataLengthValidationError(ValueError):
+    """The length provided is invalid"""
+
+
 class RuleValidationError(ValueError):
     """The Rule you are trying to create has invalid data"""
+
+
+class InvalidDataTypeValidationError(ValueError):
+    """The specified data type is invalid."""
 
 
 class RuleTargetValidationError(ValueError):

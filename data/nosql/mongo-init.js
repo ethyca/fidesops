@@ -41,7 +41,8 @@ db.employee.insert([
             "city": "Example City",
             "state": "NY",
             "zip": "12000"
-        }
+        },
+	"foreign_id": "000000000000000000000001"
     },
     {
         "email": "employee-2@example.com",
@@ -53,7 +54,8 @@ db.employee.insert([
             "city": "Example City",
             "state": "NY",
             "zip": "12000"
-        }
+        },
+	"foreign_id": "000000000000000000000002"
     }
 ])
 
@@ -237,10 +239,16 @@ db.reports.insert([
     {"email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 11, "total_visits": 100}
 ])
 
-
-
 db.composite_pk_test.insert([
     {"id_a":1, "id_b":10, "description":"linked to customer 1", "customer_id":"1"},
     {"id_a":1, "id_b":11, "description":"linked to customer 2", "customer_id":"2"},
     {"id_a":2, "id_b":10, "description":"linked to customer 3", "customer_id":"3"}
     ])
+
+//values to support test by specific objectId search
+
+db.type_link_test.insert([
+    {"_id":ObjectId("000000000000000000000001"), "name":"v1", "key":1, "email":"test1@example.com"},
+    {"_id":ObjectId("000000000000000000000002"), "name":"v2", "key":2, "email":"test1@example.com"},
+    {"_id":ObjectId("000000000000000000000003"), "name":"v3", "key":3, "email":"test1@example.com"}
+])

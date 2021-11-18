@@ -130,6 +130,7 @@ def create_privacy_request(
             logger.info(f"Caching identities for privacy request {privacy_request.id}")
             for identity in privacy_request_data.identities:
                 privacy_request.cache_identity(identity)
+                privacy_request.cache_encryption(privacy_request_data.encryption_key)
 
             PrivacyRequestRunner(
                 cache=cache,
@@ -137,14 +138,14 @@ def create_privacy_request(
                 privacy_request=privacy_request,
             ).run()
         except common_exceptions.RedisConnectionError as exc:
-            logger.error(exc)
+            logger.error("RedisConnectionError: %s", exc)
             # Thrown when cache.ping() fails on cache connection retrieval
             raise HTTPException(
                 status_code=HTTP_424_FAILED_DEPENDENCY,
                 detail=exc.args[0],
             )
         except Exception as exc:
-            logger.error(exc)
+            logger.error("Exception: %s", exc)
             failure = {
                 "message": "This record could not be added",
                 "data": kwargs,
