@@ -26,8 +26,6 @@ if config.security.CORS_ORIGINS:
 
 app.include_router(api_router)
 
-# abritrary change
-
 
 def start_webserver() -> None:
     """Run any pending DB migrations and start the webserver."""
