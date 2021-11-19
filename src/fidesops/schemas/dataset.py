@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional
 
-from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesKey
-from fideslang.validation import FidesValidationError
+from fideslang.models import Dataset, DatasetCollection, DatasetField
 from pydantic import BaseModel, root_validator, validator, ConstrainedStr
 
 from fidesops.common_exceptions import InvalidDataTypeValidationError
@@ -11,11 +10,12 @@ from fidesops.graph.data_type import DataType
 from fidesops.models.policy import _validate_data_category
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
+from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
 def _valid_data_categories(
-    data_categories: Optional[List[FidesKey]],
-) -> Optional[List[FidesKey]]:
+    data_categories: Optional[List[FidesOpsKey]],
+) -> Optional[List[FidesOpsKey]]:
     """
     Ensure that every data category provided matches a valid category defined in
     the current taxonomy. Throws an error if any of the categories are invalid,
@@ -62,14 +62,18 @@ class FidesCollectionKey(ConstrainedStr):
     def validate(cls, value: str) -> str:
 
         values = value.split(".")
-        if (
-            len(values) == 2
-            and FidesKey.validate(values[0])
-            and FidesKey.validate(values[0])
-        ):
-            return value
-
-        raise FidesValidationError(
+        try:
+            if (
+                len(values) == 2
+                and FidesOpsKey.validate(values[0])
+                and FidesOpsKey.validate(values[0])
+            ):
+                return value
+        except ValueError:
+            raise ValueError(
+                "FidesCollection must be specified in the form 'FidesKey.FidesKey'"
+            )
+        raise ValueError(
             "FidesCollection must be specified in the form 'FidesKey.FidesKey'"
         )
 
@@ -79,7 +83,7 @@ class FidesCollectionKey(ConstrainedStr):
 class FidesopsDatasetReference(BaseModel):
     """Reference to a field from another Collection"""
 
-    dataset: FidesKey
+    dataset: FidesOpsKey
     field: str
     direction: Optional[EdgeDirection]
 
@@ -87,7 +91,7 @@ class FidesopsDatasetReference(BaseModel):
 class FidesopsDatasetMeta(BaseModel):
     """ "Dataset-level fidesops-specific annotations used for query traversal"""
 
-    after: Optional[List[FidesKey]]
+    after: Optional[List[FidesOpsKey]]
 
 
 class FidesopsCollectionMeta(BaseModel):
@@ -135,8 +139,8 @@ class FidesopsDatasetField(DatasetField):
 
     @validator("data_categories")
     def valid_data_categories(
-        cls, v: Optional[List[FidesKey]]
-    ) -> Optional[List[FidesKey]]:
+        cls, v: Optional[List[FidesOpsKey]]
+    ) -> Optional[List[FidesOpsKey]]:
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_categories(v)
 
@@ -150,8 +154,8 @@ class FidesopsDatasetCollection(DatasetCollection):
 
     @validator("data_categories")
     def valid_data_categories(
-        cls, v: Optional[List[FidesKey]]
-    ) -> Optional[List[FidesKey]]:
+        cls, v: Optional[List[FidesOpsKey]]
+    ) -> Optional[List[FidesOpsKey]]:
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_categories(v)
 
@@ -165,8 +169,8 @@ class FidesopsDataset(Dataset):
 
     @validator("data_categories")
     def valid_data_categories(
-        cls, v: Optional[List[FidesKey]]
-    ) -> Optional[List[FidesKey]]:
+        cls, v: Optional[List[FidesOpsKey]]
+    ) -> Optional[List[FidesOpsKey]]:
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_categories(v)
 

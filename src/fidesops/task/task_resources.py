@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, Any, Optional, List
 
-from fideslang.validation import FidesKey
+from fidesops.schemas.shared_schemas import FidesOpsKey
 
 from fidesops.common_exceptions import ConnectorNotFoundException
 from fidesops.db.session import get_db_session
@@ -113,7 +113,7 @@ class TaskResources:
         )
         db.close()
 
-    def get_connector(self, key: FidesKey) -> Any:
+    def get_connector(self, key: FidesOpsKey) -> Any:
         """Create or return the client corresponding to the given ConnectionConfig key"""
         if key in self.connection_configs:
             return self.connections.get_connector(self.connection_configs[key])

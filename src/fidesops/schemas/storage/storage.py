@@ -8,7 +8,7 @@ from typing import (
     Union,
 )
 
-from fideslang.validation import FidesKey
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from pydantic import (
     Extra,
     ValidationError,
@@ -18,7 +18,6 @@ from pydantic import (
 from pydantic.main import BaseModel
 
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
-from fidesops.schemas.shared_mixins import FidesKeyMixin
 
 logger = logging.getLogger(__name__)
 
@@ -143,7 +142,7 @@ class StorageType(Enum):
     local = "local"  # local should be used for testing only, not for processing real-world privacy requests
 
 
-class StorageDestination(FidesKeyMixin):
+class StorageDestination(BaseModel):
     """Storage Destination Schema"""
 
     name: str
@@ -153,7 +152,7 @@ class StorageDestination(FidesKeyMixin):
         StorageDetailsOneTrust,
         StorageDetailsLocal,
     ]
-    key: Optional[FidesKey]
+    key: Optional[FidesOpsKey]
     format: Optional[ResponseFormat] = ResponseFormat.json.value  # type: ignore
 
     class Config:
@@ -215,13 +214,13 @@ class StorageDestination(FidesKeyMixin):
         return values
 
 
-class StorageDestinationResponse(FidesKeyMixin):
+class StorageDestinationResponse(BaseModel):
     """Storage Destination Response Schema"""
 
     name: str
     type: StorageType
     details: Dict[StorageDetails, Any]
-    key: Optional[FidesKey]
+    key: FidesOpsKey
     format: ResponseFormat
 
     class Config:

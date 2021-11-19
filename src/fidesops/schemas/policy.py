@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Union
 
-from fideslang.validation import FidesKey
+from fidesops.schemas.shared_schemas import FidesOpsKey
 
 from fidesops.models.policy import (
     ActionType,
@@ -9,7 +9,6 @@ from fidesops.models.policy import (
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.masking.masking_configuration import FormatPreservationConfig
-from fidesops.schemas.shared_mixins import FidesKeyMixin
 from fidesops.schemas.storage.storage import StorageDestinationResponse
 
 
@@ -30,32 +29,30 @@ class PolicyMaskingSpecResponse(BaseSchema):
     strategy: str
 
 
-class RuleTarget(FidesKeyMixin):
+class RuleTarget(BaseSchema):
     """An external representation of a Rule's target DataCategory within a Fidesops Policy"""
 
     name: Optional[str]
-    key: Optional[FidesKey]
+    key: Optional[FidesOpsKey]
     data_category: DataCategory
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
 
         use_enum_values = True
-        orm_mode = True
 
 
-class RuleBase(FidesKeyMixin):
+class RuleBase(BaseSchema):
     """An external representation of a Rule within a Fidesops Policy"""
 
     name: str
-    key: Optional[FidesKey]
+    key: Optional[FidesOpsKey]
     action_type: ActionType
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
 
         use_enum_values = True
-        orm_mode = True
 
 
 class RuleCreate(RuleBase):
@@ -64,8 +61,7 @@ class RuleCreate(RuleBase):
     over a composite object.
     """
 
-    _fides_key_field_names = ["key", "storage_destination_key"]
-    storage_destination_key: Optional[FidesKey]
+    storage_destination_key: Optional[FidesOpsKey]
     masking_strategy: Optional[PolicyMaskingSpec]
 
 
@@ -90,12 +86,7 @@ class Policy(BaseSchema):
     """An external representation of a Fidesops Policy"""
 
     name: str
-    key: Optional[FidesKey]
-
-    class Config:
-        """Allow ORM access"""
-
-        orm_mode = True
+    key: Optional[FidesOpsKey]
 
 
 class PolicyResponse(Policy):

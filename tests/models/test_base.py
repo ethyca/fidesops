@@ -1,5 +1,4 @@
 import pytest
-from fideslang.validation import FidesValidationError
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import KeyValidationError

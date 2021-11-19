@@ -12,7 +12,6 @@ from typing import (
 
 from fideslang import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
-from fideslang.validation import FidesKey
 from sqlalchemy import (
     Column,
     Enum as EnumColumn,
@@ -36,6 +35,7 @@ from fidesops.core.config import config
 from fidesops.db.base_class import Base, FidesopsBase, JSONTypeOverride
 from fidesops.models.client import ClientDetail
 from fidesops.models.storage import StorageConfig
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     SupportedMaskingStrategies,
 )
@@ -157,7 +157,7 @@ class Policy(Base):
         return [rule for rule in self.rules if rule.action_type == action_type]
 
 
-def _get_ref_from_taxonomy(fides_key: FidesKey) -> FideslangDataCategory:
+def _get_ref_from_taxonomy(fides_key: FidesOpsKey) -> FideslangDataCategory:
     """Returns the DataCategory model from the DEFAULT_TAXONOMY corresponding to fides_key."""
     for item in DEFAULT_TAXONOMY.data_category:
         if item.fides_key == fides_key:
@@ -169,7 +169,7 @@ def _get_ref_from_taxonomy(fides_key: FidesKey) -> FideslangDataCategory:
 
 
 def _is_ancestor_of_contained_categories(
-    fides_key: FidesKey,
+    fides_key: FidesOpsKey,
     data_categories: List[str],
 ) -> Tuple[bool, Optional[str]]:
     """

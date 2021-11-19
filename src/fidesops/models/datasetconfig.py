@@ -2,7 +2,6 @@ import logging
 from typing import Dict, Any, Set
 
 from boto3 import Session
-from fideslang.validation import FidesKey
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -23,6 +22,7 @@ from fidesops.graph.config import (
 from fidesops.graph.data_type import DataType
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.logger import NotPii
 
 logger = logging.getLogger(__name__)
@@ -144,7 +144,7 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
 
 
 def convert_dataset_to_graph(
-    dataset: FidesopsDataset, connection_key: FidesKey
+    dataset: FidesopsDataset, connection_key: FidesOpsKey
 ) -> Dataset:
     """
     Converts the given Fides dataset dataset into the concrete graph

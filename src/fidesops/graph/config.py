@@ -80,13 +80,12 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import List, Optional, Tuple, Set, Dict, Literal, Any
 
-from fideslang.models import FidesKey
 from pydantic import BaseModel
 
 from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.data_type import DataTypeConverter, DataType
 from fidesops.util.querytoken import QueryToken
-from fidesops.schemas.shared_mixins import FidesKeyMixin
+from fidesops.schemas.shared_schemas import FidesOpsKey
 
 DatasetAddress = str
 SeedAddress = str
@@ -192,7 +191,7 @@ class Field(BaseModel):
     """references to other fields in any other datasets"""
     identity: Optional[SeedAddress] = None
     """an optional pointer to an arbitrary key in an expected json package provided as a seed value"""
-    data_categories: Optional[List[FidesKey]]
+    data_categories: Optional[List[FidesOpsKey]]
     """annotated data categories for the field used for policy actions"""
     data_type: Optional[DataType]
     """Known type of held data"""
@@ -275,7 +274,7 @@ class Collection(BaseModel):
         arbitrary_types_allowed = True
 
 
-class Dataset(FidesKeyMixin):
+class Dataset(BaseModel):
     """Master collection of collections that are accessed in a common way"""
 
     name: str
@@ -283,5 +282,4 @@ class Dataset(FidesKeyMixin):
     # an optional list of datasets that this dataset must run after
     after: Set[DatasetAddress] = set()
     # ConnectionConfig key
-    connection_key: FidesKey
-    _fides_key_field_names = ["connection_key"]
+    connection_key: FidesOpsKey

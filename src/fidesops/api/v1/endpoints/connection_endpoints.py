@@ -6,7 +6,7 @@ from fastapi.params import Security
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
-from fideslang.validation import FidesKey
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from pydantic import ValidationError, conlist
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND
@@ -71,7 +71,7 @@ def get_connections(
     response_model=ConnectionConfigurationResponse,
 )
 def get_connection_detail(
-    connection_key: FidesKey, db: Session = Depends(deps.get_db)
+    connection_key: FidesOpsKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
     """Returns connection configuration with matching key."""
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
@@ -148,7 +148,7 @@ def patch_connections(
     status_code=204,
 )
 def delete_connection(
-    connection_key: FidesKey, *, db: Session = Depends(deps.get_db)
+    connection_key: FidesOpsKey, *, db: Session = Depends(deps.get_db)
 ) -> None:
     """Removes the connection configuration with matching key."""
     logger.info(f"Finding connection configuration with key {connection_key}")
@@ -219,7 +219,7 @@ def connection_status(
     response_model=TestStatusMessage,
 )
 async def put_connection_config_secrets(
-    connection_key: FidesKey,
+    connection_key: FidesOpsKey,
     *,
     db: Session = Depends(deps.get_db),
     unvalidated_secrets: connection_secrets_schemas,
@@ -261,7 +261,7 @@ async def put_connection_config_secrets(
     response_model=TestStatusMessage,
 )
 async def test_connection_config_secrets(
-    connection_key: FidesKey,
+    connection_key: FidesOpsKey,
     *,
     db: Session = Depends(deps.get_db),
 ) -> TestStatusMessage:

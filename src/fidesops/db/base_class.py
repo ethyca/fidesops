@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
 
 import six
-from fideslang.validation import FidesKey, FidesValidationError
+
 from sqlalchemy import Column, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.ext.mutable import MutableDict
@@ -19,6 +19,7 @@ from sqlalchemy.sql import func
 from sqlalchemy_utils import JSONType
 
 from fidesops.common_exceptions import KeyOrNameAlreadyExists, KeyValidationError
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.text import to_snake_case
 
 
@@ -28,15 +29,12 @@ def get_key_from_data(data: Dict[str, Any], cls_name: str) -> str:
 
     Will be used as the URL on applicable classes.
     """
-    try:
-        key = FidesKey.validate(data.get("key")) if data.get("key") else None
-        if key is None:
-            name = data.get("name")
-            if name is None:
-                raise KeyValidationError(f"{cls_name} requires a name.")
-            key = FidesKey.validate(to_snake_case(name))
-    except FidesValidationError as exc:
-        raise ValueError(exc)
+    key = FidesOpsKey.validate(data.get("key")) if data.get("key") else None
+    if key is None:
+        name = data.get("name")
+        if name is None:
+            raise KeyValidationError(f"{cls_name} requires a name.")
+        key = FidesOpsKey.validate(to_snake_case(name))
     return key
 
 

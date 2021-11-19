@@ -1,15 +1,14 @@
 from datetime import datetime
 from typing import Optional, List
 
-from fideslang.validation import FidesKey
-from pydantic import Extra
+from pydantic import Extra, BaseModel
 
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.models.connectionconfig import ConnectionType, AccessLevel
-from fidesops.schemas.shared_mixins import FidesKeyMixin
 
 
-class CreateConnectionConfiguration(FidesKeyMixin):
+class CreateConnectionConfiguration(BaseModel):
     """
     Schema for creating a ConnectionConfiguration
 
@@ -17,7 +16,7 @@ class CreateConnectionConfiguration(FidesKeyMixin):
     """
 
     name: str
-    key: Optional[FidesKey]
+    key: Optional[FidesOpsKey]
     connection_type: ConnectionType
     access: AccessLevel
 
@@ -29,7 +28,7 @@ class CreateConnectionConfiguration(FidesKeyMixin):
         extra = Extra.forbid
 
 
-class ConnectionConfigurationResponse(FidesKeyMixin):
+class ConnectionConfigurationResponse(BaseModel):
     """
     Describes the returned schema for a ConnectionConfiguration.
 
@@ -37,7 +36,7 @@ class ConnectionConfigurationResponse(FidesKeyMixin):
     """
 
     name: str
-    key: Optional[FidesKey]
+    key: FidesOpsKey
     connection_type: ConnectionType
     access: AccessLevel
     created_at: datetime

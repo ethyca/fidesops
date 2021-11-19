@@ -3,7 +3,7 @@ from typing import Optional
 
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
-from fideslang.validation import FidesKey
+from fidesops.schemas.shared_schemas import FidesOpsKey
 
 from fidesops.db.session import get_db_session
 from fidesops.models.storage import StorageConfig
@@ -59,6 +59,6 @@ def initiate_scheduled_request_intake() -> None:
     db.close()
 
 
-def _intake_onetrust_requests(config_key: FidesKey) -> None:
+def _intake_onetrust_requests(config_key: FidesOpsKey) -> None:
     """Begins onetrust request intake"""
     OneTrustService.intake_onetrust_requests(config_key)
