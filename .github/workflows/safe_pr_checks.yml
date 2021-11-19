@@ -1,69 +1,36 @@
 name: CI Checks - Safe
 on: [
+  push,
   pull_request
 ]
 
 jobs:
-  Autoformat:
+  Check-All:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Running CI for branch ${{ github.ref }}."
-      - name: Check out repository code
+      - name: Checkout
         uses: actions/checkout@v2
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: make black-ci
 
-  Check-Migrations:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Running CI for branch ${{ github.ref }}."
-      - name: Check out repository code
-        uses: actions/checkout@v2
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: make init-db
-      - run: make check-migrations
+      - name: Format
+        run: make black-ci
 
-  Lint:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Running CI for branch ${{ github.ref }}."
-      - name: Check out repository code
-        uses: actions/checkout@v2
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: make pylint
+      - name: Lint
+        run: make pylint
 
-  Check-Types:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Running CI for branch ${{ github.ref }}."
-      - name: Check out repository code
-        uses: actions/checkout@v2
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: make mypy
+      - name: Check Types
+        run: make mypy
 
-  Unit-Tests:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Running CI for branch ${{ github.ref }}."
-      - name: Check out repository code
-        uses: actions/checkout@v2
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: make pytest
+      - name: Init DB
+        run: make init-db
 
-  Integration-Tests-Access:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Running CI for branch ${{ github.ref }}."
-      - name: Check out repository code
-        uses: actions/checkout@v2
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: make pytest-integration-access
+      - name: Check Migrations
+        run: make check-migrations
 
-  Integration-Tests-Erasure:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Running CI for branch ${{ github.ref }}."
-      - name: Check out repository code
-        uses: actions/checkout@v2
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: make pytest-integration-erasure
+      - name: Unit Tests
+        run: make pytest
+
+      - name: Integration Tests (Access)
+        run: make pytest-integration-access
+
+      - name: Integration Tests (Erasure)
+        run: make pytest-integration-erasure
