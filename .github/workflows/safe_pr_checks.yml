@@ -1,4 +1,4 @@
-name: Run Safe CI Checks
+name: CI Checks - Safe
 on:
   push:
 

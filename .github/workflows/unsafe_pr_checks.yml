@@ -1,4 +1,4 @@
-name: Run Unsafe CI Checks
+name: CI Checks - Unsafe
 on:
   push:
   pull_request:
