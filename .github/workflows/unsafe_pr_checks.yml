@@ -1,6 +1,5 @@
 name: CI Checks - Unsafe
 on:
-  push:
   pull_request:
     types: [labeled]
 
