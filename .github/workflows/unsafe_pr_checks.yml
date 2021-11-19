@@ -16,4 +16,4 @@ jobs:
         env:
           REDSHIFT_TEST_URI: ${{ secrets.REDSHIFT_TEST_URI }}
           SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
-        run: make pytest-external-integration
+        run: make pytest-integration-external
