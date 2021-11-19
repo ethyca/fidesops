@@ -1,6 +1,5 @@
 name: CI Checks - Safe
 on: [
-  push,
   pull_request
 ]
 
