@@ -1,12 +1,13 @@
 name: CI Checks - Unsafe
 on:
+  push:
   pull_request:
     types: [labeled]
 
 jobs:
   Integration-Tests-External:
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.labels.*.name, 'safe to test')
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
     steps:
       - run: echo "Running CI for branch ${{ github.ref }}."
       - name: Check out repository code
