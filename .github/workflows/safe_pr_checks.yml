@@ -12,6 +12,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Docker Compose Build
+        run: make compose-build
+
       - name: Format
         run: make black-ci
 
