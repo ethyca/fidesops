@@ -58,21 +58,17 @@ class FidesCollectionKey(ConstrainedStr):
     Dataset:Collection name where both dataset and collection names are valid FidesKeys
     """
 
-    @classmethod  # This overrides the default method to throw the custom FidesValidationError
+    @classmethod
     def validate(cls, value: str) -> str:
-
+        """
+        Overrides validation to check FidesCollectionKey format, and that both the dataset
+        and collection names have the FidesKey format.
+        """
         values = value.split(".")
-        try:
-            if (
-                len(values) == 2
-                and FidesOpsKey.validate(values[0])
-                and FidesOpsKey.validate(values[0])
-            ):
-                return value
-        except ValueError:
-            raise ValueError(
-                "FidesCollection must be specified in the form 'FidesKey.FidesKey'"
-            )
+        if len(values) == 2:
+            FidesOpsKey.validate(values[0])
+            FidesOpsKey.validate(values[1])
+            return value
         raise ValueError(
             "FidesCollection must be specified in the form 'FidesKey.FidesKey'"
         )

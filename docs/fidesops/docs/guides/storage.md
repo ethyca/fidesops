@@ -40,7 +40,7 @@ Let's get started. To create a new StorageConfig, use the following endpoint ([A
     "destinations": [
       {
         "name": str,
-        "key": FidesKey (optional),
+        "key": FidesOpsKey (optional),
         "type": str,
         "format": str
         "details": {
