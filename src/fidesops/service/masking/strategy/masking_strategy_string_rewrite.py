@@ -33,6 +33,7 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
         if self.format_preservation is not None:
             formatter = FormatPreservation(self.format_preservation)
             return formatter.format(self.rewrite_value)
+        # fixme: how to handle length if different than rewrite_value?
         return self.rewrite_value
 
     @staticmethod
