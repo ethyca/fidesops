@@ -40,7 +40,9 @@ from fidesops.schemas.storage.storage import (
     StorageType,
 )
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
-from fidesops.service.masking.strategy.masking_strategy_string_rewrite import STRING_REWRITE
+from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
+    STRING_REWRITE,
+)
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.util.cache import FidesopsRedis
 
@@ -258,6 +260,22 @@ def snowflake_connection_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def snowflake_read_connection_config(db: Session) -> Generator:
+    name = str(uuid4())
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my-snowflake-config",
+            "connection_type": ConnectionType.snowflake,
+            "access": AccessLevel.read,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
 def erasure_policy(
     db: Session,
     oauth_client: ClientDetail,
@@ -309,7 +327,9 @@ def erasure_policy(
 
 
 @pytest.fixture(scope="function")
-def erasure_policy_two_rules(db: Session, oauth_client: ClientDetail, erasure_policy: Policy) -> Generator:
+def erasure_policy_two_rules(
+    db: Session, oauth_client: ClientDetail, erasure_policy: Policy
+) -> Generator:
 
     second_erasure_rule = Rule.create(
         db=db,
@@ -325,14 +345,16 @@ def erasure_policy_two_rules(db: Session, oauth_client: ClientDetail, erasure_po
     # TODO set masking strategy in Rule.create() call above, once more masking strategies beyond NULL_REWRITE are supported.
     second_erasure_rule.masking_strategy = {
         "strategy": STRING_REWRITE,
-        "configuration": {"rewrite_value": "*****"}
+        "configuration": {"rewrite_value": "*****"},
     }
 
     second_rule_target = RuleTarget.create(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.contact.email").value,
+            "data_category": DataCategory(
+                "user.provided.identifiable.contact.email"
+            ).value,
             "rule_id": second_erasure_rule.id,
         },
     )
@@ -698,18 +720,66 @@ def dataset_config_preview(
     dataset_config.delete(db)
 
 
+def load_dataset(filename: str) -> Dict:
+    yaml_file = load_file(filename)
+    with open(yaml_file, "r") as file:
+        return yaml.safe_load(file).get("dataset", [])
+
+
 @pytest.fixture
 def example_datasets() -> List[Dict]:
     example_datasets = []
     example_filenames = [
         "data/dataset/postgres_example_test_dataset.yml",
         "data/dataset/mongo_example_test_dataset.yml",
+        "data/dataset/snowflake_example_test_dataset.yml",
     ]
     for filename in example_filenames:
-        yaml_file = load_file(filename)
-        with open(yaml_file, "r") as file:
-            example_datasets += yaml.safe_load(file).get("dataset", [])
+        example_datasets += load_dataset(filename)
     return example_datasets
+
+
+@pytest.fixture
+def snowflake_example_test_dataset_config(
+    snowflake_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    dataset = example_datasets[2]
+    fides_key = dataset["fides_key"]
+    connection_config.name = fides_key
+    connection_config.key = fides_key
+    connection_config.save(db=db)
+    dataset_config = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config.id,
+            "fides_key": fides_key,
+            "dataset": dataset,
+        },
+    )
+    yield dataset_config
+    dataset_config.delete(db=db)
+
+
+@pytest.fixture
+def snowflake_example_test_dataset_config_read_access(
+    snowflake_read_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    postgres_dataset = example_datasets[2]
+    fides_key = postgres_dataset["fides_key"]
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": snowflake_read_connection_config.id,
+            "fides_key": fides_key,
+            "dataset": postgres_dataset,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
 
 
 @pytest.fixture
