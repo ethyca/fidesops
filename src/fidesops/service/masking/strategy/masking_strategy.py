@@ -1,7 +1,8 @@
 # MR Note - It would be nice to enforce this at compile time
 from abc import abstractmethod, ABC
-from typing import Optional
+from typing import Optional, List
 
+from fidesops.graph.data_type import DataType
 from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
@@ -28,3 +29,10 @@ class MaskingStrategy(ABC):
         """Returns the description used for documentation. In particular, used by the
         documentation endpoint in masking_endpoints.list_masking_strategies"""
         pass
+
+    @staticmethod
+    @abstractmethod
+    def get_supported_data_types() -> List[DataType]:
+        """Returns the supported data types for the given strategy"""
+        pass
+        # fixme: add supported data types for each masking strategy

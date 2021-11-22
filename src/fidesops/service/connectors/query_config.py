@@ -9,6 +9,8 @@ from sqlalchemy.sql.elements import TextClause
 from fidesops.graph.config import ROOT_COLLECTION_ADDRESS, CollectionAddress, Field
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
+from fidesops.schemas.policy import PolicyMaskingSpec
+from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.util.querytoken import QueryToken
 from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.util.collection_util import append, filter_nonempty_values
@@ -121,17 +123,24 @@ class QueryConfig(Generic[T], ABC):
         for a given customer_id will be replaced with null values.
 
         """
-        rule_to_collection_fields = self.build_rule_target_fields(policy)
+        rule_to_collection_fields: Dict[Rule, List[str]] = self.build_rule_target_fields(policy)
 
         value_map: Dict[str, Any] = {}
         for rule, field_names in rule_to_collection_fields.items():
             strategy_config = rule.masking_strategy
-            strategy = get_strategy(
+            if not strategy_config:
+                continue
+            strategy: MaskingStrategy = get_strategy(
                 strategy_config["strategy"], strategy_config["configuration"]
             )
 
             for field_name in field_names:
-                value_map[field_name] = strategy.mask(row[field_name])
+                data_type = [field.data_type for field in self.primary_key_fields if field.name == field_name][0] or type(row[field_name])
+                val = row[field_name]
+                if data_type != strategy.get_supported_data_types():
+                    # fixme: coerce or error?
+                    value_map[field_name] = strategy.mask(str(val))
+                value_map[field_name] = strategy.mask(val)
         return value_map
 
     @abstractmethod
