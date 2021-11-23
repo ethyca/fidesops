@@ -16,6 +16,7 @@ from fidesops.models.connectionconfig import ConnectionType
 from fidesops.models.policy import ActionType
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 def get_access_token(client_id: str, client_secret: str) -> str:
