@@ -266,7 +266,7 @@ def snowflake_read_connection_config(db: Session) -> Generator:
         db=db,
         data={
             "name": name,
-            "key": "my-snowflake-config",
+            "key": "my-snowflake-read-config",
             "connection_type": ConnectionType.snowflake,
             "access": AccessLevel.read,
         },
