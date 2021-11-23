@@ -10,5 +10,5 @@
 
 # Ticket
 
-Resolves #
+Fixes #
  
