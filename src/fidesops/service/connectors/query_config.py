@@ -177,7 +177,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
 
     def get_formatted_query_string(
         self,
-        field_list: List[str],
+        field_list: str,
         clauses: List[str],
     ) -> str:
         """Returns an SQL query string."""
@@ -283,7 +283,7 @@ class SnowflakeQueryConfig(SQLQueryConfig):
 
     def get_formatted_query_string(
         self,
-        field_list: List[str],
+        field_list: str,
         clauses: List[str],
     ) -> str:
         """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
