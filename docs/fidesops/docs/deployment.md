@@ -31,6 +31,7 @@ Setting up a production-grade PostgreSQL database is likely something your team 
 | `FIDESOPS__DATABASE__PASSWORD` | fidesopssecret | password `fidesops` should use to access the database |
 | `FIDESOPS__DATABASE__DB` | fidesops | database name |
 
+### Fidesops PostgreSQL `app` database diagram
 ![PostgreSQL Database](img/app_database.png)
 
 ## Step 2: Setup Hosted Cache
