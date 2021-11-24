@@ -8,7 +8,10 @@ from sqlalchemy_utils.functions import (
     drop_database,
 )
 
-from fidesops.core.config import config
+from fidesops.core.config import (
+    config,
+    load_toml,
+)
 from fidesops.db.database import init_db
 from fidesops.db.session import get_db_session, get_db_engine
 from fidesops.main import app
@@ -114,3 +117,8 @@ def generate_auth_header(oauth_client):
         return {"Authorization": "Bearer " + jwe}
 
     return _build_jwt
+
+
+@pytest.fixture(scope="session")
+def integration_config():
+    yield load_toml("fidesops-integration.toml")
