@@ -2,13 +2,12 @@ import json
 from datetime import datetime
 from typing import List
 from unittest import mock
-
 from sqlalchemy import (
     column,
     table,
     select,
 )
-
+import time
 from fastapi_pagination import Params
 import pytest
 from starlette.testclient import TestClient
@@ -39,6 +38,7 @@ from fidesops.models.privacy_request import (
 from fidesops.models.policy import DataCategory, ActionType
 from fidesops.schemas.dataset import DryRunDatasetResponse
 from fidesops.util.cache import get_identity_cache_key, get_encryption_cache_key
+from ....test_support import wait_for_privacy_request, wait_for
 
 page_size = Params().size
 
@@ -64,7 +64,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 403
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_access_request"
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_create_privacy_request(
         self,
@@ -151,7 +151,7 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_access_request"
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_create_privacy_request_with_external_id(
         self,
@@ -185,7 +185,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_access_request"
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_create_privacy_request_caches_identity(
         self,
@@ -236,7 +236,7 @@ class TestCreatePrivacyRequest:
         assert resp.json()["detail"][0]["msg"] == "Encryption key must be 16 bytes long"
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_access_request"
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_create_privacy_request_caches_encryption_keys(
         self,
@@ -304,6 +304,7 @@ class TestCreatePrivacyRequest:
         generate_auth_header,
         policy,
     ):
+
         customer_email = "customer-1@example.com"
         data = [
             {
@@ -317,9 +318,13 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
+        wait_for_privacy_request(db, response_data[0]["id"])
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+
         results = pr.get_results()
-        assert len(results.keys()) == 11
+        print(results)
+        assert len(results.keys()) == 11  ######## FAIL ########
+
         for key in results.keys():
             assert results[key] is not None
             assert results[key] != {}
@@ -365,6 +370,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
+        wait_for_privacy_request(db, response_data[0]["id"])
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
 
@@ -482,6 +488,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
+        wait_for_privacy_request(db, response_data[0]["id"])
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
 
@@ -535,6 +542,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
+        wait_for_privacy_request(db, response_data[0]["id"])
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         errored_execution_logs = pr.execution_logs.filter_by(status="error")
         assert errored_execution_logs.count() == 9
@@ -698,6 +706,7 @@ class TestGetPrivacyRequests:
         response = api_client.get(url + f"?created_gt=2019-01-01", headers=auth_header)
         assert 200 == response.status_code
         resp = response.json()
+        ####### FAIL ########
         assert len(resp["items"]) == 3
         assert resp["items"][0]["id"] == privacy_request.id
         assert resp["items"][1]["id"] == succeeded_privacy_request.id
@@ -723,6 +732,7 @@ class TestGetPrivacyRequests:
         response = api_client.get(url + f"?started_gt=2021-05-01", headers=auth_header)
         assert 200 == response.status_code
         resp = response.json()
+        ####### FAIL ########
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
 
@@ -781,6 +791,7 @@ class TestGetPrivacyRequests:
         second_postgres_execution_log,
         mongo_execution_log,
         url,
+        db,
     ):
         """Test privacy requests endpoint with verbose query param to show execution logs"""
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
@@ -791,7 +802,7 @@ class TestGetPrivacyRequests:
         assert (
             postgres_execution_log.updated_at < second_postgres_execution_log.updated_at
         )
-
+        wait_for_privacy_request(db, privacy_request.id)
         expected_resp = {
             "items": [
                 {
@@ -876,6 +887,7 @@ class TestGetPrivacyRequests:
             "page": 1,
             "size": page_size,
         }
+        ####### FAIL ######## s
         assert resp == expected_resp
 
     def test_verbose_privacy_request_embed_limit(
@@ -902,10 +914,9 @@ class TestGetPrivacyRequests:
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(url + f"?verbose=True", headers=auth_header)
         assert 200 == response.status_code
-
         resp = response.json()
         assert (
-            len(resp["items"][0]["results"]["my-postgres-db"])
+            len(resp["items"][2]["results"]["my-postgres-db"])
             == EMBEDDED_EXECUTION_LOG_LIMIT
         )
         db.query(ExecutionLog).filter(

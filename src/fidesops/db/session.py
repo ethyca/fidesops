@@ -8,7 +8,7 @@ from sqlalchemy.orm import (
     sessionmaker,
     Session,
 )
-
+import traceback
 from fidesops.core.config import config
 
 logger = logging.getLogger(__name__)
@@ -49,6 +49,7 @@ class ExtendedSession(Session):
             return super().commit()
         except Exception as exc:
             logger.error("Exception: %s", exc)
+            traceback.print_exc()
             # Rollback the current transaction after each failed commit
             self.rollback()
             raise

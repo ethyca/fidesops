@@ -158,7 +158,7 @@ class OneTrustService:
                 cache=get_cache(),
                 db=db,
                 privacy_request=privacy_request,
-            ).run()
+            ).submit()
             request_status = OneTrustSubtaskStatus.COMPLETED
         except BaseException:  # pylint: disable=W0703
             request_status = OneTrustSubtaskStatus.FAILED

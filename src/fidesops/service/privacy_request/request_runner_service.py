@@ -1,10 +1,12 @@
 import logging
 from datetime import datetime
 from typing import Set
+import threading
 
 from sqlalchemy.orm import Session
 
 from fidesops import common_exceptions
+from fidesops.db.session import get_db_session
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
@@ -17,7 +19,7 @@ from fidesops.task.graph_task import (
     run_erasure,
 )
 from fidesops.util.cache import FidesopsRedis
-
+import traceback
 
 class PrivacyRequestRunner:
     """The class responsible for dispatching PrivacyRequests into the execution layer"""
@@ -32,26 +34,39 @@ class PrivacyRequestRunner:
         self.db = db
         self.privacy_request = privacy_request
 
-    def run(self) -> None:
+    def submit(self)->None:
+        """Run this privacy request in a separate thread."""
+        task = threading.Thread(target=self.run,  args=[self.db, self.privacy_request])
+        task.daemon=True
+        task.start()
+
+
+
+    def run(self, _db:Session, privacy_request:PrivacyRequest) -> None:
         # pylint: disable=too-many-locals
         """
         Dispatch a privacy_request into the execution layer by:
-            1. Generate a graph from all the currently configured datasets
+            1. Generate a graph from all the currently , configured datasets
             2. Take the provided identity data
             3. Start the access request / erasure request execution
             4. When finished, upload the results to the configured storage destination if applicable
         """
 
-        logging.info(f"Dispatching privacy request {self.privacy_request.id}")
-        self.start_processing(db=self.db)
-
-        datasets = DatasetConfig.all(db=self.db)
-        dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
-        dataset_graph = DatasetGraph(*dataset_graphs)
-        identity_data = self.privacy_request.get_cached_identity_data()
-        connection_configs = ConnectionConfig.all(db=self.db)
-        policy = self.privacy_request.policy
-
+        _new_db = get_db_session()
+        db = _new_db()
+        _db = db
+        privacy_request = PrivacyRequest.get(db=_db, id=privacy_request.id)
+        logging.info(f"Dispatching privacy request {privacy_request.id}")
+        self.start_processing(_db,privacy_request)
+        try:
+            datasets = DatasetConfig.all(db=_db)
+            dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+            dataset_graph = DatasetGraph(*dataset_graphs)
+            identity_data = privacy_request.get_cached_identity_data()
+            connection_configs = ConnectionConfig.all(db=_db)
+            policy = privacy_request.policy
+        except Exception as e:
+            traceback.print_exc()
         try:
             policy.rules[0]
         except IndexError:
@@ -61,7 +76,7 @@ class PrivacyRequestRunner:
 
         try:
             access_result = run_access_request(
-                privacy_request=self.privacy_request,
+                privacy_request=privacy_request,
                 policy=policy,
                 graph=dataset_graph,
                 connection_configs=connection_configs,
@@ -69,7 +84,7 @@ class PrivacyRequestRunner:
             )
             if not access_result:
                 logging.info(
-                    f"No results returned for access request {self.privacy_request.id}"
+                    f"No results returned for access request {privacy_request.id}"
                 )
 
             # Once the access request is complete, process the data uploads
@@ -88,25 +103,25 @@ class PrivacyRequestRunner:
                     access_result, target_categories, dataset_graph
                 )
                 logging.info(
-                    f"Starting access request upload for rule {rule.key} for privacy request {self.privacy_request.id}"
+                    f"Starting access request upload for rule {rule.key} for privacy request {privacy_request.id}"
                 )
                 try:
                     upload(
-                        db=self.db,
-                        request_id=self.privacy_request.id,
+                        db=_db,
+                        request_id=privacy_request.id,
                         data=filtered_results,
                         storage_key=rule.storage_destination.key,
                     )
                 except common_exceptions.StorageUploadError as exc:
                     logging.error(exc)
                     logging.error(
-                        f"Error uploading subject access data for rule {rule.key} on policy {policy.key} and privacy request {self.privacy_request.id}"
+                        f"Error uploading subject access data for rule {rule.key} on policy {policy.key} and privacy request {privacy_request.id}"
                     )
 
             if policy.get_rules_for_action(action_type=ActionType.erasure):
                 # We only need to run the erasure once until masking strategies are handled
                 run_erasure(
-                    privacy_request=self.privacy_request,
+                    privacy_request=privacy_request,
                     policy=policy,
                     graph=dataset_graph,
                     connection_configs=connection_configs,
@@ -118,17 +133,20 @@ class PrivacyRequestRunner:
             logging.debug(exc)
             raise
 
-        self.privacy_request.finished_processing_at = datetime.utcnow()
-        self.privacy_request.save(db=self.db)
+        privacy_request.finished_processing_at = datetime.utcnow()
+        privacy_request.save(db=_db)
+        logging.info(
+            f"Privacy request {privacy_request.id} run completed."
+        )
 
     def dry_run(self, privacy_request: PrivacyRequest) -> None:
         """Pretend to dispatch privacy_request into the execution layer, return the query plan"""
 
-    def start_processing(self, db: Session) -> None:
+    def start_processing(self, db: Session, privacy_request:PrivacyRequest) -> None:
         """Dispatches this PrivacyRequest throughout the Fidesops System"""
-        if self.privacy_request.started_processing_at is None:
-            self.privacy_request.started_processing_at = datetime.utcnow()
-            self.privacy_request.save(db=db)
+        if privacy_request.started_processing_at is None:
+            privacy_request.started_processing_at = datetime.utcnow()
+            privacy_request.save(db=db)
 
     # TODO: This may get run in a different execution environment, we shouldn't pass
     # in the DB session
