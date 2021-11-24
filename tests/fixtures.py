@@ -1,5 +1,6 @@
 from datetime import timezone
 from datetime import datetime, timedelta
+import os
 from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
@@ -33,6 +34,9 @@ from fidesops.models.privacy_request import (
     ExecutionLogStatus,
 )
 from fidesops.models.storage import StorageConfig, ResponseFormat
+from fidesops.schemas.connection_configuration import (
+    SnowflakeSchema,
+)
 from fidesops.schemas.storage.storage import (
     FileNaming,
     StorageDetails,
@@ -260,8 +264,15 @@ def snowflake_connection_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def snowflake_read_connection_config(db: Session) -> Generator:
+def snowflake_read_connection_config(
+    db: Session,
+    integration_config: Dict[str, str],
+) -> Generator:
     name = str(uuid4())
+    uri = integration_config.get("snowflake", {}).get("external_uri") or os.environ.get(
+        "SNOWFLAKE_TEST_URI"
+    )
+    schema = SnowflakeSchema(url=uri)
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -269,6 +280,7 @@ def snowflake_read_connection_config(db: Session) -> Generator:
             "key": "my-snowflake-read-config",
             "connection_type": ConnectionType.snowflake,
             "access": AccessLevel.read,
+            "secrets": schema.dict(),
         },
     )
     yield connection_config
