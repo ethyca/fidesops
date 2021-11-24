@@ -24,6 +24,7 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import (
     relationship,
     Session,
+    declared_attr,
 )
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
@@ -33,7 +34,11 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 
 from fidesops import common_exceptions
 from fidesops.core.config import config
-from fidesops.db.base_class import Base, FidesopsBase, JSONTypeOverride
+from fidesops.db.base_class import (
+    Base,
+    FidesopsBase,
+    JSONTypeOverride,
+)
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.storage import StorageConfig
@@ -459,38 +464,62 @@ class RuleTarget(Base):
 class WebhookDirection(EnumType):
     """The webhook direction"""
 
-    one_way = "one_way"
-    two_way = "two_way"
+    one_way = "one_way"  # No response expected
+    two_way = "two_way"  # Response expected
 
 
-class HookType(EnumType):
+class WebhookBase:
+    """Mixin class to contain common fields between PolicyPreWebhooks and PolicyPostWebhooks"""
 
-    pre = "pre"
-    post = "post"
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return cls.__name__.lower()
 
-
-class PolicyWebhook(Base):
     name = Column(String, unique=True, nullable=False)
     key = Column(String, index=True, unique=True, nullable=False)
-    policy_id = Column(
-        String,
-        ForeignKey(Policy.id_field_path),
-        nullable=False,
-    )
-    connection_config_id = Column(
-        String, ForeignKey(ConnectionConfig.id_field_path), nullable=False
-    )
+
+    @declared_attr
+    def policy_id(cls: "WebhookBase") -> Column:
+        """Policy id defined as declared_attr because this is needed for FK's on mixins"""
+        return Column(
+            String,
+            ForeignKey(Policy.id_field_path),
+            nullable=False,
+        )
+
+    @declared_attr
+    def connection_config_id(cls: "WebhookBase") -> Column:
+        """Connection config id defined as declared_attr because this is needed for FK's on mixins"""
+        return Column(
+            String, ForeignKey(ConnectionConfig.id_field_path), nullable=False
+        )
+
     direction = Column(
         EnumColumn(WebhookDirection),
         nullable=False,
     )
-    hook_type = Column(
-        EnumColumn(HookType),
-        nullable=False,
-    )
     order = Column(Integer, nullable=False)
 
-    connection_config = relationship(
-        ConnectionConfig,
-        backref="policy_webhooks",
-    )
+
+class PolicyPreWebhook(WebhookBase, Base):
+    """The configuration to describe webhooks that run before Privacy Requests are executed"""
+
+    @classmethod
+    def persist_obj(
+        cls, db: Session, resource: "PolicyPreWebhook"
+    ) -> "PolicyPreWebhook":
+        """Override to have PolicyPreWebhooks not be committed to the database automatically."""
+        db.add(resource)
+        return resource
+
+
+class PolicyPostWebhook(WebhookBase, Base):
+    """The configuration to describe webhooks that run after Privacy Requests are executed"""
+
+    @classmethod
+    def persist_obj(
+        cls, db: Session, resource: "PolicyPostWebhook"
+    ) -> "PolicyPostWebhook":
+        """Override to have PolicyPostWebhooks not be committed to the database automatically."""
+        db.add(resource)
+        return resource

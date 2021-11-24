@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from fastapi import APIRouter, Body, Depends, Security
 from fastapi_pagination import (
@@ -8,12 +8,15 @@ from fastapi_pagination import (
 )
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+
+from fidesops.db.base_class import get_key_from_data
+from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from pydantic import conlist
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
-from starlette.status import HTTP_404_NOT_FOUND
+from starlette.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
 
 from fidesops.api import deps
 from fidesops.api.v1 import scope_registry as scopes
@@ -31,6 +34,8 @@ from fidesops.models.policy import (
     Policy,
     Rule,
     RuleTarget,
+    PolicyPreWebhook,
+    PolicyPostWebhook,
 )
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas import policy as schemas
@@ -443,3 +448,127 @@ def delete_rule_target(
     logger.info(f"Deleting rule target with key '{rule_target_key}'")
 
     target.delete(db=db)
+
+
+def _put_webhooks(
+    webhook_cls: Union[PolicyPreWebhook, PolicyPostWebhook],
+    policy_key: FidesOpsKey,
+    db: Session = Depends(deps.get_db),
+    webhooks: List[schemas.PolicyWebhookCreate] = Body(...),
+) -> List[Union[PolicyPreWebhook, PolicyPostWebhook]]:
+    """
+    Helper method to be shared between both endpoints that create/update policy webhooks.
+
+    Creates/updates webhooks with the same "order" in which they arrived. This endpoint is all-or-nothing.
+    Either all webhooks should be created/updated or none should be updated. Deletes any webhooks not present
+    in the webhooks list.
+    """
+    logger.info(f"Finding policy with key '{policy_key}'")
+
+    policy = Policy.get_by(db=db, field="key", value=policy_key)
+    if not policy:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No Policy found for key {policy_key}.",
+        )
+
+    keys = [
+        get_key_from_data(webhook.dict(), webhook_cls.__name__) for webhook in webhooks
+    ]
+    # Because resources are dependent on each other for order, we want to make sure that we don't have multiple
+    # resources in the request that actually point to the same object.
+    if len(keys) != len(set(keys)):
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Check request body: there are multiple webhooks whose keys resolve to the same value.",
+        )
+
+    staged_webhooks = []
+    for webhook_index, schema in enumerate(webhooks):
+        connection_config_key = schema.connection_config_key
+        connection_config: ConnectionConfig = ConnectionConfig.get_by(
+            db=db, field="key", value=connection_config_key
+        )
+
+        if not connection_config:
+            raise HTTPException(
+                status_code=HTTP_404_NOT_FOUND,
+                detail=f"No ConnectionConfig found for key {connection_config_key}.",
+            )
+
+        try:
+            webhook = webhook_cls.create_or_update(
+                db=db,
+                data={
+                    "key": schema.key,
+                    "name": schema.name,
+                    "policy_id": policy.id,
+                    "connection_config_id": connection_config.id,
+                    "direction": schema.direction,
+                    "order": webhook_index,  # Add in the order they arrived in the request
+                },
+            )
+            staged_webhooks.append(webhook)
+
+        except KeyOrNameAlreadyExists as exc:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail=exc.args[0],
+            )
+
+    webhooks_to_remove = webhook_cls.filter(
+        db,
+        conditions=(
+            webhook_cls.key.not_in(
+                [staged_webhook.key for staged_webhook in staged_webhooks]
+            )
+        ),
+    )
+    logger.info(
+        f"Removing policy webhooks not included in request: {[webhook.key for webhook in webhooks_to_remove]}"
+    )
+    webhooks_to_remove.delete()
+
+    # Committing to database now, as a last step, once we've verified that all the webhooks
+    # in the request are free of issues.
+    db.commit()
+
+    return staged_webhooks
+
+
+@router.put(
+    urls.POLICY_WEBHOOKS_PRE,
+    status_code=200,
+    # dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_CREATE_OR_UPDATE])],
+    response_model=List[schemas.PolicyWebhookResponse],
+)
+def create_or_update_pre_execution_webhooks(
+    *,
+    policy_key: FidesOpsKey,
+    db: Session = Depends(deps.get_db),
+    webhooks: conlist(schemas.PolicyWebhookCreate, max_items=50) = Body(...),  # type: ignore
+) -> List[PolicyPreWebhook]:
+    """
+    Create or update Policy Webhooks.  All webhooks must be included in the request in the desired order. Any missing webhooks
+    from the request body will be removed.
+    """
+    return _put_webhooks(PolicyPreWebhook, policy_key, db, webhooks)
+
+
+@router.put(
+    urls.POLICY_WEBHOOKS_POST,
+    status_code=200,
+    # dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_CREATE_OR_UPDATE])],
+    response_model=List[schemas.PolicyWebhookResponse],
+)
+def create_or_update_post_execution_webhooks(
+    *,
+    policy_key: FidesOpsKey,
+    db: Session = Depends(deps.get_db),
+    webhooks: conlist(schemas.PolicyWebhookCreate, max_items=50) = Body(...),  # type: ignore
+) -> List[PolicyPostWebhook]:
+    """
+    Create or update Policy Webhooks that run after query execution. All webhooks must be included in the request in
+    the desired order. Any missing webhooks from the request body will be removed.
+    """
+    return _put_webhooks(PolicyPostWebhook, policy_key, db, webhooks)

@@ -29,6 +29,9 @@ STORAGE_UPLOAD = "/storage/{request_id}"
 # Policy URLs
 POLICY_LIST = "/policy"
 POLICY_DETAIL = "/policy/{policy_key}"
+POLICY_WEBHOOKS_PRE = "/policy/{policy_key}/webhook/pre_execution"
+POLICY_WEBHOOKS_POST = "/policy/{policy_key}/webhook/post_execution"
+
 
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"

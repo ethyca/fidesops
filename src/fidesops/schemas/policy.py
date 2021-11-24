@@ -1,10 +1,14 @@
 from typing import Dict, List, Optional, Union
 
+from fidesops.schemas.connection_configuration.connection_config import (
+    ConnectionConfigurationResponse,
+)
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 from fidesops.models.policy import (
     ActionType,
     DataCategory,
+    WebhookDirection,
 )
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
@@ -114,3 +118,29 @@ class BulkPutPolicyResponse(BulkResponse):
 
     succeeded: List[PolicyResponse]
     failed: List[BulkUpdateFailed]
+
+
+class WebhookBase(BaseSchema):
+    """Base schema for webhooks"""
+
+    direction: WebhookDirection
+    key: Optional[FidesOpsKey]
+    name: Optional[str]
+
+
+class PolicyWebhookCreate(WebhookBase):
+    """Request schema for creating/updating a Policy Webhook"""
+
+    connection_config_key: FidesOpsKey
+
+    class Config:
+        """Populate models with the raw value of enum fields, rather than the enum itself"""
+
+        use_enum_values = True
+
+
+class PolicyWebhookResponse(WebhookBase):
+    """Response schema after creating a PolicyWebhook"""
+
+    connection_config: Optional[ConnectionConfigurationResponse]
+    order: int
