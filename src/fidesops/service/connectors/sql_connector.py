@@ -21,7 +21,10 @@ from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
 from fidesops.service.connectors.base_connector import (
     BaseConnector,
 )
-from fidesops.service.connectors.query_config import SQLQueryConfig
+from fidesops.service.connectors.query_config import (
+    SnowflakeQueryConfig,
+    SQLQueryConfig,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -211,3 +214,7 @@ class SnowflakeConnector(SQLConnector):
         config = SnowflakeSchema(**self.configuration.secrets or {})
         uri: str = config.url or self.build_uri()
         return create_engine(uri, hide_parameters=True)
+
+    def query_config(self, node: TraversalNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input traversal_node."""
+        return SnowflakeQueryConfig(node)

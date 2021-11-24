@@ -165,6 +165,29 @@ class QueryConfig(Generic[T], ABC):
 class SQLQueryConfig(QueryConfig[TextClause]):
     """Query config that translates parameters into SQL statements."""
 
+    def format_fields_for_query(
+        self,
+        fields: List[str],
+    ) -> List[str]:
+        """Returns"""
+        return fields
+
+    def format_clause_for_query(
+        self,
+        field_name: str,
+        operator: str,
+    ) -> str:
+        """Returns"""
+        return f"{field_name} {operator} :{field_name}"
+
+    def get_formatted_query_string(
+        self,
+        field_list: List[str],
+        clauses: List[str],
+    ) -> str:
+        """Returns"""
+        return f"SELECT {field_list} FROM {self.node.node.collection.name} WHERE {' OR '.join(clauses)}"
+
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy] = None
     ) -> Optional[TextClause]:
@@ -175,19 +198,20 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         if filtered_data:
             clauses = []
             query_data: Dict[str, Tuple[Any, ...]] = {}
-            field_list = ",".join(self.fields)
+            formatted_fields = self.format_fields_for_query(self.fields)
+            field_list = ",".join(formatted_fields)
             for field_name, data in filtered_data.items():
                 if len(data) == 1:
-                    clauses.append(f"{field_name} = :{field_name}")
+                    clauses.append(self.format_clause_for_query(field_name, "="))
                     query_data[field_name] = (data[0],)
                 elif len(data) > 1:
-                    clauses.append(f"{field_name} IN :{field_name}")
+                    clauses.append(self.format_clause_for_query(field_name, "IN"))
                     query_data[field_name] = tuple(set(data))
                 else:
                     #  if there's no data, create no clause
                     pass
             if len(clauses) > 0:
-                query_str = f"SELECT {field_list} FROM {self.node.node.collection.name} WHERE {' OR '.join(clauses)}"
+                query_str = self.get_formatted_query_string(field_list, clauses)
                 return text(query_str).params(query_data)
 
         logger.warning(
@@ -235,6 +259,33 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         if text_clause is not None:
             return self.query_to_str(text_clause, query_data)
         return None
+
+
+class SnowflakeQueryConfig(SQLQueryConfig):
+    """Generates SQL in Snowflake's custom dialect."""
+
+    def format_fields_for_query(
+        self,
+        fields: List[str],
+    ) -> List[str]:
+        """Returns fields surrounded by quotation marks as required by Snowflake syntax."""
+        return [f'"{field}"' for field in fields]
+
+    def format_clause_for_query(
+        self,
+        field_name: str,
+        operator: str,
+    ) -> str:
+        """Returns field names in clauses surrounded by quotation marks as required by Snowflake syntax."""
+        return f'"{field_name}" {operator} :{field_name}'
+
+    def get_formatted_query_string(
+        self,
+        field_list: List[str],
+        clauses: List[str],
+    ) -> str:
+        """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
+        return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
 
 
 MongoStatement = Tuple[Dict[str, Any], Dict[str, Any]]
