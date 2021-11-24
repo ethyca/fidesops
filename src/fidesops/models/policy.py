@@ -18,6 +18,7 @@ from sqlalchemy import (
     ForeignKey,
     String,
     UniqueConstraint,
+    Integer,
 )
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import (
@@ -34,6 +35,7 @@ from fidesops import common_exceptions
 from fidesops.core.config import config
 from fidesops.db.base_class import Base, FidesopsBase, JSONTypeOverride
 from fidesops.models.client import ClientDetail
+from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.masking.strategy.masking_strategy_factory import (
@@ -452,3 +454,43 @@ class RuleTarget(Base):
         ):
             _validate_data_category(data_category=updated_data_category)
         return super().update(db=db, data=data)
+
+
+class WebhookDirection(EnumType):
+    """The webhook direction"""
+
+    one_way = "one_way"
+    two_way = "two_way"
+
+
+class HookType(EnumType):
+
+    pre = "pre"
+    post = "post"
+
+
+class PolicyWebhook(Base):
+    name = Column(String, unique=True, nullable=False)
+    key = Column(String, index=True, unique=True, nullable=False)
+    policy_id = Column(
+        String,
+        ForeignKey(Policy.id_field_path),
+        nullable=False,
+    )
+    connection_config_id = Column(
+        String, ForeignKey(ConnectionConfig.id_field_path), nullable=False
+    )
+    direction = Column(
+        EnumColumn(WebhookDirection),
+        nullable=False,
+    )
+    hook_type = Column(
+        EnumColumn(HookType),
+        nullable=False,
+    )
+    order = Column(Integer, nullable=False)
+
+    connection_config = relationship(
+        ConnectionConfig,
+        backref="policy_webhooks",
+    )
