@@ -164,7 +164,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         self,
         fields: List[str],
     ) -> List[str]:
-        """Returns"""
+        """Returns fields in a format they can be added into SQL queries."""
         return fields
 
     def format_clause_for_query(
@@ -172,7 +172,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         field_name: str,
         operator: str,
     ) -> str:
-        """Returns"""
+        """Returns clauses in a format they can be added into SQL queries."""
         return f"{field_name} {operator} :{field_name}"
 
     def get_formatted_query_string(
@@ -180,7 +180,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         field_list: List[str],
         clauses: List[str],
     ) -> str:
-        """Returns"""
+        """Returns an SQL query string."""
         return f"SELECT {field_list} FROM {self.node.node.collection.name} WHERE {' OR '.join(clauses)}"
 
     def generate_query(
