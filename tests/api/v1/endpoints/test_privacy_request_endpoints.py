@@ -63,7 +63,9 @@ class TestCreatePrivacyRequest:
         resp = api_client.post(url, json={}, headers=auth_header)
         assert resp.status_code == 403
 
-    @mock.patch("fidesops.service.privacy_request.request_runner_service.run_access_request")
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.run_access_request"
+    )
     def test_create_privacy_request(
         self,
         run_access_request_mock,
@@ -89,7 +91,9 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
         assert run_access_request_mock.called
 
-    @mock.patch("fidesops.service.privacy_request.request_runner_service.run_access_request")
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.run_access_request"
+    )
     def test_create_privacy_request_limit_exceeded(
         self,
         _,
@@ -118,7 +122,9 @@ class TestCreatePrivacyRequest:
             == "ensure this value has at most 50 items"
         )
 
-    @mock.patch("fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.start_processing")
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.start_processing"
+    )
     def test_create_privacy_request_starts_processing(
         self,
         start_processing_mock,
@@ -144,7 +150,9 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
 
-    @mock.patch("fidesops.service.privacy_request.request_runner_service.run_access_request")
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.run_access_request"
+    )
     def test_create_privacy_request_with_external_id(
         self,
         run_access_request_mock,
@@ -176,7 +184,9 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
         assert run_access_request_mock.called
 
-    @mock.patch("fidesops.service.privacy_request.request_runner_service.run_access_request")
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.run_access_request"
+    )
     def test_create_privacy_request_caches_identity(
         self,
         run_access_request_mock,
@@ -276,6 +286,38 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
         db.expunge_all()
         assert ExecutionLog.get(db, id=log_id).privacy_request_id == pr_id
+
+    @pytest.mark.external_integration
+    def test_create_and_process_access_request_snowflake(
+        self,
+        snowflake_example_test_dataset_config_read_access,
+        url,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        policy,
+    ):
+        customer_email = "customer-1@example.com"
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identities": [{"email": customer_email}],
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+        resp = api_client.post(url, json=data, headers=auth_header)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        results = pr.get_results()
+        customer_table_key = (
+            f"EN_{pr.id}__access_request__snowflake_example_test_dataset:customer"
+        )
+        assert len(results[customer_table_key]) == 1
+        assert results[customer_table_key][0]["email"] == customer_email
+        assert results[customer_table_key][0]["name"] == "Example Customer 2"
 
     @pytest.mark.integration_erasure
     def test_create_and_process_erasure_request_specific_category(
