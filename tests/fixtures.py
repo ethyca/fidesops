@@ -48,6 +48,7 @@ from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
+
 from fidesops.util.cache import FidesopsRedis
 
 logging.getLogger("faker").setLevel(logging.ERROR)
@@ -75,7 +76,7 @@ def storage_config(db: Session) -> Generator:
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
-            "key": "my-test-config",
+            "key": "my_test_config",
             "format": ResponseFormat.json,
         },
     )
@@ -106,7 +107,7 @@ def storage_config_onetrust(db: Session) -> Generator:
                 StorageDetails.ONETRUST_POLLING_DAY_OF_WEEK.value: 1,
                 StorageDetails.ONETRUST_POLLING_HR.value: 8,
             },
-            "key": "my-onetrust-config",
+            "key": "my_onetrust_config",
         },
     )
     storage_config.set_secrets(
@@ -128,7 +129,7 @@ def connection_config(db: Session) -> Generator:
         db=db,
         data={
             "name": name,
-            "key": "my-postgres-db-1",
+            "key": "my_postgres_db_1",
             "connection_type": ConnectionType.postgres,
             "access": AccessLevel.write,
             "secrets": {
@@ -150,7 +151,7 @@ def read_connection_config(db: Session) -> Generator:
         db=db,
         data={
             "name": name,
-            "key": "my-postgres-db-1-read-config",
+            "key": "my_postgres_db_1_read_config",
             "connection_type": ConnectionType.postgres,
             "access": AccessLevel.read,
             "secrets": {
@@ -172,7 +173,7 @@ def connection_config_mysql(db: Session) -> Generator:
         db=db,
         data={
             "name": name,
-            "key": "my-mysql-db-1",
+            "key": "my_mysql_db_1",
             "connection_type": ConnectionType.mysql,
             "access": AccessLevel.write,
             "secrets": {
@@ -216,7 +217,7 @@ def mongo_connection_config(db: Session) -> Generator:
         db=db,
         data={
             "name": name,
-            "key": "my-mongo-db-1",
+            "key": "my_mongo_db_1",
             "connection_type": ConnectionType.mongodb,
             "access": AccessLevel.write,
             "secrets": {
@@ -238,7 +239,7 @@ def redshift_connection_config(db: Session) -> Generator:
         db=db,
         data={
             "name": name,
-            "key": "my-redshift-config",
+            "key": "my_redshift_config",
             "connection_type": ConnectionType.redshift,
             "access": AccessLevel.write,
         },
@@ -254,7 +255,7 @@ def snowflake_connection_config(db: Session) -> Generator:
         db=db,
         data={
             "name": name,
-            "key": "my-snowflake-config",
+            "key": "my_snowflake_config",
             "connection_type": ConnectionType.snowflake,
             "access": AccessLevel.write,
         },
@@ -296,7 +297,7 @@ def erasure_policy(
         db=db,
         data={
             "name": "example erasure policy",
-            "key": "example-erasure-policy",
+            "key": "example_erasure_policy",
             "client_id": oauth_client.id,
         },
     )
@@ -395,7 +396,7 @@ def policy(
         db=db,
         data={
             "name": "example access request policy",
-            "key": "example-access-request-policy",
+            "key": "example_access_request_policy",
             "client_id": oauth_client.id,
         },
     )

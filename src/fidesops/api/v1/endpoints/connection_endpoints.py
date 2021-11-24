@@ -6,6 +6,7 @@ from fastapi.params import Security
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from pydantic import ValidationError, conlist
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND
@@ -32,6 +33,7 @@ from fidesops.api.v1.scope_registry import (
     CONNECTION_DELETE,
     CONNECTION_CREATE_OR_UPDATE,
 )
+from fidesops.util.logger import NotPii
 from fidesops.util.oauth_util import verify_oauth_client
 from fidesops.api import deps
 from fidesops.models.connectionconfig import ConnectionConfig
@@ -69,7 +71,7 @@ def get_connections(
     response_model=ConnectionConfigurationResponse,
 )
 def get_connection_detail(
-    connection_key: str, db: Session = Depends(deps.get_db)
+    connection_key: FidesOpsKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
     """Returns connection configuration with matching key."""
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
@@ -82,13 +84,13 @@ def get_connection_detail(
     return connection_config
 
 
-@router.put(
+@router.patch(
     CONNECTIONS,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
     status_code=200,
     response_model=BulkPutConnectionConfiguration,
 )
-def put_connections(
+def patch_connections(
     *,
     db: Session = Depends(deps.get_db),
     configs: conlist(CreateConnectionConfiguration, max_items=50),  # type: ignore
@@ -146,7 +148,7 @@ def put_connections(
     status_code=204,
 )
 def delete_connection(
-    connection_key: str, *, db: Session = Depends(deps.get_db)
+    connection_key: FidesOpsKey, *, db: Session = Depends(deps.get_db)
 ) -> None:
     """Removes the connection configuration with matching key."""
     logger.info(f"Finding connection configuration with key {connection_key}")
@@ -191,7 +193,9 @@ def connection_status(
     try:
         connector.test_connection()
     except ConnectionException as exc:
-        logger.warning(f"Connection test failed on {connection_config.key}: {str(exc)}")
+        logger.warning(
+            "Connection test failed on %s: %s", NotPii(connection_config.key), str(exc)
+        )
         connection_config.update_test_status(succeeded=False, db=db)
         return TestStatusMessage(
             msg=msg,
@@ -215,7 +219,7 @@ def connection_status(
     response_model=TestStatusMessage,
 )
 async def put_connection_config_secrets(
-    connection_key: str,
+    connection_key: FidesOpsKey,
     *,
     db: Session = Depends(deps.get_db),
     unvalidated_secrets: connection_secrets_schemas,
@@ -257,7 +261,7 @@ async def put_connection_config_secrets(
     response_model=TestStatusMessage,
 )
 async def test_connection_config_secrets(
-    connection_key: str,
+    connection_key: FidesOpsKey,
     *,
     db: Session = Depends(deps.get_db),
 ) -> TestStatusMessage:

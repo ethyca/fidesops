@@ -63,7 +63,7 @@ def create_dataset(connection_key, yaml_path, access_token):
     Requires the `connection_key` for the PostgreSQL connection, and `yaml_path`
     that is a local filepath to a .yml Dataset Fides manifest file.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Datasets/put_datasets_api_v1_connection__connection_key__dataset_put
+    See http://localhost:8000/api#operations-tag-Datasets
     """
 
     with open(yaml_path, "r") as file:
@@ -81,7 +81,7 @@ def create_dataset(connection_key, yaml_path, access_token):
 
 ### Call helper method to create a dataset
 
-Our connection_key is the `flaskr-postgres` ConnectionConfig we created in the previous step,
+Our connection_key is the `flaskr_postgres` ConnectionConfig we created in the previous step,
 and we're also passing in our completed YAML file:
 
 ```python
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     ...
     # Upload the Dataset YAML for our PostgreSQL schema
     datasets = create_dataset(
-        connection_key="flaskr-postgres",
+        connection_key="flaskr_postgres",
         yaml_path="fides_resources/flaskr_postgres_dataset.yml",
         access_token=access_token,
     )

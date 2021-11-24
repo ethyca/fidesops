@@ -1,0 +1,21 @@
+name: CI Checks - Unsafe
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [labeled]
+
+jobs:
+  Integration-Tests-External:
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Integration Tests (External)
+        env:
+          REDSHIFT_TEST_URI: ${{ secrets.REDSHIFT_TEST_URI }}
+          SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
+        run: make pytest-integration-external

@@ -1,13 +1,18 @@
 from datetime import datetime
 from typing import List, Optional, Dict
 
-from pydantic import Field
+from pydantic import Field, validator
+from fidesops.schemas.shared_schemas import FidesOpsKey
 
+from fidesops.core.config import config
 from fidesops.models.policy import ActionType
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.models.privacy_request import PrivacyRequestStatus, ExecutionLogStatus
+from fidesops.util.encryption.aes_gcm_encryption_scheme import (
+    verify_encryption_key,
+)
 
 
 class PrivacyRequestCreate(BaseSchema):
@@ -18,7 +23,17 @@ class PrivacyRequestCreate(BaseSchema):
     finished_processing_at: Optional[datetime]
     requested_at: datetime
     identities: List[PrivacyRequestIdentity]
-    policy_key: str
+    policy_key: FidesOpsKey
+    encryption_key: Optional[str] = None
+
+    @validator("encryption_key")
+    def validate_encryption_key(
+        cls: "PrivacyRequestCreate", value: Optional[str] = None
+    ) -> Optional[str]:
+        """Validate encryption key where applicable"""
+        if value:
+            verify_encryption_key(value.encode(config.security.ENCODING))
+        return value
 
 
 class FieldsAffectedResponse(BaseSchema):

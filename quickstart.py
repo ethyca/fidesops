@@ -23,7 +23,7 @@ def get_access_token(client_id: str, client_secret: str) -> str:
     """
     Authorize with fidesops via OAuth.
     Returns a valid access token if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/OAuth/acquire_access_token_api_v1_oauth_token_post
+    See http://localhost:8000/api#operations-OAuth-acquire_access_token_api_v1_oauth_token_post
     """
     data = {
         "grant_type": "client_credentials",
@@ -47,8 +47,8 @@ def create_oauth_client():
     """
     Create a new OAuth client in fidesops.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/OAuth/acquire_access_token_api_v1_oauth_token_post
-    See http://localhost:8000/docs#/OAuth/acquire_access_token_api_v1_oauth_token_post
+    See http://localhost:8000/api#operations-OAuth-acquire_access_token_api_v1_oauth_token_post
+    See http://localhost:8000/api#operations-OAuth-acquire_access_token_api_v1_oauth_token_post
     """
     scopes_data = [
         "client:create",
@@ -95,7 +95,7 @@ def create_connection(key: str, connection_type: ConnectionType):
     """
     Create a connection in fidesops for your PostgreSQL database
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Connections/put_connections_api_v1_connection_put
+    See http://localhost:8000/api#operations-Connections-put_connections_api_v1_connection_put
     """
     connection_create_data = [
         {
@@ -105,7 +105,7 @@ def create_connection(key: str, connection_type: ConnectionType):
             "access": "write",
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/connection",
         headers=oauth_header,
         json=connection_create_data,
@@ -130,7 +130,7 @@ def configure_postgres_connection(
     """
     Configure the connection with the given `key` in fidesops with your PostgreSQL database credentials.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Connections/put_connection_config_secrets_api_v1_connection__connection_key__secret_put
+    See http://localhost:8000/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put
     """
     connection_secrets_data = {
         "host": host,
@@ -163,7 +163,7 @@ def configure_mongo_connection(
     """
     Configure the connection with the given `key` in fidesops with your PostgreSQL database credentials.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Connections/put_connection_config_secrets_api_v1_connection__connection_key__secret_put
+    See http://localhost:8000/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put
     """
     connection_secrets_data = {
         "host": host,
@@ -196,7 +196,7 @@ def validate_dataset(connection_key: str, yaml_path: str):
     Requires the `connection_key` for the connection, and `yaml_path`
     that is a local filepath to a .yml dataset Fides manifest file.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Datasets/validate_dataset_api_v1_connection__connection_key__validate_dataset_put
+    See http://localhost:8000/api#operations-Datasets-validate_dataset_api_v1_connection__connection_key__validate_dataset_put
     """
 
     with open(yaml_path, "r") as file:
@@ -232,14 +232,14 @@ def create_dataset(connection_key: str, yaml_path: str):
     Requires the `connection_key` for the PostgreSQL connection, and `yaml_path`
     that is a local filepath to a .yml dataset Fides manifest file.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Datasets/put_datasets_api_v1_connection__connection_key__dataset_put
+    See http://localhost:8000/api#operations-Datasets-put_datasets_api_v1_connection__connection_key__dataset_put
     """
 
     with open(yaml_path, "r") as file:
         dataset = yaml.safe_load(file).get("dataset", [])[0]
 
     dataset_create_data = [dataset]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/connection/{connection_key}/dataset",
         headers=oauth_header,
         json=dataset_create_data,
@@ -262,7 +262,7 @@ def create_local_storage(key: str, file_format: str):
     """
     Create a storage config in fidesops to write to a local file.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Storage/put_config_api_v1_storage_config_put
+    See http://localhost:8000/api#operations-Storage-put_config_api_v1_storage_config_put
     """
     storage_create_data = [
         {
@@ -275,7 +275,7 @@ def create_local_storage(key: str, file_format: str):
             },
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/storage/config",
         headers=oauth_header,
         json=storage_create_data,
@@ -298,7 +298,7 @@ def create_policy(key: str):
     """
     Create a request policy in fidesops with the given key.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Policy/create_or_update_policies_api_v1_policy_put
+    See http://localhost:8000/api#operations-Policy-create_or_update_policies_api_v1_policy_put
     """
 
     policy_create_data = [
@@ -307,7 +307,7 @@ def create_policy(key: str):
             "key": key,
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/policy",
         headers=oauth_header,
         json=policy_create_data,
@@ -328,7 +328,7 @@ def delete_policy_rule(policy_key: str, key: str):
     """
     Deletes a policy rule with the given key.
     Returns the response JSON.
-    See http://localhost:8000/docs#/Policy/delete_rule_api_v1_policy__policy_key__rule__rule_key__delete
+    See http://localhost:8000/api#operations-Policy-delete_rule_api_v1_policy__policy_key__rule__rule_key__delete
     """
     return requests.delete(
         f"{FIDESOPS_URL}/api/v1/policy/{policy_key}/rule/{key}", headers=oauth_header
@@ -344,7 +344,7 @@ def create_policy_rule(
     """
     Create a policy rule to return matched data in an access request to the given storage destination.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Policy/create_or_update_rules_api_v1_policy__policy_key__rule_put
+    See http://localhost:8000/api#operations-Policy-create_or_update_rules_api_v1_policy__policy_key__rule_put
     """
 
     rule_create_data = {
@@ -362,7 +362,7 @@ def create_policy_rule(
             "configuration": {},
         }
 
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/policy/{policy_key}/rule",
         headers=oauth_header,
         json=[rule_create_data],
@@ -385,7 +385,7 @@ def create_policy_rule_target(policy_key: str, rule_key: str, data_cat: str):
     """
     Create a policy rule target that matches the given data_category.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Policy/create_or_update_rule_targets_api_v1_policy__policy_key__rule__rule_key__target_put
+    See http://localhost:8000/api#operations-Policy-create_or_update_rule_targets_api_v1_policy__policy_key__rule__rule_key__target_put
     """
 
     target_create_data = [
@@ -393,7 +393,7 @@ def create_policy_rule_target(policy_key: str, rule_key: str, data_cat: str):
             "data_category": data_cat,
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/policy/{policy_key}/rule/{rule_key}/target",
         headers=oauth_header,
         json=target_create_data,
@@ -416,7 +416,7 @@ def create_privacy_request(user_email: str, policy_key: str):
     """
     Create a privacy request that is executed against the given request policy.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Privacy%20Requests/create_privacy_request_api_v1_privacy_request_post
+    See http://localhost:8000/api#operations-Privacy_Requests-create_privacy_request_api_v1_privacy_request_post
     """
 
     privacy_request_data = [
@@ -551,10 +551,10 @@ if __name__ == "__main__":
     input()
 
     create_connection(
-        key="test-application-postgres-db", connection_type=ConnectionType.postgres
+        key="test_application_postgres_db", connection_type=ConnectionType.postgres
     )
     configure_postgres_connection(
-        key="test-application-postgres-db",
+        key="test_application_postgres_db",
         host=POSTGRES_SERVER,
         port=POSTGRES_PORT,
         dbname=POSTGRES_DB_NAME,
@@ -570,11 +570,11 @@ if __name__ == "__main__":
     input()
 
     create_connection(
-        key="test-application-mongo-db", connection_type=ConnectionType.mongodb
+        key="test_application_mongo_db", connection_type=ConnectionType.mongodb
     )
     sleep(5)
     configure_mongo_connection(
-        key="test-application-mongo-db",
+        key="test_application_mongo_db",
         host=MONGO_SERVER,
         port=MONGO_PORT,
         dbname=MONGO_DB,
@@ -590,11 +590,11 @@ if __name__ == "__main__":
     input()
 
     validate_dataset(
-        connection_key="test-application-postgres-db",
+        connection_key="test_application_postgres_db",
         yaml_path="data/dataset/postgres_example_test_dataset.yml",
     )
     postgres_dataset = create_dataset(
-        connection_key="test-application-postgres-db",
+        connection_key="test_application_postgres_db",
         yaml_path="data/dataset/postgres_example_test_dataset.yml",
     )
 
@@ -606,7 +606,7 @@ if __name__ == "__main__":
     input()
 
     mongo_dataset = create_dataset(
-        connection_key="test-application-mongo-db",
+        connection_key="test_application_mongo_db",
         yaml_path="data/dataset/mongo_example_test_dataset.yml",
     )
 
@@ -620,7 +620,7 @@ if __name__ == "__main__":
     input()
 
     create_local_storage(
-        key="example-storage",
+        key="example_storage",
         file_format="json",
     )
 
@@ -643,22 +643,22 @@ if __name__ == "__main__":
     input()
 
     create_policy(
-        key="example-request-policy",
+        key="example_request_policy",
     )
     # Delete any existing policy rule so we can reconfigure it based on input
     delete_policy_rule(
-        policy_key="example-request-policy",
-        key="access-user-data",
+        policy_key="example_request_policy",
+        key="access_user_data",
     )
     create_policy_rule(
-        policy_key="example-request-policy",
-        key="access-user-data",
+        policy_key="example_request_policy",
+        key="access_user_data",
         action_type=ActionType.access,
-        storage_destination_key="example-storage",
+        storage_destination_key="example_storage",
     )
     create_policy_rule_target(
-        policy_key="example-request-policy",
-        rule_key="access-user-data",
+        policy_key="example_request_policy",
+        rule_key="access_user_data",
         data_cat=data_category,
     )
 
@@ -676,12 +676,12 @@ if __name__ == "__main__":
         "-------------------------------------------------------------------------------------"
     )
     email = "jane@example.com"
-    print(f"Press [enter] to run an access request for {email} with Policy `example-request-policy`:")
+    print(f"Press [enter] to run an access request for {email} with Policy `example_request_policy`:")
     input()
     print("Please wait...")
     privacy_requests = create_privacy_request(
         user_email=email,
-        policy_key="example-request-policy",
+        policy_key="example_request_policy",
     )
     privacy_request_id = privacy_requests["succeeded"][0]["id"]
     print_results(request_id=privacy_request_id)
@@ -709,21 +709,21 @@ if __name__ == "__main__":
     input()
 
     create_policy(
-        key="example-erasure-policy",
+        key="example_erasure_policy",
     )
     # Delete any existing policy rule so we can reconfigure it based on input
     delete_policy_rule(
-        policy_key="example-erasure-policy",
-        key="erase-user-data",
+        policy_key="example_erasure_policy",
+        key="erase_user_data",
     )
     create_policy_rule(
-        policy_key="example-erasure-policy",
-        key="erase-user-data",
+        policy_key="example_erasure_policy",
+        key="erase_user_data",
         action_type=ActionType.erasure,
     )
     create_policy_rule_target(
-        policy_key="example-erasure-policy",
-        rule_key="erase-user-data",
+        policy_key="example_erasure_policy",
+        rule_key="erase_user_data",
         data_cat=data_category,
     )
 
@@ -743,12 +743,12 @@ if __name__ == "__main__":
 
     # Execute a privacy request for jane@example.com
     email = "jane@example.com"
-    print(f"Press [enter] to issue an erasure request for email {email}: with policy `example-erasure-policy`")
+    print(f"Press [enter] to issue an erasure request for email {email}: with policy `example_erasure_policy`")
     input()
     print("Please wait...")
     privacy_requests = create_privacy_request(
         user_email=email,
-        policy_key="example-erasure-policy",
+        policy_key="example_erasure_policy",
     )
     erasure_privacy_request_id = privacy_requests["succeeded"][0]["id"]
 
@@ -759,7 +759,7 @@ if __name__ == "__main__":
     print("Please wait...")
     privacy_requests = create_privacy_request(
         user_email=email,
-        policy_key="example-request-policy",
+        policy_key="example_request_policy",
     )
     print(
         "-------------------------------------------------------------------------------------"

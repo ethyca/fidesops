@@ -1,6 +1,5 @@
 # pylint: disable=R0401
-import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from enum import Enum as EnumType
 from sqlalchemy.dialects.postgresql import JSONB
@@ -24,9 +23,8 @@ from fidesops.util.cache import (
     get_cache,
     get_identity_cache_key,
     FidesopsRedis,
+    get_encryption_cache_key,
 )
-
-logging.basicConfig(level=logging.INFO)
 
 
 class PrivacyRequestStatus(EnumType):
@@ -41,13 +39,13 @@ class PrivacyRequestStatus(EnumType):
 class PrivacyRequest(Base):
     """
     The DB ORM model to describe current and historic PrivacyRequests. A privacy request is a
-    database record representing a data subject request's progression within the FidesOps system.
+    database record representing a data subject request's progression within the Fidesops system.
     """
 
     external_id = Column(String, index=True)
-    # When the request was dispatched into the FideOps pipeline
+    # When the request was dispatched into the Fidesops pipeline
     started_processing_at = Column(DateTime(timezone=True), nullable=True)
-    # When the request finished or errored in the FidesOps pipeline
+    # When the request finished or errored in the Fidesops pipeline
     finished_processing_at = Column(DateTime(timezone=True), nullable=True)
     # When the request was created at the origin
     requested_at = Column(DateTime(timezone=True), nullable=True)
@@ -86,7 +84,7 @@ class PrivacyRequest(Base):
         super().delete(db=db)
 
     def cache_identity(self, identity: PrivacyRequestIdentity) -> None:
-        """Sets the identity's values at their specific locations in the FideOps app cache"""
+        """Sets the identity's values at their specific locations in the Fidesops app cache"""
         cache: FidesopsRedis = get_cache()
         identity_dict: Dict[str, Any] = dict(identity)
         for key, value in identity_dict.items():
@@ -95,6 +93,17 @@ class PrivacyRequest(Base):
                     get_identity_cache_key(self.id, key),
                     value,
                 )
+
+    def cache_encryption(self, encryption_key: Optional[str] = None) -> None:
+        """Sets the encryption key in the Fidesops app cache if provided"""
+        if not encryption_key:
+            return
+
+        cache: FidesopsRedis = get_cache()
+        cache.set_with_autoexpire(
+            get_encryption_cache_key(self.id, "key"),
+            encryption_key,
+        )
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache"""

@@ -1,0 +1,40 @@
+name: CI Checks - Safe
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  Check-All:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Docker Compose Build
+        run: make compose-build
+
+      - name: Format
+        run: make black-ci
+
+      - name: Lint
+        run: make pylint
+
+      - name: Check Types
+        run: make mypy
+
+      - name: Init DB
+        run: make init-db
+
+      - name: Check Migrations
+        run: make check-migrations
+
+      - name: Unit Tests
+        run: make pytest
+
+      - name: Integration Tests (Access)
+        run: make pytest-integration-access
+
+      - name: Integration Tests (Erasure)
+        run: make pytest-integration-erasure

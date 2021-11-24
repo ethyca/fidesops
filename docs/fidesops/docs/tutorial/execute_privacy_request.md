@@ -26,7 +26,7 @@ def create_privacy_request(email, policy_key, access_token):
     """
     Create a Privacy Request that is executed against the given request Policy.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Privacy%20Requests/create_privacy_request_api_v1_privacy_request_post
+    See http://localhost:8000/api#operations-Privacy_Requests-create_privacy_request_api_v1_privacy_request_post
     """
 
     privacy_request_data = [
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     email = "user@example.com"
     privacy_requests = create_privacy_request(
         email=email,
-        policy_key="example-request-policy",
+        policy_key="example_request_policy",
         access_token=access_token,
     )
 ```
