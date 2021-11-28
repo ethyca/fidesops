@@ -39,7 +39,7 @@ class PrivacyRequestRunner:
         task = threading.Thread(target=self.run,  args=[self.db, self.privacy_request])
         task.daemon=True
         task.start()
-
+        #task.join()
 
 
     def run(self, _db:Session, privacy_request:PrivacyRequest) -> None:
@@ -65,7 +65,7 @@ class PrivacyRequestRunner:
             identity_data = privacy_request.get_cached_identity_data()
             connection_configs = ConnectionConfig.all(db=_db)
             policy = privacy_request.policy
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
         try:
             policy.rules[0]

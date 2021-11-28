@@ -37,6 +37,7 @@ from fidesops.models.privacy_request import (
 )
 from fidesops.models.policy import DataCategory, ActionType
 from fidesops.schemas.dataset import DryRunDatasetResponse
+from fidesops.service.connectors import PostgreSQLConnector
 from fidesops.util.cache import get_identity_cache_key, get_encryption_cache_key
 from ....test_support import wait_for_privacy_request, wait_for
 
@@ -123,7 +124,7 @@ class TestCreatePrivacyRequest:
         )
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.start_processing"
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_create_privacy_request_starts_processing(
         self,
@@ -322,7 +323,6 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
 
         results = pr.get_results()
-        print(results)
         assert len(results.keys()) == 11  ######## FAIL ########
 
         for key in results.keys():
@@ -354,6 +354,7 @@ class TestCreatePrivacyRequest:
         api_client: TestClient,
         generate_auth_header,
         erasure_policy,
+        read_connection_config,
     ):
         customer_email = "customer-1@example.com"
         customer_id = 1
@@ -374,9 +375,7 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
 
-        example_postgres_uri = (
-            "postgresql://postgres:postgres@postgres_example/postgres_example"
-        )
+        example_postgres_uri = PostgreSQLConnector(read_connection_config).build_uri()
         engine = get_db_engine(database_uri=example_postgres_uri)
         SessionLocal = get_db_session(engine=engine)
         integration_db = SessionLocal()
@@ -403,6 +402,7 @@ class TestCreatePrivacyRequest:
         api_client: TestClient,
         generate_auth_header,
         erasure_policy,
+        connection_config,
     ):
         # It's safe to change this here since the `erasure_policy` fixture is scoped
         # at function level
@@ -425,12 +425,11 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
+        wait_for_privacy_request(db, response_data[0]["id"])
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
 
-        example_postgres_uri = (
-            "postgresql://postgres:postgres@postgres_example/postgres_example"
-        )
+        example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
         engine = get_db_engine(database_uri=example_postgres_uri)
         SessionLocal = get_db_session(engine=engine)
         integration_db = SessionLocal()
@@ -464,6 +463,7 @@ class TestCreatePrivacyRequest:
         api_client: TestClient,
         generate_auth_header,
         erasure_policy,
+            connection_config,
     ):
         # It's safe to change this here since the `erasure_policy` fixture is scoped
         # at function level
@@ -492,9 +492,7 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
 
-        example_postgres_uri = (
-            "postgresql://postgres:postgres@postgres_example/postgres_example"
-        )
+        example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
         engine = get_db_engine(database_uri=example_postgres_uri)
         SessionLocal = get_db_session(engine=engine)
         integration_db = SessionLocal()
@@ -526,6 +524,7 @@ class TestCreatePrivacyRequest:
         api_client: TestClient,
         generate_auth_header,
         erasure_policy,
+            connection_config
     ):
         customer_email = "customer-2@example.com"
         customer_id = 2
@@ -543,8 +542,13 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         wait_for_privacy_request(db, response_data[0]["id"])
+        time.sleep(1)
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         errored_execution_logs = pr.execution_logs.filter_by(status="error")
+        for l in errored_execution_logs:
+            print(f"\n\nEXECUTION LOG {l.__dict__}")
+        for l in pr.execution_logs:
+            print(f"\n---> {l.__dict__}")
         assert errored_execution_logs.count() == 9
         assert (
             errored_execution_logs[0].message
@@ -553,9 +557,7 @@ class TestCreatePrivacyRequest:
         )
         pr.delete(db=db)
 
-        example_postgres_uri = (
-            "postgresql://postgres:postgres@postgres_example/postgres_example"
-        )
+        example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
         engine = get_db_engine(database_uri=example_postgres_uri)
         SessionLocal = get_db_session(engine=engine)
         integration_db = SessionLocal()

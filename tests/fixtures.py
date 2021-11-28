@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 import pytest
 import yaml
-import logging
+import logging, json
 from faker import Faker
 
 from fidesops.core.config import load_file, load_toml
@@ -46,6 +46,13 @@ from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 
 from fidesops.util.cache import FidesopsRedis
+import threading
+import time
+from typing import Callable, Any
+import logging
+from sqlalchemy import and_
+
+from fidesops.models.privacy_request import ExecutionLog
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -80,6 +87,7 @@ integration_secrets = {
     },
 }
 
+
 @pytest.fixture(scope="session", autouse=True)
 def mock_upload_logic() -> Generator:
     with mock.patch(
@@ -111,6 +119,7 @@ def storage_config(db: Session) -> Generator:
             StorageSecrets.AWS_SECRET_ACCESS_KEY.value: "5678",
         },
     )
+    print(storage_config.__dict__)
     yield storage_config
     storage_config.delete(db)
 
@@ -178,7 +187,6 @@ def read_connection_config(db: Session) -> Generator:
     connection_config.delete(db)
 
 
-
 @pytest.fixture(scope="function")
 def connection_config_mysql(db: Session) -> Generator:
     connection_config = ConnectionConfig.create(
@@ -225,6 +233,7 @@ def mongo_connection_config(db: Session) -> Generator:
     )
     yield connection_config
     connection_config.delete(db)
+
 
 @pytest.fixture(scope="function")
 def redshift_connection_config(db: Session) -> Generator:
@@ -792,3 +801,45 @@ def privacy_request_runner(
         db=db,
         privacy_request=privacy_request,
     )
+
+
+def wait_for(
+    f: Callable[[Any], bool], timeout=10, period=0.25, *args, **kwargs
+) -> bool:
+    """Utility function to wait for the result of a callable to
+    be true before proceeding."""
+
+    def runner():
+        must_end = time.time() + timeout
+        while time.time() < must_end:
+            print(f"invoke {f}:{f()}")
+            if f(*args, **kwargs):
+                time.sleep(0.5)
+                return True
+            time.sleep(period)
+        return False
+
+    t = threading.Thread(target=runner)
+    t.start()
+    t.join()
+
+
+def wait_for_privacy_request(db, privacy_request_id: str) -> bool:
+    """Wait until there exists an execution log record for the given privacy
+    request id whose status is either 'complete' or 'error'"""
+    logger.info(f"Waiting for privacy request {privacy_request_id}")
+
+    def f():
+        x = (
+            db.query(ExecutionLog)
+            .filter(
+                and_(
+                    ExecutionLog.privacy_request_id == privacy_request_id,
+                    ExecutionLog.status.in_(("complete", "error")),
+                )
+            )
+            .first()
+        )
+        return x is not None
+
+    return wait_for(f)

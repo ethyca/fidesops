@@ -8,7 +8,6 @@ from sqlalchemy.orm import (
     sessionmaker,
     Session,
 )
-import traceback
 from fidesops.core.config import config
 
 logger = logging.getLogger(__name__)
@@ -27,7 +26,7 @@ def get_db_engine(database_uri: Optional[str] = None) -> Engine:
         else:
             database_uri = config.database.SQLALCHEMY_DATABASE_URI
 
-    return create_engine(database_uri, pool_pre_ping=True)
+    return create_engine(database_uri, pool_pre_ping=True  )
 
 
 def get_db_session(engine: Optional[Engine] = None) -> sessionmaker:
@@ -49,7 +48,6 @@ class ExtendedSession(Session):
             return super().commit()
         except Exception as exc:
             logger.error("Exception: %s", exc)
-            traceback.print_exc()
             # Rollback the current transaction after each failed commit
             self.rollback()
             raise

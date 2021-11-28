@@ -97,7 +97,6 @@ class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
             try:
                 return ObjectId(other)
             except (InvalidId, TypeError) as e:
-                print(e)
                 return None
         return None
 

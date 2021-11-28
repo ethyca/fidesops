@@ -2,10 +2,12 @@
 import threading
 import time
 from typing import Callable, Any
-
+import logging
 from sqlalchemy import and_
 
 from fidesops.models.privacy_request import ExecutionLog
+
+logger = logging.getLogger(__name__)
 
 
 def wait_for(
@@ -30,8 +32,9 @@ def wait_for(
 
 
 def wait_for_privacy_request(db, privacy_request_id: str) -> bool:
-
-    print(f"Wait for privacy request {privacy_request_id}")
+    """Wait until there exists an execution log record for the given privacy
+    request id whose status is either 'complete' or 'error'"""
+    logger.info(f"Waiting for privacy request {privacy_request_id}")
 
     def f():
         x = (

@@ -54,7 +54,6 @@ class DatabaseSettings(FidesSettings):
     @validator("SQLALCHEMY_DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, str]) -> str:
         """Join DB connection credentials into a connection string"""
-        print(f"assemble_db_connection {v}: {values}")
         if isinstance(v, str):
             return v
         return PostgresDsn.build(
@@ -71,7 +70,6 @@ class DatabaseSettings(FidesSettings):
         cls, v: Optional[str], values: Dict[str, str]
     ) -> str:
         """Join DB connection credentials into a connection string"""
-        print(f"assemble_test_db_connection {v}: {values}")
         if isinstance(v, str):
             return v
         return PostgresDsn.build(

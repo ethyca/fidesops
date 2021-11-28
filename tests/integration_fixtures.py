@@ -20,8 +20,6 @@ from .fixtures import faker, integration_config, integration_secrets
 logger = logging.getLogger(__name__)
 
 
-
-
 def generate_integration_records():
     return {
         "customer": [
@@ -163,7 +161,6 @@ def integration_mongodb_config(set_os_env: None) -> ConnectionConfig:
         access=AccessLevel.write,
         secrets=integration_secrets["mongo_example"],
     )
-
 
 
 @pytest.fixture(scope="session")
