@@ -1,3 +1,4 @@
+import logging
 from abc import abstractmethod, ABC
 from typing import Generic, Optional, Any, TypeVar
 from enum import Enum
@@ -5,6 +6,7 @@ from enum import Enum
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
 
+logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
@@ -21,6 +23,10 @@ class DataTypeConverter(ABC, Generic[T]):
     def empty_value(self) -> T:
         """A value that represents `empty` in whatever way makes sense for type T"""
 
+    @abstractmethod
+    def truncate(self, length: int, val: T) -> T:
+        """Truncates value to given length"""
+
 
 class StringTypeConverter(DataTypeConverter[str]):
     """String data type converter. This type just uses str() type conversion."""
@@ -32,6 +38,10 @@ class StringTypeConverter(DataTypeConverter[str]):
     def empty_value(self) -> str:
         """Empty string value"""
         return ""
+
+    def truncate(self, length: int, val: str) -> str:
+        """Truncates value to given length"""
+        return val[:length]
 
 
 class IntTypeConverter(DataTypeConverter[int]):
@@ -49,6 +59,10 @@ class IntTypeConverter(DataTypeConverter[int]):
         """Empty int value"""
         return 0
 
+    def truncate(self, length: int, val: int) -> int:
+        """Truncates value to given length"""
+        return int(str(val)[:length])
+
 
 class FloatTypeConverter(DataTypeConverter[float]):
     """Float data type converter. This type just uses built-in float() type conversion."""
@@ -64,6 +78,13 @@ class FloatTypeConverter(DataTypeConverter[float]):
     def empty_value(self) -> float:
         """Empty float value"""
         return 0.0
+
+    def truncate(self, length: int, val: float) -> float:
+        """Truncates value to given length"""
+        logger.warning(
+            "Length truncation not supported for float data_type. Using original masked value instead for update query."
+        )
+        return val
 
 
 class BooleanTypeConverter(DataTypeConverter[bool]):
@@ -83,6 +104,13 @@ class BooleanTypeConverter(DataTypeConverter[bool]):
     def empty_value(self) -> bool:
         """Empty boolean value"""
         return False
+
+    def truncate(self, length: int, val: bool) -> bool:
+        """Truncates value to given length"""
+        logger.warning(
+            "Length truncation not supported for bool data_type. Using original masked value instead for update query."
+        )
+        return val
 
 
 class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
@@ -104,6 +132,13 @@ class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
     def empty_value(self) -> ObjectId:
         """Empty objectId value"""
         return ObjectId("000000000000000000000000")
+
+    def truncate(self, length: int, val: ObjectId) -> ObjectId:
+        """Truncates value to given length"""
+        logger.warning(
+            "Length truncation not supported for ObjectId data_type. Using original masked value instead for update query."
+        )
+        return val
 
 
 class DataType(Enum):
