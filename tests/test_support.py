@@ -10,20 +10,21 @@ from fidesops.models.privacy_request import ExecutionLog
 logger = logging.getLogger(__name__)
 
 
-def wait_for(
-    f: Callable[[Any], bool], timeout=10, period=0.25, *args, **kwargs
-) -> bool:
+def wait_for(f: Callable[[Any], bool], timeout=3, period=0.25, *args, **kwargs) -> bool:
     """Utility function to wait for the result of a callable to
     be true before proceeding."""
 
     def runner():
         must_end = time.time() + timeout
         while time.time() < must_end:
-            print(f"invoke {f}:{f()}")
-            if f(*args, **kwargs):
-                time.sleep(0.5)
-                return True
-            time.sleep(period)
+            print(f"invoke {f}")
+            try:
+                if f(*args, **kwargs):
+                    time.sleep(0.25)
+                    return True
+                time.sleep(period)
+            except Exception as e:
+                print(e)
         return False
 
     t = threading.Thread(target=runner)

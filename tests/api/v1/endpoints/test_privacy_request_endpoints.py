@@ -42,7 +42,7 @@ from fidesops.util.cache import get_identity_cache_key, get_encryption_cache_key
 from ....test_support import wait_for_privacy_request, wait_for
 
 page_size = Params().size
-
+url = '/api/v1/privacy-request'
 
 def stringify_date(log_date: datetime) -> str:
     return log_date.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
@@ -315,13 +315,11 @@ class TestCreatePrivacyRequest:
             }
         ]
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
+        resp = api_client.post('url', json=data, headers=auth_header)
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
-        wait_for_privacy_request(db, response_data[0]["id"])
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
-
         results = pr.get_results()
         assert len(results.keys()) == 11  ######## FAIL ########
 
@@ -463,7 +461,7 @@ class TestCreatePrivacyRequest:
         api_client: TestClient,
         generate_auth_header,
         erasure_policy,
-            connection_config,
+        connection_config,
     ):
         # It's safe to change this here since the `erasure_policy` fixture is scoped
         # at function level
@@ -524,7 +522,7 @@ class TestCreatePrivacyRequest:
         api_client: TestClient,
         generate_auth_header,
         erasure_policy,
-            connection_config
+        connection_config,
     ):
         customer_email = "customer-2@example.com"
         customer_id = 2
@@ -710,6 +708,7 @@ class TestGetPrivacyRequests:
         resp = response.json()
         ####### FAIL ########
         assert len(resp["items"]) == 3
+        print(json.dumps(resp, indent=2))
         assert resp["items"][0]["id"] == privacy_request.id
         assert resp["items"][1]["id"] == succeeded_privacy_request.id
         assert resp["items"][2]["id"] == failed_privacy_request.id
@@ -727,7 +726,7 @@ class TestGetPrivacyRequests:
         response = api_client.get(url + f"?started_lt=2021-05-01", headers=auth_header)
         assert 200 == response.status_code
         resp = response.json()
-        assert len(resp["items"]) == 2
+        assert len(resp["items"]) == 2 ####### FAIL ########
         assert resp["items"][0]["id"] == privacy_request.id
         assert resp["items"][1]["id"] == failed_privacy_request.id
 

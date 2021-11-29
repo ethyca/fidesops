@@ -26,7 +26,7 @@ def get_db_engine(database_uri: Optional[str] = None) -> Engine:
         else:
             database_uri = config.database.SQLALCHEMY_DATABASE_URI
 
-    return create_engine(database_uri, pool_pre_ping=True  )
+    return create_engine(database_uri, pool_pre_ping=True)
 
 
 def get_db_session(engine: Optional[Engine] = None) -> sessionmaker:

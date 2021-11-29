@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Set
-import threading
+from typing import Set, Awaitable
 
 from sqlalchemy.orm import Session
 
@@ -18,8 +17,9 @@ from fidesops.task.graph_task import (
     filter_data_categories,
     run_erasure,
 )
+from fidesops.util.async_util import run_async, wait_for
 from fidesops.util.cache import FidesopsRedis
-import traceback
+
 
 class PrivacyRequestRunner:
     """The class responsible for dispatching PrivacyRequests into the execution layer"""
@@ -34,15 +34,13 @@ class PrivacyRequestRunner:
         self.db = db
         self.privacy_request = privacy_request
 
-    def submit(self)->None:
+    def submit(self) -> Awaitable[None]:
         """Run this privacy request in a separate thread."""
-        task = threading.Thread(target=self.run,  args=[self.db, self.privacy_request])
-        task.daemon=True
-        task.start()
-        #task.join()
+        f= run_async(self.run, self.privacy_request.id)
+        wait_for(f)
+        logging.info("WAITED ")
 
-
-    def run(self, _db:Session, privacy_request:PrivacyRequest) -> None:
+    def run(self, privacy_request_id: str) -> None:
         # pylint: disable=too-many-locals
         """
         Dispatch a privacy_request into the execution layer by:
@@ -52,21 +50,19 @@ class PrivacyRequestRunner:
             4. When finished, upload the results to the configured storage destination if applicable
         """
 
-        _new_db = get_db_session()
-        db = _new_db()
-        _db = db
-        privacy_request = PrivacyRequest.get(db=_db, id=privacy_request.id)
+        _sessionmaker = get_db_session()
+        session = _sessionmaker()
+
+        privacy_request = PrivacyRequest.get(db=session, id=privacy_request_id)
         logging.info(f"Dispatching privacy request {privacy_request.id}")
-        self.start_processing(_db,privacy_request)
-        try:
-            datasets = DatasetConfig.all(db=_db)
-            dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
-            dataset_graph = DatasetGraph(*dataset_graphs)
-            identity_data = privacy_request.get_cached_identity_data()
-            connection_configs = ConnectionConfig.all(db=_db)
-            policy = privacy_request.policy
-        except Exception:
-            traceback.print_exc()
+        self.start_processing(session, privacy_request)
+
+        datasets = DatasetConfig.all(db=session)
+        dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+        dataset_graph = DatasetGraph(*dataset_graphs)
+        identity_data = privacy_request.get_cached_identity_data()
+        connection_configs = ConnectionConfig.all(db=session)
+        policy = privacy_request.policy
         try:
             policy.rules[0]
         except IndexError:
@@ -107,7 +103,7 @@ class PrivacyRequestRunner:
                 )
                 try:
                     upload(
-                        db=_db,
+                        db=session,
                         request_id=privacy_request.id,
                         data=filtered_results,
                         storage_key=rule.storage_destination.key,
@@ -134,15 +130,13 @@ class PrivacyRequestRunner:
             raise
 
         privacy_request.finished_processing_at = datetime.utcnow()
-        privacy_request.save(db=_db)
-        logging.info(
-            f"Privacy request {privacy_request.id} run completed."
-        )
+        privacy_request.save(db=session)
+        logging.info(f"Privacy request {privacy_request.id} run completed.")
 
     def dry_run(self, privacy_request: PrivacyRequest) -> None:
         """Pretend to dispatch privacy_request into the execution layer, return the query plan"""
 
-    def start_processing(self, db: Session, privacy_request:PrivacyRequest) -> None:
+    def start_processing(self, db: Session, privacy_request: PrivacyRequest) -> None:
         """Dispatches this PrivacyRequest throughout the Fidesops System"""
         if privacy_request.started_processing_at is None:
             privacy_request.started_processing_at = datetime.utcnow()
