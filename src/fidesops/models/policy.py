@@ -33,6 +33,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 
 
 from fidesops import common_exceptions
+from fidesops.common_exceptions import WebhookOrderException
 from fidesops.core.config import config
 from fidesops.db.base_class import (
     Base,
@@ -499,6 +500,29 @@ class WebhookBase:
         nullable=False,
     )
     order = Column(Integer, nullable=False)
+
+    def reorder_related_webhooks(self, db: Session, new_index: int) -> None:
+        """Updates the order of the current webhook, and order of related webhooks where applicable.
+
+        For example, if you had five Pre-Execution webhooks on a Policy and you updated the order of the
+        fifth webhook to be the second webhook, the second, third, fourth, and fifth Pre-Execution
+        Webhooks on that Policy would likewise have their order updated.
+        """
+
+        cls = self.__class__
+        webhooks = (
+            db.query(cls).filter(cls.policy_id == self.policy_id).order_by(cls.order)  # pylint: disable=W0143
+        )
+        if new_index > webhooks.count() - 1:
+            raise WebhookOrderException(
+                f"Cannot set order to {new_index}: there are only {webhooks.count()} {cls.__name__}(s) defined on this Policy."
+            )
+        webhook_order = [webhook.key for webhook in webhooks]
+        webhook_order.insert(new_index, webhook_order.pop(self.order))
+
+        for webhook in webhooks:
+            webhook.update(db=db, data={"order": webhook_order.index(webhook.key)})
+        db.commit()
 
 
 class PolicyPreWebhook(WebhookBase, Base):

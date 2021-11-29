@@ -11,6 +11,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 
 from fidesops.db.base_class import get_key_from_data
 from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.schemas.policy import PolicyWebhookUpdateResponse
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from pydantic import conlist
 from sqlalchemy.exc import IntegrityError
@@ -27,6 +28,7 @@ from fidesops.common_exceptions import (
     RuleValidationError,
     RuleTargetValidationError,
     KeyOrNameAlreadyExists,
+    WebhookOrderException,
 )
 from fidesops.models.client import ClientDetail
 from fidesops.models.policy import (
@@ -519,13 +521,16 @@ def _put_webhooks(
     webhooks_to_remove = webhook_cls.filter(
         db,
         conditions=(
-            webhook_cls.key.not_in(
-                [staged_webhook.key for staged_webhook in staged_webhooks]
+            (
+                webhook_cls.key.not_in(
+                    [staged_webhook.key for staged_webhook in staged_webhooks]
+                )
             )
+            & (webhook_cls.policy_id == policy.id)
         ),
     )
     logger.info(
-        f"Removing Policy Pre-Execution Webhooks that were not included in request: {[webhook.key for webhook in webhooks_to_remove]}"
+        f"Removing Policy {policy.id }Pre-Execution Webhooks that were not included in request: {[webhook.key for webhook in webhooks_to_remove]}"
     )
     webhooks_to_remove.delete()
 
@@ -583,3 +588,138 @@ def create_or_update_post_execution_webhooks(
     from the request body will be removed.
     """
     return _put_webhooks(PolicyPostWebhook, policy_key, db, webhooks)
+
+
+def _patch_webhook(
+    *,
+    db: Session = Depends(deps.get_db),
+    policy_key: FidesOpsKey,
+    webhook_key: FidesOpsKey,
+    webhook_body: schemas.PolicyWebhookUpdate = Body(...),
+    webhook_cls: Union[PolicyPreWebhook, PolicyPostWebhook],
+) -> PolicyWebhookUpdateResponse:
+    """Helper method to be shared between the endpoints that PATCH a single webhook, either
+    Pre-Execution or Post-Execution
+    """
+    logger.info(f"Finding policy with key '{policy_key}'")
+    policy = Policy.get_by(db=db, field="key", value=policy_key)
+    if not policy:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No Policy found for key {policy_key}.",
+        )
+
+    loaded_webhook = webhook_cls.get_by(db=db, field="key", value=webhook_key)
+    if not loaded_webhook:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No {webhook_cls.__class__} found for key {webhook_key}.",
+        )
+
+    data = webhook_body.dict(exclude_none=True)
+
+    if data.get("connection_config_key"):
+        connection_config: ConnectionConfig = ConnectionConfig.get_by(
+            db=db, field="key", value=data["connection_config_key"]
+        )
+
+        if not connection_config:
+            raise HTTPException(
+                status_code=HTTP_404_NOT_FOUND,
+                detail=f"No ConnectionConfig found for key {data['connection_config_key']}.",
+            )
+        data["connection_config_id"] = connection_config.id
+
+    # Removing index from incoming data - we'll set this later.
+    index = data.pop("order", None)
+
+    try:
+        logger.info(f"Updating {webhook_cls.__class__} {webhook_key}")
+        loaded_webhook.update(db, data=data)
+    except KeyOrNameAlreadyExists as exc:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=exc.args[0],
+        )
+
+    if index is not None and index != loaded_webhook.order:
+        logger.info(
+            f"Reordering {'Pre-Execution' if webhook_cls == PolicyPreWebhook else 'Post-Execution'} Webhooks for Policy {policy_key}"
+        )
+        try:
+            loaded_webhook.reorder_related_webhooks(db=db, new_index=index)
+        except WebhookOrderException as exc:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail=exc.args[0],
+            )
+        return PolicyWebhookUpdateResponse(
+            resource=loaded_webhook,
+            reordered=[
+                webhook
+                for webhook in webhook_cls.filter(
+                    db=db,
+                    conditions=(webhook_cls.policy_id == policy.id),
+                ).order_by(webhook_cls.order)
+            ],
+        )
+
+    # Policy Webhooks are not committed by default, so we commit at the end.
+    db.commit()
+    return PolicyWebhookUpdateResponse(resource=loaded_webhook, reordered=[])
+
+
+@router.patch(
+    urls.POLICY_PRE_WEBHOOK_DETAIL,
+    status_code=200,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[scopes.WEBHOOK_CREATE_OR_UPDATE])
+    ],
+    response_model=PolicyWebhookUpdateResponse,
+)
+def update_pre_execution_webhook(
+    *,
+    db: Session = Depends(deps.get_db),
+    policy_key: FidesOpsKey,
+    pre_webhook_key: FidesOpsKey,
+    webhook_body: schemas.PolicyWebhookUpdate = Body(...),
+) -> PolicyWebhookUpdateResponse:
+    """PATCH a single Policy Webhook that runs **prior** to executing the Privacy Request.
+
+    Note that updates to the webhook's "order" can affect the order of the other pre-execution webhooks.
+    """
+    return _patch_webhook(
+        db=db,
+        policy_key=policy_key,
+        webhook_key=pre_webhook_key,
+        webhook_body=webhook_body,
+        webhook_cls=PolicyPreWebhook,
+    )
+
+
+@router.patch(
+    urls.POLICY_POST_WEBHOOK_DETAIL,
+    status_code=200,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[scopes.WEBHOOK_CREATE_OR_UPDATE])
+    ],
+    response_model=PolicyWebhookUpdateResponse,
+)
+def update_post_execution_webhook(
+    *,
+    db: Session = Depends(deps.get_db),
+    policy_key: FidesOpsKey,
+    post_webhook_key: FidesOpsKey,
+    webhook_body: schemas.PolicyWebhookUpdate = Body(...),
+) -> PolicyWebhookUpdateResponse:
+    """PATCH a single Policy Webhook that runs **after** executing the Privacy Request.
+
+    Note that updates to the webhook's "order" can affect the order of the other post-execution webhooks.
+    """
+    return _patch_webhook(
+        db=db,
+        policy_key=policy_key,
+        webhook_key=post_webhook_key,
+        webhook_body=webhook_body,
+        webhook_cls=PolicyPostWebhook,
+    )

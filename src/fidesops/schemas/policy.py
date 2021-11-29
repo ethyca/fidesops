@@ -149,3 +149,46 @@ class PolicyWebhookResponse(WebhookBase):
         """Set orm_mode to True"""
 
         orm_mode = True
+
+
+class PolicyWebhookUpdate(BaseSchema):
+    """Request schema for updating a single webhook - fields are optional"""
+
+    direction: Optional[WebhookDirection]
+    name: Optional[str]
+    connection_config_key: Optional[FidesOpsKey]
+    order: Optional[int]
+
+    class Config:
+        """Only the included attributes will be used"""
+
+        orm_mode = True
+        extra = "forbid"
+        use_enum_values = True
+
+
+class WebhookOrder(BaseSchema):
+    """Schema for displaying which order the webhooks should run"""
+
+    key: FidesOpsKey
+    order: int
+
+    class Config:
+        """Set orm_mode to True"""
+
+        orm_mode = True
+
+
+class PolicyWebhookUpdateResponse(BaseSchema):
+    """Response schema after a PATCH to a single webhook - because updating the order of this webhook can update the
+    order of other webhooks, reordered will include the new order if order was adjusted at all"""
+
+    resource: PolicyWebhookResponse
+    reordered: List[WebhookOrder]
+
+    class Config:
+        """Set orm_mode to True"""
+
+        orm_mode = True
+        extra = "forbid"
+        use_enum_values = True
