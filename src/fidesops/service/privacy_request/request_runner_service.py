@@ -36,9 +36,9 @@ class PrivacyRequestRunner:
 
     def submit(self) -> Awaitable[None]:
         """Run this privacy request in a separate thread."""
-        f= run_async(self.run, self.privacy_request.id)
-        wait_for(f)
-        logging.info("WAITED ")
+        run_async(self.run, self.privacy_request.id)
+        #wait_for(f)
+        #logging.info("WAITED ")
 
     def run(self, privacy_request_id: str) -> None:
         # pylint: disable=too-many-locals

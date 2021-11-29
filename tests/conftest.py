@@ -69,7 +69,7 @@ def db(set_os_env: None) -> Generator:
     logger.debug(f"Dropping database at: {engine.url}")
     # We don't need to perform any extra checks before dropping the DB
     # here since we know the engine will always be connected to the test DB
-    # drop_database(engine.url)
+    drop_database(engine.url)
     logger.debug(f"Database at: {engine.url} successfully dropped")
 
 

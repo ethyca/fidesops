@@ -17,7 +17,6 @@ def wait_for(f: Callable[[Any], bool], timeout=3, period=0.25, *args, **kwargs) 
     def runner():
         must_end = time.time() + timeout
         while time.time() < must_end:
-            print(f"invoke {f}")
             try:
                 if f(*args, **kwargs):
                     time.sleep(0.25)

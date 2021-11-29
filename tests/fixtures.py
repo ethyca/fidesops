@@ -59,7 +59,6 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 faker = Faker()
 integration_config = load_toml("fidesops-integration.toml")
 
-
 # Unified list of connections to integration dbs specified from fidesops-integration.toml
 
 integration_secrets = {
@@ -77,13 +76,11 @@ integration_secrets = {
         "password": integration_config["mongodb_example"]["PASSWORD"],
     },
     "mysql_example": {
-        "secrets": {
             "host": integration_config["mysql_example"]["SERVER"],
-            "port": integration_config["mysql_example"]["PORT"],
+            "port": "PORT" in integration_config["mysql_example"] and integration_config["mysql_example"]["PORT"] or None,
             "dbname": integration_config["mysql_example"]["DB"],
             "username": integration_config["mysql_example"]["USER"],
             "password": integration_config["mysql_example"]["PASSWORD"],
-        },
     },
 }
 
@@ -119,7 +116,6 @@ def storage_config(db: Session) -> Generator:
             StorageSecrets.AWS_SECRET_ACCESS_KEY.value: "5678",
         },
     )
-    print(storage_config.__dict__)
     yield storage_config
     storage_config.delete(db)
 

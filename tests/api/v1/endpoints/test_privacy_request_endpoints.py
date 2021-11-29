@@ -916,10 +916,8 @@ class TestGetPrivacyRequests:
         response = api_client.get(url + f"?verbose=True", headers=auth_header)
         assert 200 == response.status_code
         resp = response.json()
-        print("\n\n\n\n=============\n\n")
-        print(json.dumps(resp, indent=2))
         assert (
-            len(resp["items"][2]["results"]["my-postgres-db"])
+            len(resp["items"][0]["results"]["my-postgres-db"])
             == EMBEDDED_EXECUTION_LOG_LIMIT
         )
         db.query(ExecutionLog).filter(
