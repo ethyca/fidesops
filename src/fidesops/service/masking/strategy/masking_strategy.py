@@ -32,6 +32,6 @@ class MaskingStrategy(ABC):
 
     @staticmethod
     @abstractmethod
-    def data_type_supported(data_type: str) -> bool:
+    def data_type_supported(data_type: Optional[str]) -> bool:
         """Returns the whether the data type is supported for the given strategy"""
         pass

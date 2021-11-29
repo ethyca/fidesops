@@ -6,13 +6,14 @@ from typing import Dict, Any, List, Set, Optional, Generic, TypeVar, Tuple
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
 
+from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.config import ROOT_COLLECTION_ADDRESS, CollectionAddress, Field
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
 from fidesops.schemas.policy import PolicyMaskingSpec
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.util.querytoken import QueryToken
-from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
+from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy, SupportedMaskingStrategies
 from fidesops.util.collection_util import append, filter_nonempty_values
 
 logger = logging.getLogger(__name__)
@@ -135,12 +136,18 @@ class QueryConfig(Generic[T], ABC):
             )
 
             for field_name in field_names:
-                data_type = [field.data_type for field in self.primary_key_fields if field.name == field_name][0] or type(row[field_name])
+                data_type: Optional[str] = [field.data_type for field in self.primary_key_fields if field.name == field_name][0]
+                if strategy_config["strategy"] is not SupportedMaskingStrategies.null_rewrite.value:
+                    if not data_type:
+                        logger.warning(
+                            f"Unable to generate a query for {self.node.address} due to: data_type required on fields for the {strategy_config['strategy']} masking strategy"
+                            )
+                    if not strategy.data_type_supported(data_type=data_type):
+                        logger.warning(
+                            f"Unable to generate a query for {self.node.address} due to: data_type of {data_type} is not supported for the {strategy_config['strategy']} masking strategy"
+                        )
                 val = row[field_name]
-                if data_type != strategy.get_supported_data_types():
-                    # fixme: coerce or error?
-                    value_map[field_name] = strategy.mask(str(val))
-                value_map[field_name] = strategy.mask(val)
+                value_map[field_name] = strategy.mask(str(val))
         return value_map
 
     @abstractmethod

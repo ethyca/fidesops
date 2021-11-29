@@ -40,6 +40,6 @@ class NullMaskingStrategy(MaskingStrategy):
         )
 
     @staticmethod
-    def data_type_supported(data_type: str) -> bool:
+    def data_type_supported(data_type: Optional[str]) -> bool:
         """Determines whether or not the given data type is supported by this masking strategy"""
         return True
