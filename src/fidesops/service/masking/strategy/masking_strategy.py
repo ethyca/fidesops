@@ -32,7 +32,6 @@ class MaskingStrategy(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_supported_data_types() -> List[DataType]:
-        """Returns the supported data types for the given strategy"""
+    def data_type_supported(data_type: str) -> bool:
+        """Returns the whether the data type is supported for the given strategy"""
         pass
-        # fixme: add supported data types for each masking strategy

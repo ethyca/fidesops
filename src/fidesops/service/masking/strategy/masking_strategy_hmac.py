@@ -16,6 +16,7 @@ from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 
 
 HMAC = "hmac"
+SUPPORTED_DATA_TYPES = ["string"]
 
 
 class HmacMaskingStrategy(MaskingStrategy):
@@ -92,6 +93,11 @@ class HmacMaskingStrategy(MaskingStrategy):
         return _hmac(
             value=value, hmac_key=hmac_key, salt=salt, hashing_alg=hashlib.sha512
         )
+
+    @staticmethod
+    def data_type_supported(data_type: str) -> bool:
+        """Determines whether or not the given data type is supported by this masking strategy"""
+        return data_type in SUPPORTED_DATA_TYPES
 
 
 def _hmac(value: str, hmac_key: str, salt: str, hashing_alg: Callable) -> str:

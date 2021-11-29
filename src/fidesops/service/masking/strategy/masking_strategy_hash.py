@@ -15,6 +15,7 @@ from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 
 
 HASH = "hash"
+SUPPORTED_DATA_TYPES = ["string"]
 
 
 class HashMaskingStrategy(MaskingStrategy):
@@ -66,6 +67,11 @@ class HashMaskingStrategy(MaskingStrategy):
                 ),
             ],
         )
+
+    @staticmethod
+    def data_type_supported(data_type: str) -> bool:
+        """Determines whether or not the given data type is supported by this masking strategy"""
+        return data_type in SUPPORTED_DATA_TYPES
 
     # Helpers
 
