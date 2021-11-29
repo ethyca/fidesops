@@ -486,6 +486,7 @@ def _put_webhooks(
     staged_webhooks = []
     for webhook_index, schema in enumerate(webhooks):
         connection_config_key = schema.connection_config_key
+        logger.info(f"Finding ConnectionConfig with key '{connection_config_key}'")
         connection_config: ConnectionConfig = ConnectionConfig.get_by(
             db=db, field="key", value=connection_config_key
         )
@@ -509,7 +510,6 @@ def _put_webhooks(
                 },
             )
             staged_webhooks.append(webhook)
-
         except KeyOrNameAlreadyExists as exc:
             raise HTTPException(
                 status_code=HTTP_400_BAD_REQUEST,
@@ -525,13 +525,16 @@ def _put_webhooks(
         ),
     )
     logger.info(
-        f"Removing policy webhooks not included in request: {[webhook.key for webhook in webhooks_to_remove]}"
+        f"Removing Policy Pre-Execution Webhooks that were not included in request: {[webhook.key for webhook in webhooks_to_remove]}"
     )
     webhooks_to_remove.delete()
 
     # Committing to database now, as a last step, once we've verified that all the webhooks
     # in the request are free of issues.
     db.commit()
+    logger.info(
+        f"Creating/updating Policy Pre-Execution Webhooks: {[staged_webhook.key for staged_webhook in staged_webhooks]}"
+    )
 
     return staged_webhooks
 
@@ -539,7 +542,9 @@ def _put_webhooks(
 @router.put(
     urls.POLICY_WEBHOOKS_PRE,
     status_code=200,
-    # dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_CREATE_OR_UPDATE])],
+    dependencies=[
+        Security(verify_oauth_client, scopes=[scopes.WEBHOOK_CREATE_OR_UPDATE])
+    ],
     response_model=List[schemas.PolicyWebhookResponse],
 )
 def create_or_update_pre_execution_webhooks(
@@ -549,7 +554,9 @@ def create_or_update_pre_execution_webhooks(
     webhooks: conlist(schemas.PolicyWebhookCreate, max_items=50) = Body(...),  # type: ignore
 ) -> List[PolicyPreWebhook]:
     """
-    Create or update Policy Webhooks.  All webhooks must be included in the request in the desired order. Any missing webhooks
+    Create or update Policy Webhooks that run **before** query execution.
+
+    All webhooks must be included in the request in the desired order. Any missing webhooks
     from the request body will be removed.
     """
     return _put_webhooks(PolicyPreWebhook, policy_key, db, webhooks)
@@ -558,7 +565,9 @@ def create_or_update_pre_execution_webhooks(
 @router.put(
     urls.POLICY_WEBHOOKS_POST,
     status_code=200,
-    # dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_CREATE_OR_UPDATE])],
+    dependencies=[
+        Security(verify_oauth_client, scopes=[scopes.WEBHOOK_CREATE_OR_UPDATE])
+    ],
     response_model=List[schemas.PolicyWebhookResponse],
 )
 def create_or_update_post_execution_webhooks(
@@ -568,7 +577,9 @@ def create_or_update_post_execution_webhooks(
     webhooks: conlist(schemas.PolicyWebhookCreate, max_items=50) = Body(...),  # type: ignore
 ) -> List[PolicyPostWebhook]:
     """
-    Create or update Policy Webhooks that run after query execution. All webhooks must be included in the request in
-    the desired order. Any missing webhooks from the request body will be removed.
+    Create or update Policy Webhooks that run **after** query execution.
+
+    All webhooks must be included in the request in the desired order. Any missing webhooks
+    from the request body will be removed.
     """
     return _put_webhooks(PolicyPostWebhook, policy_key, db, webhooks)

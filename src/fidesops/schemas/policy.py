@@ -144,3 +144,8 @@ class PolicyWebhookResponse(WebhookBase):
 
     connection_config: Optional[ConnectionConfigurationResponse]
     order: int
+
+    class Config:
+        """Set orm_mode to True"""
+
+        orm_mode = True
