@@ -8,8 +8,9 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from ...test_support import wait_for_privacy_request
 
+
 @mock.patch(
-     "fidesops.service.privacy_request.request_runner_service.run_access_request"
+    "fidesops.service.privacy_request.request_runner_service.run_access_request"
 )
 @mock.patch("fidesops.service.privacy_request.request_runner_service.upload")
 def test_policy_upload_called(

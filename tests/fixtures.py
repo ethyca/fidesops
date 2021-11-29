@@ -76,11 +76,13 @@ integration_secrets = {
         "password": integration_config["mongodb_example"]["PASSWORD"],
     },
     "mysql_example": {
-            "host": integration_config["mysql_example"]["SERVER"],
-            "port": "PORT" in integration_config["mysql_example"] and integration_config["mysql_example"]["PORT"] or None,
-            "dbname": integration_config["mysql_example"]["DB"],
-            "username": integration_config["mysql_example"]["USER"],
-            "password": integration_config["mysql_example"]["PASSWORD"],
+        "host": integration_config["mysql_example"]["SERVER"],
+        "port": "PORT" in integration_config["mysql_example"]
+        and integration_config["mysql_example"]["PORT"]
+        or None,
+        "dbname": integration_config["mysql_example"]["DB"],
+        "username": integration_config["mysql_example"]["USER"],
+        "password": integration_config["mysql_example"]["PASSWORD"],
     },
 }
 

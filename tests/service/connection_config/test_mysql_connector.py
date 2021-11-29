@@ -5,8 +5,8 @@ from fidesops.service.connectors.sql_connector import MySQLConnector
 
 def test_mysql_connector_build_uri(connection_config_mysql, db: Session):
     connector = MySQLConnector(configuration=connection_config_mysql)
-    s=connection_config_mysql.secrets
-    port = s['port'] and f":{s['port']}" or ""
+    s = connection_config_mysql.secrets
+    port = s["port"] and f":{s['port']}" or ""
     uri = f"mysql+pymysql://{s['username']}:{s['password']}@{s['host']}{port}/{s['dbname']}"
     assert connector.build_uri() == uri
 

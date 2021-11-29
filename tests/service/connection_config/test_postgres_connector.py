@@ -4,10 +4,13 @@ from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.service.connectors import PostgreSQLConnector
 
 
-def test_postgres_connector_build_uri(connection_config:ConnectionConfig, db: Session):
+def test_postgres_connector_build_uri(connection_config: ConnectionConfig, db: Session):
     connector = PostgreSQLConnector(configuration=connection_config)
-    s=connection_config.secrets
-    assert connector.build_uri() == f"postgresql://{s['username']}:{s['password']}@{s['host']}:{s['port']}/{s['dbname']}"
+    s = connection_config.secrets
+    assert (
+        connector.build_uri()
+        == f"postgresql://{s['username']}:{s['password']}@{s['host']}:{s['port']}/{s['dbname']}"
+    )
 
     connection_config.secrets = {
         "username": "postgres",
