@@ -32,10 +32,7 @@ class SupportedMaskingStrategies(Enum):
     """
 
     string_rewrite = StringRewriteMaskingStrategy
-    hash = HashMaskingStrategy
     random_string_rewrite = RandomStringRewriteMaskingStrategy
-    aes_encrypt = AesEncryptionMaskingStrategy
-    hmac = HmacMaskingStrategy
     null_rewrite = NullMaskingStrategy
 
 
