@@ -88,14 +88,14 @@ def api_client() -> Generator:
 @pytest.fixture(scope="function")
 def oauth_client(db: Session) -> Generator:
     """Return a client for authentication purposes"""
-    client = ClientDetail(
-        hashed_secret="thisisatest",
-        salt="thisisstillatest",
-        scopes=SCOPE_REGISTRY,
+    client = ClientDetail.create(
+        db=db,
+        data={
+            "hashed_secret": "thisisatest",
+            "salt": "thisisstillatest",
+            "scopes": SCOPE_REGISTRY,
+        },
     )
-    db.add(client)
-    db.commit()
-    db.refresh(client)
     yield client
     client.delete(db)
 
