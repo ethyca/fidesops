@@ -1,4 +1,5 @@
 import logging
+from sqlalchemy.exc import IntegrityError
 from typing import List, Union
 
 from fastapi import APIRouter, Body, Depends, Security
@@ -9,9 +10,11 @@ from fastapi_pagination import (
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 
-from fidesops.api.v1.endpoints.policy_endpoints import _get_policy_or_error
+from fidesops.api.v1.endpoints.connection_endpoints import (
+    get_connection_config_or_error,
+)
+from fidesops.api.v1.endpoints.policy_endpoints import get_policy_or_error
 from fidesops.db.base_class import get_key_from_data
-from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from pydantic import conlist
 from sqlalchemy.orm import Session
@@ -30,7 +33,7 @@ from fidesops.models.policy import (
     PolicyPreWebhook,
     PolicyPostWebhook,
 )
-from fidesops.schemas import policy as schemas
+from fidesops.schemas import policy_webhooks as schemas
 from fidesops.util.oauth_util import verify_oauth_client
 
 
@@ -52,13 +55,13 @@ def get_policy_pre_execution_webhooks(
     params: Params = Depends(),
 ) -> AbstractPage[PolicyPreWebhook]:
     """
-    Return a paginated list of all Post-Execution Webhooks that will run in order for the Policy **before** a
+    Return a paginated list of all Pre-Execution Webhooks that will run in order for the Policy **before** a
     Privacy Request is executed.
     """
-    policy = _get_policy_or_error(db, policy_key)
+    policy = get_policy_or_error(db, policy_key)
 
     logger.info(
-        f"Finding all pre-execution webhooks for policy {policy.key} with pagination params '{params}'"
+        f"Finding all Pre-Execution Webhooks for Policy '{policy.key}' with pagination params '{params}'"
     )
     return paginate(policy.pre_execution_webhooks.order_by("order"), params=params)
 
@@ -79,53 +82,46 @@ def get_policy_post_execution_webhooks(
     Return a paginated list of all Post-Execution Webhooks that will run in order for the Policy **after** a
     Privacy Request is executed.
     """
-    policy = _get_policy_or_error(db, policy_key)
+    policy = get_policy_or_error(db, policy_key)
 
     logger.info(
-        f"Finding all post-execution webhooks for policy {policy.key} with pagination params '{params}'"
+        f"Finding all Post-Execution Webhooks for Policy '{policy.key}' with pagination params '{params}'"
     )
     return paginate(policy.post_execution_webhooks.order_by("order"), params=params)
 
 
-def _put_webhooks(
+def put_webhooks(
     webhook_cls: Union[PolicyPreWebhook, PolicyPostWebhook],
     policy_key: FidesOpsKey,
     db: Session = Depends(deps.get_db),
     webhooks: List[schemas.PolicyWebhookCreate] = Body(...),
 ) -> List[Union[PolicyPreWebhook, PolicyPostWebhook]]:
     """
-    Helper method to PUT pre-execution or post-execution Policy Endpoints.
+    Helper method to PUT pre-execution or post-execution policy webhooks.
 
     Creates/updates webhooks with the same "order" in which they arrived. This endpoint is all-or-nothing.
     Either all webhooks should be created/updated or none should be updated. Deletes any webhooks not present
-    in the webhooks list.
+    in the request body.
     """
-    policy = _get_policy_or_error(db, policy_key)
+    policy = get_policy_or_error(db, policy_key)
 
     keys = [
         get_key_from_data(webhook.dict(), webhook_cls.__name__) for webhook in webhooks
     ]
+    names = [webhook.name for webhook in webhooks]
     # Because resources are dependent on each other for order, we want to make sure that we don't have multiple
     # resources in the request that actually point to the same object.
-    if len(keys) != len(set(keys)):
+    if len(keys) != len(set(keys)) or len(names) != len(set(names)):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail="Check request body: there are multiple webhooks whose keys resolve to the same value.",
+            detail="Check request body: there are multiple webhooks whose keys or names resolve to the same value.",
         )
 
-    staged_webhooks = []
+    staged_webhooks = []  # Webhooks will be committed at the end
     for webhook_index, schema in enumerate(webhooks):
-        connection_config_key = schema.connection_config_key
-        logger.info(f"Finding ConnectionConfig with key '{connection_config_key}'")
-        connection_config: ConnectionConfig = ConnectionConfig.get_by(
-            db=db, field="key", value=connection_config_key
+        connection_config = get_connection_config_or_error(
+            db, schema.connection_config_key
         )
-
-        if not connection_config:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND,
-                detail=f"No ConnectionConfig found for key {connection_config_key}.",
-            )
 
         try:
             webhook = webhook_cls.create_or_update(
@@ -151,19 +147,19 @@ def _put_webhooks(
         policy, f"{webhook_cls.prefix}_execution_webhooks"
     ).filter(webhook_cls.key.not_in(staged_webhook_keys))
 
-    logger.info(
-        f"Removing Policy {policy.id} {webhook_cls.prefix.upper()}-Execution Webhooks that were not included in request: "
-        f"{[webhook.key for webhook in webhooks_to_remove]}"
-    )
-    webhooks_to_remove.delete()
+    if webhooks_to_remove.count():
+        logger.info(
+            f"Removing {webhook_cls.prefix.capitalize()}-Execution Webhooks from Policy '{policy.key}' that were not included in request: "
+            f"{[webhook.key for webhook in webhooks_to_remove]}"
+        )
+        webhooks_to_remove.delete()
 
-    # Committing to database now, as a last step, once we've verified that all the webhooks
-    # in the request are free of issues.
-    db.commit()
     logger.info(
         f"Creating/updating Policy Pre-Execution Webhooks: {staged_webhook_keys}"
     )
-
+    # Committing to database now, as a last step, once we've verified that all the webhooks
+    # in the request are free of issues.
+    db.commit()
     return staged_webhooks
 
 
@@ -187,7 +183,7 @@ def create_or_update_pre_execution_webhooks(
     All webhooks must be included in the request in the desired order. Any missing webhooks
     from the request body will be removed.
     """
-    return _put_webhooks(PolicyPreWebhook, policy_key, db, webhooks)
+    return put_webhooks(PolicyPreWebhook, policy_key, db, webhooks)
 
 
 @router.put(
@@ -210,10 +206,10 @@ def create_or_update_post_execution_webhooks(
     All webhooks must be included in the request in the desired order. Any missing webhooks
     from the request body will be removed.
     """
-    return _put_webhooks(PolicyPostWebhook, policy_key, db, webhooks)
+    return put_webhooks(PolicyPostWebhook, policy_key, db, webhooks)
 
 
-def _get_webhook_or_error(
+def get_policy_webhook_or_error(
     db: Session,
     policy: Policy,
     webhook_key: FidesOpsKey,
@@ -224,7 +220,7 @@ def _get_webhook_or_error(
     Also verifies that the webhook belongs to the given Policy.
     """
     logger.info(
-        f"Finding {webhook_cls.__name__} with key {webhook_key} for Policy {policy.key}."
+        f"Finding {webhook_cls.prefix.capitalize()}-Execution Webhook with key '{webhook_key}' for Policy '{policy.key}'"
     )
     loaded_webhook = webhook_cls.filter(
         db=db,
@@ -235,7 +231,7 @@ def _get_webhook_or_error(
     if not loaded_webhook:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No {webhook_cls.__name__} found for key {webhook_key} on Policy {policy.key}.",
+            detail=f"No {webhook_cls.prefix.capitalize()}-Execution Webhook found for key '{webhook_key}' on Policy '{policy.key}'.",
         )
     return loaded_webhook
 
@@ -255,8 +251,8 @@ def get_policy_pre_execution_webhook(
     """
     Loads the given Pre-Execution Webhook on the Policy
     """
-    policy = _get_policy_or_error(db, policy_key)
-    return _get_webhook_or_error(db, policy, pre_webhook_key, PolicyPreWebhook)
+    policy = get_policy_or_error(db, policy_key)
+    return get_policy_webhook_or_error(db, policy, pre_webhook_key, PolicyPreWebhook)
 
 
 @router.get(
@@ -274,8 +270,8 @@ def get_policy_post_execution_webhook(
     """
     Loads the given Post-Execution Webhook on the Policy
     """
-    policy = _get_policy_or_error(db, policy_key)
-    return _get_webhook_or_error(db, policy, post_webhook_key, PolicyPostWebhook)
+    policy = get_policy_or_error(db, policy_key)
+    return get_policy_webhook_or_error(db, policy, post_webhook_key, PolicyPostWebhook)
 
 
 def _patch_webhook(
@@ -286,30 +282,27 @@ def _patch_webhook(
     webhook_body: schemas.PolicyWebhookUpdate = Body(...),
     webhook_cls: Union[PolicyPreWebhook, PolicyPostWebhook],
 ) -> schemas.PolicyWebhookUpdateResponse:
-    """Helper method to be shared between the endpoints that PATCH a single webhook, either
-    Pre-Execution or Post-Execution
+    """Helper method for PATCHing a single webhook, either Pre-Execution or Post-Execution
+
+    If the order is updated, this will affect the order of other webhooks.
     """
-    policy = _get_policy_or_error(db, policy_key)
-    loaded_webhook = _get_webhook_or_error(db, policy, webhook_key, webhook_cls)
+    policy = get_policy_or_error(db, policy_key)
+    loaded_webhook = get_policy_webhook_or_error(db, policy, webhook_key, webhook_cls)
     data = webhook_body.dict(exclude_none=True)
 
     if data.get("connection_config_key"):
-        connection_config: ConnectionConfig = ConnectionConfig.get_by(
-            db=db, field="key", value=data["connection_config_key"]
+        connection_config = get_connection_config_or_error(
+            db, data.get("connection_config_key")
         )
-
-        if not connection_config:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND,
-                detail=f"No ConnectionConfig found for key {data['connection_config_key']}.",
-            )
         data["connection_config_id"] = connection_config.id
 
-    # Removing index from incoming data - we'll set this later.
+    # Removing index from incoming data - we'll set this at the end.
     index = data.pop("order", None)
 
     try:
-        logger.info(f"Updating {webhook_cls.__class__} {webhook_key}")
+        logger.info(
+            f"Updating {webhook_cls.prefix.capitalize()}-Execution Webhook with key '{webhook_key}' on Policy '{policy_key}' "
+        )
         loaded_webhook.update(db, data=data)
     except KeyOrNameAlreadyExists as exc:
         raise HTTPException(
@@ -319,7 +312,7 @@ def _patch_webhook(
 
     if index is not None and index != loaded_webhook.order:
         logger.info(
-            f"Reordering {'Pre-Execution' if webhook_cls == PolicyPreWebhook else 'Post-Execution'} Webhooks for Policy {policy_key}"
+            f"Reordering {webhook_cls.prefix.capitalize()}-Execution Webhooks for Policy '{policy_key}'"
         )
         try:
             loaded_webhook.reorder_related_webhooks(db=db, new_index=index)
@@ -328,20 +321,20 @@ def _patch_webhook(
                 status_code=HTTP_400_BAD_REQUEST,
                 detail=exc.args[0],
             )
+
         return schemas.PolicyWebhookUpdateResponse(
             resource=loaded_webhook,
-            reordered=[
+            new_order=[
                 webhook
-                for webhook in webhook_cls.filter(
-                    db=db,
-                    conditions=(webhook_cls.policy_id == policy.id),
+                for webhook in getattr(
+                    policy, f"{webhook_cls.prefix}_execution_webhooks"
                 ).order_by(webhook_cls.order)
             ],
         )
 
     # Policy Webhooks are not committed by default, so we commit at the end.
     db.commit()
-    return schemas.PolicyWebhookUpdateResponse(resource=loaded_webhook, reordered=[])
+    return schemas.PolicyWebhookUpdateResponse(resource=loaded_webhook, new_order=[])
 
 
 @router.patch(

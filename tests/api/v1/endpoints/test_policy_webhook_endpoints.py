@@ -227,7 +227,7 @@ class TestGetPolicyPreExecutionWebhookDetail:
         body = json.loads(resp.text)
         assert (
             body["detail"]
-            == "No PolicyPreWebhook found for key pre_execution_one_way_webhook on Policy example_erasure_policy."
+            == "No Pre-Execution Webhook found for key 'pre_execution_one_way_webhook' on Policy 'example_erasure_policy'."
         )
 
     def test_get_pre_execution_policy_webhook_detail(
@@ -310,7 +310,7 @@ class TestGetPolicyPostExecutionWebhookDetail:
         body = json.loads(resp.text)
         assert (
             body["detail"]
-            == "No PolicyPostWebhook found for key cache_busting_webhook on Policy example_erasure_policy."
+            == "No Post-Execution Webhook found for key 'cache_busting_webhook' on Policy 'example_erasure_policy'."
         )
 
     def test_get_pre_execution_policy_webhook_detail(
@@ -399,7 +399,7 @@ class TestPutPolicyPreExecutionWebhooks:
         body = json.loads(resp.text)
         assert (
             body["detail"]
-            == "No ConnectionConfig found for key unknown_connection_key."
+            == "No connection configuration found with key 'unknown_connection_key'."
         )
         assert db.query(PolicyPreWebhook).count() == 0  # All must succeed or fail
 
@@ -451,7 +451,7 @@ class TestPutPolicyPreExecutionWebhooks:
         body = json.loads(resp.text)
         assert (
             body["detail"]
-            == "Check request body: there are multiple webhooks whose keys resolve to the same value."
+            == "Check request body: there are multiple webhooks whose keys or names resolve to the same value."
         )
 
         name_only = {
@@ -467,9 +467,34 @@ class TestPutPolicyPreExecutionWebhooks:
         body = json.loads(resp.text)
         assert (
             body["detail"]
-            == "Check request body: there are multiple webhooks whose keys resolve to the same value."
+            == "Check request body: there are multiple webhooks whose keys or names resolve to the same value."
         )
         assert db.query(PolicyPreWebhook).count() == 0  # All must succeed or fail
+
+    def test_put_pre_execution_webhooks_duplicate_names(
+        self,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        valid_webhook_request,
+        https_connection_config,
+    ):
+        second_payload = valid_webhook_request.copy()
+        second_payload["key"] = "new_key"
+
+        auth_header = generate_auth_header(scopes=[WEBHOOK_CREATE_OR_UPDATE])
+        resp = api_client.put(
+            url,
+            headers=auth_header,
+            json=[valid_webhook_request, valid_webhook_request],
+        )
+        assert resp.status_code == 400
+        body = json.loads(resp.text)
+        assert (
+            body["detail"]
+            == "Check request body: there are multiple webhooks whose keys or names resolve to the same value."
+        )
 
     def test_create_multiple_pre_execution_webhooks(
         self,
@@ -765,7 +790,7 @@ class TestPatchPreExecutionPolicyWebhook:
                 ),
                 "order": 0,
             },
-            "reordered": [],
+            "new_order": [],
         }
         webhook = PolicyPreWebhook.filter(
             db=db, conditions=(PolicyPreWebhook.key == "pre_execution_one_way_webhook")
@@ -796,7 +821,7 @@ class TestPatchPreExecutionPolicyWebhook:
                 ),
                 "order": 1,
             },
-            "reordered": [
+            "new_order": [
                 {"key": "pre_execution_two_way_webhook", "order": 0},
                 {"key": "pre_execution_one_way_webhook", "order": 1},
             ],
@@ -868,7 +893,7 @@ class TestPatchPostExecutionPolicyWebhook:
                 ),
                 "order": 1,
             },
-            "reordered": [
+            "new_order": [
                 {"key": "cleanup_webhook", "order": 0},
                 {"key": "cache_busting_webhook", "order": 1},
             ],

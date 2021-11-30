@@ -63,7 +63,7 @@ def get_policy_list(
     return paginate(policies, params=params)
 
 
-def _get_policy_or_error(db: Session, policy_key: FidesOpsKey) -> Policy:
+def get_policy_or_error(db: Session, policy_key: FidesOpsKey) -> Policy:
     """Helper method to load Policy or throw a 404"""
     logger.info(f"Finding policy with key '{policy_key}'")
     policy = Policy.get_by(db=db, field="key", value=policy_key)
@@ -90,7 +90,7 @@ def get_policy(
     """
     Return a single Policy
     """
-    return _get_policy_or_error(db, policy_key)
+    return get_policy_or_error(db, policy_key)
 
 
 @router.patch(
@@ -172,7 +172,7 @@ def create_or_update_rules(
     """
     logger.info(f"Finding policy with key '{policy_key}'")
 
-    policy = _get_policy_or_error(db, policy_key)
+    policy = get_policy_or_error(db, policy_key)
 
     created_or_updated: List[Rule] = []
     failed: List[BulkUpdateFailed] = []
@@ -274,7 +274,7 @@ def delete_rule(
     """
     Delete a policy rule.
     """
-    policy = _get_policy_or_error(db, policy_key)
+    policy = get_policy_or_error(db, policy_key)
 
     logger.info(f"Finding rule with key '{rule_key}'")
 
@@ -310,7 +310,7 @@ def create_or_update_rule_targets(
     Given a list of Rule data elements, create corresponding Rule objects
     or report failure
     """
-    policy = _get_policy_or_error(db, policy_key)
+    policy = get_policy_or_error(db, policy_key)
 
     logger.info(f"Finding rule with key '{rule_key}'")
     rule = Rule.filter(
@@ -396,7 +396,7 @@ def delete_rule_target(
     """
     Delete the rule target.
     """
-    policy = _get_policy_or_error(db, policy_key)
+    policy = get_policy_or_error(db, policy_key)
 
     logger.info(f"Finding rule with key '{rule_key}'")
     rule = Rule.filter(
