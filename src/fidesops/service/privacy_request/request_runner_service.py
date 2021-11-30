@@ -17,7 +17,7 @@ from fidesops.task.graph_task import (
     filter_data_categories,
     run_erasure,
 )
-from fidesops.util.async_util import run_async, wait_for
+from fidesops.util.async_util import run_async
 from fidesops.util.cache import FidesopsRedis
 
 
@@ -36,9 +36,7 @@ class PrivacyRequestRunner:
 
     def submit(self) -> Awaitable[None]:
         """Run this privacy request in a separate thread."""
-        run_async(self.run, self.privacy_request.id)
-        # wait_for(f)
-        # logging.info("WAITED ")
+        return run_async(self.run, self.privacy_request.id)
 
     def run(self, privacy_request_id: str) -> None:
         # pylint: disable=too-many-locals

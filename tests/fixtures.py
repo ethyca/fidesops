@@ -1,15 +1,16 @@
-from datetime import timezone
+import logging
 from datetime import datetime, timedelta
+from datetime import timezone
 from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
 
-from sqlalchemy.orm import Session
-from sqlalchemy.orm.exc import ObjectDeletedError
+import pydash
 import pytest
 import yaml
-import logging, json
 from faker import Faker
+from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fidesops.core.config import load_file, load_toml
 from fidesops.models.client import ClientDetail
@@ -26,10 +27,10 @@ from fidesops.models.policy import (
     Rule,
     RuleTarget,
 )
+from fidesops.models.privacy_request import ExecutionLog
 from fidesops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
-    ExecutionLog,
     ExecutionLogStatus,
 )
 from fidesops.models.storage import StorageConfig, ResponseFormat
@@ -44,15 +45,7 @@ from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
-
 from fidesops.util.cache import FidesopsRedis
-import threading
-import time
-from typing import Callable, Any
-import logging
-from sqlalchemy import and_
-
-from fidesops.models.privacy_request import ExecutionLog
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -63,26 +56,24 @@ integration_config = load_toml("fidesops-integration.toml")
 
 integration_secrets = {
     "postgres_example": {
-        "host": integration_config["postgres_example"]["SERVER"],
-        "port": integration_config["postgres_example"]["PORT"],
-        "dbname": integration_config["postgres_example"]["DB"],
-        "username": integration_config["postgres_example"]["USER"],
-        "password": integration_config["postgres_example"]["PASSWORD"],
+        "host": pydash.get(integration_config, "postgres_example.SERVER"),
+        "port": pydash.get(integration_config, "postgres_example.PORT"),
+        "dbname": pydash.get(integration_config, "postgres_example.DB"),
+        "username": pydash.get(integration_config, "postgres_example.USER"),
+        "password": pydash.get(integration_config, "postgres_example.PASSWORD"),
     },
     "mongo_example": {
-        "host": integration_config["mongodb_example"]["SERVER"],
-        "defaultauthdb": integration_config["mongodb_example"]["DB"],
-        "username": integration_config["mongodb_example"]["USER"],
-        "password": integration_config["mongodb_example"]["PASSWORD"],
+        "host": pydash.get(integration_config, "mongodb_example.SERVER"),
+        "defaultauthdb": pydash.get(integration_config, "mongodb_example.DB"),
+        "username": pydash.get(integration_config, "mongodb_example.USER"),
+        "password": pydash.get(integration_config, "mongodb_example.PASSWORD"),
     },
     "mysql_example": {
-        "host": integration_config["mysql_example"]["SERVER"],
-        "port": "PORT" in integration_config["mysql_example"]
-        and integration_config["mysql_example"]["PORT"]
-        or None,
-        "dbname": integration_config["mysql_example"]["DB"],
-        "username": integration_config["mysql_example"]["USER"],
-        "password": integration_config["mysql_example"]["PASSWORD"],
+        "host": pydash.get(integration_config, "mysql_example.SERVER"),
+        "port": pydash.get(integration_config, "mysql_example.PORT"),
+        "dbname": pydash.get(integration_config, "mysql_example.DB"),
+        "username": pydash.get(integration_config, "mysql_example.USER"),
+        "password": pydash.get(integration_config, "mysql_example.PASSWORD"),
     },
 }
 

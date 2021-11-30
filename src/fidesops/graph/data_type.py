@@ -96,7 +96,7 @@ class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
         if t == str and len(other) == 24:
             try:
                 return ObjectId(other)
-            except (InvalidId, TypeError) as e:
+            except (InvalidId, TypeError):
                 return None
         return None
 

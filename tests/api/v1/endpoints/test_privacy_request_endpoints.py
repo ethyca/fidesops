@@ -40,9 +40,9 @@ from fidesops.schemas.dataset import DryRunDatasetResponse
 from fidesops.service.connectors import PostgreSQLConnector
 from fidesops.util.cache import get_identity_cache_key, get_encryption_cache_key
 from ....test_support import wait_for_privacy_request, wait_for
+import time
 
 page_size = Params().size
-url = "/api/v1/privacy-request"
 
 
 def stringify_date(log_date: datetime) -> str:
@@ -306,7 +306,6 @@ class TestCreatePrivacyRequest:
         generate_auth_header,
         policy,
     ):
-
         customer_email = "customer-1@example.com"
         data = [
             {
@@ -316,13 +315,15 @@ class TestCreatePrivacyRequest:
             }
         ]
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post("url", json=data, headers=auth_header)
+        resp = api_client.post(url, json=data, headers=auth_header)
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
+        wait_for_privacy_request(db, response_data[0]["id"])
+        time.sleep(2)
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         results = pr.get_results()
-        assert len(results.keys()) == 11  ######## FAIL ########
+        assert len(results.keys()) == 11
 
         for key in results.keys():
             assert results[key] is not None
@@ -371,6 +372,7 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         wait_for_privacy_request(db, response_data[0]["id"])
+        time.sleep(2)
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
 
@@ -425,6 +427,7 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         wait_for_privacy_request(db, response_data[0]["id"])
+        time.sleep(2)
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
 
@@ -488,6 +491,7 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         wait_for_privacy_request(db, response_data[0]["id"])
+        time.sleep(2)
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
 
@@ -544,10 +548,6 @@ class TestCreatePrivacyRequest:
         time.sleep(1)
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         errored_execution_logs = pr.execution_logs.filter_by(status="error")
-        for l in errored_execution_logs:
-            print(f"\n\nEXECUTION LOG {l.__dict__}")
-        for l in pr.execution_logs:
-            print(f"\n---> {l.__dict__}")
         assert errored_execution_logs.count() == 9
         assert (
             errored_execution_logs[0].message
@@ -707,9 +707,7 @@ class TestGetPrivacyRequests:
         response = api_client.get(url + f"?created_gt=2019-01-01", headers=auth_header)
         assert 200 == response.status_code
         resp = response.json()
-        ####### FAIL ########
         assert len(resp["items"]) == 3
-        print(json.dumps(resp, indent=2))
         assert resp["items"][0]["id"] == privacy_request.id
         assert resp["items"][1]["id"] == succeeded_privacy_request.id
         assert resp["items"][2]["id"] == failed_privacy_request.id
@@ -727,14 +725,13 @@ class TestGetPrivacyRequests:
         response = api_client.get(url + f"?started_lt=2021-05-01", headers=auth_header)
         assert 200 == response.status_code
         resp = response.json()
-        assert len(resp["items"]) == 2  ####### FAIL ########
+        assert len(resp["items"]) == 2
         assert resp["items"][0]["id"] == privacy_request.id
         assert resp["items"][1]["id"] == failed_privacy_request.id
 
         response = api_client.get(url + f"?started_gt=2021-05-01", headers=auth_header)
         assert 200 == response.status_code
         resp = response.json()
-        ####### FAIL ########
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
 
@@ -889,7 +886,6 @@ class TestGetPrivacyRequests:
             "page": 1,
             "size": page_size,
         }
-        ####### FAIL ######## s
         assert resp == expected_resp
 
     def test_verbose_privacy_request_embed_limit(
