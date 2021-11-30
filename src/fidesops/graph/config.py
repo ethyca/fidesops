@@ -222,6 +222,8 @@ class Field(BaseModel):
 
 @dataclass
 class MaskingOverride:
+    """Data class to store override params related to data masking"""
+
     data_type: Optional[DataType]
     length: Optional[int]
 

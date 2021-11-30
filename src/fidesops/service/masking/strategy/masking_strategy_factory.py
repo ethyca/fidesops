@@ -23,7 +23,10 @@ from fidesops.common_exceptions import (
     NoSuchStrategyException,
 )
 
-from fidesops.schemas.masking.masking_configuration import FormatPreservationConfig, MaskingConfiguration
+from fidesops.schemas.masking.masking_configuration import (
+    FormatPreservationConfig,
+    MaskingConfiguration,
+)
 
 
 class SupportedMaskingStrategies(Enum):
@@ -54,7 +57,9 @@ def get_strategy(
         )
     strategy = SupportedMaskingStrategies[strategy_name].value
     try:
-        strategy_config: MaskingConfiguration = strategy.get_configuration_model()(**configuration)
+        strategy_config: MaskingConfiguration = strategy.get_configuration_model()(
+            **configuration
+        )
         return strategy(configuration=strategy_config)
     except ValidationError as e:
         raise FidesopsValidationError(message=str(e))
