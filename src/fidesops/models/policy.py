@@ -515,7 +515,7 @@ class WebhookBase:
             cls.order
         )  # pylint: disable=W0143
 
-        if new_index > webhooks.count() - 1:
+        if new_index > webhooks.count() - 1 or new_index < 0:
             raise WebhookOrderException(
                 f"Cannot set order to {new_index}: there are only {webhooks.count()} {cls.__name__}(s) defined on this Policy."
             )

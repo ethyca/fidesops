@@ -15,6 +15,7 @@ from fidesops.api.v1.endpoints.connection_endpoints import (
 )
 from fidesops.api.v1.endpoints.policy_endpoints import get_policy_or_error
 from fidesops.db.base_class import get_key_from_data
+from fidesops.schemas.policy_webhooks import PolicyWebhookDeleteResponse
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from pydantic import conlist
 from sqlalchemy.orm import Session
@@ -389,5 +390,85 @@ def update_post_execution_webhook(
         policy_key=policy_key,
         webhook_key=post_webhook_key,
         webhook_body=webhook_body,
+        webhook_cls=PolicyPostWebhook,
+    )
+
+
+def delete_webhook(
+    *,
+    db: Session = Depends(deps.get_db),
+    policy_key: FidesOpsKey,
+    webhook_key: FidesOpsKey,
+    webhook_cls: Union[PolicyPreWebhook, PolicyPostWebhook],
+) -> PolicyWebhookDeleteResponse:
+    """Handles deleting Pre- or Post-Execution Policy Webhooks. Related webhooks are reordered as necessary"""
+    policy = get_policy_or_error(db, policy_key)
+    loaded_webhook = get_policy_webhook_or_error(db, policy, webhook_key, webhook_cls)
+    total_webhook_count = (
+        getattr(policy, f"{webhook_cls.prefix}_execution_webhooks").count() - 1
+    )
+    reordering = total_webhook_count != loaded_webhook.order
+
+    if reordering:
+        # Move the webhook to the end and shuffle other webhooks
+        logger.info(
+            f"Reordering {webhook_cls.prefix.capitalize()}-Execution Webhooks for Policy '{policy_key}'"
+        )
+        loaded_webhook.reorder_related_webhooks(db=db, new_index=total_webhook_count)
+
+    logger.info(
+        f"Deleting {webhook_cls.prefix.capitalize()}-Execution Webhook with key '{webhook_key}' off of Policy '{policy_key}'"
+    )
+    loaded_webhook.delete(db=db)
+    return PolicyWebhookDeleteResponse(
+        new_order=[
+            webhook
+            for webhook in getattr(
+                policy, f"{webhook_cls.prefix}_execution_webhooks"
+            ).order_by(webhook_cls.order)
+        ]
+        if reordering
+        else []
+    )
+
+
+@router.delete(
+    urls.POLICY_PRE_WEBHOOK_DETAIL,
+    status_code=200,
+    dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_DELETE])],
+    response_model=schemas.PolicyWebhookDeleteResponse,
+)
+def delete_pre_execution_webhook(
+    *,
+    db: Session = Depends(deps.get_db),
+    policy_key: FidesOpsKey,
+    pre_webhook_key: FidesOpsKey,
+) -> schemas.PolicyWebhookDeleteResponse:
+    """Delete the Pre-Execution Webhook from the Policy and reorder remaining webhooks as necessary."""
+    return delete_webhook(
+        db=db,
+        policy_key=policy_key,
+        webhook_key=pre_webhook_key,
+        webhook_cls=PolicyPreWebhook,
+    )
+
+
+@router.delete(
+    urls.POLICY_POST_WEBHOOK_DETAIL,
+    status_code=200,
+    dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_DELETE])],
+    response_model=schemas.PolicyWebhookDeleteResponse,
+)
+def delete_post_execution_webhook(
+    *,
+    db: Session = Depends(deps.get_db),
+    policy_key: FidesOpsKey,
+    post_webhook_key: FidesOpsKey,
+) -> schemas.PolicyWebhookDeleteResponse:
+    """Delete the Post-Execution Webhook from the Policy and reorder remaining webhooks as necessary."""
+    return delete_webhook(
+        db=db,
+        policy_key=policy_key,
+        webhook_key=post_webhook_key,
         webhook_cls=PolicyPostWebhook,
     )

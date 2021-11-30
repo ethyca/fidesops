@@ -77,9 +77,13 @@ class PolicyWebhookUpdateResponse(BaseSchema):
     resource: PolicyWebhookResponse
     new_order: List[WebhookOrder]
 
+
+class PolicyWebhookDeleteResponse(BaseSchema):
+    """Response schema after deleting a webhook; new_order includes remaining reordered webhooks if applicable"""
+
+    new_order: List[WebhookOrder]
+
     class Config:
-        """Set orm_mode to True and don't allow extra vlalues in the request"""
+        """Set orm_mode to True"""
 
         orm_mode = True
-        extra = "forbid"
-        use_enum_values = True

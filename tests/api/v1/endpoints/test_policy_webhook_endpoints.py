@@ -8,6 +8,7 @@ from fidesops.api.v1.scope_registry import (
     WEBHOOK_READ,
     WEBHOOK_CREATE_OR_UPDATE,
     POLICY_READ,
+    WEBHOOK_DELETE,
 )
 from fidesops.api.v1.urn_registry import (
     V1_URL_PREFIX,
@@ -901,3 +902,106 @@ class TestPatchPostExecutionPolicyWebhook:
 
         db.refresh(webhook)
         assert webhook.order == 1
+
+
+class TestDeletePolicyPreWebhook:
+    @pytest.fixture(scope="function")
+    def url(self, policy, policy_pre_execution_webhooks) -> str:
+        return V1_URL_PREFIX + POLICY_PRE_WEBHOOK_DETAIL.format(
+            policy_key=policy.key, pre_webhook_key=policy_pre_execution_webhooks[0].key
+        )
+
+    def test_delete_pre_execution_webhook(self, url, api_client):
+        resp = api_client.delete(url)
+        assert resp.status_code == 401
+
+    def test_delete_pre_execution_webhook_detail_wrong_scope(
+        self, url, api_client, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
+        resp = api_client.delete(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    def test_delete_pre_execution_webhook_detail_and_reorder(
+        self,
+        url,
+        api_client,
+        generate_auth_header,
+        policy,
+        policy_pre_execution_webhooks,
+    ):
+        auth_header = generate_auth_header(scopes=[WEBHOOK_DELETE])
+        resp = api_client.delete(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        body = json.loads(resp.text)
+        assert body == {
+            "new_order": [{"key": policy_pre_execution_webhooks[1].key, "order": 0}]
+        }
+
+        assert policy.pre_execution_webhooks.count() == 1
+
+
+class TestDeletePolicyPostWebhook:
+    @pytest.fixture(scope="function")
+    def url(self, policy, policy_post_execution_webhooks) -> str:
+        return V1_URL_PREFIX + POLICY_POST_WEBHOOK_DETAIL.format(
+            policy_key=policy.key,
+            post_webhook_key=policy_post_execution_webhooks[0].key,
+        )
+
+    def test_delete_pre_execution_webhook(self, url, api_client):
+        resp = api_client.delete(url)
+        assert resp.status_code == 401
+
+    def test_delete_post_execution_webhook_detail_wrong_scope(
+        self, url, api_client, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
+        resp = api_client.delete(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    def test_delete_post_execution_webhook_detail_and_reorder(
+        self,
+        url,
+        api_client,
+        generate_auth_header,
+        policy,
+        policy_post_execution_webhooks,
+    ):
+        auth_header = generate_auth_header(scopes=[WEBHOOK_DELETE])
+        resp = api_client.delete(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        body = json.loads(resp.text)
+        assert body == {
+            "new_order": [{"key": policy_post_execution_webhooks[1].key, "order": 0}]
+        }
+
+        assert policy.post_execution_webhooks.count() == 1
+
+        url = V1_URL_PREFIX + POLICY_POST_WEBHOOK_DETAIL.format(
+            policy_key=policy.key,
+            post_webhook_key=policy_post_execution_webhooks[1].key,
+        )
+        resp = api_client.delete(
+            url,
+            headers=auth_header,
+        )
+        body = json.loads(resp.text)
+        assert body == {
+            "new_order": []
+        }
+
+        assert policy.post_execution_webhooks.count() == 0
+
