@@ -57,20 +57,21 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
 
 
 def get_privacy_request_results(
-    db, policy, cache, privacy_request_data: Dict[str, Any] ) -> PrivacyRequest:
+    db, policy, cache, privacy_request_data: Dict[str, Any]
+) -> PrivacyRequest:
     """Utility method to run a privacy request and return results after waiting for
     the returned future."""
     kwargs = {
-        "requested_at": pydash.get(privacy_request_data,"requested_at"),
+        "requested_at": pydash.get(privacy_request_data, "requested_at"),
         "policy_id": policy.id,
         "status": "pending",
-        #"client_id": client.id,
+        # "client_id": client.id,
     }
-    optional_fields = [ "started_processing_at", "finished_processing_at"]
+    optional_fields = ["started_processing_at", "finished_processing_at"]
     for field in optional_fields:
         try:
-           attr = getattr(privacy_request_data, field)
-           if attr is not None:
+            attr = getattr(privacy_request_data, field)
+            if attr is not None:
                 kwargs[field] = attr
         except AttributeError:
             pass
@@ -79,7 +80,7 @@ def get_privacy_request_results(
     print(json.dumps(privacy_request_data, indent=2))
     for identity in privacy_request_data["identities"]:
         privacy_request.cache_identity(identity)
-        if "encryption_key" in  privacy_request_data:
+        if "encryption_key" in privacy_request_data:
             privacy_request.cache_encryption(privacy_request_data["encryption_key"])
 
     wait_for(
@@ -102,12 +103,11 @@ def test_create_and_process_access_request(
 ):
 
     customer_email = "customer-1@example.com"
-    data =  {
-            "requested_at": "2021-08-30T16:09:37.359Z",
-            "policy_key": policy.key,
-            "identities": [{"email": customer_email}],
-        }
-
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identities": [{"email": customer_email}],
+    }
 
     pr = get_privacy_request_results(db, policy, cache, data)
 
@@ -144,11 +144,11 @@ def test_create_and_process_erasure_request_specific_category(
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
-    data =  {
-            "requested_at": "2021-08-30T16:09:37.359Z",
-            "policy_key": erasure_policy.key,
-            "identities": [{"email": customer_email}],
-        }
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy.key,
+        "identities": [{"email": customer_email}],
+    }
 
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
     pr.delete(db=db)

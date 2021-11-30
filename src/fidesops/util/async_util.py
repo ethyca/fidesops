@@ -1,13 +1,17 @@
 import asyncio
+from asyncio import AbstractEventLoop
 from typing import TypeVar, Callable, Any, Awaitable, Optional
 import logging
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
-def _loop():
+
+def _loop() -> AbstractEventLoop:
     asyncio.set_event_loop(asyncio.SelectorEventLoop())
     return asyncio.get_event_loop()
+
+
 def run_async(task: Callable[[Any], T], *args: Any) -> Awaitable[T]:
     """Run a callable async"""
     if not callable(task):
@@ -22,5 +26,5 @@ def wait_for(t: Awaitable[T]) -> Optional[T]:
     return asyncio.get_event_loop().run_until_complete(t)
 
 
-def close():
+def close() -> None:
     _loop().close()

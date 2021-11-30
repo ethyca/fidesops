@@ -509,7 +509,7 @@ class TestGetPrivacyRequests:
         assert (
             postgres_execution_log.updated_at < second_postgres_execution_log.updated_at
         )
-        #wait_for_privacy_request(db, privacy_request.id)
+        # wait_for_privacy_request(db, privacy_request.id)
         expected_resp = {
             "items": [
                 {
