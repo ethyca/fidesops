@@ -273,7 +273,10 @@ class OrmWrappedFidesopsBase(FidesopsBase):
 
     @classmethod
     def persist_obj(cls, db: Session, resource: FidesopsBase) -> FidesopsBase:
-        """Method to be run after 'create' or 'save' to write the resource to the db"""
+        """Method to be run after 'create' or 'save' to write the resource to the db
+
+        Can be overridden on subclasses to not commit immediately when creating/updating.
+        """
         db.add(resource)
         db.commit()
         db.refresh(resource)

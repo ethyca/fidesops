@@ -4,7 +4,11 @@ from typing import Dict
 
 import pytest
 
-from fidesops.api.v1.scope_registry import WEBHOOK_READ, WEBHOOK_CREATE_OR_UPDATE
+from fidesops.api.v1.scope_registry import (
+    WEBHOOK_READ,
+    WEBHOOK_CREATE_OR_UPDATE,
+    POLICY_READ,
+)
 from fidesops.api.v1.urn_registry import (
     V1_URL_PREFIX,
     POLICY_WEBHOOKS_PRE,
@@ -12,8 +16,326 @@ from fidesops.api.v1.urn_registry import (
     POLICY_PRE_WEBHOOK_DETAIL,
     POLICY_POST_WEBHOOK_DETAIL,
 )
+from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.policy import PolicyPreWebhook, PolicyPostWebhook
 from tests.api.v1.endpoints.test_privacy_request_endpoints import stringify_date
+
+
+def embedded_http_connection_config(connection_config: ConnectionConfig) -> Dict:
+    """Helper to reduce clutter - a lot of the tests below assert the entire response body, which includes the
+    https connection config"""
+    return {
+        "name": connection_config.name,
+        "key": connection_config.key,
+        "connection_type": "https",
+        "access": connection_config.access.value,
+        "created_at": stringify_date(connection_config.created_at),
+        "updated_at": stringify_date(connection_config.updated_at),
+        "last_test_timestamp": None,
+        "last_test_succeeded": None,
+    }
+
+
+class TestGetPolicyPreExecutionWebhooks:
+    @pytest.fixture(scope="function")
+    def url(self, policy) -> str:
+        return V1_URL_PREFIX + POLICY_WEBHOOKS_PRE.format(policy_key=policy.key)
+
+    def test_get_pre_execution_webhooks_unauthenticated(self, url, api_client):
+        resp = api_client.get(url)
+        assert resp.status_code == 401
+
+    def test_get_pre_execution_webhooks_wrong_scope(
+        self, url, api_client, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[POLICY_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    def test_invalid_policy(self, db, api_client, generate_auth_header):
+        url = V1_URL_PREFIX + POLICY_WEBHOOKS_PRE.format(policy_key="my_fake_policy")
+        auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
+        resp = api_client.get(url, headers=auth_header)
+
+        assert resp.status_code == 404
+        body = json.loads(resp.text)
+        assert body["detail"] == "No Policy found for key my_fake_policy."
+
+    def test_get_pre_execution_policy_webhooks(
+        self,
+        url,
+        db,
+        api_client,
+        generate_auth_header,
+        policy_pre_execution_webhooks,
+        https_connection_config,
+    ):
+        auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        body = json.loads(resp.text)
+
+        assert body == {
+            "items": [
+                {
+                    "direction": "one_way",
+                    "key": "pre_execution_one_way_webhook",
+                    "name": policy_pre_execution_webhooks[0].name,
+                    "connection_config": embedded_http_connection_config(
+                        https_connection_config
+                    ),
+                    "order": 0,
+                },
+                {
+                    "direction": "two_way",
+                    "key": "pre_execution_two_way_webhook",
+                    "name": policy_pre_execution_webhooks[1].name,
+                    "connection_config": embedded_http_connection_config(
+                        https_connection_config
+                    ),
+                    "order": 1,
+                },
+            ],
+            "total": 2,
+            "page": 1,
+            "size": 50,
+        }
+
+
+class TestGetPolicyPostExecutionWebhooks:
+    @pytest.fixture(scope="function")
+    def url(self, policy) -> str:
+        return V1_URL_PREFIX + POLICY_WEBHOOKS_POST.format(policy_key=policy.key)
+
+    def test_get_post_execution_webhooks_unauthenticated(self, url, api_client):
+        resp = api_client.get(url)
+        assert resp.status_code == 401
+
+    def test_get_post_execution_webhooks_wrong_scope(
+        self, url, api_client, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[POLICY_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    def test_invalid_policy(self, db, api_client, generate_auth_header):
+        url = V1_URL_PREFIX + POLICY_WEBHOOKS_PRE.format(policy_key="my_fake_policy")
+        auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
+        resp = api_client.get(url, headers=auth_header)
+
+        assert resp.status_code == 404
+        body = json.loads(resp.text)
+        assert body["detail"] == "No Policy found for key my_fake_policy."
+
+    def test_get_post_execution_policy_webhooks(
+        self,
+        url,
+        db,
+        api_client,
+        generate_auth_header,
+        policy_post_execution_webhooks,
+        https_connection_config,
+    ):
+        auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        body = json.loads(resp.text)
+        assert body == {
+            "items": [
+                {
+                    "direction": "one_way",
+                    "key": "cache_busting_webhook",
+                    "name": policy_post_execution_webhooks[0].name,
+                    "connection_config": embedded_http_connection_config(
+                        https_connection_config
+                    ),
+                    "order": 0,
+                },
+                {
+                    "direction": "one_way",
+                    "key": "cleanup_webhook",
+                    "name": policy_post_execution_webhooks[1].name,
+                    "connection_config": embedded_http_connection_config(
+                        https_connection_config
+                    ),
+                    "order": 1,
+                },
+            ],
+            "total": 2,
+            "page": 1,
+            "size": 50,
+        }
+
+
+class TestGetPolicyPreExecutionWebhookDetail:
+    @pytest.fixture(scope="function")
+    def url(self, policy, policy_pre_execution_webhooks) -> str:
+        return V1_URL_PREFIX + POLICY_PRE_WEBHOOK_DETAIL.format(
+            policy_key=policy.key, pre_webhook_key=policy_pre_execution_webhooks[0].key
+        )
+
+    def test_get_pre_execution_webhook_detail_unauthenticated(self, url, api_client):
+        resp = api_client.get(url)
+        assert resp.status_code == 401
+
+    def test_get_pre_execution_webhook_detail_wrong_scope(
+        self, url, api_client, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[POLICY_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    def test_invalid_policy(
+        self, db, api_client, generate_auth_header, policy_pre_execution_webhooks
+    ):
+        url = V1_URL_PREFIX + POLICY_PRE_WEBHOOK_DETAIL.format(
+            policy_key="my_fake_policy",
+            pre_webhook_key=policy_pre_execution_webhooks[0].key,
+        )
+        auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
+        resp = api_client.get(url, headers=auth_header)
+
+        assert resp.status_code == 404
+        body = json.loads(resp.text)
+        assert body["detail"] == "No Policy found for key my_fake_policy."
+
+    def test_webhook_not_on_policy(
+        self,
+        db,
+        api_client,
+        generate_auth_header,
+        erasure_policy,
+        policy_pre_execution_webhooks,
+    ):
+        url = V1_URL_PREFIX + POLICY_PRE_WEBHOOK_DETAIL.format(
+            policy_key=erasure_policy.key,
+            pre_webhook_key=policy_pre_execution_webhooks[0].key,
+        )
+        auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
+        resp = api_client.get(url, headers=auth_header)
+
+        assert resp.status_code == 404
+        body = json.loads(resp.text)
+        assert (
+            body["detail"]
+            == "No PolicyPreWebhook found for key pre_execution_one_way_webhook on Policy example_erasure_policy."
+        )
+
+    def test_get_pre_execution_policy_webhook_detail(
+        self,
+        url,
+        db,
+        api_client,
+        generate_auth_header,
+        policy_pre_execution_webhooks,
+        https_connection_config,
+    ):
+        auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        body = json.loads(resp.text)
+
+        assert body == {
+            "direction": "one_way",
+            "key": "pre_execution_one_way_webhook",
+            "name": policy_pre_execution_webhooks[0].name,
+            "connection_config": embedded_http_connection_config(
+                https_connection_config
+            ),
+            "order": 0,
+        }
+
+
+class TestGetPolicyPostExecutionWebhookDetail:
+    @pytest.fixture(scope="function")
+    def url(self, policy, policy_post_execution_webhooks) -> str:
+        return V1_URL_PREFIX + POLICY_POST_WEBHOOK_DETAIL.format(
+            policy_key=policy.key,
+            post_webhook_key=policy_post_execution_webhooks[0].key,
+        )
+
+    def test_get_post_execution_webhook_detail_unauthenticated(self, url, api_client):
+        resp = api_client.get(url)
+        assert resp.status_code == 401
+
+    def test_get_post_execution_webhook_detail_wrong_scope(
+        self, url, api_client, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[POLICY_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    def test_invalid_policy(
+        self, db, api_client, generate_auth_header, policy_post_execution_webhooks
+    ):
+        url = V1_URL_PREFIX + POLICY_POST_WEBHOOK_DETAIL.format(
+            policy_key="my_fake_policy",
+            post_webhook_key=policy_post_execution_webhooks[0].key,
+        )
+        auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
+        resp = api_client.get(url, headers=auth_header)
+
+        assert resp.status_code == 404
+        body = json.loads(resp.text)
+        assert body["detail"] == "No Policy found for key my_fake_policy."
+
+    def test_webhook_not_on_policy(
+        self,
+        db,
+        api_client,
+        generate_auth_header,
+        erasure_policy,
+        policy_post_execution_webhooks,
+    ):
+        url = V1_URL_PREFIX + POLICY_POST_WEBHOOK_DETAIL.format(
+            policy_key=erasure_policy.key,
+            post_webhook_key=policy_post_execution_webhooks[0].key,
+        )
+        auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
+        resp = api_client.get(url, headers=auth_header)
+
+        assert resp.status_code == 404
+        body = json.loads(resp.text)
+        assert (
+            body["detail"]
+            == "No PolicyPostWebhook found for key cache_busting_webhook on Policy example_erasure_policy."
+        )
+
+    def test_get_pre_execution_policy_webhook_detail(
+        self,
+        url,
+        db,
+        api_client,
+        generate_auth_header,
+        policy_post_execution_webhooks,
+        https_connection_config,
+    ):
+        auth_header = generate_auth_header(scopes=[WEBHOOK_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        body = json.loads(resp.text)
+
+        assert body == {
+            "direction": "one_way",
+            "key": "cache_busting_webhook",
+            "name": policy_post_execution_webhooks[0].name,
+            "connection_config": embedded_http_connection_config(
+                https_connection_config
+            ),
+            "order": 0,
+        }
 
 
 class TestPutPolicyPreExecutionWebhooks:
@@ -177,32 +499,18 @@ class TestPutPolicyPreExecutionWebhooks:
                 "direction": "one_way",
                 "key": "poke_snowflake_webhook",
                 "name": "Poke Snowflake Webhook",
-                "connection_config": {
-                    "name": https_connection_config.name,
-                    "key": "my_webhook_config",
-                    "connection_type": "https",
-                    "access": "read",
-                    "created_at": stringify_date(https_connection_config.created_at),
-                    "updated_at": stringify_date(https_connection_config.updated_at),
-                    "last_test_timestamp": None,
-                    "last_test_succeeded": None,
-                },
+                "connection_config": embedded_http_connection_config(
+                    https_connection_config
+                ),
                 "order": 0,
             },
             {
                 "direction": "two_way",
                 "key": "my_pre_execution_webhook",
                 "name": "My Pre Execution Webhook",
-                "connection_config": {
-                    "name": https_connection_config.name,
-                    "key": "my_webhook_config",
-                    "connection_type": "https",
-                    "access": "read",
-                    "created_at": stringify_date(https_connection_config.created_at),
-                    "updated_at": stringify_date(https_connection_config.updated_at),
-                    "last_test_timestamp": None,
-                    "last_test_succeeded": None,
-                },
+                "connection_config": embedded_http_connection_config(
+                    https_connection_config
+                ),
                 "order": 1,
             },
         ]
@@ -352,32 +660,18 @@ class TestPutPolicyPostExecutionWebhooks:
                 "direction": "one_way",
                 "key": "clear_app_cache",
                 "name": "Clear App Cache",
-                "connection_config": {
-                    "name": https_connection_config.name,
-                    "key": "my_webhook_config",
-                    "connection_type": "https",
-                    "access": "read",
-                    "created_at": stringify_date(https_connection_config.created_at),
-                    "updated_at": stringify_date(https_connection_config.updated_at),
-                    "last_test_timestamp": None,
-                    "last_test_succeeded": None,
-                },
+                "connection_config": embedded_http_connection_config(
+                    https_connection_config
+                ),
                 "order": 0,
             },
             {
                 "direction": "two_way",
                 "key": "my_post_execution_webhook",
                 "name": "My Post Execution Webhook",
-                "connection_config": {
-                    "name": https_connection_config.name,
-                    "key": "my_webhook_config",
-                    "connection_type": "https",
-                    "access": "read",
-                    "created_at": stringify_date(https_connection_config.created_at),
-                    "updated_at": stringify_date(https_connection_config.updated_at),
-                    "last_test_timestamp": None,
-                    "last_test_succeeded": None,
-                },
+                "connection_config": embedded_http_connection_config(
+                    https_connection_config
+                ),
                 "order": 1,
             },
         ]
@@ -466,16 +760,9 @@ class TestPatchPreExecutionPolicyWebhook:
                 "direction": "one_way",
                 "key": "pre_execution_one_way_webhook",
                 "name": "Renaming this webhook",
-                "connection_config": {
-                    "name": https_connection_config.name,
-                    "key": "my_webhook_config",
-                    "connection_type": "https",
-                    "access": "read",
-                    "created_at": stringify_date(https_connection_config.created_at),
-                    "updated_at": stringify_date(https_connection_config.updated_at),
-                    "last_test_timestamp": None,
-                    "last_test_succeeded": None,
-                },
+                "connection_config": embedded_http_connection_config(
+                    https_connection_config
+                ),
                 "order": 0,
             },
             "reordered": [],
@@ -504,16 +791,9 @@ class TestPatchPreExecutionPolicyWebhook:
                 "direction": "one_way",
                 "key": "pre_execution_one_way_webhook",
                 "name": "Renaming this webhook",
-                "connection_config": {
-                    "name": https_connection_config.name,
-                    "key": "my_webhook_config",
-                    "connection_type": "https",
-                    "access": "read",
-                    "created_at": stringify_date(https_connection_config.created_at),
-                    "updated_at": stringify_date(https_connection_config.updated_at),
-                    "last_test_timestamp": None,
-                    "last_test_succeeded": None,
-                },
+                "connection_config": embedded_http_connection_config(
+                    https_connection_config
+                ),
                 "order": 1,
             },
             "reordered": [
@@ -583,16 +863,9 @@ class TestPatchPostExecutionPolicyWebhook:
                 "direction": "two_way",
                 "key": "cache_busting_webhook",
                 "name": "Better Webhook Name",
-                "connection_config": {
-                    "name": https_connection_config.name,
-                    "key": "my_webhook_config",
-                    "connection_type": "https",
-                    "access": "read",
-                    "created_at": stringify_date(https_connection_config.created_at),
-                    "updated_at": stringify_date(https_connection_config.updated_at),
-                    "last_test_timestamp": None,
-                    "last_test_succeeded": None,
-                },
+                "connection_config": embedded_http_connection_config(
+                    https_connection_config
+                ),
                 "order": 1,
             },
             "reordered": [

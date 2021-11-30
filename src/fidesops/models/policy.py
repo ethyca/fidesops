@@ -25,6 +25,7 @@ from sqlalchemy.orm import (
     relationship,
     Session,
     declared_attr,
+    backref,
 )
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
@@ -510,9 +511,10 @@ class WebhookBase:
         """
 
         cls = self.__class__
-        webhooks = (
-            db.query(cls).filter(cls.policy_id == self.policy_id).order_by(cls.order)  # pylint: disable=W0143
-        )
+        webhooks = getattr(self.policy, f"{cls.prefix}_execution_webhooks").order_by(
+            cls.order
+        )  # pylint: disable=W0143
+
         if new_index > webhooks.count() - 1:
             raise WebhookOrderException(
                 f"Cannot set order to {new_index}: there are only {webhooks.count()} {cls.__name__}(s) defined on this Policy."
@@ -528,9 +530,15 @@ class WebhookBase:
 class PolicyPreWebhook(WebhookBase, Base):
     """The configuration to describe webhooks that run before Privacy Requests are executed for a given Policy"""
 
+    prefix = "pre"  # For logging purposes
+
     connection_config = relationship(
         ConnectionConfig,
         backref="policy_pre_execution_webhooks",
+    )
+
+    policy = relationship(
+        "Policy", backref=backref("pre_execution_webhooks", lazy="dynamic")
     )
 
     @classmethod
@@ -545,9 +553,15 @@ class PolicyPreWebhook(WebhookBase, Base):
 class PolicyPostWebhook(WebhookBase, Base):
     """The configuration to describe webhooks that run after Privacy Requests are executed for a given Policy"""
 
+    prefix = "post"  # For logging purposes
+
     connection_config = relationship(
         ConnectionConfig,
         backref="policy_post_execution_webhooks",
+    )
+
+    policy = relationship(
+        "Policy", backref=backref("post_execution_webhooks", lazy="dynamic")
     )
 
     @classmethod
