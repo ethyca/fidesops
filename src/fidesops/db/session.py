@@ -14,7 +14,10 @@ from fidesops.core.config import config
 logger = logging.getLogger(__name__)
 
 
-def get_db_engine(database_uri: Optional[str] = None) -> Engine:
+def get_db_engine(
+    database_uri: Optional[str] = None,
+    isolation_level: Optional[str] = "AUTOCOMMIT",
+) -> Engine:
     """
     Return a database engine. If the TESTING environment var is set the
     database engine returned will be connected to the test DB.
@@ -27,7 +30,11 @@ def get_db_engine(database_uri: Optional[str] = None) -> Engine:
         else:
             database_uri = config.database.SQLALCHEMY_DATABASE_URI
 
-    return create_engine(database_uri, pool_pre_ping=True)
+    return create_engine(
+        database_uri,
+        pool_pre_ping=True,
+        isolation_level=isolation_level,
+    )
 
 
 def get_db_session(engine: Optional[Engine] = None) -> sessionmaker:
