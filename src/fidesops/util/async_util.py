@@ -8,6 +8,7 @@ T = TypeVar("T")
 
 
 def _loop() -> AbstractEventLoop:
+    """Return the event loop"""
     asyncio.set_event_loop(asyncio.SelectorEventLoop())
     return asyncio.get_event_loop()
 
@@ -27,4 +28,5 @@ def wait_for(t: Awaitable[T]) -> Optional[T]:
 
 
 def close() -> None:
+    """Close the event loop"""
     _loop().close()
