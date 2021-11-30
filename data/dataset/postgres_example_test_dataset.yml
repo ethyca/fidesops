@@ -44,6 +44,7 @@ dataset:
             data_categories: [user.provided.identifiable.name]
             fidesops_meta:
               data_type: string
+              length: 40
 
       - name: employee
         fields:

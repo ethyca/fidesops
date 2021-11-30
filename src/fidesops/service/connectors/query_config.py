@@ -20,7 +20,6 @@ from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWR
 from fidesops.util.querytoken import QueryToken
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     get_strategy,
-    SupportedMaskingStrategies,
 )
 from fidesops.util.collection_util import append, filter_nonempty_values
 
@@ -151,9 +150,7 @@ class QueryConfig(Generic[T], ABC):
                     for field in self.node.node.collection.fields
                     if field.name == field_name
                 ][0]
-                not_null_masking: bool = (
-                     strategy_config.get("strategy") != NULL_REWRITE
-                )
+                not_null_masking: bool = strategy_config.get("strategy") != NULL_REWRITE
                 if not_null_masking:
                     if not masking_override.data_type:
                         logger.warning(
