@@ -4,12 +4,12 @@ In this section we'll cover:
 
 - What's a Policy Webhook?
 - How do I configure Policy Webhooks?
-  - Create a ConnectionConfig
-  - Add ConnectionConfig secrets
-  - Define PolicyPreWebhooks or PolicyPostWebhooks
+    - Create a ConnectionConfig
+    - Add ConnectionConfig secrets
+    - Define PolicyPreWebhooks or PolicyPostWebhooks
 - Expected webhook request and response format
 
-Take me directly to the [Policy Webhooks API documentation](/fidesops/api#operations-Policy_Webhooks).
+Take me directly to the [Policy Webhooks API documentation](/fidesops/api/#operations-Policy_Webhooks-get_policy_pre_execution_webhooks_api_v1_policy__policy_key__webhook_pre_execution_get).
 
 
 ## Policy Webhook Defined
@@ -20,7 +20,7 @@ REST API endpoint *before* or *after* a PrivacyRequest executes.
 You can define as many webhooks as you'd like.  Webhooks can be `one_way`, 
 where we will just ping your API and move on, or `two_way`, where we will wait for a response. Any `derived_identities`
 returned from a `two_way` webhook will be saved and can be used to locate other user information.  For example, a webhook
-might take a known `email` `identity` and use that to find a `phone_number` identity.
+might take a known `email` `identity` and use that to find a `phone_number` `identity`.
 
 Another use case for a Policy Webhook might be to log a user out of your mobile app after you've cleared
 their data from your system.  In this case, you'd create a `Policy` and a `ConnectionConfig` to describe the URL to hit
@@ -164,4 +164,5 @@ and how to [PATCH a PolicyPostWebhook](/fidesops/api#operations-Policy_Webhooks-
 
 ## Expected Webhook Request and Response Format
 
-In progress.
+In progress, this will be added in the next release.  For now, you have the ability to configure webhooks. The work
+to trigger those callbacks is ongoing.
