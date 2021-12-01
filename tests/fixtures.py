@@ -245,7 +245,7 @@ def snowflake_connection_config(db: Session) -> Generator:
         db=db,
         data={
             "name": str(uuid4()),
-            "key": "mmy_redshift_config",
+            "key": "my_snowflake_config",
             "connection_type": ConnectionType.snowflake,
             "access": AccessLevel.write,
         },
