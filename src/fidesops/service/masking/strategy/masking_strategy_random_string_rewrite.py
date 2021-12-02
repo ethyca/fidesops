@@ -15,7 +15,7 @@ from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 
 
 RANDOM_STRING_REWRITE = "random_string_rewrite"
-SUPPORTED_DATA_TYPES = ["string"]
+SUPPORTED_DATA_TYPES = {"string"}
 
 
 class RandomStringRewriteMaskingStrategy(MaskingStrategy):

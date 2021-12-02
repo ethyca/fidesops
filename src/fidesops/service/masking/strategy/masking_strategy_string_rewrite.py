@@ -13,7 +13,7 @@ from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 
 
 STRING_REWRITE = "string_rewrite"
-SUPPORTED_DATA_TYPES = ["string"]
+SUPPORTED_DATA_TYPES = {"string"}
 
 
 class StringRewriteMaskingStrategy(MaskingStrategy):

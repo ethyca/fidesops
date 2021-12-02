@@ -16,7 +16,7 @@ from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 
 
 HMAC = "hmac"
-SUPPORTED_DATA_TYPES = ["string"]
+SUPPORTED_DATA_TYPES = {"string"}
 
 
 class HmacMaskingStrategy(MaskingStrategy):

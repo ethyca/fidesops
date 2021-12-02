@@ -23,9 +23,12 @@ class DataTypeConverter(ABC, Generic[T]):
     def empty_value(self) -> T:
         """A value that represents `empty` in whatever way makes sense for type T"""
 
-    @abstractmethod
     def truncate(self, length: int, val: T) -> T:
         """Truncates value to given length"""
+        logger.warning(
+            f"Length truncation not supported for {T} data_type. Using original masked value instead for update query."
+        )
+        return val
 
 
 class StringTypeConverter(DataTypeConverter[str]):
@@ -79,13 +82,6 @@ class FloatTypeConverter(DataTypeConverter[float]):
         """Empty float value"""
         return 0.0
 
-    def truncate(self, length: int, val: float) -> float:
-        """Truncates value to given length"""
-        logger.warning(
-            "Length truncation not supported for float data_type. Using original masked value instead for update query."
-        )
-        return val
-
 
 class BooleanTypeConverter(DataTypeConverter[bool]):
     """Boolean data type converter recognizing the strings True/False, 1,0, and booleans."""
@@ -104,13 +100,6 @@ class BooleanTypeConverter(DataTypeConverter[bool]):
     def empty_value(self) -> bool:
         """Empty boolean value"""
         return False
-
-    def truncate(self, length: int, val: bool) -> bool:
-        """Truncates value to given length"""
-        logger.warning(
-            "Length truncation not supported for bool data_type. Using original masked value instead for update query."
-        )
-        return val
 
 
 class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
@@ -132,13 +121,6 @@ class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
     def empty_value(self) -> ObjectId:
         """Empty objectId value"""
         return ObjectId("000000000000000000000000")
-
-    def truncate(self, length: int, val: ObjectId) -> ObjectId:
-        """Truncates value to given length"""
-        logger.warning(
-            "Length truncation not supported for ObjectId data_type. Using original masked value instead for update query."
-        )
-        return val
 
 
 class DataType(Enum):

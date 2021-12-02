@@ -15,7 +15,7 @@ from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 
 
 HASH = "hash"
-SUPPORTED_DATA_TYPES = ["string"]
+SUPPORTED_DATA_TYPES = {"string"}
 
 
 class HashMaskingStrategy(MaskingStrategy):

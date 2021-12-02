@@ -150,38 +150,58 @@ class QueryConfig(Generic[T], ABC):
                     for field in self.node.node.collection.fields
                     if field.name == field_name
                 ][0]
-                not_null_masking: bool = strategy_config.get("strategy") != NULL_REWRITE
-                if not_null_masking:
-                    if not masking_override.data_type:
-                        logger.warning(
-                            f"Unable to generate a query for field {field_name} due to: data_type required on fields for the {strategy_config['strategy']} masking strategy"
-                        )
-                        continue
-                    if not strategy.data_type_supported(
-                        data_type=masking_override.data_type.name
-                    ):
-                        logger.warning(
-                            f"Unable to generate a query for field {field_name} due to: data_type of {masking_override.data_type} is not supported for the {strategy_config['strategy']} masking strategy"
-                        )
-                        continue
-                val: Any = row[field_name]
-                masked_val = strategy.mask(val)
-                logger.info(
-                    f"Generated the following masked val for field {field_name}: {masked_val}"
-                )
-                if masking_override.length and not_null_masking:
+                null_masking: bool = strategy_config.get("strategy") == NULL_REWRITE
+                if not self._supported_data_type(
+                    masking_override, null_masking, strategy
+                ):
                     logger.warning(
-                        f"Because a length has been specified for field {field_name}, we will truncate length of masked value to match, regardless of masking strategy"
+                        f"Unable to generate a query for field {field_name}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type}"
                     )
-                    #  for strategies other than null masking we assume that masked data type is the same as specified data type
-                    data_type_convertor: DataTypeConverter = (
-                        masking_override.data_type.value
-                    )
-                    masked_val = data_type_convertor.truncate(
-                        masking_override.length, masked_val
-                    )
+                    continue
+                val: Any = row[field_name]
+                masked_val = self._generate_masked_value(
+                    strategy, val, masking_override, null_masking, field_name
+                )
                 value_map[field_name] = masked_val
         return value_map
+
+    @staticmethod
+    def _supported_data_type(
+        masking_override: MaskingOverride, null_masking: bool, strategy: MaskingStrategy
+    ) -> bool:
+        """Helper method to determine whether given data_type exists and is supported by the masking strategy"""
+        if null_masking:
+            return True
+        if not masking_override.data_type:
+            return False
+        if not strategy.data_type_supported(data_type=masking_override.data_type.name):
+            return False
+        return True
+
+    @staticmethod
+    def _generate_masked_value(
+        strategy: MaskingStrategy,
+        val: Any,
+        masking_override: MaskingOverride,
+        null_masking: bool,
+        field_name: str,
+    ) -> T:
+        masked_val = strategy.mask(val)
+        logger.debug(
+            f"Generated the following masked val for field {field_name}: {masked_val}"
+        )
+        if null_masking:
+            return masked_val
+        if masking_override.length:
+            logger.warning(
+                f"Because a length has been specified for field {field_name}, we will truncate length of masked value to match, regardless of masking strategy"
+            )
+            #  for strategies other than null masking we assume that masked data type is the same as specified data type
+            data_type_convertor: DataTypeConverter = masking_override.data_type.value
+            masked_val = data_type_convertor.truncate(
+                masking_override.length, masked_val
+            )
+        return masked_val
 
     @abstractmethod
     def generate_query(

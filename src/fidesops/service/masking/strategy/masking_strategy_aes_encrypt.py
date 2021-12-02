@@ -14,7 +14,7 @@ from fidesops.util.encryption.aes_gcm_encryption_scheme import encrypt
 
 
 AES_ENCRYPT = "aes_encrypt"
-SUPPORTED_DATA_TYPES = ["string"]
+SUPPORTED_DATA_TYPES = {"string"}
 
 
 class AesEncryptionMaskingStrategy(MaskingStrategy):
