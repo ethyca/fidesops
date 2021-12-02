@@ -26,7 +26,7 @@ class DataTypeConverter(ABC, Generic[T]):
     def truncate(self, length: int, val: T) -> T:
         """Truncates value to given length"""
         print(
-            f"Length truncation is only supported for string and int data types. Using original masked value instead for update query."
+            "Length truncation is only supported for string data types. Using original masked value instead for update query."
         )
         return val
 
@@ -61,10 +61,6 @@ class IntTypeConverter(DataTypeConverter[int]):
     def empty_value(self) -> int:
         """Empty int value"""
         return 0
-
-    def truncate(self, length: int, val: int) -> int:
-        """Truncates value to given length"""
-        return int(str(val)[:length])
 
 
 class FloatTypeConverter(DataTypeConverter[float]):
