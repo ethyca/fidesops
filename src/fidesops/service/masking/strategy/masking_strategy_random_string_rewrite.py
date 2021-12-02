@@ -15,7 +15,6 @@ from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 
 
 RANDOM_STRING_REWRITE = "random_string_rewrite"
-SUPPORTED_DATA_TYPES = {"string"}
 
 
 class RandomStringRewriteMaskingStrategy(MaskingStrategy):
@@ -60,4 +59,5 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     @staticmethod
     def data_type_supported(data_type: Optional[str]) -> bool:
         """Determines whether or not the given data type is supported by this masking strategy"""
-        return data_type in SUPPORTED_DATA_TYPES
+        supported_data_types = {"string"}
+        return data_type in supported_data_types

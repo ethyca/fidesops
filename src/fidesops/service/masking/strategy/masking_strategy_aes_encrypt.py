@@ -14,7 +14,6 @@ from fidesops.util.encryption.aes_gcm_encryption_scheme import encrypt
 
 
 AES_ENCRYPT = "aes_encrypt"
-SUPPORTED_DATA_TYPES = {"string"}
 
 
 class AesEncryptionMaskingStrategy(MaskingStrategy):
@@ -59,4 +58,5 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
     @staticmethod
     def data_type_supported(data_type: Optional[str]) -> bool:
         """Determines whether or not the given data type is supported by this masking strategy"""
-        return data_type in SUPPORTED_DATA_TYPES
+        supported_data_types = {"string"}
+        return data_type in supported_data_types
