@@ -56,24 +56,24 @@ integration_config = load_toml("fidesops-integration.toml")
 
 integration_secrets = {
     "postgres_example": {
-        "host": pydash.get(integration_config,"postgres_example.SERVER"),
-        "port": pydash.get(integration_config,"postgres_example.PORT"),
-        "dbname": pydash.get(integration_config,"postgres_example.DB"),
-        "username": pydash.get(integration_config,"postgres_example.USER"),
-        "password": pydash.get(integration_config,"postgres_example.PASSWORD"),
+        "host": pydash.get(integration_config, "postgres_example.SERVER"),
+        "port": pydash.get(integration_config, "postgres_example.PORT"),
+        "dbname": pydash.get(integration_config, "postgres_example.DB"),
+        "username": pydash.get(integration_config, "postgres_example.USER"),
+        "password": pydash.get(integration_config, "postgres_example.PASSWORD"),
     },
     "mongo_example": {
-        "host": pydash.get(integration_config,"mongodb_example.SERVER"),
-        "defaultauthdb": pydash.get(integration_config,"mongodb_example.DB"),
-        "username": pydash.get(integration_config,"mongodb_example.USER"),
-        "password": pydash.get(integration_config,"mongodb_example.PASSWORD"),
+        "host": pydash.get(integration_config, "mongodb_example.SERVER"),
+        "defaultauthdb": pydash.get(integration_config, "mongodb_example.DB"),
+        "username": pydash.get(integration_config, "mongodb_example.USER"),
+        "password": pydash.get(integration_config, "mongodb_example.PASSWORD"),
     },
     "mysql_example": {
-        "host": pydash.get(integration_config,"mysql_example.SERVER"),
-        "port":  pydash.get(integration_config,"mysql_example.PORT"),
-        "dbname": pydash.get(integration_config,"mysql_example.DB"),
-        "username": pydash.get(integration_config,"mysql_example.USER"),
-        "password":pydash.get(integration_config,"mysql_example.PASSWORD"),
+        "host": pydash.get(integration_config, "mysql_example.SERVER"),
+        "port": pydash.get(integration_config, "mysql_example.PORT"),
+        "dbname": pydash.get(integration_config, "mysql_example.DB"),
+        "username": pydash.get(integration_config, "mysql_example.USER"),
+        "password": pydash.get(integration_config, "mysql_example.PASSWORD"),
     },
 }
 

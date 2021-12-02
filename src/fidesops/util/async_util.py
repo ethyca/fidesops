@@ -25,8 +25,3 @@ def wait_for(t: Awaitable[T]) -> Optional[T]:
     """Wait for the return of a callable. This is mostly intended
     to be used for testing async tasks."""
     return asyncio.get_event_loop().run_until_complete(t)
-
-
-def close() -> None:
-    """Close the event loop"""
-    _loop().close()
