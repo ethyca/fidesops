@@ -1,5 +1,9 @@
 # pylint: disable=R0401
-from typing import Any, Dict, Optional
+from datetime import datetime
+
+import json
+
+from typing import Any, Dict, Optional, Union
 
 from enum import Enum as EnumType
 from sqlalchemy.dialects.postgresql import JSONB
@@ -14,10 +18,27 @@ from sqlalchemy import (
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import relationship, Session
 
+from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.db.base_class import Base
 from fidesops.models.client import ClientDetail
-from fidesops.models.policy import Policy, ActionType
+from fidesops.models.policy import (
+    Policy,
+    ActionType,
+    PolicyPreWebhook,
+    PolicyPostWebhook,
+    WebhookDirection,
+)
+from fidesops.schemas.external_https import (
+    SecondPartyRequestFormat,
+    SecondPartyResponseFormat,
+)
+from fidesops.schemas.jwt import (
+    JWE_PAYLOAD_SCOPES,
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+)
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.service.connectors import HTTPSConnector, get_connector
 from fidesops.util.cache import (
     get_all_cache_keys_for_privacy_request,
     get_cache,
@@ -25,6 +46,7 @@ from fidesops.util.cache import (
     FidesopsRedis,
     get_encryption_cache_key,
 )
+from fidesops.util.oauth_util import generate_jwe
 
 
 class PrivacyRequestStatus(EnumType):
@@ -33,6 +55,7 @@ class PrivacyRequestStatus(EnumType):
     in_processing = "in_processing"
     pending = "pending"
     complete = "complete"
+    paused = "paused"
     error = "error"
 
 
@@ -117,6 +140,52 @@ class PrivacyRequest(Base):
         cache: FidesopsRedis = get_cache()
         result_prefix = f"{self.id}__*"
         return cache.get_encoded_objects_by_prefix(result_prefix)
+
+    def trigger_policy_webhook(
+        self, db: Session, webhook: Union[PolicyPreWebhook, PolicyPostWebhook]
+    ) -> None:
+        """Trigger a request to a customer-defined policy webhook"""
+        https_connector: HTTPSConnector = get_connector(webhook.connection_config)
+        request_body = SecondPartyRequestFormat(
+            privacy_request_id=self.id,
+            direction=webhook.direction.value,
+            callback_type=webhook.prefix,
+            identities=self.get_cached_identity_data(),
+        )
+        jwe = generate_jwe(
+            json.dumps(
+                {
+                    "privacy_request_id": self.id,
+                    "webhook_id": webhook.id,
+                    "webhook_type": webhook.prefix,
+                    JWE_PAYLOAD_SCOPES: [PRIVACY_REQUEST_CALLBACK_RESUME],
+                    JWE_ISSUED_AT: datetime.now().isoformat(),
+                    JWE_PAYLOAD_CLIENT_ID: self.client_id,
+                }
+            )
+        )
+
+        headers = {
+            "reply-to": f"/privacy-request/{self.id}/callback",
+            "reply-to-token": jwe,
+        }
+
+        response: Optional[SecondPartyResponseFormat] = https_connector.execute(
+            request_body.dict(),
+            response_expected=webhook.direction == WebhookDirection.two_way,
+            additional_headers=headers,
+        )
+        if not response:
+            return
+
+        response_body = SecondPartyResponseFormat(**response)
+        if response_body.halt:
+            self.status = PrivacyRequestStatus.paused.value
+            self.save(db)
+
+        self.cache_identity(response_body.derived_identities)
+
+        return
 
     # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.

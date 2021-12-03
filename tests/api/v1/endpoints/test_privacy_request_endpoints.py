@@ -1,3 +1,5 @@
+from unittest.mock import Mock
+import requests_mock
 import json
 from datetime import datetime
 from typing import List
@@ -26,6 +28,7 @@ from fidesops.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_READ,
 )
+from fidesops.common_exceptions import ClientUnsuccessfulException
 from fidesops.db.session import (
     get_db_engine,
     get_db_session,
@@ -35,9 +38,11 @@ from fidesops.models.privacy_request import (
     PrivacyRequest,
     ExecutionLog,
     ExecutionLogStatus,
+    PrivacyRequestStatus,
 )
 from fidesops.models.policy import DataCategory, ActionType
 from fidesops.schemas.dataset import DryRunDatasetResponse
+from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.util.cache import get_identity_cache_key, get_encryption_cache_key
 
 page_size = Params().size
