@@ -8,7 +8,7 @@ from fidesops import common_exceptions
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import ActionType
+from fidesops.models.policy import ActionType, PolicyPreWebhook
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.storage.storage_uploader_service import upload
 from fidesops.task.graph_task import (
@@ -31,6 +31,9 @@ class PrivacyRequestRunner:
         self.cache = cache
         self.db = db
         self.privacy_request = privacy_request
+
+    def run_from_webhook(self, webhook: PolicyPreWebhook) -> None:
+        """TODO needs to run the privacy request from a specific webhook"""
 
     def run(self) -> None:
         # pylint: disable=too-many-locals

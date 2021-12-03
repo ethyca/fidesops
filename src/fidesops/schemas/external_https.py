@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
 
@@ -34,10 +34,6 @@ class SecondPartyResponseFormat(BaseModel):
     Responses are only expected (and considered) for two_way webhooks.
     """
 
-    privacy_request_id: str
-    direction: WebhookDirection
-    callback_type: CallbackType
-    identities: PrivacyRequestIdentity
     derived_identities: Optional[PrivacyRequestIdentity] = {}
     halt: bool
 
@@ -45,3 +41,23 @@ class SecondPartyResponseFormat(BaseModel):
         """Using enum values"""
 
         use_enum_values = True
+
+
+class PrivacyRequestResumeFormat(BaseModel):
+    """Expected request body to resume a privacy request after it was paused by a webhook"""
+
+    derived_identities: Optional[PrivacyRequestIdentity] = {}
+
+    class Config:
+        """Using enum values"""
+
+        use_enum_values = True
+
+
+class WebhookJWE(BaseModel):
+    """Describes JWE that is given to the user that they need to send with their request
+    to resume a privacy request"""
+
+    webhook_id: str
+    scopes: List[str]
+    iat: str

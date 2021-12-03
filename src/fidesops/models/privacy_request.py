@@ -3,7 +3,7 @@ from datetime import datetime
 
 import json
 
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 from enum import Enum as EnumType
 from sqlalchemy.dialects.postgresql import JSONB
@@ -25,17 +25,13 @@ from fidesops.models.policy import (
     Policy,
     ActionType,
     PolicyPreWebhook,
-    PolicyPostWebhook,
     WebhookDirection,
+    WebhookType,
 )
 from fidesops.schemas.external_https import (
     SecondPartyRequestFormat,
     SecondPartyResponseFormat,
-)
-from fidesops.schemas.jwt import (
-    JWE_PAYLOAD_SCOPES,
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
+    WebhookJWE,
 )
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.service.connectors import HTTPSConnector, get_connector
@@ -57,6 +53,16 @@ class PrivacyRequestStatus(EnumType):
     complete = "complete"
     paused = "paused"
     error = "error"
+
+
+def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
+    """Generate a JWE to be used to resume privacy request execution."""
+    jwe = WebhookJWE(
+        webhook_id=webhook.id,
+        scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
+        iat=datetime.now().isoformat(),
+    )
+    return generate_jwe(json.dumps(jwe.dict()))
 
 
 class PrivacyRequest(Base):
@@ -141,10 +147,13 @@ class PrivacyRequest(Base):
         result_prefix = f"{self.id}__*"
         return cache.get_encoded_objects_by_prefix(result_prefix)
 
-    def trigger_policy_webhook(
-        self, db: Session, webhook: Union[PolicyPreWebhook, PolicyPostWebhook]
-    ) -> None:
-        """Trigger a request to a customer-defined policy webhook"""
+    def trigger_policy_webhook(self, db: Session, webhook: WebhookType) -> None:
+        """Trigger a request to a customer-defined policy webhook
+
+        Pre-Execution webhooks send headers to the webhook in the event that execution should be paused.
+        """
+        is_pre_webhook = webhook.__class__ == PolicyPreWebhook
+
         https_connector: HTTPSConnector = get_connector(webhook.connection_config)
         request_body = SecondPartyRequestFormat(
             privacy_request_id=self.id,
@@ -152,23 +161,13 @@ class PrivacyRequest(Base):
             callback_type=webhook.prefix,
             identities=self.get_cached_identity_data(),
         )
-        jwe = generate_jwe(
-            json.dumps(
-                {
-                    "privacy_request_id": self.id,
-                    "webhook_id": webhook.id,
-                    "webhook_type": webhook.prefix,
-                    JWE_PAYLOAD_SCOPES: [PRIVACY_REQUEST_CALLBACK_RESUME],
-                    JWE_ISSUED_AT: datetime.now().isoformat(),
-                    JWE_PAYLOAD_CLIENT_ID: self.client_id,
-                }
-            )
-        )
 
-        headers = {
-            "reply-to": f"/privacy-request/{self.id}/callback",
-            "reply-to-token": jwe,
-        }
+        headers = {}
+        if is_pre_webhook:
+            headers = {
+                "reply-to": f"/privacy-request/{self.id}/callback",
+                "reply-to-token": generate_request_callback_jwe(webhook),
+            }
 
         response: Optional[SecondPartyResponseFormat] = https_connector.execute(
             request_body.dict(),
@@ -179,9 +178,9 @@ class PrivacyRequest(Base):
             return
 
         response_body = SecondPartyResponseFormat(**response)
-        if response_body.halt:
-            self.status = PrivacyRequestStatus.paused.value
-            self.save(db)
+        if response_body.halt and is_pre_webhook:
+            self.update(db=db, data={"status": PrivacyRequestStatus.paused})
+            # TODO Need to stop privacy request execution
 
         self.cache_identity(response_body.derived_identities)
 
