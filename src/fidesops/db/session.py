@@ -9,7 +9,7 @@ from sqlalchemy.orm import (
     Session,
 )
 from fidesops.core.config import config
-import traceback
+
 logger = logging.getLogger(__name__)
 
 
@@ -26,13 +26,16 @@ def get_db_engine(database_uri: Optional[str] = None) -> Engine:
             database_uri = config.database.SQLALCHEMY_DATABASE_URI
     return create_engine(database_uri, pool_pre_ping=True)
 
+
 ENGINE = get_db_engine(config.database.SQLALCHEMY_TEST_DATABASE_URI)
+
+
 def get_db_session(engine: Optional[Engine] = None) -> sessionmaker:
     """Return a database SessionLocal"""
     return sessionmaker(
         autocommit=False,
         autoflush=False,
-        bind=engine or ENGINE, #get_db_engine(),
+        bind=engine or ENGINE,  # get_db_engine(),
         class_=ExtendedSession,
     )
 
@@ -49,4 +52,3 @@ class ExtendedSession(Session):
             # Rollback the current transaction after each failed commit
             self.rollback()
             raise
-
