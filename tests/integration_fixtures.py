@@ -153,8 +153,8 @@ def postgres_inserts(integration_postgres_db_engine):
 
 
 @pytest.fixture(scope="session")
-def integration_mongodb_config(set_os_env: None) -> ConnectionConfig:
-    mongo_conf = integration_config["mongodb_example"]
+def integration_mongodb_config() -> ConnectionConfig:
+    #mongo_conf = integration_config["mongodb_example"]
     return ConnectionConfig(
         key="mongo_example",
         connection_type=ConnectionType.mongodb,
