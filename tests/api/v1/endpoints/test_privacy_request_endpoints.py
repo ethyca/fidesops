@@ -370,7 +370,7 @@ class TestCreatePrivacyRequest:
         )
         assert len(results[customer_table_key]) == 1
         assert results[customer_table_key][0]["email"] == customer_email
-        assert results[customer_table_key][0]["name"] == "Example Customer 2"
+        assert results[customer_table_key][0]["name"] == "Example Customer 1"
 
     @pytest.mark.integration_erasure
     def test_create_and_process_erasure_request_specific_category(
