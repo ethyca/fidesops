@@ -249,8 +249,15 @@ def redshift_connection_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def snowflake_connection_config(db: Session) -> Generator:
+def snowflake_connection_config(
+    db: Session,
+    integration_config: Dict[str, str],
+) -> Generator:
     name = str(uuid4())
+    uri = integration_config.get("snowflake", {}).get("external_uri") or os.environ.get(
+        "SNOWFLAKE_TEST_URI"
+    )
+    schema = SnowflakeSchema(url=uri)
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -258,6 +265,7 @@ def snowflake_connection_config(db: Session) -> Generator:
             "key": "my_snowflake_config",
             "connection_type": ConnectionType.snowflake,
             "access": AccessLevel.write,
+            "secrets": schema.dict(),
         },
     )
     yield connection_config
@@ -278,7 +286,7 @@ def snowflake_read_connection_config(
         db=db,
         data={
             "name": name,
-            "key": "my-snowflake-read-config",
+            "key": "my_snowflake_read_config",
             "connection_type": ConnectionType.snowflake,
             "access": AccessLevel.read,
             "secrets": schema.dict(),
@@ -760,13 +768,10 @@ def snowflake_example_test_dataset_config(
 ) -> Generator:
     dataset = example_datasets[2]
     fides_key = dataset["fides_key"]
-    connection_config.name = fides_key
-    connection_config.key = fides_key
-    connection_config.save(db=db)
     dataset_config = DatasetConfig.create(
         db=db,
         data={
-            "connection_config_id": connection_config.id,
+            "connection_config_id": snowflake_connection_config.id,
             "fides_key": fides_key,
             "dataset": dataset,
         },
