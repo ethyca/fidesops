@@ -183,6 +183,13 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         """Returns an SQL query string."""
         return f"SELECT {field_list} FROM {self.node.node.collection.name} WHERE {' OR '.join(clauses)}"
 
+    def get_formatted_update_stmt(
+        self,
+        update_clauses: List[str],
+        pk_clauses: List[str],
+    ) -> str:
+        return f"UPDATE {self.node.address.collection} SET {','.join(update_clauses)} WHERE  {' AND '.join(pk_clauses)}"
+
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy] = None
     ) -> Optional[TextClause]:
@@ -235,7 +242,11 @@ class SQLQueryConfig(QueryConfig[TextClause]):
                 f"There is not enough data to generate a valid update statement for {self.node.address}"
             )
             return None
-        query_str = f"UPDATE {self.node.address.collection} SET {','.join(update_clauses)} WHERE  {' AND '.join(pk_clauses)}"
+
+        query_str = self.get_formatted_update_stmt(
+            update_clauses,
+            pk_clauses,
+        )
         logger.info("query = %s, params = %s", query_str, update_value_map)
         return text(query_str).params(update_value_map)
 
@@ -288,6 +299,13 @@ class SnowflakeQueryConfig(SQLQueryConfig):
     ) -> str:
         """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
         return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
+
+    def get_formatted_update_stmt(
+        self,
+        update_clauses: List[str],
+        pk_clauses: List[str],
+    ) -> str:
+        return f'UPDATE {self.node.address.collection} SET {",".join(update_clauses)} WHERE  {" AND ".join(pk_clauses)}'
 
 
 MongoStatement = Tuple[Dict[str, Any], Dict[str, Any]]
