@@ -545,20 +545,14 @@ class TestPutDatasets:
         assert response.status_code == 200  # Returns 200 regardless
         response_body = json.loads(response.text)
         assert len(response_body["succeeded"]) == 0
-        assert len(response_body["failed"]) == 2
+        assert len(response_body["failed"]) == 3
 
         for failed_response in response_body["failed"]:
             assert "Dataset create/update failed" in failed_response["message"]
             assert set(failed_response.keys()) == {"message", "data"}
 
-        assert (
-            response_body["failed"][0]["data"]["fides_key"]
-            == example_datasets[0]["fides_key"]
-        )
-        assert (
-            response_body["failed"][1]["data"]["fides_key"]
-            == example_datasets[1]["fides_key"]
-        )
+        for index, failed in enumerate(response_body["failed"]):
+            assert failed["data"]["fides_key"] == example_datasets[index]["fides_key"]
 
 
 class TestGetDatasets:

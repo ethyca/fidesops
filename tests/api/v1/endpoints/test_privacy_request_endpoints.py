@@ -373,6 +373,8 @@ class TestCreatePrivacyRequest:
         assert results[customer_table_key][0]["email"] == customer_email
         assert results[customer_table_key][0]["name"] == "Example Customer 1"
 
+        pr.delete(db=db)
+
     # @pytest.mark.external_integration
     # def test_create_and_process_erasure_request_snowflake(
     #     self,
