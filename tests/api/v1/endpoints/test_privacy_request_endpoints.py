@@ -1,6 +1,7 @@
 import json
+import os
 from datetime import datetime
-from typing import List
+from typing import List, Dict
 from unittest import mock
 
 from sqlalchemy import (
@@ -371,6 +372,38 @@ class TestCreatePrivacyRequest:
         assert len(results[customer_table_key]) == 1
         assert results[customer_table_key][0]["email"] == customer_email
         assert results[customer_table_key][0]["name"] == "Example Customer 1"
+
+    # @pytest.mark.external_integration
+    # def test_create_and_process_erasure_request_snowflake(
+    #     self,
+    #     snowflake_example_test_dataset_config,
+    #     integration_config: Dict[str, str],
+    #     url,
+    #     db,
+    #     api_client: TestClient,
+    #     generate_auth_header,
+    #     erasure_policy,
+    # ):
+    #     customer_email = "customer-2@example.com"
+    #     data = [
+    #         {
+    #             "requested_at": "2021-08-30T16:09:37.359Z",
+    #             "policy_key": erasure_policy.key,
+    #             "identities": [{"email": customer_email}],
+    #         }
+    #     ]
+    #     auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+    #     resp = api_client.post(url, json=data, headers=auth_header)
+
+    #     assert resp.status_code == 200
+    #     response_data = resp.json()["succeeded"]
+    #     assert len(response_data) == 1
+    #     pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+    #     pr.delete(db=db)
+
+    #     snowflake_uri = integration_config.get("snowflake", {}).get(
+    #         "external_uri"
+    #     ) or os.environ.get("SNOWFLAKE_TEST_URI")
 
     @pytest.mark.integration_erasure
     def test_create_and_process_erasure_request_specific_category(
