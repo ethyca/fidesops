@@ -81,9 +81,7 @@ class ConnectionConfig(Base):
     last_test_timestamp = Column(DateTime(timezone=True))
     last_test_succeeded = Column(Boolean)
 
-    def update_test_status(
-        self, test_status: TestStatus, db: Session
-    ) -> Optional[Base]:
+    def update_test_status(self, test_status: TestStatus, db: Session) -> None:
         """Updates last_test_timestamp and last_test_succeeded after an attempt to make a test connection.
 
         If the test was skipped, for example, on an HTTP Connector, don't update these fields.
@@ -95,7 +93,7 @@ class ConnectionConfig(Base):
         self.last_test_succeeded = test_status == TestStatus.succeeded
         self.save(db)
 
-    def delete(self, db: Session) -> None:
+    def delete(self, db: Session) -> Optional[Base]:
         """Hard deletes datastores that map this ConnectionConfig."""
         for dataset in self.datasets:
             dataset.delete(db=db)
