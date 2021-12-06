@@ -341,7 +341,7 @@ class TestCreatePrivacyRequest:
         db.expunge_all()
         assert ExecutionLog.get(db, id=log_id).privacy_request_id == pr_id
 
-    @pytest.mark.external_integration
+    @pytest.mark.integration_external
     def test_create_and_process_access_request_snowflake(
         self,
         snowflake_example_test_dataset_config_read_access,
