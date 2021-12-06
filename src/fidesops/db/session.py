@@ -12,6 +12,7 @@ from fidesops.core.config import config
 
 logger = logging.getLogger(__name__)
 
+
 def get_db_engine(database_uri: Optional[str] = None) -> Engine:
     """
     Return a database engine. If the TESTING environment var is set the
