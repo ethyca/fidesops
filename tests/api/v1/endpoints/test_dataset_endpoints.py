@@ -488,7 +488,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 2
+        assert len(response_body["succeeded"]) == 3
         assert len(response_body["failed"]) == 0
 
         postgres_dataset = response_body["succeeded"][0]
@@ -513,8 +513,20 @@ class TestPutDatasets:
         assert mongo_config is not None
         assert mongo_config.updated_at is not None
 
+        snowflake_dataset = response_body["succeeded"][2]
+        assert snowflake_dataset["fides_key"] == "snowflake_example_test_dataset"
+        assert "birthday" not in [
+            f["name"] for f in snowflake_dataset["collections"][0]["fields"]
+        ]  # "birthday field should be removed
+        snowflake_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="snowflake_example_test_dataset"
+        )
+        assert snowflake_config is not None
+        assert snowflake_config.updated_at is not None
+
         postgres_config.delete(db)
         mongo_config.delete(db)
+        snowflake_config.delete(db)
 
     @mock.patch("fidesops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_datasets_failed_response(
