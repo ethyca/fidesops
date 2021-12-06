@@ -34,6 +34,9 @@ class PrivacyRequestRunner:
 
     def run_from_webhook(self, webhook: PolicyPreWebhook) -> None:
         """TODO needs to run the privacy request from a specific webhook"""
+        logging.info(
+            f"Resuming privacy request with id {self.privacy_request.id} after webhook {webhook.key}"
+        )
 
     def run(self) -> None:
         # pylint: disable=too-many-locals

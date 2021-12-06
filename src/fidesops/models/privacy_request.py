@@ -1,4 +1,5 @@
 # pylint: disable=R0401
+import logging
 from datetime import datetime
 
 import json
@@ -43,6 +44,8 @@ from fidesops.util.cache import (
     get_encryption_cache_key,
 )
 from fidesops.util.oauth_util import generate_jwe
+
+logger = logging.getLogger(__name__)
 
 
 class PrivacyRequestStatus(EnumType):
@@ -169,6 +172,7 @@ class PrivacyRequest(Base):
                 "reply-to-token": generate_request_callback_jwe(webhook),
             }
 
+        logger.info(f"Calling webhook {webhook.key} for privacy_request {self.id}")
         response: Optional[SecondPartyResponseFormat] = https_connector.execute(
             request_body.dict(),
             response_expected=webhook.direction == WebhookDirection.two_way,
@@ -178,11 +182,21 @@ class PrivacyRequest(Base):
             return
 
         response_body = SecondPartyResponseFormat(**response)
+
+        if response_body.derived_identities and any(
+            [response_body.derived_identities.dict().values()]
+        ):
+            logger.info(
+                f"Updating known identities on privacy request {self.id} from webhook {webhook.key}."
+            )
+            self.cache_identity(response_body.derived_identities)
+
         if response_body.halt and is_pre_webhook:
+            logger.info(
+                f"Pausing execution of privacy request {self.id}. Halt instruction received from webhook {webhook.key}."
+            )
             self.update(db=db, data={"status": PrivacyRequestStatus.paused})
             # TODO Need to stop privacy request execution
-
-        self.cache_identity(response_body.derived_identities)
 
         return
 

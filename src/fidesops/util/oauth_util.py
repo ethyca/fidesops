@@ -118,8 +118,9 @@ async def verify_callback_oauth(
     db: Session = Depends(deps.get_db),
 ) -> PolicyPreWebhook:
     """
-    Verifies the specific token that should accompany a request when a user wants to resume executing
-    a PrivacyRequest after it was paused by a webhook.
+    Verifies the specific token that accompanies a request when a user wants to resume executing
+    a PrivacyRequest after it was paused by a webhook. Note that this token was sent along with the
+    request when calling the webhook originally.
 
     Verifies that the webhook token hasn't expired and loads the webhook from that token.
 

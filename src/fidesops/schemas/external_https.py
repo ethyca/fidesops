@@ -34,7 +34,7 @@ class SecondPartyResponseFormat(BaseModel):
     Responses are only expected (and considered) for two_way webhooks.
     """
 
-    derived_identities: Optional[PrivacyRequestIdentity] = {}
+    derived_identities: Optional[PrivacyRequestIdentity] = None
     halt: bool
 
     class Config:

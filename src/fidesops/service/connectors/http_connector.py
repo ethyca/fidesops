@@ -49,6 +49,7 @@ class HTTPSConnector(BaseConnector):
             return {}
 
         if not response.ok:
+            logger.error("Invalid response received from webhook.")
             raise ClientUnsuccessfulException(
                 status_code=response.status_code, message=response.text
             )
