@@ -26,6 +26,7 @@ from fidesops.models.policy import (
     Policy,
     Rule,
     RuleTarget,
+    PolicyPreWebhook, PolicyPostWebhook,
 )
 from fidesops.models.privacy_request import ExecutionLog
 from fidesops.models.privacy_request import (
@@ -255,6 +256,99 @@ def snowflake_connection_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def https_connection_config(db: Session) -> Generator:
+    name = str(uuid4())
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my_webhook_config",
+            "connection_type": ConnectionType.https,
+            "access": AccessLevel.read,
+            "secrets": {"url": "example.com", "authorization": "test_authorization"},
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def policy_pre_execution_webhooks(
+    db: Session, https_connection_config, policy
+) -> Generator:
+    pre_webhook = PolicyPreWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config.id,
+            "policy_id": policy.id,
+            "direction": "one_way",
+            "name": str(uuid4()),
+            "key": "pre_execution_one_way_webhook",
+            "order": 0,
+        },
+    )
+    pre_webhook_two = PolicyPreWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config.id,
+            "policy_id": policy.id,
+            "direction": "two_way",
+            "name": str(uuid4()),
+            "key": "pre_execution_two_way_webhook",
+            "order": 1,
+        },
+    )
+    db.commit()
+    yield [pre_webhook, pre_webhook_two]
+    try:
+        pre_webhook.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        pre_webhook_two.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def policy_post_execution_webhooks(
+    db: Session, https_connection_config, policy
+) -> Generator:
+    post_webhook = PolicyPostWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config.id,
+            "policy_id": policy.id,
+            "direction": "one_way",
+            "name": str(uuid4()),
+            "key": "cache_busting_webhook",
+            "order": 0,
+        },
+    )
+    post_webhook_two = PolicyPostWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config.id,
+            "policy_id": policy.id,
+            "direction": "one_way",
+            "name": str(uuid4()),
+            "key": "cleanup_webhook",
+            "order": 1,
+        },
+    )
+    db.commit()
+    yield [post_webhook, post_webhook_two]
+    try:
+        post_webhook.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        post_webhook_two.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def erasure_policy(
     db: Session,
     oauth_client: ClientDetail,
@@ -278,6 +372,59 @@ def erasure_policy(
             "masking_strategy": {
                 "strategy": "null_rewrite",
                 "configuration": {},
+            },
+        },
+    )
+
+    rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "rule_id": erasure_rule.id,
+        },
+    )
+    yield erasure_policy
+    try:
+        rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def erasure_policy_string_rewrite_long(
+        db: Session,
+        oauth_client: ClientDetail,
+) -> Generator:
+    erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example erasure policy string rewrite",
+            "key": "example_erasure_policy_string_rewrite",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": STRING_REWRITE,
+                "configuration": {
+                    "rewrite_value": "some rewrite value that is very long and goes on and on"
+                },
             },
         },
     )
