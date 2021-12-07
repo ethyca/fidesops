@@ -178,7 +178,8 @@ class PrivacyRequest(Base):
 
         headers = {}
         is_pre_webhook = webhook.__class__ == PolicyPreWebhook
-        if is_pre_webhook:
+        response_expected = webhook.direction == WebhookDirection.two_way
+        if is_pre_webhook and response_expected:
             headers = {
                 "reply-to": f"/privacy-request/{self.id}/callback",
                 "reply-to-token": generate_request_callback_jwe(webhook),
@@ -187,7 +188,7 @@ class PrivacyRequest(Base):
         logger.info(f"Calling webhook {webhook.key} for privacy_request {self.id}")
         response: Optional[SecondPartyResponseFormat] = https_connector.execute(
             request_body.dict(),
-            response_expected=webhook.direction == WebhookDirection.two_way,
+            response_expected=response_expected,
             additional_headers=headers,
         )
         if not response:
