@@ -119,7 +119,7 @@ class PrivacyRequestRunner:
                         access_request_data=access_result,
                     )
 
-            except BaseException as exc: # pylint: disable=broad-except
+            except BaseException as exc:  # pylint: disable=broad-except
                 logging.error(exc)
                 privacy_request.status = PrivacyRequestStatus.error
                 # raise
