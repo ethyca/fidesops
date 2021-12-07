@@ -26,7 +26,8 @@ from fidesops.models.policy import (
     Policy,
     Rule,
     RuleTarget,
-    PolicyPreWebhook, PolicyPostWebhook,
+    PolicyPreWebhook,
+    PolicyPostWebhook,
 )
 from fidesops.models.privacy_request import (
     PrivacyRequest,
@@ -250,15 +251,10 @@ def redshift_connection_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def snowflake_connection_config(
+def safe_snowflake_connection_config(
     db: Session,
-    integration_config: Dict[str, str],
 ) -> Generator:
     name = str(uuid4())
-    uri = integration_config.get("snowflake", {}).get("external_uri") or os.environ.get(
-        "SNOWFLAKE_TEST_URI"
-    )
-    schema = SnowflakeSchema(url=uri)
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -266,11 +262,25 @@ def snowflake_connection_config(
             "key": "my_snowflake_config",
             "connection_type": ConnectionType.snowflake,
             "access": AccessLevel.write,
-            "secrets": schema.dict(),
         },
     )
     yield connection_config
     connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def snowflake_connection_config(
+    db: Session,
+    integration_config: Dict[str, str],
+    safe_snowflake_connection_config: ConnectionConfig,
+) -> Generator:
+    uri = integration_config.get("snowflake", {}).get("external_uri") or os.environ.get(
+        "SNOWFLAKE_TEST_URI"
+    )
+    schema = SnowflakeSchema(url=uri)
+    safe_snowflake_connection_config.secrets = schema.dict()
+    safe_snowflake_connection_config.save(db=db)
+    yield safe_snowflake_connection_config
 
 
 @pytest.fixture(scope="function")
@@ -443,8 +453,8 @@ def erasure_policy(
 
 @pytest.fixture(scope="function")
 def erasure_policy_string_rewrite_long(
-        db: Session,
-        oauth_client: ClientDetail,
+    db: Session,
+    oauth_client: ClientDetail,
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
