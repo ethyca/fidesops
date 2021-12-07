@@ -338,7 +338,7 @@ class TestCreatePrivacyRequest:
 
         policy.delete(db=db)
         pr.delete(db=db)
-        db.expunge_all()
+        assert not pr in db  # Check that `pr` has been expunged from the session
         assert ExecutionLog.get(db, id=log_id).privacy_request_id == pr_id
 
     @pytest.mark.integration_external
