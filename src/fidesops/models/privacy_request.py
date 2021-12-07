@@ -105,6 +105,16 @@ class PrivacyRequest(Base):
         backref="privacy_requests",
     )
 
+    # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
+    # a privacy_request is deleted.  We want to retain for record-keeping.
+    execution_logs = relationship(
+        "ExecutionLog",
+        backref="privacy_request",
+        lazy="dynamic",
+        passive_deletes="all",
+        primaryjoin="foreign(ExecutionLog.privacy_request_id)==PrivacyRequest.id",
+    )
+
     def delete(self, db: Session) -> None:
         """
         Clean up the cached data related to this privacy request before deleting this
@@ -151,8 +161,9 @@ class PrivacyRequest(Base):
         result_prefix = f"{self.id}__*"
         return cache.get_encoded_objects_by_prefix(result_prefix)
 
-    def trigger_policy_webhook(self, db: Session, webhook: WebhookType) -> None:
-        """Trigger a request to a customer-defined policy webhook
+    def trigger_policy_webhook(self, webhook: WebhookType) -> None:
+        """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response
+        should cause privacy request execution to stop.
 
         Pre-Execution webhooks send headers to the webhook in case the service needs to send back instructions
         to halt.  To resume, they use send a request to the reply-to URL with the reply-to-token.
@@ -195,23 +206,9 @@ class PrivacyRequest(Base):
 
         # Pause execution if instructed
         if response_body.halt and is_pre_webhook:
-            logger.info(
-                f"Pausing execution of privacy request {self.id}. Halt instruction received from webhook {webhook.key}."
-            )
-            self.update(db=db, data={"status": PrivacyRequestStatus.paused})
             raise PrivacyRequestPaused("Halt instruction received.")
 
         return
-
-    # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
-    # a privacy_request is deleted.  We want to retain for record-keeping.
-    execution_logs = relationship(
-        "ExecutionLog",
-        backref="privacy_request",
-        lazy="dynamic",
-        passive_deletes="all",
-        primaryjoin="foreign(ExecutionLog.privacy_request_id)==PrivacyRequest.id",
-    )
 
 
 class ExecutionLogStatus(EnumType):

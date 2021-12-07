@@ -161,7 +161,7 @@ class TestPrivacyRequestTriggerWebhooks:
                 },
                 status_code=500,
             )
-            privacy_request.trigger_policy_webhook(db, webhook)
+            privacy_request.trigger_policy_webhook(webhook)
             db.refresh(privacy_request)
             assert privacy_request.status == PrivacyRequestStatus.in_processing
 
@@ -189,7 +189,7 @@ class TestPrivacyRequestTriggerWebhooks:
                 status_code=500,
             )
             with pytest.raises(ClientUnsuccessfulException):
-                privacy_request.trigger_policy_webhook(db, webhook)
+                privacy_request.trigger_policy_webhook(webhook)
 
     def test_trigger_two_way_policy_webhook_200_proceed(
         self,
@@ -215,7 +215,7 @@ class TestPrivacyRequestTriggerWebhooks:
                 },
                 status_code=200,
             )
-            privacy_request.trigger_policy_webhook(db, webhook)
+            privacy_request.trigger_policy_webhook(webhook)
             db.refresh(privacy_request)
             assert privacy_request.status == PrivacyRequestStatus.in_processing
 
@@ -245,10 +245,8 @@ class TestPrivacyRequestTriggerWebhooks:
             )
 
             with pytest.raises(PrivacyRequestPaused):
-                privacy_request.trigger_policy_webhook(db, webhook)
+                privacy_request.trigger_policy_webhook(webhook)
 
-            db.refresh(privacy_request)
-            assert privacy_request.status == PrivacyRequestStatus.paused
 
     def test_trigger_two_way_policy_webhook_add_derived_identities(
         self,
@@ -275,7 +273,7 @@ class TestPrivacyRequestTriggerWebhooks:
                 },
                 status_code=200,
             )
-            privacy_request.trigger_policy_webhook(db, webhook)
+            privacy_request.trigger_policy_webhook(webhook)
             db.refresh(privacy_request)
             assert privacy_request.status == PrivacyRequestStatus.in_processing
             assert privacy_request.get_cached_identity_data() == {
@@ -308,7 +306,7 @@ class TestPrivacyRequestTriggerWebhooks:
                 status_code=200,
             )
             with pytest.raises(ValidationError):
-                privacy_request.trigger_policy_webhook(db, webhook)
+                privacy_request.trigger_policy_webhook(webhook)
 
         # Derived identity invalid
         with requests_mock.Mocker() as mock_response:
@@ -325,4 +323,4 @@ class TestPrivacyRequestTriggerWebhooks:
                 status_code=200,
             )
             with pytest.raises(ValidationError):
-                privacy_request.trigger_policy_webhook(db, webhook)
+                privacy_request.trigger_policy_webhook(webhook)
