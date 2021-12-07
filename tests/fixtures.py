@@ -26,7 +26,8 @@ from fidesops.models.policy import (
     Policy,
     Rule,
     RuleTarget,
-    PolicyPreWebhook, PolicyPostWebhook,
+    PolicyPreWebhook,
+    PolicyPostWebhook,
 )
 from fidesops.models.privacy_request import ExecutionLog
 from fidesops.models.privacy_request import (
@@ -401,8 +402,8 @@ def erasure_policy(
 
 @pytest.fixture(scope="function")
 def erasure_policy_string_rewrite_long(
-        db: Session,
-        oauth_client: ClientDetail,
+    db: Session,
+    oauth_client: ClientDetail,
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
