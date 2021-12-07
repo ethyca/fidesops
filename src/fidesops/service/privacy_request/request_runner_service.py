@@ -10,7 +10,7 @@ from fidesops.graph.graph import DatasetGraph
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import ActionType
-from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.service.storage.storage_uploader_service import upload
 from fidesops.task.graph_task import (
     run_access_request,
@@ -106,6 +106,7 @@ class PrivacyRequestRunner:
                         logging.error(
                             f"Error uploading subject access data for rule {rule.key} on policy {policy.key} and privacy request {privacy_request.id} : {exc}"
                         )
+                        privacy_request.status = PrivacyRequestStatus.error
 
                 if policy.get_rules_for_action(action_type=ActionType.erasure):
                     # We only need to run the erasure once until masking strategies are handled
@@ -118,13 +119,17 @@ class PrivacyRequestRunner:
                         access_request_data=access_result,
                     )
 
-            except BaseException as exc:
-                logging.info(exc)
-                raise
+            except BaseException as exc: # pylint: disable=broad-except
+                logging.error(exc)
+                privacy_request.status = PrivacyRequestStatus.error
+                # raise
 
             privacy_request.finished_processing_at = datetime.utcnow()
+            if privacy_request.status != PrivacyRequestStatus.error:
+                privacy_request.status = PrivacyRequestStatus.complete
             privacy_request.save(db=session)
             logging.info(f"Privacy request {privacy_request.id} run completed.")
+            session.close()
 
     def dry_run(self, privacy_request: PrivacyRequest) -> None:
         """Pretend to dispatch privacy_request into the execution layer, return the query plan"""

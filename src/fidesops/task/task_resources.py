@@ -4,7 +4,7 @@ from typing import Dict, Any, Optional, List
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 from fidesops.common_exceptions import ConnectorNotFoundException
-from fidesops.db.session import get_db_session, get_db_engine
+from fidesops.db.session import get_db_session
 from fidesops.graph.config import (
     CollectionAddress,
 )
@@ -75,7 +75,6 @@ class TaskResources:
             c.key: c for c in connection_configs
         }
         self.connections = Connections()
-        self.db_engine = get_db_engine()
 
     def cache_object(self, key: str, value: Any) -> None:
         """Store in cache. Object will be
@@ -97,7 +96,7 @@ class TaskResources:
         message: str = None,
     ) -> Any:
         """Store in application db. Return the created or written-to id field value."""
-        SessionLocal = get_db_session(self.db_engine)
+        SessionLocal = get_db_session()
         db = SessionLocal()
 
         ExecutionLog.create(
