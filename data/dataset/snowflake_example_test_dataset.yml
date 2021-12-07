@@ -78,7 +78,7 @@ dataset:
           - name: time
             data_categories: [user.derived.nonidentifiable.sensor]
 
-      - name: orders
+      - name: order
         fields:
           - name: customer_id
             data_categories: [user.derived.identifiable.unique_id]
@@ -107,7 +107,7 @@ dataset:
             fidesops_meta:
               references:
                 - dataset: snowflake_example_test_dataset
-                  field: orders.id
+                  field: order.id
                   direction: from
           - name: product_id
             data_categories: [system.operations]
