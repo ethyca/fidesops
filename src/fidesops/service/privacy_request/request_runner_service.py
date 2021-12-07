@@ -122,7 +122,6 @@ class PrivacyRequestRunner:
             except BaseException as exc:  # pylint: disable=broad-except
                 logging.error(exc)
                 privacy_request.status = PrivacyRequestStatus.error
-                # raise
 
             privacy_request.finished_processing_at = datetime.utcnow()
             if privacy_request.status != PrivacyRequestStatus.error:

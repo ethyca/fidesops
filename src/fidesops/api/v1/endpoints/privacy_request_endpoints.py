@@ -47,7 +47,6 @@ from fidesops.task.graph_task import collect_queries, EMPTY_REQUEST
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.cache import FidesopsRedis
 from fidesops.util.oauth_util import verify_oauth_client
-import traceback
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Privacy Requests"], prefix=urls.V1_URL_PREFIX)
@@ -147,8 +146,6 @@ def create_privacy_request(
                 detail=exc.args[0],
             )
         except Exception as exc:
-            print(exc)
-            traceback.print_exc()
             logger.error("Exception: %s", exc)
             failure = {
                 "message": "This record could not be added",
