@@ -135,10 +135,8 @@ class AuthorizationError(HTTPException):
 class ClientUnsuccessfulException(FidesopsException):
     """Exception for when client call fails"""
 
-    def __init__(self, status_code: int, message: str):
-        super().__init__(
-            message=f"Client call failed with status '{status_code}': message '{message}'"
-        )
+    def __init__(self, status_code: int):
+        super().__init__(message=f"Client call failed with status code '{status_code}'")
 
 
 class NoSuchStrategyException(ValueError):

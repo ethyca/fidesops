@@ -73,7 +73,7 @@ class PrivacyRequestRunner:
                 return False
             except ClientUnsuccessfulException as exc:
                 logging.error(
-                    f"Privacy Request exited after response from webhook {webhook.key} {exc.args[0]}."
+                    f"Privacy Request exited after response from webhook '{webhook.key}': {exc.args[0]}."
                 )
                 self.privacy_request.update(
                     db=self.db,

@@ -50,9 +50,7 @@ class HTTPSConnector(BaseConnector):
 
         if not response.ok:
             logger.error("Invalid response received from webhook.")
-            raise ClientUnsuccessfulException(
-                status_code=response.status_code, message=response.text
-            )
+            raise ClientUnsuccessfulException(status_code=response.status_code)
         return json.loads(response.text)
 
     def test_connection(self) -> Optional[TestStatus]:

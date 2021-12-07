@@ -55,5 +55,5 @@ class TestHttpConnectorMethods:
 
             assert (
                 exc.value.args[0]
-                == "Client call failed with status '500': message 'Error'"
+                == "Client call failed with status code '500'"
             )

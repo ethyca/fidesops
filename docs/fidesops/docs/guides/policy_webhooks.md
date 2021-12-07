@@ -189,8 +189,7 @@ before PrivacyRequest execution or "post" for `PolicyPostWebhook`s that will run
 Known identities are also embedded in the request.
 
 For `two-way` `PolicyPreWebhooks`, we include specific headers in case you need to pause PrivacyRequest 
-execution while you take care of additional processing on your end. To resume, you should send a request back to the `reply-to` 
-URL with the `reply-to-token`.
+execution while you take care of additional processing on your end.
 
 ```json
      {
@@ -198,6 +197,7 @@ URL with the `reply-to-token`.
         "reply-to-token": "<jwe_token>"
      }
 ```
+ To resume, you should send a request back to the `reply-to` URL with the `reply-to-token`.
 
 ## Expected Webhook Response Format
 
@@ -205,7 +205,7 @@ Your webhook should respond immediately. If more processing time is needed, eith
 `one-way` webhook, or reply back with `halt=True` if you want to pause execution and wait for your processing to finish.
 Note that only `PolicyPreWebhooks` can pause execution. 
 
-`Two-way` webhooks should respond with the following: 
+We don't expect a response from `one-way` webhooks, but `two-way` webhooks should respond with the following: 
 
 ```json
 {

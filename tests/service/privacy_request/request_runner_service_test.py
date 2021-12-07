@@ -74,9 +74,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
         privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
-        mock_trigger_policy_webhook.side_effect = ClientUnsuccessfulException(
-            status_code=500, message="Received 500 from client-defined endpoint"
-        )
+        mock_trigger_policy_webhook.side_effect = ClientUnsuccessfulException(status_code=500)
 
         proceed = privacy_request_runner.run_webhooks(PolicyPreWebhook)
         assert not proceed
