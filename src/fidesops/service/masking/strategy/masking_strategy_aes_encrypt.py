@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from fidesops.schemas.masking.masking_configuration import (
     MaskingConfiguration,
-    AesEncryptionMaskingConfiguration,
+    AesEncryptionMaskingConfiguration, HmacMaskingConfiguration,
 )
 from fidesops.schemas.masking.masking_secrets import MaskingSecret
 from fidesops.schemas.masking.masking_strategy_description import (
@@ -12,6 +12,7 @@ from fidesops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.util.cache import get_cache, get_masking_secret_cache_key
 from fidesops.util.encryption.aes_gcm_encryption_scheme import encrypt
 
@@ -23,13 +24,13 @@ secret_types = {"key"}
 class AesEncryptionMaskingStrategy(MaskingStrategy):
     def __init__(self, configuration: AesEncryptionMaskingConfiguration):
         self.mode = configuration.mode
-        self.nonce = configuration.nonce
         self.format_preservation = configuration.format_preservation
 
     def mask(self, value: Optional[str]) -> str:
         if self.mode == AesEncryptionMaskingConfiguration.Mode.GCM:
-            secret_key = self._get_secret_key()
-            masked: str = encrypt(value, secret_key, self.nonce)
+            secret_key: bytes = self._get_secret_key()
+            nonce = self._generate_nonce(value)
+            masked: str = encrypt(value, secret_key, nonce)
             if self.format_preservation is not None:
                 formatter = FormatPreservation(self.format_preservation)
                 return formatter.format(masked)
@@ -38,7 +39,15 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
             raise ValueError(f"aes_mode {self.mode} is not supported")
 
     @staticmethod
-    def _get_secret_key():
+    def _generate_nonce(value: Optional[str]) -> bytes:
+        hmac_strategy: MaskingStrategy = get_strategy(
+            AES_ENCRYPT, {}
+        )
+        # todo- return bytes instead of str
+        return hmac_strategy.mask(value)
+
+    @staticmethod
+    def _get_secret_key() -> bytes:
         cache = get_cache()
         masking_secret_cache_key = get_masking_secret_cache_key(
             # todo- how do I get privacy request id at this level?
@@ -73,11 +82,12 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
             description="Masks by encrypting the value using AES",
             configurations=[
                 MaskingStrategyConfigurationDescription(
-                    key="nonce", description="A 12-byte nonce"
+                    key="mode", description="Specifies the algorithm mode. Default is GCM if not provided."
                 ),
                 MaskingStrategyConfigurationDescription(
-                    key="key", description="A 128-byte encryption key"
-                ),
+                    key="format_preservation",
+                    description="Option to preserve format in masking, with a provided suffix",
+                )
             ],
         )
 

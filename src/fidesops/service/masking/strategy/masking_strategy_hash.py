@@ -70,9 +70,9 @@ class HashMaskingStrategy(MaskingStrategy):
                     "SHA-512. If not provided, default is SHA-256",
                 ),
                 MaskingStrategyConfigurationDescription(
-                    key="salt",
-                    description="Specifies the salt to be used in conjunction with the hash.",
-                ),
+                    key="format_preservation",
+                    description="Option to preserve format in masking, with a provided suffix",
+                )
             ],
         )
 

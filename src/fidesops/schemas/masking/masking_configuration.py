@@ -43,7 +43,6 @@ class AesEncryptionMaskingConfiguration(MaskingConfiguration):
         GCM = "GCM"
 
     mode: Mode = Mode.GCM
-    nonce: bytes
     format_preservation: Optional[FormatPreservationConfig] = None
 
 

@@ -76,13 +76,9 @@ class HmacMaskingStrategy(MaskingStrategy):
                     "SHA-512. If not provided, default is SHA-256",
                 ),
                 MaskingStrategyConfigurationDescription(
-                    key="hmac_key",
-                    description="Specifies the secret key to be used in conjunction with the hash.",
-                ),
-                MaskingStrategyConfigurationDescription(
-                    key="salt",
-                    description="Specifies optional salt that can be added to the value we're hashing.",
-                ),
+                    key="format_preservation",
+                    description="Option to preserve format in masking, with a provided suffix",
+                )
             ],
         )
 
