@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
-from fidesops.common_exceptions import ClientUnsuccessfulException
+from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import (
     PrivacyRequest,
@@ -243,7 +243,10 @@ class TestPrivacyRequestTriggerWebhooks:
                 },
                 status_code=200,
             )
-            privacy_request.trigger_policy_webhook(db, webhook)
+
+            with pytest.raises(PrivacyRequestPaused):
+                privacy_request.trigger_policy_webhook(db, webhook)
+
             db.refresh(privacy_request)
             assert privacy_request.status == PrivacyRequestStatus.paused
 

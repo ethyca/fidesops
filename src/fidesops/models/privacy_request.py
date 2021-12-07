@@ -20,6 +20,7 @@ from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import relationship, Session
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
+from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.db.base_class import Base
 from fidesops.models.client import ClientDetail
 from fidesops.models.policy import (
@@ -153,10 +154,9 @@ class PrivacyRequest(Base):
     def trigger_policy_webhook(self, db: Session, webhook: WebhookType) -> None:
         """Trigger a request to a customer-defined policy webhook
 
-        Pre-Execution webhooks send headers to the webhook in the event that execution should be paused.
+        Pre-Execution webhooks send headers to the webhook in case the service needs to send back instructions
+        to halt.  To resume, they use send a request to the reply-to URL with the reply-to-token.
         """
-        is_pre_webhook = webhook.__class__ == PolicyPreWebhook
-
         https_connector: HTTPSConnector = get_connector(webhook.connection_config)
         request_body = SecondPartyRequestFormat(
             privacy_request_id=self.id,
@@ -166,6 +166,7 @@ class PrivacyRequest(Base):
         )
 
         headers = {}
+        is_pre_webhook = webhook.__class__ == PolicyPreWebhook
         if is_pre_webhook:
             headers = {
                 "reply-to": f"/privacy-request/{self.id}/callback",
@@ -183,6 +184,7 @@ class PrivacyRequest(Base):
 
         response_body = SecondPartyResponseFormat(**response)
 
+        # Cache any new identities
         if response_body.derived_identities and any(
             [response_body.derived_identities.dict().values()]
         ):
@@ -191,12 +193,13 @@ class PrivacyRequest(Base):
             )
             self.cache_identity(response_body.derived_identities)
 
+        # Pause execution if instructed
         if response_body.halt and is_pre_webhook:
             logger.info(
                 f"Pausing execution of privacy request {self.id}. Halt instruction received from webhook {webhook.key}."
             )
             self.update(db=db, data={"status": PrivacyRequestStatus.paused})
-            # TODO Need to stop privacy request execution
+            raise PrivacyRequestPaused("Halt instruction received.")
 
         return
 

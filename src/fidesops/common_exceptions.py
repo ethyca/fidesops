@@ -99,6 +99,10 @@ class WebhookOrderException(BaseException):
     """Custom Exception - Issue with webhooks order"""
 
 
+class PrivacyRequestPaused(BaseException):
+    """Halt Instruction Received on Privacy Request"""
+
+
 class AuthenticationFailure(HTTPException):
     """Wrapper for authentication failure exception"""
 
