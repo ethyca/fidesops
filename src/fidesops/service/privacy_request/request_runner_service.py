@@ -13,8 +13,7 @@ from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import (
     ActionType,
     PolicyPreWebhook,
-    WebhookType,
-    PolicyPostWebhook,
+    WebhookTypes,
 )
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.service.storage.storage_uploader_service import upload
@@ -46,7 +45,7 @@ class PrivacyRequestRunner:
         )
 
     def run_webhooks(
-        self, webhook_cls: WebhookType, after_webhook: Optional[WebhookType] = None
+        self, webhook_cls: WebhookTypes, after_webhook: Optional[WebhookTypes] = None
     ) -> bool:
         """
         Runs a series of webhooks either pre- or post- privacy request execution.

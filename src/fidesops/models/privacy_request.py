@@ -28,7 +28,7 @@ from fidesops.models.policy import (
     ActionType,
     PolicyPreWebhook,
     WebhookDirection,
-    WebhookType,
+    WebhookTypes,
 )
 from fidesops.schemas.external_https import (
     SecondPartyRequestFormat,
@@ -161,7 +161,7 @@ class PrivacyRequest(Base):
         result_prefix = f"{self.id}__*"
         return cache.get_encoded_objects_by_prefix(result_prefix)
 
-    def trigger_policy_webhook(self, webhook: WebhookType) -> None:
+    def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
         """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response
         should cause privacy request execution to stop.
 

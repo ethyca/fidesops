@@ -32,7 +32,7 @@ from fidesops.models.policy import (
     Policy,
     PolicyPreWebhook,
     PolicyPostWebhook,
-    WebhookType,
+    WebhookTypes,
 )
 from fidesops.schemas import policy_webhooks as schemas
 from fidesops.util.oauth_util import verify_oauth_client
@@ -92,11 +92,11 @@ def get_policy_post_execution_webhooks(
 
 
 def put_webhooks(
-    webhook_cls: WebhookType,
+    webhook_cls: WebhookTypes,
     policy_key: FidesOpsKey,
     db: Session = Depends(deps.get_db),
     webhooks: List[schemas.PolicyWebhookCreate] = Body(...),
-) -> List[WebhookType]:
+) -> List[WebhookTypes]:
     """
     Helper method to PUT pre-execution or post-execution policy webhooks.
 
@@ -214,8 +214,8 @@ def get_policy_webhook_or_error(
     db: Session,
     policy: Policy,
     webhook_key: FidesOpsKey,
-    webhook_cls: WebhookType,
-) -> WebhookType:
+    webhook_cls: WebhookTypes,
+) -> WebhookTypes:
     """Helper method to load a Pre-Execution or Post-Execution Policy Webhook or 404
 
     Also verifies that the webhook belongs to the given Policy.
@@ -281,7 +281,7 @@ def _patch_webhook(
     policy_key: FidesOpsKey,
     webhook_key: FidesOpsKey,
     webhook_body: schemas.PolicyWebhookUpdate = Body(...),
-    webhook_cls: WebhookType,
+    webhook_cls: WebhookTypes,
 ) -> schemas.PolicyWebhookUpdateResponse:
     """Helper method for PATCHing a single webhook, either Pre-Execution or Post-Execution
 
@@ -399,7 +399,7 @@ def delete_webhook(
     db: Session = Depends(deps.get_db),
     policy_key: FidesOpsKey,
     webhook_key: FidesOpsKey,
-    webhook_cls: WebhookType,
+    webhook_cls: WebhookTypes,
 ) -> PolicyWebhookDeleteResponse:
     """Handles deleting Pre- or Post-Execution Policy Webhooks. Related webhooks are reordered as necessary"""
     policy = get_policy_or_error(db, policy_key)

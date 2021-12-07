@@ -574,4 +574,4 @@ class PolicyPostWebhook(WebhookBase, Base):
         return resource
 
 
-WebhookType = Union[PolicyPreWebhook, PolicyPostWebhook]
+WebhookTypes = Union[PolicyPreWebhook, PolicyPostWebhook]

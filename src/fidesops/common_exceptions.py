@@ -137,7 +137,7 @@ class ClientUnsuccessfulException(FidesopsException):
 
     def __init__(self, status_code: int, message: str):
         super().__init__(
-            message=f"Client call failed. Status '{status_code}', message '{message}'"
+            message=f"Client call failed with status '{status_code}': message '{message}'"
         )
 
 
