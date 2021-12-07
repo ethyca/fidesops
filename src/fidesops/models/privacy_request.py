@@ -17,13 +17,14 @@ from sqlalchemy.orm import relationship, Session
 from fidesops.db.base_class import Base
 from fidesops.models.client import ClientDetail
 from fidesops.models.policy import Policy, ActionType
+from fidesops.schemas.masking.masking_secrets import MaskingSecret
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.util.cache import (
     get_all_cache_keys_for_privacy_request,
     get_cache,
     get_identity_cache_key,
     FidesopsRedis,
-    get_encryption_cache_key,
+    get_encryption_cache_key, get_masking_secret_cache_key,
 )
 
 
@@ -103,6 +104,16 @@ class PrivacyRequest(Base):
         cache.set_with_autoexpire(
             get_encryption_cache_key(self.id, "key"),
             encryption_key,
+        )
+
+    def cache_masking_secret(self, masking_secret: MaskingSecret) -> None:
+        """Sets masking encryption secrets in the Fidesops app cache if provided"""
+        if not masking_secret:
+            return
+        cache: FidesopsRedis = get_cache()
+        cache.set_with_autoexpire(
+            get_masking_secret_cache_key(self.id, masking_strategy=masking_secret.masking_strategy, secret_type=masking_secret.secret_type),
+            masking_secret.secret,
         )
 
     def get_cached_identity_data(self) -> Dict[str, Any]:

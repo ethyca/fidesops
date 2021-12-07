@@ -1,12 +1,14 @@
 import hashlib
 import hmac
-from typing import Optional, Callable
+import secrets
+from typing import Optional, Callable, List
 
 from fidesops.core.config import config
 from fidesops.schemas.masking.masking_configuration import (
     MaskingConfiguration,
     HmacMaskingConfiguration,
 )
+from fidesops.schemas.masking.masking_secrets import MaskingSecret
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
     MaskingStrategyConfigurationDescription,
@@ -34,8 +36,6 @@ class HmacMaskingStrategy(MaskingStrategy):
         }
 
         self.algorithm_function = algorithm_function_mapping.get(self.algorithm)
-        self.hmac_key = configuration.hmac_key
-        self.salt = configuration.salt
         self.format_preservation = configuration.format_preservation
 
     def mask(self, value: Optional[str]) -> Optional[str]:
@@ -50,6 +50,14 @@ class HmacMaskingStrategy(MaskingStrategy):
             formatter = FormatPreservation(self.format_preservation)
             return formatter.format(masked)
         return masked
+
+    def generate_secrets(self) -> List[MaskingSecret]:
+        secret_types = {"key", "salt"}
+        masking_secrets = []
+        for secret_type in secret_types:
+            secret = secrets.token_bytes()  #  todo- add length
+            masking_secrets.append(MaskingSecret(secret=secret, masking_strategy=HMAC, secret_type=secret_type))
+        return masking_secrets
 
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:

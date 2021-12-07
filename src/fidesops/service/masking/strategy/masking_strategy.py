@@ -4,6 +4,7 @@ from typing import Optional, List
 
 from fidesops.graph.data_type import DataType
 from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
+from fidesops.schemas.masking.masking_secrets import MaskingSecret
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
@@ -15,6 +16,10 @@ class MaskingStrategy(ABC):
     @abstractmethod
     def mask(self, value: Optional[str]) -> Optional[str]:
         """Used to mask the provided value"""
+        pass
+
+    def generate_secrets(self) -> List[MaskingSecret]:
+        """Generates secrets for strategy"""
         pass
 
     @staticmethod

@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from datetime import date
-from typing import List, Optional, Union, DefaultDict, Dict
+from typing import List, Optional, Union, DefaultDict, Dict, Set
 
 from fastapi import APIRouter, Body, Depends, Security, HTTPException
 from fastapi_pagination import Page, Params
@@ -28,13 +28,15 @@ from fidesops.graph.traversal import Traversal
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import Policy
+from fidesops.models.policy import Policy, ActionType
 from fidesops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
 from fidesops.schemas.dataset import DryRunDatasetResponse, CollectionAddressResponse
+from fidesops.schemas.masking.masking_secrets import MaskingSecret
+from fidesops.schemas.policy import Rule
 from fidesops.schemas.privacy_request import (
     PrivacyRequestCreate,
     PrivacyRequestResponse,
@@ -42,6 +44,7 @@ from fidesops.schemas.privacy_request import (
     ExecutionLogDetailResponse,
     BulkPostPrivacyRequests,
 )
+from fidesops.service.masking.strategy.masking_strategy_factory import SupportedMaskingStrategies
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.task.graph_task import collect_queries, EMPTY_REQUEST
 from fidesops.task.task_resources import TaskResources
@@ -131,6 +134,18 @@ def create_privacy_request(
             for identity in privacy_request_data.identities:
                 privacy_request.cache_identity(identity)
                 privacy_request.cache_encryption(privacy_request_data.encryption_key)
+
+            # Store masking secrets in the cache
+            logger.info(f"Caching masking secrets for privacy request {privacy_request.id}")
+            erasure_rules: List[Rule] = policy.get_rules_for_action(action_type=ActionType.erasure)
+            unique_masking_strategies_by_name: Set[str] = set()
+            for rule in erasure_rules:
+                unique_masking_strategies_by_name.add(rule.masking_strategy.strategy)
+            for strategy_name in unique_masking_strategies_by_name:
+                masking_strategy = SupportedMaskingStrategies[strategy_name].value
+                masking_secrets: List[MaskingSecret] = masking_strategy.generate_secrets()
+                for masking_secret in masking_secrets:
+                    privacy_request.cache_masking_secret(masking_secret)
 
             PrivacyRequestRunner(
                 cache=cache,

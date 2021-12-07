@@ -1,11 +1,13 @@
 import hashlib
-from typing import Optional
+import secrets
+from typing import Optional, List
 
 from fidesops.core.config import config
 from fidesops.schemas.masking.masking_configuration import (
     HashMaskingConfiguration,
     MaskingConfiguration,
 )
+from fidesops.schemas.masking.masking_secrets import MaskingSecret
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
     MaskingStrategyConfigurationDescription,
@@ -29,7 +31,6 @@ class HashMaskingStrategy(MaskingStrategy):
             self.algorithm_function = self._hash_sha256
         elif self.algorithm == HashMaskingConfiguration.Algorithm.SHA_512:
             self.algorithm_function = self._hash_sha512
-        self.salt = configuration.salt
         self.format_preservation = configuration.format_preservation
 
     def mask(self, value: Optional[str]) -> Optional[str]:
@@ -42,6 +43,14 @@ class HashMaskingStrategy(MaskingStrategy):
             formatter = FormatPreservation(self.format_preservation)
             return formatter.format(masked)
         return masked
+
+    def generate_secrets(self) -> List[MaskingSecret]:
+        secret_types = {"salt"}
+        masking_secrets = []
+        for secret_type in secret_types:
+            secret = secrets.token_bytes()  #  todo- add length
+            masking_secrets.append(MaskingSecret(secret=secret, masking_strategy=HASH, secret_type=secret_type))
+        return masking_secrets
 
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:

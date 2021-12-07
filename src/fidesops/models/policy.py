@@ -117,17 +117,6 @@ def _validate_rule(
             "Erasure Rules must have masking strategies."
         )
 
-    # Temporary, remove when we have the pieces in place to support more than these masking strategies.
-    if (
-        action_type == ActionType.erasure.value
-        and masking_strategy
-        and masking_strategy.get("strategy")
-        not in [NULL_REWRITE, STRING_REWRITE, RANDOM_STRING_REWRITE]
-    ):
-        raise common_exceptions.RuleValidationError(
-            "Only the following masking strategies are supported at this time:  null_rewrite, string_rewrite, random_string_rewrite"
-        )
-
     if action_type == ActionType.access.value and storage_destination_id is None:
         raise common_exceptions.RuleValidationError(
             "Access Rules must have a storage destination."
