@@ -7,7 +7,7 @@ from fidesops.schemas.masking.masking_configuration import (
     HashMaskingConfiguration,
     MaskingConfiguration,
 )
-from fidesops.schemas.masking.masking_secrets import MaskingSecret
+from fidesops.schemas.masking.masking_secrets import MaskingSecret, SecretType
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
     MaskingStrategyConfigurationDescription,
@@ -45,10 +45,10 @@ class HashMaskingStrategy(MaskingStrategy):
         return masked
 
     def generate_secrets(self) -> List[MaskingSecret]:
-        secret_types = {"salt"}
+        secret_types = {SecretType.salt}
         masking_secrets = []
         for secret_type in secret_types:
-            secret = secrets.token_bytes()  #  todo- add length
+            secret = secrets.token_urlsafe(config.security.DEFAULT_ENCRYPTION_BYTE_LENGTH)
             masking_secrets.append(MaskingSecret(secret=secret, masking_strategy=HASH, secret_type=secret_type))
         return masking_secrets
 
