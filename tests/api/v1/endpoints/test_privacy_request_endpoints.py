@@ -387,24 +387,27 @@ class TestCreatePrivacyRequest:
         )
         snowflake_client = SnowflakeConnector(snowflake_connection_config).client()
         uuid = str(uuid4())
-        customer_email = f"'customer-{uuid}@example.com'"
-        customer_name = f"'{uuid}'"
+        customer_email = f"customer-{uuid}@example.com"
+        formatted_customer_email = f"'{customer_email}'"
+        customer_name = f"{uuid}"
+        formatted_customer_name = f"'{customer_name}'"
 
         stmt = 'select max("id") from "customer";'
         res = snowflake_client.execute(stmt).all()
         customer_id = res[0][0] + 1
 
-        stmt = f'insert into "customer" ("id", "email", "name") values ({customer_id}, {customer_email}, {customer_name});'
+        stmt = f'insert into "customer" ("id", "email", "name") values ({customer_id}, {formatted_customer_email}, {formatted_customer_name});'
         res = snowflake_client.execute(stmt).all()
         assert res[0][0] == 1
         yield {
             "email": customer_email,
+            "formatted_email": formatted_customer_email,
             "name": customer_name,
             "id": customer_id,
             "client": snowflake_client,
         }
         # Remove test data and close Snowflake connection in teardown
-        stmt = f'delete from "customer" where "email" = {customer_email};'
+        stmt = f'delete from "customer" where "email" = {formatted_customer_email};'
         res = snowflake_client.execute(stmt).all()
         assert res[0][0] == 1
 
@@ -422,6 +425,7 @@ class TestCreatePrivacyRequest:
     ):
         customer_email = snowflake_resources["email"]
         snowflake_client = snowflake_resources["client"]
+        formatted_customer_email = snowflake_resources["formatted_email"]
         data = [
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
@@ -438,7 +442,9 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
 
-        stmt = f'select "name" from "customer" where "email" = {customer_email};'
+        stmt = (
+            f'select "name" from "customer" where "email" = {formatted_customer_email};'
+        )
         res = snowflake_client.execute(stmt).all()
         for row in res:
             assert row[0] == None
