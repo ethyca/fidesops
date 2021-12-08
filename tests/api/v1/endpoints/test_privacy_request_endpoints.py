@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from typing import List, Dict
 from unittest import mock
+from uuid import uuid4
 
 from sqlalchemy import (
     column,
@@ -39,6 +40,7 @@ from fidesops.models.privacy_request import (
 )
 from fidesops.models.policy import DataCategory, ActionType
 from fidesops.schemas.dataset import DryRunDatasetResponse
+from fidesops.service.connectors.sql_connector import SnowflakeConnector
 from fidesops.util.cache import get_identity_cache_key, get_encryption_cache_key
 
 page_size = Params().size
@@ -375,37 +377,53 @@ class TestCreatePrivacyRequest:
 
         pr.delete(db=db)
 
-    # @pytest.mark.external_integration
-    # def test_create_and_process_erasure_request_snowflake(
-    #     self,
-    #     snowflake_example_test_dataset_config,
-    #     integration_config: Dict[str, str],
-    #     url,
-    #     db,
-    #     api_client: TestClient,
-    #     generate_auth_header,
-    #     erasure_policy,
-    # ):
-    #     customer_email = "customer-2@example.com"
-    #     data = [
-    #         {
-    #             "requested_at": "2021-08-30T16:09:37.359Z",
-    #             "policy_key": erasure_policy.key,
-    #             "identities": [{"email": customer_email}],
-    #         }
-    #     ]
-    #     auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-    #     resp = api_client.post(url, json=data, headers=auth_header)
+    @pytest.mark.integration_external
+    def test_create_and_process_erasure_request_snowflake(
+        self,
+        snowflake_example_test_dataset_config,
+        integration_config: Dict[str, str],
+        url,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        erasure_policy,
+    ):
+        snowflake_connection_config = (
+            snowflake_example_test_dataset_config.connection_config
+        )
+        snowflake_client = SnowflakeConnector(snowflake_connection_config).client()
+        uuid = str(uuid4())
+        customer_email = f"'customer-{uuid}@example.com'"
+        customer_name = f"'{uuid}'"
 
-    #     assert resp.status_code == 200
-    #     response_data = resp.json()["succeeded"]
-    #     assert len(response_data) == 1
-    #     pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
-    #     pr.delete(db=db)
+        stmt = 'select max("id") from "customer";'
+        res = snowflake_client.execute(stmt).all()
+        customer_id = res[0][0] + 1
 
-    #     snowflake_uri = integration_config.get("snowflake", {}).get(
-    #         "external_uri"
-    #     ) or os.environ.get("SNOWFLAKE_TEST_URI")
+        stmt = f'insert into "customer" ("id", "email", "name") values ({customer_id}, {customer_email}, {customer_name});'
+        res = snowflake_client.execute(stmt).all()
+        assert res[0][0] == 1
+
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": erasure_policy.key,
+                "identities": [{"email": customer_email}],
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+        resp = api_client.post(url, json=data, headers=auth_header)
+
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr.delete(db=db)
+
+        stmt = f'select "name" from "customer" where "email" = {customer_email};'
+        res = snowflake_client.execute(stmt).all()
+        for row in res:
+            assert row[0] == None
 
     @pytest.mark.integration_erasure
     def test_create_and_process_erasure_request_specific_category(
