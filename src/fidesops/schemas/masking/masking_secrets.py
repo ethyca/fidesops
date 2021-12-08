@@ -6,6 +6,8 @@ from fidesops.schemas.base_class import BaseSchema
 class SecretType(Enum):
     key = "key"
     salt = "salt"
+    key_hmac = "key_hmac"
+    salt_hmac = "salt_hmac"
 
 
 class MaskingSecretGeneration(BaseSchema):
