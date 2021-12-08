@@ -44,7 +44,9 @@ from fidesops.schemas.privacy_request import (
     ExecutionLogDetailResponse,
     BulkPostPrivacyRequests,
 )
-from fidesops.service.masking.strategy.masking_strategy_factory import SupportedMaskingStrategies
+from fidesops.service.masking.strategy.masking_strategy_factory import (
+    SupportedMaskingStrategies,
+)
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.task.graph_task import collect_queries, EMPTY_REQUEST
 from fidesops.task.task_resources import TaskResources
@@ -136,8 +138,12 @@ def create_privacy_request(
                 privacy_request.cache_encryption(privacy_request_data.encryption_key)
 
             # Store masking secrets in the cache
-            logger.info(f"Caching masking secrets for privacy request {privacy_request.id}")
-            erasure_rules: List[Rule] = policy.get_rules_for_action(action_type=ActionType.erasure)
+            logger.info(
+                f"Caching masking secrets for privacy request {privacy_request.id}"
+            )
+            erasure_rules: List[Rule] = policy.get_rules_for_action(
+                action_type=ActionType.erasure
+            )
             unique_masking_strategies_by_name: Set[str] = set()
             for rule in erasure_rules:
                 unique_masking_strategies_by_name.add(rule.masking_strategy.strategy)
@@ -145,7 +151,9 @@ def create_privacy_request(
             for strategy_name in unique_masking_strategies_by_name:
                 masking_strategy = SupportedMaskingStrategies[strategy_name].value
                 # todo- check if generate secrets exists on class
-                masking_secrets: List[MaskingSecretGeneration] = masking_strategy.generate_secrets()
+                masking_secrets: List[
+                    MaskingSecretGeneration
+                ] = masking_strategy.generate_secrets()
                 for masking_secret in masking_secrets:
                     privacy_request.cache_masking_secret(masking_secret)
 

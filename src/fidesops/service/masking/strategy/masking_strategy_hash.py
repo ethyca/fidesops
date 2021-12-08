@@ -33,7 +33,9 @@ class HashMaskingStrategy(MaskingStrategy):
             self.algorithm_function = self._hash_sha512
         self.format_preservation = configuration.format_preservation
 
-    def mask(self, value: Optional[str], privacy_request_id: Optional[str]) -> Optional[str]:
+    def mask(
+        self, value: Optional[str], privacy_request_id: Optional[str]
+    ) -> Optional[str]:
         """Returns the hashed version of the provided value. Returns None if the provided value
         is None"""
         if value is None:
@@ -49,8 +51,14 @@ class HashMaskingStrategy(MaskingStrategy):
         secret_types = {SecretType.salt}
         masking_secrets = []
         for secret_type in secret_types:
-            secret = secrets.token_urlsafe(config.security.DEFAULT_ENCRYPTION_BYTE_LENGTH)
-            masking_secrets.append(MaskingSecretGeneration(secret=secret, masking_strategy=HASH, secret_type=secret_type))
+            secret = secrets.token_urlsafe(
+                config.security.DEFAULT_ENCRYPTION_BYTE_LENGTH
+            )
+            masking_secrets.append(
+                MaskingSecretGeneration(
+                    secret=secret, masking_strategy=HASH, secret_type=secret_type
+                )
+            )
         return masking_secrets
 
     @staticmethod
@@ -73,7 +81,7 @@ class HashMaskingStrategy(MaskingStrategy):
                 MaskingStrategyConfigurationDescription(
                     key="format_preservation",
                     description="Option to preserve format in masking, with a provided suffix",
-                )
+                ),
             ],
         )
 

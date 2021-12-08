@@ -24,7 +24,8 @@ from fidesops.util.cache import (
     get_cache,
     get_identity_cache_key,
     FidesopsRedis,
-    get_encryption_cache_key, get_masking_secret_cache_key,
+    get_encryption_cache_key,
+    get_masking_secret_cache_key,
 )
 
 
@@ -112,7 +113,11 @@ class PrivacyRequest(Base):
             return
         cache: FidesopsRedis = get_cache()
         cache.set_with_autoexpire(
-            get_masking_secret_cache_key(self.id, masking_strategy=masking_secret.masking_strategy, secret_type=masking_secret.secret_type),
+            get_masking_secret_cache_key(
+                self.id,
+                masking_strategy=masking_secret.masking_strategy,
+                secret_type=masking_secret.secret_type,
+            ),
             masking_secret.secret,
         )
 

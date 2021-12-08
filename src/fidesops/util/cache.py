@@ -125,9 +125,13 @@ def get_encryption_cache_key(privacy_request_id: str, encryption_attr: str) -> s
     return f"id-{privacy_request_id}-encryption-{encryption_attr}"
 
 
-def get_masking_secret_cache_key(privacy_request_id: str, masking_strategy: str, secret_type: SecretType) -> str:
+def get_masking_secret_cache_key(
+    privacy_request_id: str, masking_strategy: str, secret_type: SecretType
+) -> str:
     """Return the key at which to save this PrivacyRequest's masking secret attribute"""
-    return f"id-{privacy_request_id}-masking-secret-{masking_strategy}-{secret_type.value}"
+    return (
+        f"id-{privacy_request_id}-masking-secret-{masking_strategy}-{secret_type.value}"
+    )
 
 
 def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> Set:

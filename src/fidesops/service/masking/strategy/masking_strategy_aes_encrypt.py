@@ -4,7 +4,8 @@ from typing import Optional, List
 from fidesops.core.config import config
 from fidesops.schemas.masking.masking_configuration import (
     MaskingConfiguration,
-    AesEncryptionMaskingConfiguration, HmacMaskingConfiguration,
+    AesEncryptionMaskingConfiguration,
+    HmacMaskingConfiguration,
 )
 from fidesops.schemas.masking.masking_secrets import MaskingSecretGeneration, SecretType
 from fidesops.schemas.masking.masking_strategy_description import (
@@ -27,9 +28,13 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
 
     def mask(self, value: Optional[str], privacy_request_id: Optional[str]) -> str:
         if self.mode == AesEncryptionMaskingConfiguration.Mode.GCM:
-            key_hmac: str = SecretsUtil.get_secret(privacy_request_id, AES_ENCRYPT, SecretType.key_hmac)
+            key_hmac: str = SecretsUtil.get_secret(
+                privacy_request_id, AES_ENCRYPT, SecretType.key_hmac
+            )
             nonce: bytes = self._generate_nonce(value, key_hmac, privacy_request_id)
-            key: bytes = SecretsUtil.get_secret(privacy_request_id, AES_ENCRYPT, SecretType.key)
+            key: bytes = SecretsUtil.get_secret(
+                privacy_request_id, AES_ENCRYPT, SecretType.key
+            )
             masked: str = encrypt(value, key, nonce)
             if self.format_preservation is not None:
                 formatter = FormatPreservation(self.format_preservation)
@@ -39,25 +44,49 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
             raise ValueError(f"aes_mode {self.mode} is not supported")
 
     @staticmethod
-    def _generate_nonce(value: Optional[str], key: str, privacy_request_id: str) -> bytes:
-        salt: str = SecretsUtil.get_secret(privacy_request_id, AES_ENCRYPT, SecretType.salt_hmac)
+    def _generate_nonce(
+        value: Optional[str], key: str, privacy_request_id: Optional[str]
+    ) -> bytes:
+        salt: str = SecretsUtil.get_secret(
+            privacy_request_id, AES_ENCRYPT, SecretType.salt_hmac
+        )
         # fixme: replicate what Vault does with sum and remove lower bytes
-        return hmac_encrypt_return_bytes(value, key, salt, HmacMaskingConfiguration.Algorithm.sha_256)
+        return hmac_encrypt_return_bytes(
+            value, key, salt, HmacMaskingConfiguration.Algorithm.sha_256
+        )
 
     def generate_secrets(self) -> List[MaskingSecretGeneration]:
         masking_secrets = []
-        secret_key: bytes = secrets.token_bytes(config.security.AES_ENCRYPTION_KEY_LENGTH)
-        masking_secrets.append(
-            MaskingSecretGeneration(secret=secret_key, masking_strategy=AES_ENCRYPT, secret_type=SecretType.key)
+        secret_key: bytes = secrets.token_bytes(
+            config.security.AES_ENCRYPTION_KEY_LENGTH
         )
-        secret_key_hmac: str = secrets.token_urlsafe(config.security.DEFAULT_ENCRYPTION_BYTE_LENGTH)
         masking_secrets.append(
-            MaskingSecretGeneration(secret=secret_key_hmac, masking_strategy=AES_ENCRYPT, secret_type=SecretType.key_hmac)
+            MaskingSecretGeneration(
+                secret=secret_key,
+                masking_strategy=AES_ENCRYPT,
+                secret_type=SecretType.key,
+            )
+        )
+        secret_key_hmac: str = secrets.token_urlsafe(
+            config.security.DEFAULT_ENCRYPTION_BYTE_LENGTH
+        )
+        masking_secrets.append(
+            MaskingSecretGeneration(
+                secret=secret_key_hmac,
+                masking_strategy=AES_ENCRYPT,
+                secret_type=SecretType.key_hmac,
+            )
         )
         # the salt will be used in hmac to generate the nonce for aes
-        secret_salt_hmac: str = secrets.token_urlsafe(config.security.DEFAULT_ENCRYPTION_BYTE_LENGTH)
+        secret_salt_hmac: str = secrets.token_urlsafe(
+            config.security.DEFAULT_ENCRYPTION_BYTE_LENGTH
+        )
         masking_secrets.append(
-            MaskingSecretGeneration(secret=secret_salt_hmac, masking_strategy=AES_ENCRYPT, secret_type=SecretType.salt_hmac)
+            MaskingSecretGeneration(
+                secret=secret_salt_hmac,
+                masking_strategy=AES_ENCRYPT,
+                secret_type=SecretType.salt_hmac,
+            )
         )
         return masking_secrets
 
@@ -75,12 +104,13 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
             description="Masks by encrypting the value using AES",
             configurations=[
                 MaskingStrategyConfigurationDescription(
-                    key="mode", description="Specifies the algorithm mode. Default is GCM if not provided."
+                    key="mode",
+                    description="Specifies the algorithm mode. Default is GCM if not provided.",
                 ),
                 MaskingStrategyConfigurationDescription(
                     key="format_preservation",
                     description="Option to preserve format in masking, with a provided suffix",
-                )
+                ),
             ],
         )
 

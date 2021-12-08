@@ -27,7 +27,9 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
         self.length = configuration.length
         self.format_preservation = configuration.format_preservation
 
-    def mask(self, value: Optional[str], privacy_request_id: Optional[str]) -> Optional[str]:
+    def mask(
+        self, value: Optional[str], privacy_request_id: Optional[str]
+    ) -> Optional[str]:
         """Replaces the value with a random lowercase string of the configured length"""
         if value is None:
             return None

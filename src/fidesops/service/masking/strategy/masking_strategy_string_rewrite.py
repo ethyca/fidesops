@@ -25,7 +25,9 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
         self.rewrite_value = configuration.rewrite_value
         self.format_preservation = configuration.format_preservation
 
-    def mask(self, value: Optional[str], privacy_request_id: Optional[str]) -> Optional[str]:
+    def mask(
+        self, value: Optional[str], privacy_request_id: Optional[str]
+    ) -> Optional[str]:
         """Replaces the value with the value specified in strategy spec. Returns None if input is
         None"""
         if value is None:

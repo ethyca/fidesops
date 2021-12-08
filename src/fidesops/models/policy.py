@@ -48,13 +48,6 @@ from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     SupportedMaskingStrategies,
 )
-from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
-from fidesops.service.masking.strategy.masking_strategy_random_string_rewrite import (
-    RANDOM_STRING_REWRITE,
-)
-from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
-    STRING_REWRITE,
-)
 
 
 class ActionType(EnumType):

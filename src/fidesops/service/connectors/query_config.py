@@ -15,6 +15,7 @@ from fidesops.graph.config import (
 from fidesops.graph.data_type import DataTypeConverter
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
+from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.task.task_resources import TaskResources
@@ -123,7 +124,7 @@ class QueryConfig(Generic[T], ABC):
 
         return data
 
-    def update_value_map(self, row: Row, resources: TaskResources) -> Dict[str, Any]:
+    def update_value_map(self, row: Row, policy: Policy, request: PrivacyRequest) -> Dict[str, Any]:
         """Map the relevant fields to be updated on the row with their masked values from Policy Rules
 
         Example return:  {'name': None, 'ccn': None, 'code': None}
@@ -134,7 +135,7 @@ class QueryConfig(Generic[T], ABC):
         """
         rule_to_collection_fields: Dict[
             Rule, List[str]
-        ] = self.build_rule_target_fields(resources.policy)
+        ] = self.build_rule_target_fields(policy)
 
         value_map: Dict[str, Any] = {}
         for rule, field_names in rule_to_collection_fields.items():
@@ -161,7 +162,12 @@ class QueryConfig(Generic[T], ABC):
                     continue
                 val: Any = row[field_name]
                 masked_val = self._generate_masked_value(
-                    resources.request.id, strategy, val, masking_override, null_masking, field_name
+                    request.request.id,
+                    strategy,
+                    val,
+                    masking_override,
+                    null_masking,
+                    field_name,
                 )
                 value_map[field_name] = masked_val
         return value_map
@@ -180,7 +186,7 @@ class QueryConfig(Generic[T], ABC):
         return True
 
     @staticmethod
-    def _generate_masked_value(
+    def _generate_masked_value(  # pylint: disable=R0913
         request_id: str,
         strategy: MaskingStrategy,
         val: Any,
@@ -222,7 +228,9 @@ class QueryConfig(Generic[T], ABC):
         """dry run query for display"""
 
     @abstractmethod
-    def generate_update_stmt(self, row: Row, resources: Optional[TaskResources]) -> Optional[T]:
+    def generate_update_stmt(
+        self, row: Row, policy: Policy, request: PrivacyRequest
+    ) -> Optional[T]:
         """Generate an update statement. If there is no data to be updated
         (for example, if the policy identifies no fields to be updated)
         returns None"""
@@ -261,8 +269,10 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         )
         return None
 
-    def generate_update_stmt(self, row: Row, resources: TaskResources) -> Optional[TextClause]:
-        update_value_map = self.update_value_map(row, resources)
+    def generate_update_stmt(
+        self, row: Row, policy: Policy, request: PrivacyRequest
+    ) -> Optional[TextClause]:
+        update_value_map = self.update_value_map(row, policy, request)
         update_clauses = [f"{k} = :{k}" for k in update_value_map]
         non_empty_primary_keys = filter_nonempty_values(
             {

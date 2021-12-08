@@ -31,7 +31,9 @@ class HmacMaskingStrategy(MaskingStrategy):
         self.algorithm = configuration.algorithm
         self.format_preservation = configuration.format_preservation
 
-    def mask(self, value: Optional[str], privacy_request_id: Optional[str]) -> Optional[str]:
+    def mask(
+        self, value: Optional[str], privacy_request_id: Optional[str]
+    ) -> Optional[str]:
         """
         Returns a hash using the hmac algorithm, generating a hash of the supplied value and the secret hmac_key.
         Returns None if the provided value is None.
@@ -50,8 +52,14 @@ class HmacMaskingStrategy(MaskingStrategy):
         secret_types = {SecretType.key, SecretType.salt}
         masking_secrets = []
         for secret_type in secret_types:
-            secret = secrets.token_urlsafe(config.security.DEFAULT_ENCRYPTION_BYTE_LENGTH)
-            masking_secrets.append(MaskingSecretGeneration(secret=secret, masking_strategy=HMAC, secret_type=secret_type))
+            secret = secrets.token_urlsafe(
+                config.security.DEFAULT_ENCRYPTION_BYTE_LENGTH
+            )
+            masking_secrets.append(
+                MaskingSecretGeneration(
+                    secret=secret, masking_strategy=HMAC, secret_type=secret_type
+                )
+            )
         return masking_secrets
 
     @staticmethod
@@ -73,7 +81,7 @@ class HmacMaskingStrategy(MaskingStrategy):
                 MaskingStrategyConfigurationDescription(
                     key="format_preservation",
                     description="Option to preserve format in masking, with a provided suffix",
-                )
+                ),
             ],
         )
 
@@ -82,4 +90,3 @@ class HmacMaskingStrategy(MaskingStrategy):
         """Determines whether or not the given data type is supported by this masking strategy"""
         supported_data_types = {"string"}
         return data_type in supported_data_types
-
