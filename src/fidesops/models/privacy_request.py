@@ -181,7 +181,7 @@ class PrivacyRequest(Base):
         response_expected = webhook.direction == WebhookDirection.two_way
         if is_pre_webhook and response_expected:
             headers = {
-                "reply-to": f"/privacy-request/{self.id}/callback",
+                "reply-to": f"/privacy-request/{self.id}/resume",
                 "reply-to-token": generate_request_callback_jwe(webhook),
             }
 

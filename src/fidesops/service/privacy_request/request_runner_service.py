@@ -12,7 +12,6 @@ from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import (
     ActionType,
-    PolicyPreWebhook,
     WebhookTypes,
 )
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
@@ -37,12 +36,6 @@ class PrivacyRequestRunner:
         self.cache = cache
         self.db = db
         self.privacy_request = privacy_request
-
-    def run_from_webhook(self, webhook: PolicyPreWebhook) -> None:
-        """TODO needs to run the privacy request from a specific webhook"""
-        logging.info(
-            f"Resuming privacy request with id {self.privacy_request.id} after webhook {webhook.key}"
-        )
 
     def run_webhooks(
         self, webhook_cls: WebhookTypes, after_webhook: Optional[WebhookTypes] = None

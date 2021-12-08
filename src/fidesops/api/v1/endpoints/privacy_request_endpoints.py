@@ -404,8 +404,4 @@ def resume_privacy_request(
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
     privacy_request.cache_identity(webhook_callback.derived_identities)
 
-    PrivacyRequestRunner(
-        cache=cache,
-        db=db,
-        privacy_request=privacy_request,
-    ).run_from_webhook(webhook)
+    # TODO resume running privacy request from specific webhook

@@ -193,7 +193,7 @@ execution while you take care of additional processing on your end.
 
 ```json
      {
-        "reply-to": "/privacy-request/<privacy_request_id>/callback",
+        "reply-to": "/privacy-request/<privacy_request_id>/resume",
         "reply-to-token": "<jwe_token>"
      }
 ```
@@ -224,7 +224,7 @@ Derived identities are optional: a returned email or phone number will replace c
 If your webhook needed more processing time, once completed, send a request to the `reply-to` URL 
 given to you in the original request header with the `reply-to-token` auth token.
 
-`POST privacy_request/<privacy-request-id>/callback`
+`POST privacy_request/<privacy-request-id>/resume`
 
 ```json
 {
