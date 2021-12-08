@@ -34,7 +34,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         # parameters inside queries for debugging purposes. By
         # default we assume that Fidesops is not running in test
         # mode.
-        self.hide_parameters = not os.getenv("TESTING", False)
+        self.hide_parameters = not (os.getenv("TESTING") == "True")
         self.db_client: Optional[DB_CONNECTOR_TYPE] = None
 
     @abstractmethod

@@ -343,6 +343,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         return query_str
 
     def dry_run_query(self) -> Optional[str]:
+        """Returns a text representation of the query."""
         query_data = self.display_query_data()
         text_clause = self.generate_query(query_data, None)
         if text_clause is not None:

@@ -49,7 +49,7 @@ def _can_log_pii() -> bool:
     to output any PII to the logs. Right now this is being allowed
     in test mode only.
     """
-    return os.getenv("TESTING", False)
+    return os.getenv("TESTING") == "True"
 
 
 def _mask_pii_for_logs(parameter: Any) -> Any:
