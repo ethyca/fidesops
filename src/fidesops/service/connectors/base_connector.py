@@ -1,4 +1,5 @@
 import logging
+import os
 from abc import abstractmethod, ABC
 from typing import Any, Dict, List, Optional
 
@@ -28,6 +29,11 @@ class BaseConnector(ABC):
 
     def __init__(self, configuration: ConnectionConfig):
         self.configuration = configuration
+        # If Fidesops is running in test mode, it's OK to show
+        # parameters inside queries for debugging purposes. By
+        # default we assume that Fidesops is not running in test
+        # mode.
+        self.hide_parameters = not os.getenv("TESTING", False)
 
     @abstractmethod
     def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
