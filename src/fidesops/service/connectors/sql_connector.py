@@ -21,6 +21,7 @@ from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
 )
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.service.connectors.query_config import SQLQueryConfig
+from fidesops.task.task_resources import TaskResources
 
 logger = logging.getLogger(__name__)
 
@@ -87,13 +88,13 @@ class SQLConnector(BaseConnector):
             results = connection.execute(stmt)
             return SQLConnector.cursor_result_to_rows(results)
 
-    def mask_data(self, node: TraversalNode, policy: Policy, rows: List[Row]) -> int:
+    def mask_data(self, node: TraversalNode, resources: TaskResources, rows: List[Row]) -> int:
         """Execute a masking request. Returns the number of records masked"""
         query_config = self.query_config(node)
         update_ct = 0
         client = self.client()
         for row in rows:
-            update_stmt = query_config.generate_update_stmt(row, policy)
+            update_stmt = query_config.generate_update_stmt(row, resources)
             if update_stmt is not None:
                 with client.connect() as connection:
                     results: LegacyCursorResult = connection.execute(update_stmt)

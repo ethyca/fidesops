@@ -19,5 +19,5 @@ def mask(value: str, masking_strategies: List[PolicyMaskingSpec]) -> str:
         strategy = masking_strategy_factory.get_strategy(
             strategy.strategy, strategy.configuration
         )
-        masked_value = strategy.mask(masked_value)
+        masked_value = strategy.mask(masked_value, None)
     return masked_value

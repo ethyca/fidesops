@@ -8,6 +8,7 @@ from fidesops.schemas.connection_configuration import HttpsSchema
 
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.service.connectors.query_config import QueryConfig
+from fidesops.task.task_resources import TaskResources
 
 logger = logging.getLogger(__name__)
 
@@ -39,5 +40,5 @@ class HTTPSConnector(BaseConnector):
         The input data is expected to include a key and list of values for
         each input key that may be queried on."""
 
-    def mask_data(self, node: TraversalNode, policy: Policy, rows: List[Row]) -> int:
+    def mask_data(self, node: TraversalNode, resources: TaskResources, rows: List[Row]) -> int:
         """Execute a masking request. Return the number of rows that have been updated"""

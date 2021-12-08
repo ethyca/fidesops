@@ -6,6 +6,7 @@ from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.connectionconfig import ConnectionConfig, TestStatus
 from fidesops.models.policy import Policy
 from fidesops.service.connectors.query_config import QueryConfig
+from fidesops.task.task_resources import TaskResources
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ class BaseConnector(ABC):
         each input key that may be queried on."""
 
     @abstractmethod
-    def mask_data(self, node: TraversalNode, policy: Policy, rows: List[Row]) -> int:
+    def mask_data(self, node: TraversalNode, resources: TaskResources, rows: List[Row]) -> int:
         """Execute a masking request. Return the number of rows that have been updated"""
 
     def dry_run_query(self, node: TraversalNode) -> str:

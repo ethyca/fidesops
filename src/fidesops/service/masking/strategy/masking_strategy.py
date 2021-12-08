@@ -13,8 +13,9 @@ class MaskingStrategy(ABC):
     """Abstract base class for masking strategies"""
 
     @abstractmethod
-    def mask(self, value: Optional[str]) -> Optional[str]:
+    def mask(self, value: Optional[str], request_id: Optional[str]) -> Optional[str]:
         """Used to mask the provided value"""
+        # fixme: how to handle when no request id provided?
         pass
 
     def generate_secrets(self) -> List[MaskingSecretGeneration]:
