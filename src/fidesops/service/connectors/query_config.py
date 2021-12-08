@@ -18,7 +18,6 @@ from fidesops.models.policy import Policy, ActionType, Rule
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
-from fidesops.task.task_resources import TaskResources
 from fidesops.util.querytoken import QueryToken
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     get_strategy,
@@ -376,10 +375,10 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         return None
 
     def generate_update_stmt(
-        self, row: Row, resources: Optional[TaskResources] = None
+        self, row: Row, policy: Policy, request: PrivacyRequest = None
     ) -> Optional[MongoStatement]:
         """Generate a SQL update statement in the form of Mongo update statement components"""
-        update_clauses = self.update_value_map(row, resources)
+        update_clauses = self.update_value_map(row, policy, request)
 
         pk_clauses = filter_nonempty_values(
             {k.name: k.cast(row[k.name]) for k in self.primary_key_fields}

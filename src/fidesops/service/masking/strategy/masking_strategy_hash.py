@@ -40,7 +40,7 @@ class HashMaskingStrategy(MaskingStrategy):
         is None"""
         if value is None:
             return None
-        salt: str = SecretsUtil.get_secret(privacy_request_id, HASH, SecretType.key)
+        salt: str = SecretsUtil.get_secret(privacy_request_id, HASH, SecretType.salt)
         masked: str = self.algorithm_function(value, salt)
         if self.format_preservation is not None:
             formatter = FormatPreservation(self.format_preservation)

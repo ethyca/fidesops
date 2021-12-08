@@ -238,8 +238,18 @@ class TestSQLQueryConfig:
             "configuration": {"algorithm": "SHA-512"},
         }
 
-        with pytest.raises(NoSuchStrategyException):
-            config.generate_update_stmt(row, erasure_policy)
+        text_clause = config.generate_update_stmt(row, erasure_policy)
+        assert (
+                text_clause.text
+                == "UPDATE customer SET email = :email,name = :name WHERE  id = :id"
+        )
+        assert text_clause._bindparams["name"].key == "name"
+        assert text_clause._bindparams["name"].value == HashMaskingStrategy(
+            HashMaskingConfiguration(algorithm="SHA-512")
+        ).mask("John Customer")
+        assert text_clause._bindparams["email"].value == HashMaskingStrategy(
+            HashMaskingConfiguration(algorithm="SHA-512")
+        ).mask("customer-1@example.com")
 
 
     def test_generate_update_stmts_from_multiple_rules(
@@ -365,5 +375,9 @@ class TestMongoQueryConfig:
         target = rule_two.targets[0]
         target.data_category = DataCategory("user.provided.identifiable.gender").value
 
-        with pytest.raises(NoSuchStrategyException):
-            config.generate_update_stmt(row, erasure_policy_two_rules)
+        mongo_statement = config.generate_update_stmt(row, erasure_policy_two_rules)
+        assert mongo_statement[0] == {"_id": 1}
+        assert len(mongo_statement[1]["$set"]["gender"]) == 30
+        assert mongo_statement[1]["$set"]["birthday"] == HashMaskingStrategy(
+            HashMaskingConfiguration(algorithm="SHA-512")
+        ).mask("1988-01-10")
