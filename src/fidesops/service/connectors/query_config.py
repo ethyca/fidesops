@@ -295,9 +295,11 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         return None
 
     def format_key_map_for_update_stmt(self, key_map: Dict[str, Any]) -> List[str]:
+        """Adds the appropriate formatting for update statements in this datastore."""
         return [f"{k} = :{k}" for k in key_map]
 
     def generate_update_stmt(self, row: Row, policy: Policy) -> Optional[TextClause]:
+        """Returns an update statement in generic SQL dialect."""
         update_value_map = self.update_value_map(row, policy)
         update_clauses = self.format_key_map_for_update_stmt(update_value_map)
         non_empty_primary_keys = filter_nonempty_values(
@@ -378,6 +380,7 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
 
     def format_key_map_for_update_stmt(self, key_map: Dict[str, Any]) -> List[str]:
+        """Adds the appropriate formatting for update statements in this datastore."""
         return [f'"{k}" = :{k}' for k in key_map]
 
     def get_formatted_update_stmt(
@@ -385,6 +388,7 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         update_clauses: List[str],
         pk_clauses: List[str],
     ) -> str:
+        """Returns a parameterised update statement in Snowflake dialect."""
         return f'UPDATE "{self.node.address.collection}" SET {",".join(update_clauses)} WHERE  {" AND ".join(pk_clauses)}'
 
 
