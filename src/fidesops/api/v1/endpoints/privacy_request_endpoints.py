@@ -160,7 +160,8 @@ def create_privacy_request(
                 cache=cache,
                 db=db,
                 privacy_request=privacy_request,
-            ).run()
+            ).submit()
+
         except common_exceptions.RedisConnectionError as exc:
             logger.error("RedisConnectionError: %s", exc)
             # Thrown when cache.ping() fails on cache connection retrieval
