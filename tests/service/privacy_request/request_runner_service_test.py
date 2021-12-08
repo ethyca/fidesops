@@ -321,7 +321,7 @@ def test_create_and_process_erasure_request_read_access(
     assert customer_found
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def snowflake_resources(
     snowflake_example_test_dataset_config,
 ):
