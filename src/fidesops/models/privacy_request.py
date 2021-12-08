@@ -207,7 +207,9 @@ class PrivacyRequest(Base):
 
         # Pause execution if instructed
         if response_body.halt and is_pre_webhook:
-            raise PrivacyRequestPaused("Halt instruction received.")
+            raise PrivacyRequestPaused(
+                f"Halt instruction received on privacy request {self.id}."
+            )
 
         return
 

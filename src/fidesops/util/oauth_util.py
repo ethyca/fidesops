@@ -112,7 +112,7 @@ def is_callback_token_expired(issued_at: Optional[datetime]) -> bool:
     ).total_seconds() / 60.0 > config.redis.DEFAULT_TTL_SECONDS
 
 
-async def verify_callback_oauth(
+def verify_callback_oauth(
     security_scopes: SecurityScopes,
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(deps.get_db),
