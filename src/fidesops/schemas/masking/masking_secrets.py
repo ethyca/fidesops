@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel
+from fidesops.schemas.base_class import BaseSchema
 
 
 class SecretType(Enum):
@@ -8,9 +8,7 @@ class SecretType(Enum):
     salt = "salt"
 
 
-class MaskingSecret(BaseModel):
+class MaskingSecretGeneration(BaseSchema):
     secret: str
     masking_strategy: str
     secret_type: SecretType
-
-

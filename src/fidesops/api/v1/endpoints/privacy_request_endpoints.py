@@ -35,7 +35,7 @@ from fidesops.models.privacy_request import (
     PrivacyRequestStatus,
 )
 from fidesops.schemas.dataset import DryRunDatasetResponse, CollectionAddressResponse
-from fidesops.schemas.masking.masking_secrets import MaskingSecret
+from fidesops.schemas.masking.masking_secrets import MaskingSecretGeneration
 from fidesops.schemas.policy import Rule
 from fidesops.schemas.privacy_request import (
     PrivacyRequestCreate,
@@ -141,9 +141,11 @@ def create_privacy_request(
             unique_masking_strategies_by_name: Set[str] = set()
             for rule in erasure_rules:
                 unique_masking_strategies_by_name.add(rule.masking_strategy.strategy)
+            # todo- could generate all secrets for all strategies
             for strategy_name in unique_masking_strategies_by_name:
                 masking_strategy = SupportedMaskingStrategies[strategy_name].value
-                masking_secrets: List[MaskingSecret] = masking_strategy.generate_secrets()
+                # todo- check if generate secrets exists on class
+                masking_secrets: List[MaskingSecretGeneration] = masking_strategy.generate_secrets()
                 for masking_secret in masking_secrets:
                     privacy_request.cache_masking_secret(masking_secret)
 

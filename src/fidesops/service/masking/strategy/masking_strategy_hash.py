@@ -7,14 +7,14 @@ from fidesops.schemas.masking.masking_configuration import (
     HashMaskingConfiguration,
     MaskingConfiguration,
 )
-from fidesops.schemas.masking.masking_secrets import MaskingSecret, SecretType
+from fidesops.schemas.masking.masking_secrets import MaskingSecretGeneration, SecretType
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
     MaskingStrategyConfigurationDescription,
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-
+from fidesops.util.encryption.secrets_util import SecretsUtil
 
 HASH = "hash"
 
@@ -38,18 +38,19 @@ class HashMaskingStrategy(MaskingStrategy):
         is None"""
         if value is None:
             return None
-        masked: str = self.algorithm_function(value, self.salt)
+        salt: str = SecretsUtil.get_secret(privacy_request_id, HASH, SecretType.key)
+        masked: str = self.algorithm_function(value, salt)
         if self.format_preservation is not None:
             formatter = FormatPreservation(self.format_preservation)
             return formatter.format(masked)
         return masked
 
-    def generate_secrets(self) -> List[MaskingSecret]:
+    def generate_secrets(self) -> List[MaskingSecretGeneration]:
         secret_types = {SecretType.salt}
         masking_secrets = []
         for secret_type in secret_types:
             secret = secrets.token_urlsafe(config.security.DEFAULT_ENCRYPTION_BYTE_LENGTH)
-            masking_secrets.append(MaskingSecret(secret=secret, masking_strategy=HASH, secret_type=secret_type))
+            masking_secrets.append(MaskingSecretGeneration(secret=secret, masking_strategy=HASH, secret_type=secret_type))
         return masking_secrets
 
     @staticmethod

@@ -30,6 +30,8 @@ from fidesops.util.cryptographic_util import bytes_to_b64_str
 #     encrypted: bytes = encrypt_to_bytes(plain_value, key, nonce)
 #     return bytes_to_b64_str(encrypted)
 #
+
+
 def hmac_encrypt_return_bytes(value: str, hmac_key: str, salt: str, hashing_algorithm: HmacMaskingConfiguration.Algorithm) -> bytes:
     return _hmac_encrypt(value, hmac_key, salt, hashing_algorithm).digest()
 
@@ -40,6 +42,7 @@ def hmac_encrypt_return_str(value: str, hmac_key: str, salt: str, hashing_algori
 
 def _hmac_encrypt(value: str, hmac_key: str, salt: str, hashing_algorithm: HmacMaskingConfiguration.Algorithm) -> hmac.HMAC:
     """Generic HMAC algorithm"""
+
     algorithm_function_mapping = {
         HmacMaskingConfiguration.Algorithm.sha_256: _hmac_sha256,
         HmacMaskingConfiguration.Algorithm.sha_512: _hmac_sha512,
