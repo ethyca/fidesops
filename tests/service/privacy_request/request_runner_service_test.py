@@ -321,37 +321,8 @@ def test_create_and_process_erasure_request_read_access(
     assert customer_found
 
 
-@pytest.mark.integration_external
-def test_create_and_process_access_request_snowflake(
-    self,
-    snowflake_example_test_dataset_config_read_access,
-    db,
-    cache,
-    policy,
-):
-    customer_email = "customer-1@example.com"
-    data = [
-        {
-            "requested_at": "2021-08-30T16:09:37.359Z",
-            "policy_key": policy.key,
-            "identities": [{"email": customer_email}],
-        }
-    ]
-    pr = get_privacy_request_results(db, policy, cache, data)
-    results = pr.get_results()
-    customer_table_key = (
-        f"EN_{pr.id}__access_request__snowflake_example_test_dataset:customer"
-    )
-    assert len(results[customer_table_key]) == 1
-    assert results[customer_table_key][0]["email"] == customer_email
-    assert results[customer_table_key][0]["name"] == "Example Customer 1"
-
-    pr.delete(db=db)
-
-
 @pytest.fixture
 def snowflake_resources(
-    self,
     snowflake_example_test_dataset_config,
 ):
     snowflake_connection_config = (
@@ -385,8 +356,33 @@ def snowflake_resources(
 
 
 @pytest.mark.integration_external
+def test_create_and_process_access_request_snowflake(
+    snowflake_resources,
+    db,
+    cache,
+    policy,
+):
+    customer_email = snowflake_resources["email"]
+    customer_name = snowflake_resources["name"]
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identities": [{"email": customer_email}],
+    }
+    pr = get_privacy_request_results(db, policy, cache, data)
+    results = pr.get_results()
+    customer_table_key = (
+        f"EN_{pr.id}__access_request__snowflake_example_test_dataset:customer"
+    )
+    assert len(results[customer_table_key]) == 1
+    assert results[customer_table_key][0]["email"] == customer_email
+    assert results[customer_table_key][0]["name"] == customer_name
+
+    pr.delete(db=db)
+
+
+@pytest.mark.integration_external
 def test_create_and_process_erasure_request_snowflake(
-    self,
     snowflake_example_test_dataset_config,
     snowflake_resources,
     integration_config: Dict[str, str],
@@ -397,13 +393,11 @@ def test_create_and_process_erasure_request_snowflake(
     customer_email = snowflake_resources["email"]
     snowflake_client = snowflake_resources["client"]
     formatted_customer_email = snowflake_resources["formatted_email"]
-    data = [
-        {
-            "requested_at": "2021-08-30T16:09:37.359Z",
-            "policy_key": erasure_policy.key,
-            "identities": [{"email": customer_email}],
-        }
-    ]
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy.key,
+        "identities": [{"email": customer_email}],
+    }
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
     pr.delete(db=db)
 
