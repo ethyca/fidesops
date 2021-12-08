@@ -3,13 +3,6 @@ import os
 from datetime import datetime
 from typing import List, Dict
 from unittest import mock
-from uuid import uuid4
-
-from sqlalchemy import (
-    column,
-    table,
-    select,
-)
 
 from fastapi_pagination import Params
 import pytest
@@ -28,19 +21,14 @@ from fidesops.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_READ,
 )
-from fidesops.db.session import (
-    get_db_engine,
-    get_db_session,
-)
 from fidesops.models.client import ClientDetail
 from fidesops.models.privacy_request import (
     PrivacyRequest,
     ExecutionLog,
     ExecutionLogStatus,
 )
-from fidesops.models.policy import DataCategory, ActionType
+from fidesops.models.policy import ActionType
 from fidesops.schemas.dataset import DryRunDatasetResponse
-from fidesops.service.connectors.sql_connector import SnowflakeConnector
 from fidesops.util.cache import get_identity_cache_key, get_encryption_cache_key
 
 page_size = Params().size
@@ -67,7 +55,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 403
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_access_request"
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_create_privacy_request(
         self,
@@ -126,7 +114,7 @@ class TestCreatePrivacyRequest:
         )
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.start_processing"
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_create_privacy_request_starts_processing(
         self,
@@ -154,7 +142,7 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_access_request"
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_create_privacy_request_with_external_id(
         self,
@@ -188,7 +176,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_access_request"
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_create_privacy_request_caches_identity(
         self,
@@ -239,7 +227,7 @@ class TestCreatePrivacyRequest:
         assert resp.json()["detail"][0]["msg"] == "Encryption key must be 16 bytes long"
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_access_request"
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_create_privacy_request_caches_encryption_keys(
         self,
@@ -296,385 +284,6 @@ class TestCreatePrivacyRequest:
         assert len(response_data) == 0
         response_data = resp.json()["failed"]
         assert len(response_data) == 1
-
-    @pytest.mark.integration
-    def test_create_and_process_access_request(
-        self,
-        postgres_example_test_dataset_config_read_access,
-        url,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        policy,
-    ):
-        customer_email = "customer-1@example.com"
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": policy.key,
-                "identities": [{"email": customer_email}],
-            }
-        ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
-        assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
-        assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
-        results = pr.get_results()
-        assert len(results.keys()) == 11
-        for key in results.keys():
-            assert results[key] is not None
-            assert results[key] != {}
-
-        result_key_prefix = (
-            f"EN_{pr.id}__access_request__postgres_example_test_dataset:"
-        )
-        customer_key = result_key_prefix + "customer"
-        assert results[customer_key][0]["email"] == customer_email
-
-        visit_key = result_key_prefix + "visit"
-        assert results[visit_key][0]["email"] == customer_email
-        log_id = pr.execution_logs[0].id
-        pr_id = pr.id
-
-        policy.delete(db=db)
-        pr.delete(db=db)
-        assert not pr in db  # Check that `pr` has been expunged from the session
-        assert ExecutionLog.get(db, id=log_id).privacy_request_id == pr_id
-
-    @pytest.mark.integration_external
-    def test_create_and_process_access_request_snowflake(
-        self,
-        snowflake_example_test_dataset_config_read_access,
-        url,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        policy,
-    ):
-        customer_email = "customer-1@example.com"
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": policy.key,
-                "identities": [{"email": customer_email}],
-            }
-        ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
-        assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
-        assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
-        results = pr.get_results()
-        customer_table_key = (
-            f"EN_{pr.id}__access_request__snowflake_example_test_dataset:customer"
-        )
-        assert len(results[customer_table_key]) == 1
-        assert results[customer_table_key][0]["email"] == customer_email
-        assert results[customer_table_key][0]["name"] == "Example Customer 1"
-
-        pr.delete(db=db)
-
-    @pytest.fixture
-    def snowflake_resources(
-        self,
-        snowflake_example_test_dataset_config,
-    ):
-        snowflake_connection_config = (
-            snowflake_example_test_dataset_config.connection_config
-        )
-        snowflake_client = SnowflakeConnector(snowflake_connection_config).client()
-        uuid = str(uuid4())
-        customer_email = f"customer-{uuid}@example.com"
-        formatted_customer_email = f"'{customer_email}'"
-        customer_name = f"{uuid}"
-        formatted_customer_name = f"'{customer_name}'"
-
-        stmt = 'select max("id") from "customer";'
-        res = snowflake_client.execute(stmt).all()
-        customer_id = res[0][0] + 1
-
-        stmt = f'insert into "customer" ("id", "email", "name") values ({customer_id}, {formatted_customer_email}, {formatted_customer_name});'
-        res = snowflake_client.execute(stmt).all()
-        assert res[0][0] == 1
-        yield {
-            "email": customer_email,
-            "formatted_email": formatted_customer_email,
-            "name": customer_name,
-            "id": customer_id,
-            "client": snowflake_client,
-        }
-        # Remove test data and close Snowflake connection in teardown
-        stmt = f'delete from "customer" where "email" = {formatted_customer_email};'
-        res = snowflake_client.execute(stmt).all()
-        assert res[0][0] == 1
-
-    @pytest.mark.integration_external
-    def test_create_and_process_erasure_request_snowflake(
-        self,
-        snowflake_example_test_dataset_config,
-        snowflake_resources,
-        integration_config: Dict[str, str],
-        url,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        erasure_policy,
-    ):
-        customer_email = snowflake_resources["email"]
-        snowflake_client = snowflake_resources["client"]
-        formatted_customer_email = snowflake_resources["formatted_email"]
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": erasure_policy.key,
-                "identities": [{"email": customer_email}],
-            }
-        ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
-
-        assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
-        assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
-        pr.delete(db=db)
-
-        stmt = (
-            f'select "name" from "customer" where "email" = {formatted_customer_email};'
-        )
-        res = snowflake_client.execute(stmt).all()
-        for row in res:
-            assert row[0] == None
-
-    @pytest.mark.integration_erasure
-    def test_create_and_process_erasure_request_specific_category(
-        self,
-        postgres_example_test_dataset_config,
-        url,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        erasure_policy,
-    ):
-        customer_email = "customer-1@example.com"
-        customer_id = 1
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": erasure_policy.key,
-                "identities": [{"email": customer_email}],
-            }
-        ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
-
-        assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
-        assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
-        pr.delete(db=db)
-
-        example_postgres_uri = (
-            "postgresql://postgres:postgres@postgres_example/postgres_example"
-        )
-        engine = get_db_engine(database_uri=example_postgres_uri)
-        SessionLocal = get_db_session(engine=engine)
-        integration_db = SessionLocal()
-        stmt = select(
-            column("id"),
-            column("name"),
-        ).select_from(table("customer"))
-        res = integration_db.execute(stmt).all()
-
-        customer_found = False
-        for row in res:
-            if customer_id in row:
-                customer_found = True
-                # Check that the `name` field is `None`
-                assert row[1] is None
-        assert customer_found
-
-    @pytest.mark.integration_erasure
-    def test_create_and_process_erasure_request_generic_category(
-        self,
-        postgres_example_test_dataset_config,
-        url,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        erasure_policy,
-    ):
-        # It's safe to change this here since the `erasure_policy` fixture is scoped
-        # at function level
-        target = erasure_policy.rules[0].targets[0]
-        target.data_category = DataCategory("user.provided.identifiable.contact").value
-        target.save(db=db)
-
-        email = "customer-2@example.com"
-        customer_id = 2
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": erasure_policy.key,
-                "identities": [{"email": email}],
-            }
-        ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
-
-        assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
-        assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
-        pr.delete(db=db)
-
-        example_postgres_uri = (
-            "postgresql://postgres:postgres@postgres_example/postgres_example"
-        )
-        engine = get_db_engine(database_uri=example_postgres_uri)
-        SessionLocal = get_db_session(engine=engine)
-        integration_db = SessionLocal()
-        stmt = select(
-            column("id"),
-            column("email"),
-            column("name"),
-        ).select_from(table("customer"))
-        res = integration_db.execute(stmt).all()
-
-        customer_found = False
-        for row in res:
-            if customer_id in row:
-                customer_found = True
-                # Check that the `email` field is `None` and that its data category
-                # ("user.provided.identifiable.contact.email") has been erased by the parent
-                # category ("user.provided.identifiable.contact")
-                assert row[1] is None
-                assert row[2] is not None
-            else:
-                # There are two rows other rows, and they should not have been erased
-                assert row[1] in ["customer-1@example.com", "jane@example.com"]
-        assert customer_found
-
-    @pytest.mark.integration_erasure
-    def test_create_and_process_erasure_request_with_table_joins(
-        self,
-        postgres_example_test_dataset_config,
-        url,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        erasure_policy,
-    ):
-        # It's safe to change this here since the `erasure_policy` fixture is scoped
-        # at function level
-        target = erasure_policy.rules[0].targets[0]
-        target.data_category = DataCategory(
-            "user.provided.identifiable.financial"
-        ).value
-        target.save(db=db)
-
-        customer_email = "customer-1@example.com"
-        customer_id = 1
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": erasure_policy.key,
-                "identities": [{"email": customer_email}],
-            }
-        ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
-
-        assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
-        assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
-        pr.delete(db=db)
-
-        example_postgres_uri = (
-            "postgresql://postgres:postgres@postgres_example/postgres_example"
-        )
-        engine = get_db_engine(database_uri=example_postgres_uri)
-        SessionLocal = get_db_session(engine=engine)
-        integration_db = SessionLocal()
-        stmt = select(
-            column("customer_id"),
-            column("id"),
-            column("ccn"),
-            column("code"),
-            column("name"),
-        ).select_from(table("payment_card"))
-        res = integration_db.execute(stmt).all()
-
-        card_found = False
-        for row in res:
-            if row[0] == customer_id:
-                card_found = True
-                assert row[2] is None
-                assert row[3] is None
-                assert row[4] is None
-
-        assert card_found is True
-
-    @pytest.mark.integration_erasure
-    def test_create_and_process_erasure_request_read_access(
-        self,
-        postgres_example_test_dataset_config_read_access,
-        url,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        erasure_policy,
-    ):
-        customer_email = "customer-2@example.com"
-        customer_id = 2
-        data = [
-            {
-                "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": erasure_policy.key,
-                "identities": [{"email": customer_email}],
-            }
-        ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
-
-        assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
-        assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
-        errored_execution_logs = pr.execution_logs.filter_by(status="error")
-        assert errored_execution_logs.count() == 9
-        assert (
-            errored_execution_logs[0].message
-            == "No values were erased since this connection "
-            "my_postgres_db_1_read_config has not been given write access"
-        )
-        pr.delete(db=db)
-
-        example_postgres_uri = (
-            "postgresql://postgres:postgres@postgres_example/postgres_example"
-        )
-        engine = get_db_engine(database_uri=example_postgres_uri)
-        SessionLocal = get_db_session(engine=engine)
-        integration_db = SessionLocal()
-        stmt = select(
-            column("id"),
-            column("name"),
-        ).select_from(table("customer"))
-        res = integration_db.execute(stmt).all()
-
-        customer_found = False
-        for row in res:
-            if customer_id in row:
-                customer_found = True
-                # Check that the `name` field is NOT `None`. We couldn't erase, because the ConnectionConfig only had
-                # "read" access
-                assert row[1] is not None
-        assert customer_found
-
 
 class TestGetPrivacyRequests:
     @pytest.fixture(scope="function")
@@ -890,6 +499,7 @@ class TestGetPrivacyRequests:
         second_postgres_execution_log,
         mongo_execution_log,
         url,
+        db,
     ):
         """Test privacy requests endpoint with verbose query param to show execution logs"""
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
@@ -900,7 +510,6 @@ class TestGetPrivacyRequests:
         assert (
             postgres_execution_log.updated_at < second_postgres_execution_log.updated_at
         )
-
         expected_resp = {
             "items": [
                 {
@@ -1011,7 +620,6 @@ class TestGetPrivacyRequests:
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(url + f"?verbose=True", headers=auth_header)
         assert 200 == response.status_code
-
         resp = response.json()
         assert (
             len(resp["items"][0]["results"]["my-postgres-db"])

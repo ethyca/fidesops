@@ -1,18 +1,18 @@
-from datetime import timezone
-from datetime import datetime, timedelta
+import logging
+from datetime import datetime, timedelta, timezone
 import os
 from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
 
-from sqlalchemy.orm import Session
-from sqlalchemy.orm.exc import ObjectDeletedError
+import pydash
 import pytest
 import yaml
-import logging
 from faker import Faker
+from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import ObjectDeletedError
 
-from fidesops.core.config import load_file
+from fidesops.core.config import load_file, load_toml
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import (
     ConnectionConfig,
@@ -29,10 +29,10 @@ from fidesops.models.policy import (
     PolicyPreWebhook,
     PolicyPostWebhook,
 )
+from fidesops.models.privacy_request import ExecutionLog
 from fidesops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
-    ExecutionLog,
     ExecutionLogStatus,
 )
 from fidesops.models.storage import StorageConfig, ResponseFormat
@@ -50,12 +50,37 @@ from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
-
 from fidesops.util.cache import FidesopsRedis
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
+integration_config = load_toml("fidesops-integration.toml")
+
+# Unified list of connections to integration dbs specified from fidesops-integration.toml
+
+integration_secrets = {
+    "postgres_example": {
+        "host": pydash.get(integration_config, "postgres_example.SERVER"),
+        "port": pydash.get(integration_config, "postgres_example.PORT"),
+        "dbname": pydash.get(integration_config, "postgres_example.DB"),
+        "username": pydash.get(integration_config, "postgres_example.USER"),
+        "password": pydash.get(integration_config, "postgres_example.PASSWORD"),
+    },
+    "mongo_example": {
+        "host": pydash.get(integration_config, "mongodb_example.SERVER"),
+        "defaultauthdb": pydash.get(integration_config, "mongodb_example.DB"),
+        "username": pydash.get(integration_config, "mongodb_example.USER"),
+        "password": pydash.get(integration_config, "mongodb_example.PASSWORD"),
+    },
+    "mysql_example": {
+        "host": pydash.get(integration_config, "mysql_example.SERVER"),
+        "port": pydash.get(integration_config, "mysql_example.PORT"),
+        "dbname": pydash.get(integration_config, "mysql_example.DB"),
+        "username": pydash.get(integration_config, "mysql_example.USER"),
+        "password": pydash.get(integration_config, "mysql_example.PASSWORD"),
+    },
+}
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -126,20 +151,14 @@ def storage_config_onetrust(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def connection_config(db: Session) -> Generator:
-    name = str(uuid4())
     connection_config = ConnectionConfig.create(
         db=db,
         data={
-            "name": name,
+            "name": str(uuid4()),
             "key": "my_postgres_db_1",
             "connection_type": ConnectionType.postgres,
             "access": AccessLevel.write,
-            "secrets": {
-                "host": "postgres_example",
-                "dbname": "postgres_example",
-                "username": "postgres",
-                "password": "postgres",
-            },
+            "secrets": integration_secrets["postgres_example"],
         },
     )
     yield connection_config
@@ -148,20 +167,14 @@ def connection_config(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def read_connection_config(db: Session) -> Generator:
-    name = str(uuid4())
     connection_config = ConnectionConfig.create(
         db=db,
         data={
-            "name": name,
+            "name": str(uuid4()),
             "key": "my_postgres_db_1_read_config",
             "connection_type": ConnectionType.postgres,
             "access": AccessLevel.read,
-            "secrets": {
-                "host": "postgres_example",
-                "dbname": "postgres_example",
-                "username": "postgres",
-                "password": "postgres",
-            },
+            "secrets": integration_secrets["postgres_example"],
         },
     )
     yield connection_config
@@ -170,20 +183,14 @@ def read_connection_config(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def connection_config_mysql(db: Session) -> Generator:
-    name = str(uuid4())
     connection_config = ConnectionConfig.create(
         db=db,
         data={
-            "name": name,
+            "name": str(uuid4()),
             "key": "my_mysql_db_1",
             "connection_type": ConnectionType.mysql,
             "access": AccessLevel.write,
-            "secrets": {
-                "host": "mysql_example",
-                "dbname": "mysql_example",
-                "username": "mysql_user",
-                "password": "mysql_pw",
-            },
+            "secrets": integration_secrets["mysql_example"],
         },
     )
     yield connection_config
@@ -192,20 +199,14 @@ def connection_config_mysql(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def connection_config_dry_run(db: Session) -> Generator:
-    name = str(uuid4())
     connection_config = ConnectionConfig.create(
         db=db,
         data={
-            "name": name,
+            "name": str(uuid4()),
             "key": "postgres",
             "connection_type": ConnectionType.postgres,
             "access": AccessLevel.write,
-            "secrets": {
-                "host": "postgres_example",
-                "dbname": "postgres_example",
-                "username": "postgres",
-                "password": "postgres",
-            },
+            "secrets": integration_secrets["postgres_example"],
         },
     )
     yield connection_config
@@ -214,20 +215,14 @@ def connection_config_dry_run(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def mongo_connection_config(db: Session) -> Generator:
-    name = str(uuid4())
     connection_config = ConnectionConfig.create(
         db=db,
         data={
-            "name": name,
+            "name": str(uuid4()),
             "key": "my_mongo_db_1",
             "connection_type": ConnectionType.mongodb,
             "access": AccessLevel.write,
-            "secrets": {
-                "host": "mongodb_example",
-                "defaultauthdb": "mongo_test",
-                "username": "mongo_user",
-                "password": "mongo_pass",
-            },
+            "secrets": integration_secrets["mongo_example"],
         },
     )
     yield connection_config
@@ -236,11 +231,10 @@ def mongo_connection_config(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def redshift_connection_config(db: Session) -> Generator:
-    name = str(uuid4())
     connection_config = ConnectionConfig.create(
         db=db,
         data={
-            "name": name,
+            "name": str(uuid4()),
             "key": "my_redshift_config",
             "connection_type": ConnectionType.redshift,
             "access": AccessLevel.write,
@@ -258,7 +252,7 @@ def safe_snowflake_connection_config(
     connection_config = ConnectionConfig.create(
         db=db,
         data={
-            "name": name,
+            "name": str(uuid4()),
             "key": "my_snowflake_config",
             "connection_type": ConnectionType.snowflake,
             "access": AccessLevel.write,
