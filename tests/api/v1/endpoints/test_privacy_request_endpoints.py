@@ -425,6 +425,10 @@ class TestCreatePrivacyRequest:
         for row in res:
             assert row[0] == None
 
+        stmt = f'delete from "customer" where "email" = {customer_email};'
+        res = snowflake_client.execute(stmt).all()
+        assert res[0][0] == 1
+
     @pytest.mark.integration_erasure
     def test_create_and_process_erasure_request_specific_category(
         self,
