@@ -377,16 +377,10 @@ class TestCreatePrivacyRequest:
 
         pr.delete(db=db)
 
-    @pytest.mark.integration_external
-    def test_create_and_process_erasure_request_snowflake(
+    @pytest.fixture
+    def snowflake_resources(
         self,
         snowflake_example_test_dataset_config,
-        integration_config: Dict[str, str],
-        url,
-        db,
-        api_client: TestClient,
-        generate_auth_header,
-        erasure_policy,
     ):
         snowflake_connection_config = (
             snowflake_example_test_dataset_config.connection_config
@@ -403,7 +397,31 @@ class TestCreatePrivacyRequest:
         stmt = f'insert into "customer" ("id", "email", "name") values ({customer_id}, {customer_email}, {customer_name});'
         res = snowflake_client.execute(stmt).all()
         assert res[0][0] == 1
+        yield {
+            "email": customer_email,
+            "name": customer_name,
+            "id": customer_id,
+            "client": snowflake_client,
+        }
+        # Remove test data and close Snowflake connection in teardown
+        stmt = f'delete from "customer" where "email" = {customer_email};'
+        res = snowflake_client.execute(stmt).all()
+        assert res[0][0] == 1
 
+    @pytest.mark.integration_external
+    def test_create_and_process_erasure_request_snowflake(
+        self,
+        snowflake_example_test_dataset_config,
+        snowflake_resources,
+        integration_config: Dict[str, str],
+        url,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        erasure_policy,
+    ):
+        customer_email = snowflake_resources["email"]
+        snowflake_client = snowflake_resources["client"]
         data = [
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
@@ -424,10 +442,6 @@ class TestCreatePrivacyRequest:
         res = snowflake_client.execute(stmt).all()
         for row in res:
             assert row[0] == None
-
-        stmt = f'delete from "customer" where "email" = {customer_email};'
-        res = snowflake_client.execute(stmt).all()
-        assert res[0][0] == 1
 
     @pytest.mark.integration_erasure
     def test_create_and_process_erasure_request_specific_category(
