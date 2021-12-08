@@ -14,7 +14,6 @@ from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import (
     ActionType,
     WebhookTypes,
-    PolicyPreWebhook,
 )
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.service.storage.storage_uploader_service import upload
