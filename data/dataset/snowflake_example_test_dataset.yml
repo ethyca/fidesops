@@ -45,6 +45,10 @@ dataset:
             fidesops_meta:
               data_type: string
               length: 40
+          - name: variant_eg
+            # We use this data category so we can target this column from
+            # our Snowflake tests
+            data_categories: [user.provided.identifiable.name]
 
       - name: employee
         fields:

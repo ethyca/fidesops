@@ -339,7 +339,10 @@ def snowflake_resources(
     res = snowflake_client.execute(stmt).all()
     customer_id = res[0][0] + 1
 
-    stmt = f'insert into "customer" ("id", "email", "name") values ({customer_id}, {formatted_customer_email}, {formatted_customer_name});'
+    stmt = f"""
+    insert into "customer" ("id", "email", "name", "variant_eg")
+    select {customer_id}, {formatted_customer_email}, {formatted_customer_name}, to_variant({formatted_customer_name});
+    """
     res = snowflake_client.execute(stmt).all()
     assert res[0][0] == 1
     yield {
@@ -401,7 +404,8 @@ def test_create_and_process_erasure_request_snowflake(
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
     pr.delete(db=db)
 
-    stmt = f'select "name" from "customer" where "email" = {formatted_customer_email};'
+    stmt = f'select "name", "variant_eg" from "customer" where "email" = {formatted_customer_email};'
     res = snowflake_client.execute(stmt).all()
     for row in res:
         assert row[0] == None
+        assert row[1] == None
