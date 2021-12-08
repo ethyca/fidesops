@@ -23,7 +23,7 @@ class NullMaskingStrategy(MaskingStrategy):
     ):
         """For parity with other MaskingStrategies, but for NullMaskingStrategy, nothing is pulled from the config"""
 
-    def mask(self, value: Optional[str]) -> None:
+    def mask(self, value: Optional[str], privacy_request_id: Optional[str]) -> None:
         """Replaces the value with a null value"""
         return None
 

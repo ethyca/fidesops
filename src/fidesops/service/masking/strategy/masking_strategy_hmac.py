@@ -31,7 +31,7 @@ class HmacMaskingStrategy(MaskingStrategy):
         self.algorithm = configuration.algorithm
         self.format_preservation = configuration.format_preservation
 
-    def mask(self, value: Optional[str]) -> Optional[str]:
+    def mask(self, value: Optional[str], privacy_request_id: Optional[str]) -> Optional[str]:
         """
         Returns a hash using the hmac algorithm, generating a hash of the supplied value and the secret hmac_key.
         Returns None if the provided value is None.

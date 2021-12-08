@@ -25,7 +25,7 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         self.mode = configuration.mode
         self.format_preservation = configuration.format_preservation
 
-    def mask(self, value: Optional[str]) -> str:
+    def mask(self, value: Optional[str], privacy_request_id: Optional[str]) -> str:
         if self.mode == AesEncryptionMaskingConfiguration.Mode.GCM:
             # todo- does it make sense to move into init?
             secret_key: bytes = SecretsUtil.get_secret(privacy_request_id, AES_ENCRYPT, SecretType.key)

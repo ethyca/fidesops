@@ -33,7 +33,7 @@ class HashMaskingStrategy(MaskingStrategy):
             self.algorithm_function = self._hash_sha512
         self.format_preservation = configuration.format_preservation
 
-    def mask(self, value: Optional[str]) -> Optional[str]:
+    def mask(self, value: Optional[str], privacy_request_id: Optional[str]) -> Optional[str]:
         """Returns the hashed version of the provided value. Returns None if the provided value
         is None"""
         if value is None:
