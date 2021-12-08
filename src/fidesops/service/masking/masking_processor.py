@@ -19,5 +19,6 @@ def mask(value: str, masking_strategies: List[PolicyMaskingSpec]) -> str:
         strategy = masking_strategy_factory.get_strategy(
             strategy.strategy, strategy.configuration
         )
+        # fixme: generate secrets, but what privacy request id to use?
         masked_value = strategy.mask(masked_value, None)
     return masked_value

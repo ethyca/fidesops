@@ -15,7 +15,6 @@ class MaskingStrategy(ABC):
     @abstractmethod
     def mask(self, value: Optional[str], request_id: Optional[str]) -> Optional[str]:
         """Used to mask the provided value"""
-        # fixme: how to handle when no request id provided? maybe generate secrets before calling mask
         pass
 
     def generate_secrets(self) -> List[MaskingSecretGeneration]:
