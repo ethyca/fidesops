@@ -252,7 +252,6 @@ def safe_snowflake_connection_config(
     Returns a Snowflake ConnectionConfig without secrets
     attached that is safe to usein any tests.
     """
-    name = str(uuid4())
     connection_config = ConnectionConfig.create(
         db=db,
         data={

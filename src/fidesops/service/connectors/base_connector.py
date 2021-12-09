@@ -3,6 +3,7 @@ import os
 from abc import abstractmethod, ABC
 from typing import Any, Dict, List, Optional, TypeVar, Generic
 
+from fidesops.core.config import config
 from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.connectionconfig import ConnectionConfig, TestStatus
 from fidesops.models.policy import Policy
@@ -34,7 +35,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         # parameters inside queries for debugging purposes. By
         # default we assume that Fidesops is not running in test
         # mode.
-        self.hide_parameters = not os.getenv("TESTING") == "True"
+        self.hide_parameters = not config.is_test_mode
         self.db_client: Optional[DB_CONNECTOR_TYPE] = None
 
     @abstractmethod

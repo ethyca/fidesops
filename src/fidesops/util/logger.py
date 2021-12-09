@@ -3,6 +3,8 @@ import os
 from typing import Any, Mapping, Union
 from numbers import Number
 
+from fidesops.core.config import config
+
 MASKED = "MASKED"
 
 
@@ -49,7 +51,7 @@ def _can_log_pii() -> bool:
     to output any PII to the logs. Right now this is being allowed
     in test mode only.
     """
-    return os.getenv("TESTING") == "True"
+    return config.is_test_mode
 
 
 def _mask_pii_for_logs(parameter: Any) -> Any:
