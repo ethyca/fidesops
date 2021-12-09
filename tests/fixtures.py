@@ -275,13 +275,15 @@ def snowflake_connection_config(
     Returns a Snowflake ConectionConfig with secrets attached if secrets are present
     in the configuration.
     """
+    snowflake_connection_config = snowflake_connection_config_without_secrets
     uri = integration_config.get("snowflake", {}).get("external_uri") or os.environ.get(
         "SNOWFLAKE_TEST_URI"
     )
-    schema = SnowflakeSchema(url=uri)
-    snowflake_connection_config_without_secrets.secrets = schema.dict()
-    snowflake_connection_config_without_secrets.save(db=db)
-    yield snowflake_connection_config_without_secrets
+    if uri is not None:
+        schema = SnowflakeSchema(url=uri)
+        snowflake_connection_config.secrets = schema.dict()
+        snowflake_connection_config.save(db=db)
+    yield snowflake_connection_config
 
 
 @pytest.fixture(scope="function")
