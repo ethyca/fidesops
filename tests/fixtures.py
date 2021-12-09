@@ -248,6 +248,10 @@ def redshift_connection_config(db: Session) -> Generator:
 def safe_snowflake_connection_config(
     db: Session,
 ) -> Generator:
+    """
+    Returns a Snowflake ConnectionConfig without secrets
+    attached that is safe to usein any tests.
+    """
     name = str(uuid4())
     connection_config = ConnectionConfig.create(
         db=db,
