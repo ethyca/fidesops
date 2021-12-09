@@ -517,7 +517,7 @@ class TestPutDatasets:
         assert snowflake_dataset["fides_key"] == "snowflake_example_test_dataset"
         assert "birthday" not in [
             f["name"] for f in snowflake_dataset["collections"][0]["fields"]
-        ]  # "birthday field should be removed
+        ]
         snowflake_config = DatasetConfig.get_by(
             db=db, field="fides_key", value="snowflake_example_test_dataset"
         )
