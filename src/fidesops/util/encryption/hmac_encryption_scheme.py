@@ -59,17 +59,3 @@ def _hmac(value: str, hmac_key: str, salt: str, hashing_alg: Callable) -> hmac.H
         msg=(value + salt).encode(config.security.ENCODING),
         digestmod=hashing_alg,
     )
-
-
-def verify_nonce(nonce: bytes) -> None:
-    if len(nonce) != config.security.AES_GCM_NONCE_LENGTH:
-        raise ValueError(
-            f"Nonce must be {config.security.AES_GCM_NONCE_LENGTH} bytes long"
-        )
-
-
-def verify_encryption_key(key: bytes) -> None:
-    if len(key) != config.security.AES_ENCRYPTION_KEY_LENGTH:
-        raise ValueError(
-            f"Encryption key must be {config.security.AES_ENCRYPTION_KEY_LENGTH} bytes long"
-        )
