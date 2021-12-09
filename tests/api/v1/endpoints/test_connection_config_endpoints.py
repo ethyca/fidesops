@@ -625,11 +625,11 @@ class TestPutConnectionConfigSecrets:
         api_client: TestClient,
         db: Session,
         generate_auth_header,
-        safe_snowflake_connection_config,
+        snowflake_connection_config,
     ) -> None:
         """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{safe_snowflake_connection_config.key}/secret"
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{snowflake_connection_config.key}/secret"
         payload = {
             "user_login_name": "test_user",
             "password": "test_password",
@@ -645,10 +645,10 @@ class TestPutConnectionConfigSecrets:
         assert resp.status_code == 200
         assert (
             json.loads(resp.text)["msg"]
-            == f"Secrets updated for ConnectionConfig with key: {safe_snowflake_connection_config.key}."
+            == f"Secrets updated for ConnectionConfig with key: {snowflake_connection_config.key}."
         )
-        db.refresh(safe_snowflake_connection_config)
-        assert safe_snowflake_connection_config.secrets == {
+        db.refresh(snowflake_connection_config)
+        assert snowflake_connection_config.secrets == {
             "user_login_name": "test_user",
             "password": "test_password",
             "account_identifier": "flso2222test",
@@ -658,8 +658,8 @@ class TestPutConnectionConfigSecrets:
             "role_name": None,
             "url": None,
         }
-        assert safe_snowflake_connection_config.last_test_timestamp is None
-        assert safe_snowflake_connection_config.last_test_succeeded is None
+        assert snowflake_connection_config.last_test_timestamp is None
+        assert snowflake_connection_config.last_test_succeeded is None
 
     def test_put_http_connection_config_secrets(
         self,

@@ -245,7 +245,7 @@ def redshift_connection_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def safe_snowflake_connection_config(
+def snowflake_connection_config_without_secrets(
     db: Session,
 ) -> Generator:
     """
@@ -269,39 +269,19 @@ def safe_snowflake_connection_config(
 def snowflake_connection_config(
     db: Session,
     integration_config: Dict[str, str],
-    safe_snowflake_connection_config: ConnectionConfig,
+    snowflake_connection_config_without_secrets: ConnectionConfig,
 ) -> Generator:
+    """
+    Returns a Snowflake ConectionConfig with secrets attached if secrets are present
+    in the configuration.
+    """
     uri = integration_config.get("snowflake", {}).get("external_uri") or os.environ.get(
         "SNOWFLAKE_TEST_URI"
     )
     schema = SnowflakeSchema(url=uri)
-    safe_snowflake_connection_config.secrets = schema.dict()
-    safe_snowflake_connection_config.save(db=db)
-    yield safe_snowflake_connection_config
-
-
-@pytest.fixture(scope="function")
-def snowflake_read_connection_config(
-    db: Session,
-    integration_config: Dict[str, str],
-) -> Generator:
-    name = str(uuid4())
-    uri = integration_config.get("snowflake", {}).get("external_uri") or os.environ.get(
-        "SNOWFLAKE_TEST_URI"
-    )
-    schema = SnowflakeSchema(url=uri)
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "name": name,
-            "key": "my_snowflake_read_config",
-            "connection_type": ConnectionType.snowflake,
-            "access": AccessLevel.read,
-            "secrets": schema.dict(),
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
+    snowflake_connection_config_without_secrets.secrets = schema.dict()
+    snowflake_connection_config_without_secrets.save(db=db)
+    yield snowflake_connection_config_without_secrets
 
 
 @pytest.fixture(scope="function")
@@ -932,26 +912,6 @@ def snowflake_example_test_dataset_config(
     )
     yield dataset_config
     dataset_config.delete(db=db)
-
-
-@pytest.fixture
-def snowflake_example_test_dataset_config_read_access(
-    snowflake_read_connection_config: ConnectionConfig,
-    db: Session,
-    example_datasets: List[Dict],
-) -> Generator:
-    postgres_dataset = example_datasets[2]
-    fides_key = postgres_dataset["fides_key"]
-    dataset = DatasetConfig.create(
-        db=db,
-        data={
-            "connection_config_id": snowflake_read_connection_config.id,
-            "fides_key": fides_key,
-            "dataset": postgres_dataset,
-        },
-    )
-    yield dataset
-    dataset.delete(db=db)
 
 
 @pytest.fixture
