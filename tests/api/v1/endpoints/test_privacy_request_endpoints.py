@@ -1,9 +1,11 @@
 from unittest.mock import Mock
 import requests_mock
 import json
+import os
 from datetime import datetime
-from typing import List
+from typing import List, Dict
 from unittest import mock
+
 from fastapi_pagination import Params
 import pytest
 from starlette.testclient import TestClient
@@ -287,7 +289,6 @@ class TestCreatePrivacyRequest:
         assert len(response_data) == 0
         response_data = resp.json()["failed"]
         assert len(response_data) == 1
-
 
 class TestGetPrivacyRequests:
     @pytest.fixture(scope="function")
