@@ -14,6 +14,8 @@ from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import (
     ActionType,
     WebhookTypes,
+    PolicyPreWebhook,
+    PolicyPostWebhook,
 )
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.service.storage.storage_uploader_service import upload
@@ -32,72 +34,68 @@ class PrivacyRequestRunner:
     def __init__(
         self,
         cache: FidesopsRedis,
-        db: Session,
         privacy_request: PrivacyRequest,
     ):
         self.cache = cache
-        self.db = db
         self.privacy_request = privacy_request
 
-    def run_webhooks(
-        self, webhook_cls: WebhookTypes, after_webhook: Optional[WebhookTypes] = None
+    def run_webhooks_and_report_status(
+        self,
+        db: Session,
+        privacy_request,
+        webhook_cls: WebhookTypes,
+        after_webhook_id: str = None,
     ) -> bool:
         """
-        Runs a series of webhooks either pre- or post- privacy request execution.
+        Runs a series of webhooks either pre- or post- privacy request execution, if any are configured.
         Updates privacy request status if execution is paused/errored.
         Returns True if execution should proceed.
         """
-        webhooks = self.db.query(webhook_cls).filter_by(
-            policy_id=self.privacy_request.policy.id
-        )
+        webhooks = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)
 
-        if after_webhook:
-            # Only run webhooks configured to run after this webhook
-            webhooks = webhooks.filter(webhook_cls.order > after_webhook.order)
+        if after_webhook_id:
+            # Only run webhooks configured to run after this Pre-Execution webhook
+            pre_webhook = PolicyPreWebhook.get(db=db, id=after_webhook_id)
+            webhooks = webhooks.filter(
+                webhook_cls.order > pre_webhook.order,
+            )
 
         for webhook in webhooks.order_by(webhook_cls.order):
             try:
-                self.privacy_request.trigger_policy_webhook(webhook)
+                privacy_request.trigger_policy_webhook(webhook)
             except PrivacyRequestPaused:
                 logging.info(
-                    f"Pausing execution of privacy request {self.privacy_request.id}. Halt instruction received from webhook {webhook.key}."
+                    f"Pausing execution of privacy request {privacy_request.id}. Halt instruction received from webhook {webhook.key}."
                 )
-                self.privacy_request.update(
-                    db=self.db, data={"status": PrivacyRequestStatus.paused}
+                privacy_request.update(
+                    db=db, data={"status": PrivacyRequestStatus.paused}
                 )
                 return False
             except ClientUnsuccessfulException as exc:
                 logging.error(
                     f"Privacy Request exited after response from webhook '{webhook.key}': {exc.args[0]}."
                 )
-                self.privacy_request.update(
-                    db=self.db,
-                    data={
-                        "status": PrivacyRequestStatus.error,
-                        "finished_processing_at": datetime.utcnow(),
-                    },
-                )
+                privacy_request.error_processing(db)
                 return False
             except ValidationError:
                 logging.error(
-                    f"Privacy Request {self.privacy_request.id} errored due to response validation error from webhook '{webhook.key}'."
+                    f"Privacy Request {privacy_request.id} errored due to response validation error from webhook '{webhook.key}'."
                 )
-                self.privacy_request.update(
-                    db=self.db,
-                    data={
-                        "status": PrivacyRequestStatus.error,
-                        "finished_processing_at": datetime.utcnow(),
-                    },
-                )
+                privacy_request.error_processing(db)
                 return False
 
         return True
 
-    def submit(self) -> Awaitable[None]:
+    def submit(
+        self, from_webhook: Optional[PolicyPreWebhook] = None
+    ) -> Awaitable[None]:
         """Run this privacy request in a separate thread."""
-        return run_async(self.run, self.privacy_request.id)
+        from_webhook_id = from_webhook.id if from_webhook else None
+        return run_async(self.run, self.privacy_request.id, from_webhook_id)
 
-    def run(self, privacy_request_id: str) -> None:
+    def run(
+        self, privacy_request_id: str, from_webhook_id: Optional[str] = None
+    ) -> None:
         # pylint: disable=too-many-locals
         """
         Dispatch a privacy_request into the execution layer by:
@@ -111,7 +109,18 @@ class PrivacyRequestRunner:
 
             privacy_request = PrivacyRequest.get(db=session, id=privacy_request_id)
             logging.info(f"Dispatching privacy request {privacy_request.id}")
-            self.start_processing(session, privacy_request)
+            privacy_request.start_processing(session)
+
+            # Run pre-execution webhooks
+            proceed = self.run_webhooks_and_report_status(
+                session,
+                privacy_request=privacy_request,
+                webhook_cls=PolicyPreWebhook,
+                after_webhook_id=from_webhook_id,
+            )
+            if not proceed:
+                session.close()
+                return
 
             datasets = DatasetConfig.all(db=session)
             dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
@@ -182,6 +191,16 @@ class PrivacyRequestRunner:
                 logging.error(exc)
                 privacy_request.status = PrivacyRequestStatus.error
 
+            # Run post-execution webhooks
+            proceed = self.run_webhooks_and_report_status(
+                db=session,
+                privacy_request=privacy_request,
+                webhook_cls=PolicyPostWebhook,
+            )
+            if not proceed:
+                session.close()
+                return
+
             privacy_request.finished_processing_at = datetime.utcnow()
             if privacy_request.status != PrivacyRequestStatus.error:
                 privacy_request.status = PrivacyRequestStatus.complete
@@ -191,23 +210,3 @@ class PrivacyRequestRunner:
 
     def dry_run(self, privacy_request: PrivacyRequest) -> None:
         """Pretend to dispatch privacy_request into the execution layer, return the query plan"""
-
-    def start_processing(self, db: Session, privacy_request: PrivacyRequest) -> None:
-        """Dispatches this PrivacyRequest throughout the Fidesops System"""
-        if privacy_request.started_processing_at is None:
-            privacy_request.started_processing_at = datetime.utcnow()
-            privacy_request.save(db=db)
-
-    # TODO: This may get run in a different execution environment, we shouldn't pass
-    # in the DB session
-    def finish_processing(self, db: Session) -> None:
-        """Called at the end of a successful PrivacyRequest execution"""
-        self.privacy_request.finished_processing_at = datetime.utcnow()
-        self.privacy_request.save(db=db)
-        # 6. Upload results to storage specified in the Policy
-        upload(
-            db=db,
-            request_id=self.privacy_request.id,
-            data=self.privacy_request.get_results(),
-            storage_key=self.privacy_request.policy.storage_destination.key,
-        )

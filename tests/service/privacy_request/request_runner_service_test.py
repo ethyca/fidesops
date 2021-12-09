@@ -93,7 +93,6 @@ def get_privacy_request_results(
     wait_for(
         PrivacyRequestRunner(
             cache=cache,
-            db=db,
             privacy_request=privacy_request,
         ).submit()
     )
@@ -421,6 +420,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
     def test_run_webhooks_halt_received(
         self,
         mock_trigger_policy_webhook,
+        db,
         privacy_request,
         privacy_request_runner,
         policy_pre_execution_webhooks,
@@ -429,7 +429,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
             "Request received to halt"
         )
 
-        proceed = privacy_request_runner.run_webhooks(PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert not proceed
         assert privacy_request.finished_processing_at is None
         assert privacy_request.status == PrivacyRequestStatus.paused
@@ -438,13 +438,14 @@ class TestPrivacyRequestRunnerRunWebhooks:
     def test_run_webhooks_client_error(
         self,
         mock_trigger_policy_webhook,
+        db,
         privacy_request,
         privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
         mock_trigger_policy_webhook.side_effect = ClientUnsuccessfulException(status_code=500)
 
-        proceed = privacy_request_runner.run_webhooks(PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert not proceed
         assert privacy_request.status == PrivacyRequestStatus.error
 
@@ -452,6 +453,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
     def test_run_webhooks_validation_error(
         self,
         mock_trigger_policy_webhook,
+        db,
         privacy_request,
         privacy_request_runner,
         policy_pre_execution_webhooks,
@@ -460,7 +462,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
             errors={}, model=SecondPartyResponseFormat
         )
 
-        proceed = privacy_request_runner.run_webhooks(PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert not proceed
         assert privacy_request.finished_processing_at is not None
         assert privacy_request.status == PrivacyRequestStatus.error
@@ -469,12 +471,13 @@ class TestPrivacyRequestRunnerRunWebhooks:
     def test_run_webhooks(
         self,
         mock_trigger_policy_webhook,
+        db,
         privacy_request,
         privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
 
-        proceed = privacy_request_runner.run_webhooks(PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert proceed
         assert privacy_request.status == PrivacyRequestStatus.in_processing
         assert privacy_request.finished_processing_at is None
@@ -484,13 +487,14 @@ class TestPrivacyRequestRunnerRunWebhooks:
     def test_run_webhooks_after_webhook(
         self,
         mock_trigger_policy_webhook,
+        db,
         privacy_request,
         privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
         """Test running webhooks after specific webhook - for when we're resuming privacy request execution"""
-        proceed = privacy_request_runner.run_webhooks(
-            PolicyPreWebhook, policy_pre_execution_webhooks[0]
+        proceed = privacy_request_runner.run_webhooks_and_report_status(
+            db, privacy_request, PolicyPreWebhook, policy_pre_execution_webhooks[0].id
         )
         assert proceed
         assert privacy_request.status == PrivacyRequestStatus.in_processing
