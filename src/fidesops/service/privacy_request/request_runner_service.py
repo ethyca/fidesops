@@ -42,7 +42,7 @@ class PrivacyRequestRunner:
     def run_webhooks_and_report_status(
         self,
         db: Session,
-        privacy_request,
+        privacy_request: PrivacyRequest,
         webhook_cls: WebhookTypes,
         after_webhook_id: str = None,
     ) -> bool:
@@ -73,13 +73,13 @@ class PrivacyRequestRunner:
                 return False
             except ClientUnsuccessfulException as exc:
                 logging.error(
-                    f"Privacy Request exited after response from webhook '{webhook.key}': {exc.args[0]}."
+                    f"Privacy Request '{privacy_request.id}' exited after response from webhook '{webhook.key}': {exc.args[0]}."
                 )
                 privacy_request.error_processing(db)
                 return False
             except ValidationError:
                 logging.error(
-                    f"Privacy Request {privacy_request.id} errored due to response validation error from webhook '{webhook.key}'."
+                    f"Privacy Request '{privacy_request.id}' errored due to response validation error from webhook '{webhook.key}'."
                 )
                 privacy_request.error_processing(db)
                 return False
