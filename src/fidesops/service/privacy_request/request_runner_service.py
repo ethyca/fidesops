@@ -54,6 +54,54 @@ class PrivacyRequestRunner:
         self.cache = cache
         self.privacy_request = privacy_request
 
+    @staticmethod
+    def run_webhooks_and_report_status(
+        db: Session,
+        privacy_request: PrivacyRequest,
+        webhook_cls: WebhookTypes,
+        after_webhook_id: str = None,
+    ) -> bool:
+        """
+        Runs a series of webhooks either pre- or post- privacy request execution, if any are configured.
+        Updates privacy request status if execution is paused/errored.
+        Returns True if execution should proceed.
+        """
+        webhooks = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)
+
+        if after_webhook_id:
+            # Only run webhooks configured to run after this Pre-Execution webhook
+            pre_webhook = PolicyPreWebhook.get(db=db, id=after_webhook_id)
+            webhooks = webhooks.filter(
+                webhook_cls.order > pre_webhook.order,
+            )
+
+        for webhook in webhooks.order_by(webhook_cls.order):
+            try:
+                privacy_request.trigger_policy_webhook(webhook)
+            except PrivacyRequestPaused:
+                logging.info(
+                    f"Pausing execution of privacy request {privacy_request.id}. Halt instruction received from webhook {webhook.key}."
+                )
+                privacy_request.update(
+                    db=db, data={"status": PrivacyRequestStatus.paused}
+                )
+                initiate_paused_privacy_request_followup(privacy_request)
+                return False
+            except ClientUnsuccessfulException as exc:
+                logging.error(
+                    f"Privacy Request '{privacy_request.id}' exited after response from webhook '{webhook.key}': {exc.args[0]}."
+                )
+                privacy_request.error_processing(db)
+                return False
+            except ValidationError:
+                logging.error(
+                    f"Privacy Request '{privacy_request.id}' errored due to response validation error from webhook '{webhook.key}'."
+                )
+                privacy_request.error_processing(db)
+                return False
+
+        return True
+
     def submit(
         self, from_webhook: Optional[PolicyPreWebhook] = None
     ) -> Awaitable[None]:
@@ -175,54 +223,6 @@ class PrivacyRequestRunner:
             privacy_request.save(db=session)
             logging.info(f"Privacy request {privacy_request.id} run completed.")
             session.close()
-
-    @staticmethod
-    def run_webhooks_and_report_status(
-        db: Session,
-        privacy_request: PrivacyRequest,
-        webhook_cls: WebhookTypes,
-        after_webhook_id: str = None,
-    ) -> bool:
-        """
-        Runs a series of webhooks either pre- or post- privacy request execution, if any are configured.
-        Updates privacy request status if execution is paused/errored.
-        Returns True if execution should proceed.
-        """
-        webhooks = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)
-
-        if after_webhook_id:
-            # Only run webhooks configured to run after this Pre-Execution webhook
-            pre_webhook = PolicyPreWebhook.get(db=db, id=after_webhook_id)
-            webhooks = webhooks.filter(
-                webhook_cls.order > pre_webhook.order,
-            )
-
-        for webhook in webhooks.order_by(webhook_cls.order):
-            try:
-                privacy_request.trigger_policy_webhook(webhook)
-            except PrivacyRequestPaused:
-                logging.info(
-                    f"Pausing execution of privacy request {privacy_request.id}. Halt instruction received from webhook {webhook.key}."
-                )
-                privacy_request.update(
-                    db=db, data={"status": PrivacyRequestStatus.paused}
-                )
-                initiate_paused_privacy_request_followup(privacy_request)
-                return False
-            except ClientUnsuccessfulException as exc:
-                logging.error(
-                    f"Privacy Request '{privacy_request.id}' exited after response from webhook '{webhook.key}': {exc.args[0]}."
-                )
-                privacy_request.error_processing(db)
-                return False
-            except ValidationError:
-                logging.error(
-                    f"Privacy Request '{privacy_request.id}' errored due to response validation error from webhook '{webhook.key}'."
-                )
-                privacy_request.error_processing(db)
-                return False
-
-        return True
 
     def dry_run(self, privacy_request: PrivacyRequest) -> None:
         """Pretend to dispatch privacy_request into the execution layer, return the query plan"""
