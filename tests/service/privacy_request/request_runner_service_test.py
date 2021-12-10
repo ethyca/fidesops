@@ -72,7 +72,6 @@ def get_privacy_request_results(
         "requested_at": pydash.get(privacy_request_data, "requested_at"),
         "policy_id": policy.id,
         "status": "pending",
-        # "client_id": client.id,
     }
     optional_fields = ["started_processing_at", "finished_processing_at"]
     for field in optional_fields:
@@ -101,11 +100,15 @@ def get_privacy_request_results(
 
 
 @pytest.mark.integration
+@mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request(
+    trigger_webhook_mock,
     postgres_example_test_dataset_config_read_access,
     db,
     cache,
     policy,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
 ):
 
     customer_email = "customer-1@example.com"
@@ -132,6 +135,14 @@ def test_create_and_process_access_request(
     assert results[visit_key][0]["email"] == customer_email
     log_id = pr.execution_logs[0].id
     pr_id = pr.id
+    # Both pre-execution webhooks and both post-execution webhooks were called
+    assert trigger_webhook_mock.call_count == 4
+
+    for webhook in policy_pre_execution_webhooks:
+        webhook.delete(db=db)
+
+    for webhook in policy_post_execution_webhooks:
+        webhook.delete(db=db)
 
     policy.delete(db=db)
     pr.delete(db=db)
