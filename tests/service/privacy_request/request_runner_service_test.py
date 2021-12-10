@@ -1,4 +1,5 @@
 import json
+import time
 from typing import Any, Dict
 from unittest import mock
 from unittest.mock import Mock
@@ -15,6 +16,7 @@ from sqlalchemy.orm import Session
 from pydantic import ValidationError
 
 from fidesops.common_exceptions import PrivacyRequestPaused, ClientUnsuccessfulException
+from fidesops.core.config import config
 from fidesops.models.policy import PolicyPreWebhook
 from fidesops.models.privacy_request import PrivacyRequestStatus
 from fidesops.schemas.external_https import SecondPartyResponseFormat
@@ -444,6 +446,29 @@ class TestPrivacyRequestRunnerRunWebhooks:
         assert not proceed
         assert privacy_request.finished_processing_at is None
         assert privacy_request.status == PrivacyRequestStatus.paused
+
+    @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+    def test_run_webhooks_ap_scheduler_cleanup(
+            self,
+            mock_trigger_policy_webhook,
+            db,
+            privacy_request,
+            privacy_request_runner,
+            policy_pre_execution_webhooks,
+    ):
+        config.redis.DEFAULT_TTL_SECONDS = 1  # Set redis cache to expire very quickly for testing purposes
+        mock_trigger_policy_webhook.side_effect = PrivacyRequestPaused(
+            "Request received to halt"
+        )
+
+        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
+        assert not proceed
+        time.sleep(3)
+
+        db.refresh(privacy_request)
+        # Privacy request has been set to errored by ap scheduler, because it took too long for webhook to report back
+        assert privacy_request.status == PrivacyRequestStatus.error
+        assert privacy_request.finished_processing_at is not None
 
     @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
     def test_run_webhooks_client_error(

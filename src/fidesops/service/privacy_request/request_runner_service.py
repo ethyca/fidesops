@@ -1,11 +1,13 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Set, Optional, Awaitable
 
+from apscheduler.schedulers.background import BackgroundScheduler
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from fidesops import common_exceptions
+from fidesops.core.config import config
 from fidesops.db.session import get_db_session
 from fidesops.common_exceptions import PrivacyRequestPaused, ClientUnsuccessfulException
 from fidesops.graph.graph import DatasetGraph
@@ -27,6 +29,19 @@ from fidesops.task.graph_task import (
 from fidesops.util.async_util import run_async
 from fidesops.util.cache import FidesopsRedis
 
+logger = logging.getLogger(__name__)
+
+_scheduler = None
+
+
+def get_scheduler() -> BackgroundScheduler:
+    """Returns a BackgroundScheduler as a singleton"""
+    global _scheduler  # pylint: disable=W0603
+    if _scheduler is None:
+        _scheduler = BackgroundScheduler()
+        _scheduler.start()
+    return _scheduler
+
 
 class PrivacyRequestRunner:
     """The class responsible for dispatching PrivacyRequests into the execution layer"""
@@ -38,53 +53,6 @@ class PrivacyRequestRunner:
     ):
         self.cache = cache
         self.privacy_request = privacy_request
-
-    def run_webhooks_and_report_status(
-        self,
-        db: Session,
-        privacy_request: PrivacyRequest,
-        webhook_cls: WebhookTypes,
-        after_webhook_id: str = None,
-    ) -> bool:
-        """
-        Runs a series of webhooks either pre- or post- privacy request execution, if any are configured.
-        Updates privacy request status if execution is paused/errored.
-        Returns True if execution should proceed.
-        """
-        webhooks = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)
-
-        if after_webhook_id:
-            # Only run webhooks configured to run after this Pre-Execution webhook
-            pre_webhook = PolicyPreWebhook.get(db=db, id=after_webhook_id)
-            webhooks = webhooks.filter(
-                webhook_cls.order > pre_webhook.order,
-            )
-
-        for webhook in webhooks.order_by(webhook_cls.order):
-            try:
-                privacy_request.trigger_policy_webhook(webhook)
-            except PrivacyRequestPaused:
-                logging.info(
-                    f"Pausing execution of privacy request {privacy_request.id}. Halt instruction received from webhook {webhook.key}."
-                )
-                privacy_request.update(
-                    db=db, data={"status": PrivacyRequestStatus.paused}
-                )
-                return False
-            except ClientUnsuccessfulException as exc:
-                logging.error(
-                    f"Privacy Request '{privacy_request.id}' exited after response from webhook '{webhook.key}': {exc.args[0]}."
-                )
-                privacy_request.error_processing(db)
-                return False
-            except ValidationError:
-                logging.error(
-                    f"Privacy Request '{privacy_request.id}' errored due to response validation error from webhook '{webhook.key}'."
-                )
-                privacy_request.error_processing(db)
-                return False
-
-        return True
 
     def submit(
         self, from_webhook: Optional[PolicyPreWebhook] = None
@@ -208,5 +176,85 @@ class PrivacyRequestRunner:
             logging.info(f"Privacy request {privacy_request.id} run completed.")
             session.close()
 
+    @staticmethod
+    def run_webhooks_and_report_status(
+        db: Session,
+        privacy_request: PrivacyRequest,
+        webhook_cls: WebhookTypes,
+        after_webhook_id: str = None,
+    ) -> bool:
+        """
+        Runs a series of webhooks either pre- or post- privacy request execution, if any are configured.
+        Updates privacy request status if execution is paused/errored.
+        Returns True if execution should proceed.
+        """
+        webhooks = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)
+
+        if after_webhook_id:
+            # Only run webhooks configured to run after this Pre-Execution webhook
+            pre_webhook = PolicyPreWebhook.get(db=db, id=after_webhook_id)
+            webhooks = webhooks.filter(
+                webhook_cls.order > pre_webhook.order,
+            )
+
+        for webhook in webhooks.order_by(webhook_cls.order):
+            try:
+                privacy_request.trigger_policy_webhook(webhook)
+            except PrivacyRequestPaused:
+                logging.info(
+                    f"Pausing execution of privacy request {privacy_request.id}. Halt instruction received from webhook {webhook.key}."
+                )
+                privacy_request.update(
+                    db=db, data={"status": PrivacyRequestStatus.paused}
+                )
+                initiate_paused_privacy_request_followup(privacy_request)
+                return False
+            except ClientUnsuccessfulException as exc:
+                logging.error(
+                    f"Privacy Request '{privacy_request.id}' exited after response from webhook '{webhook.key}': {exc.args[0]}."
+                )
+                privacy_request.error_processing(db)
+                return False
+            except ValidationError:
+                logging.error(
+                    f"Privacy Request '{privacy_request.id}' errored due to response validation error from webhook '{webhook.key}'."
+                )
+                privacy_request.error_processing(db)
+                return False
+
+        return True
+
     def dry_run(self, privacy_request: PrivacyRequest) -> None:
         """Pretend to dispatch privacy_request into the execution layer, return the query plan"""
+
+
+def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) -> None:
+    """Initiates scheduler to expire privacy request when the redis cache expires"""
+    scheduler = get_scheduler()
+    scheduler.add_job(
+        func=mark_paused_privacy_request_as_expired,
+        kwargs={"privacy_request_id": privacy_request.id},
+        id=privacy_request.id,
+        replace_existing=True,
+        trigger="date",
+        run_date=(datetime.now() + timedelta(seconds=config.redis.DEFAULT_TTL_SECONDS)),
+    )
+
+
+def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
+    """Mark "paused" PrivacyRequest as "errored" after its associated identity data in the redis cache has expired."""
+    SessionLocal = get_db_session()
+    db = SessionLocal()
+    privacy_request = PrivacyRequest.get(db=db, id=privacy_request_id)
+    if not privacy_request:
+        logger.info(
+            f"Attempted to mark as expired. No privacy request with id'{privacy_request_id}' found."
+        )
+        db.close()
+        return
+    if privacy_request.status == PrivacyRequestStatus.paused:
+        logger.error(
+            f"Privacy request '{privacy_request.id}' has expired. Please resubmit information."
+        )
+        privacy_request.error_processing(db=db)
+    db.close()

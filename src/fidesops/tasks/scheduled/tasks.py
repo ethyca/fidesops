@@ -2,27 +2,17 @@ import logging
 from typing import Optional
 
 from apscheduler.jobstores.base import JobLookupError
-from apscheduler.schedulers.background import BackgroundScheduler
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 from fidesops.db.session import get_db_session
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.storage.storage import StorageType, StorageDetails
 from fidesops.service.privacy_request.onetrust_service import OneTrustService
+from fidesops.service.privacy_request.request_runner_service import get_scheduler
 
 logger = logging.getLogger(__name__)
 
 ONETRUST_INTAKE_TASK = "onetrust_intake"
-_scheduler = None
-
-
-def get_scheduler() -> BackgroundScheduler:
-    """Returns a BackgroundScheduler as a singleton"""
-    global _scheduler  # pylint: disable=W0603
-    if _scheduler is None:
-        _scheduler = BackgroundScheduler()
-        _scheduler.start()
-    return _scheduler
 
 
 def initiate_scheduled_request_intake() -> None:
