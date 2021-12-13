@@ -72,7 +72,6 @@ def get_privacy_request_results(
         "requested_at": pydash.get(privacy_request_data, "requested_at"),
         "policy_id": policy.id,
         "status": "pending",
-        # "client_id": client.id,
     }
     optional_fields = ["started_processing_at", "finished_processing_at"]
     for field in optional_fields:
@@ -83,12 +82,9 @@ def get_privacy_request_results(
         except AttributeError:
             pass
     privacy_request = PrivacyRequest.create(db=db, data=kwargs)
-
-    print(json.dumps(privacy_request_data, indent=2))
-    for identity in privacy_request_data["identities"]:
-        privacy_request.cache_identity(identity)
-        if "encryption_key" in privacy_request_data:
-            privacy_request.cache_encryption(privacy_request_data["encryption_key"])
+    privacy_request.cache_identity(privacy_request_data["identities"])
+    if "encryption_key" in privacy_request_data:
+        privacy_request.cache_encryption(privacy_request_data["encryption_key"])
 
     wait_for(
         PrivacyRequestRunner(
