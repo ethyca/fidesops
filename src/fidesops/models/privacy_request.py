@@ -17,7 +17,7 @@ from sqlalchemy.orm import relationship, Session
 from fidesops.db.base_class import Base
 from fidesops.models.client import ClientDetail
 from fidesops.models.policy import Policy, ActionType
-from fidesops.schemas.masking.masking_secrets import MaskingSecretGeneration
+from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.util.cache import (
     get_all_cache_keys_for_privacy_request,
@@ -107,7 +107,7 @@ class PrivacyRequest(Base):
             encryption_key,
         )
 
-    def cache_masking_secret(self, masking_secret: MaskingSecretGeneration) -> None:
+    def cache_masking_secret(self, masking_secret: MaskingSecretCache) -> None:
         """Sets masking encryption secrets in the Fidesops app cache if provided"""
         if not masking_secret:
             return

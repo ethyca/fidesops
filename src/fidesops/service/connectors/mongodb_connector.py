@@ -108,7 +108,11 @@ class MongoDBConnector(BaseConnector):
         return rows
 
     def mask_data(
-        self, node: TraversalNode, policy: Policy, request: PrivacyRequest, rows: List[Row]
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        request: PrivacyRequest,
+        rows: List[Row],
     ) -> int:
         # pylint: disable=too-many-locals
         """Execute a masking request"""

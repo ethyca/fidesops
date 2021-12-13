@@ -3,7 +3,7 @@ from abc import abstractmethod, ABC
 from typing import Optional, List
 
 from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
-from fidesops.schemas.masking.masking_secrets import MaskingSecretGeneration
+from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
@@ -17,7 +17,13 @@ class MaskingStrategy(ABC):
         """Used to mask the provided value"""
         pass
 
-    def generate_secrets(self) -> List[MaskingSecretGeneration]:
+    @staticmethod
+    @abstractmethod
+    def secrets_required() -> bool:
+        """Determines whether secrets are needed for specific masking strategy"""
+        pass
+
+    def generate_secrets_for_cache(self) -> List[MaskingSecretCache]:
         """Generates secrets for strategy"""
         pass
 

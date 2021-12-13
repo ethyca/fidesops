@@ -38,6 +38,10 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
         return self.rewrite_value
 
     @staticmethod
+    def secrets_required() -> bool:
+        return False
+
+    @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
         return StringRewriteMaskingConfiguration
 

@@ -41,6 +41,10 @@ class HTTPSConnector(BaseConnector):
         each input key that may be queried on."""
 
     def mask_data(
-        self, node: TraversalNode, policy: Policy, request: PrivacyRequest, rows: List[Row]
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        request: PrivacyRequest,
+        rows: List[Row],
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated"""

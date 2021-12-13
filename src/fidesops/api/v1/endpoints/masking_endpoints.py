@@ -30,7 +30,6 @@ def mask_value(masking_strategy: PolicyMaskingSpec, value: str) -> MaskingAPIRes
             masking_strategy.strategy, masking_strategy.configuration
         )
         logger.info(f"Starting masking with strategy {masking_strategy.strategy}")
-        # fixme: generate secrets, but what privacy request id to use?
         masked_value = strategy.mask(value, None)
         return MaskingAPIResponse(plain=value, masked_value=masked_value)
     except NoSuchStrategyException as e:

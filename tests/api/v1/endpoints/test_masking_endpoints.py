@@ -3,7 +3,7 @@ import json
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
-from fidesops.schemas.masking.masking_secrets import MaskingSecretGeneration, SecretType
+from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import AES_ENCRYPT
 from fidesops.service.masking.strategy.masking_strategy_hash import HASH
 from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
@@ -73,7 +73,7 @@ class TestMaskValues:
             "strategy": HMAC,
             "configuration": {},
         }
-        secret = MaskingSecretGeneration(
+        secret = MaskingSecretCache(
             secret=hmac_key, masking_strategy=HMAC, secret_type=SecretType.key
         )
         cache_secret(secret, request_id)
@@ -98,7 +98,7 @@ class TestMaskValues:
             "strategy": HASH,
             "configuration": {},
         }
-        secret = MaskingSecretGeneration(
+        secret = MaskingSecretCache(
             secret=salt, masking_strategy=HASH, secret_type=SecretType.salt
         )
         cache_secret(secret, request_id)
@@ -123,15 +123,15 @@ class TestMaskValues:
                 "mode": "GCM"
             },
         }
-        secret_key = MaskingSecretGeneration(
+        secret_key = MaskingSecretCache(
             secret="4838f838d9g939f9", masking_strategy=AES_ENCRYPT, secret_type=SecretType.key
         )
         cache_secret(secret_key, request_id)
-        secret_hmac_key = MaskingSecretGeneration(
+        secret_hmac_key = MaskingSecretCache(
             secret="939f929dajr2", masking_strategy=AES_ENCRYPT, secret_type=SecretType.key_hmac
         )
         cache_secret(secret_hmac_key, request_id)
-        secret_hmac_salt = MaskingSecretGeneration(
+        secret_hmac_salt = MaskingSecretCache(
             secret="sometasdfasdf", masking_strategy=AES_ENCRYPT, secret_type=SecretType.salt_hmac
         )
         cache_secret(secret_hmac_salt, request_id)

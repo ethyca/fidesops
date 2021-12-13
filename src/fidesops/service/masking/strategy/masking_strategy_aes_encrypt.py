@@ -1,13 +1,16 @@
-import secrets
-from typing import Optional, List
+from typing import Optional, List, Set
 
-from fidesops.core.config import config
 from fidesops.schemas.masking.masking_configuration import (
     MaskingConfiguration,
     AesEncryptionMaskingConfiguration,
     HmacMaskingConfiguration,
 )
-from fidesops.schemas.masking.masking_secrets import MaskingSecretGeneration, SecretType
+from fidesops.schemas.masking.masking_secrets import (
+    MaskingSecretCache,
+    SecretType,
+    MaskingSecretMeta,
+    SecretDataType,
+)
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
     MaskingStrategyConfigurationDescription,
@@ -28,12 +31,23 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
 
     def mask(self, value: Optional[str], privacy_request_id: Optional[str]) -> str:
         if self.mode == AesEncryptionMaskingConfiguration.Mode.GCM:
-            key_hmac: str = SecretsUtil.get_secret(
-                privacy_request_id, AES_ENCRYPT, SecretType.key_hmac
+            masking_meta: Set[MaskingSecretMeta] = self._build_masking_secret_meta()
+            key: bytes = SecretsUtil.get_or_generate_secret(
+                privacy_request_id,
+                [meta for meta in masking_meta if meta.secret_type == SecretType.key][
+                    0
+                ],
             )
-            nonce: bytes = self._generate_nonce(value, key_hmac, privacy_request_id)
-            key: bytes = SecretsUtil.get_secret(
-                privacy_request_id, AES_ENCRYPT, SecretType.key
+            key_hmac: str = SecretsUtil.get_or_generate_secret(
+                privacy_request_id,
+                [
+                    meta
+                    for meta in masking_meta
+                    if meta.secret_type == SecretType.key_hmac
+                ][0],
+            )
+            nonce: bytes = self._generate_nonce(
+                value, key_hmac, privacy_request_id, masking_meta
             )
             masked: str = encrypt(value, key, nonce)
             if self.format_preservation is not None:
@@ -44,51 +58,12 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
             raise ValueError(f"aes_mode {self.mode} is not supported")
 
     @staticmethod
-    def _generate_nonce(
-        value: Optional[str], key: str, privacy_request_id: Optional[str]
-    ) -> bytes:
-        salt: str = SecretsUtil.get_secret(
-            privacy_request_id, AES_ENCRYPT, SecretType.salt_hmac
-        )
-        # fixme: replicate what Vault does with sum and remove lower bytes
-        return hmac_encrypt_return_bytes(
-            value, key, salt, HmacMaskingConfiguration.Algorithm.sha_256
-        )
+    def secrets_required() -> bool:
+        return True
 
-    def generate_secrets(self) -> List[MaskingSecretGeneration]:
-        masking_secrets = []
-        secret_key: bytes = secrets.token_bytes(
-            config.security.AES_ENCRYPTION_KEY_LENGTH
-        )
-        masking_secrets.append(
-            MaskingSecretGeneration(
-                secret=secret_key,
-                masking_strategy=AES_ENCRYPT,
-                secret_type=SecretType.key,
-            )
-        )
-        secret_key_hmac: str = secrets.token_urlsafe(
-            config.security.DEFAULT_ENCRYPTION_BYTE_LENGTH
-        )
-        masking_secrets.append(
-            MaskingSecretGeneration(
-                secret=secret_key_hmac,
-                masking_strategy=AES_ENCRYPT,
-                secret_type=SecretType.key_hmac,
-            )
-        )
-        # the salt will be used in hmac to generate the nonce for aes
-        secret_salt_hmac: str = secrets.token_urlsafe(
-            config.security.DEFAULT_ENCRYPTION_BYTE_LENGTH
-        )
-        masking_secrets.append(
-            MaskingSecretGeneration(
-                secret=secret_salt_hmac,
-                masking_strategy=AES_ENCRYPT,
-                secret_type=SecretType.salt_hmac,
-            )
-        )
-        return masking_secrets
+    def generate_secrets_for_cache(self) -> List[MaskingSecretCache]:
+        masking_meta: Set[MaskingSecretMeta] = self._build_masking_secret_meta()
+        return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
 
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
@@ -119,3 +94,47 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         """Determines whether or not the given data type is supported by this masking strategy"""
         supported_data_types = {"string"}
         return data_type in supported_data_types
+
+    @staticmethod
+    def _generate_nonce(
+        value: Optional[str],
+        key: str,
+        privacy_request_id: Optional[str],
+        masking_meta: Set[MaskingSecretMeta],
+    ) -> bytes:
+        salt: str = SecretsUtil.get_or_generate_secret(
+            privacy_request_id,
+            [meta for meta in masking_meta if meta.secret_type == SecretType.salt_hmac][
+                0
+            ],
+        )
+        # fixme: replicate what Vault does - remove lower bytes
+        return hmac_encrypt_return_bytes(
+            value, key, salt, HmacMaskingConfiguration.Algorithm.sha_256
+        )
+
+    @staticmethod
+    def _build_masking_secret_meta() -> Set[MaskingSecretMeta]:
+        masking_meta: Set[MaskingSecretMeta] = set()
+        masking_meta.add(
+            MaskingSecretMeta[bytes](
+                masking_strategy=AES_ENCRYPT,
+                secret_type=SecretType.key,
+                generate_secret=SecretsUtil.generate_secret_bytes
+            )
+        )
+        masking_meta.add(
+            MaskingSecretMeta[str](
+                masking_strategy=AES_ENCRYPT,
+                secret_type=SecretType.key_hmac,
+                generate_secret=SecretsUtil.generate_secret_string
+            )
+        )
+        masking_meta.add(
+            MaskingSecretMeta[str](
+                masking_strategy=AES_ENCRYPT,
+                secret_type=SecretType.salt_hmac,
+                generate_secret=SecretsUtil.generate_secret_string
+            )
+        )
+        return masking_meta

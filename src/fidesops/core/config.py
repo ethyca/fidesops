@@ -116,7 +116,6 @@ class SecuritySettings(FidesSettings):
 
     AES_ENCRYPTION_KEY_LENGTH: int = 16
     AES_GCM_NONCE_LENGTH: int = 12
-    DEFAULT_ENCRYPTION_BYTE_LENGTH: int = 32
     APP_ENCRYPTION_KEY: str
 
     @validator("APP_ENCRYPTION_KEY")

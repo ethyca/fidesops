@@ -89,7 +89,11 @@ class SQLConnector(BaseConnector):
             return SQLConnector.cursor_result_to_rows(results)
 
     def mask_data(
-        self, node: TraversalNode, policy: Policy, request: PrivacyRequest, rows: List[Row]
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        request: PrivacyRequest,
+        rows: List[Row],
     ) -> int:
         """Execute a masking request. Returns the number of records masked"""
         query_config = self.query_config(node)

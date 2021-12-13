@@ -4,7 +4,7 @@ from unittest.mock import Mock
 from fidesops.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
 )
-from fidesops.schemas.masking.masking_secrets import MaskingSecretGeneration, SecretType
+from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import (
     AesEncryptionMaskingStrategy, AES_ENCRYPT,
 )
@@ -40,15 +40,15 @@ def test_mask_all_aes_modes(mock_encrypt: Mock):
 
 
 def cache_secrets() -> None:
-    secret_key = MaskingSecretGeneration(
+    secret_key = MaskingSecretCache(
         secret="key", masking_strategy=AES_ENCRYPT, secret_type=SecretType.key
     )
     cache_secret(secret_key, request_id)
-    secret_hmac_key = MaskingSecretGeneration(
+    secret_hmac_key = MaskingSecretCache(
         secret="other_key", masking_strategy=AES_ENCRYPT, secret_type=SecretType.key_hmac
     )
     cache_secret(secret_hmac_key, request_id)
-    secret_hmac_salt = MaskingSecretGeneration(
+    secret_hmac_salt = MaskingSecretCache(
         secret="some_salt", masking_strategy=AES_ENCRYPT, secret_type=SecretType.salt_hmac
     )
     cache_secret(secret_hmac_salt, request_id)

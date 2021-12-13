@@ -28,6 +28,10 @@ class NullMaskingStrategy(MaskingStrategy):
         return None
 
     @staticmethod
+    def secrets_required() -> bool:
+        return False
+
+    @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
         return NullMaskingConfiguration
 

@@ -1,12 +1,15 @@
-import secrets
-from typing import Optional, List
+from typing import Optional, List, Set
 
-from fidesops.core.config import config
 from fidesops.schemas.masking.masking_configuration import (
     MaskingConfiguration,
     HmacMaskingConfiguration,
 )
-from fidesops.schemas.masking.masking_secrets import MaskingSecretGeneration, SecretType
+from fidesops.schemas.masking.masking_secrets import (
+    MaskingSecretCache,
+    SecretType,
+    MaskingSecretMeta,
+    SecretDataType,
+)
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
     MaskingStrategyConfigurationDescription,
@@ -40,27 +43,28 @@ class HmacMaskingStrategy(MaskingStrategy):
         """
         if value is None:
             return None
-        key = SecretsUtil.get_secret(privacy_request_id, HMAC, SecretType.key)
-        salt = SecretsUtil.get_secret(privacy_request_id, HMAC, SecretType.salt)
+        masking_meta: Set[MaskingSecretMeta] = self._build_masking_secret_meta()
+        key: str = SecretsUtil.get_or_generate_secret(
+            privacy_request_id,
+            [meta for meta in masking_meta if meta.secret_type == SecretType.key][0],
+        )
+        salt: str = SecretsUtil.get_or_generate_secret(
+            privacy_request_id,
+            [meta for meta in masking_meta if meta.secret_type == SecretType.salt][0],
+        )
         masked: str = hmac_encrypt_return_str(value, key, salt, self.algorithm)
         if self.format_preservation is not None:
             formatter = FormatPreservation(self.format_preservation)
             return formatter.format(masked)
         return masked
 
-    def generate_secrets(self) -> List[MaskingSecretGeneration]:
-        secret_types = {SecretType.key, SecretType.salt}
-        masking_secrets = []
-        for secret_type in secret_types:
-            secret = secrets.token_urlsafe(
-                config.security.DEFAULT_ENCRYPTION_BYTE_LENGTH
-            )
-            masking_secrets.append(
-                MaskingSecretGeneration(
-                    secret=secret, masking_strategy=HMAC, secret_type=secret_type
-                )
-            )
-        return masking_secrets
+    @staticmethod
+    def secrets_required() -> bool:
+        return True
+
+    def generate_secrets_for_cache(self) -> List[MaskingSecretCache]:
+        masking_meta: Set[MaskingSecretMeta] = self._build_masking_secret_meta()
+        return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
 
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
@@ -90,3 +94,22 @@ class HmacMaskingStrategy(MaskingStrategy):
         """Determines whether or not the given data type is supported by this masking strategy"""
         supported_data_types = {"string"}
         return data_type in supported_data_types
+
+    @staticmethod
+    def _build_masking_secret_meta() -> Set[MaskingSecretMeta]:
+        masking_meta: Set[MaskingSecretMeta] = set()
+        masking_meta.add(
+            MaskingSecretMeta[str](
+                masking_strategy=HMAC,
+                secret_type=SecretType.key,
+                generate_secret=SecretsUtil.generate_secret_string
+            )
+        )
+        masking_meta.add(
+            MaskingSecretMeta[str](
+                masking_strategy=HMAC,
+                secret_type=SecretType.salt,
+                generate_secret=SecretsUtil.generate_secret_string
+            )
+        )
+        return masking_meta

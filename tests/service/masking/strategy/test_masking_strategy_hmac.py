@@ -1,4 +1,4 @@
-from fidesops.schemas.masking.masking_secrets import MaskingSecretGeneration, SecretType
+from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fidesops.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy, HMAC
 from fidesops.schemas.masking.masking_configuration import HmacMaskingConfiguration
 from ....test_helpers.cache_secrets_helper import clear_cache_secrets, cache_secret
@@ -13,11 +13,11 @@ def test_hmac_sha_256():
     masker = HmacMaskingStrategy(configuration)
     expected = "df1e66dc2262ae3336f36294811f795b075900287e0a1add7974eacea8a52970"
 
-    secret_key = MaskingSecretGeneration(
+    secret_key = MaskingSecretCache(
         secret="test_key", masking_strategy=HMAC, secret_type=SecretType.key
     )
     cache_secret(secret_key, request_id)
-    secret_salt = MaskingSecretGeneration(
+    secret_salt = MaskingSecretCache(
         secret="test_salt", masking_strategy=HMAC, secret_type=SecretType.salt
     )
     cache_secret(secret_salt, request_id)
@@ -35,11 +35,11 @@ def test_mask_sha512():
         "7b47f304563f4f061d01712cfe34fc449e"
     )
 
-    secret_key = MaskingSecretGeneration(
+    secret_key = MaskingSecretCache(
         secret="test_key", masking_strategy=HMAC, secret_type=SecretType.key
     )
     cache_secret(secret_key, request_id)
-    secret_salt = MaskingSecretGeneration(
+    secret_salt = MaskingSecretCache(
         secret="test_salt", masking_strategy=HMAC, secret_type=SecretType.salt
     )
     cache_secret(secret_salt, request_id)
@@ -54,11 +54,11 @@ def test_mask_sha256_default():
     masker = HmacMaskingStrategy(configuration)
     expected = "df1e66dc2262ae3336f36294811f795b075900287e0a1add7974eacea8a52970"
 
-    secret_key = MaskingSecretGeneration(
+    secret_key = MaskingSecretCache(
         secret="test_key", masking_strategy=HMAC, secret_type=SecretType.key
     )
     cache_secret(secret_key, request_id)
-    secret_salt = MaskingSecretGeneration(
+    secret_salt = MaskingSecretCache(
         secret="test_salt", masking_strategy=HMAC, secret_type=SecretType.salt
     )
     cache_secret(secret_salt, request_id)
@@ -73,11 +73,11 @@ def test_mask_arguments_null():
     masker = HmacMaskingStrategy(configuration)
     expected = None
 
-    secret_key = MaskingSecretGeneration(
+    secret_key = MaskingSecretCache(
         secret="test_key", masking_strategy=HMAC, secret_type=SecretType.key
     )
     cache_secret(secret_key, request_id)
-    secret_salt = MaskingSecretGeneration(
+    secret_salt = MaskingSecretCache(
         secret="test_salt", masking_strategy=HMAC, secret_type=SecretType.salt
     )
     cache_secret(secret_salt, request_id)

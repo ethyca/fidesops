@@ -1,16 +1,16 @@
-from fidesops.schemas.masking.masking_secrets import MaskingSecretGeneration
+from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.util.cache import FidesopsRedis, get_cache, get_masking_secret_cache_key
 
 
-def cache_secret(secret: MaskingSecretGeneration, request_id: str) -> None:
+def cache_secret(masking_secret_cache: MaskingSecretCache, request_id: str) -> None:
     cache: FidesopsRedis = get_cache()
     cache.set_with_autoexpire(
         get_masking_secret_cache_key(
             request_id,
-            masking_strategy=secret.masking_strategy,
-            secret_type=secret.secret_type,
+            masking_strategy=masking_secret_cache.masking_strategy,
+            secret_type=masking_secret_cache.secret_type,
         ),
-        secret.secret,
+        masking_secret_cache.secret,
     )
 
 

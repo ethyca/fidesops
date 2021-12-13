@@ -123,7 +123,9 @@ class QueryConfig(Generic[T], ABC):
 
         return data
 
-    def update_value_map(self, row: Row, policy: Policy, request: PrivacyRequest) -> Dict[str, Any]:
+    def update_value_map(
+        self, row: Row, policy: Policy, request: PrivacyRequest
+    ) -> Dict[str, Any]:
         """Map the relevant fields to be updated on the row with their masked values from Policy Rules
 
         Example return:  {'name': None, 'ccn': None, 'code': None}
