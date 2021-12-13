@@ -107,7 +107,7 @@ def create_privacy_request(
 
     optional_fields = ["external_id", "started_processing_at", "finished_processing_at"]
     for privacy_request_data in data:
-        if len(privacy_request_data.identities) == 0:
+        if not any(privacy_request_data.identities.dict().values()):
             logger.warning(
                 "Create failed for privacy request with no identities provided"
             )
@@ -152,9 +152,8 @@ def create_privacy_request(
 
             # Store identity in the cache
             logger.info(f"Caching identities for privacy request {privacy_request.id}")
-            for identity in privacy_request_data.identities:
-                privacy_request.cache_identity(identity)
-                privacy_request.cache_encryption(privacy_request_data.encryption_key)
+            privacy_request.cache_identity(privacy_request_data.identities)
+            privacy_request.cache_encryption(privacy_request_data.encryption_key)
 
             PrivacyRequestRunner(
                 cache=cache,

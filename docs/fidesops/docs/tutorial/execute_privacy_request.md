@@ -33,7 +33,7 @@ def create_privacy_request(email, policy_key, access_token):
         {
             "requested_at": datetime(2021, 1, 1).isoformat(),
             "policy_key": policy_key,
-            "identities": [{"email": email}],
+            "identities": {"email": email},
         },
     ]
     response = requests.post(
