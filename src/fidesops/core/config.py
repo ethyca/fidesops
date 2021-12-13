@@ -174,8 +174,16 @@ class FidesopsConfig(FidesSettings):
     security: SecuritySettings
     execution: ExecutionSettings
 
+    is_test_mode: bool = os.getenv("TESTING") == "True"
+    hot_reloading: bool = os.getenv("DEV_MODE") == "True"
+
     class Config:  # pylint: disable=C0115
         case_sensitive = True
+
+    logger.warning(f"Startup configuration: reloading = {hot_reloading}")
+    logger.warning(
+        f'Startup configuration: pii logging = {os.getenv("LOG_PII") == "True"}'
+    )
 
 
 def load_file(file_name: str) -> str:

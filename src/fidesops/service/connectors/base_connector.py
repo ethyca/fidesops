@@ -1,7 +1,8 @@
 import logging
 from abc import abstractmethod, ABC
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TypeVar, Generic
 
+from fidesops.core.config import config
 from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.connectionconfig import ConnectionConfig, TestStatus
 from fidesops.models.policy import Policy
@@ -9,9 +10,10 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.connectors.query_config import QueryConfig
 
 logger = logging.getLogger(__name__)
+DB_CONNECTOR_TYPE = TypeVar("DB_CONNECTOR_TYPE")
 
 
-class BaseConnector(ABC):
+class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
     """Abstract BaseConnector class containing the methods to interact with your configured connection.
 
     How to use example:
@@ -29,6 +31,12 @@ class BaseConnector(ABC):
 
     def __init__(self, configuration: ConnectionConfig):
         self.configuration = configuration
+        # If Fidesops is running in test mode, it's OK to show
+        # parameters inside queries for debugging purposes. By
+        # default we assume that Fidesops is not running in test
+        # mode.
+        self.hide_parameters = not config.is_test_mode
+        self.db_client: Optional[DB_CONNECTOR_TYPE] = None
 
     @abstractmethod
     def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
@@ -41,6 +49,16 @@ class BaseConnector(ABC):
         If no issues are encountered, this should run without error, otherwise a ConnectionException
         will be raised.
         """
+
+    @abstractmethod
+    def create_client(self) -> DB_CONNECTOR_TYPE:
+        """Create a client connector appropriate to this resource"""
+
+    def client(self) -> DB_CONNECTOR_TYPE:
+        """Return connector appropriate to this resource"""
+        if not self.db_client:
+            self.db_client = self.create_client()
+        return self.db_client
 
     @abstractmethod
     def retrieve_data(
@@ -64,3 +82,7 @@ class BaseConnector(ABC):
     def dry_run_query(self, node: TraversalNode) -> str:
         """Generate a dry-run query to display action that will be taken"""
         return self.query_config(node).dry_run_query()
+
+    @abstractmethod
+    def close(self) -> None:
+        """Close any held resources"""

@@ -21,12 +21,15 @@ from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
 from fidesops.service.connectors.base_connector import BaseConnector
-from fidesops.service.connectors.query_config import SQLQueryConfig
+from fidesops.service.connectors.query_config import (
+    SnowflakeQueryConfig,
+    SQLQueryConfig,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class SQLConnector(BaseConnector):
+class SQLConnector(BaseConnector[Engine]):
     """A SQL connector represents an abstract connector to any datastore that can be
     interacted with via standard SQL via SQLAlchemy"""
 
@@ -43,10 +46,6 @@ class SQLConnector(BaseConnector):
     @abstractmethod
     def build_uri(self) -> str:
         """Build a database specific uri connection string"""
-
-    @abstractmethod
-    def client(self) -> Engine:
-        """Return SQLAlchemy engine that can be used to interact with a database"""
 
     def query_config(self, node: TraversalNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input traversal_node."""
@@ -107,6 +106,12 @@ class SQLConnector(BaseConnector):
                     update_ct = update_ct + results.rowcount
         return update_ct
 
+    def close(self) -> None:
+        """Close any held resources"""
+        if self.db_client:
+            logger.debug(f" disposing of {self.__class__}")
+            self.db_client.dispose()
+
 
 class PostgreSQLConnector(SQLConnector):
     """Connector specific to postgresql"""
@@ -126,11 +131,15 @@ class PostgreSQLConnector(SQLConnector):
         dbname = f"/{config.dbname}" if config.dbname else ""
         return f"postgresql://{user_password}{netloc}{port}{dbname}"
 
-    def client(self) -> Engine:
+    def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a PostgreSQL database"""
         config = PostgreSQLSchema(**self.configuration.secrets or {})
         uri = config.url or self.build_uri()
-        return create_engine(uri, hide_parameters=True)
+        return create_engine(
+            uri,
+            hide_parameters=self.hide_parameters,
+            echo=not self.hide_parameters,
+        )
 
 
 class MySQLConnector(SQLConnector):
@@ -152,11 +161,15 @@ class MySQLConnector(SQLConnector):
         url = f"mysql+pymysql://{user_password}{netloc}{port}{dbname}"
         return url
 
-    def client(self) -> Engine:
+    def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a MySQL database"""
         config = MySQLSchema(**self.configuration.secrets or {})
         uri = config.url or self.build_uri()
-        return create_engine(uri, hide_parameters=True)
+        return create_engine(
+            uri,
+            hide_parameters=self.hide_parameters,
+            echo=not self.hide_parameters,
+        )
 
 
 class RedshiftConnector(SQLConnector):
@@ -171,11 +184,15 @@ class RedshiftConnector(SQLConnector):
         url = f"redshift+psycopg2://{config.user}:{config.password}@{config.host}{port}{database}"
         return url
 
-    def client(self) -> Engine:
+    def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with an Amazon Redshift cluster"""
         config = RedshiftSchema(**self.configuration.secrets or {})
         uri = config.url or self.build_uri()
-        return create_engine(uri, hide_parameters=True)
+        return create_engine(
+            uri,
+            hide_parameters=self.hide_parameters,
+            echo=not self.hide_parameters,
+        )
 
 
 class SnowflakeConnector(SQLConnector):
@@ -207,8 +224,16 @@ class SnowflakeConnector(SQLConnector):
         url: str = URL(**kwargs)
         return url
 
-    def client(self) -> Engine:
+    def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with Snowflake"""
         config = SnowflakeSchema(**self.configuration.secrets or {})
         uri: str = config.url or self.build_uri()
-        return create_engine(uri, hide_parameters=True)
+        return create_engine(
+            uri,
+            hide_parameters=self.hide_parameters,
+            echo=not self.hide_parameters,
+        )
+
+    def query_config(self, node: TraversalNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input traversal_node."""
+        return SnowflakeQueryConfig(node)
