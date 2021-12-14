@@ -73,7 +73,7 @@ class TestCreatePrivacyRequest:
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
                 "policy_key": policy.key,
-                "identities": [{"email": "test@example.com"}],
+                "identity": {"email": "test@example.com"},
             }
         ]
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
@@ -103,7 +103,7 @@ class TestCreatePrivacyRequest:
                 {
                     "requested_at": "2021-08-30T16:09:37.359Z",
                     "policy_key": policy.key,
-                    "identities": [{"email": "ftest{i}@example.com"}],
+                    "identity": {"email": "ftest{i}@example.com"},
                 },
             )
 
@@ -132,7 +132,7 @@ class TestCreatePrivacyRequest:
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
                 "policy_key": policy.key,
-                "identities": [{"email": "test@example.com"}],
+                "identity": {"email": "test@example.com"},
             }
         ]
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
@@ -162,7 +162,7 @@ class TestCreatePrivacyRequest:
                 "external_id": external_id,
                 "requested_at": "2021-08-30T16:09:37.359Z",
                 "policy_key": policy.key,
-                "identities": [{"email": "test@example.com"}],
+                "identity": {"email": "test@example.com"},
             }
         ]
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
@@ -196,7 +196,7 @@ class TestCreatePrivacyRequest:
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
                 "policy_key": policy.key,
-                "identities": [identity],
+                "identity": identity,
             }
         ]
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
@@ -220,7 +220,7 @@ class TestCreatePrivacyRequest:
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
                 "policy_key": policy.key,
-                "identities": ["test@example.com"],
+                "identity": {"email": "test@example.com"},
                 "encryption_key": "test",
             }
         ]
@@ -247,7 +247,7 @@ class TestCreatePrivacyRequest:
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
                 "policy_key": policy.key,
-                "identities": [identity],
+                "identity": identity,
                 "encryption_key": "test--encryption",
             }
         ]
@@ -277,7 +277,7 @@ class TestCreatePrivacyRequest:
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
                 "policy_key": policy.key,
-                "identities": [],
+                "identity": {},
             }
         ]
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
@@ -916,7 +916,7 @@ class TestResumePrivacyRequest:
             webhook=policy_pre_execution_webhooks[0]
         )
         response = api_client.post(
-            url, headers=auth_header, json={"derived_identities": {}}
+            url, headers=auth_header, json={"derived_identity": {}}
         )
         assert response.status_code == 200
         response_body = json.loads(response.text)
