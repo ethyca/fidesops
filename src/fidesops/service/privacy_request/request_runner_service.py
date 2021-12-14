@@ -25,7 +25,7 @@ from fidesops.task.graph_task import (
     filter_data_categories,
     run_erasure,
 )
-from fidesops.tasks.scheduled import get_scheduler
+from fidesops.tasks.scheduled.scheduler import get_scheduler
 from fidesops.util.async_util import run_async
 from fidesops.util.cache import FidesopsRedis
 
