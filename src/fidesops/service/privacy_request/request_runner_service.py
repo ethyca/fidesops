@@ -2,7 +2,6 @@ import logging
 from datetime import datetime, timedelta
 from typing import Set, Optional, Awaitable
 
-from apscheduler.schedulers.background import BackgroundScheduler
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
@@ -26,21 +25,11 @@ from fidesops.task.graph_task import (
     filter_data_categories,
     run_erasure,
 )
+from fidesops.tasks.scheduled import get_scheduler
 from fidesops.util.async_util import run_async
 from fidesops.util.cache import FidesopsRedis
 
 logger = logging.getLogger(__name__)
-
-_scheduler = None
-
-
-def get_scheduler() -> BackgroundScheduler:
-    """Returns a BackgroundScheduler as a singleton"""
-    global _scheduler  # pylint: disable=W0603
-    if _scheduler is None:
-        _scheduler = BackgroundScheduler()
-        _scheduler.start()
-    return _scheduler
 
 
 class PrivacyRequestRunner:

@@ -8,7 +8,7 @@ from fidesops.db.session import get_db_session
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.storage.storage import StorageType, StorageDetails
 from fidesops.service.privacy_request.onetrust_service import OneTrustService
-from fidesops.service.privacy_request.request_runner_service import get_scheduler
+from fidesops.tasks.scheduled import get_scheduler
 
 logger = logging.getLogger(__name__)
 
