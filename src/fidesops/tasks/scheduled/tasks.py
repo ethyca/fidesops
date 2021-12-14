@@ -8,7 +8,7 @@ from fidesops.db.session import get_db_session
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.storage.storage import StorageType, StorageDetails
 from fidesops.service.privacy_request.onetrust_service import OneTrustService
-from fidesops.tasks.scheduled.scheduler import get_scheduler
+from fidesops.tasks.scheduled.scheduler import scheduler
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,6 @@ def initiate_scheduled_request_intake() -> None:
     onetrust_config: Optional[StorageConfig] = StorageConfig.get_by(
         db=db, field="type", value=StorageType.onetrust
     )
-    scheduler = get_scheduler()
     if onetrust_config is not None:
         logger.info("Initiating request intake for OneTrust.")
         scheduler.add_job(

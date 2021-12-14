@@ -25,7 +25,7 @@ from fidesops.task.graph_task import (
     filter_data_categories,
     run_erasure,
 )
-from fidesops.tasks.scheduled.scheduler import get_scheduler
+from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.util.async_util import run_async
 from fidesops.util.cache import FidesopsRedis
 
@@ -219,7 +219,6 @@ class PrivacyRequestRunner:
 
 def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) -> None:
     """Initiates scheduler to expire privacy request when the redis cache expires"""
-    scheduler = get_scheduler()
     scheduler.add_job(
         func=mark_paused_privacy_request_as_expired,
         kwargs={"privacy_request_id": privacy_request.id},
