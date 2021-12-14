@@ -18,10 +18,10 @@ Take me directly to the [Policy Webhooks API documentation](/fidesops/api/#opera
 A Policy Webhook is an HTTPS Callback that you've defined on a Policy to call an external
 REST API endpoint *before* or *after* a PrivacyRequest executes.
 
-You can define as many webhooks as you'd like.  Webhooks can be `one_way`, 
-where we will just ping your API and move on, or `two_way`, where we will wait for a response. Any `derived_identities`
-returned from a `two_way` webhook will be saved and can be used to locate other user information.  For example, a webhook
-might take a known `email` `identity` and use that to find a `phone_number` `identity`.
+You can define as many webhooks as you'd like.  Webhooks can be `one_way`, where we will just ping your API and move on, 
+or `two_way`, where we will wait for a response. Any `derived_identities` returned from a `two_way` webhook will be saved 
+and can be used to locate other user information.  For example, a webhook might take a known `email` `identity` and
+use that to find a `phone_number` `derived)identity`.
 
 Another use case for a Policy Webhook might be to log a user out of your mobile app after you've cleared
 their data from your system.  In this case, you'd create a `Policy` and a `ConnectionConfig` to describe the URL to hit
@@ -30,9 +30,8 @@ to clear the cache. You'd then create a `one-way` `PolicyPostWebhook` to run aft
 
 ## Configuration
 
-Big picture, you will define an `https` `ConnectionConfig` that contains the details to
-make a request to your API endpoint.  You will then define a `PolicyPreWebhook` or a `PolicyPostWebhook`
-for a specific `Policy` using that `ConnectionConfig`.
+Big picture, you will define an `https` `ConnectionConfig` that contains the details to make a request to your API endpoint.  
+You will then define a `PolicyPreWebhook` or a `PolicyPostWebhook`for a specific `Policy` using that `ConnectionConfig`.
 
 ### Creating an HTTPS ConnectionConfig
 
@@ -66,7 +65,7 @@ See API docs on how to [Set a ConnectionConfig's Secrets](/fidesops/api#operatio
 
 ```json
     {
-        "url": "example.com",
+        "url": "https://www.example.com",
         "authorization": "test_authorization"
     }
 ```
@@ -165,8 +164,6 @@ and how to [PATCH a PolicyPostWebhook](/fidesops/api#operations-Policy_Webhooks-
 
 ## Webhook Request Format
 
-NOTE: FEATURE IN PROGRESS.
-
 
 Before and after running access or erasure requests, Fidesops will send requests to any configured webhooks in sequential order
 with the following request body:
@@ -177,7 +174,7 @@ POST <user-defined URL>
   "privacy_request_id": "pri_029832ba-3b84-40f7-8946-82aec6f95448",
   "direction": "one_way | two_way",
   "callback_type": "pre | post",
-  "identities": {
+  "identity": {
     "email": "customer-1@example.com",
     "phone_number": "555-5555"
   }
@@ -197,7 +194,10 @@ execution while you take care of additional processing on your end.
         "reply-to-token": "<jwe_token>"
      }
 ```
- To resume, you should send a request back to the `reply-to` URL with the `reply-to-token`.
+ To resume, you should send a request back to the `reply-to` URL with the `reply-to-token`.  The `reply-to-token` will
+expire when your redis cache expires: `config.redis.DEFAULT_TTL_SECONDS` (Fidesops uses the redis cache to temporarily
+ store identity data).  At this point, your PrivacyRequest will be given an `error` status and you would have to resubmit
+the PrivacyRequest.
 
 ## Expected Webhook Response Format
 
@@ -209,7 +209,7 @@ We don't expect a response from `one-way` webhooks, but `two-way` webhooks shoul
 
 ```json
 {
-  "derived_identities": {
+  "derived_identity": {
     "email": "customer-1@gmail.com",
     "phone_number": "555-5555"
   },
@@ -217,7 +217,7 @@ We don't expect a response from `one-way` webhooks, but `two-way` webhooks shoul
 }
 ```
 
-Derived identities are optional: a returned email or phone number will replace currently known emails or phone numbers.
+Derived identity is optional: a returned email or phone number will replace currently known emails or phone numbers.
 
 ## Resuming PrivacyRequest Execution
 
@@ -228,7 +228,7 @@ given to you in the original request header with the `reply-to-token` auth token
 
 ```json
 {
-  "derived_identities": {
+  "derived_identity": {
     "email": "customer-1@gmail.com",
     "phone_number": "555-5555"
   }
