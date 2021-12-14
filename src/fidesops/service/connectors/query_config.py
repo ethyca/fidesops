@@ -163,7 +163,7 @@ class QueryConfig(Generic[T], ABC):
                     continue
                 val: Any = row[field_name]
                 masked_val = self._generate_masked_value(
-                    request.request.id,
+                    request.id,
                     strategy,
                     val,
                     masking_override,
