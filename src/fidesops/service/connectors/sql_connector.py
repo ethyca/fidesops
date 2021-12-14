@@ -230,3 +230,9 @@ class SnowflakeConnector(SQLConnector):
     def query_config(self, node: TraversalNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input traversal_node."""
         return SnowflakeQueryConfig(node)
+
+
+class MicrosoftSQLServerConnector(SQLConnector):
+    """
+    Connector specific to Microsoft SQL Server
+    """
