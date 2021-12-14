@@ -17,7 +17,7 @@ masking:
     configuration:
       algorithm: SHA-256
       key: configuration(hmac_key)
-  - strategy: encrypt_verify_secret_length
+  - strategy: encrypt
     categories: [ zip ]
     configuration:
       algorithm: AES
