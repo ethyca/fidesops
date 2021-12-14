@@ -232,7 +232,7 @@ class TestCreatePrivacyRequest:
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
                 "policy_key": erasure_policy_hash.key,
-                "identities": [identity],
+                "identity": identity,
             }
         ]
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
