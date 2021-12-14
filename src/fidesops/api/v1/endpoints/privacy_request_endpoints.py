@@ -42,6 +42,7 @@ from fidesops.schemas.external_https import (
     SecondPartyResponseFormat,
     PrivacyRequestResumeFormat,
 )
+from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.policy import Rule
 from fidesops.schemas.privacy_request import (
@@ -51,6 +52,7 @@ from fidesops.schemas.privacy_request import (
     ExecutionLogDetailResponse,
     BulkPostPrivacyRequests,
 )
+from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     SupportedMaskingStrategies,
 )
@@ -170,9 +172,12 @@ def create_privacy_request(
             )
             unique_masking_strategies_by_name: Set[str] = set()
             for rule in erasure_rules:
-                unique_masking_strategies_by_name.add(rule.masking_strategy.strategy)
+                unique_masking_strategies_by_name.add(rule.masking_strategy["strategy"])
             for strategy_name in unique_masking_strategies_by_name:
-                masking_strategy = SupportedMaskingStrategies[strategy_name].value
+                strategy = SupportedMaskingStrategies[strategy_name].value
+                masking_strategy: MaskingStrategy = strategy(
+                    configuration=strategy.get_configuration_model()()
+                )
                 if masking_strategy.secrets_required():
                     masking_secrets: List[
                         MaskingSecretCache
@@ -195,6 +200,7 @@ def create_privacy_request(
             )
         except Exception as exc:
             logger.error("Exception: %s", exc)
+            logger.info(f"Error is {exc}")
             failure = {
                 "message": "This record could not be added",
                 "data": kwargs,

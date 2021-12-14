@@ -40,15 +40,15 @@ def test_mask_all_aes_modes(mock_encrypt: Mock):
 
 
 def cache_secrets() -> None:
-    secret_key = MaskingSecretCache(
+    secret_key = MaskingSecretCache[bytes](
         secret="key", masking_strategy=AES_ENCRYPT, secret_type=SecretType.key
     )
     cache_secret(secret_key, request_id)
-    secret_hmac_key = MaskingSecretCache(
+    secret_hmac_key = MaskingSecretCache[str](
         secret="other_key", masking_strategy=AES_ENCRYPT, secret_type=SecretType.key_hmac
     )
     cache_secret(secret_hmac_key, request_id)
-    secret_hmac_salt = MaskingSecretCache(
+    secret_hmac_salt = MaskingSecretCache[str](
         secret="some_salt", masking_strategy=AES_ENCRYPT, secret_type=SecretType.salt_hmac
     )
     cache_secret(secret_hmac_salt, request_id)

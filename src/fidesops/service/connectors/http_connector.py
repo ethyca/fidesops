@@ -75,11 +75,11 @@ class HTTPSConnector(BaseConnector[None]):
         """
 
     def mask_data(
-            self,
-            node: TraversalNode,
-            policy: Policy,
-            request: PrivacyRequest,
-            rows: List[Row],
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        request: PrivacyRequest,
+        rows: List[Row],
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated
 

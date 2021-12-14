@@ -1,10 +1,9 @@
 import logging
 import secrets
-from typing import TypeVar, Optional, Set, List, Union
+from typing import TypeVar, Optional, Set, List
 
 from fidesops.schemas.masking.masking_secrets import (
     MaskingSecretMeta,
-    SecretDataType,
     MaskingSecretCache,
 )
 from fidesops.util.cache import get_masking_secret_cache_key, get_cache
@@ -26,12 +25,16 @@ class SecretsUtil:
                 logger.warning(
                     f"Secret type {masking_secret_meta.secret_type} expected from cache but was not present for masking strategy {masking_secret_meta.masking_strategy}"
                 )
-                return masking_secret_meta.generate_secret()
+                return masking_secret_meta.generate_secret(
+                    masking_secret_meta.secret_length
+                )
                 # todo- should we attempt to re-cache in this case?
             return secret
         else:
             # expected for standalone masking service
-            return masking_secret_meta.generate_secret()
+            return masking_secret_meta.generate_secret(
+                masking_secret_meta.secret_length
+            )
 
     @staticmethod
     def _get_secret_from_cache(
@@ -46,14 +49,12 @@ class SecretsUtil:
         return cache.get(masking_secret_cache_key)
 
     @staticmethod
-    def generate_secret_string() -> str:
-        default_length: int = 32
-        return secrets.token_urlsafe(default_length)
+    def generate_secret_string(length: int) -> str:
+        return secrets.token_urlsafe(length)
 
     @staticmethod
-    def generate_secret_bytes() -> bytes:
-        default_length: int = 32
-        return secrets.token_bytes(default_length)
+    def generate_secret_bytes(length: int) -> bytes:
+        return secrets.token_bytes(length)
 
     @staticmethod
     def build_masking_secrets_for_cache(
@@ -61,7 +62,7 @@ class SecretsUtil:
     ) -> List[MaskingSecretCache[T]]:
         masking_secrets = []
         for meta in masking_secret_meta:
-            secret: T = meta.generate_secret()
+            secret: T = meta.generate_secret(meta.secret_length)
             masking_secrets.append(
                 MaskingSecretCache[T](
                     secret=secret,

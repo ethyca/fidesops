@@ -12,7 +12,7 @@ CLIENT_BY_ID = "/oauth/client/{client_id}"
 CLIENT_SCOPE = "/oauth/client/{client_id}/scope"
 
 # Encryption URLs
-ENCRYPT_AES = "/cryptography/encryption/aes/encrypt"
+ENCRYPT_AES = "/cryptography/encryption/aes/encrypt_verify_secret_length"
 DECRYPT_AES = "/cryptography/encryption/aes/decrypt"
 ENCRYPTION_KEY = "/cryptography/encryption/key"
 

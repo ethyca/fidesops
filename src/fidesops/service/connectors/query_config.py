@@ -309,7 +309,9 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         """Adds the appropriate formatting for update statements in this datastore."""
         return [f"{k} = :{k}" for k in key_map]
 
-    def generate_update_stmt(self, row: Row, policy: Policy, request: PrivacyRequest) -> Optional[TextClause]:
+    def generate_update_stmt(
+        self, row: Row, policy: Policy, request: PrivacyRequest
+    ) -> Optional[TextClause]:
         """Returns an update statement in generic SQL dialect."""
         update_value_map = self.update_value_map(row, policy, request)
         update_clauses = self.format_key_map_for_update_stmt(update_value_map)

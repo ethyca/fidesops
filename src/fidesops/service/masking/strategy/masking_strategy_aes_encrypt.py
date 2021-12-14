@@ -9,7 +9,6 @@ from fidesops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
     SecretType,
     MaskingSecretMeta,
-    SecretDataType,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
@@ -120,21 +119,21 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
             MaskingSecretMeta[bytes](
                 masking_strategy=AES_ENCRYPT,
                 secret_type=SecretType.key,
-                generate_secret=SecretsUtil.generate_secret_bytes
+                generate_secret=SecretsUtil.generate_secret_bytes,
             )
         )
         masking_meta.add(
             MaskingSecretMeta[str](
                 masking_strategy=AES_ENCRYPT,
                 secret_type=SecretType.key_hmac,
-                generate_secret=SecretsUtil.generate_secret_string
+                generate_secret=SecretsUtil.generate_secret_string,
             )
         )
         masking_meta.add(
             MaskingSecretMeta[str](
                 masking_strategy=AES_ENCRYPT,
                 secret_type=SecretType.salt_hmac,
-                generate_secret=SecretsUtil.generate_secret_string
+                generate_secret=SecretsUtil.generate_secret_string,
             )
         )
         return masking_meta

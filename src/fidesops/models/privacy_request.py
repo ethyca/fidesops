@@ -37,7 +37,6 @@ from fidesops.schemas.external_https import (
 )
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.service.connectors import HTTPSConnector, get_connector
 from fidesops.util.cache import (
     get_all_cache_keys_for_privacy_request,
     get_cache,
@@ -184,6 +183,9 @@ class PrivacyRequest(Base):
         Pre-Execution webhooks send headers to the webhook in case the service needs to send back instructions
         to halt.  To resume, they use send a request to the reply-to URL with the reply-to-token.
         """
+        # temp fix for circular dependency
+        from fidesops.service.connectors import HTTPSConnector, get_connector
+
         https_connector: HTTPSConnector = get_connector(webhook.connection_config)
         request_body = SecondPartyRequestFormat(
             privacy_request_id=self.id,

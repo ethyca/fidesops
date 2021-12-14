@@ -8,7 +8,6 @@ from fidesops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
     SecretType,
     MaskingSecretMeta,
-    SecretDataType,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
@@ -102,14 +101,14 @@ class HmacMaskingStrategy(MaskingStrategy):
             MaskingSecretMeta[str](
                 masking_strategy=HMAC,
                 secret_type=SecretType.key,
-                generate_secret=SecretsUtil.generate_secret_string
+                generate_secret=SecretsUtil.generate_secret_string,
             )
         )
         masking_meta.add(
             MaskingSecretMeta[str](
                 masking_strategy=HMAC,
                 secret_type=SecretType.salt,
-                generate_secret=SecretsUtil.generate_secret_string
+                generate_secret=SecretsUtil.generate_secret_string,
             )
         )
         return masking_meta
