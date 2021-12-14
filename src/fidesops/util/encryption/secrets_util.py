@@ -25,10 +25,6 @@ class SecretsUtil:
                 logger.warning(
                     f"Secret type {masking_secret_meta.secret_type} expected from cache but was not present for masking strategy {masking_secret_meta.masking_strategy}"
                 )
-                return masking_secret_meta.generate_secret(
-                    masking_secret_meta.secret_length
-                )
-                # todo- should we attempt to re-cache in this case?
             return secret
         else:
             # expected for standalone masking service
