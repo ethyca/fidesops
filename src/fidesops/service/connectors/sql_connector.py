@@ -3,7 +3,13 @@ from abc import abstractmethod
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import Column
-from sqlalchemy.engine import Engine, create_engine, CursorResult, LegacyCursorResult
+from sqlalchemy.engine import (
+    Engine,
+    create_engine,
+    CursorResult,
+    LegacyCursorResult,
+    Connection,
+)
 from sqlalchemy.exc import OperationalError, InternalError
 from snowflake.sqlalchemy import URL
 
@@ -23,6 +29,7 @@ from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.service.connectors.query_config import (
     SnowflakeQueryConfig,
     SQLQueryConfig,
+    RedshiftQueryConfig,
 )
 
 logger = logging.getLogger(__name__)
@@ -168,6 +175,7 @@ class MySQLConnector(SQLConnector):
 class RedshiftConnector(SQLConnector):
     """Connector specific to Amazon Redshift"""
 
+    # Overrides BaseConnector.build_uri
     def build_uri(self) -> str:
         """Build URI of format redshift+psycopg2://user:password@[host][:port][/database]"""
         config = RedshiftSchema(**self.configuration.secrets or {})
@@ -177,6 +185,7 @@ class RedshiftConnector(SQLConnector):
         url = f"redshift+psycopg2://{config.user}:{config.password}@{config.host}{port}{database}"
         return url
 
+    # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with an Amazon Redshift cluster"""
         config = RedshiftSchema(**self.configuration.secrets or {})
@@ -186,6 +195,35 @@ class RedshiftConnector(SQLConnector):
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
         )
+
+    def set_schema(self, connection: Connection) -> None:
+        """Sets the search_path for the duration of the session"""
+        config = RedshiftSchema(**self.configuration.secrets or {})
+        if config.db_schema:
+            logger.info("Setting Redshift search_path before retrieving data")
+            connection.execute("SET search_path TO %s" % config.db_schema)
+
+    # Overrides SQLConnector.retrieve_data
+    def retrieve_data(
+        self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
+    ) -> List[Row]:
+        """Retrieve data from Amazon Redshift"""
+        query_config = self.query_config(node)
+        client = self.client()
+        stmt = query_config.generate_query(input_data, policy)
+        if stmt is None:
+            return []
+
+        logger.info(f"Starting data retrieval for {node.address}")
+        with client.connect() as connection:
+            self.set_schema(connection)
+            results = connection.execute(stmt)
+            return SQLConnector.cursor_result_to_rows(results)
+
+    # Overrides SQLConnector.query_config
+    def query_config(self, node: TraversalNode) -> RedshiftQueryConfig:
+        """Query wrapper corresponding to the input traversal_node."""
+        return RedshiftQueryConfig(node)
 
 
 class SnowflakeConnector(SQLConnector):

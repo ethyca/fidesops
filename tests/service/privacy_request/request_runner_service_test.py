@@ -22,7 +22,10 @@ from fidesops.db.session import get_db_session, get_db_engine
 from fidesops.models.policy import DataCategory
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLog
 from fidesops.service.connectors import PostgreSQLConnector
-from fidesops.service.connectors.sql_connector import SnowflakeConnector
+from fidesops.service.connectors.sql_connector import (
+    SnowflakeConnector,
+    RedshiftConnector,
+)
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.util.async_util import wait_for
 
@@ -412,6 +415,94 @@ def test_create_and_process_erasure_request_snowflake(
         assert row[1] == None
 
 
+@pytest.fixture(scope="function")
+def redshift_resources(
+    redshift_example_test_dataset_config,
+):
+    redshift_connection_config = redshift_example_test_dataset_config.connection_config
+    connector = RedshiftConnector(redshift_connection_config)
+    redshift_client = connector.client()
+    with redshift_client.connect() as connection:
+        connector.set_schema(connection)
+        uuid = str(uuid4())
+        customer_email = f"customer-{uuid}@example.com"
+        customer_name = f"{uuid}"
+
+        stmt = "select max(id) from customer;"
+        res = connection.execute(stmt)
+        customer_id = res.all()[0][0] + 1
+
+        stmt = "select max(id) from address;"
+        res = connection.execute(stmt)
+        address_id = res.all()[0][0] + 1
+
+        city = "Test City"
+        state = "TX"
+        stmt = f"""
+        insert into address (id, house, street, city, state, zip)
+        values ({address_id}, '{111}', 'Test Street', '{city}', '{state}', '55555');
+        """
+        connection.execute(stmt)
+
+        stmt = f"""
+            insert into customer (id, email, name, address_id)
+            values ({customer_id}, '{customer_email}', '{customer_name}', '{address_id}');
+        """
+        connection.execute(stmt)
+
+        yield {
+            "email": customer_email,
+            "name": customer_name,
+            "id": customer_id,
+            "client": redshift_client,
+            "address_id": address_id,
+            "city": city,
+            "state": state,
+        }
+        # Remove test data and close Redshift connection in teardown
+        stmt = f"delete from customer where email = '{customer_email}';"
+        connection.execute(stmt)
+
+        stmt = f'delete from address where "id" = {address_id};'
+        connection.execute(stmt)
+
+
+@pytest.mark.integration_external
+def test_create_and_process_access_request_redshift(
+    redshift_resources,
+    db,
+    cache,
+    policy,
+):
+    customer_email = redshift_resources["email"]
+    customer_name = redshift_resources["name"]
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": customer_email},
+    }
+    pr = get_privacy_request_results(db, policy, cache, data)
+    results = pr.get_results()
+    customer_table_key = (
+        f"EN_{pr.id}__access_request__redshift_example_test_dataset:customer"
+    )
+    assert len(results[customer_table_key]) == 1
+    assert results[customer_table_key][0]["email"] == customer_email
+    assert results[customer_table_key][0]["name"] == customer_name
+
+    address_table_key = (
+        f"EN_{pr.id}__access_request__redshift_example_test_dataset:address"
+    )
+
+    city = redshift_resources["city"]
+    state = redshift_resources["state"]
+    assert len(results[address_table_key]) == 1
+    assert results[address_table_key][0]["city"] == city
+    assert results[address_table_key][0]["state"] == state
+
+    pr.delete(db=db)
+
+
 class TestPrivacyRequestRunnerRunWebhooks:
     @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
     def test_run_webhooks_halt_received(
@@ -438,7 +529,9 @@ class TestPrivacyRequestRunnerRunWebhooks:
         privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
-        mock_trigger_policy_webhook.side_effect = ClientUnsuccessfulException(status_code=500)
+        mock_trigger_policy_webhook.side_effect = ClientUnsuccessfulException(
+            status_code=500
+        )
 
         proceed = privacy_request_runner.run_webhooks(PolicyPreWebhook)
         assert not proceed
