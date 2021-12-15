@@ -27,4 +27,4 @@ external_uri=""
 
 [mssql_example]
 SA_PASSWORD="mssql_pw"
-
+ACCEPT_EULA="Y"

@@ -1,4 +1,5 @@
 import logging
+import urllib.parse
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional
 
@@ -21,7 +22,7 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.connection_configuration import (
     PostgreSQLSchema,
     RedshiftSchema,
-    SnowflakeSchema,
+    SnowflakeSchema, MicrosoftSQLServerSchema,
 )
 from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
@@ -312,3 +313,29 @@ class MicrosoftSQLServerConnector(SQLConnector):
     """
     Connector specific to Microsoft SQL Server
     """
+    def build_uri(self) -> str:
+        """Build URI of format mssql://[Server_Name[:Portno]]/[Database_Instance_Name]/[Database_Name]
+        ?FailoverPartner=[Partner_Server_Name]&InboundId=[Inbound_ID]"""
+        config = MicrosoftSQLServerSchema(**self.configuration.secrets or {})
+
+        server_name = config.server_name
+        port = f":{config.port_no}" if config.port_no else ""
+        db_instance_name = f"/{config.database_instance_name}" if config.database_instance_name else ""
+        db_name = f"/{config.database_name}" if config.database_name else ""
+        params: Dict[str, str] = {}
+        if config.partner_server_name:
+            params["FailoverPartner"] = config.partner_server_name
+        if config.inbound_id:
+            params["InboundId"] = config.inbound_id
+        url = f"mssql://{server_name}{port}{db_instance_name}{db_name}{urllib.parse.urlencode(params)}"
+        return url
+
+    def create_client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with a MicrosoftSQLServer database"""
+        config = MicrosoftSQLServerSchema(**self.configuration.secrets or {})
+        uri = config.url or self.build_uri()
+        return create_engine(
+            uri,
+            hide_parameters=self.hide_parameters,
+            echo=not self.hide_parameters,
+        )
