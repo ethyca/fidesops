@@ -246,7 +246,7 @@ def redshift_connection_config(db: Session) -> Generator:
     db_schema = integration_config.get("redshift", {}).get("db_schema") or os.environ.get(
         "REDSHIFT_TEST_DB_SCHEMA"
     )
-    if uri is not None and db_schema is not None:
+    if uri and db_schema:
         schema = RedshiftSchema(url=uri, db_schema=db_schema)
         connection_config.secrets = schema.dict()
         connection_config.save(db=db)

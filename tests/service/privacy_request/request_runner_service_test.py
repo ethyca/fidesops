@@ -458,6 +458,7 @@ def redshift_resources(
             "address_id": address_id,
             "city": city,
             "state": state,
+            "connector": connector,
         }
         # Remove test data and close Redshift connection in teardown
         stmt = f"delete from customer where email = '{customer_email}';"
@@ -501,6 +502,67 @@ def test_create_and_process_access_request_redshift(
     assert results[address_table_key][0]["state"] == state
 
     pr.delete(db=db)
+
+
+@pytest.mark.integration_external
+def test_create_and_process_erasure_request_redshift(
+    redshift_example_test_dataset_config,
+    redshift_resources,
+    integration_config: Dict[str, str],
+    db,
+    cache,
+    erasure_policy,
+):
+    customer_email = redshift_resources["email"]
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    # Should erase customer name
+    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr.delete(db=db)
+
+    connector = redshift_resources["connector"]
+    redshift_client = redshift_resources["client"]
+    with redshift_client.connect() as connection:
+        connector.set_schema(connection)
+        stmt = f"select name from customer where email = '{customer_email}';"
+        res = connection.execute(stmt).all()
+        for row in res:
+            # Confirms customer name has been replaced with null
+            assert row[0] is None
+
+        address_id = redshift_resources["address_id"]
+        stmt = f"select 'id', city, state from address where id = {address_id};"
+        res = connection.execute(stmt).all()
+        for row in res:
+            # Not yet masked because these fields aren't targeted by erasure policy
+            assert row[1] == redshift_resources["city"]
+            assert row[2] == redshift_resources["state"]
+
+    target = erasure_policy.rules[0].targets[0]
+    target.data_category = "user.provided.identifiable.contact"
+    target.save(db=db)
+
+    # Should erase contact fields on address table
+    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr.delete(db=db)
+
+    connector = redshift_resources["connector"]
+    redshift_client = redshift_resources["client"]
+    with redshift_client.connect() as connection:
+        connector.set_schema(connection)
+
+        address_id = redshift_resources["address_id"]
+        stmt = f"select 'id', city, state from address where id = {address_id};"
+        res = connection.execute(stmt).all()
+        for row in res:
+            # Confirms address id is still there, but contact fields have been replaced by null values.
+            assert row[0] is not None
+            assert row[1] is None
+            assert row[2] is None
 
 
 class TestPrivacyRequestRunnerRunWebhooks:

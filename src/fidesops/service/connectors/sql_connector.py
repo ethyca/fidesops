@@ -207,7 +207,11 @@ class RedshiftConnector(SQLConnector):
     def retrieve_data(
         self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
     ) -> List[Row]:
-        """Retrieve data from Amazon Redshift"""
+        """Retrieve data from Amazon Redshift
+
+        For redshift, we also set the search_path to be the schema defined on the ConnectionConfig if
+        applicable - persists for the current session.
+        """
         query_config = self.query_config(node)
         client = self.client()
         stmt = query_config.generate_query(input_data, policy)
@@ -219,6 +223,25 @@ class RedshiftConnector(SQLConnector):
             self.set_schema(connection)
             results = connection.execute(stmt)
             return SQLConnector.cursor_result_to_rows(results)
+
+    # Overrides SQLConnector.mask_data
+    def mask_data(self, node: TraversalNode, policy: Policy, rows: List[Row]) -> int:
+        """Execute a masking request. Returns the number of records masked
+
+        For redshift, we also set the search_path to be the schema defined on the ConnectionConfig if
+        applicable - persists for the current session.
+        """
+        query_config = self.query_config(node)
+        update_ct = 0
+        client = self.client()
+        for row in rows:
+            update_stmt = query_config.generate_update_stmt(row, policy)
+            if update_stmt is not None:
+                with client.connect() as connection:
+                    self.set_schema(connection)
+                    results: LegacyCursorResult = connection.execute(update_stmt)
+                    update_ct = update_ct + results.rowcount
+        return update_ct
 
     # Overrides SQLConnector.query_config
     def query_config(self, node: TraversalNode) -> RedshiftQueryConfig:
