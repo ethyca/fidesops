@@ -53,8 +53,7 @@ services:
       - ./data/sql/mysql_example.sql:/docker-entrypoint-initdb.d/mysql_example.sql
 
   mssql_example:
-#    image: mcr.microsoft.com/azure-sql-edge:latest
-   image: mcr.microsoft.com/mssql/server
+    image: mcr.microsoft.com/mssql/server
     volumes:
       - ./data/sql/mssql_example.sql:/docker-entrypoint-initdb.d/mssql_example.sql
     ports:
