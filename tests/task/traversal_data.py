@@ -7,11 +7,13 @@ from fidesops.graph.config import (
     CollectionAddress,
     Dataset,
 )
-from fidesops.graph.data_type import DataType
+from fidesops.graph.data_type import SimpleDataType
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.shared_schemas import FidesOpsKey
+
+str_converter = SimpleDataType.string.value
 
 
 def integration_db_mongo_graph(
@@ -22,7 +24,11 @@ def integration_db_mongo_graph(
         id_field = next(f for f in coll.fields if f.name == "id")
         id_field.primary_key = False
         coll.fields.append(
-            Field(name="_id", data_type=DataType.object_id, primary_key=True)
+            Field(
+                name="_id",
+                data_type_converter=SimpleDataType.object_id.value,
+                primary_key=True,
+            )
         )
     return dataset, DatasetGraph(dataset)
 
@@ -42,10 +48,10 @@ def combined_mongo_posgresql_graph(
                     (FieldAddress("postgres_example", "customer", "address_id"), "from")
                 ],
             ),
-            Field(name="street", data_type=DataType.string),
-            Field(name="city", data_type=DataType.string),
-            Field(name="state", data_type=DataType.string),
-            Field(name="zip", data_type=DataType.string),
+            Field(name="street", data_type_converter=str_converter),
+            Field(name="city", data_type_converter=str_converter),
+            Field(name="state", data_type_converter=str_converter),
+            Field(name="zip", data_type_converter=str_converter),
         ],
     )
     mongo_orders = Collection(
@@ -60,7 +66,7 @@ def combined_mongo_posgresql_graph(
             ),
             Field(
                 name="payment_card_id",
-                data_type=DataType.string,
+                data_type_converter=str_converter,
             ),
         ],
     )
@@ -79,8 +85,8 @@ def integration_db_dataset(db_name: str, connection_key: FidesOpsKey) -> Dataset
         name="customer",
         fields=[
             Field(name="id", primary_key=True),
-            Field(name="name", data_type=DataType.string),
-            Field(name="email", identity="email", data_type=DataType.string),
+            Field(name="name", data_type_converter=str_converter),
+            Field(name="email", identity="email", data_type_converter=str_converter),
             Field(
                 name="address_id",
                 references=[(FieldAddress(db_name, "address", "id"), "to")],
@@ -95,10 +101,10 @@ def integration_db_dataset(db_name: str, connection_key: FidesOpsKey) -> Dataset
         },
         fields=[
             Field(name="id", primary_key=True),
-            Field(name="street", data_type=DataType.string),
-            Field(name="city", data_type=DataType.string),
-            Field(name="state", data_type=DataType.string),
-            Field(name="zip", data_type=DataType.string),
+            Field(name="street", data_type_converter=str_converter),
+            Field(name="city", data_type_converter=str_converter),
+            Field(name="state", data_type_converter=str_converter),
+            Field(name="zip", data_type_converter=str_converter),
         ],
     )
     orders = Collection(
@@ -116,15 +122,15 @@ def integration_db_dataset(db_name: str, connection_key: FidesOpsKey) -> Dataset
             Field(
                 name="payment_card_id",
                 references=[(FieldAddress(db_name, "payment_card", "id"), "to")],
-                data_type=DataType.string,
+                data_type_converter=str_converter,
             ),
         ],
     )
     payment_cards = Collection(
         name="payment_card",
         fields=[
-            Field(name="id", data_type=DataType.string, primary_key=True),
-            Field(name="name", data_type=DataType.string),
+            Field(name="id", data_type_converter=str_converter, primary_key=True),
+            Field(name="name", data_type_converter=str_converter),
             Field(name="ccn"),
             Field(
                 name="customer_id",

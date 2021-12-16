@@ -84,7 +84,7 @@ from typing import List, Optional, Tuple, Set, Dict, Literal, Any
 from pydantic import BaseModel
 
 from fidesops.common_exceptions import FidesopsException
-from fidesops.graph.data_type import DataTypeConverter, DataType
+from fidesops.graph.data_type import DataTypeConverter
 from fidesops.util.querytoken import QueryToken
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
@@ -194,7 +194,7 @@ class Field(BaseModel):
     """an optional pointer to an arbitrary key in an expected json package provided as a seed value"""
     data_categories: Optional[List[FidesOpsKey]]
     """annotated data categories for the field used for policy actions"""
-    data_type: Optional[DataType]
+    data_type_converter: Optional[DataTypeConverter]
     """Known type of held data"""
     length: Optional[int]
     """Known length of held data"""
@@ -210,12 +210,11 @@ class Field(BaseModel):
         - If the data_type is None, then it has not been specified, so just return the input value.
         - Return either a cast value or None"""
 
-        if self.data_type:
+        if self.data_type_converter:
             # if no data type is specified just return the input value.
             # Skip conversions for query tokens, which are only for display output
             if not isinstance(value, QueryToken):
-                converter: DataTypeConverter = self.data_type.value
-                return converter.to_value(value)
+                return self.data_type_converter.to_value(value)
 
         return value
 
@@ -224,7 +223,7 @@ class Field(BaseModel):
 class MaskingOverride:
     """Data class to store override params related to data masking"""
 
-    data_type: Optional[DataType]
+    data_type_converter: Optional[DataTypeConverter]
     length: Optional[int]
 
 

@@ -6,7 +6,7 @@ from pydantic import BaseModel, root_validator, validator, ConstrainedStr
 from fidesops.common_exceptions import InvalidDataTypeValidationError
 from fidesops.common_exceptions import InvalidDataLengthValidationError
 from fidesops.graph.config import EdgeDirection
-from fidesops.graph.data_type import DataType
+from fidesops.graph.data_type import SimpleDataType
 from fidesops.models.policy import _validate_data_category
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
@@ -28,11 +28,11 @@ def _valid_data_categories(
 
 
 def _valid_data_type(data_type_str: Optional[str]) -> Optional[str]:
-    """If the data_type is provided ensure that it is a member of DataType."""
+    """If the data_type is provided ensure that it is a member of SimpleDataType."""
 
     if data_type_str is not None:
         try:
-            DataType[data_type_str]  # pylint: disable=pointless-statement
+            SimpleDataType[data_type_str]  # pylint: disable=pointless-statement
             return data_type_str
         except KeyError:
             raise InvalidDataTypeValidationError(

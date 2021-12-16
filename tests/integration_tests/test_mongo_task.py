@@ -9,8 +9,11 @@ import pytest
 from bson import ObjectId
 
 from fidesops.graph.config import FieldAddress, Field, Collection, Dataset
-
-from fidesops.graph.data_type import DataType
+from fidesops.graph.data_type import (
+    IntTypeConverter,
+    StringTypeConverter,
+    ObjectIdTypeConverter,
+)
 from fidesops.graph.graph import DatasetGraph, Node, Edge
 from fidesops.graph.traversal import TraversalNode
 from fidesops.models.connectionconfig import (
@@ -179,7 +182,11 @@ def test_composite_key_erasure(
         name="customer",
         fields=[
             Field(name="id", primary_key=True),
-            Field(name="email", identity="email", data_type=DataType.string),
+            Field(
+                name="email",
+                identity="email",
+                data_type_converter=StringTypeConverter(),
+            ),
         ],
     )
 
@@ -189,17 +196,21 @@ def test_composite_key_erasure(
             Field(
                 name="id_a",
                 primary_key=True,
-                data_type=DataType.integer,
+                data_type_converter=IntTypeConverter(),
             ),
             Field(
                 name="id_b",
                 primary_key=True,
-                data_type=DataType.integer,
+                data_type_converter=IntTypeConverter(),
             ),
-            Field(name="description", data_type=DataType.string, data_categories=["A"]),
+            Field(
+                name="description",
+                data_type_converter=StringTypeConverter(),
+                data_categories=["A"],
+            ),
             Field(
                 name="customer_id",
-                data_type=DataType.string,
+                data_type_converter=StringTypeConverter(),
                 references=[(FieldAddress("mongo_test", "customer", "id"), "from")],
             ),
         ],
@@ -264,9 +275,13 @@ def test_access_erasure_type_conversion(
         name="employee",
         fields=[
             Field(name="id", primary_key=True),
-            Field(name="name", data_type=DataType.string),
-            Field(name="email", identity="email", data_type=DataType.string),
-            Field(name="foreign_id", data_type=DataType.string),
+            Field(name="name", data_type_converter=StringTypeConverter()),
+            Field(
+                name="email",
+                identity="email",
+                data_type_converter=StringTypeConverter(),
+            ),
+            Field(name="foreign_id", data_type_converter=StringTypeConverter()),
         ],
     )
 
@@ -276,13 +291,17 @@ def test_access_erasure_type_conversion(
             Field(
                 name="_id",
                 primary_key=True,
-                data_type=DataType.object_id,
+                data_type_converter=ObjectIdTypeConverter(),
                 references=[
                     (FieldAddress("mongo_test", "employee", "foreign_id"), "from")
                 ],
             ),
-            Field(name="name", data_type=DataType.string, data_categories=["A"]),
-            Field(name="key", data_type=DataType.integer),
+            Field(
+                name="name",
+                data_type_converter=StringTypeConverter(),
+                data_categories=["A"],
+            ),
+            Field(name="key", data_type_converter=IntTypeConverter()),
         ],
     )
 

@@ -101,6 +101,8 @@ class OrmWrappedFidesopsBase(FidesopsBase):
         data stored on the object
     """
 
+    __mapper_args__ = {"confirm_deleted_rows": False}
+
     @classmethod
     def get_optional_field_names(cls) -> List[str]:
         """Returns the names of all nullable fields on the wrapped model"""

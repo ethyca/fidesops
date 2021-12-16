@@ -13,6 +13,9 @@ T = TypeVar("T")
 class DataTypeConverter(ABC, Generic[T]):
     """DataTypeConverters are responsible for converting types of other values into the type represented here."""
 
+    def __init__(self, name: str):
+        self.name = name
+
     @abstractmethod
     def to_value(self, other: Any) -> Optional[T]:
         """How to convert from another datatype value to this type. When extending DataTypeConverter this method should
@@ -26,13 +29,35 @@ class DataTypeConverter(ABC, Generic[T]):
     def truncate(self, length: int, val: T) -> T:
         """Truncates value to given length"""
         logger.warning(
-            f"{self.__class__.__name__} does not support length truncation. Using original masked value instead for update query."
+            f"{self.name} does not support length truncation. Using original masked value instead for update query."
         )
+        return val
+
+
+class NoOpTypeConverter(DataTypeConverter[Any]):
+    """Placeholder No-op converter. This type is assigned to fields when type is unspecified."""
+
+    def __init__(self) -> None:
+        super().__init__("None")
+
+    def to_value(self, other: Any) -> Optional[Any]:
+        """no-op"""
+        return other
+
+    def empty_value(self) -> None:
+        """Empty value"""
+        return None
+
+    def truncate(self, length: int, val: Any) -> Any:
+        """No action"""
         return val
 
 
 class StringTypeConverter(DataTypeConverter[str]):
     """String data type converter. This type just uses str() type conversion."""
+
+    def __init__(self) -> None:
+        super().__init__("string")
 
     def to_value(self, other: Any) -> Optional[str]:
         """Convert to str"""
@@ -50,6 +75,9 @@ class StringTypeConverter(DataTypeConverter[str]):
 class IntTypeConverter(DataTypeConverter[int]):
     """Int data type converter. This type just uses built-in int() type conversion."""
 
+    def __init__(self) -> None:
+        super().__init__("integer")
+
     def to_value(self, other: Any) -> Optional[int]:
         """Convert to int"""
         try:
@@ -66,6 +94,9 @@ class IntTypeConverter(DataTypeConverter[int]):
 class FloatTypeConverter(DataTypeConverter[float]):
     """Float data type converter. This type just uses built-in float() type conversion."""
 
+    def __init__(self) -> None:
+        super().__init__("float")
+
     def to_value(self, other: Any) -> Optional[float]:
         """Convert to float"""
         try:
@@ -81,6 +112,9 @@ class FloatTypeConverter(DataTypeConverter[float]):
 
 class BooleanTypeConverter(DataTypeConverter[bool]):
     """Boolean data type converter recognizing the strings True/False, 1,0, and booleans."""
+
+    def __init__(self) -> None:
+        super().__init__("boolean")
 
     true_vals = {"True", "true", True, 1}
     false_vals = {"False", "false", False, 0}
@@ -101,6 +135,9 @@ class BooleanTypeConverter(DataTypeConverter[bool]):
 class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
     """ObjectId data type converter, allowing for conversions from strings only."""
 
+    def __init__(self) -> None:
+        super().__init__("object_id")
+
     def to_value(self, other: Any) -> Optional[ObjectId]:
         """Convert to ObjectId."""
         t = type(other)
@@ -118,7 +155,7 @@ class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
         return ObjectId("000000000000000000000000")
 
 
-class DataType(Enum):
+class SimpleDataType(Enum):
     """Supported data types for data retrieval and erasure.
 
     This type list is based on json-schema, with some alterations:
@@ -131,3 +168,18 @@ class DataType(Enum):
     float = FloatTypeConverter()
     boolean = BooleanTypeConverter()
     object_id = ObjectIdTypeConverter()
+    no_op = NoOpTypeConverter()
+
+
+def get_data_type_converter(type_name: str) -> DataTypeConverter:
+    """Return the matching type converter. If an empty string or None is passed in
+    will return the No-op converter, so the converter will never be set to 'None'.
+    On an illegal key will raise a KeyError.
+
+    TODO
+
+    It's expected that when types get more elaborate this method may need more information,
+    e.g. the specification of the structure of sub-values."""
+    if not type_name:
+        return SimpleDataType.no_op.value
+    return SimpleDataType[type_name].value

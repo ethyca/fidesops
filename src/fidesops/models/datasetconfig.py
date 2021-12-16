@@ -19,7 +19,7 @@ from fidesops.graph.config import (
     Dataset,
     CollectionAddress,
 )
-from fidesops.graph.data_type import DataType
+from fidesops.graph.data_type import get_data_type_converter
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
 from fidesops.schemas.shared_schemas import FidesOpsKey
@@ -90,8 +90,8 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
     is_pk = False
     references = []
     meta_section = field.fidesops_meta
-    data_type = None
     length = None
+    data_type_name = None
     if meta_section:
         identity = meta_section.identity
         if meta_section.primary_key:
@@ -122,7 +122,6 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
                     reference.dataset, ref_collection, ".".join(ref_fields)
                 )
                 references.append((address, reference.direction))
-
         if meta_section.length is not None:
             # 'if meta_section.length' will not suffice here, we will want to pass through
             # length for any valid integer if it has been set in the config, including 0.
@@ -131,12 +130,13 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
             # here in case we decide to allow it in the future.
             length = meta_section.length
 
-        data_type = meta_section.data_type
+        data_type_name = meta_section.data_type
+
     return Field(
         name=field.name,
         data_categories=field.data_categories,
         identity=identity,
-        data_type=DataType[data_type] if data_type else None,
+        data_type_converter=get_data_type_converter(data_type_name),
         references=references,
         primary_key=is_pk,
         length=length,
