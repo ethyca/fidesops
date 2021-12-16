@@ -543,10 +543,10 @@ def test_create_and_process_erasure_request_redshift(
             assert row[2] == redshift_resources["state"]
 
     target = erasure_policy.rules[0].targets[0]
-    target.data_category = "user.provided.identifiable.contact"
+    target.data_category = "user.provided.identifiable.contact.state"
     target.save(db=db)
 
-    # Should erase contact fields on address table
+    # Should erase state fields on address table
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
     pr.delete(db=db)
 
@@ -559,9 +559,9 @@ def test_create_and_process_erasure_request_redshift(
         stmt = f"select 'id', city, state from address where id = {address_id};"
         res = connection.execute(stmt).all()
         for row in res:
-            # Confirms address id is still there, but contact fields have been replaced by null values.
+            # Confirms address id/street are still there, but state fields have been replaced by null values.
             assert row[0] is not None
-            assert row[1] is None
+            assert row[1] is not None
             assert row[2] is None
 
 
