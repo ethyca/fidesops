@@ -1,4 +1,4 @@
-from typing import Optional, List, Set
+from typing import Optional, List, Dict
 
 from fidesops.schemas.masking.masking_configuration import (
     MaskingConfiguration,
@@ -30,20 +30,16 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
 
     def mask(self, value: Optional[str], privacy_request_id: Optional[str]) -> str:
         if self.mode == AesEncryptionMaskingConfiguration.Mode.GCM:
-            masking_meta: Set[MaskingSecretMeta] = self._build_masking_secret_meta()
+            masking_meta: Dict[
+                SecretType, MaskingSecretMeta
+            ] = self._build_masking_secret_meta()
             key: bytes = SecretsUtil.get_or_generate_secret(
-                privacy_request_id,
-                [meta for meta in masking_meta if meta.secret_type == SecretType.key][
-                    0
-                ],
+                privacy_request_id, SecretType.key, masking_meta[SecretType.key]
             )
             key_hmac: str = SecretsUtil.get_or_generate_secret(
                 privacy_request_id,
-                [
-                    meta
-                    for meta in masking_meta
-                    if meta.secret_type == SecretType.key_hmac
-                ][0],
+                SecretType.key_hmac,
+                masking_meta[SecretType.key_hmac],
             )
             nonce: bytes = self._generate_nonce(
                 value, key_hmac, privacy_request_id, masking_meta
@@ -61,7 +57,9 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         return True
 
     def generate_secrets_for_cache(self) -> List[MaskingSecretCache]:
-        masking_meta: Set[MaskingSecretMeta] = self._build_masking_secret_meta()
+        masking_meta: Dict[
+            SecretType, MaskingSecretMeta
+        ] = self._build_masking_secret_meta()
         return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
 
     @staticmethod
@@ -99,13 +97,10 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         value: Optional[str],
         key: str,
         privacy_request_id: Optional[str],
-        masking_meta: Set[MaskingSecretMeta],
+        masking_meta: Dict[SecretType, MaskingSecretMeta],
     ) -> bytes:
         salt: str = SecretsUtil.get_or_generate_secret(
-            privacy_request_id,
-            [meta for meta in masking_meta if meta.secret_type == SecretType.salt_hmac][
-                0
-            ],
+            privacy_request_id, SecretType.salt_hmac, masking_meta[SecretType.salt_hmac]
         )
         # fixme: replicate what Vault does - remove lower bytes
         return hmac_encrypt_return_bytes(
@@ -113,27 +108,19 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         )
 
     @staticmethod
-    def _build_masking_secret_meta() -> Set[MaskingSecretMeta]:
-        masking_meta: Set[MaskingSecretMeta] = set()
-        masking_meta.add(
-            MaskingSecretMeta[bytes](
+    def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
+        return {
+            SecretType.key: MaskingSecretMeta[bytes](
                 masking_strategy=AES_ENCRYPT,
-                secret_type=SecretType.key,
-                generate_secret=SecretsUtil.generate_secret_bytes,
-            )
-        )
-        masking_meta.add(
-            MaskingSecretMeta[str](
+                generate_secret_func=SecretsUtil.generate_secret_bytes,
+            ),
+            SecretType.key_hmac: MaskingSecretMeta[str](
                 masking_strategy=AES_ENCRYPT,
-                secret_type=SecretType.key_hmac,
-                generate_secret=SecretsUtil.generate_secret_string,
-            )
-        )
-        masking_meta.add(
-            MaskingSecretMeta[str](
+                generate_secret_func=SecretsUtil.generate_secret_string,
+            ),
+            SecretType.salt_hmac: MaskingSecretMeta[str](
                 masking_strategy=AES_ENCRYPT,
                 secret_type=SecretType.salt_hmac,
-                generate_secret=SecretsUtil.generate_secret_string,
-            )
-        )
-        return masking_meta
+                generate_secret_func=SecretsUtil.generate_secret_string,
+            ),
+        }

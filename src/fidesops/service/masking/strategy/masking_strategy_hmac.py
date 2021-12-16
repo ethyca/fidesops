@@ -1,4 +1,4 @@
-from typing import Optional, List, Set
+from typing import Optional, List, Dict
 
 from fidesops.schemas.masking.masking_configuration import (
     MaskingConfiguration,
@@ -42,14 +42,14 @@ class HmacMaskingStrategy(MaskingStrategy):
         """
         if value is None:
             return None
-        masking_meta: Set[MaskingSecretMeta] = self._build_masking_secret_meta()
+        masking_meta: Dict[
+            SecretType, MaskingSecretMeta
+        ] = self._build_masking_secret_meta()
         key: str = SecretsUtil.get_or_generate_secret(
-            privacy_request_id,
-            [meta for meta in masking_meta if meta.secret_type == SecretType.key][0],
+            privacy_request_id, SecretType.key, masking_meta[SecretType.key]
         )
         salt: str = SecretsUtil.get_or_generate_secret(
-            privacy_request_id,
-            [meta for meta in masking_meta if meta.secret_type == SecretType.salt][0],
+            privacy_request_id, SecretType.salt, masking_meta[SecretType.salt]
         )
         masked: str = hmac_encrypt_return_str(value, key, salt, self.algorithm)
         if self.format_preservation is not None:
@@ -62,7 +62,9 @@ class HmacMaskingStrategy(MaskingStrategy):
         return True
 
     def generate_secrets_for_cache(self) -> List[MaskingSecretCache]:
-        masking_meta: Set[MaskingSecretMeta] = self._build_masking_secret_meta()
+        masking_meta: Dict[
+            SecretType, MaskingSecretMeta
+        ] = self._build_masking_secret_meta()
         return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
 
     @staticmethod
@@ -95,20 +97,16 @@ class HmacMaskingStrategy(MaskingStrategy):
         return data_type in supported_data_types
 
     @staticmethod
-    def _build_masking_secret_meta() -> Set[MaskingSecretMeta]:
-        masking_meta: Set[MaskingSecretMeta] = set()
-        masking_meta.add(
-            MaskingSecretMeta[str](
+    def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
+        return {
+            SecretType.key: MaskingSecretMeta[str](
                 masking_strategy=HMAC,
                 secret_type=SecretType.key,
-                generate_secret=SecretsUtil.generate_secret_string,
-            )
-        )
-        masking_meta.add(
-            MaskingSecretMeta[str](
+                generate_secret_func=SecretsUtil.generate_secret_string,
+            ),
+            SecretType.salt: MaskingSecretMeta[str](
                 masking_strategy=HMAC,
                 secret_type=SecretType.salt,
-                generate_secret=SecretsUtil.generate_secret_string,
-            )
-        )
-        return masking_meta
+                generate_secret_func=SecretsUtil.generate_secret_string,
+            ),
+        }

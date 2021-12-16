@@ -1,5 +1,5 @@
 import hashlib
-from typing import Optional, List, Set
+from typing import Optional, List, Dict
 
 from fidesops.core.config import config
 from fidesops.schemas.masking.masking_configuration import (
@@ -43,10 +43,13 @@ class HashMaskingStrategy(MaskingStrategy):
         is None"""
         if value is None:
             return None
-        masking_meta: Set[MaskingSecretMeta] = self._build_masking_secret_meta()
+        masking_meta: Dict[
+            SecretType, MaskingSecretMeta
+        ] = self._build_masking_secret_meta()
         salt: str = SecretsUtil.get_or_generate_secret(
             privacy_request_id,
-            [meta for meta in masking_meta if meta.secret_type == SecretType.salt][0],
+            SecretType.salt,
+            masking_meta[SecretType.salt],
         )
         masked: str = self.algorithm_function(value, salt)
         if self.format_preservation is not None:
@@ -59,7 +62,9 @@ class HashMaskingStrategy(MaskingStrategy):
         return True
 
     def generate_secrets_for_cache(self) -> List[MaskingSecretCache]:
-        masking_meta: Set[MaskingSecretMeta] = self._build_masking_secret_meta()
+        masking_meta: Dict[
+            SecretType, MaskingSecretMeta
+        ] = self._build_masking_secret_meta()
         return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
 
     @staticmethod
@@ -107,13 +112,10 @@ class HashMaskingStrategy(MaskingStrategy):
         ).hexdigest()
 
     @staticmethod
-    def _build_masking_secret_meta() -> Set[MaskingSecretMeta]:
-        masking_meta: Set[MaskingSecretMeta] = set()
-        masking_meta.add(
-            MaskingSecretMeta[str](
+    def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
+        return {
+            SecretType.salt: MaskingSecretMeta[str](
                 masking_strategy=HASH,
-                secret_type=SecretType.salt,
-                generate_secret=SecretsUtil.generate_secret_string,
+                generate_secret_func=SecretsUtil.generate_secret_string,
             )
-        )
-        return masking_meta
+        }

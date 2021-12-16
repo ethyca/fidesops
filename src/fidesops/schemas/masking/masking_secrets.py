@@ -1,9 +1,6 @@
-from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
-from typing import TypeVar, Generic, Callable, Optional
-
-from fidesops.schemas.base_class import BaseSchema
+from typing import TypeVar, Generic, Callable
 
 
 T = TypeVar("T")
@@ -24,8 +21,7 @@ class MaskingSecretMeta(Generic[T]):
     """Holds metadata describing one secret"""
 
     masking_strategy: str
-    secret_type: SecretType
-    generate_secret: Callable[[int], T]
+    generate_secret_func: Callable[[int], T]
     # currently length is the same for all masking secrets, but just in case we want to specify in future
     secret_length: int = 32
 

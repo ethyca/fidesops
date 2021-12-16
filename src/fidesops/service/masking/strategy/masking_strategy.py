@@ -15,33 +15,27 @@ class MaskingStrategy(ABC):
     @abstractmethod
     def mask(self, value: Optional[str], request_id: Optional[str]) -> Optional[str]:
         """Used to mask the provided value"""
-        pass
 
     @staticmethod
     @abstractmethod
     def secrets_required() -> bool:
         """Determines whether secrets are needed for specific masking strategy"""
-        pass
 
     def generate_secrets_for_cache(self) -> List[MaskingSecretCache]:
         """Generates secrets for strategy"""
-        pass
 
     @staticmethod
     @abstractmethod
     def get_configuration_model() -> MaskingConfiguration:
         """Used to get the configuration model to configure the strategy"""
-        pass
 
     @staticmethod
     @abstractmethod
     def get_description() -> MaskingStrategyDescription:
         """Returns the description used for documentation. In particular, used by the
         documentation endpoint in masking_endpoints.list_masking_strategies"""
-        pass
 
     @staticmethod
     @abstractmethod
     def data_type_supported(data_type: Optional[str]) -> bool:
         """Returns the whether the data type is supported for the given strategy"""
-        pass

@@ -23,7 +23,7 @@ from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
 )
 from fidesops.api.v1.urn_registry import REQUEST_PREVIEW, PRIVACY_REQUEST_RESUME
-from fidesops.common_exceptions import TraversalError
+from fidesops.common_exceptions import TraversalError, NoSuchStrategyException
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
@@ -54,6 +54,7 @@ from fidesops.schemas.privacy_request import (
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     SupportedMaskingStrategies,
+    get_strategy,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.task.graph_task import collect_queries, EMPTY_REQUEST
@@ -168,14 +169,10 @@ def create_privacy_request(
             erasure_rules: List[Rule] = policy.get_rules_for_action(
                 action_type=ActionType.erasure
             )
-            unique_masking_strategies_by_name: Set[str] = set()
-            for rule in erasure_rules:
-                unique_masking_strategies_by_name.add(rule.masking_strategy["strategy"])
-            for strategy_name in unique_masking_strategies_by_name:
-                strategy = SupportedMaskingStrategies[strategy_name].value
-                masking_strategy: MaskingStrategy = strategy(
-                    configuration=strategy.get_configuration_model()()
-                )
+            for strategy_name in {
+                rule.masking_strategy["strategy"] for rule in erasure_rules
+            }:
+                masking_strategy = get_strategy(strategy_name, {})
                 if masking_strategy.secrets_required():
                     masking_secrets: List[
                         MaskingSecretCache
@@ -197,7 +194,6 @@ def create_privacy_request(
             )
         except Exception as exc:
             logger.error("Exception: %s", exc)
-            logger.info(f"Error is {exc}")
             failure = {
                 "message": "This record could not be added",
                 "data": kwargs,
