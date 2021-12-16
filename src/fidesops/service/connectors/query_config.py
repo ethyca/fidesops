@@ -11,7 +11,7 @@ from fidesops.graph.config import (
     CollectionAddress,
     Field,
     MaskingOverride,
-) 
+)
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
