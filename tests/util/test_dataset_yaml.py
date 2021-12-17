@@ -71,7 +71,6 @@ f2 = """dataset:
               - name: comment_id
               - name: text
               - name: submitter
-              ""
 """
 
 

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, ForwardRef
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from pydantic import BaseModel, root_validator, validator, ConstrainedStr
 
@@ -118,6 +118,13 @@ class FidesopsMeta(BaseModel):
         return _valid_data_length(v)
 
 
+
+FidesopsDatasetField = ForwardRef('FidesopsDatasetField')
+
+
+
+
+
 class FidesopsDatasetField(DatasetField):
     """Extends fideslang DatasetField model with additional Fidesops annotations"""
 
@@ -132,6 +139,7 @@ class FidesopsDatasetField(DatasetField):
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_categories(v)
 
+FidesopsDatasetField.update_forward_refs()
 
 class FidesopsDatasetCollection(DatasetCollection):
     """Overrides fideslang DatasetCollection model with additional Fidesops annotations"""
