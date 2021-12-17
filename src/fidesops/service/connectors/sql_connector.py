@@ -1,12 +1,11 @@
 import logging
-import urllib.parse
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import Column
-from sqlalchemy.engine import Engine, create_engine, CursorResult, LegacyCursorResult
+from sqlalchemy.engine import URL, Engine, create_engine, CursorResult, LegacyCursorResult
 from sqlalchemy.exc import OperationalError, InternalError
-from snowflake.sqlalchemy import URL
+from snowflake.sqlalchemy import URL as Snowflake_URL
 
 from fidesops.common_exceptions import ConnectionException
 from fidesops.graph.traversal import Row, TraversalNode
@@ -215,7 +214,7 @@ class SnowflakeConnector(SQLConnector):
         if config.role_name:
             kwargs["role"] = config.role_name
 
-        url: str = URL(**kwargs)
+        url: str = Snowflake_URL(**kwargs)
         return url
 
     def create_client(self) -> Engine:
@@ -237,21 +236,24 @@ class MicrosoftSQLServerConnector(SQLConnector):
     """
     Connector specific to Microsoft SQL Server
     """
-    def build_uri(self) -> str:
-        """Build URI of format mssql://[Server_Name[:Portno]]/[Database_Instance_Name]/[Database_Name]
+    def build_uri(self) -> URL:
+        """Build URI of format mssql+pyodbc://[Server_Name[:Portno]]/[Database_Instance_Name]/[Database_Name]
         ?FailoverPartner=[Partner_Server_Name]&InboundId=[Inbound_ID]"""
         config = MicrosoftSQLServerSchema(**self.configuration.secrets or {})
 
-        server_name = config.server_name
-        port = f":{config.port_no}" if config.port_no else ""
-        db_instance_name = f"/{config.database_instance_name}" if config.database_instance_name else ""
-        db_name = f"/{config.database_name}" if config.database_name else ""
-        params: Dict[str, str] = {}
-        if config.partner_server_name:
-            params["FailoverPartner"] = config.partner_server_name
-        if config.inbound_id:
-            params["InboundId"] = config.inbound_id
-        url = f"mssql://{server_name}{port}{db_instance_name}{db_name}{urllib.parse.urlencode(params)}"
+        url = URL.create(
+            "mssql+pyodbc",
+            username=config.username,
+            password=config.password,
+            host=config.host,
+            port=config.port_no,
+            database=config.database_name,
+            query={
+                "driver": config.driver,
+                "authentication": config.driver_authentication,
+            },
+        )
+
         return url
 
     def create_client(self) -> Engine:
