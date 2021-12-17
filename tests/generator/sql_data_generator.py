@@ -1,3 +1,4 @@
+import random
 from typing import Dict, List, Any
 
 from faker import Faker
@@ -21,7 +22,10 @@ class DataGeneratorFunctions():
         return cls.faker.name()
 
     def string(cls):
-        return "ALSKDJASLDKJD"
+        return cls.faker.first_name()
+
+    def integer(cls):
+        return random.randint(0,1000000)
 
 def sqlalchemy_datatype(fides_data_type:DataType, **kwargs):
     return {
@@ -34,9 +38,8 @@ def sqlalchemy_datatype(fides_data_type:DataType, **kwargs):
 
 
 def create_sample_value(type_name:str):
-    #v= getattr(DataGeneratorFunctions,type_name)()
-    #print(f" generate {v}")
-    return "AAA"
+    return getattr(DataGeneratorFunctions,type_name)(DataGeneratorFunctions)
+
 
 
 t = type(
@@ -59,15 +62,11 @@ def generate_data_for_traversal( traversal: Traversal,ct:int) -> Dict[Collection
 
 
     def traversal_collection_fn(  tn: TraversalNode, data: Dict[CollectionAddress, List[Row]]) -> None:
-        print(f"tcf: {tn}, {data.keys()}")
         incoming_values = {}
         for edge in tn.incoming_edges():
             if edge.f1.collection_address() in data:
                 collection_data = data[edge.f1.collection_address()]
                 incoming_values[edge.f2.field] =  edge.f1.field in collection_data and collection_data[edge.f1.field] or []# for row in collection_data]
-
-
-        print(f"INCOMING VALUES == {incoming_values}")
 
         for f in tn.node.collection.fields:
             if not f.name in incoming_values or len(incoming_values[f.name]) == 0:
@@ -112,7 +111,7 @@ def test_gen() -> None:
     # extract see nodes
     traversal = Traversal(graph, {"x": 1})
 
-    for k,v in generate_data_for_traversal(traversal,10):
+    for k,v in generate_data_for_traversal(traversal,10).items():
         print(f"{k}=={v}")
 
 

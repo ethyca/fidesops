@@ -16,6 +16,9 @@ def test_extract_seed_nodes() -> None:
     field(t, ("dr_1", "ds_1", "f1")).references.append(
         (FieldAddress("dr_2", "ds_2", "f1"), None)
     )
+    field(t, ("dr_1", "ds_1", "f1")).data_type = "integer"
+    field(t, ("dr_2", "ds_2", "f1")).data_type = "integer"
+    field(t, ("dr_3", "ds_3", "f1")).data_type = "integer"
     field(t, ("dr_1", "ds_1", "f1")).references.append(
         (FieldAddress("dr_3", "ds_3", "f1"), None)
     )
@@ -44,4 +47,6 @@ def test_extract_seed_nodes() -> None:
 
 
     for k, v in sql_data_generator.generate_data_for_traversal(traversal, 10).items():
-        print(f"{k}=={v}")
+        for k2,v2 in v.items():
+            print(f"{k}--{k2}=={v2}")
+
