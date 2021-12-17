@@ -25,6 +25,7 @@ def test_mask_gcm_happypath(mock_encrypt: Mock):
 
     masked_value = AES_STRATEGY.mask("value", request_id)
 
+    mock_encrypt.assert_called_with("value", "key", b'\x94Y\xa8Z\xd9\x12\x83\x00\xa4~\ny')
     assert masked_value == mock_encrypt.return_value
     clear_cache_secrets(request_id)
 

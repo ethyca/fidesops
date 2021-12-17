@@ -41,6 +41,11 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
                 SecretType.key_hmac,
                 masking_meta[SecretType.key_hmac],
             )
+            """
+            The nonce is generated deterministically such that the same input val will result in same nonce
+            and therefore the same masked val through the aes strategy. This is called convergent encryption, with this
+            implementation loosely based on https://www.vaultproject.io/docs/secrets/transit#convergent-encryption
+            """
             nonce: bytes = self._generate_nonce(
                 value, key_hmac, privacy_request_id, masking_meta
             )
@@ -101,10 +106,13 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         salt: str = SecretsUtil.get_or_generate_secret(
             privacy_request_id, SecretType.salt_hmac, masking_meta[SecretType.salt_hmac]
         )
-        # fixme: replicate what Vault does - remove lower bytes
+        """
+        Trim to 12 bytes, which is recommended length from aes gcm lib:
+        https://cryptography.io/en/latest/hazmat/primitives/aead/#cryptography.hazmat.primitives.ciphers.aead.AESGCM.encrypt
+        """
         return hmac_encrypt_return_bytes(
             value, key, salt, HmacMaskingConfiguration.Algorithm.sha_256
-        )
+        )[:12]
 
     @staticmethod
     def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
