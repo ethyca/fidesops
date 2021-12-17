@@ -42,5 +42,6 @@ def test_extract_seed_nodes() -> None:
     # extract see nodes
     traversal = Traversal(graph, {"x": 1})
 
-    for k, v in sql_data_generator.generate_data_for_traversal(traversal, 10):
+
+    for k, v in sql_data_generator.generate_data_for_traversal(traversal, 10).items():
         print(f"{k}=={v}")

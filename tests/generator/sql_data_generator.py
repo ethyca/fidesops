@@ -20,6 +20,8 @@ class DataGeneratorFunctions():
     def name(cls):
         return cls.faker.name()
 
+    def string(cls):
+        return "ALSKDJASLDKJD"
 
 def sqlalchemy_datatype(fides_data_type:DataType, **kwargs):
     return {
@@ -32,7 +34,9 @@ def sqlalchemy_datatype(fides_data_type:DataType, **kwargs):
 
 
 def create_sample_value(type_name:str):
-    return getattr(DataGeneratorFunctions,type_name)()
+    #v= getattr(DataGeneratorFunctions,type_name)()
+    #print(f" generate {v}")
+    return "AAA"
 
 
 t = type(
@@ -60,22 +64,14 @@ def generate_data_for_traversal( traversal: Traversal,ct:int) -> Dict[Collection
         for edge in tn.incoming_edges():
             if edge.f1.collection_address() in data:
                 collection_data = data[edge.f1.collection_address()]
-                print(f"field:[{edge.f2.field}] [{edge.f1.field}] [{collection_data}]")
-                print(f"field:[{type(edge.f2.field)}] [{type(edge.f1.field)}] [{collection_data}]")
-                print(f"incomingvalues={incoming_values}")
-
-                print(f"collection data={collection_data}")
-                print("----")
-                incoming_values[edge.f2.field] =  [row[edge.f1.field] for row in collection_data]
+                incoming_values[edge.f2.field] =  edge.f1.field in collection_data and collection_data[edge.f1.field] or []# for row in collection_data]
 
 
+        print(f"INCOMING VALUES == {incoming_values}")
 
-        max_size = ct
-        if incoming_values:
-            max_size = min(max_size, *[len(i) for i in incoming_values.values()])
         for f in tn.node.collection.fields:
-            if not f.name in incoming_values:
-                incoming_values[f.name] = [generate_data(f) for i in range(max_size)]
+            if not f.name in incoming_values or len(incoming_values[f.name]) == 0:
+                incoming_values[f.name] = [generate_data(f) for i in range(ct)]
 
         data[tn.address] = incoming_values
 
