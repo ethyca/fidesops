@@ -16,9 +16,8 @@ class MaskingStrategy(ABC):
     def mask(self, value: Optional[str], request_id: Optional[str]) -> Optional[str]:
         """Used to mask the provided value"""
 
-    @staticmethod
     @abstractmethod
-    def secrets_required() -> bool:
+    def secrets_required(self) -> bool:
         """Determines whether secrets are needed for specific masking strategy"""
 
     def generate_secrets_for_cache(self) -> List[MaskingSecretCache]:

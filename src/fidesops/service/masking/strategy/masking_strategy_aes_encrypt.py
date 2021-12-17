@@ -52,8 +52,7 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         else:
             raise ValueError(f"aes_mode {self.mode} is not supported")
 
-    @staticmethod
-    def secrets_required() -> bool:
+    def secrets_required(self) -> bool:
         return True
 
     def generate_secrets_for_cache(self) -> List[MaskingSecretCache]:
@@ -120,7 +119,6 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
             ),
             SecretType.salt_hmac: MaskingSecretMeta[str](
                 masking_strategy=AES_ENCRYPT,
-                secret_type=SecretType.salt_hmac,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             ),
         }

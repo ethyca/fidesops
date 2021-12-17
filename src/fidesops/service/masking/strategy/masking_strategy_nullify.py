@@ -27,8 +27,7 @@ class NullMaskingStrategy(MaskingStrategy):
         """Replaces the value with a null value"""
         return None
 
-    @staticmethod
-    def secrets_required() -> bool:
+    def secrets_required(self) -> bool:
         return False
 
     @staticmethod

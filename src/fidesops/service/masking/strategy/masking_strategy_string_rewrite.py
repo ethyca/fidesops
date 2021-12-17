@@ -37,8 +37,7 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
             return formatter.format(self.rewrite_value)
         return self.rewrite_value
 
-    @staticmethod
-    def secrets_required() -> bool:
+    def secrets_required(self) -> bool:
         return False
 
     @staticmethod

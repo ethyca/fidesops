@@ -41,8 +41,7 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
             return formatter.format(masked)
         return masked
 
-    @staticmethod
-    def secrets_required() -> bool:
+    def secrets_required(self) -> bool:
         return False
 
     @staticmethod

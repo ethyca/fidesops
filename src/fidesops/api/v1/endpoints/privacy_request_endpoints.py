@@ -169,9 +169,12 @@ def create_privacy_request(
             erasure_rules: List[Rule] = policy.get_rules_for_action(
                 action_type=ActionType.erasure
             )
-            for strategy_name in {
-                rule.masking_strategy["strategy"] for rule in erasure_rules
-            }:
+            unique_masking_strategies_by_name: Set[str] = set()
+            for rule in erasure_rules:
+                strategy_name: str = rule.masking_strategy["strategy"]
+                if strategy_name in unique_masking_strategies_by_name:
+                    continue
+                unique_masking_strategies_by_name.add(strategy_name)
                 masking_strategy = get_strategy(strategy_name, {})
                 if masking_strategy.secrets_required():
                     masking_secrets: List[

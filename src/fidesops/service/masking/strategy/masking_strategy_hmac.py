@@ -57,8 +57,7 @@ class HmacMaskingStrategy(MaskingStrategy):
             return formatter.format(masked)
         return masked
 
-    @staticmethod
-    def secrets_required() -> bool:
+    def secrets_required(self) -> bool:
         return True
 
     def generate_secrets_for_cache(self) -> List[MaskingSecretCache]:
@@ -101,12 +100,10 @@ class HmacMaskingStrategy(MaskingStrategy):
         return {
             SecretType.key: MaskingSecretMeta[str](
                 masking_strategy=HMAC,
-                secret_type=SecretType.key,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             ),
             SecretType.salt: MaskingSecretMeta[str](
                 masking_strategy=HMAC,
-                secret_type=SecretType.salt,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             ),
         }
