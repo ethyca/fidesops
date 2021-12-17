@@ -44,6 +44,9 @@ server: compose-build
 server-shell: compose-build
 	@docker-compose run $(IMAGE_NAME) /bin/bash
 
+demo-shell: compose-build
+	@docker-compose -f docker-compose.yml -f docker-compose.postgres-integration-test.yml run $(IMAGE_NAME) /bin/bash
+
 integration-shell: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml run $(IMAGE_NAME) /bin/bash
 
@@ -100,6 +103,20 @@ pytest: compose-build
 	@echo "Running pytest unit tests..."
 	@docker-compose run $(IMAGE_NAME) \
 		pytest $(pytestpath) -m "not integration and not integration_erasure and not integration_external"
+
+
+pytest-integration: compose-build
+	@echo "Building additional Docker images for integration tests..."
+	@docker-compose -f docker-compose.yml -f docker-compose.postgres-integration-test.yml build
+	@echo "Bringing up the integration environment..."
+	@docker-compose -f docker-compose.yml -f docker-compose.postgres-integration-test.yml up -d
+	@echo "Waiting 10s for integration containers to be ready..."
+	@sleep 10
+	@echo "Running pytest integration tests..."
+	@docker-compose -f docker-compose.yml -f docker-compose.postgres-integration-test.yml \
+		run $(IMAGE_NAME) \
+		pytest $(pytestpath) -m integration_postgres
+	@docker-compose -f docker-compose.yml -f docker-compose.postgres-integration-test.yml down --remove-orphans
 
 # Run the pytest integration tests.
 pytest-integration-access: compose-build
