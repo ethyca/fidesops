@@ -1,0 +1,90 @@
+dataset:
+  - fides_key: comprehensive_test_dataset
+    name: Comprehensive Test Dataset
+    description: Test dataset containing an exhaustive list of datatypes available to Postgres.
+    collections:
+      - name: postgres_types
+        fields:
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+          # For lookup
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              identity: email
+              data_type: string
+          # Numeric
+          - name: int_column
+            data_categories: [system]
+          - name: float_column
+            data_categories: [system]
+          # - name: serial_column
+          #   data_categories: [system]
+          # Monetary
+          - name: money_column
+            data_categories: [system]
+          # Char-based
+          - name: char_column
+            data_categories: [system]
+          - name: varchar_column
+            data_categories: [system]
+          - name: text_column
+            data_categories: [system]
+      #     # Datetime
+      #     - name: datetime_column
+      #     - name: interval_column
+      #     - name: timezone_column
+      #     # Boolean
+      #     - name: boolean_column
+      #     # Enum
+      #     - name: enum_column
+      #     # Geometric
+      #     - name: point_column
+      #     - name: lines_column
+      #     - name: line_column
+      #     - name: box_column
+      #     - name: path_column
+      #     - name: polygon_column
+      #     - name: circle_column
+      #     # Network address
+      #     - name: inet_column
+      #     - name: cidr_column
+      #     - name: macaddr_column
+      #     # Bit string
+      #     - name: bitstr_column
+      #     # UUID
+      #     - name: uuid_column
+      #     # XML
+      #     - name: xml_column
+      #     # JSON
+      #     - name: json_column
+      #     # Array
+      #     - name: array_column
+      #     # Range
+      #     - name: int4range_column
+      #     - name: int8range_column
+      #     - name: numrange_column
+      #     - name: tsrange_column
+      #     - name: tstzrange_column
+      #     - name: daterange_column
+
+      # - name: mongo_types
+      #   fields:
+      #     - name: string
+      #     - name: integer
+      #     - name: boolean
+      #     - name: double
+      #     - name: min_key
+      #     - name: max_key
+      #     - name: array
+      #     - name: timestamp
+      #     - name: object
+      #     - name: null
+      #     - name: symbol
+      #     - name: date
+      #     - name: oid
+      #     - name: binary_data
+      #     - name: code
+      #     - name: regex
