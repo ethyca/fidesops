@@ -16,14 +16,16 @@ class MicrosoftSQLServerSchema(ConnectionConfigSecretsSchema):
 
     """
 
-    server_name: Optional[str] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
+    host: Optional[str] = None
     port_no: Optional[int] = None
-    database_instance_name: Optional[str] = None
     database_name: Optional[str] = None
-    partner_server_name: Optional[str] = None
-    inbound_id: Optional[str] = None
+    driver: Optional[str] = None
+    driver_authentication: Optional[str] = None
 
-    _required_components: List[str] = ["server_name"]
+
+    _required_components: List[str] = ["host"]
 
 
 class MSSQLDocsSchema(MicrosoftSQLServerSchema, NoValidationSchema):
