@@ -34,7 +34,6 @@ def _reject_key(dict: Dict, key: str) -> Dict:
 def test_example_datasets(example_datasets):
     """Ensure the test fixture loads the right sample data"""
     assert example_datasets
-    assert len(example_datasets) == 4
     assert example_datasets[0]["fides_key"] == "postgres_example_test_dataset"
     assert len(example_datasets[0]["collections"]) == 11
     assert example_datasets[1]["fides_key"] == "mongo_test"

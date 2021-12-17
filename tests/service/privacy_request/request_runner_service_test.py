@@ -174,7 +174,7 @@ def test_create_and_process_erasure_request_specific_category(
         if customer_id in row:
             customer_found = True
             # Check that the `name` field is `None`
-            assert row[1] is None
+            assert row.name is None
     assert customer_found
 
 
@@ -222,11 +222,11 @@ def test_create_and_process_erasure_request_generic_category(
             # Check that the `email` field is `None` and that its data category
             # ("user.provided.identifiable.contact.email") has been erased by the parent
             # category ("user.provided.identifiable.contact")
-            assert row[1] is None
-            assert row[2] is not None
+            assert row.email is None
+            assert row.name is not None
         else:
             # There are two rows other rows, and they should not have been erased
-            assert row[1] in ["customer-1@example.com", "jane@example.com"]
+            assert row.email in ["customer-1@example.com", "jane@example.com"]
     assert customer_found
 
 
@@ -270,11 +270,11 @@ def test_create_and_process_erasure_request_with_table_joins(
 
     card_found = False
     for row in res:
-        if row[0] == customer_id:
+        if row.customer_id == customer_id:
             card_found = True
-            assert row[2] is None
-            assert row[3] is None
-            assert row[4] is None
+            assert row.ccn is None
+            assert row.code is None
+            assert row.name is None
 
     assert card_found is True
 
@@ -321,7 +321,7 @@ def test_create_and_process_erasure_request_read_access(
             customer_found = True
             # Check that the `name` field is NOT `None`. We couldn't erase, because the ConnectionConfig only had
             # "read" access
-            assert row[1] is not None
+            assert row.name is not None
     assert customer_found
 
 
@@ -411,8 +411,8 @@ def test_create_and_process_erasure_request_snowflake(
     stmt = f'select "name", "variant_eg" from "customer" where "email" = {formatted_customer_email};'
     res = snowflake_client.execute(stmt).all()
     for row in res:
-        assert row[0] == None
-        assert row[1] == None
+        assert row.name is None
+        assert row.variant_eg is None
 
 
 @pytest.fixture(scope="function")
@@ -530,17 +530,17 @@ def test_create_and_process_erasure_request_redshift(
         connector.set_schema(connection)
         stmt = f"select name from customer where email = '{customer_email}';"
         res = connection.execute(stmt).all()
+        import pdb; pdb.set_trace()
         for row in res:
-            # Confirms customer name has been replaced with null
-            assert row[0] is None
+            assert row.name is None
 
         address_id = redshift_resources["address_id"]
         stmt = f"select 'id', city, state from address where id = {address_id};"
         res = connection.execute(stmt).all()
         for row in res:
             # Not yet masked because these fields aren't targeted by erasure policy
-            assert row[1] == redshift_resources["city"]
-            assert row[2] == redshift_resources["state"]
+            assert row.city == redshift_resources["city"]
+            assert row.state == redshift_resources["state"]
 
     target = erasure_policy.rules[0].targets[0]
     target.data_category = "user.provided.identifiable.contact.state"
@@ -559,10 +559,9 @@ def test_create_and_process_erasure_request_redshift(
         stmt = f"select 'id', city, state from address where id = {address_id};"
         res = connection.execute(stmt).all()
         for row in res:
-            # Confirms address id/street are still there, but state fields have been replaced by null values.
-            assert row[0] is not None
-            assert row[1] is not None
-            assert row[2] is None
+            # State field was targeted by erasure policy but city was not
+            assert row.city is not None
+            assert row.state is None
 
 
 class TestPrivacyRequestRunnerRunWebhooks:
