@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Any, Set
+from typing import Dict, Any, Set, Tuple, Optional
 
 from boto3 import Session
 from sqlalchemy import (
@@ -18,8 +18,8 @@ from fidesops.graph.config import (
     FieldAddress,
     Dataset,
     CollectionAddress,
+    generate_field,
 )
-from fidesops.graph.data_type import get_data_type_converter
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
 from fidesops.schemas.shared_schemas import FidesOpsKey
@@ -79,17 +79,35 @@ class DatasetConfig(Base):
             FidesopsDataset(**self.dataset), self.connection_config.key
         )
 
+def parse_data_type(type_string:Optional[str]) -> Tuple[Optional[str], bool]:
+        """Parse the data type string. Arrays are expressed in the form 'type[]'.
 
-def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
+        e.g.
+        - 'string' -> ('string', false)
+        - 'string[]' -> ('string', true)
+        """
+        if not type_string:
+            return (None, False)
+        idx= type_string.find('[]')
+        if idx == -1:
+            return (type_string, False)
+        return (type_string[:idx], True)
+
+def to_graph_field(field: FidesopsDatasetField) -> Field:
     """Flattens the dataset field type into its graph representation"""
 
     # NOTE: on the dataset field, annotations like identity & references are
     # declared on the meta object, whereas in our graph representation these are
     # top-level attributes for convenience
+
+
+
     identity = None
     is_pk = False
+    is_array = False
     references = []
     meta_section = field.fidesops_meta
+    sub_fields = []
     length = None
     data_type_name = None
     if meta_section:
@@ -130,16 +148,21 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
             # here in case we decide to allow it in the future.
             length = meta_section.length
 
-        data_type_name = meta_section.data_type
+        (data_type_name, is_array) = parse_data_type(meta_section.data_type)
 
-    return Field(
-        name=field.name,
-        data_categories=field.data_categories,
-        identity=identity,
-        data_type_converter=get_data_type_converter(data_type_name),
-        references=references,
-        primary_key=is_pk,
-        length=length,
+    if field.fields:
+        sub_fields = [to_graph_field(fld) for fld in sub_fields]
+
+    return generate_field(
+        field.name,
+        field.data_categories,
+        identity,
+        data_type_name,
+        references,
+        is_pk,
+        length,
+        is_array,
+        sub_fields
     )
 
 
@@ -159,7 +182,7 @@ def convert_dataset_to_graph(
     graph_collections = []
     for collection in dataset.collections:
         graph_fields = [
-            _convert_dataset_field_to_graph(field) for field in collection.fields
+            to_graph_field(field) for field in collection.fields
         ]
         logger.debug(
             "Parsing dataset %s: parsed collection %s with %s fields",

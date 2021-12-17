@@ -77,6 +77,7 @@ Field identities:
 """
 from __future__ import annotations
 
+from abc import ABC
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Optional, Tuple, Set, Dict, Literal, Any
@@ -84,7 +85,7 @@ from typing import List, Optional, Tuple, Set, Dict, Literal, Any
 from pydantic import BaseModel
 
 from fidesops.common_exceptions import FidesopsException
-from fidesops.graph.data_type import DataTypeConverter
+from fidesops.graph.data_type import DataTypeConverter, get_data_type_converter
 from fidesops.util.querytoken import QueryToken
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
@@ -183,7 +184,7 @@ class FieldAddress:
         return self.__repr__()
 
 
-class Field(BaseModel):
+class Field(BaseModel, ABC):
     """A single piece of data"""
 
     name: str
@@ -198,6 +199,8 @@ class Field(BaseModel):
     """Known type of held data"""
     length: Optional[int]
     """Known length of held data"""
+    is_array: bool = False
+    """True if this field represents an array of values."""
 
     class Config:
         """for pydantic incorporation of custom non-pydantic types"""
@@ -217,6 +220,40 @@ class Field(BaseModel):
                 return self.data_type_converter.to_value(value)
 
         return value
+
+
+class ScalarField(Field):
+    pass
+
+
+class JsonField(Field):
+    pass
+
+
+class ArrayField(Field):
+    pass
+
+
+def generate_field(
+    name: str,
+    data_categories: List[str],
+    identity: str,
+    data_type_name: str,
+    references: List[Tuple[FieldAddress, EdgeDirection]],
+    is_pk: bool,
+    length: int,
+    is_array: bool,
+    sub_fields:List[Field]
+) -> Field:
+    return ScalarField(
+        name=name,
+        data_categories=data_categories,
+        identity=identity,
+        data_type_converter=get_data_type_converter(data_type_name),
+        references=references,
+        primary_key=is_pk,
+        length=length,
+    )
 
 
 @dataclass

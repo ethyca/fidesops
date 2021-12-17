@@ -1,12 +1,12 @@
+from __future__ import annotations
 from typing import Dict, List, Optional
-
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from pydantic import BaseModel, root_validator, validator, ConstrainedStr
 
 from fidesops.common_exceptions import InvalidDataTypeValidationError
 from fidesops.common_exceptions import InvalidDataLengthValidationError
 from fidesops.graph.config import EdgeDirection
-from fidesops.graph.data_type import SimpleDataType
+from fidesops.graph.data_type import DataType
 from fidesops.models.policy import _validate_data_category
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
@@ -28,11 +28,11 @@ def _valid_data_categories(
 
 
 def _valid_data_type(data_type_str: Optional[str]) -> Optional[str]:
-    """If the data_type is provided ensure that it is a member of SimpleDataType."""
+    """If the data_type is provided ensure that it is a member of DataType."""
 
     if data_type_str is not None:
         try:
-            SimpleDataType[data_type_str]  # pylint: disable=pointless-statement
+            DataType[data_type_str]  # pylint: disable=pointless-statement
             return data_type_str
         except KeyError:
             raise InvalidDataTypeValidationError(
@@ -123,15 +123,7 @@ class FidesopsDatasetField(DatasetField):
 
     fidesops_meta: Optional[FidesopsMeta]
 
-    @root_validator(pre=True)
-    def prevent_nested_collections(cls, values: Dict) -> Dict:
-        """
-        Defensively check to ensure that there are no nested collections.
-
-        NOTE: This should be removed once nesting support is implemented!
-        """
-        assert "fields" not in values, f"unsupported nested collection: {values}"
-        return values
+    fields: Optional[List[FidesopsDatasetField]] = []
 
     @validator("data_categories")
     def valid_data_categories(

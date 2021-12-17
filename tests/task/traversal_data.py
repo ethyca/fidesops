@@ -7,13 +7,13 @@ from fidesops.graph.config import (
     CollectionAddress,
     Dataset,
 )
-from fidesops.graph.data_type import SimpleDataType
+from fidesops.graph.data_type import DataType
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
-str_converter = SimpleDataType.string.value
+str_converter = DataType.string.value
 
 
 def integration_db_mongo_graph(
@@ -26,7 +26,7 @@ def integration_db_mongo_graph(
         coll.fields.append(
             Field(
                 name="_id",
-                data_type_converter=SimpleDataType.object_id.value,
+                data_type_converter=DataType.object_id.value,
                 primary_key=True,
             )
         )

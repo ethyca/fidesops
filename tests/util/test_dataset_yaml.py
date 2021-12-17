@@ -25,6 +25,56 @@ f = """dataset:
 """
 
 
+f2 = """dataset:
+  - fides_key: mongo_nested_test
+    name: Mongo Example Nested Test Dataset
+    description: Example of a Mongo dataset that contains nested data
+    collections:
+      - name: photos
+        data_type: json   # nested types
+        fields:
+          - name: _id
+            data_type: object_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
+          - name: photo_id
+            data_type: integer
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              references:
+                - dataset: postgres_example_test_dataset
+                  field: customer.id
+                  direction: from
+          - name: name
+            data_categories: [user.provided.identifiable]
+            data_type: string
+          - name: submitter
+            data_type: string
+            data_categories: [user.provided.identifiable]
+          - name: thumbnail
+            fields:
+              - name: photo_id
+                data_type: integer
+              - name: name
+                data_categories: [user.provided.identifiable]
+                data_type: string
+              - name: submitter
+                data_type: string
+                data_categories: [user.provided.identifiable]
+          - name: tags
+            data_type: string[]
+            data_categories: [user.provided]
+          - name: comments
+            data_type: json[] # array type
+            fields:
+              - name: comment_id
+              - name: text
+              - name: submitter
+              ""
+"""
+
+
 def test_dataset_yaml_format():
     """Test that 'after' parameters are properly read"""
     d = yaml.safe_load(f)
@@ -65,3 +115,11 @@ def test_dataset_yaml_format_invalid_fides_keys():
     assert "FidesKey must only contain alphanumeric characters, '.' or '_'." in str(
         exc.value
     )
+
+
+def test_nested_dataset_format():
+    d = yaml.safe_load(f2)
+    dataset = d.get("dataset")[0]
+    print(dataset)
+    d2 = FidesopsDataset.parse_obj(dataset)
+    print(d2)
