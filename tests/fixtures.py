@@ -17,7 +17,7 @@ from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import (
     ConnectionConfig,
     AccessLevel,
-    ConnectionType,
+    ConnectionType, TestStatus,
 )
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import (
@@ -56,6 +56,11 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
 integration_config = load_toml("fidesops-integration.toml")
+
+
+# Hide pytest 'cannot collect test class' warnings
+TestStatus.__test__ = False
+TestCacheObject.__test__ = False
 
 # Unified list of connections to integration dbs specified from fidesops-integration.toml
 

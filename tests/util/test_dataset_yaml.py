@@ -1,6 +1,11 @@
 import pytest
 import yaml
-from fidesops.graph.config import CollectionAddress, ArrayField, ScalarField, JsonField
+from fidesops.graph.config import (
+    CollectionAddress,
+    ArrayField,
+    ScalarField,
+    ObjectField,
+)
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.schemas.dataset import FidesopsDataset
 from ..graph.graph_test_util import field
@@ -133,7 +138,7 @@ def test_nested_dataset_format():
         field([graph], ("mongo_nested_test", "photos", "_id")), ScalarField
     )
     assert isinstance(
-        field([graph], ("mongo_nested_test", "photos", "thumbnail")), JsonField
+        field([graph], ("mongo_nested_test", "photos", "thumbnail")), ObjectField
     )
 
 

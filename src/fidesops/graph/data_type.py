@@ -1,7 +1,7 @@
 import logging
 from abc import abstractmethod, ABC
 from enum import Enum
-from typing import Generic, Optional, Any, TypeVar, Dict, Tuple
+from typing import Generic, Optional, Any, TypeVar, Dict, Tuple, List
 
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
@@ -132,15 +132,28 @@ class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
         return None
 
 
-class JsonTypeConverter(DataTypeConverter[Dict[str, Any]]):
+class ObjectTypeConverter(DataTypeConverter[Dict[str, Any]]):
     """Json data type converter."""
 
     def __init__(self) -> None:
-        super().__init__("json", {})
+        super().__init__("object", {})
 
     def to_value(self, other: Any) -> Optional[Dict[str, Any]]:
         """Pass through dict values."""
         if isinstance(other, dict):
+            return other
+        return None
+
+
+class ArrayTypeConverter(DataTypeConverter[List[Any]]):
+    """Array type converter."""
+
+    def __init__(self) -> None:
+        super().__init__("array", [])
+
+    def to_value(self, other: Any) -> Optional[List[Any]]:
+        """Pass through dict values."""
+        if isinstance(other, list):
             return other
         return None
 
@@ -158,7 +171,8 @@ class DataType(Enum):
     float = FloatTypeConverter()
     boolean = BooleanTypeConverter()
     object_id = ObjectIdTypeConverter()
-    json = JsonTypeConverter()
+    object = ObjectTypeConverter()
+    array = ArrayTypeConverter()
     no_op = NoOpTypeConverter()
 
 

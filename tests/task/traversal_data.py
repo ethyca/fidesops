@@ -2,7 +2,7 @@ from typing import Optional, Tuple
 
 from fidesops.graph.config import (
     Collection,
-    Field,
+    ScalarField,
     FieldAddress,
     CollectionAddress,
     Dataset,
@@ -24,7 +24,7 @@ def integration_db_mongo_graph(
         id_field = next(f for f in coll.fields if f.name == "id")
         id_field.primary_key = False
         coll.fields.append(
-            Field(
+            ScalarField(
                 name="_id",
                 data_type_converter=DataType.object_id.value,
                 primary_key=True,
@@ -41,30 +41,30 @@ def combined_mongo_posgresql_graph(
     mongo_addresses = Collection(
         name="address",
         fields=[
-            Field(name="_id", primary_key=True),
-            Field(
+            ScalarField(name="_id", primary_key=True),
+            ScalarField(
                 name="id",
                 references=[
                     (FieldAddress("postgres_example", "customer", "address_id"), "from")
                 ],
             ),
-            Field(name="street", data_type_converter=str_converter),
-            Field(name="city", data_type_converter=str_converter),
-            Field(name="state", data_type_converter=str_converter),
-            Field(name="zip", data_type_converter=str_converter),
+            ScalarField(name="street", data_type_converter=str_converter),
+            ScalarField(name="city", data_type_converter=str_converter),
+            ScalarField(name="state", data_type_converter=str_converter),
+            ScalarField(name="zip", data_type_converter=str_converter),
         ],
     )
     mongo_orders = Collection(
         name="orders",
         fields=[
-            Field(name="_id", primary_key=True),
-            Field(
+            ScalarField(name="_id", primary_key=True),
+            ScalarField(
                 name="customer_id",
                 references=[
                     (FieldAddress("postgres_example", "customer", "id"), "from")
                 ],
             ),
-            Field(
+            ScalarField(
                 name="payment_card_id",
                 data_type_converter=str_converter,
             ),
@@ -84,10 +84,12 @@ def integration_db_dataset(db_name: str, connection_key: FidesOpsKey) -> Dataset
     customers = Collection(
         name="customer",
         fields=[
-            Field(name="id", primary_key=True),
-            Field(name="name", data_type_converter=str_converter),
-            Field(name="email", identity="email", data_type_converter=str_converter),
-            Field(
+            ScalarField(name="id", primary_key=True),
+            ScalarField(name="name", data_type_converter=str_converter),
+            ScalarField(
+                name="email", identity="email", data_type_converter=str_converter
+            ),
+            ScalarField(
                 name="address_id",
                 references=[(FieldAddress(db_name, "address", "id"), "to")],
             ),
@@ -100,26 +102,26 @@ def integration_db_dataset(db_name: str, connection_key: FidesOpsKey) -> Dataset
             CollectionAddress(db_name, "orders"),
         },
         fields=[
-            Field(name="id", primary_key=True),
-            Field(name="street", data_type_converter=str_converter),
-            Field(name="city", data_type_converter=str_converter),
-            Field(name="state", data_type_converter=str_converter),
-            Field(name="zip", data_type_converter=str_converter),
+            ScalarField(name="id", primary_key=True),
+            ScalarField(name="street", data_type_converter=str_converter),
+            ScalarField(name="city", data_type_converter=str_converter),
+            ScalarField(name="state", data_type_converter=str_converter),
+            ScalarField(name="zip", data_type_converter=str_converter),
         ],
     )
     orders = Collection(
         name="orders",
         fields=[
-            Field(name="id", primary_key=True),
-            Field(
+            ScalarField(name="id", primary_key=True),
+            ScalarField(
                 name="customer_id",
                 references=[(FieldAddress(db_name, "customer", "id"), "from")],
             ),
-            Field(
+            ScalarField(
                 name="shipping_address_id",
                 references=[(FieldAddress(db_name, "address", "id"), "to")],
             ),
-            Field(
+            ScalarField(
                 name="payment_card_id",
                 references=[(FieldAddress(db_name, "payment_card", "id"), "to")],
                 data_type_converter=str_converter,
@@ -129,14 +131,14 @@ def integration_db_dataset(db_name: str, connection_key: FidesOpsKey) -> Dataset
     payment_cards = Collection(
         name="payment_card",
         fields=[
-            Field(name="id", data_type_converter=str_converter, primary_key=True),
-            Field(name="name", data_type_converter=str_converter),
-            Field(name="ccn"),
-            Field(
+            ScalarField(name="id", data_type_converter=str_converter, primary_key=True),
+            ScalarField(name="name", data_type_converter=str_converter),
+            ScalarField(name="ccn"),
+            ScalarField(
                 name="customer_id",
                 references=[(FieldAddress(db_name, "customer", "id"), "from")],
             ),
-            Field(
+            ScalarField(
                 name="billing_address_id",
                 references=[(FieldAddress(db_name, "address", "id"), "to")],
             ),
@@ -164,10 +166,10 @@ def sample_traversal() -> Traversal:
     customers = Collection(
         name="Customer",
         fields=[
-            Field(name="customer_id"),
-            Field(name="name"),
-            Field(name="email", identity="email"),
-            Field(
+            ScalarField(name="customer_id"),
+            ScalarField(name="name"),
+            ScalarField(name="email", identity="email"),
+            ScalarField(
                 name="contact_address_id",
                 references=[(FieldAddress("mysql", "Address", "id"), "to")],
             ),
@@ -180,26 +182,26 @@ def sample_traversal() -> Traversal:
             CollectionAddress("postgres", "Order"),
         },
         fields=[
-            Field(name="id"),
-            Field(name="street"),
-            Field(name="city"),
-            Field(name="state"),
-            Field(name="zip"),
+            ScalarField(name="id"),
+            ScalarField(name="street"),
+            ScalarField(name="city"),
+            ScalarField(name="state"),
+            ScalarField(name="zip"),
         ],
     )
     orders = Collection(
         name="Order",
         fields=[
-            Field(name="order_id"),
-            Field(
+            ScalarField(name="order_id"),
+            ScalarField(
                 name="customer_id",
                 references=[(FieldAddress("mysql", "Customer", "customer_id"), "from")],
             ),
-            Field(
+            ScalarField(
                 name="shipping_address_id",
                 references=[(FieldAddress("mysql", "Address", "id"), "to")],
             ),
-            Field(
+            ScalarField(
                 name="billing_address_id",
                 references=[(FieldAddress("mysql", "Address", "id"), "to")],
             ),
@@ -208,9 +210,9 @@ def sample_traversal() -> Traversal:
     users = Collection(
         name="User",
         fields=[
-            Field(name="id"),
-            Field(name="user_id", identity="user_id"),
-            Field(name="name"),
+            ScalarField(name="id"),
+            ScalarField(name="user_id", identity="user_id"),
+            ScalarField(name="name"),
         ],
     )
     mysql = Dataset(

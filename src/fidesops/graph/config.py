@@ -234,7 +234,7 @@ class ScalarField(Field):
         return value
 
 
-class JsonField(Field):
+class ObjectField(Field):
     """A field that represents a json dict structure."""
 
     fields: Dict[str, Field]
@@ -297,7 +297,7 @@ def generate_field(
         return ArrayField(
             name=name,
             data_categories=data_categories,
-            data_type_converter=DataType.json.value,
+            data_type_converter=DataType.array.value,
             field=ScalarField(
                 name=name,
                 data_categories=data_categories,
@@ -310,10 +310,10 @@ def generate_field(
         )
 
     if sub_fields:
-        return JsonField(
+        return ObjectField(
             name=name,
             data_categories=data_categories,
-            data_type_converter=DataType.json.value,
+            data_type_converter=DataType.object.value,
             fields=sub_fields,
         )
     return ScalarField(

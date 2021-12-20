@@ -8,7 +8,7 @@ import dask
 import pytest
 from bson import ObjectId
 
-from fidesops.graph.config import FieldAddress, Field, Collection, Dataset
+from fidesops.graph.config import FieldAddress, ScalarField, Collection, Dataset
 from fidesops.graph.data_type import (
     IntTypeConverter,
     StringTypeConverter,
@@ -181,8 +181,8 @@ def test_composite_key_erasure(
     customer = Collection(
         name="customer",
         fields=[
-            Field(name="id", primary_key=True),
-            Field(
+            ScalarField(name="id", primary_key=True),
+            ScalarField(
                 name="email",
                 identity="email",
                 data_type_converter=StringTypeConverter(),
@@ -193,22 +193,22 @@ def test_composite_key_erasure(
     composite_pk_test = Collection(
         name="composite_pk_test",
         fields=[
-            Field(
+            ScalarField(
                 name="id_a",
                 primary_key=True,
                 data_type_converter=IntTypeConverter(),
             ),
-            Field(
+            ScalarField(
                 name="id_b",
                 primary_key=True,
                 data_type_converter=IntTypeConverter(),
             ),
-            Field(
+            ScalarField(
                 name="description",
                 data_type_converter=StringTypeConverter(),
                 data_categories=["A"],
             ),
-            Field(
+            ScalarField(
                 name="customer_id",
                 data_type_converter=StringTypeConverter(),
                 references=[(FieldAddress("mongo_test", "customer", "id"), "from")],
@@ -274,21 +274,21 @@ def test_access_erasure_type_conversion(
     employee = Collection(
         name="employee",
         fields=[
-            Field(name="id", primary_key=True),
-            Field(name="name", data_type_converter=StringTypeConverter()),
-            Field(
+            ScalarField(name="id", primary_key=True),
+            ScalarField(name="name", data_type_converter=StringTypeConverter()),
+            ScalarField(
                 name="email",
                 identity="email",
                 data_type_converter=StringTypeConverter(),
             ),
-            Field(name="foreign_id", data_type_converter=StringTypeConverter()),
+            ScalarField(name="foreign_id", data_type_converter=StringTypeConverter()),
         ],
     )
 
     type_link = Collection(
         name="type_link_test",
         fields=[
-            Field(
+            ScalarField(
                 name="_id",
                 primary_key=True,
                 data_type_converter=ObjectIdTypeConverter(),
@@ -296,12 +296,12 @@ def test_access_erasure_type_conversion(
                     (FieldAddress("mongo_test", "employee", "foreign_id"), "from")
                 ],
             ),
-            Field(
+            ScalarField(
                 name="name",
                 data_type_converter=StringTypeConverter(),
                 data_categories=["A"],
             ),
-            Field(name="key", data_type_converter=IntTypeConverter()),
+            ScalarField(name="key", data_type_converter=IntTypeConverter()),
         ],
     )
 

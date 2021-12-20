@@ -1,5 +1,6 @@
-import pytest
 from typing import Dict, Any, Set
+
+import pytest
 
 from fidesops.common_exceptions import NoSuchStrategyException
 from fidesops.graph.config import CollectionAddress
@@ -8,15 +9,12 @@ from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.policy import DataCategory
 from fidesops.schemas.dataset import FidesopsDataset
-from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.service.connectors.query_config import (
     QueryConfig,
     SQLQueryConfig,
     MongoQueryConfig,
 )
-from fidesops.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
 from ...task.traversal_data import integration_db_graph
-
 
 # customers -> address, order
 # orders -> address, payment card
