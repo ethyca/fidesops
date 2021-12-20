@@ -301,9 +301,11 @@ def test_create_and_process_erasure_request_aes_generic_category(
     for row in res:
         if customer_id in row:
             customer_found = True
-            # Check that the `email` field is `None` and that its data category
+            # Check that the `email` field is not original val and that its data category
             # ("user.provided.identifiable.contact.email") has been erased by the parent
-            # category ("user.provided.identifiable.contact")
+            # category ("user.provided.identifiable.contact").
+            # masked val for `email` field will change per new privacy request, so the best
+            # we can do here is test that the original val has been changed
             assert row[1] is not "customer-2@example.com"
             assert row[2] is not None
         else:
