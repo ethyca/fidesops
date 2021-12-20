@@ -85,7 +85,11 @@ from typing import List, Optional, Tuple, Set, Dict, Literal, Any
 from pydantic import BaseModel
 
 from fidesops.common_exceptions import FidesopsException
-from fidesops.graph.data_type import DataTypeConverter, get_data_type_converter
+from fidesops.graph.data_type import (
+    DataTypeConverter,
+    get_data_type_converter,
+    DataType,
+)
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.querytoken import QueryToken
 
@@ -248,9 +252,25 @@ def generate_field(
 ) -> Field:
     """Generate a graph field."""
     if is_array:
-        return ArrayField()
+        return ArrayField(
+            name=name,
+            data_categories=data_categories,
+            identity=identity,
+            data_type_converter=DataType.array.value,
+            references=references,
+            primary_key=is_pk,
+            length=length,
+        )
     if sub_fields:
-        return JsonField()
+        return JsonField(
+            name=name,
+            data_categories=data_categories,
+            identity=identity,
+            data_type_converter=DataType.json.value,
+            references=references,
+            primary_key=is_pk,
+            length=length,
+        )
     return ScalarField(
         name=name,
         data_categories=data_categories,

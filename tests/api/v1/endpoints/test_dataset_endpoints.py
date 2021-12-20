@@ -101,37 +101,37 @@ class TestValidateDataset:
         details = json.loads(response.text)["detail"]
         assert ["body", "collections"] in [e["loc"] for e in details]
 
-    def test_put_validate_dataset_nested_collections(
-        self,
-        example_datasets: List,
-        validate_dataset_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        """Ensure we defensively throw an error if validating a nested collection"""
-
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
-        invalid_dataset = example_datasets[0]
-        invalid_dataset["collections"][0]["fields"].append(
-            {
-                "name": "details",
-                "fields": [
-                    {
-                        "name": "phone",
-                        "data_categories": ["user.provided.identifiable.contact"],
-                    },
-                    {"name": "count", "data_categories": ["system.operations"]},
-                ],
-            }
-        )
-        response = api_client.put(
-            validate_dataset_url, headers=auth_header, json=invalid_dataset
-        )
-        assert response.status_code == 422
-        details = json.loads(response.text)["detail"]
-        assert ["body", "collections", 0, "fields", 6, "__root__"] in [
-            e["loc"] for e in details
-        ]
+    # def test_put_validate_dataset_nested_collections(
+    #     self,
+    #     example_datasets: List,
+    #     validate_dataset_url,
+    #     api_client: TestClient,
+    #     generate_auth_header,
+    # ) -> None:
+    #     """Ensure we defensively throw an error if validating a nested collection"""
+    #
+    #     auth_header = generate_auth_header(scopes=[DATASET_READ])
+    #     invalid_dataset = example_datasets[0]
+    #     invalid_dataset["collections"][0]["fields"].append(
+    #         {
+    #             "name": "details",
+    #             "fields": [
+    #                 {
+    #                     "name": "phone",
+    #                     "data_categories": ["user.provided.identifiable.contact"],
+    #                 },
+    #                 {"name": "count", "data_categories": ["system.operations"]},
+    #             ],
+    #         }
+    #     )
+    #     response = api_client.put(
+    #         validate_dataset_url, headers=auth_header, json=invalid_dataset
+    #     )
+    #     assert response.status_code == 422
+    #     details = json.loads(response.text)["detail"]
+    #     assert ["body", "collections", 0, "fields", 6, "__root__"] in [
+    #         e["loc"] for e in details
+    #     ]
 
     def test_put_validate_dataset_invalid_length(
         self,

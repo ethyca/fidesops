@@ -133,6 +133,9 @@ class FidesopsDatasetField(DatasetField):
         return _valid_data_categories(v)
 
 
+FidesopsDatasetField.update_forward_refs()
+
+
 class FidesopsDatasetCollection(DatasetCollection):
     """Overrides fideslang DatasetCollection model with additional Fidesops annotations"""
 

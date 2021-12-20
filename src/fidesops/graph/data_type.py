@@ -1,6 +1,6 @@
 import logging
 from abc import abstractmethod, ABC
-from typing import Generic, Optional, Any, TypeVar, Dict
+from typing import Generic, Optional, Any, TypeVar, Dict, List
 from enum import Enum
 
 from bson.errors import InvalidId
@@ -13,8 +13,9 @@ T = TypeVar("T")
 class DataTypeConverter(ABC, Generic[T]):
     """DataTypeConverters are responsible for converting types of other values into the type represented here."""
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, _empty_value: T):
         self.name = name
+        self._empty_value = _empty_value
 
     @abstractmethod
     def to_value(self, other: Any) -> Optional[T]:
@@ -22,9 +23,9 @@ class DataTypeConverter(ABC, Generic[T]):
             return either a T or None in every case and never raise an Exception.
         an Exception."""
 
-    @abstractmethod
     def empty_value(self) -> T:
         """A value that represents `empty` in whatever way makes sense for type T"""
+        return self._empty_value
 
     def truncate(self, length: int, val: T) -> T:
         """Truncates value to given length"""
@@ -38,15 +39,11 @@ class NoOpTypeConverter(DataTypeConverter[Any]):
     """Placeholder No-op converter. This type is assigned to fields when type is unspecified."""
 
     def __init__(self) -> None:
-        super().__init__("None")
+        super().__init__("None", None)
 
     def to_value(self, other: Any) -> Optional[Any]:
         """no-op"""
         return other
-
-    def empty_value(self) -> None:
-        """Empty value"""
-        return None
 
     def truncate(self, length: int, val: Any) -> Any:
         """No action"""
@@ -57,15 +54,11 @@ class StringTypeConverter(DataTypeConverter[str]):
     """String data type converter. This type just uses str() type conversion."""
 
     def __init__(self) -> None:
-        super().__init__("string")
+        super().__init__("string", "")
 
     def to_value(self, other: Any) -> Optional[str]:
         """Convert to str"""
         return str(other) if other else None
-
-    def empty_value(self) -> str:
-        """Empty string value"""
-        return ""
 
     def truncate(self, length: int, val: str) -> str:
         """Truncates value to given length"""
@@ -76,7 +69,7 @@ class IntTypeConverter(DataTypeConverter[int]):
     """Int data type converter. This type just uses built-in int() type conversion."""
 
     def __init__(self) -> None:
-        super().__init__("integer")
+        super().__init__("integer", 0)
 
     def to_value(self, other: Any) -> Optional[int]:
         """Convert to int"""
@@ -86,16 +79,12 @@ class IntTypeConverter(DataTypeConverter[int]):
         except (ValueError, TypeError):
             return None
 
-    def empty_value(self) -> int:
-        """Empty int value"""
-        return 0
-
 
 class FloatTypeConverter(DataTypeConverter[float]):
     """Float data type converter. This type just uses built-in float() type conversion."""
 
     def __init__(self) -> None:
-        super().__init__("float")
+        super().__init__("float", 0.0)
 
     def to_value(self, other: Any) -> Optional[float]:
         """Convert to float"""
@@ -105,16 +94,12 @@ class FloatTypeConverter(DataTypeConverter[float]):
         except (ValueError, TypeError):
             return None
 
-    def empty_value(self) -> float:
-        """Empty float value"""
-        return 0.0
-
 
 class BooleanTypeConverter(DataTypeConverter[bool]):
     """Boolean data type converter recognizing the strings True/False, 1,0, and booleans."""
 
     def __init__(self) -> None:
-        super().__init__("boolean")
+        super().__init__("boolean", False)
 
     true_vals = {"True", "true", True, 1}
     false_vals = {"False", "false", False, 0}
@@ -127,16 +112,12 @@ class BooleanTypeConverter(DataTypeConverter[bool]):
             return False
         return None
 
-    def empty_value(self) -> bool:
-        """Empty boolean value"""
-        return False
-
 
 class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
     """ObjectId data type converter, allowing for conversions from strings only."""
 
     def __init__(self) -> None:
-        super().__init__("object_id")
+        super().__init__("object_id", ObjectId("000000000000000000000000"))
 
     def to_value(self, other: Any) -> Optional[ObjectId]:
         """Convert to ObjectId."""
@@ -150,16 +131,12 @@ class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
                 return None
         return None
 
-    def empty_value(self) -> ObjectId:
-        """Empty objectId value"""
-        return ObjectId("000000000000000000000000")
-
 
 class JsonTypeConverter(DataTypeConverter[Dict[str, Any]]):
     """Json data type converter."""
 
     def __init__(self) -> None:
-        super().__init__("json")
+        super().__init__("json", {})
 
     def to_value(self, other: Any) -> Optional[Dict[str, Any]]:
         """Pass through dict values."""
@@ -167,9 +144,18 @@ class JsonTypeConverter(DataTypeConverter[Dict[str, Any]]):
             return other
         return None
 
-    def empty_value(self) -> Dict[str, Any]:
-        """Empty json value"""
-        return {}
+
+class ArrayTypeConverter(DataTypeConverter[List[Any]]):
+    """Json data type converter."""
+
+    def __init__(self) -> None:
+        super().__init__("json", [])
+
+    def to_value(self, other: Any) -> Optional[List[Any]]:
+        """Pass through array values."""
+        if isinstance(other, list):
+            return other
+        return None
 
 
 class DataType(Enum):
@@ -186,6 +172,7 @@ class DataType(Enum):
     boolean = BooleanTypeConverter()
     object_id = ObjectIdTypeConverter()
     json = JsonTypeConverter()
+    array = ArrayTypeConverter()
     no_op = NoOpTypeConverter()
 
 
