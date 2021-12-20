@@ -86,8 +86,8 @@ from pydantic import BaseModel
 
 from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.data_type import DataTypeConverter, get_data_type_converter
-from fidesops.util.querytoken import QueryToken
 from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.util.querytoken import QueryToken
 
 DatasetAddress = str
 SeedAddress = str
@@ -223,17 +223,18 @@ class Field(BaseModel, ABC):
 
 
 class ScalarField(Field):
-    pass
+    """A field that represents a simple value. Most fields will be scalar fields."""
 
 
 class JsonField(Field):
-    pass
+    """A field that represents a json dict structure."""
 
 
 class ArrayField(Field):
-    pass
+    """A field that represents an array structure."""
 
 
+# pylint: disable=too-many-arguments
 def generate_field(
     name: str,
     data_categories: List[str],
@@ -243,8 +244,13 @@ def generate_field(
     is_pk: bool,
     length: int,
     is_array: bool,
-    sub_fields:List[Field]
+    sub_fields: List[Field],
 ) -> Field:
+    """Generate a graph field."""
+    if is_array:
+        return ArrayField()
+    if sub_fields:
+        return JsonField()
     return ScalarField(
         name=name,
         data_categories=data_categories,

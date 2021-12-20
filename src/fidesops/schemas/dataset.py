@@ -1,10 +1,10 @@
-from __future__ import annotations
-from typing import Dict, List, Optional, ForwardRef
-from fideslang.models import Dataset, DatasetCollection, DatasetField
-from pydantic import BaseModel, root_validator, validator, ConstrainedStr
+from typing import List, Optional
 
-from fidesops.common_exceptions import InvalidDataTypeValidationError
+from fideslang.models import Dataset, DatasetCollection, DatasetField
+from pydantic import BaseModel, validator, ConstrainedStr
+
 from fidesops.common_exceptions import InvalidDataLengthValidationError
+from fidesops.common_exceptions import InvalidDataTypeValidationError
 from fidesops.graph.config import EdgeDirection
 from fidesops.graph.data_type import DataType
 from fidesops.models.policy import _validate_data_category
@@ -118,19 +118,12 @@ class FidesopsMeta(BaseModel):
         return _valid_data_length(v)
 
 
-
-FidesopsDatasetField = ForwardRef('FidesopsDatasetField')
-
-
-
-
-
 class FidesopsDatasetField(DatasetField):
     """Extends fideslang DatasetField model with additional Fidesops annotations"""
 
     fidesops_meta: Optional[FidesopsMeta]
 
-    fields: Optional[List[FidesopsDatasetField]] = []
+    fields: Optional[List["FidesopsDatasetField"]] = []
 
     @validator("data_categories")
     def valid_data_categories(
@@ -139,7 +132,6 @@ class FidesopsDatasetField(DatasetField):
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_categories(v)
 
-FidesopsDatasetField.update_forward_refs()
 
 class FidesopsDatasetCollection(DatasetCollection):
     """Overrides fideslang DatasetCollection model with additional Fidesops annotations"""

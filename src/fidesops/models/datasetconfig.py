@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Any, Set, Tuple, Optional
+from typing import Dict, Any, Set, Tuple, Optional, List
 
 from boto3 import Session
 from sqlalchemy import (
@@ -79,19 +79,21 @@ class DatasetConfig(Base):
             FidesopsDataset(**self.dataset), self.connection_config.key
         )
 
-def parse_data_type(type_string:Optional[str]) -> Tuple[Optional[str], bool]:
-        """Parse the data type string. Arrays are expressed in the form 'type[]'.
 
-        e.g.
-        - 'string' -> ('string', false)
-        - 'string[]' -> ('string', true)
-        """
-        if not type_string:
-            return (None, False)
-        idx= type_string.find('[]')
-        if idx == -1:
-            return (type_string, False)
-        return (type_string[:idx], True)
+def parse_data_type(type_string: Optional[str]) -> Tuple[Optional[str], bool]:
+    """Parse the data type string. Arrays are expressed in the form 'type[]'.
+
+    e.g.
+    - 'string' -> ('string', false)
+    - 'string[]' -> ('string', true)
+    """
+    if not type_string:
+        return (None, False)
+    idx = type_string.find("[]")
+    if idx == -1:
+        return (type_string, False)
+    return (type_string[:idx], True)
+
 
 def to_graph_field(field: FidesopsDatasetField) -> Field:
     """Flattens the dataset field type into its graph representation"""
@@ -100,14 +102,12 @@ def to_graph_field(field: FidesopsDatasetField) -> Field:
     # declared on the meta object, whereas in our graph representation these are
     # top-level attributes for convenience
 
-
-
     identity = None
     is_pk = False
     is_array = False
     references = []
     meta_section = field.fidesops_meta
-    sub_fields = []
+    sub_fields: List[Field] = []
     length = None
     data_type_name = None
     if meta_section:
@@ -162,7 +162,7 @@ def to_graph_field(field: FidesopsDatasetField) -> Field:
         is_pk,
         length,
         is_array,
-        sub_fields
+        sub_fields,
     )
 
 
@@ -181,9 +181,7 @@ def convert_dataset_to_graph(
     logger.debug(f"Parsing dataset '{dataset_name}' into graph representation")
     graph_collections = []
     for collection in dataset.collections:
-        graph_fields = [
-            to_graph_field(field) for field in collection.fields
-        ]
+        graph_fields = [to_graph_field(field) for field in collection.fields]
         logger.debug(
             "Parsing dataset %s: parsed collection %s with %s fields",
             NotPii(dataset_name),

@@ -154,21 +154,23 @@ class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
         """Empty objectId value"""
         return ObjectId("000000000000000000000000")
 
-class JsonTypeConverter(DataTypeConverter[Dict[str,Any]]):
+
+class JsonTypeConverter(DataTypeConverter[Dict[str, Any]]):
     """Json data type converter."""
 
     def __init__(self) -> None:
         super().__init__("json")
 
-    def to_value(self, other: Any) -> Optional[Dict[str,Any]]:
+    def to_value(self, other: Any) -> Optional[Dict[str, Any]]:
         """Pass through dict values."""
         if isinstance(other, dict):
             return other
         return None
 
-    def empty_value(self) -> Dict[str,Any]:
+    def empty_value(self) -> Dict[str, Any]:
         """Empty json value"""
         return {}
+
 
 class DataType(Enum):
     """Supported data types for data retrieval and erasure.
@@ -190,13 +192,7 @@ class DataType(Enum):
 def get_data_type_converter(type_name: str) -> DataTypeConverter:
     """Return the matching type converter. If an empty string or None is passed in
     will return the No-op converter, so the converter will never be set to 'None'.
-    On an illegal key will raise a KeyError.
-
-    TODO
-
-    It's expected that when types get more elaborate this method may need more information,
-    e.g. the specification of the structure of sub-values, and that this method may return
-    a customized instance that is not a simple type."""
+    On an illegal key will raise a KeyError."""
     if not type_name:
         return DataType.no_op.value
     return DataType[type_name].value
