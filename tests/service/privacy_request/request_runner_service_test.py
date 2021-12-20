@@ -530,7 +530,6 @@ def test_create_and_process_erasure_request_redshift(
         connector.set_schema(connection)
         stmt = f"select name from customer where email = '{customer_email}';"
         res = connection.execute(stmt).all()
-        import pdb; pdb.set_trace()
         for row in res:
             assert row.name is None
 
