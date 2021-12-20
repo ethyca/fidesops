@@ -5,7 +5,7 @@ from typing import TypeVar, Optional, List, Dict
 from fidesops.schemas.masking.masking_secrets import (
     MaskingSecretMeta,
     MaskingSecretCache,
-    SecretType
+    SecretType,
 )
 from fidesops.util.cache import get_masking_secret_cache_key, get_cache
 

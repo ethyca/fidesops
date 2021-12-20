@@ -8,7 +8,7 @@ from fidesops.schemas.masking.masking_configuration import (
 from fidesops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
     SecretType,
-    MaskingSecretMeta
+    MaskingSecretMeta,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
