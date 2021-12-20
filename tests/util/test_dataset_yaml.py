@@ -1,9 +1,9 @@
 import pytest
 import yaml
-
-from fidesops.graph.config import CollectionAddress
+from fidesops.graph.config import CollectionAddress, ArrayField, ScalarField, JsonField
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.schemas.dataset import FidesopsDataset
+from ..graph.graph_test_util import field
 
 f = """dataset:
   - fides_key: xyz
@@ -24,33 +24,33 @@ f = """dataset:
               primary_key: True  
 """
 
-
 f2 = """dataset:
   - fides_key: mongo_nested_test
     name: Mongo Example Nested Test Dataset
     description: Example of a Mongo dataset that contains nested data
     collections:
       - name: photos
-        data_type: json   # nested types
         fields:
           - name: _id
-            data_type: object_id
             data_categories: [system.operations]
             fidesops_meta:
               primary_key: True
+              data_type: object_id
           - name: photo_id
-            data_type: integer
             data_categories: [user.derived.identifiable.unique_id]
             fidesops_meta:
               references:
                 - dataset: postgres_example_test_dataset
                   field: customer.id
                   direction: from
+              data_type: integer
           - name: name
             data_categories: [user.provided.identifiable]
-            data_type: string
+            fidesops_meta:
+                data_type: string
           - name: submitter
-            data_type: string
+            fidesops_meta:
+                data_type: string 
             data_categories: [user.provided.identifiable]
           - name: thumbnail
             fields:
@@ -63,10 +63,12 @@ f2 = """dataset:
                 data_type: string
                 data_categories: [user.provided.identifiable]
           - name: tags
-            data_type: string[]
+            fidesops_meta:
+                data_type: string[]
             data_categories: [user.provided]
           - name: comments
-            data_type: json[] # array type
+            fidesops_meta:
+                data_type: string[]
             fields:
               - name: comment_id
               - name: text
@@ -118,7 +120,22 @@ def test_dataset_yaml_format_invalid_fides_keys():
 
 def test_nested_dataset_format():
     d = yaml.safe_load(f2)
-    dataset = d.get("dataset")[0]
-    print(dataset)
-    d2 = FidesopsDataset.parse_obj(dataset)
-    print(d2)
+    ds = FidesopsDataset.parse_obj(d.get("dataset")[0])
+    graph = convert_dataset_to_graph(ds, "ignore")
+
+    assert isinstance(
+        field([graph], ("mongo_nested_test", "photos", "comments")), ArrayField
+    )
+    assert isinstance(
+        field([graph], ("mongo_nested_test", "photos", "tags")), ArrayField
+    )
+    assert isinstance(
+        field([graph], ("mongo_nested_test", "photos", "_id")), ScalarField
+    )
+    assert isinstance(
+        field([graph], ("mongo_nested_test", "photos", "thumbnail")), JsonField
+    )
+
+
+if __name__ == "__main__":
+    test_nested_dataset_format()

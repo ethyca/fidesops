@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Any, Set, Tuple, Optional, List
+from typing import Dict, Any, Set
 
 from boto3 import Session
 from sqlalchemy import (
@@ -20,6 +20,7 @@ from fidesops.graph.config import (
     CollectionAddress,
     generate_field,
 )
+from fidesops.graph.data_type import parse_data_type
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
 from fidesops.schemas.shared_schemas import FidesOpsKey
@@ -80,21 +81,6 @@ class DatasetConfig(Base):
         )
 
 
-def parse_data_type(type_string: Optional[str]) -> Tuple[Optional[str], bool]:
-    """Parse the data type string. Arrays are expressed in the form 'type[]'.
-
-    e.g.
-    - 'string' -> ('string', false)
-    - 'string[]' -> ('string', true)
-    """
-    if not type_string:
-        return (None, False)
-    idx = type_string.find("[]")
-    if idx == -1:
-        return (type_string, False)
-    return (type_string[:idx], True)
-
-
 def to_graph_field(field: FidesopsDatasetField) -> Field:
     """Flattens the dataset field type into its graph representation"""
 
@@ -107,7 +93,7 @@ def to_graph_field(field: FidesopsDatasetField) -> Field:
     is_array = False
     references = []
     meta_section = field.fidesops_meta
-    sub_fields: List[Field] = []
+    sub_fields: Dict[str, Field] = {}
     length = None
     data_type_name = None
     if meta_section:
@@ -151,7 +137,7 @@ def to_graph_field(field: FidesopsDatasetField) -> Field:
         (data_type_name, is_array) = parse_data_type(meta_section.data_type)
 
     if field.fields:
-        sub_fields = [to_graph_field(fld) for fld in sub_fields]
+        sub_fields = {fld.name: to_graph_field(fld) for fld in field.fields}
 
     return generate_field(
         field.name,

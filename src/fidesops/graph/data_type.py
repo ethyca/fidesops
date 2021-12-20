@@ -1,7 +1,7 @@
 import logging
 from abc import abstractmethod, ABC
-from typing import Generic, Optional, Any, TypeVar, Dict, List
 from enum import Enum
+from typing import Generic, Optional, Any, TypeVar, Dict, Tuple
 
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
@@ -145,19 +145,6 @@ class JsonTypeConverter(DataTypeConverter[Dict[str, Any]]):
         return None
 
 
-class ArrayTypeConverter(DataTypeConverter[List[Any]]):
-    """Json data type converter."""
-
-    def __init__(self) -> None:
-        super().__init__("json", [])
-
-    def to_value(self, other: Any) -> Optional[List[Any]]:
-        """Pass through array values."""
-        if isinstance(other, list):
-            return other
-        return None
-
-
 class DataType(Enum):
     """Supported data types for data retrieval and erasure.
 
@@ -172,7 +159,6 @@ class DataType(Enum):
     boolean = BooleanTypeConverter()
     object_id = ObjectIdTypeConverter()
     json = JsonTypeConverter()
-    array = ArrayTypeConverter()
     no_op = NoOpTypeConverter()
 
 
@@ -183,3 +169,18 @@ def get_data_type_converter(type_name: str) -> DataTypeConverter:
     if not type_name:
         return DataType.no_op.value
     return DataType[type_name].value
+
+
+def parse_data_type(type_string: Optional[str]) -> Tuple[Optional[str], bool]:
+    """Parse the data type string. Arrays are expressed in the form 'type[]'.
+
+    e.g.
+    - 'string' -> ('string', false)
+    - 'string[]' -> ('string', true)
+    """
+    if not type_string:
+        return (None, False)
+    idx = type_string.find("[]")
+    if idx == -1:
+        return (type_string, False)
+    return (type_string[:idx], True)

@@ -5,6 +5,7 @@ from fidesops.graph.data_type import (
     NoOpTypeConverter,
     get_data_type_converter,
     StringTypeConverter,
+    parse_data_type,
 )
 
 
@@ -63,3 +64,8 @@ def test_get_data_type_converter():
     assert isinstance(get_data_type_converter(None), NoOpTypeConverter)
     assert isinstance(get_data_type_converter(""), NoOpTypeConverter)
     assert isinstance(get_data_type_converter("string"), StringTypeConverter)
+
+
+def test_parse_data_type():
+    assert parse_data_type("string") == ("string", False)
+    assert parse_data_type("string[]") == ("string", True)

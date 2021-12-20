@@ -77,7 +77,7 @@ Field identities:
 """
 from __future__ import annotations
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Optional, Tuple, Set, Dict, Literal, Any
@@ -199,17 +199,25 @@ class Field(BaseModel, ABC):
     """an optional pointer to an arbitrary key in an expected json package provided as a seed value"""
     data_categories: Optional[List[FidesOpsKey]]
     """annotated data categories for the field used for policy actions"""
-    data_type_converter: Optional[DataTypeConverter]
-    """Known type of held data"""
+
     length: Optional[int]
     """Known length of held data"""
-    is_array: bool = False
-    """True if this field represents an array of values."""
 
     class Config:
         """for pydantic incorporation of custom non-pydantic types"""
 
         arbitrary_types_allowed = True
+
+    @abstractmethod
+    def cast(self, value: Any) -> Optional[Any]:
+        """Cast the input value into the form represented by data_type."""
+
+
+class ScalarField(Field):
+    """A field that represents a simple value. Most fields will be scalar fields."""
+
+    data_type_converter: Optional[DataTypeConverter]
+    """Known type of held data"""
 
     def cast(self, value: Any) -> Optional[Any]:
         """Cast the input value into the form represented by data_type.
@@ -226,16 +234,50 @@ class Field(BaseModel, ABC):
         return value
 
 
-class ScalarField(Field):
-    """A field that represents a simple value. Most fields will be scalar fields."""
-
-
 class JsonField(Field):
     """A field that represents a json dict structure."""
+
+    fields: Dict[str, Field]
+
+    def cast(self, value: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Cast the input value into the form represented by data_type.
+
+        - If the data_type is None, then it has not been specified, so just return the input value.
+        - Return either a cast value or None"""
+
+        def extract(key: str, values: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+            if key in values:
+                return values[key]
+            return None
+
+        # if no data type is specified just return the input value.
+        # Skip conversions for query tokens, which are only for display output
+        if not isinstance(value, QueryToken):
+            return {
+                field.name: field.cast(extract(field.name, value))
+                for field in self.fields
+            }
+
+        return value
 
 
 class ArrayField(Field):
     """A field that represents an array structure."""
+
+    field: Field
+
+    def cast(self, value: Any) -> Optional[List[Any]]:
+        """Cast the input value into the form represented by data_type.
+
+        - If the data_type is None, then it has not been specified, so just return the input value.
+        - Return either a cast value or None"""
+
+        # if no data type is specified just return the input value.
+        # Skip conversions for query tokens, which are only for display output
+        if not isinstance(value, QueryToken):
+            return [self.field.cast(v) for v in value]
+
+        return value
 
 
 # pylint: disable=too-many-arguments
@@ -255,21 +297,24 @@ def generate_field(
         return ArrayField(
             name=name,
             data_categories=data_categories,
-            identity=identity,
-            data_type_converter=DataType.array.value,
-            references=references,
-            primary_key=is_pk,
-            length=length,
+            data_type_converter=DataType.json.value,
+            field=ScalarField(
+                name=name,
+                data_categories=data_categories,
+                identity=identity,
+                data_type_converter=get_data_type_converter(data_type_name),
+                references=references,
+                primary_key=is_pk,
+                length=length,
+            ),
         )
+
     if sub_fields:
         return JsonField(
             name=name,
             data_categories=data_categories,
-            identity=identity,
             data_type_converter=DataType.json.value,
-            references=references,
-            primary_key=is_pk,
-            length=length,
+            fields=sub_fields,
         )
     return ScalarField(
         name=name,
