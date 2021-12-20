@@ -160,7 +160,7 @@ class PrivacyRequest(Base):
                 masking_strategy=masking_secret.masking_strategy,
                 secret_type=masking_secret.secret_type,
             ),
-            masking_secret.secret,
+            FidesopsRedis.encode_obj(masking_secret.secret)
         )
 
     def get_cached_identity_data(self) -> Dict[str, Any]:

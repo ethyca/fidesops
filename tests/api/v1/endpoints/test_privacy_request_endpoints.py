@@ -224,14 +224,14 @@ class TestCreatePrivacyRequest:
             db,
             api_client: TestClient,
             generate_auth_header,
-            erasure_policy_hash,
+            erasure_policy_aes,
             cache,
     ):
         identity = {"email": "test@example.com"}
         data = [
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
-                "policy_key": erasure_policy_hash.key,
+                "policy_key": erasure_policy_aes.key,
                 "identity": identity,
             }
         ]
@@ -241,12 +241,12 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
-        key = get_masking_secret_cache_key(
+        secret_key = get_masking_secret_cache_key(
             privacy_request_id=pr.id,
-            masking_strategy="hash",
-            secret_type=SecretType.salt
+            masking_strategy="aes_encrypt",
+            secret_type=SecretType.key
         )
-        assert cache.get(key) is not None
+        assert cache.get_encoded_by_key(secret_key) is not None
         pr.delete(db=db)
         assert run_erasure_request_mock.called
 

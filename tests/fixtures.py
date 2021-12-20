@@ -431,15 +431,15 @@ def erasure_policy(
 
 
 @pytest.fixture(scope="function")
-def erasure_policy_hash(
+def erasure_policy_aes(
         db: Session,
         oauth_client: ClientDetail,
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
         data={
-            "name": "example erasure policy hash",
-            "key": "example_erasure_policy_hash",
+            "name": "example erasure policy aes",
+            "key": "example_erasure_policy_aes",
             "client_id": oauth_client.id,
         },
     )
@@ -452,7 +452,7 @@ def erasure_policy_hash(
             "name": "Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": "hash",
+                "strategy": "aes_encrypt",
                 "configuration": {},
             },
         },

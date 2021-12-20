@@ -5,7 +5,7 @@ from typing import TypeVar, Optional, List, Dict
 from fidesops.schemas.masking.masking_secrets import (
     MaskingSecretMeta,
     MaskingSecretCache,
-    SecretType,
+    SecretType
 )
 from fidesops.util.cache import get_masking_secret_cache_key, get_cache
 
@@ -47,7 +47,7 @@ class SecretsUtil:
             masking_strategy=masking_secret_meta.masking_strategy,
             secret_type=secret_type,
         )
-        return cache.get(masking_secret_cache_key)
+        return cache.get_encoded_by_key(masking_secret_cache_key)
 
     @staticmethod
     def generate_secret_string(length: int) -> str:

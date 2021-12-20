@@ -66,6 +66,11 @@ class FidesopsRedis(Redis):
         get_objects_by_prefix or processed with decode_obj."""
         return self.set_with_autoexpire(f"EN_{key}", FidesopsRedis.encode_obj(obj))
 
+    def get_encoded_by_key(self, key) -> Optional[Any]:
+        """Returns cached obj decoded from base64"""
+        val = super(FidesopsRedis, self).get(key)
+        return self.decode_obj(val) if val else None
+
     def get_encoded_objects_by_prefix(self, prefix: str) -> Dict[str, Optional[Any]]:
         """Return all objects stored under a given prefix. This method
         assumes these objects have been stored encoded using set_object"""
