@@ -11,9 +11,16 @@ from fidesops.graph.data_type import DataType
 from fidesops.graph.graph import Edge, BidirectionalEdge, DatasetGraph
 from fidesops.graph.traversal import Traversal, TraversalNode, Row
 from tests.graph.graph_test_util import generate_graph_resources, field
+from string import ascii_letters, digits
 Base = declarative_base()
 
+faker = Faker(use_weighting=False)
 
+from faker.providers.lorem.en_US import Provider as lorem
+from faker.providers import address
+
+faker.add_provider(address)
+faker.add_provider(lorem)
 class DataGeneratorFunctions():
 
     faker = Faker(use_weighting=False)
@@ -22,10 +29,19 @@ class DataGeneratorFunctions():
         return cls.faker.name()
 
     def string(cls):
-        return cls.faker.first_name()
+        return ''.join(random.choices(ascii_letters, k=10))
 
     def integer(cls):
         return random.randint(0,1000000)
+
+    def street(cls):
+        return cls.faker.street_address()
+
+    def city(cls):
+        return cls.faker.city()
+
+    def zip(cls):
+        return cls.faker.postcode()
 
 def sqlalchemy_datatype(fides_data_type:DataType, **kwargs):
     return {
@@ -37,28 +53,22 @@ def sqlalchemy_datatype(fides_data_type:DataType, **kwargs):
     }[fides_data_type]
 
 
-def create_sample_value(type_name:str):
-    return getattr(DataGeneratorFunctions,type_name)(DataGeneratorFunctions)
+def create_sample_value(field:Field):
+    def get_function_name(field) -> str:
+        names = { s for s in DataGeneratorFunctions().__dir__() if not s.startswith('__')}
+        if field.name in names:
+            return field.name
+        if field.data_type ==DataType.integer:
+            return "integer"
+        return "string"
 
-
-
-t = type(
-    "FPaths",
-    (Base,),
-    {
-        "__tablename__": "foo",
-        "id": Column(Integer, primary_key=True),
-        "path": Column(String(255)),
-    },
-)
-obj = t()
-print(obj)
+    return getattr(DataGeneratorFunctions,get_function_name(field))(DataGeneratorFunctions)
 
 
 def generate_data_for_traversal( traversal: Traversal,ct:int) -> Dict[CollectionAddress, List[int]]:
 
     def generate_data(f:Field):
-        return create_sample_value(f.data_type or "string" )
+        return create_sample_value(f)
 
 
     def traversal_collection_fn(  tn: TraversalNode, data: Dict[CollectionAddress, List[Row]]) -> None:
@@ -91,22 +101,24 @@ def test_gen() -> None:
     field(t, ("dr_1", "ds_1", "f1")).identity = "x"
     graph: DatasetGraph = DatasetGraph(*t)
 
-    assert set(graph.nodes.keys()) == {
-        CollectionAddress("dr_1", "ds_1"),
-        CollectionAddress("dr_2", "ds_2"),
-        CollectionAddress("dr_3", "ds_3"),
-    }
-
-    assert graph.identity_keys == {FieldAddress("dr_1", "ds_1", "f1"): "x"}
-
-    assert graph.edges == {
-        BidirectionalEdge(
-            FieldAddress("dr_1", "ds_1", "f1"), FieldAddress("dr_2", "ds_2", "f1")
-        ),
-        BidirectionalEdge(
-            FieldAddress("dr_1", "ds_1", "f1"), FieldAddress("dr_3", "ds_3", "f1")
-        ),
-    }
+    for x in t:
+        print(x)
+    # assert set(graph.nodes.keys()) == {
+    #     CollectionAddress("dr_1", "ds_1"),
+    #     CollectionAddress("dr_2", "ds_2"),
+    #     CollectionAddress("dr_3", "ds_3"),
+    # }
+    #
+    # assert graph.identity_keys == {FieldAddress("dr_1", "ds_1", "f1"): "x"}
+    #
+    # assert graph.edges == {
+    #     BidirectionalEdge(
+    #         FieldAddress("dr_1", "ds_1", "f1"), FieldAddress("dr_2", "ds_2", "f1")
+    #     ),
+    #     BidirectionalEdge(
+    #         FieldAddress("dr_1", "ds_1", "f1"), FieldAddress("dr_3", "ds_3", "f1")
+    #     ),
+    # }
 
     # extract see nodes
     traversal = Traversal(graph, {"x": 1})
