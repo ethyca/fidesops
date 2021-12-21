@@ -2,7 +2,7 @@ import logging
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import Column
+from sqlalchemy import Column, text
 from sqlalchemy.engine import (
     Engine,
     create_engine,
@@ -201,7 +201,9 @@ class RedshiftConnector(SQLConnector):
         config = RedshiftSchema(**self.configuration.secrets or {})
         if config.db_schema:
             logger.info("Setting Redshift search_path before retrieving data")
-            connection.execute("SET search_path TO %s" % config.db_schema)
+            stmt = text("SET search_path to :search_path")
+            stmt = stmt.bindparams(search_path=config.db_schema)
+            connection.execute(stmt)
 
     # Overrides SQLConnector.retrieve_data
     def retrieve_data(
