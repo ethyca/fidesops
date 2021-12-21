@@ -8,6 +8,7 @@ from fidesops.common_exceptions import ClientUnsuccessfulException
 from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.connectionconfig import TestStatus
 from fidesops.models.policy import Policy
+from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.connection_configuration import HttpsSchema
 
 from fidesops.service.connectors.base_connector import BaseConnector
@@ -44,7 +45,12 @@ class HTTPSConnector(BaseConnector[None]):
         headers = self.build_authorization_header()
         headers.update(additional_headers)
 
-        response = requests.post(url=config.url, headers=headers, json=request_body)
+        try:
+            response = requests.post(url=config.url, headers=headers, json=request_body)
+        except requests.ConnectionError:
+            logger.info("Requests connection error received.")
+            raise ClientUnsuccessfulException(status_code=500)
+
         if not response_expected:
             return {}
 
@@ -73,7 +79,13 @@ class HTTPSConnector(BaseConnector[None]):
         TODO: implement when HTTPS Connectors can be part of the traversal.
         """
 
-    def mask_data(self, node: TraversalNode, policy: Policy, rows: List[Row]) -> int:
+    def mask_data(
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        request: PrivacyRequest,
+        rows: List[Row],
+    ) -> int:
         """Execute a masking request. Return the number of rows that have been updated
 
         TODO: implement when HTTPS Connectors can be part of the traversal.

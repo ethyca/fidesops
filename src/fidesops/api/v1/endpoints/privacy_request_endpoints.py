@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from datetime import date
-from typing import List, Optional, Union, DefaultDict, Dict
+from typing import List, Optional, Union, DefaultDict, Dict, Set
 
 from fastapi import APIRouter, Body, Depends, Security, HTTPException
 from fastapi_pagination import Page, Params
@@ -21,17 +21,16 @@ from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_CALLBACK_RESUME,
 )
 from fidesops.api.v1.urn_registry import REQUEST_PREVIEW, PRIVACY_REQUEST_RESUME
-from fidesops.common_exceptions import TraversalError
+from fidesops.common_exceptions import TraversalError, NoSuchStrategyException
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import Policy, PolicyPreWebhook
+from fidesops.models.policy import Policy, ActionType, PolicyPreWebhook
 from fidesops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
@@ -42,12 +41,20 @@ from fidesops.schemas.external_https import (
     SecondPartyResponseFormat,
     PrivacyRequestResumeFormat,
 )
+from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
+from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
+from fidesops.schemas.policy import Rule
 from fidesops.schemas.privacy_request import (
     PrivacyRequestCreate,
     PrivacyRequestResponse,
     PrivacyRequestVerboseResponse,
     ExecutionLogDetailResponse,
     BulkPostPrivacyRequests,
+)
+from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.service.masking.strategy.masking_strategy_factory import (
+    SupportedMaskingStrategies,
+    get_strategy,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.task.graph_task import collect_queries, EMPTY_REQUEST
@@ -155,9 +162,29 @@ def create_privacy_request(
             privacy_request.cache_identity(privacy_request_data.identity)
             privacy_request.cache_encryption(privacy_request_data.encryption_key)
 
+            # Store masking secrets in the cache
+            logger.info(
+                f"Caching masking secrets for privacy request {privacy_request.id}"
+            )
+            erasure_rules: List[Rule] = policy.get_rules_for_action(
+                action_type=ActionType.erasure
+            )
+            unique_masking_strategies_by_name: Set[str] = set()
+            for rule in erasure_rules:
+                strategy_name: str = rule.masking_strategy["strategy"]
+                if strategy_name in unique_masking_strategies_by_name:
+                    continue
+                unique_masking_strategies_by_name.add(strategy_name)
+                masking_strategy = get_strategy(strategy_name, {})
+                if masking_strategy.secrets_required():
+                    masking_secrets: List[
+                        MaskingSecretCache
+                    ] = masking_strategy.generate_secrets_for_cache()
+                    for masking_secret in masking_secrets:
+                        privacy_request.cache_masking_secret(masking_secret)
+
             PrivacyRequestRunner(
                 cache=cache,
-                db=db,
                 privacy_request=privacy_request,
             ).submit()
 
@@ -387,8 +414,7 @@ def get_request_preview_queries(
 
 
 @router.post(
-    PRIVACY_REQUEST_RESUME,
-    status_code=200,
+    PRIVACY_REQUEST_RESUME, status_code=200, response_model=PrivacyRequestResponse
 )
 def resume_privacy_request(
     privacy_request_id: str,
@@ -399,9 +425,27 @@ def resume_privacy_request(
         verify_callback_oauth, scopes=[scopes.PRIVACY_REQUEST_CALLBACK_RESUME]
     ),
     webhook_callback: PrivacyRequestResumeFormat,
-) -> None:
+) -> PrivacyRequestResponse:
     """Resume running a privacy request after it was paused by a Pre-Execution webhook"""
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
     privacy_request.cache_identity(webhook_callback.derived_identity)
 
-    # TODO resume running privacy request from specific webhook
+    if privacy_request.status != PrivacyRequestStatus.paused:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid resume request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+        )
+
+    logger.info(
+        f"Resuming privacy request '{privacy_request_id}' from webhook '{webhook.key}'"
+    )
+
+    privacy_request.status = PrivacyRequestStatus.in_processing
+    privacy_request.save(db=db)
+
+    PrivacyRequestRunner(
+        cache=cache,
+        privacy_request=privacy_request,
+    ).submit(from_webhook=webhook)
+
+    return privacy_request

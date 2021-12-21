@@ -1,5 +1,6 @@
 import json
-from typing import Any, Dict
+import time
+from typing import Any, Dict, List, Set
 from unittest import mock
 from unittest.mock import Mock
 from uuid import uuid4
@@ -15,17 +16,21 @@ from sqlalchemy.orm import Session
 from pydantic import ValidationError
 
 from fidesops.common_exceptions import PrivacyRequestPaused, ClientUnsuccessfulException
-from fidesops.models.policy import PolicyPreWebhook
+from fidesops.core.config import config
+from fidesops.models.policy import PolicyPreWebhook, ActionType
 from fidesops.models.privacy_request import PrivacyRequestStatus
 from fidesops.schemas.external_https import SecondPartyResponseFormat
 from fidesops.db.session import get_db_session, get_db_engine
 from fidesops.models.policy import DataCategory
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLog
+from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
+from fidesops.schemas.policy import Rule
 from fidesops.service.connectors import PostgreSQLConnector
 from fidesops.service.connectors.sql_connector import (
     SnowflakeConnector,
     RedshiftConnector,
 )
+from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.util.async_util import wait_for
 
@@ -89,10 +94,26 @@ def get_privacy_request_results(
     if "encryption_key" in privacy_request_data:
         privacy_request.cache_encryption(privacy_request_data["encryption_key"])
 
+    erasure_rules: List[Rule] = policy.get_rules_for_action(
+        action_type=ActionType.erasure
+    )
+    unique_masking_strategies_by_name: Set[str] = set()
+    for rule in erasure_rules:
+        strategy_name: str = rule.masking_strategy["strategy"]
+        if strategy_name in unique_masking_strategies_by_name:
+            continue
+        unique_masking_strategies_by_name.add(strategy_name)
+        masking_strategy = get_strategy(strategy_name, {})
+        if masking_strategy.secrets_required():
+            masking_secrets: List[
+                MaskingSecretCache
+            ] = masking_strategy.generate_secrets_for_cache()
+            for masking_secret in masking_secrets:
+                privacy_request.cache_masking_secret(masking_secret)
+
     wait_for(
         PrivacyRequestRunner(
             cache=cache,
-            db=db,
             privacy_request=privacy_request,
         ).submit()
     )
@@ -101,11 +122,15 @@ def get_privacy_request_results(
 
 
 @pytest.mark.integration
+@mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request(
+    trigger_webhook_mock,
     postgres_example_test_dataset_config_read_access,
     db,
     cache,
     policy,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
 ):
 
     customer_email = "customer-1@example.com"
@@ -132,6 +157,14 @@ def test_create_and_process_access_request(
     assert results[visit_key][0]["email"] == customer_email
     log_id = pr.execution_logs[0].id
     pr_id = pr.id
+    # Both pre-execution webhooks and both post-execution webhooks were called
+    assert trigger_webhook_mock.call_count == 4
+
+    for webhook in policy_pre_execution_webhooks:
+        webhook.delete(db=db)
+
+    for webhook in policy_post_execution_webhooks:
+        webhook.delete(db=db)
 
     policy.delete(db=db)
     pr.delete(db=db)
@@ -227,6 +260,60 @@ def test_create_and_process_erasure_request_generic_category(
         else:
             # There are two rows other rows, and they should not have been erased
             assert row.email in ["customer-1@example.com", "jane@example.com"]
+    assert customer_found
+
+
+@pytest.mark.integration_erasure
+def test_create_and_process_erasure_request_aes_generic_category(
+        postgres_example_test_dataset_config,
+        cache,
+        db,
+        generate_auth_header,
+        erasure_policy_aes,
+        connection_config,
+):
+    # It's safe to change this here since the `erasure_policy` fixture is scoped
+    # at function level
+    target = erasure_policy_aes.rules[0].targets[0]
+    target.data_category = DataCategory("user.provided.identifiable.contact").value
+    target.save(db=db)
+
+    email = "customer-2@example.com"
+    customer_id = 2
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy_aes.key,
+        "identity": {"email": email},
+    }
+
+    pr = get_privacy_request_results(db, erasure_policy_aes, cache, data)
+    pr.delete(db=db)
+
+    example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
+    engine = get_db_engine(database_uri=example_postgres_uri)
+    SessionLocal = get_db_session(engine=engine)
+    integration_db = SessionLocal()
+    stmt = select(
+        column("id"),
+        column("email"),
+        column("name"),
+    ).select_from(table("customer"))
+    res = integration_db.execute(stmt).all()
+
+    customer_found = False
+    for row in res:
+        if customer_id in row:
+            customer_found = True
+            # Check that the `email` field is not original val and that its data category
+            # ("user.provided.identifiable.contact.email") has been erased by the parent
+            # category ("user.provided.identifiable.contact").
+            # masked val for `email` field will change per new privacy request, so the best
+            # we can do here is test that the original val has been changed
+            assert row[1] is not "customer-2@example.com"
+            assert row[2] is not None
+        else:
+            # There are two rows other rows, and they should not have been erased
+            assert row[1] in ["customer-1@example.com", "jane@example.com"]
     assert customer_found
 
 
@@ -568,6 +655,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
     def test_run_webhooks_halt_received(
         self,
         mock_trigger_policy_webhook,
+        db,
         privacy_request,
         privacy_request_runner,
         policy_pre_execution_webhooks,
@@ -576,15 +664,39 @@ class TestPrivacyRequestRunnerRunWebhooks:
             "Request received to halt"
         )
 
-        proceed = privacy_request_runner.run_webhooks(PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert not proceed
         assert privacy_request.finished_processing_at is None
         assert privacy_request.status == PrivacyRequestStatus.paused
 
     @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+    def test_run_webhooks_ap_scheduler_cleanup(
+            self,
+            mock_trigger_policy_webhook,
+            db,
+            privacy_request,
+            privacy_request_runner,
+            policy_pre_execution_webhooks,
+    ):
+        config.redis.DEFAULT_TTL_SECONDS = 1  # Set redis cache to expire very quickly for testing purposes
+        mock_trigger_policy_webhook.side_effect = PrivacyRequestPaused(
+            "Request received to halt"
+        )
+
+        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
+        assert not proceed
+        time.sleep(3)
+
+        db.refresh(privacy_request)
+        # Privacy request has been set to errored by ap scheduler, because it took too long for webhook to report back
+        assert privacy_request.status == PrivacyRequestStatus.error
+        assert privacy_request.finished_processing_at is not None
+
+    @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
     def test_run_webhooks_client_error(
         self,
         mock_trigger_policy_webhook,
+        db,
         privacy_request,
         privacy_request_runner,
         policy_pre_execution_webhooks,
@@ -593,7 +705,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
             status_code=500
         )
 
-        proceed = privacy_request_runner.run_webhooks(PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert not proceed
         assert privacy_request.status == PrivacyRequestStatus.error
 
@@ -601,6 +713,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
     def test_run_webhooks_validation_error(
         self,
         mock_trigger_policy_webhook,
+        db,
         privacy_request,
         privacy_request_runner,
         policy_pre_execution_webhooks,
@@ -609,7 +722,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
             errors={}, model=SecondPartyResponseFormat
         )
 
-        proceed = privacy_request_runner.run_webhooks(PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert not proceed
         assert privacy_request.finished_processing_at is not None
         assert privacy_request.status == PrivacyRequestStatus.error
@@ -618,12 +731,13 @@ class TestPrivacyRequestRunnerRunWebhooks:
     def test_run_webhooks(
         self,
         mock_trigger_policy_webhook,
+        db,
         privacy_request,
         privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
 
-        proceed = privacy_request_runner.run_webhooks(PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert proceed
         assert privacy_request.status == PrivacyRequestStatus.in_processing
         assert privacy_request.finished_processing_at is None
@@ -633,13 +747,14 @@ class TestPrivacyRequestRunnerRunWebhooks:
     def test_run_webhooks_after_webhook(
         self,
         mock_trigger_policy_webhook,
+        db,
         privacy_request,
         privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
         """Test running webhooks after specific webhook - for when we're resuming privacy request execution"""
-        proceed = privacy_request_runner.run_webhooks(
-            PolicyPreWebhook, policy_pre_execution_webhooks[0]
+        proceed = privacy_request_runner.run_webhooks_and_report_status(
+            db, privacy_request, PolicyPreWebhook, policy_pre_execution_webhooks[0].id
         )
         assert proceed
         assert privacy_request.status == PrivacyRequestStatus.in_processing
