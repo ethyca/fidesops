@@ -121,6 +121,7 @@ def get_privacy_request_results(
     return PrivacyRequest.get(db=db, id=privacy_request.id)
 
 
+@pytest.mark.integration_postgres
 @pytest.mark.integration
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request(
@@ -265,12 +266,12 @@ def test_create_and_process_erasure_request_generic_category(
 
 @pytest.mark.integration_erasure
 def test_create_and_process_erasure_request_aes_generic_category(
-        postgres_example_test_dataset_config,
-        cache,
-        db,
-        generate_auth_header,
-        erasure_policy_aes,
-        connection_config,
+    postgres_example_test_dataset_config,
+    cache,
+    db,
+    generate_auth_header,
+    erasure_policy_aes,
+    connection_config,
 ):
     # It's safe to change this here since the `erasure_policy` fixture is scoped
     # at function level

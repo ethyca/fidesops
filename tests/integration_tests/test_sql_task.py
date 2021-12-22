@@ -48,6 +48,7 @@ sample_postgres_configuration_policy = erasure_policy(
 )
 
 
+@pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_sql_erasure_ignores_collections_without_pk(
     db, postgres_inserts, integration_postgres_config
@@ -112,6 +113,7 @@ def test_sql_erasure_ignores_collections_without_pk(
     }
 
 
+@pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_composite_key_erasure(
     db,
@@ -204,6 +206,7 @@ def test_composite_key_erasure(
     }
 
 
+@pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
     seed_email = postgres_inserts["customer"][0]["email"]
@@ -244,6 +247,7 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
     }
 
 
+@pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_sql_access_request_task(db, policy, integration_postgres_config) -> None:
 
@@ -326,6 +330,7 @@ def test_sql_access_request_task(db, policy, integration_postgres_config) -> Non
     )
 
 
+@pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_filter_on_data_categories(
     db,
@@ -458,6 +463,7 @@ def test_filter_on_data_categories(
     rule_target.delete(db)
 
 
+@pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_access_erasure_type_conversion(
     db,

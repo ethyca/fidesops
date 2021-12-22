@@ -27,6 +27,7 @@ class TestPostgresConnectionPutSecretsAPI:
     def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/secret"
 
+    @pytest.mark.integration_postgres
     @pytest.mark.integration
     def test_postgres_db_connection_incorrect_secrets(
         self,
@@ -64,6 +65,7 @@ class TestPostgresConnectionPutSecretsAPI:
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is False
 
+    @pytest.mark.integration_postgres
     @pytest.mark.integration
     def test_postgres_db_connection_connect_with_components(
         self,
@@ -107,6 +109,7 @@ class TestPostgresConnectionPutSecretsAPI:
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is True
 
+    @pytest.mark.integration_postgres
     @pytest.mark.integration
     def test_postgres_db_connection_connect_with_url(
         self,
@@ -148,12 +151,13 @@ class TestPostgresConnectionPutSecretsAPI:
         assert connection_config.last_test_succeeded is True
 
 
+@pytest.mark.integration_postgres
+@pytest.mark.integration
 class TestPostgresConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/test"
 
-    @pytest.mark.integration
     def test_connection_configuration_test_not_authenticated(
         self,
         url,
@@ -170,7 +174,6 @@ class TestPostgresConnectionTestSecretsAPI:
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
 
-    @pytest.mark.integration
     def test_connection_configuration_test_incorrect_scopes(
         self,
         url,
@@ -191,7 +194,6 @@ class TestPostgresConnectionTestSecretsAPI:
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
 
-    @pytest.mark.integration
     def test_connection_configuration_test_failed_response(
         self,
         url,
@@ -222,7 +224,6 @@ class TestPostgresConnectionTestSecretsAPI:
             == f"Test completed for ConnectionConfig with key: {connection_config.key}."
         )
 
-    @pytest.mark.integration
     def test_connection_configuration_test(
         self,
         url,
@@ -252,8 +253,9 @@ class TestPostgresConnectionTestSecretsAPI:
         assert connection_config.last_test_succeeded is True
 
 
+@pytest.mark.integration_postgres
+@pytest.mark.integration
 class TestPostgresConnector:
-    @pytest.mark.integration
     def test_postgres_db_connector(
         self,
         api_client: TestClient,
@@ -275,12 +277,13 @@ class TestPostgresConnector:
             connector.test_connection()
 
 
+    @pytest.mark.integration_mysql
+    @pytest.mark.integration
 class TestMySQLConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
     def url(self, oauth_client, policy, connection_config_mysql) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mysql.key}/secret"
 
-    @pytest.mark.integration
     def test_mysql_db_connection_incorrect_secrets(
         self,
         api_client: TestClient,
@@ -317,7 +320,6 @@ class TestMySQLConnectionPutSecretsAPI:
         assert connection_config_mysql.last_test_timestamp is not None
         assert connection_config_mysql.last_test_succeeded is False
 
-    @pytest.mark.integration
     def test_mysql_db_connection_connect_with_components(
         self,
         url,
@@ -360,7 +362,6 @@ class TestMySQLConnectionPutSecretsAPI:
         assert connection_config_mysql.last_test_timestamp is not None
         assert connection_config_mysql.last_test_succeeded is True
 
-    @pytest.mark.integration
     def test_mysql_db_connection_connect_with_url(
         self,
         url,
@@ -401,12 +402,13 @@ class TestMySQLConnectionPutSecretsAPI:
         assert connection_config_mysql.last_test_succeeded is True
 
 
+@pytest.mark.integration_mysql
+@pytest.mark.integration
 class TestMySQLConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
     def url(self, oauth_client, policy, connection_config_mysql) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mysql.key}/test"
 
-    @pytest.mark.integration
     def test_connection_configuration_test_not_authenticated(
         self,
         url,
@@ -423,7 +425,6 @@ class TestMySQLConnectionTestSecretsAPI:
         assert connection_config_mysql.last_test_timestamp is None
         assert connection_config_mysql.last_test_succeeded is None
 
-    @pytest.mark.integration
     def test_connection_configuration_test_incorrect_scopes(
         self,
         url,
@@ -444,7 +445,6 @@ class TestMySQLConnectionTestSecretsAPI:
         assert connection_config_mysql.last_test_timestamp is None
         assert connection_config_mysql.last_test_succeeded is None
 
-    @pytest.mark.integration
     def test_connection_configuration_test_failed_response(
         self,
         url,
@@ -475,7 +475,6 @@ class TestMySQLConnectionTestSecretsAPI:
             == f"Test completed for ConnectionConfig with key: {connection_config_mysql.key}."
         )
 
-    @pytest.mark.integration
     def test_connection_configuration_test(
         self,
         url,
@@ -505,8 +504,9 @@ class TestMySQLConnectionTestSecretsAPI:
         assert connection_config_mysql.last_test_succeeded is True
 
 
+@pytest.mark.integration_mysql
+@pytest.mark.integration
 class TestMySQLConnector:
-    @pytest.mark.integration
     def test_mysql_db_connector(
         self,
         api_client: TestClient,
@@ -528,8 +528,10 @@ class TestMySQLConnector:
             connector.test_connection()
 
 
+@pytest.mark.integration_mongo
+@pytest.mark.integration
 class TestMongoConnector:
-    @pytest.mark.integration
+
     def test_mongo_db_connector(
         self,
         api_client: TestClient,
@@ -551,12 +553,13 @@ class TestMongoConnector:
             connector.test_connection()
 
 
+@pytest.mark.integration_mongo
+@pytest.mark.integration
 class TestMongoConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, mongo_connection_config) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{mongo_connection_config.key}/secret"
 
-    @pytest.mark.integration
     def test_mongo_db_connection_incorrect_secrets(
         self,
         url,
@@ -596,7 +599,6 @@ class TestMongoConnectionPutSecretsAPI:
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is False
 
-    @pytest.mark.integration
     def test_mongo_db_connection_connect_with_components(
         self,
         url,
@@ -639,7 +641,6 @@ class TestMongoConnectionPutSecretsAPI:
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is True
 
-    @pytest.mark.integration
     def test_mongo_db_connection_connect_with_url(
         self,
         url,
