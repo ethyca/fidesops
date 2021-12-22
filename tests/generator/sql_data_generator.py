@@ -64,7 +64,7 @@ def create_sample_value(field: Field):
         }
         if field.name in names:
             return field.name
-        if field.data_type == DataType.integer:
+        if field.data_type_converter == DataType.integer.value:
             return "integer"
         return "string"
 
