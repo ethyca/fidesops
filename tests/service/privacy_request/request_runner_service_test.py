@@ -1,6 +1,6 @@
 import json
 import time
-from typing import Any, Dict
+from typing import Any, Dict, List, Set
 from unittest import mock
 from unittest.mock import Mock
 from uuid import uuid4
@@ -17,14 +17,20 @@ from pydantic import ValidationError
 
 from fidesops.common_exceptions import PrivacyRequestPaused, ClientUnsuccessfulException
 from fidesops.core.config import config
-from fidesops.models.policy import PolicyPreWebhook
+from fidesops.models.policy import PolicyPreWebhook, ActionType
 from fidesops.models.privacy_request import PrivacyRequestStatus
 from fidesops.schemas.external_https import SecondPartyResponseFormat
 from fidesops.db.session import get_db_session, get_db_engine
 from fidesops.models.policy import DataCategory
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLog
+from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
+from fidesops.schemas.policy import Rule
 from fidesops.service.connectors import PostgreSQLConnector
-from fidesops.service.connectors.sql_connector import SnowflakeConnector
+from fidesops.service.connectors.sql_connector import (
+    SnowflakeConnector,
+    RedshiftConnector,
+)
+from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.util.async_util import wait_for
 
@@ -87,6 +93,23 @@ def get_privacy_request_results(
     privacy_request.cache_identity(privacy_request_data["identity"])
     if "encryption_key" in privacy_request_data:
         privacy_request.cache_encryption(privacy_request_data["encryption_key"])
+
+    erasure_rules: List[Rule] = policy.get_rules_for_action(
+        action_type=ActionType.erasure
+    )
+    unique_masking_strategies_by_name: Set[str] = set()
+    for rule in erasure_rules:
+        strategy_name: str = rule.masking_strategy["strategy"]
+        if strategy_name in unique_masking_strategies_by_name:
+            continue
+        unique_masking_strategies_by_name.add(strategy_name)
+        masking_strategy = get_strategy(strategy_name, {})
+        if masking_strategy.secrets_required():
+            masking_secrets: List[
+                MaskingSecretCache
+            ] = masking_strategy.generate_secrets_for_cache()
+            for masking_secret in masking_secrets:
+                privacy_request.cache_masking_secret(masking_secret)
 
     wait_for(
         PrivacyRequestRunner(
@@ -184,7 +207,7 @@ def test_create_and_process_erasure_request_specific_category(
         if customer_id in row:
             customer_found = True
             # Check that the `name` field is `None`
-            assert row[1] is None
+            assert row.name is None
     assert customer_found
 
 
@@ -232,7 +255,61 @@ def test_create_and_process_erasure_request_generic_category(
             # Check that the `email` field is `None` and that its data category
             # ("user.provided.identifiable.contact.email") has been erased by the parent
             # category ("user.provided.identifiable.contact")
-            assert row[1] is None
+            assert row.email is None
+            assert row.name is not None
+        else:
+            # There are two rows other rows, and they should not have been erased
+            assert row.email in ["customer-1@example.com", "jane@example.com"]
+    assert customer_found
+
+
+@pytest.mark.integration_erasure
+def test_create_and_process_erasure_request_aes_generic_category(
+    postgres_example_test_dataset_config,
+    cache,
+    db,
+    generate_auth_header,
+    erasure_policy_aes,
+    connection_config,
+):
+    # It's safe to change this here since the `erasure_policy` fixture is scoped
+    # at function level
+    target = erasure_policy_aes.rules[0].targets[0]
+    target.data_category = DataCategory("user.provided.identifiable.contact").value
+    target.save(db=db)
+
+    email = "customer-2@example.com"
+    customer_id = 2
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy_aes.key,
+        "identity": {"email": email},
+    }
+
+    pr = get_privacy_request_results(db, erasure_policy_aes, cache, data)
+    pr.delete(db=db)
+
+    example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
+    engine = get_db_engine(database_uri=example_postgres_uri)
+    SessionLocal = get_db_session(engine=engine)
+    integration_db = SessionLocal()
+    stmt = select(
+        column("id"),
+        column("email"),
+        column("name"),
+    ).select_from(table("customer"))
+    res = integration_db.execute(stmt).all()
+
+    customer_found = False
+    for row in res:
+        if customer_id in row:
+            customer_found = True
+            # Check that the `email` field is not original val and that its data category
+            # ("user.provided.identifiable.contact.email") has been erased by the parent
+            # category ("user.provided.identifiable.contact").
+            # masked val for `email` field will change per new privacy request, so the best
+            # we can do here is test that the original val has been changed
+            assert row[1] is not "customer-2@example.com"
             assert row[2] is not None
         else:
             # There are two rows other rows, and they should not have been erased
@@ -280,11 +357,11 @@ def test_create_and_process_erasure_request_with_table_joins(
 
     card_found = False
     for row in res:
-        if row[0] == customer_id:
+        if row.customer_id == customer_id:
             card_found = True
-            assert row[2] is None
-            assert row[3] is None
-            assert row[4] is None
+            assert row.ccn is None
+            assert row.code is None
+            assert row.name is None
 
     assert card_found is True
 
@@ -331,7 +408,7 @@ def test_create_and_process_erasure_request_read_access(
             customer_found = True
             # Check that the `name` field is NOT `None`. We couldn't erase, because the ConnectionConfig only had
             # "read" access
-            assert row[1] is not None
+            assert row.name is not None
     assert customer_found
 
 
@@ -421,8 +498,156 @@ def test_create_and_process_erasure_request_snowflake(
     stmt = f'select "name", "variant_eg" from "customer" where "email" = {formatted_customer_email};'
     res = snowflake_client.execute(stmt).all()
     for row in res:
-        assert row[0] == None
-        assert row[1] == None
+        assert row.name is None
+        assert row.variant_eg is None
+
+
+@pytest.fixture(scope="function")
+def redshift_resources(
+    redshift_example_test_dataset_config,
+):
+    redshift_connection_config = redshift_example_test_dataset_config.connection_config
+    connector = RedshiftConnector(redshift_connection_config)
+    redshift_client = connector.client()
+    with redshift_client.connect() as connection:
+        connector.set_schema(connection)
+        uuid = str(uuid4())
+        customer_email = f"customer-{uuid}@example.com"
+        customer_name = f"{uuid}"
+
+        stmt = "select max(id) from customer;"
+        res = connection.execute(stmt)
+        customer_id = res.all()[0][0] + 1
+
+        stmt = "select max(id) from address;"
+        res = connection.execute(stmt)
+        address_id = res.all()[0][0] + 1
+
+        city = "Test City"
+        state = "TX"
+        stmt = f"""
+        insert into address (id, house, street, city, state, zip)
+        values ({address_id}, '{111}', 'Test Street', '{city}', '{state}', '55555');
+        """
+        connection.execute(stmt)
+
+        stmt = f"""
+            insert into customer (id, email, name, address_id)
+            values ({customer_id}, '{customer_email}', '{customer_name}', '{address_id}');
+        """
+        connection.execute(stmt)
+
+        yield {
+            "email": customer_email,
+            "name": customer_name,
+            "id": customer_id,
+            "client": redshift_client,
+            "address_id": address_id,
+            "city": city,
+            "state": state,
+            "connector": connector,
+        }
+        # Remove test data and close Redshift connection in teardown
+        stmt = f"delete from customer where email = '{customer_email}';"
+        connection.execute(stmt)
+
+        stmt = f'delete from address where "id" = {address_id};'
+        connection.execute(stmt)
+
+
+@pytest.mark.integration_external
+def test_create_and_process_access_request_redshift(
+    redshift_resources,
+    db,
+    cache,
+    policy,
+):
+    customer_email = redshift_resources["email"]
+    customer_name = redshift_resources["name"]
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": customer_email},
+    }
+    pr = get_privacy_request_results(db, policy, cache, data)
+    results = pr.get_results()
+    customer_table_key = (
+        f"EN_{pr.id}__access_request__redshift_example_test_dataset:customer"
+    )
+    assert len(results[customer_table_key]) == 1
+    assert results[customer_table_key][0]["email"] == customer_email
+    assert results[customer_table_key][0]["name"] == customer_name
+
+    address_table_key = (
+        f"EN_{pr.id}__access_request__redshift_example_test_dataset:address"
+    )
+
+    city = redshift_resources["city"]
+    state = redshift_resources["state"]
+    assert len(results[address_table_key]) == 1
+    assert results[address_table_key][0]["city"] == city
+    assert results[address_table_key][0]["state"] == state
+
+    pr.delete(db=db)
+
+
+@pytest.mark.integration_external
+def test_create_and_process_erasure_request_redshift(
+    redshift_example_test_dataset_config,
+    redshift_resources,
+    integration_config: Dict[str, str],
+    db,
+    cache,
+    erasure_policy,
+):
+    customer_email = redshift_resources["email"]
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    # Should erase customer name
+    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr.delete(db=db)
+
+    connector = redshift_resources["connector"]
+    redshift_client = redshift_resources["client"]
+    with redshift_client.connect() as connection:
+        connector.set_schema(connection)
+        stmt = f"select name from customer where email = '{customer_email}';"
+        res = connection.execute(stmt).all()
+        for row in res:
+            assert row.name is None
+
+        address_id = redshift_resources["address_id"]
+        stmt = f"select 'id', city, state from address where id = {address_id};"
+        res = connection.execute(stmt).all()
+        for row in res:
+            # Not yet masked because these fields aren't targeted by erasure policy
+            assert row.city == redshift_resources["city"]
+            assert row.state == redshift_resources["state"]
+
+    target = erasure_policy.rules[0].targets[0]
+    target.data_category = "user.provided.identifiable.contact.state"
+    target.save(db=db)
+
+    # Should erase state fields on address table
+    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr.delete(db=db)
+
+    connector = redshift_resources["connector"]
+    redshift_client = redshift_resources["client"]
+    with redshift_client.connect() as connection:
+        connector.set_schema(connection)
+
+        address_id = redshift_resources["address_id"]
+        stmt = f"select 'id', city, state from address where id = {address_id};"
+        res = connection.execute(stmt).all()
+        for row in res:
+            # State field was targeted by erasure policy but city was not
+            assert row.city is not None
+            assert row.state is None
 
 
 class TestPrivacyRequestRunnerRunWebhooks:

@@ -139,7 +139,7 @@ class FidesopsDatasetField(DatasetField):
         fields: Optional[List["FidesopsDatasetField"]],
         values: Dict[str, Any],
     ) -> Optional[List["FidesopsDatasetField"]]:
-    """If there are sub-fields specified, type should be either empty or 'object'"""
+        """If there are sub-fields specified, type should be either empty or 'object'"""
         data_type_str = None
         if values["fidesops_meta"]:
             data_type_str = values["fidesops_meta"].data_type

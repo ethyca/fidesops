@@ -39,6 +39,7 @@ from fidesops.models.privacy_request import (
 from fidesops.models.storage import StorageConfig, ResponseFormat
 from fidesops.schemas.connection_configuration import (
     SnowflakeSchema,
+    RedshiftSchema,
 )
 from fidesops.schemas.storage.storage import (
     FileNaming,
@@ -245,6 +246,17 @@ def redshift_connection_config(db: Session) -> Generator:
             "access": AccessLevel.write,
         },
     )
+    uri = integration_config.get("redshift", {}).get("external_uri") or os.environ.get(
+        "REDSHIFT_TEST_URI"
+    )
+    db_schema = integration_config.get("redshift", {}).get(
+        "db_schema"
+    ) or os.environ.get("REDSHIFT_TEST_DB_SCHEMA")
+    if uri and db_schema:
+        schema = RedshiftSchema(url=uri, db_schema=db_schema)
+        connection_config.secrets = schema.dict()
+        connection_config.save(db=db)
+
     yield connection_config
     connection_config.delete(db)
 
@@ -410,6 +422,57 @@ def erasure_policy(
             "policy_id": erasure_policy.id,
             "masking_strategy": {
                 "strategy": "null_rewrite",
+                "configuration": {},
+            },
+        },
+    )
+
+    rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "rule_id": erasure_rule.id,
+        },
+    )
+    yield erasure_policy
+    try:
+        rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def erasure_policy_aes(
+    db: Session,
+    oauth_client: ClientDetail,
+) -> Generator:
+    erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example erasure policy aes",
+            "key": "example_erasure_policy_aes",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": "aes_encrypt",
                 "configuration": {},
             },
         },
@@ -898,6 +961,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/postgres_example_test_dataset.yml",
         "data/dataset/mongo_example_test_dataset.yml",
         "data/dataset/snowflake_example_test_dataset.yml",
+        "data/dataset/redshift_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
@@ -916,6 +980,26 @@ def snowflake_example_test_dataset_config(
         db=db,
         data={
             "connection_config_id": snowflake_connection_config.id,
+            "fides_key": fides_key,
+            "dataset": dataset,
+        },
+    )
+    yield dataset_config
+    dataset_config.delete(db=db)
+
+
+@pytest.fixture
+def redshift_example_test_dataset_config(
+    redshift_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    dataset = example_datasets[3]
+    fides_key = dataset["fides_key"]
+    dataset_config = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": redshift_connection_config.id,
             "fides_key": fides_key,
             "dataset": dataset,
         },
