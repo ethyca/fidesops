@@ -1,12 +1,14 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from pydantic import BaseModel, validator, ConstrainedStr
 
-from fidesops.common_exceptions import InvalidDataLengthValidationError
+from fidesops.common_exceptions import (
+    InvalidDataLengthValidationError,
+)
 from fidesops.common_exceptions import InvalidDataTypeValidationError
 from fidesops.graph.config import EdgeDirection
-from fidesops.graph.data_type import DataType, parse_data_type
+from fidesops.graph.data_type import parse_data_type, is_valid_data_type
 from fidesops.models.policy import _validate_data_category
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
@@ -30,17 +32,13 @@ def _valid_data_categories(
 def _valid_data_type(data_type_str: Optional[str]) -> Optional[str]:
     """If the data_type is provided ensure that it is a member of DataType."""
 
-    data_type, _ = parse_data_type(data_type_str)
-    if data_type is not None:
-        try:
-            DataType[data_type]  # pylint: disable=pointless-statement
-            return data_type_str
-        except KeyError:
-            raise InvalidDataTypeValidationError(
-                f"The data type {data_type_str} is not supported."
-            )
+    dt, _ = parse_data_type(data_type_str)
+    if not is_valid_data_type(dt):
+        raise InvalidDataTypeValidationError(
+            f"The data type {data_type_str} is not supported."
+        )
 
-    return None
+    return data_type_str
 
 
 def _valid_data_length(data_length: Optional[int]) -> Optional[int]:
@@ -132,6 +130,26 @@ class FidesopsDatasetField(DatasetField):
     ) -> Optional[List[FidesOpsKey]]:
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_categories(v)
+
+    #
+
+    @validator("fields")
+    def validate_fields_using_datatypes(
+        cls,
+        fields: Optional[List["FidesopsDatasetField"]],
+        values: Dict[str, Any],
+    ) -> Optional[List["FidesopsDatasetField"]]:
+    """If there are sub-fields specified, type should be either empty or 'object'"""
+        data_type_str = None
+        if values["fidesops_meta"]:
+            data_type_str = values["fidesops_meta"].data_type
+        if fields and data_type_str:
+            data_type, _ = parse_data_type(data_type_str)
+            if data_type != "object":
+                raise InvalidDataTypeValidationError(
+                    f"The data type {data_type} is not compatible with specified sub-fields."
+                )
+        return fields
 
 
 FidesopsDatasetField.update_forward_refs()

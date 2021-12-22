@@ -2,12 +2,15 @@ from typing import Dict, Any
 
 import pytest
 import yaml
+from pydantic import ValidationError
+
+from fidesops.common_exceptions import InvalidDataTypeValidationError
 from fidesops.graph.config import (
     CollectionAddress,
-    ArrayField,
     ScalarField,
     ObjectField,
 )
+from fidesops.graph.data_type import DataType
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.schemas.dataset import FidesopsDataset
 from ..graph.graph_test_util import field
@@ -81,6 +84,27 @@ example_dataset_nested_yaml = """dataset:
               - name: text
               - name: submitter
 """
+example_bad_dataset_nested_yaml = """dataset:
+  - fides_key: mongo_nested_test 
+    name: Mongo Example Nested Test Dataset
+    description: Example of a Mongo dataset that contains nested data
+    collections:
+      - name: photos
+        
+        fields:
+          - name: thumbnail
+            fidesops_meta:
+                data_type: string
+            fields:
+              - name: photo_id
+                data_type: integer
+              - name: name
+                data_categories: [user.provided.identifiable]
+                data_type: string
+              - name: submitter
+                data_type: string
+                data_categories: [user.provided.identifiable]          
+"""
 
 
 def __to_dataset__(yamlstr: str) -> Dict[str, Any]:
@@ -136,9 +160,18 @@ def test_nested_dataset_format():
     _id_field = field([graph], ("mongo_nested_test", "photos", "_id"))
     thumbnail_field = field([graph], ("mongo_nested_test", "photos", "thumbnail"))
 
-    assert isinstance(comments_field, ArrayField)
-    assert isinstance(comments_field.field, ObjectField)
-    assert isinstance(tags_field, ArrayField)
-    assert isinstance(tags_field.field, ScalarField)
+    assert isinstance(comments_field, ObjectField)
+    assert comments_field.is_array
+    assert isinstance(comments_field.fields["text"], ScalarField)
+    assert comments_field.fields["text"].data_type_converter == DataType.no_op.value
+    assert isinstance(tags_field, ScalarField)
+    assert tags_field.is_array
     assert isinstance(_id_field, ScalarField)
+    assert _id_field.is_array == False
     assert isinstance(thumbnail_field, ObjectField)
+    assert thumbnail_field.is_array == False
+
+
+def test_nested_dataset_validation():
+    with pytest.raises(ValidationError):
+        FidesopsDataset.parse_obj(__to_dataset__(example_bad_dataset_nested_yaml))

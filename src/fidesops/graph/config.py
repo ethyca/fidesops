@@ -88,7 +88,6 @@ from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.data_type import (
     DataTypeConverter,
     get_data_type_converter,
-    DataType,
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.querytoken import QueryToken
@@ -203,6 +202,8 @@ class Field(BaseModel, ABC):
     length: Optional[int]
     """Known length of held data"""
 
+    is_array: bool = False
+
     class Config:
         """for pydantic incorporation of custom non-pydantic types"""
 
@@ -261,25 +262,6 @@ class ObjectField(Field):
         return value
 
 
-class ArrayField(Field):
-    """A field that represents an array structure."""
-
-    field: Field
-
-    def cast(self, value: Any) -> Optional[List[Any]]:
-        """Cast the input value into the form represented by data_type.
-
-        - If the data_type is None, then it has not been specified, so just return the input value.
-        - Return either a cast value or None"""
-
-        # if no data type is specified just return the input value.
-        # Skip conversions for query tokens, which are only for display output
-        if not isinstance(value, QueryToken):
-            return [self.field.cast(v) for v in value]
-
-        return value
-
-
 # pylint: disable=too-many-arguments
 def generate_field(
     name: str,
@@ -292,43 +274,13 @@ def generate_field(
     is_array: bool,
     sub_fields: List[Field],
 ) -> Field:
-    for f in sub_fields:
-        print(f"{f.name}, {type(f)}")
     """Generate a graph field."""
-    if is_array:
-
-        if data_type_name == "object":
-            return ArrayField(
-                name=name,
-                data_categories=data_categories,
-                data_type_converter=DataType.array.value,
-                field=ObjectField(
-                    name=name,
-                    data_type_converter=DataType.object.value,
-                    fields={f.name: f for f in sub_fields},
-                ),
-            )
-
-        return ArrayField(
-            name=name,
-            data_categories=data_categories,
-            data_type_converter=DataType.array.value,
-            field=ScalarField(
-                name=name,
-                data_categories=data_categories,
-                identity=identity,
-                data_type_converter=get_data_type_converter(data_type_name),
-                references=references,
-                primary_key=is_pk,
-                length=length,
-            ),
-        )
 
     if sub_fields:
         return ObjectField(
             name=name,
             data_categories=data_categories,
-            data_type_converter=DataType.object.value,
+            is_array=is_array,
             fields={f.name: f for f in sub_fields},
         )
     return ScalarField(
@@ -339,6 +291,7 @@ def generate_field(
         references=references,
         primary_key=is_pk,
         length=length,
+        is_array=is_array,
     )
 
 

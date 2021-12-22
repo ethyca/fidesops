@@ -1,7 +1,7 @@
 import logging
 from abc import abstractmethod, ABC
 from enum import Enum
-from typing import Generic, Optional, Any, TypeVar, Dict, Tuple, List
+from typing import Generic, Optional, Any, TypeVar, Dict, Tuple, Set
 
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
@@ -145,19 +145,6 @@ class ObjectTypeConverter(DataTypeConverter[Dict[str, Any]]):
         return None
 
 
-class ArrayTypeConverter(DataTypeConverter[List[Any]]):
-    """Array type converter."""
-
-    def __init__(self) -> None:
-        super().__init__("array", [])
-
-    def to_value(self, other: Any) -> Optional[List[Any]]:
-        """Pass through dict values."""
-        if isinstance(other, list):
-            return other
-        return None
-
-
 class DataType(Enum):
     """Supported data types for data retrieval and erasure.
 
@@ -172,8 +159,22 @@ class DataType(Enum):
     boolean = BooleanTypeConverter()
     object_id = ObjectIdTypeConverter()
     object = ObjectTypeConverter()
-    array = ArrayTypeConverter()
     no_op = NoOpTypeConverter()
+
+
+_data_type_names: Set[str] = {
+    "string",
+    "integer",
+    "float",
+    "boolean",
+    "object_id",
+    "object",
+}
+
+
+def is_valid_data_type(type_name: str) -> bool:
+    """Is this type a valid data type identifier"""
+    return type_name is None or type_name in _data_type_names
 
 
 def get_data_type_converter(type_name: str) -> DataTypeConverter:

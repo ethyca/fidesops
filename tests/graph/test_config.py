@@ -137,14 +137,14 @@ def test_generate_field() -> None:
     )
 
     assert _is_string_field(string_field)
-    assert isinstance(array_field, ArrayField) and _is_string_field(array_field.field)
+    assert isinstance(array_field, ScalarField) and array_field.is_array
     assert isinstance(object_field, ObjectField) and _is_string_field(
         object_field.fields["str"]
     )
-    assert isinstance(object_field.fields["arr"], ArrayField) and _is_string_field(
-        object_field.fields["str"]
+    assert (
+        isinstance(object_field.fields["arr"], ScalarField)
+        and object_field.fields["arr"].is_array
+        and _is_string_field(object_field.fields["str"])
     )
-    assert isinstance(object_array_field, ArrayField) and isinstance(
-        object_array_field.field, ObjectField
-    )
-    assert object_array_field.field.fields["obj"] == object_field
+    assert isinstance(object_array_field, ObjectField) and object_array_field.is_array
+    assert object_array_field.fields["obj"] == object_field

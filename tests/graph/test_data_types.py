@@ -6,6 +6,7 @@ from fidesops.graph.data_type import (
     get_data_type_converter,
     StringTypeConverter,
     parse_data_type,
+    is_valid_data_type,
 )
 
 
@@ -58,9 +59,6 @@ def test_safe_none_conversion():
 
 
 def test_get_data_type_converter():
-    v = get_data_type_converter(None)
-    v2 = get_data_type_converter("")
-    v3 = get_data_type_converter("string")
     assert isinstance(get_data_type_converter(None), NoOpTypeConverter)
     assert isinstance(get_data_type_converter(""), NoOpTypeConverter)
     assert isinstance(get_data_type_converter("string"), StringTypeConverter)
@@ -69,3 +67,10 @@ def test_get_data_type_converter():
 def test_parse_data_type():
     assert parse_data_type("string") == ("string", False)
     assert parse_data_type("string[]") == ("string", True)
+
+
+def test_valid():
+    for s in ["string", "integer", "float", "boolean", "object_id", "object", None]:
+        assert is_valid_data_type(s)
+
+    assert is_valid_data_type("unknown") == False
