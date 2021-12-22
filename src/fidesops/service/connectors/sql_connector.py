@@ -234,7 +234,13 @@ class RedshiftConnector(SQLConnector):
             return SQLConnector.cursor_result_to_rows(results)
 
     # Overrides SQLConnector.mask_data
-    def mask_data(self, node: TraversalNode, policy: Policy, rows: List[Row]) -> int:
+    def mask_data(
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        request: PrivacyRequest,
+        rows: List[Row],
+    ) -> int:
         """Execute a masking request. Returns the number of records masked
 
         For redshift, we also set the search_path to be the schema defined on the ConnectionConfig if
@@ -244,7 +250,7 @@ class RedshiftConnector(SQLConnector):
         update_ct = 0
         client = self.client()
         for row in rows:
-            update_stmt = query_config.generate_update_stmt(row, policy)
+            update_stmt = query_config.generate_update_stmt(row, policy, request)
             if update_stmt is not None:
                 with client.connect() as connection:
                     self.set_schema(connection)
