@@ -143,7 +143,7 @@ class SecuritySettings(FidesSettings):
     # OAuth
     OAUTH_ROOT_CLIENT_ID: str
     OAUTH_ROOT_CLIENT_SECRET: str
-    OAUTH_ROOT_CLIENT_SECRET_HASH: Optional[Tuple[str,str]]
+    OAUTH_ROOT_CLIENT_SECRET_HASH: Optional[Tuple[str, str]]
     OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     OAUTH_CLIENT_ID_LENGTH_BYTES = 16
     OAUTH_CLIENT_SECRET_LENGTH_BYTES = 16
@@ -151,7 +151,7 @@ class SecuritySettings(FidesSettings):
     @validator("OAUTH_ROOT_CLIENT_SECRET_HASH", pre=True)
     def assemble_root_access_token(
         cls, v: Optional[str], values: Dict[str, str]
-    ) -> Tuple[str,str]:
+    ) -> Tuple[str, str]:
         """Returns a hashed value of the root access key. This is hashed as it is not wise to
         return a plaintext for of the root credential anywhere in the system"""
         value = values["OAUTH_ROOT_CLIENT_SECRET"]

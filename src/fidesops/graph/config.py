@@ -299,7 +299,7 @@ class Collection(BaseModel):
     after: Set[CollectionAddress] = set()
     field_dict: Dict[str, Field] = {}
 
-    def __init__(self, **kwargs: Dict[str,Any]) -> None:
+    def __init__(self, **kwargs: Dict[str, Any]) -> None:
         super().__init__(**kwargs)
         self.field_dict = {f.name: f for f in self.fields}
 
