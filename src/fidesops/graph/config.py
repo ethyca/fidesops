@@ -217,7 +217,6 @@ class Field(BaseModel, ABC):
 class ScalarField(Field):
     """A field that represents a simple value. Most fields will be scalar fields."""
 
-    """annotated data categories for the field used for policy actions"""
     data_type_converter: Optional[DataTypeConverter]
 
     def cast(self, value: Any) -> Optional[Any]:
