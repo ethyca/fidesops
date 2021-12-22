@@ -101,3 +101,50 @@ def test_directional_references() -> None:
         ],
         "f2": [(FieldAddress("d", "e", "f"), None)],
     }
+
+
+def test_generate_field() -> None:
+    def _is_string_field(f: Field):
+        return isinstance(f, ScalarField) and f.data_type_converter.name == "string"
+
+    string_field = generate_field(
+        "str", ["category"], "identity", "string", [], False, 0, False, []
+    )
+    array_field = generate_field(
+        "arr", ["category"], "identity", "string", [], False, 0, True, []
+    )
+    object_field = generate_field(
+        "obj",
+        ["category"],
+        "identity",
+        "object",
+        [],
+        False,
+        0,
+        False,
+        [string_field, array_field],
+    )
+    object_array_field = generate_field(
+        "obj_a",
+        ["category"],
+        "identity",
+        "string",
+        [],
+        False,
+        0,
+        True,
+        [string_field, object_field],
+    )
+
+    assert _is_string_field(string_field)
+    assert isinstance(array_field, ArrayField) and _is_string_field(array_field.field)
+    assert isinstance(object_field, ObjectField) and _is_string_field(
+        object_field.fields["str"]
+    )
+    assert isinstance(object_field.fields["arr"], ArrayField) and _is_string_field(
+        object_field.fields["str"]
+    )
+    assert isinstance(object_array_field, ArrayField) and isinstance(
+        object_array_field.field, ObjectField
+    )
+    assert object_array_field.field.fields["obj"] == object_field

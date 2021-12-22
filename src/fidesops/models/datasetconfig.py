@@ -93,7 +93,7 @@ def to_graph_field(field: FidesopsDatasetField) -> Field:
     is_array = False
     references = []
     meta_section = field.fidesops_meta
-    sub_fields: Dict[str, Field] = {}
+    sub_fields = []
     length = None
     data_type_name = None
     if meta_section:
@@ -137,7 +137,7 @@ def to_graph_field(field: FidesopsDatasetField) -> Field:
         (data_type_name, is_array) = parse_data_type(meta_section.data_type)
 
     if field.fields:
-        sub_fields = {fld.name: to_graph_field(fld) for fld in field.fields}
+        sub_fields = [to_graph_field(fld) for fld in field.fields]
 
     return generate_field(
         field.name,

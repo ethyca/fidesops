@@ -292,8 +292,23 @@ def generate_field(
     is_array: bool,
     sub_fields: List[Field],
 ) -> Field:
+    for f in sub_fields:
+        print(f"{f.name}, {type(f)}")
     """Generate a graph field."""
     if is_array:
+
+        if data_type_name == "object":
+            return ArrayField(
+                name=name,
+                data_categories=data_categories,
+                data_type_converter=DataType.array.value,
+                field=ObjectField(
+                    name=name,
+                    data_type_converter=DataType.object.value,
+                    fields={f.name: f for f in sub_fields},
+                ),
+            )
+
         return ArrayField(
             name=name,
             data_categories=data_categories,
@@ -314,7 +329,7 @@ def generate_field(
             name=name,
             data_categories=data_categories,
             data_type_converter=DataType.object.value,
-            fields=sub_fields,
+            fields={f.name: f for f in sub_fields},
         )
     return ScalarField(
         name=name,
