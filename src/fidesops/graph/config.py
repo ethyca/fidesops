@@ -197,8 +197,7 @@ class Field(BaseModel, ABC):
     identity: Optional[SeedAddress] = None
     """an optional pointer to an arbitrary key in an expected json package provided as a seed value"""
     data_categories: Optional[List[FidesOpsKey]]
-    """annotated data categories for the field used for policy actions"""
-    data_type_converter: Optional[DataTypeConverter]
+
     """Known type of held data"""
     length: Optional[int]
     """Known length of held data"""
@@ -217,6 +216,9 @@ class Field(BaseModel, ABC):
 
 class ScalarField(Field):
     """A field that represents a simple value. Most fields will be scalar fields."""
+
+    """annotated data categories for the field used for policy actions"""
+    data_type_converter: Optional[DataTypeConverter]
 
     def cast(self, value: Any) -> Optional[Any]:
         """Cast the input value into the form represented by data_type.
