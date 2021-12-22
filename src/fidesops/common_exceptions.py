@@ -51,8 +51,16 @@ class PolicyValidationError(ValueError):
     """The policy you are trying to create has invalid data"""
 
 
+class InvalidDataLengthValidationError(ValueError):
+    """The length provided is invalid"""
+
+
 class RuleValidationError(ValueError):
     """The Rule you are trying to create has invalid data"""
+
+
+class InvalidDataTypeValidationError(ValueError):
+    """The specified data type is invalid."""
 
 
 class RuleTargetValidationError(ValueError):
@@ -87,6 +95,14 @@ class AuthenticationException(BaseException):
     """Custom Exception - Authentication Failed"""
 
 
+class WebhookOrderException(BaseException):
+    """Custom Exception - Issue with webhooks order"""
+
+
+class PrivacyRequestPaused(BaseException):
+    """Halt Instruction Received on Privacy Request"""
+
+
 class AuthenticationFailure(HTTPException):
     """Wrapper for authentication failure exception"""
 
@@ -119,10 +135,8 @@ class AuthorizationError(HTTPException):
 class ClientUnsuccessfulException(FidesopsException):
     """Exception for when client call fails"""
 
-    def __init__(self, status_code: int, message: str):
-        super().__init__(
-            message=f"Client call failed. Status '{status_code}', message '{message}'"
-        )
+    def __init__(self, status_code: int):
+        super().__init__(message=f"Client call failed with status code '{status_code}'")
 
 
 class NoSuchStrategyException(ValueError):

@@ -24,7 +24,7 @@ from fidesops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
 page_size = Params().size
 
 
-class TestPutConnections:
+class TestPatchConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
         return V1_URL_PREFIX + CONNECTIONS
@@ -34,33 +34,33 @@ class TestPutConnections:
         return [
             {
                 "name": "My Main Postgres DB",
-                "key": "postgres db 1",
+                "key": "postgres_db_1",
                 "connection_type": "postgres",
                 "access": "write",
             },
             {"name": "My Mongo DB", "connection_type": "mongodb", "access": "read"},
         ]
 
-    def test_put_connections_not_authenticated(
+    def test_patch_connections_not_authenticated(
         self, api_client: TestClient, generate_auth_header, url, payload
     ) -> None:
-        response = api_client.put(url, headers={}, json=payload)
+        response = api_client.patch(url, headers={}, json=payload)
         assert 401 == response.status_code
 
-    def test_put_connections_incorrect_scope(
+    def test_patch_connections_incorrect_scope(
         self, api_client: TestClient, generate_auth_header, url, payload
     ) -> None:
         auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
-        response = api_client.put(url, headers=auth_header, json=payload)
+        response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
-    def test_put_connections_add_secret_invalid(
+    def test_patch_connections_add_secret_invalid(
         self, api_client: TestClient, generate_auth_header, url
     ) -> None:
         payload_with_secrets = [
             {
                 "name": "My Main Postgres DB",
-                "key": "postgres-db-1",
+                "key": "postgres_db_1",
                 "connection_type": "postgres",
                 "access": "write",
                 "secrets": {"host": "localhost"},
@@ -68,16 +68,35 @@ class TestPutConnections:
             {"name": "My Mongo DB", "connection_type": "mongodb", "access": "read"},
         ]
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        response = api_client.put(url, headers=auth_header, json=payload_with_secrets)
+        response = api_client.patch(url, headers=auth_header, json=payload_with_secrets)
         assert 422 == response.status_code
         response_body = json.loads(response.text)
         assert "extra fields not permitted" == response_body["detail"][0]["msg"]
 
-    def test_put_connections_bulk_create(
+    def test_patch_http_connection(
+        self, url, api_client, db: Session, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = [
+            {
+                "name": "My Post-Execution Webhook",
+                "key": "webhook_key",
+                "connection_type": "https",
+                "access": "read",
+            }
+        ]
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        body = json.loads(response.text)
+        assert body["succeeded"][0]["connection_type"] == "https"
+        http_config = ConnectionConfig.get_by(db, field="key", value="webhook_key")
+        http_config.delete(db)
+
+    def test_patch_connections_bulk_create(
         self, api_client: TestClient, db: Session, generate_auth_header, url, payload
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        response = api_client.put(url, headers=auth_header, json=payload)
+        response = api_client.patch(url, headers=auth_header, json=payload)
 
         assert 200 == response.status_code
         response_body = json.loads(response.text)
@@ -86,10 +105,10 @@ class TestPutConnections:
 
         postgres_connection = response_body["succeeded"][0]
         postgres_resource = (
-            db.query(ConnectionConfig).filter_by(key="postgres-db-1").first()
+            db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()
         )
         assert postgres_connection["name"] == "My Main Postgres DB"
-        assert postgres_connection["key"] == "postgres-db-1"
+        assert postgres_connection["key"] == "postgres_db_1"
         assert postgres_connection["connection_type"] == "postgres"
         assert postgres_connection["access"] == "write"
         assert postgres_connection["created_at"] is not None
@@ -98,9 +117,9 @@ class TestPutConnections:
         assert "secrets" not in postgres_connection
 
         mongo_connection = response_body["succeeded"][1]
-        mongo_resource = db.query(ConnectionConfig).filter_by(key="my-mongo-db").first()
+        mongo_resource = db.query(ConnectionConfig).filter_by(key="my_mongo_db").first()
         assert mongo_connection["name"] == "My Mongo DB"
-        assert mongo_connection["key"] == "my-mongo-db"  # stringified name
+        assert mongo_connection["key"] == "my_mongo_db"  # stringified name
         assert mongo_connection["connection_type"] == "mongodb"
         assert mongo_connection["access"] == "read"
         assert mongo_connection["created_at"] is not None
@@ -113,35 +132,34 @@ class TestPutConnections:
         postgres_resource.delete(db)
         mongo_resource.delete(db)
 
-    def test_put_connections_bulk_update_key_error(
+    def test_patch_connections_bulk_update_key_error(
         self, url, api_client: TestClient, db: Session, generate_auth_header, payload
     ) -> None:
         # Create resources first
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        api_client.put(url, headers=auth_header, json=payload)
+        api_client.patch(url, headers=auth_header, json=payload)
 
         # Update resources
-        response = api_client.put(url, headers=auth_header, json=payload)
+        response = api_client.patch(url, headers=auth_header, json=payload)
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 0
-        assert len(response_body["failed"]) == 2
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 1
 
+        succeeded = response_body["succeeded"]
         failed = response_body["failed"]
-        # non-slugified key was supplied in request body, which turned into a key that exists
-        assert failed[0]["data"]["key"] == "postgres db 1"
-        assert (
-            "Key postgres-db-1 already exists in ConnectionConfig"
-            in failed[0]["message"]
-        )
+
+        # key supplied matches existing key, so the rest of the configs are updated
+        assert succeeded[0]["key"] == "postgres_db_1"
+
         # No key was supplied in request body, just a name, and that name turned into a key that exists
-        assert failed[1]["data"]["key"] is None
+        assert failed[0]["data"]["key"] is None
         assert (
-            "Key my-mongo-db already exists in ConnectionConfig" in failed[1]["message"]
+            "Key my_mongo_db already exists in ConnectionConfig" in failed[0]["message"]
         )
 
-    def test_put_connections_bulk_create_limit_exceeded(
+    def test_patch_connections_bulk_create_limit_exceeded(
         self, url, api_client: TestClient, db: Session, generate_auth_header
     ):
         payload = []
@@ -149,56 +167,56 @@ class TestPutConnections:
             payload.append(
                 {
                     "name": f"My Main Postgres DB {i}",
-                    "key": f"postgres-db-{i}",
+                    "key": f"postgres_db_{i}",
                     "connection_type": "postgres",
                     "access": "read",
                 }
             )
 
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        response = api_client.put(url, headers=auth_header, json=payload)
+        response = api_client.patch(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
             == "ensure this value has at most 50 items"
         )
 
-    def test_put_connections_bulk_update(
+    def test_patch_connections_bulk_update(
         self, url, api_client: TestClient, db: Session, generate_auth_header, payload
     ) -> None:
         # Create resources first
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        api_client.put(url, headers=auth_header, json=payload)
+        api_client.patch(url, headers=auth_header, json=payload)
 
         # Update resources
         payload = [
             {
                 "name": "My Main Postgres DB",
-                "key": "postgres-db-1",
+                "key": "postgres_db_1",
                 "connection_type": "postgres",
                 "access": "read",
             },
             {
-                "key": "my-mongo-db",
+                "key": "my_mongo_db",
                 "name": "My Mongo DB",
                 "connection_type": "mongodb",
                 "access": "write",
             },
             {
-                "key": "my-redshift-cluster",
+                "key": "my_redshift_cluster",
                 "name": "My Amazon Redshift",
                 "connection_type": "redshift",
                 "access": "read",
             },
             {
-                "key": "my-snowflake",
+                "key": "my_snowflake",
                 "name": "Snowflake Warehouse",
                 "connection_type": "snowflake",
                 "access": "write",
             },
         ]
 
-        response = api_client.put(
+        response = api_client.patch(
             V1_URL_PREFIX + CONNECTIONS, headers=auth_header, json=payload
         )
 
@@ -213,14 +231,14 @@ class TestPutConnections:
         assert "secrets" not in postgres_connection
         assert postgres_connection["updated_at"] is not None
         postgres_resource = (
-            db.query(ConnectionConfig).filter_by(key="postgres-db-1").first()
+            db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()
         )
         assert postgres_resource.access.value == "read"
 
         mongo_connection = response_body["succeeded"][1]
         assert mongo_connection["access"] == "write"
         assert mongo_connection["updated_at"] is not None
-        mongo_resource = db.query(ConnectionConfig).filter_by(key="my-mongo-db").first()
+        mongo_resource = db.query(ConnectionConfig).filter_by(key="my_mongo_db").first()
         assert mongo_resource.access.value == "write"
         assert "secrets" not in mongo_connection
 
@@ -228,7 +246,7 @@ class TestPutConnections:
         assert redshift_connection["access"] == "read"
         assert redshift_connection["updated_at"] is not None
         redshift_resource = (
-            db.query(ConnectionConfig).filter_by(key="my-redshift-cluster").first()
+            db.query(ConnectionConfig).filter_by(key="my_redshift_cluster").first()
         )
         assert redshift_resource.access.value == "read"
         assert "secrets" not in redshift_connection
@@ -237,7 +255,7 @@ class TestPutConnections:
         assert snowflake_connection["access"] == "write"
         assert snowflake_connection["updated_at"] is not None
         snowflake_resource = (
-            db.query(ConnectionConfig).filter_by(key="my-snowflake").first()
+            db.query(ConnectionConfig).filter_by(key="my_snowflake").first()
         )
         assert snowflake_resource.access.value == "write"
         assert "secrets" not in snowflake_connection
@@ -248,7 +266,7 @@ class TestPutConnections:
         snowflake_resource.delete(db)
 
     @mock.patch("fidesops.db.base_class.OrmWrappedFidesopsBase.create_or_update")
-    def test_put_connections_failed_response(
+    def test_patch_connections_failed_response(
         self, mock_create: Mock, api_client: TestClient, generate_auth_header, url
     ) -> None:
         mock_create.side_effect = HTTPException(mock.Mock(status=400), "Test error")
@@ -256,14 +274,14 @@ class TestPutConnections:
         payload = [
             {
                 "name": "My Main Postgres DB",
-                "key": "postgres-db-1",
+                "key": "postgres_db_1",
                 "connection_type": "postgres",
                 "access": "write",
             },
             {"name": "My Mongo DB", "connection_type": "mongodb", "access": "read"},
         ]
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        response = api_client.put(url, headers=auth_header, json=payload)
+        response = api_client.patch(url, headers=auth_header, json=payload)
         assert response.status_code == 200  # Returns 200 regardless
         response_body = json.loads(response.text)
         assert response_body["succeeded"] == []
@@ -278,7 +296,7 @@ class TestPutConnections:
 
         assert response_body["failed"][0]["data"] == {
             "name": "My Main Postgres DB",
-            "key": "postgres-db-1",
+            "key": "postgres_db_1",
             "connection_type": "postgres",
             "access": "write",
         }
@@ -330,7 +348,7 @@ class TestGetConnections:
             "created_at",
         }
 
-        assert connection["key"] == "my-postgres-db-1"
+        assert connection["key"] == "my_postgres_db_1"
         assert connection["connection_type"] == "postgres"
         assert connection["access"] == "write"
         assert connection["updated_at"] is not None
@@ -364,7 +382,7 @@ class TestGetConnection:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
-            f"{V1_URL_PREFIX}{CONNECTIONS}/this-is-a-nonexistant-key",
+            f"{V1_URL_PREFIX}{CONNECTIONS}/this_is_a_nonexistent_key",
             headers=auth_header,
         )
         assert resp.status_code == 404
@@ -388,7 +406,7 @@ class TestGetConnection:
             "created_at",
         }
 
-        assert response_body["key"] == "my-postgres-db-1"
+        assert response_body["key"] == "my_postgres_db_1"
         assert response_body["connection_type"] == "postgres"
         assert response_body["access"] == "write"
         assert response_body["updated_at"] is not None
@@ -419,7 +437,7 @@ class TestDeleteConnection:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
         resp = api_client.delete(
-            f"{V1_URL_PREFIX}{CONNECTIONS}/non-existent-config", headers=auth_header
+            f"{V1_URL_PREFIX}{CONNECTIONS}/non_existent_config", headers=auth_header
         )
         assert resp.status_code == 404
 
@@ -467,9 +485,9 @@ class TestPutConnectionConfigSecrets:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.put(
-            f"{V1_URL_PREFIX}{CONNECTIONS}/this-is-not-a-known-key/secret",
+            f"{V1_URL_PREFIX}{CONNECTIONS}/this_is_not_a_known_key/secret",
             headers=auth_header,
-            json={}
+            json={},
         )
         assert resp.status_code == 404
 
@@ -579,6 +597,7 @@ class TestPutConnectionConfigSecrets:
             "database": "dev",
             "user": "awsuser",
             "password": "test_password",
+            "db_schema": "test"
         }
         resp = api_client.put(
             url + "?verify=False",
@@ -597,6 +616,7 @@ class TestPutConnectionConfigSecrets:
             "database": "dev",
             "user": "awsuser",
             "password": "test_password",
+            "db_schema": "test",
             "url": None,
         }
         assert redshift_connection_config.last_test_timestamp is None
@@ -642,3 +662,35 @@ class TestPutConnectionConfigSecrets:
         }
         assert snowflake_connection_config.last_test_timestamp is None
         assert snowflake_connection_config.last_test_succeeded is None
+
+    def test_put_http_connection_config_secrets(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        https_connection_config,
+    ) -> None:
+        """Note: HTTP Connection Configs don't attempt to test secrets"""
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{https_connection_config.key}/secret"
+        payload = {"url": "example.com", "authorization": "test_authorization123"}
+
+        resp = api_client.put(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        body = json.loads(resp.text)
+        assert (
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {https_connection_config.key}."
+        )
+        assert body["test_status"] == "skipped"
+        db.refresh(https_connection_config)
+        assert https_connection_config.secrets == {
+            "url": "example.com",
+            "authorization": "test_authorization123",
+        }
+        assert https_connection_config.last_test_timestamp is None
+        assert https_connection_config.last_test_succeeded is None

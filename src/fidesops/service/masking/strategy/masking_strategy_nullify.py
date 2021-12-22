@@ -23,9 +23,12 @@ class NullMaskingStrategy(MaskingStrategy):
     ):
         """For parity with other MaskingStrategies, but for NullMaskingStrategy, nothing is pulled from the config"""
 
-    def mask(self, value: Optional[str]) -> None:
+    def mask(self, value: Optional[str], privacy_request_id: Optional[str]) -> None:
         """Replaces the value with a null value"""
         return None
+
+    def secrets_required(self) -> bool:
+        return False
 
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
@@ -38,3 +41,8 @@ class NullMaskingStrategy(MaskingStrategy):
             description="Masks the input value with a null value",
             configurations=[],
         )
+
+    @staticmethod
+    def data_type_supported(data_type: Optional[str]) -> bool:
+        """Determines whether or not the given data type is supported by this masking strategy"""
+        return True
