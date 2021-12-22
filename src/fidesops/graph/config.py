@@ -3,7 +3,7 @@
  representations.
 
   The language here is intended to be more general than SQL-specific language, since the intention here is to be able to
-  reference many different kinds of data resources. If we think of a traditionql SQL database as composed of
+  reference many different kinds of data resources. If we think of a traditional SQL database as composed of
  Schemas, Tables, and Fields, in this nomenclature
  Schema == Dataset: any abstract data source that may contain multiple data sets
  Table == Collection:  a set of identifiable fields (e.g. rows of data)
@@ -70,7 +70,7 @@ Field identities:
   - select all values in mysql.users where email == "test@test.com"
   - select all values in mongo.users where the username is in (any of the "name" fields in the rows found in the previous step.
 
-  Note that this makes no statements about _how_ this data is to be retrieved. In particular many datastores will need special
+  Note that this makes no statements about _how_ this data is to be retrieved. In particular many data stores will need special
   instructions (such as json paths) to extract data.
 
 
@@ -239,26 +239,14 @@ class ObjectField(Field):
 
     fields: Dict[str, Field]
 
-    def cast(self, value: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Cast the input value into the form represented by data_type.
+    def cast(self, value_map: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Cast the input value into the form represented by data_type."""
 
-        - If the data_type is None, then it has not been specified, so just return the input value.
-        - Return either a cast value or None"""
-
-        def extract(key: str, values: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-            if key in values:
-                return values[key]
-            return None
-
-        # if no data type is specified just return the input value.
-        # Skip conversions for query tokens, which are only for display output
-        if not isinstance(value, QueryToken):
-            return {
-                field.name: field.cast(extract(field.name, value))
-                for field in self.fields
-            }
-
-        return value
+        return {
+            field.name: field.cast(value_map[field.name])
+            for field in self.fields.values()
+            if field.name in value_map
+        }
 
 
 # pylint: disable=too-many-arguments
@@ -311,7 +299,7 @@ class Collection(BaseModel):
     after: Set[CollectionAddress] = set()
     field_dict: Dict[str, Field] = {}
 
-    def __init__(self, **kwargs: dict) -> None:
+    def __init__(self, **kwargs: Dict[str,Any]) -> None:
         super().__init__(**kwargs)
         self.field_dict = {f.name: f for f in self.fields}
 

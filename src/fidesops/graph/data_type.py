@@ -194,8 +194,8 @@ def parse_data_type(type_string: Optional[str]) -> Tuple[Optional[str], bool]:
     - 'string[]' -> ('string', true)
     """
     if not type_string:
-        return (None, False)
+        return None, False
     idx = type_string.find("[]")
     if idx == -1:
-        return (type_string, False)
-    return (type_string[:idx], True)
+        return type_string, False
+    return type_string[:idx], True
