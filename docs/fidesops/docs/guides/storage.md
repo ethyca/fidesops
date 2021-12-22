@@ -8,7 +8,7 @@ In this section we'll cover:
 - How to test your storage destinations
 - How to extend this module to create a new, custom storage destination type
 
-Take me directly to [API docs](/api#operations-Storage-upload_data_api_v1_storage__request_id__post/) (you'll need to `make server` first)
+Take me directly to [API docs](/fidesops/api#operations-Storage-upload_data_api_v1_storage__request_id__post) 
 
 ## Overview
 
@@ -32,15 +32,15 @@ To configure a StorageConfig, you'll first need to choose a storage destination 
 
 ## Configuration
 
-Let's get started. To create a new StorageConfig, use the following endpoint ([API docs here](/api#operations-Storage-put_config_api_v1_storage_config_put/)):
+Let's get started. To create a new StorageConfig, use the following endpoint ([API docs here](/fidesops/api#operations-Storage-put_config_api_v1_storage_config_put)):
 
 ```bash
-  PUT {host}/api/v1/storage/config
+  PATCH {host}/api/v1/storage/config
   {
     "destinations": [
       {
         "name": str,
-        "key": str (optional),
+        "key": FidesOpsKey (optional),
         "type": str,
         "format": str
         "details": {
@@ -60,7 +60,7 @@ Let's get started. To create a new StorageConfig, use the following endpoint ([A
 Params:
 
 - `name`: A unique user-friendly name for your storage destination.
-- `key`: A unique key used to manage your storage destination. This is auto-generated from `name` (dasherized) if left blank.
+- `key`: A unique key used to manage your storage destination. This is auto-generated from `name` if left blank. Accepted values are alphanumeric, `_`, and `.`.
 - `type`: Type of storage destination. Supported types include `s3`, `onetrust`, and `local`. You may configure multiple destinations of the same type.
 - `format`: Format of uploaded data. Supported formats include `json` and `csv`. For OneTrust and local destination types, use `json`.
 
@@ -95,7 +95,7 @@ Example response:
                 "naming": "request_id",
                 "object_name": "requests"
             },
-            "key": "s3-storage-2"
+            "key": "s3_storage_2"
         }
     ],
     "total": 1,
@@ -109,7 +109,7 @@ Next, you'll need to authenticate secrets with the specific storage destination.
 
 Authentication is not needed for the `local` destination type.
 
-Use the `storage_key` obtained from above in the following endpoint ([API docs here](/api#operations-Storage-put_config_secrets_api_v1_storage_config__config_key__secret_put)): 
+Use the `storage_key` obtained from above in the following endpoint ([API docs here](/fidesops/api#operations-Storage-put_config_secrets_api_v1_storage_config__config_key__secret_put)): 
 
 ```bash
   PUT {host}/api/v1/storage/config/{storage_key}/secret
@@ -144,7 +144,7 @@ To test that your storage destination works correctly, you may hit the upload en
 
 Keep in mind that OneTrust destinations will need to be tested end-to-end, using the OneTrust interface to approve a test privacy request. 
 
-To upload data to a storage destination of choice ([api docs here](/api#operations-Storage-upload_data_api_v1_storage__request_id__post/)):
+To upload data to a storage destination of choice ([api docs here](/fidesops/api#operations-Storage-upload_data_api_v1_storage__request_id__post)):
 
 ```bash
   PUT {host}/api/v1/storage/{request_id}

@@ -17,7 +17,7 @@ To summarize so far, we have:
     5) Defined Policies describing what data we're looking for and what to do with that data.
 
 For our last step, we'll write a method that will let us create a Privacy Request.  We need to specify the
-Policy we want applied to that Privacy Request, as well as the starting Identities of the user we'll need
+Policy we want applied to that Privacy Request, as well as the starting identity of the user we'll need
 to locate the remaining user information:
 
 ### Define helper method
@@ -26,14 +26,14 @@ def create_privacy_request(email, policy_key, access_token):
     """
     Create a Privacy Request that is executed against the given request Policy.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Privacy%20Requests/create_privacy_request_api_v1_privacy_request_post
+    See http://localhost:8000/api#operations-Privacy_Requests-create_privacy_request_api_v1_privacy_request_post
     """
 
     privacy_request_data = [
         {
             "requested_at": datetime(2021, 1, 1).isoformat(),
             "policy_key": policy_key,
-            "identities": [{"email": email}],
+            "identity": {"email": email},
         },
     ]
     response = requests.post(
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     email = "user@example.com"
     privacy_requests = create_privacy_request(
         email=email,
-        policy_key="example-request-policy",
+        policy_key="example_request_policy",
         access_token=access_token,
     )
 ```

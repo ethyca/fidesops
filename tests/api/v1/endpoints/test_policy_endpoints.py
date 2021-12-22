@@ -22,7 +22,6 @@ from fidesops.models.policy import (
     RuleTarget,
     generate_fides_data_categories,
 )
-from fidesops.service.masking.strategy.masking_strategy_hash import HASH
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 
 
@@ -65,7 +64,7 @@ class TestGetPolicies:
         assert len(policy_data["rules"]) == 1
 
         rule = policy_data["rules"][0]
-        assert rule["key"] == "access-request-rule"
+        assert rule["key"] == "access_request_rule"
         assert rule["action_type"] == "access"
         assert rule["storage_destination"]["type"] == "s3"
 
@@ -117,7 +116,7 @@ class TestGetPolicyDetail:
         assert len(data["rules"]) == 1
 
         rule = data["rules"][0]
-        assert rule["key"] == "access-request-rule"
+        assert rule["key"] == "access_request_rule"
         assert rule["action_type"] == "access"
         assert rule["storage_destination"]["type"] == "s3"
 
@@ -149,7 +148,7 @@ class TestGetPolicyDetail:
         assert len(policy_data["rules"]) == 1
 
         rule = policy_data["rules"][0]
-        assert rule["key"] == "access-request-rule"
+        assert rule["key"] == "access_request_rule"
         assert rule["action_type"] == "access"
         assert rule["storage_destination"]["type"] == "s3"
 
@@ -179,14 +178,14 @@ class TestCreatePolicies:
     def test_create_policies_unauthenticated(
         self, url, api_client: TestClient, payload
     ):
-        resp = api_client.put(url, json=payload)
+        resp = api_client.patch(url, json=payload)
         assert resp.status_code == 401
 
     def test_create_policies_wrong_scope(
         self, url, api_client: TestClient, payload, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[scopes.POLICY_READ])
-        resp = api_client.put(url, headers=auth_header, json=payload)
+        resp = api_client.patch(url, headers=auth_header, json=payload)
         assert resp.status_code == 403
 
     def test_create_polices_limit_exceeded(
@@ -204,7 +203,7 @@ class TestCreatePolicies:
             )
 
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
-        response = api_client.put(url, headers=auth_header, json=payload)
+        response = api_client.patch(url, headers=auth_header, json=payload)
 
         assert 422 == response.status_code
         assert (
@@ -222,7 +221,7 @@ class TestCreatePolicies:
         payload,
     ):
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
-        resp = api_client.put(url, json=payload, headers=auth_header)
+        resp = api_client.patch(url, json=payload, headers=auth_header)
         assert resp.status_code == 200
 
         data = resp.json()
@@ -256,7 +255,7 @@ class TestCreatePolicies:
             },
         ]
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
-        resp = api_client.put(url, json=data, headers=auth_header)
+        resp = api_client.patch(url, json=data, headers=auth_header)
         assert resp.status_code == 200
 
         data = resp.json()
@@ -274,7 +273,7 @@ class TestCreatePolicies:
             }
         ]
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
-        resp = api_client.put(url, json=data, headers=auth_header)
+        resp = api_client.patch(url, json=data, headers=auth_header)
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
@@ -292,7 +291,7 @@ class TestCreatePolicies:
         generate_auth_header,
         storage_config,
     ):
-        key = "here-is-a-key"
+        key = "here_is_a_key"
         data = [
             {
                 "name": "test create policy api",
@@ -303,7 +302,7 @@ class TestCreatePolicies:
             }
         ]
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
-        resp = api_client.put(url, json=data, headers=auth_header)
+        resp = api_client.patch(url, json=data, headers=auth_header)
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
@@ -315,6 +314,32 @@ class TestCreatePolicies:
             db=db, conditions=(Policy.key == policy_data["key"])
         ).first()
         pol.delete(db=db)
+
+    def test_create_policy_with_invalid_key(
+        self,
+        url,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        storage_config,
+    ):
+        key = "here-is-an-invalid-key"
+        data = [
+            {
+                "name": "test create policy api",
+                "action_type": "erasure",
+                "data_category": DataCategory("user.provided.identifiable").value,
+                "storage_destination_key": storage_config.key,
+                "key": key,
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
+        resp = api_client.patch(url, json=data, headers=auth_header)
+        assert resp.status_code == 422
+        assert (
+            json.loads(resp.text)["detail"][0]["msg"]
+            == "FidesKey must only contain alphanumeric characters, '.' or '_'."
+        )
 
     def test_create_policy_already_exists(
         self,
@@ -330,7 +355,7 @@ class TestCreatePolicies:
             }
         ]
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
-        resp = api_client.put(url, json=data, headers=auth_header)
+        resp = api_client.patch(url, json=data, headers=auth_header)
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
@@ -342,21 +367,21 @@ class TestCreateRules:
         return V1_URL_PREFIX + RULE_CREATE_URI.format(policy_key=policy.key)
 
     def test_create_rules_unauthenticated(self, url, api_client):
-        resp = api_client.put(url, json={})
+        resp = api_client.patch(url, json={})
         assert resp.status_code == 401
 
     def test_create_rules_wrong_scope(
         self, url, api_client: TestClient, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[scopes.POLICY_READ])
-        resp = api_client.put(url, headers=auth_header, json={})
+        resp = api_client.patch(url, headers=auth_header, json={})
         assert resp.status_code == 403
 
     def test_create_rules_invalid_policy(
         self, url, api_client: TestClient, generate_auth_header, policy, storage_config
     ):
         auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
-        url = V1_URL_PREFIX + RULE_CREATE_URI.format(policy_key="bad-key")
+        url = V1_URL_PREFIX + RULE_CREATE_URI.format(policy_key="bad_key")
 
         data = [
             {
@@ -366,7 +391,7 @@ class TestCreateRules:
             }
         ]
 
-        resp = api_client.put(url, headers=auth_header, json=data)
+        resp = api_client.patch(url, headers=auth_header, json=data)
         assert resp.status_code == 404
 
     def test_create_rules_limit_exceeded(
@@ -383,7 +408,7 @@ class TestCreateRules:
             )
 
         auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
-        response = api_client.put(url, headers=auth_header, json=payload)
+        response = api_client.patch(url, headers=auth_header, json=payload)
 
         assert 422 == response.status_code
         assert (
@@ -407,7 +432,7 @@ class TestCreateRules:
             }
         ]
         auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
-        resp = api_client.put(
+        resp = api_client.patch(
             url,
             json=data,
             headers=auth_header,
@@ -436,7 +461,7 @@ class TestCreateRules:
         ]
 
         auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
-        resp = api_client.put(
+        resp = api_client.patch(
             url,
             json=data,
             headers=auth_header,
@@ -464,7 +489,7 @@ class TestCreateRules:
             }
         ]
         auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
-        resp = api_client.put(
+        resp = api_client.patch(
             url,
             json=data,
             headers=auth_header,
@@ -494,7 +519,7 @@ class TestCreateRules:
             db=db,
             data={
                 "name": "Second Access Request policy",
-                "key": "second-access-request-policy",
+                "key": "second_access_request_policy",
                 "client_id": oauth_client.id,
             },
         )
@@ -510,7 +535,7 @@ class TestCreateRules:
             }
         ]
         auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
-        resp = api_client.put(
+        resp = api_client.patch(
             url,
             json=data,
             headers=auth_header,
@@ -558,7 +583,7 @@ class TestDeleteRule:
         rule = policy.rules[0]
 
         url = V1_URL_PREFIX + RULE_DETAIL_URI.format(
-            policy_key="bad-policy",
+            policy_key="bad_policy",
             rule_key=rule.key,
         )
 
@@ -571,7 +596,7 @@ class TestDeleteRule:
     ):
         url = V1_URL_PREFIX + RULE_DETAIL_URI.format(
             policy_key=policy.key,
-            rule_key="bad-rule",
+            rule_key="bad_rule",
         )
 
         auth_header = generate_auth_header(scopes=[scopes.RULE_DELETE])
@@ -621,7 +646,7 @@ class TestRuleTargets:
             },
         ]
         auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
-        resp = api_client.put(
+        resp = api_client.patch(
             self.get_rule_url(policy.key, rule.key),
             json=data,
             headers=auth_header,
@@ -643,16 +668,16 @@ class TestRuleTargets:
             {
                 "data_category": data_category,
                 "name": "this-is-a-test",
-                "key": "this-is-a-test",
+                "key": "this_is_a_test",
             },
             {
                 "data_category": data_category,
                 "name": "this-is-another-test",
-                "key": "this-is-another-test",
+                "key": "this_is_another_test",
             },
         ]
         auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
-        resp = api_client.put(
+        resp = api_client.patch(
             self.get_rule_url(policy.key, rule.key),
             json=data,
             headers=auth_header,
@@ -688,7 +713,7 @@ class TestRuleTargets:
             )
 
         auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
-        response = api_client.put(
+        response = api_client.patch(
             self.get_rule_url(policy.key, rule.key), headers=auth_header, json=payload
         )
 
@@ -715,7 +740,7 @@ class TestRuleTargets:
             },
         ]
         auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
-        resp = api_client.put(
+        resp = api_client.patch(
             self.get_rule_url(policy.key, rule.key),
             json=data,
             headers=auth_header,
@@ -762,7 +787,7 @@ class TestRuleTargets:
             },
         ]
         auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
-        resp = api_client.put(
+        resp = api_client.patch(
             # Here we send the request to the URL corresponding to a different rule entirely
             self.get_rule_url(policy.key, another_rule.key),
             json=data,
@@ -836,7 +861,7 @@ class TestRuleTargets:
             },
         ]
         auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
-        resp = api_client.put(
+        resp = api_client.patch(
             self.get_rule_url(policy.key, erasure_rule.key),
             json=data,
             headers=auth_header,

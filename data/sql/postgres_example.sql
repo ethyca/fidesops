@@ -10,6 +10,9 @@ DROP TABLE IF EXISTS public.employee;
 DROP TABLE IF EXISTS public.customer;
 DROP TABLE IF EXISTS public.address;
 DROP TABLE IF EXISTS public.product;
+DROP TABLE IF EXISTS public.composite_pk_test;
+DROP TABLE IF EXISTS public.type_link_test;
+
 
 CREATE TABLE public.product (
     id INT PRIMARY KEY,
@@ -96,6 +99,24 @@ CREATE TABLE public.report (
     total_visits INT
 );
 
+CREATE TABLE public.composite_pk_test (
+    id_a INT NOT NULL,
+    id_b INT NOT NULL,
+    description VARCHAR(100),
+    customer_id INT,
+    PRIMARY KEY(id_a, id_b)
+);
+
+INSERT INTO public.composite_pk_test VALUES
+    (1,10,'linked to customer 1',1),
+    (1,11,'linked to customer 2',2),
+    (2,10,'linked to customer 3',3);
+
+CREATE TABLE public.type_link_test (
+    id CHARACTER VARYING(100) PRIMARY KEY,
+    name CHARACTER VARYING(100)
+);
+
 -- Populate tables with some public data
 INSERT INTO public.product VALUES
 (1, 'Example Product 1', '$10.00'),
@@ -168,3 +189,7 @@ INSERT INTO public.report VALUES
 (2, 'admin-account@example.com', 'Monthly Report', 2021, 9, 100),
 (3, 'admin-account@example.com', 'Monthly Report', 2021, 10, 100),
 (4, 'admin-account@example.com', 'Monthly Report', 2021, 11, 100);
+
+INSERT INTO public.type_link_test VALUES
+('1', 'name1'),
+('2', 'name2');

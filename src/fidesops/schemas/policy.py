@@ -1,4 +1,5 @@
 from typing import Dict, List, Optional, Union
+from fidesops.schemas.shared_schemas import FidesOpsKey
 
 from fidesops.models.policy import (
     ActionType,
@@ -31,7 +32,7 @@ class RuleTarget(BaseSchema):
     """An external representation of a Rule's target DataCategory within a Fidesops Policy"""
 
     name: Optional[str]
-    key: Optional[str]
+    key: Optional[FidesOpsKey]
     data_category: DataCategory
 
     class Config:
@@ -44,7 +45,7 @@ class RuleBase(BaseSchema):
     """An external representation of a Rule within a Fidesops Policy"""
 
     name: str
-    key: Optional[str]
+    key: Optional[FidesOpsKey]
     action_type: ActionType
 
     class Config:
@@ -59,7 +60,7 @@ class RuleCreate(RuleBase):
     over a composite object.
     """
 
-    storage_destination_key: Optional[str]
+    storage_destination_key: Optional[FidesOpsKey]
     masking_strategy: Optional[PolicyMaskingSpec]
 
 
@@ -81,10 +82,10 @@ class Rule(RuleBase):
 
 
 class Policy(BaseSchema):
-    """An external representation of a FidesOps Policy"""
+    """An external representation of a Fidesops Policy"""
 
     name: str
-    key: Optional[str]
+    key: Optional[FidesOpsKey]
 
 
 class PolicyResponse(Policy):

@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, Dict
+from typing import Optional, Tuple
 
 from fidesops.graph.config import (
     Collection,
@@ -11,17 +11,18 @@ from fidesops.graph.data_type import DataType
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
 from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
 def integration_db_mongo_graph(
-    db_name: str, connection_key: str
+    db_name: str, connection_key: FidesOpsKey
 ) -> Tuple[Dataset, DatasetGraph]:
     dataset = integration_db_dataset(db_name, connection_key)
     for coll in dataset.collections:
         id_field = next(f for f in coll.fields if f.name == "id")
         id_field.primary_key = False
         coll.fields.append(
-            Field(name="_id", data_type=DataType.mongo_object_id, primary_key=True)
+            Field(name="_id", data_type=DataType.object_id, primary_key=True)
         )
     return dataset, DatasetGraph(dataset)
 
@@ -69,10 +70,10 @@ def combined_mongo_posgresql_graph(
         connection_key=mongo_config.key,
     )
 
-    return (mongo_dataset, postgres_dataset)
+    return mongo_dataset, postgres_dataset
 
 
-def integration_db_dataset(db_name: str, connection_key: str) -> Dataset:
+def integration_db_dataset(db_name: str, connection_key: FidesOpsKey) -> Dataset:
     """A traversal that maps tables in the postgresql test database"""
     customers = Collection(
         name="customer",
@@ -143,7 +144,7 @@ def integration_db_dataset(db_name: str, connection_key: str) -> Dataset:
 
 
 def integration_db_graph(
-    db_name: str, connection_key: Optional[str] = None
+    db_name: str, connection_key: Optional[FidesOpsKey] = None
 ) -> DatasetGraph:
     """A traversal that maps tables in the postgresql test database"""
     if not connection_key:

@@ -27,7 +27,9 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
         self.length = configuration.length
         self.format_preservation = configuration.format_preservation
 
-    def mask(self, value: Optional[str]) -> Optional[str]:
+    def mask(
+        self, value: Optional[str], privacy_request_id: Optional[str]
+    ) -> Optional[str]:
         """Replaces the value with a random lowercase string of the configured length"""
         if value is None:
             return None
@@ -38,6 +40,9 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
             formatter = FormatPreservation(self.format_preservation)
             return formatter.format(masked)
         return masked
+
+    def secrets_required(self) -> bool:
+        return False
 
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
@@ -55,3 +60,9 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
                 )
             ],
         )
+
+    @staticmethod
+    def data_type_supported(data_type: Optional[str]) -> bool:
+        """Determines whether or not the given data type is supported by this masking strategy"""
+        supported_data_types = {"string"}
+        return data_type in supported_data_types
