@@ -3,7 +3,7 @@
 
 A Policy is a set of instructions, or "Rules", that are executed when a user submits a request to perform an action on their data. Every Rule contains an "execution strategy":
 
-* `action_type`: The action this Rule performs, either `access` (retrieve data) or `erasure` (obfuscate data). Other actions will be added in subsequent releases.
+* `action_type`: The action this Rule performs, either `access` (retrieve data) or `erasure` (mask data). Other actions will be added in subsequent releases.
 
 * `storage_destination`: If the `action_type` is `access`, this is the key of a `StorageConfig` object that defines where the data is uploaded.  Currently, Amazon S3 buckets and local filesystem storage are supported. See [How-To: Configure Storage](storage.md) for more information.
 
@@ -64,7 +64,7 @@ PUT /api/v1/policy/{policy_key}/rule
 ]
 ```
 
-!!! The `storage_key` value must identify an existing StorageConfig object. Again, see  [How-To: Configure Storage](storage.md) for instructions on creating a StorageConfig.
+!!! The `storage_key` value must identify an existing StorageConfig object. See  [How-To: Configure Storage](storage.md) for instructions on creating a StorageConfig.
 
 The operation returns a `rule_key`, which we use to add a Target:
 

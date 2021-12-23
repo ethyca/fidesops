@@ -11,7 +11,7 @@ Take me directly to [API docs](/api#operations-Privacy_Requests-get_request_stat
 
 ## What is a Privacy Request?
 
-A Privacy Request  represents a request to perform an action on a user's identity data. The Request object itself identifies the user by email address, phone number, social security number, or other identifiable information. The data that will be affected and how it's affected is described in a Policy object that's associated with the Request.
+A Privacy Request represents a request to perform an action on a user's identity data. The Request object itself identifies the user by email address, phone number, social security number, or other identifiable information. The data that will be affected and how it's affected is described in a Policy object that's associated with the Request.
 
 For more information on Policies, see [How-To: Configure Policies](policies.md#rule-attributes).
 
