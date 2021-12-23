@@ -1,7 +1,7 @@
 services:
   fidesops:
     depends_on:
-      - mongo_example
+      - mongodb_example
 
   mongodb_example:
     image: mongo:5.0.3
