@@ -277,8 +277,8 @@ class TestPostgresConnector:
             connector.test_connection()
 
 
-    @pytest.mark.integration_mysql
-    @pytest.mark.integration
+@pytest.mark.integration_mysql
+@pytest.mark.integration
 class TestMySQLConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
     def url(self, oauth_client, policy, connection_config_mysql) -> str:
@@ -528,7 +528,7 @@ class TestMySQLConnector:
             connector.test_connection()
 
 
-@pytest.mark.integration_mongo
+@pytest.mark.integration_mongodb
 @pytest.mark.integration
 class TestMongoConnector:
 
@@ -553,7 +553,7 @@ class TestMongoConnector:
             connector.test_connection()
 
 
-@pytest.mark.integration_mongo
+@pytest.mark.integration_mongodb
 @pytest.mark.integration
 class TestMongoConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
