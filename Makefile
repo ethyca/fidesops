@@ -11,6 +11,9 @@ IMAGE_NAME := fidesops
 IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
+DOCKERFILE_ENVIRONMENTS := postgres mysql mongodb
+EXTERNAL_ENVIRONMENTS := snowflake redshift
+
 
 ####################
 # Defaults
@@ -100,6 +103,42 @@ pytest: compose-build
 	@echo "Running pytest unit tests..."
 	@docker-compose run $(IMAGE_NAME) \
 		pytest $(pytestpath) -m "not integration and not integration_erasure and not integration_external"
+
+
+pytest-integration: compose-build
+ifeq (,$(env))
+	@echo "no environment specified"
+	@path=""; \
+	for word in $(DOCKERFILE_ENVIRONMENTS); do \
+		path="$$path -f docker-compose.integration-$$word.yml"; \
+	done; \
+	docker-compose -f docker-compose.yml $$path build; \
+	docker-compose -f docker-compose.yml $$path up -d; \
+	sleep 5; \
+	docker-compose -f docker-compose.yml $$path run $(IMAGE_NAME) pytest $(pytestpath) -m integration; \
+	docker-compose -f docker-compose.yml $$path down --remove-orphans
+else ifneq (,$(findstring $(env),$(DOCKERFILE_ENVIRONMENTS)))
+	@echo "$(env) is a Dockerfile environment"
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml build
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml up -d
+	@sleep 5
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml \
+		run $(IMAGE_NAME) \
+		pytest $(pytestpath) -m integration_$(env)
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml down --remove-orphans
+else ifneq (,$(findstring $(env),$(EXTERNAL_ENVIRONMENTS)))
+	@echo "$(env) is an external environment"
+	@docker-compose -f docker-compose.yml build
+	@docker-compose -f docker-compose.yml up -d
+	@sleep 5
+	@docker-compose -f docker-compose.yml \
+		run $(IMAGE_NAME) \
+		pytest $(pytestpath) -m integration_$(env)
+	@docker-compose -f docker-compose.yml down --remove-orphans
+else
+	@echo "$(env) is not currently supported"
+endif
+
 
 # Run the pytest integration tests.
 pytest-integration-access: compose-build
