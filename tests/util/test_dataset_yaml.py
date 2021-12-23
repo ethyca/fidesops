@@ -4,7 +4,7 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from fidesops.common_exceptions import InvalidDataTypeValidationError
+from fidesops.core.config import load_file
 from fidesops.graph.config import (
     CollectionAddress,
     ScalarField,
@@ -90,7 +90,7 @@ example_bad_dataset_nested_yaml = """dataset:
     description: Example of a Mongo dataset that contains nested data
     collections:
       - name: photos
-        
+
         fields:
           - name: thumbnail
             fidesops_meta:
