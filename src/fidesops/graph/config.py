@@ -239,13 +239,13 @@ class ObjectField(Field):
 
     fields: Dict[str, Field]
 
-    def cast(self, value_map: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def cast(self, value: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Cast the input value into the form represented by data_type."""
 
         return {
-            field.name: field.cast(value_map[field.name])
+            field.name: field.cast(value[field.name])
             for field in self.fields.values()
-            if field.name in value_map
+            if field.name in value
         }
 
 
