@@ -13,9 +13,9 @@ T = TypeVar("T")
 class DataTypeConverter(ABC, Generic[T]):
     """DataTypeConverters are responsible for converting types of other values into the type represented here."""
 
-    def __init__(self, name: str, _empty_value: T):
+    def __init__(self, name: str, empty_val: T):
         self.name = name
-        self._empty_value = _empty_value
+        self.empty_val = empty_val
 
     @abstractmethod
     def to_value(self, other: Any) -> Optional[T]:
@@ -25,7 +25,7 @@ class DataTypeConverter(ABC, Generic[T]):
 
     def empty_value(self) -> T:
         """A value that represents `empty` in whatever way makes sense for type T"""
-        return self._empty_value
+        return self.empty_val
 
     def truncate(self, length: int, val: T) -> T:
         """Truncates value to given length"""
@@ -186,7 +186,7 @@ def get_data_type_converter(type_name: str) -> DataTypeConverter:
     return DataType[type_name].value
 
 
-def parse_data_type(type_string: Optional[str]) -> Tuple[Optional[str], bool]:
+def parse_data_type_string(type_string: Optional[str]) -> Tuple[Optional[str], bool]:
     """Parse the data type string. Arrays are expressed in the form 'type[]'.
 
     e.g.
@@ -199,3 +199,9 @@ def parse_data_type(type_string: Optional[str]) -> Tuple[Optional[str], bool]:
     if idx == -1:
         return type_string, False
     return type_string[:idx], True
+
+if __name__ == '__main__':
+    v = DataType.no_op.value
+    for x in v.__dict__:
+        print(x)
+    print(v)

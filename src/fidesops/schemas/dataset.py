@@ -8,7 +8,7 @@ from fidesops.common_exceptions import (
 )
 from fidesops.common_exceptions import InvalidDataTypeValidationError
 from fidesops.graph.config import EdgeDirection
-from fidesops.graph.data_type import parse_data_type, is_valid_data_type
+from fidesops.graph.data_type import parse_data_type_string, is_valid_data_type
 from fidesops.models.policy import _validate_data_category
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
@@ -32,7 +32,7 @@ def _valid_data_categories(
 def _valid_data_type(data_type_str: Optional[str]) -> Optional[str]:
     """If the data_type is provided ensure that it is a member of DataType."""
 
-    dt, _ = parse_data_type(data_type_str)
+    dt, _ = parse_data_type_string(data_type_str)
     if not is_valid_data_type(dt):
         raise InvalidDataTypeValidationError(
             f"The data type {data_type_str} is not supported."
@@ -131,10 +131,8 @@ class FidesopsDatasetField(DatasetField):
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_categories(v)
 
-    #
-
     @validator("fields")
-    def validate_fields_using_datatypes(
+    def validate_field_with_subfields_is_properly_typed(
         cls,
         fields: Optional[List["FidesopsDatasetField"]],
         values: Dict[str, Any],
@@ -144,7 +142,7 @@ class FidesopsDatasetField(DatasetField):
         if values["fidesops_meta"]:
             data_type_str = values["fidesops_meta"].data_type
         if fields and data_type_str:
-            data_type, _ = parse_data_type(data_type_str)
+            data_type, _ = parse_data_type_string(data_type_str)
             if data_type != "object":
                 raise InvalidDataTypeValidationError(
                     f"The data type {data_type} is not compatible with specified sub-fields."
@@ -152,6 +150,7 @@ class FidesopsDatasetField(DatasetField):
         return fields
 
 
+# this is required for the recursive reference in the pydantic model:
 FidesopsDatasetField.update_forward_refs()
 
 

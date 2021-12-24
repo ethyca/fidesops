@@ -88,6 +88,7 @@ from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.data_type import (
     DataTypeConverter,
     get_data_type_converter,
+    DataType,
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.querytoken import QueryToken
@@ -197,6 +198,7 @@ class Field(BaseModel, ABC):
     identity: Optional[SeedAddress] = None
     """an optional pointer to an arbitrary key in an expected json package provided as a seed value"""
     data_categories: Optional[List[FidesOpsKey]]
+    data_type_converter: DataTypeConverter = DataType.no_op.value
 
     """Known type of held data"""
     length: Optional[int]
@@ -213,23 +215,21 @@ class Field(BaseModel, ABC):
     def cast(self, value: Any) -> Optional[Any]:
         """Cast the input value into the form represented by data_type."""
 
+    def data_type(self) -> str:
+        """return the data type name"""
+        return self.data_type_converter.name
+
 
 class ScalarField(Field):
     """A field that represents a simple value. Most fields will be scalar fields."""
-
-    data_type_converter: Optional[DataTypeConverter]
 
     def cast(self, value: Any) -> Optional[Any]:
         """Cast the input value into the form represented by data_type.
 
         - If the data_type is None, then it has not been specified, so just return the input value.
         - Return either a cast value or None"""
-
-        if self.data_type_converter:
-            # if no data type is specified just return the input value.
-            # Skip conversions for query tokens, which are only for display output
-            if not isinstance(value, QueryToken):
-                return self.data_type_converter.to_value(value)
+        if not isinstance(value, QueryToken):
+            return self.data_type_converter.to_value(value)
 
         return value
 
@@ -269,6 +269,7 @@ def generate_field(
             data_categories=data_categories,
             is_array=is_array,
             fields={f.name: f for f in sub_fields},
+            data_type_converter=DataType.object.value,
         )
     return ScalarField(
         name=name,

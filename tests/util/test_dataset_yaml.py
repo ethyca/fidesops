@@ -4,7 +4,6 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from fidesops.core.config import load_file
 from fidesops.graph.config import (
     CollectionAddress,
     ScalarField,
@@ -65,12 +64,15 @@ example_dataset_nested_yaml = """dataset:
           - name: thumbnail
             fields:
               - name: photo_id
-                data_type: integer
+                fidesops_meta:
+                    data_type: integer
               - name: name
                 data_categories: [user.provided.identifiable]
-                data_type: string
+                fidesops_meta:
+                    data_type: string
               - name: submitter
-                data_type: string
+                fidesops_meta:
+                    data_type: string
                 data_categories: [user.provided.identifiable]
           - name: tags
             fidesops_meta:
@@ -163,13 +165,15 @@ def test_nested_dataset_format():
     assert isinstance(comments_field, ObjectField)
     assert comments_field.is_array
     assert isinstance(comments_field.fields["text"], ScalarField)
-    assert comments_field.fields["text"].data_type_converter == DataType.no_op.value
+    assert comments_field.fields["text"].data_type() == "None"
     assert isinstance(tags_field, ScalarField)
     assert tags_field.is_array
     assert isinstance(_id_field, ScalarField)
-    assert _id_field.is_array == False
+    assert _id_field.is_array is False
     assert isinstance(thumbnail_field, ObjectField)
-    assert thumbnail_field.is_array == False
+    assert thumbnail_field.is_array is False
+    assert thumbnail_field.data_type() == "object"
+    assert thumbnail_field.fields["photo_id"].data_type() == "integer"
 
 
 def test_nested_dataset_validation():

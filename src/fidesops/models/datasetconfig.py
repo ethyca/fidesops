@@ -20,7 +20,7 @@ from fidesops.graph.config import (
     CollectionAddress,
     generate_field,
 )
-from fidesops.graph.data_type import parse_data_type
+from fidesops.graph.data_type import parse_data_type_string
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
 from fidesops.schemas.shared_schemas import FidesOpsKey
@@ -134,7 +134,7 @@ def to_graph_field(field: FidesopsDatasetField) -> Field:
             # here in case we decide to allow it in the future.
             length = meta_section.length
 
-        (data_type_name, is_array) = parse_data_type(meta_section.data_type)
+        (data_type_name, is_array) = parse_data_type_string(meta_section.data_type)
 
     if field.fields:
         sub_fields = [to_graph_field(fld) for fld in field.fields]
