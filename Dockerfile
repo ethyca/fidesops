@@ -1,4 +1,4 @@
-FROM python:3.9.6-slim-buster
+FROM --platform=linux/amd64 python:3.9.6-slim-buster
 
 # Install auxiliary software
 RUN apt-get update && \
@@ -8,7 +8,19 @@ RUN apt-get update && \
     ipython \
     vim \
     curl \
+    g++ \
+    gnupg \
     gcc
+
+# SQL Server (MS SQL)
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+RUN curl https://packages.microsoft.com/config/debian/10/prod.list | tee /etc/apt/sources.list.d/msprod.list
+RUN apt-get update
+ENV ACCEPT_EULA=y DEBIAN_FRONTEND=noninteractive
+RUN apt-get -y install \
+    apt-transport-https \
+    unixodbc-dev \
+    mssql-tools
 
 # Update pip and install requirements
 COPY requirements.txt dev-requirements.txt ./

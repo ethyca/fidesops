@@ -10,9 +10,7 @@ class MicrosoftSQLServerSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to a MS SQL Database
 
     connection string takes the format:
-    mssql://[Server_Name[:Portno]]/[Database_Instance_Name]/[Database_Name]?FailoverPartner=[Partner_Server_Name]&InboundId=[Inbound_ID]
-
-    Will probably change some depending on SQLAlchemy dialect/DBAPI option used
+    mssql+pyodbc://[username]:[password]@[host]:[port_no]/[database_name]?driver=ODBC+Driver+17+for+SQL+Server
 
     """
 
@@ -21,9 +19,6 @@ class MicrosoftSQLServerSchema(ConnectionConfigSecretsSchema):
     host: Optional[str] = None
     port_no: Optional[int] = None
     database_name: Optional[str] = None
-    driver: Optional[str] = None
-    driver_authentication: Optional[str] = None
-
 
     _required_components: List[str] = ["host"]
 
