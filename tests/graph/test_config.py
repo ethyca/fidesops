@@ -108,32 +108,48 @@ def test_generate_field() -> None:
         return isinstance(f, ScalarField) and f.data_type_converter.name == "string"
 
     string_field = generate_field(
-        "str", ["category"], "identity", "string", [], False, 0, False, []
+        name="str",
+        data_categories=["category"],
+        identity="identity",
+        data_type_name="string",
+        references=[],
+        is_pk=False,
+        length=0,
+        is_array=False,
+        sub_fields=[],
     )
     array_field = generate_field(
-        "arr", ["category"], "identity", "string", [], False, 0, True, []
+        name="arr",
+        data_categories=["category"],
+        identity="identity",
+        data_type_name="string",
+        references=[],
+        is_pk=False,
+        length=0,
+        is_array=True,
+        sub_fields=[],
     )
     object_field = generate_field(
-        "obj",
-        ["category"],
-        "identity",
-        "object",
-        [],
-        False,
-        0,
-        False,
-        [string_field, array_field],
+        name="obj",
+        data_categories=["category"],
+        identity="identity",
+        data_type_name="object",
+        references=[],
+        is_pk=False,
+        length=0,
+        is_array=False,
+        sub_fields=[string_field, array_field],
     )
     object_array_field = generate_field(
-        "obj_a",
-        ["category"],
-        "identity",
-        "string",
-        [],
-        False,
-        0,
-        True,
-        [string_field, object_field],
+        name="obj_a",
+        data_categories=["category"],
+        identity="identity",
+        data_type_name="string",
+        references=[],
+        is_pk=False,
+        length=0,
+        is_array=True,
+        sub_fields=[string_field, object_field],
     )
 
     assert _is_string_field(string_field)

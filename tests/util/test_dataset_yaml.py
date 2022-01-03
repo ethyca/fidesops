@@ -179,3 +179,19 @@ def test_nested_dataset_format():
 def test_nested_dataset_validation():
     with pytest.raises(ValidationError):
         FidesopsDataset.parse_obj(__to_dataset__(example_bad_dataset_nested_yaml))
+
+
+def test_invalid_datatype():
+    """Test that specifying a data type string that doesn't correspond to a supported
+    data type string will throw a validation error."""
+    bad_data_declaration = """dataset:
+  - fides_key: dont_care
+    collections:
+      - name: dont_care
+        fields:
+          - name: dont_care
+            fidesops_meta:
+                data_type: this_is_bad"""
+    dataset = __to_dataset__(bad_data_declaration)
+    with pytest.raises(ValidationError):
+        FidesopsDataset.parse_obj(dataset)

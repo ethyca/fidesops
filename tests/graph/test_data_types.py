@@ -73,4 +73,4 @@ def test_valid():
     for s in ["string", "integer", "float", "boolean", "object_id", "object", None]:
         assert is_valid_data_type(s)
 
-    assert is_valid_data_type("unknown") == False
+    assert not is_valid_data_type("unknown")

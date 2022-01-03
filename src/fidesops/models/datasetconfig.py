@@ -140,15 +140,15 @@ def to_graph_field(field: FidesopsDatasetField) -> Field:
         sub_fields = [to_graph_field(fld) for fld in field.fields]
 
     return generate_field(
-        field.name,
-        field.data_categories,
-        identity,
-        data_type_name,
-        references,
-        is_pk,
-        length,
-        is_array,
-        sub_fields,
+        name=field.name,
+        data_categories=field.data_categories,
+        identity=identity,
+        data_type_name=data_type_name,
+        references=references,
+        is_pk=is_pk,
+        length=length,
+        is_array=is_array,
+        sub_fields=sub_fields,
     )
 
 

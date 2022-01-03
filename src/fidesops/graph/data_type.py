@@ -39,7 +39,7 @@ class NoOpTypeConverter(DataTypeConverter[Any]):
     """Placeholder No-op converter. This type is assigned to fields when type is unspecified."""
 
     def __init__(self) -> None:
-        super().__init__("None", None)
+        super().__init__(name="None", empty_val=None)
 
     def to_value(self, other: Any) -> Optional[Any]:
         """no-op"""
@@ -54,7 +54,7 @@ class StringTypeConverter(DataTypeConverter[str]):
     """String data type converter. This type just uses str() type conversion."""
 
     def __init__(self) -> None:
-        super().__init__("string", "")
+        super().__init__(name="string", empty_val="")
 
     def to_value(self, other: Any) -> Optional[str]:
         """Convert to str"""
@@ -69,7 +69,7 @@ class IntTypeConverter(DataTypeConverter[int]):
     """Int data type converter. This type just uses built-in int() type conversion."""
 
     def __init__(self) -> None:
-        super().__init__("integer", 0)
+        super().__init__(name="integer", empty_val=0)
 
     def to_value(self, other: Any) -> Optional[int]:
         """Convert to int"""
@@ -84,7 +84,7 @@ class FloatTypeConverter(DataTypeConverter[float]):
     """Float data type converter. This type just uses built-in float() type conversion."""
 
     def __init__(self) -> None:
-        super().__init__("float", 0.0)
+        super().__init__(name="float", empty_val=0.0)
 
     def to_value(self, other: Any) -> Optional[float]:
         """Convert to float"""
@@ -99,7 +99,7 @@ class BooleanTypeConverter(DataTypeConverter[bool]):
     """Boolean data type converter recognizing the strings True/False, 1,0, and booleans."""
 
     def __init__(self) -> None:
-        super().__init__("boolean", False)
+        super().__init__(name="boolean", empty_val=False)
 
     true_vals = {"True", "true", True, 1}
     false_vals = {"False", "false", False, 0}
@@ -117,7 +117,9 @@ class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
     """ObjectId data type converter, allowing for conversions from strings only."""
 
     def __init__(self) -> None:
-        super().__init__("object_id", ObjectId("000000000000000000000000"))
+        super().__init__(
+            name="object_id", empty_val=ObjectId("000000000000000000000000")
+        )
 
     def to_value(self, other: Any) -> Optional[ObjectId]:
         """Convert to ObjectId."""
@@ -136,7 +138,7 @@ class ObjectTypeConverter(DataTypeConverter[Dict[str, Any]]):
     """Json data type converter."""
 
     def __init__(self) -> None:
-        super().__init__("object", {})
+        super().__init__(name="object", empty_val={})
 
     def to_value(self, other: Any) -> Optional[Dict[str, Any]]:
         """Pass through dict values."""
@@ -177,7 +179,7 @@ def is_valid_data_type(type_name: str) -> bool:
     return type_name is None or type_name in _data_type_names
 
 
-def get_data_type_converter(type_name: str) -> DataTypeConverter:
+def get_data_type_converter(type_name: Optional[str]) -> DataTypeConverter:
     """Return the matching type converter. If an empty string or None is passed in
     will return the No-op converter, so the converter will never be set to 'None'.
     On an illegal key will raise a KeyError."""
