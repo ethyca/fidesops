@@ -200,7 +200,8 @@ def parse_data_type_string(type_string: Optional[str]) -> Tuple[Optional[str], b
         return type_string, False
     return type_string[:idx], True
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     v = DataType.no_op.value
     for x in v.__dict__:
         print(x)
