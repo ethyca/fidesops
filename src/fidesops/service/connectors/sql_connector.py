@@ -314,8 +314,11 @@ class MicrosoftSQLServerConnector(SQLConnector):
     Connector specific to Microsoft SQL Server
     """
     def build_uri(self) -> URL:
-        """Build URI of format mssql+pyodbc://[Server_Name[:Portno]]/[Database_Instance_Name]/[Database_Name]
-        ?FailoverPartner=[Partner_Server_Name]&InboundId=[Inbound_ID]"""
+        """
+        Build URI of format
+        mssql+pyodbc://[username]:[password]@[host]:[port_no]/[database_name]?driver=ODBC+Driver+17+for+SQL+Server
+        """
+
         config = MicrosoftSQLServerSchema(**self.configuration.secrets or {})
 
         url = URL.create(
@@ -326,8 +329,7 @@ class MicrosoftSQLServerConnector(SQLConnector):
             port=config.port_no,
             database=config.database_name,
             query={
-                "driver": config.driver,
-                "authentication": config.driver_authentication,
+                "driver": "ODBC+Driver+17+for+SQL+Server"
             },
         )
 
