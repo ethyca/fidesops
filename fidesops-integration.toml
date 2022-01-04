@@ -26,5 +26,9 @@ external_uri=""
 external_uri=""
 
 [mssql_example]
-SA_PASSWORD="mssql_pw"
-ACCEPT_EULA="Y"
+SERVER="mssql_example"
+USER="mssql_user"
+PASSWORD="mssql_pw"
+DB="mssql_example"
+PORT_NO=5432
+
