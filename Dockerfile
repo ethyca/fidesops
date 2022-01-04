@@ -32,6 +32,11 @@ RUN pip install -U pip  \
 # Copy in the application files and install it locally
 COPY . /fidesops
 WORKDIR /fidesops
-RUN pip install -e .
+ARG include_dangerous="False"
+RUN if [ "$include_dangerous" = "True" ] ; then \
+    pip install -e ".[all,mssql]" ; \
+    else \
+    pip install -e ".[all]" ; \
+    fi
 
 CMD [ "fidesops", "webserver" ]
