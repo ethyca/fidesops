@@ -80,7 +80,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, Set, Dict, Literal, Any
+from typing import List, Optional, Tuple, Set, Dict, Literal, Any, Callable, TypeVar
 
 from pydantic import BaseModel
 
@@ -92,7 +92,7 @@ from fidesops.graph.data_type import (
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.querytoken import QueryToken
-
+from functools import reduce
 DatasetAddress = str
 SeedAddress = str
 EdgeDirection = Literal["from", "to"]
@@ -145,7 +145,10 @@ TERMINATOR_ADDRESS = CollectionAddress("__TERMINATE__", "__TERMINATE__")
 
 class FieldAddress:
     """The representation of a field location in the graph, specified by
-    (data dataset name, collection name, field name)"""
+    (data dataset name, collection name, field name).
+
+    Nested fields are represented by dot notation,
+    e.g. parent_field.child_field.grandchild_field"""
 
     def __init__(self, dataset: str, collection: str, field: str):
         self.dataset = dataset
@@ -187,7 +190,7 @@ class FieldAddress:
             return f"identity:{self.field}"
         return self.__repr__()
 
-
+T = TypeVar("T")
 class Field(BaseModel, ABC):
     """A single piece of data"""
 
@@ -219,6 +222,10 @@ class Field(BaseModel, ABC):
         """return the data type name"""
         return self.data_type_converter.name
 
+    @abstractmethod
+    def gather(self, f: Callable[['Field'],  T]) -> Dict[str, 'Field']:
+        """internal"""
+
 
 class ScalarField(Field):
     """A field that represents a simple value. Most fields will be scalar fields."""
@@ -233,6 +240,11 @@ class ScalarField(Field):
 
         return value
 
+    def gather(self, f: Callable[['Field'],  T]) -> Dict[str, T]:
+        out=f(self)
+        if out:
+            return {self.name: out}
+        return {}
 
 class ObjectField(Field):
     """A field that represents a json dict structure."""
@@ -247,6 +259,19 @@ class ObjectField(Field):
             for field in self.fields.values()
             if field.name in value
         }
+
+    def gather(self, f: Callable[['Field'],  T]) -> Dict[str, T]:
+        top = {}
+        for k,v in self.fields.items():
+            out=v.gather(f)
+            if out:
+                for k2,v2 in out.items():
+                    top[f"{self.name}.{k2}"] = v2
+        # children:List[Dict[str,'Field']] = map(lambda child: child.gather(f), self.fields.values())
+        # print(f"chidlren={children}")
+        # child_map = reduce(lambda a,b: a | b, children)
+        # print(f"child map = {child_map}")
+        return top #{f"{self.name}.{child.name}": child  for child in child_map.values()}
 
 
 # pylint: disable=too-many-arguments

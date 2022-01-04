@@ -103,10 +103,7 @@ def test_directional_references() -> None:
     }
 
 
-def test_generate_field() -> None:
-    def _is_string_field(f: Field):
-        return isinstance(f, ScalarField) and f.data_type_converter.name == "string"
-
+class TestFieldConfig:
     string_field = generate_field(
         name="str",
         data_categories=["category"],
@@ -152,15 +149,31 @@ def test_generate_field() -> None:
         sub_fields=[string_field, object_field],
     )
 
-    assert _is_string_field(string_field)
-    assert isinstance(array_field, ScalarField) and array_field.is_array
-    assert isinstance(object_field, ObjectField) and _is_string_field(
-        object_field.fields["str"]
-    )
-    assert (
-        isinstance(object_field.fields["arr"], ScalarField)
-        and object_field.fields["arr"].is_array
-        and _is_string_field(object_field.fields["str"])
-    )
-    assert isinstance(object_array_field, ObjectField) and object_array_field.is_array
-    assert object_array_field.fields["obj"] == object_field
+    def _is_string_field(self, f: Field):
+        return isinstance(f, ScalarField) and f.data_type_converter.name == "string"
+
+    def test_generate_field(self) -> None:
+
+        assert self._is_string_field(TestFieldConfig.string_field)
+        assert isinstance(TestFieldConfig.array_field, ScalarField) and TestFieldConfig.array_field.is_array
+        assert isinstance(TestFieldConfig.object_field, ObjectField) and self._is_string_field(
+            TestFieldConfig.object_field.fields["str"]
+        )
+        assert (
+            isinstance(TestFieldConfig.object_field.fields["arr"], ScalarField)
+            and TestFieldConfig.object_field.fields["arr"].is_array
+            and self._is_string_field(TestFieldConfig.object_field.fields["str"])
+        )
+        assert (
+            isinstance(TestFieldConfig.object_array_field, ObjectField) and TestFieldConfig.object_array_field.is_array
+        )
+        assert TestFieldConfig.object_array_field.fields["obj"] == TestFieldConfig.object_field
+
+    def test_gather(self):
+        # test gather
+        assert TestFieldConfig.object_field.gather(
+            lambda f: "category" in f.data_categories and f.data_categories
+        ) == {"obj.str":['category'], "obj.arr":['category']}
+
+        assert  TestFieldConfig.object_field.gather(lambda f: f.is_array) == {"obj.arr":True}
+ 
