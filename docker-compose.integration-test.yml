@@ -54,12 +54,10 @@ services:
 
   mssql_example:
     image: mcr.microsoft.com/azure-sql-edge:latest # Equivalent to SQL Server 2016
-    volumes:
-      - ./data/sql/mssql_example.sql:/docker-entrypoint-initdb.d/mssql_example.sql
     ports:
       - 1433:1433
     environment:
-      - SA_PASSWORD=mssql_pw
+      - SA_PASSWORD=Mssql_pw1
       - ACCEPT_EULA="Y"
 
 

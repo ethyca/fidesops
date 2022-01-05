@@ -27,8 +27,8 @@ external_uri=""
 
 [mssql_example]
 SERVER="mssql_example"
-USER="mssql_user"
-PASSWORD="mssql_pw"
+USER="sa"
+PASSWORD="Mssql_pw1"
 DB="mssql_example"
-PORT_NO=5432
+PORT=1433
 

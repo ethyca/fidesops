@@ -329,7 +329,7 @@ class MicrosoftSQLServerConnector(SQLConnector):
             port=config.port_no,
             database=config.database_name,
             query={
-                "driver": "ODBC+Driver+17+for+SQL+Server"
+                "driver": "ODBC Driver 17 for SQL Server"
             },
         )
 
