@@ -1,6 +1,7 @@
 import pytest
 import json
 
+import sqlalchemy as sqlalchemy
 from pymongo import MongoClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
@@ -20,6 +21,10 @@ from fidesops.api.v1.scope_registry import (
 )
 
 from fidesops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
+
+MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:Mssql_pw1@mssql_example:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
+MSSQL_URL = MSSQL_URL_TEMPLATE.format("mssql_example")
+MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
 
 
 class TestPostgresConnectionPutSecretsAPI:
@@ -528,9 +533,24 @@ class TestMySQLConnector:
             connector.test_connection()
 
 
-class TestMicrosoftSQLServerConnectionPutSecretsAPI:
+class TestMicrosoftSQLServerConnection:
+    @pytest.fixture(scope="class", autouse=True)
+    def mssql_setup(self):
+        """
+        Set up the SQL Server Database for testing.
+        The query file must have each query on a separate line.
+        Initial connection must be done to the master database.
+        """
+        engine = sqlalchemy.create_engine(MASTER_MSSQL_URL)
+        with open("data/sql/mssql_example.sql", "r") as query_file:
+            queries = [query for query in query_file.read().splitlines() if query != ""]
+        print(queries)
+        for query in queries:
+            engine.execute(sqlalchemy.sql.text(query))
+        yield
+
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, connection_config_mssql) -> str:
+    def url_put_secret(self, oauth_client, policy, connection_config_mssql) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mssql.key}/secret"
 
     @pytest.mark.integration
@@ -539,19 +559,21 @@ class TestMicrosoftSQLServerConnectionPutSecretsAPI:
             api_client: TestClient,
             db: Session,
             generate_auth_header,
+            mssql_setup,
             connection_config_mssql,
-            url,
+            url_put_secret,
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = {
-            "username": None,
-            "password": None,
-            "host": "mysql_example",
-            "port_no": 5432,
-            "database_name": "mssql_example"
+            "username": "sa",
+            "password": "incorrect",
+            "host": "mssql_example",
+            "port_no": 1433,
+            "database_name": "mssql_example",
+            "url": None
         }
         resp = api_client.put(
-            url,
+            url_put_secret,
             headers=auth_header,
             json=payload,
         )
@@ -562,14 +584,14 @@ class TestMicrosoftSQLServerConnectionPutSecretsAPI:
                 == f"Secrets updated for ConnectionConfig with key: {connection_config_mssql.key}."
         )
         assert body["test_status"] == "failed"
-        assert "Operational Error connecting to mssql db." == body["failure_reason"]
+        assert "Connection error." == body["failure_reason"]
         db.refresh(connection_config_mssql)
 
         assert connection_config_mssql.secrets == {
-            "username": "mysql_example",
-            "password": "something_incorrect",
-            "host": "mysql_example",
-            "port_no": 5432,
+            "username": "sa",
+            "password": "incorrect",
+            "host": "mssql_example",
+            "port_no": 1433,
             "database_name": "mssql_example",
             "url": None,
         }
@@ -579,23 +601,23 @@ class TestMicrosoftSQLServerConnectionPutSecretsAPI:
     @pytest.mark.integration
     def test_mssql_db_connection_connect_with_components(
             self,
-            url,
+            url_put_secret,
             api_client: TestClient,
             db: Session,
             generate_auth_header,
             connection_config_mssql,
     ) -> None:
         payload = {
-            "username": "mysql_example",
-            "password": "mysql_pw",
-            "host": "mysql_example",
-            "port_no": 5432,
+            "username": "sa",
+            "password": "Mssql_pw1",
+            "host": "mssql_example",
+            "port_no": 1433,
             "database_name": "mssql_example"
         }
 
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.put(
-            url,
+            url_put_secret,
             headers=auth_header,
             json=payload,
         )
@@ -610,10 +632,10 @@ class TestMicrosoftSQLServerConnectionPutSecretsAPI:
         assert body["failure_reason"] is None
         db.refresh(connection_config_mssql)
         assert connection_config_mssql.secrets == {
-            "username": "mysql_example",
-            "password": "mysql_pw",
-            "host": "mysql_example",
-            "port_no": 5432,
+            "username": "sa",
+            "password": "Mssql_pw1",
+            "host": "mssql_example",
+            "port_no": 1433,
             "database_name": "mssql_example",
             "url": None
         }
@@ -623,19 +645,19 @@ class TestMicrosoftSQLServerConnectionPutSecretsAPI:
     @pytest.mark.integration
     def test_mssql_db_connection_connect_with_url(
             self,
-            url,
+            url_put_secret,
             api_client: TestClient,
             db: Session,
             generate_auth_header,
             connection_config_mssql,
     ) -> None:
         payload = {
-            "url": "mssql+pyodbc://mysql_example:mysql_pw@mysql_example:5432/mssql_example?driver=ODBC+Driver+17+for+SQL+Server"
+            "url": "mssql+pyodbc://sa:Mssql_pw1@mssql_example:1433/mssql_example?driver=ODBC+Driver+17+for+SQL+Server"
         }
 
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.put(
-            url,
+            url_put_secret,
             headers=auth_header,
             json=payload,
         )
@@ -660,16 +682,14 @@ class TestMicrosoftSQLServerConnectionPutSecretsAPI:
         assert connection_config_mssql.last_test_timestamp is not None
         assert connection_config_mssql.last_test_succeeded is True
 
-
-class TestMicrosoftSQLServerConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, connection_config_mssql) -> str:
+    def url_test_secrets(self, oauth_client, policy, connection_config_mssql) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mssql.key}/test"
 
     @pytest.mark.integration
     def test_connection_configuration_test_not_authenticated(
             self,
-            url,
+            url_test_secrets,
             api_client: TestClient,
             db: Session,
             generate_auth_header,
@@ -677,7 +697,7 @@ class TestMicrosoftSQLServerConnectionTestSecretsAPI:
     ) -> None:
         assert connection_config_mssql.last_test_timestamp is None
 
-        resp = api_client.get(url)
+        resp = api_client.get(url_test_secrets)
         assert resp.status_code == 401
         db.refresh(connection_config_mssql)
         assert connection_config_mssql.last_test_timestamp is None
@@ -686,7 +706,7 @@ class TestMicrosoftSQLServerConnectionTestSecretsAPI:
     @pytest.mark.integration
     def test_connection_configuration_test_incorrect_scopes(
             self,
-            url,
+            url_test_secrets,
             api_client: TestClient,
             db: Session,
             generate_auth_header,
@@ -696,7 +716,7 @@ class TestMicrosoftSQLServerConnectionTestSecretsAPI:
 
         auth_header = generate_auth_header(scopes=[STORAGE_READ])
         resp = api_client.get(
-            url,
+            url_test_secrets,
             headers=auth_header,
         )
         assert resp.status_code == 403
@@ -707,7 +727,7 @@ class TestMicrosoftSQLServerConnectionTestSecretsAPI:
     @pytest.mark.integration
     def test_connection_configuration_test_failed_response(
             self,
-            url,
+            url_test_secrets,
             api_client: TestClient,
             db: Session,
             generate_auth_header,
@@ -719,7 +739,7 @@ class TestMicrosoftSQLServerConnectionTestSecretsAPI:
 
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
-            url,
+            url_test_secrets,
             headers=auth_header,
         )
         assert resp.status_code == 200
@@ -729,7 +749,7 @@ class TestMicrosoftSQLServerConnectionTestSecretsAPI:
         assert connection_config_mssql.last_test_timestamp is not None
         assert connection_config_mssql.last_test_succeeded is False
         assert body["test_status"] == "failed"
-        assert "Operational Error connecting to mssql db." == body["failure_reason"]
+        assert "Connection error." == body["failure_reason"]
         assert (
                 body["msg"]
                 == f"Test completed for ConnectionConfig with key: {connection_config_mssql.key}."
@@ -738,7 +758,7 @@ class TestMicrosoftSQLServerConnectionTestSecretsAPI:
     @pytest.mark.integration
     def test_connection_configuration_test(
             self,
-            url,
+            url_test_secrets,
             api_client: TestClient,
             db: Session,
             generate_auth_header,
@@ -748,7 +768,7 @@ class TestMicrosoftSQLServerConnectionTestSecretsAPI:
 
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
-            url,
+            url_test_secrets,
             headers=auth_header,
         )
         assert resp.status_code == 200
@@ -764,8 +784,6 @@ class TestMicrosoftSQLServerConnectionTestSecretsAPI:
         assert connection_config_mssql.last_test_timestamp is not None
         assert connection_config_mssql.last_test_succeeded is True
 
-
-class TestMicrosoftSQLServerConnector:
     @pytest.mark.integration
     def test_mssql_db_connector(
             self,
