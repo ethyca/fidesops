@@ -316,7 +316,7 @@ class MicrosoftSQLServerConnector(SQLConnector):
     def build_uri(self) -> URL:
         """
         Build URI of format
-        mssql+pyodbc://[username]:[password]@[host]:[port_no]/[database_name]?driver=ODBC+Driver+17+for+SQL+Server
+        mssql+pyodbc://[username]:[password]@[host]:[port]/[dbname]?driver=ODBC+Driver+17+for+SQL+Server
         """
 
         config = MicrosoftSQLServerSchema(**self.configuration.secrets or {})
@@ -326,8 +326,8 @@ class MicrosoftSQLServerConnector(SQLConnector):
             username=config.username,
             password=config.password,
             host=config.host,
-            port=config.port_no,
-            database=config.database_name,
+            port=config.port,
+            database=config.dbname,
             query={
                 "driver": "ODBC Driver 17 for SQL Server"
             },

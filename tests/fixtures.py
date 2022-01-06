@@ -84,8 +84,8 @@ integration_secrets = {
     },
     "mssql_example": {
         "host": pydash.get(integration_config, "mssql_example.SERVER"),
-        "port_no": pydash.get(integration_config, "mssql_example.PORT"),
-        "database_name": pydash.get(integration_config, "mssql_example.DB"),
+        "port": pydash.get(integration_config, "mssql_example.PORT"),
+        "dbname": pydash.get(integration_config, "mssql_example.DB"),
         "username": pydash.get(integration_config, "mssql_example.USER"),
         "password": pydash.get(integration_config, "mssql_example.PASSWORD"),
     },

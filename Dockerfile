@@ -34,7 +34,6 @@ RUN pip install -U pip  \
 # Copy in the application files and install it locally
 COPY . /fidesops
 WORKDIR /fidesops
-ARG include_dangerous="False"
 RUN pip install -e .
 
 CMD [ "fidesops", "webserver" ]

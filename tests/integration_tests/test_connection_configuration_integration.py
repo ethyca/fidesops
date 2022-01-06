@@ -21,10 +21,7 @@ from fidesops.api.v1.scope_registry import (
 )
 
 from fidesops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
-
-MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:Mssql_pw1@mssql_example:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
-MSSQL_URL = MSSQL_URL_TEMPLATE.format("mssql_example")
-MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
+from .test_integration_mssql_example import MASTER_MSSQL_URL
 
 
 class TestPostgresConnectionPutSecretsAPI:
@@ -568,8 +565,8 @@ class TestMicrosoftSQLServerConnection:
             "username": "sa",
             "password": "incorrect",
             "host": "mssql_example",
-            "port_no": 1433,
-            "database_name": "mssql_example",
+            "port": 1433,
+            "dbname": "mssql_example",
             "url": None
         }
         resp = api_client.put(
@@ -591,8 +588,8 @@ class TestMicrosoftSQLServerConnection:
             "username": "sa",
             "password": "incorrect",
             "host": "mssql_example",
-            "port_no": 1433,
-            "database_name": "mssql_example",
+            "port": 1433,
+            "dbname": "mssql_example",
             "url": None,
         }
         assert connection_config_mssql.last_test_timestamp is not None
@@ -611,8 +608,8 @@ class TestMicrosoftSQLServerConnection:
             "username": "sa",
             "password": "Mssql_pw1",
             "host": "mssql_example",
-            "port_no": 1433,
-            "database_name": "mssql_example"
+            "port": 1433,
+            "dbname": "mssql_example"
         }
 
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
@@ -635,8 +632,8 @@ class TestMicrosoftSQLServerConnection:
             "username": "sa",
             "password": "Mssql_pw1",
             "host": "mssql_example",
-            "port_no": 1433,
-            "database_name": "mssql_example",
+            "port": 1433,
+            "dbname": "mssql_example",
             "url": None
         }
         assert connection_config_mssql.last_test_timestamp is not None
@@ -675,8 +672,8 @@ class TestMicrosoftSQLServerConnection:
             "username": None,
             "password": None,
             "host": None,
-            "port_no": None,
-            "database_name": None,
+            "port": None,
+            "dbname": None,
             "url": payload["url"],
         }
         assert connection_config_mssql.last_test_timestamp is not None
