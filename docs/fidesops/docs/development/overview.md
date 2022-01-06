@@ -29,8 +29,8 @@ commands to give you different functionality.
 - `make server-shell`-  opens a shell on the Docker container, from here you can run useful commands like:
   - `ipython` - open a Python shell
 - `make pytest` - runs all unit tests except those that talk to integration databases
-- `make include_dangerous="True" pytest-integration-access` - runs access integration tests. See note below about MSSQL.
-- `make include_dangerous="True" pytest-integration-erasure` - runs erasure integration tests. See note below about MSSQL.
+- `make pytest-integration-access` - runs access integration tests.
+- `make pytest-integration-erasure` - runs erasure integration tests.
 - `make reset-db` - tears down the Fideops postgres db, then recreates and re-runs migrations.
 - `make quickstart` - runs a quick, five second quickstart that talks to the Fidesops API to execute privacy requests
 - `make check-migrations` - verifies there are no un-run migrations 
@@ -41,10 +41,7 @@ See [Makefile](https://github.com/ethyca/fidesops/blob/main/Makefile) for more o
 
 #### Issues 
 
-- MSSQL: Known issues around connecting to MSSQL exist today for Apple M1 users, so the `pyodbc` dependency is not installed by default.
-If you wish to install MSSQL please add the `include_dangerous="True"` argument to the `make` commands above, e.g. `make include_dangerous="True" server`.
-
-M1 users that wish to install MSSQL please reference the workaround [here](https://github.com/mkleehammer/pyodbc/issues/846).
+- MSSQL: Known issues around connecting to MSSQL exist today for Apple M1 users. M1 users that wish to install `pyodbc` locally, please reference the workaround [here](https://github.com/mkleehammer/pyodbc/issues/846).
 
 - Package not found: When running `make server`, if you get a `importlib.metadata.PackageNotFoundError: fidesops`, do `make server-shell`,
 and then run `pip install -e .`. Verify Fidesops is installed with `pip list`. 

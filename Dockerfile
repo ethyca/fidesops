@@ -35,10 +35,6 @@ RUN pip install -U pip  \
 COPY . /fidesops
 WORKDIR /fidesops
 ARG include_dangerous="False"
-RUN if [ "$include_dangerous" = "True" ] ; then \
-    pip install -e ".[all,mssql]" ; \
-    else \
-    pip install -e ".[all]" ; \
-    fi
+RUN pip install -e .
 
 CMD [ "fidesops", "webserver" ]
