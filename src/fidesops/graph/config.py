@@ -80,7 +80,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, Set, Dict, Literal, Any
+from typing import List, Optional, Tuple, Set, Dict, Literal, Any, Callable
 
 from pydantic import BaseModel
 
@@ -91,6 +91,7 @@ from fidesops.graph.data_type import (
     DataType,
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.util.collection_util import merge_dicts
 from fidesops.util.querytoken import QueryToken
 
 DatasetAddress = str
@@ -132,7 +133,7 @@ class CollectionAddress:
                 f"'{address_str}' is not a valid collection address"
             )
 
-    def field_address(self, field: str) -> FieldAddress:
+    def field_address(self, field: FieldKey) -> FieldAddress:
         """Create a field address appended to this collection address."""
         return FieldAddress(self.dataset, self.collection, field)
 
@@ -143,15 +144,46 @@ TERMINATOR_ADDRESS = CollectionAddress("__TERMINATE__", "__TERMINATE__")
 """An address that corresponds to traversal termination"""
 
 
+class FieldKey:
+    """Fields are addressable by a (possibly) nested name. This key
+    represents a field name held as a tuple of possibly descending names.
+    A scalar field is represented as a single-element tuple.
+    """
+
+    def __init__(self, names: Tuple[str, ...]):
+        self.names = names
+        self.value = ".".join(names)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, FieldKey):
+            return False
+        return other.names == self.names
+
+    def __hash__(self) -> int:
+        return hash(self.value)
+
+    def __repr__(self) -> str:
+        return self.value
+
+    def __lt__(self, other: FieldKey) -> bool:
+        return self.value < other.value
+
+    def prepend(self, key: str) -> FieldKey:
+        return FieldKey((key,) + self.names)
+
+
 class FieldAddress:
     """The representation of a field location in the graph, specified by
-    (data dataset name, collection name, field name)"""
+    (data dataset name, collection name, field name)
 
-    def __init__(self, dataset: str, collection: str, field: str):
+    Field name is specified as a tuple to accomodate nested field addressing
+    """
+
+    def __init__(self, dataset: str, collection: str, field: FieldKey):
         self.dataset = dataset
         self.collection = collection
         self.field = field
-        self.value: str = ":".join((dataset, collection, field))
+        self.value: str = ":".join((dataset, collection, str(field)))
 
     def is_member_of(self, collection_address: CollectionAddress) -> bool:
         """True if this field represents a field in the given collection address."""
@@ -177,15 +209,6 @@ class FieldAddress:
 
     def __lt__(self, other: FieldAddress) -> bool:
         return self.value < other.value
-
-    def display_name(self) -> str:
-        """Displayable name"""
-        if (
-            self.dataset == ROOT_COLLECTION_ADDRESS.dataset
-            and self.collection == ROOT_COLLECTION_ADDRESS.collection
-        ):
-            return f"identity:{self.field}"
-        return self.__repr__()
 
 
 class Field(BaseModel, ABC):
@@ -219,6 +242,15 @@ class Field(BaseModel, ABC):
         """return the data type name"""
         return self.data_type_converter.name
 
+    def getChild(self, names: Tuple[str, ...]) -> Optional["Field"]:
+        """Return the child field or None if it is not found"""
+
+    def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldKey, Field]:
+        """Find fields or subfields satisfying the input function"""
+
+    def __repr__(self) -> str:
+        return f"{self.name}:{self.data_type_converter.name}"
+
 
 class ScalarField(Field):
     """A field that represents a simple value. Most fields will be scalar fields."""
@@ -232,6 +264,16 @@ class ScalarField(Field):
             return self.data_type_converter.to_value(value)
 
         return value
+
+    def getChild(self, names: Tuple[str, ...]) -> Optional["Field"]:
+        """Scalar field is defined as not having children"""
+        return len(names) == 0 and self or None
+
+    def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldKey, Field]:
+        """Find fields or subfields satisfying the input function"""
+        if f(self):
+            return {FieldKey((self.name,)): self}
+        return {}
 
 
 class ObjectField(Field):
@@ -247,6 +289,23 @@ class ObjectField(Field):
             for field in self.fields.values()
             if field.name in value
         }
+
+    def getChild(self, names: Tuple[str, ...]) -> Optional["Field"]:
+        """Return the child field or None if it is not found"""
+        if len(names) == 0:
+            return self
+        if names[0] in self.fields:
+            return self.fields[names[0]].getChild(names[1:])
+
+    def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldKey, Field]:
+        """Find fields or subfields satisfying the input function"""
+        base: Dict[FieldKey, Field] = f(self) and {FieldKey((self.name,)): self} or {}
+        child_dicts = merge_dicts(
+            *map(lambda field: field.collect_matching(f), self.fields.values())
+        )
+        return merge_dicts(
+            base, {k.prepend(self.name): v for k, v in child_dicts.items()}
+        )
 
 
 # pylint: disable=too-many-arguments
@@ -298,30 +357,33 @@ class Collection(BaseModel):
     fields: List[Field]
     # an optional list of collections that this collection must run after
     after: Set[CollectionAddress] = set()
-    field_dict: Dict[str, Field] = {}
+    field_dict: Dict[FieldKey, Field] = {}
 
     def __init__(self, **kwargs: Dict[str, Any]) -> None:
         super().__init__(**kwargs)
-        self.field_dict = {f.name: f for f in self.fields}
+        self.field_dict = self._collect_matching(lambda f: True)
+
+    def _collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldKey, Field]:
+        matches = map(lambda field: field.collect_matching(f), self.fields)
+        return merge_dicts(*matches)
 
     def references(
         self,
-    ) -> Dict[str, List[Tuple[FieldAddress, Optional[EdgeDirection]]]]:
+    ) -> Dict[FieldKey, List[Tuple[FieldAddress, Optional[EdgeDirection]]]]:
         """return references from fields in this collection to fields in any other"""
-        flds_w_ref = filter(lambda f: f.references, self.fields)
-        return {f.name: f.references for f in flds_w_ref}
+        return {k: v.references for k, v in self.field_dict.items() if v.references}
 
     def identities(self) -> Dict[str, Tuple[str, ...]]:
         """return identity pointers included in the table"""
-        flds_w_ident = filter(lambda f: f.identity, self.fields)
-        return {f.name: f.identity for f in flds_w_ident}
+        return {k: v.identity for k, v in self.field_dict.items() if v.identity}
 
-    def field(self, name: str) -> Optional[Field]:
+    def field(self, *name: str) -> Optional[Field]:
         """return field by name, or None if not found"""
-        return self.field_dict[name] if name in self.field_dict else None
+        field_key = FieldKey(name)
+        return self.field_dict[field_key] if field_key in self.field_dict else None
 
     @property
-    def fields_by_category(self) -> Dict[str, List]:
+    def fields_by_category(self) -> Dict[Tuple[str, ...], List]:
         """Returns mapping of data categories to fields, flips fields -> categories
         to be categories -> fields.
 
@@ -335,9 +397,9 @@ class Collection(BaseModel):
             }
         """
         categories = defaultdict(list)
-        for field in self.fields:
+        for field_key, field in self.field_dict.items():
             for category in field.data_categories or []:
-                categories[category].append(field.name)
+                categories[category].append(field_key)
         return categories
 
     class Config:

@@ -52,7 +52,7 @@ def test_collection_identities() -> None:
             ScalarField(name="f3"),
         ],
     )
-    assert ds.identities() == {"f1": "email", "f2": "id"}
+    assert ds.identities() == {FieldKey(("f1",)): "email", FieldKey(("f2",)): "id"}
 
 
 def test_collection_references() -> None:
@@ -71,11 +71,11 @@ def test_collection_references() -> None:
         ],
     )
     assert ds.references() == {
-        "f1": [
-            (FieldAddress("a", "b", "c"), None),
+        FieldKey(("f1",)): [
+            (FieldAddress("a", "b", FieldKey(("c",))), None),
             (FieldAddress("a", "b", "d"), None),
         ],
-        "f2": [(FieldAddress("d", "e", "f"), None)],
+        FieldKey(("f2",)): [(FieldAddress("d", "e", FieldKey(("f",))), None)],
     }
 
 
@@ -95,72 +95,9 @@ def test_directional_references() -> None:
         ],
     )
     assert ds.references() == {
-        "f1": [
+        FieldKey(("f1",)): [
             (FieldAddress("a", "b", "c"), "from"),
             (FieldAddress("a", "b", "d"), "to"),
         ],
-        "f2": [(FieldAddress("d", "e", "f"), None)],
+        FieldKey(("f2",)): [(FieldAddress("d", "e", FieldKey(("f",))), None)],
     }
-
-
-def test_generate_field() -> None:
-    def _is_string_field(f: Field):
-        return isinstance(f, ScalarField) and f.data_type_converter.name == "string"
-
-    string_field = generate_field(
-        name="str",
-        data_categories=["category"],
-        identity="identity",
-        data_type_name="string",
-        references=[],
-        is_pk=False,
-        length=0,
-        is_array=False,
-        sub_fields=[],
-    )
-    array_field = generate_field(
-        name="arr",
-        data_categories=["category"],
-        identity="identity",
-        data_type_name="string",
-        references=[],
-        is_pk=False,
-        length=0,
-        is_array=True,
-        sub_fields=[],
-    )
-    object_field = generate_field(
-        name="obj",
-        data_categories=["category"],
-        identity="identity",
-        data_type_name="object",
-        references=[],
-        is_pk=False,
-        length=0,
-        is_array=False,
-        sub_fields=[string_field, array_field],
-    )
-    object_array_field = generate_field(
-        name="obj_a",
-        data_categories=["category"],
-        identity="identity",
-        data_type_name="string",
-        references=[],
-        is_pk=False,
-        length=0,
-        is_array=True,
-        sub_fields=[string_field, object_field],
-    )
-
-    assert _is_string_field(string_field)
-    assert isinstance(array_field, ScalarField) and array_field.is_array
-    assert isinstance(object_field, ObjectField) and _is_string_field(
-        object_field.fields["str"]
-    )
-    assert (
-        isinstance(object_field.fields["arr"], ScalarField)
-        and object_field.fields["arr"].is_array
-        and _is_string_field(object_field.fields["str"])
-    )
-    assert isinstance(object_array_field, ObjectField) and object_array_field.is_array
-    assert object_array_field.fields["obj"] == object_field

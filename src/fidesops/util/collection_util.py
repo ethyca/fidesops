@@ -1,18 +1,12 @@
+import functools
 from typing import List, Dict, TypeVar, Iterable, Callable, Any, Optional
 
 T = TypeVar("T")
 U = TypeVar("U")
 
 
-def merge_dicts(dictionaries: List[Dict[T, U]]) -> Dict[T, List[U]]:
-    """Convert an iterable of dictionaries to a dictionary of iterables"""
-
-    out: Dict[T, List[U]] = {k: [] for d in dictionaries for k in d.keys()}
-
-    for d in dictionaries:
-        for k, v in d.items():
-            out[k].append(v)
-    return out
+def merge_dicts(*dicts: Dict[T, U]) -> Dict[T, U]:
+    return functools.reduce(lambda x, y: x | y, dicts)
 
 
 def append(d: Dict[T, List[U]], key: T, val: U) -> None:
