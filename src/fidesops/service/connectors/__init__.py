@@ -8,7 +8,8 @@ from fidesops.service.connectors.sql_connector import (
     PostgreSQLConnector,
     MySQLConnector,
     RedshiftConnector,
-    SnowflakeConnector, MicrosoftSQLServerConnector,
+    SnowflakeConnector,
+    MicrosoftSQLServerConnector,
 )
 
 supported_connectors: Dict[str, Any] = {
@@ -18,7 +19,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.redshift.value: RedshiftConnector,
     ConnectionType.snowflake.value: SnowflakeConnector,
     ConnectionType.https.value: HTTPSConnector,
-    ConnectionType.mssql.value: MicrosoftSQLServerConnector
+    ConnectionType.mssql.value: MicrosoftSQLServerConnector,
 }
 
 

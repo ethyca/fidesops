@@ -15,7 +15,7 @@ MSSQL_URL = MSSQL_URL_TEMPLATE.format("mssql_example")
 MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mssql_setup():
     """
     Set up the SQL Server Database for testing.
@@ -28,11 +28,11 @@ def mssql_setup():
     print(queries)
     for query in queries:
         engine.execute(sqlalchemy.sql.text(query))
-    yield
+    yield engine
     engine.dispose()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mssql_example_db(mssql_setup) -> Generator:
     """Return a connection to the MsSQL example DB"""
     engine = get_db_engine(database_uri=MSSQL_URL)

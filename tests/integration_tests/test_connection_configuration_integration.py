@@ -544,7 +544,8 @@ class TestMicrosoftSQLServerConnection:
         print(queries)
         for query in queries:
             engine.execute(sqlalchemy.sql.text(query))
-        yield
+        yield engine
+        engine.dispose()
 
     @pytest.fixture(scope="function")
     def url_put_secret(self, oauth_client, policy, connection_config_mssql) -> str:
@@ -556,7 +557,6 @@ class TestMicrosoftSQLServerConnection:
             api_client: TestClient,
             db: Session,
             generate_auth_header,
-            mssql_setup,
             connection_config_mssql,
             url_put_secret,
     ) -> None:
@@ -794,7 +794,7 @@ class TestMicrosoftSQLServerConnection:
 
         client = connector.client()
         assert client.__class__ == Engine
-        assert connector.test_connection() == TestStatus.succeeded
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
 
         connection_config_mssql.secrets = {"host": "bad_host"}
         connection_config_mssql.save(db)

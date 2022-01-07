@@ -22,7 +22,8 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.connection_configuration import (
     PostgreSQLSchema,
     RedshiftSchema,
-    SnowflakeSchema, MicrosoftSQLServerSchema,
+    SnowflakeSchema,
+    MicrosoftSQLServerSchema,
 )
 from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
@@ -313,6 +314,7 @@ class MicrosoftSQLServerConnector(SQLConnector):
     """
     Connector specific to Microsoft SQL Server
     """
+
     def build_uri(self) -> URL:
         """
         Build URI of format
@@ -328,9 +330,7 @@ class MicrosoftSQLServerConnector(SQLConnector):
             host=config.host,
             port=config.port,
             database=config.dbname,
-            query={
-                "driver": "ODBC Driver 17 for SQL Server"
-            },
+            query={"driver": "ODBC Driver 17 for SQL Server"},
         )
 
         return url
