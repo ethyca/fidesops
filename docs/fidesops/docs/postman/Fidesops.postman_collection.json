@@ -465,7 +465,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"host\": \"host.docker.internal\",\n    \"port\": 1433,\n    \"dbname\": \"mssql_example\",\n    \"username\": \"mssql\",\n    \"password\": \"Ms_sql1234\"\n}",
+							"raw": "{\n    \"host\": \"mssql_example\",\n    \"port\": 1433,\n    \"dbname\": \"mssql_example\",\n    \"username\": \"sa\",\n    \"password\": \"Ms_sql1234\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

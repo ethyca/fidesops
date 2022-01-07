@@ -25,7 +25,6 @@ def mssql_setup():
     engine = sqlalchemy.create_engine(MASTER_MSSQL_URL)
     with open("data/sql/mssql_example.sql", "r") as query_file:
         queries = [query for query in query_file.read().splitlines() if query != ""]
-    print(queries)
     for query in queries:
         engine.execute(sqlalchemy.sql.text(query))
     yield engine
@@ -47,7 +46,6 @@ def mssql_example_db(mssql_setup) -> Generator:
 
 
 @pytest.mark.integration
-@pytest.mark.integration_mssql
 def test_mssql_example_data(mssql_example_db):
     """Confirm that the example database is populated with simulated data"""
     expected_counts = {

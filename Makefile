@@ -59,7 +59,7 @@ quickstart: compose-build
 ####################
 
 docker-build:
-	docker build --build-arg include_dangerous=$(include_dangerous) --tag $(IMAGE) .
+	docker build --tag $(IMAGE) .
 
 docker-push:
 	docker tag $(IMAGE) $(IMAGE_LATEST)
@@ -104,7 +104,7 @@ pytest: compose-build
 # Run the pytest integration tests.
 pytest-integration-access: compose-build
 	@echo "Building additional Docker images for integration tests..."
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build --build-arg include_dangerous=$(include_dangerous)
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build
 	@echo "Bringing up the integration environment..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
 	@echo "Waiting 10s for integration containers to be ready..."
@@ -117,7 +117,7 @@ pytest-integration-access: compose-build
 
 pytest-integration-erasure: compose-build
 	@echo "Building additional Docker images for integration tests..."
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build --build-arg include_dangerous=$(include_dangerous)
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build --build-arg
 	@echo "Running pytest integration tests..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml \
 		run $(IMAGE_NAME) \
@@ -150,7 +150,7 @@ clean:
 compose-build:
 	@echo "Tearing down the docker compose images, network, etc..."
 	@docker-compose down --remove-orphans
-	@docker-compose build --build-arg include_dangerous=$(include_dangerous)
+	@docker-compose build
 
 .PHONY: teardown
 teardown:
