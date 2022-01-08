@@ -55,6 +55,7 @@ quickstart: compose-build
 	@docker exec -it fidesops python quickstart.py
 
 ####################
+
 # Docker
 ####################
 
