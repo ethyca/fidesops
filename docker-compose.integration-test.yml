@@ -60,11 +60,4 @@ services:
       - SA_PASSWORD=Mssql_pw1
       - ACCEPT_EULA="Y"
 
-  mssql_init_db:
-    build: ./data/mssql
-    depends_on:
-      fidesops:
-        condition: service_healthy
-
-
 
