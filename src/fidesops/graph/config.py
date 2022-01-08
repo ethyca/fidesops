@@ -135,7 +135,7 @@ class CollectionAddress:
 
     def field_address(self, field: FieldKey) -> FieldAddress:
         """Create a field address appended to this collection address."""
-        return FieldAddress(self.dataset, self.collection, field)
+        return FieldAddress(self.dataset, self.collection, *field.keys)
 
 
 ROOT_COLLECTION_ADDRESS: CollectionAddress = CollectionAddress("__ROOT__", "__ROOT__")
@@ -146,18 +146,18 @@ TERMINATOR_ADDRESS = CollectionAddress("__TERMINATE__", "__TERMINATE__")
 
 class FieldKey:
     """Fields are addressable by a (possibly) nested name. This key
-    represents a field name held as a tuple of possibly descending names.
+    represents a field name held as a tuple of possibly descending keys.
     A scalar field is represented as a single-element tuple.
     """
 
     def __init__(self, *names: str):
-        self.names = tuple(names)
-        self.value = ".".join(self.names)
+        self.keys = tuple(names)
+        self.value = ".".join(self.keys)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, FieldKey):
             return False
-        return other.names == self.names
+        return other.keys == self.keys
 
     def __hash__(self) -> int:
         return hash(self.value)
@@ -165,25 +165,28 @@ class FieldKey:
     def __repr__(self) -> str:
         return self.value
 
-    def __lt__(self, other: FieldKey) -> bool:
+    def __lt__(self, other: "FieldKey") -> bool:
         return self.value < other.value
 
-    def prepend(self, key: str) -> FieldKey:
-        return FieldKey(*((key,) + self.names))
+    def prepend(self, key: str) -> "FieldKey":
+        return FieldKey(*((key,) + self.keys))
 
 
 class FieldAddress:
     """The representation of a field location in the graph, specified by
-    (data dataset name, collection name, field name)
+    (data dataset name, collection name, field name ... )
 
-    Field name is specified as a tuple to accomodate nested field addressing
+    All values after the second are grouped to provide a FieldKey object.
+    Additional values are understood to refer to nested field values.
+    e.g. ("dataset", "collection", "a", "b", "c") creates a reference to
+    dataset:collection:a.b.c
     """
 
-    def __init__(self, dataset: str, collection: str, field: FieldKey):
+    def __init__(self, dataset: str, collection: str, *fields: str):
         self.dataset = dataset
         self.collection = collection
-        self.field = field
-        self.value: str = ":".join((dataset, collection, str(field)))
+        self.field = FieldKey(*fields)
+        self.value: str = ":".join((dataset, collection, self.field.value))
 
     def is_member_of(self, collection_address: CollectionAddress) -> bool:
         """True if this field represents a field in the given collection address."""
@@ -272,7 +275,7 @@ class ScalarField(Field):
     def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldKey, Field]:
         """Find fields or subfields satisfying the input function"""
         if f(self):
-            return {FieldKey((self.name,)): self}
+            return {FieldKey(self.name): self}
         return {}
 
 
@@ -299,7 +302,7 @@ class ObjectField(Field):
 
     def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldKey, Field]:
         """Find fields or subfields satisfying the input function"""
-        base: Dict[FieldKey, Field] = f(self) and {FieldKey((self.name,)): self} or {}
+        base: Dict[FieldKey, Field] = f(self) and {FieldKey(self.name): self} or {}
         child_dicts = merge_dicts(
             *map(lambda field: field.collect_matching(f), self.fields.values())
         )
@@ -373,26 +376,25 @@ class Collection(BaseModel):
         """return references from fields in this collection to fields in any other"""
         return {k: v.references for k, v in self.field_dict.items() if v.references}
 
-    def identities(self) -> Dict[str, Tuple[str, ...]]:
+    def identities(self) -> Dict[FieldKey, Tuple[str, ...]]:
         """return identity pointers included in the table"""
         return {k: v.identity for k, v in self.field_dict.items() if v.identity}
 
-    def field(self, *name: str) -> Optional[Field]:
+    def field(self, key:FieldKey) -> Optional[Field]:
         """return field by name, or None if not found"""
-        field_key = FieldKey(name)
-        return self.field_dict[field_key] if field_key in self.field_dict else None
+        return self.field_dict[key] if key in self.field_dict else None
 
     @property
-    def fields_by_category(self) -> Dict[Tuple[str, ...], List]:
+    def fields_by_category(self) -> Dict[Tuple[str, ...], List[FieldKey]]:
         """Returns mapping of data categories to fields, flips fields -> categories
         to be categories -> fields.
 
         Example:
             {
-                "user.provided.identifiable.contact.city": ["city"],
-                "user.provided.identifiable.contact.street": ["house", "street"],
+                "user.provided.identifiable.contact.city": [FieldKey("city")],
+                "user.provided.identifiable.contact.street": [FieldKey("house"), FieldKey("street")],
                 "system.operations": ["id"],
-                "user.provided.identifiable.contact.state": ["state"],
+                "user.provided.identifiable.contact.state": [FieldKey("state", "code"),FieldKey("state", "full_name"), ],
                 "user.provided.identifiable.contact.postal_code": ["zip"]
             }
         """

@@ -10,7 +10,7 @@ class FidesopsSchema(BaseModel):
 
     @classmethod
     def get_field_names(cls) -> List[str]:
-        """Return a list of all field names specified on this schema"""
+        """Return a list of all field keys specified on this schema"""
         return list(cls.schema().get("properties", {}).keys())
 
     class Config:

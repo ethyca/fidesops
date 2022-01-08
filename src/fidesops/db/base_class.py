@@ -109,7 +109,7 @@ class OrmWrappedFidesopsBase(FidesopsBase):
 
     @classmethod
     def get_optional_field_names(cls) -> List[str]:
-        """Returns the names of all nullable fields on the wrapped model"""
+        """Returns the keys of all nullable fields on the wrapped model"""
         return [field.name for field in list(cls.__table__.columns) if field.nullable]
 
     @classmethod
@@ -159,7 +159,7 @@ class OrmWrappedFidesopsBase(FidesopsBase):
             data["key"] = get_key_from_data(data, cls.__name__)
             if db.query(cls).filter_by(key=data["key"]).first():
                 raise KeyOrNameAlreadyExists(
-                    f"Key {data['key']} already exists in {cls.__name__}. Keys will be snake-cased names if not provided. "
+                    f"Key {data['key']} already exists in {cls.__name__}. Keys will be snake-cased keys if not provided. "
                     f"If you are seeing this error without providing a key, please provide a key or a different name."
                     ""
                 )

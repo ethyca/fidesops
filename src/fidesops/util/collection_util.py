@@ -6,7 +6,7 @@ U = TypeVar("U")
 
 
 def merge_dicts(*dicts: Dict[T, U]) -> Dict[T, U]:
-    return functools.reduce(lambda x, y: x | y, dicts)
+    return dicts and functools.reduce(lambda x, y: x | y, dicts) or {}
 
 
 def append(d: Dict[T, List[U]], key: T, val: U) -> None:

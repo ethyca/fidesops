@@ -54,14 +54,14 @@ def _valid_data_length(data_length: Optional[int]) -> Optional[int]:
 
 class FidesCollectionKey(ConstrainedStr):
     """
-    Dataset:Collection name where both dataset and collection names are valid FidesKeys
+    Dataset:Collection name where both dataset and collection keys are valid FidesKeys
     """
 
     @classmethod
     def validate(cls, value: str) -> str:
         """
         Overrides validation to check FidesCollectionKey format, and that both the dataset
-        and collection names have the FidesKey format.
+        and collection keys have the FidesKey format.
         """
         values = value.split(".")
         if len(values) == 2:

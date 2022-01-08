@@ -46,7 +46,7 @@ class Node:
 
     def contains_field(self, f: Callable[[Field], bool]) -> bool:
         """True if any field in this collection matches the condition of the callable"""
-        return any(map(f, self.collection.fields))
+        return any(map(f, self.collection.field_dict.values()))
 
 
 class Edge:
@@ -206,7 +206,7 @@ class DatasetGraph:
             for field_name, ref_list in node.collection.references().items():
 
                 source_field_address = FieldAddress(
-                    node_address.dataset, node_address.collection, field_name
+                    node_address.dataset, node_address.collection, *field_name.keys
                 )
                 for (dest_field_address, direction) in ref_list:
                     if dest_field_address.collection_address() not in self.nodes:
@@ -224,7 +224,7 @@ class DatasetGraph:
 
         # collect all seed references
         self.identity_keys: Dict[FieldAddress, SeedAddress] = {
-            FieldAddress(node.address.dataset, node.address.collection, k): v
+            FieldAddress(node.address.dataset, node.address.collection, *k.keys): v
             for node in nodes
             for k, v in node.collection.identities().items()
         }

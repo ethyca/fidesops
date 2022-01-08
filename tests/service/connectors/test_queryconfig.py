@@ -1,7 +1,7 @@
 from typing import Dict, Any, Set
 
 
-from fidesops.graph.config import CollectionAddress
+from fidesops.graph.config import CollectionAddress, FieldKey
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.datasetconfig import convert_dataset_to_graph
@@ -50,13 +50,16 @@ class TestSQLQueryConfig:
 
         config = SQLQueryConfig(payment_card_node)
         assert config.fields == [
-            "id",
-            "name",
-            "ccn",
-            "customer_id",
-            "billing_address_id",
+            FieldKey(s)
+            for s in [
+                "id",
+                "name",
+                "ccn",
+                "customer_id",
+                "billing_address_id",
+            ]
         ]
-        assert config.query_keys == {"id", "customer_id"}
+        assert config.query_keys == {FieldKey("id"), FieldKey("customer_id")}
 
         # values exist for all query keys
         assert found_query_keys(

@@ -15,6 +15,7 @@ from fidesops.graph.config import (
     CollectionAddress,
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
+    FieldKey,
 )
 from fidesops.graph.graph import Edge, DatasetGraph
 from fidesops.graph.traversal import TraversalNode, Row, Traversal
@@ -98,11 +99,13 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         b: Dict[CollectionAddress, List[Edge]] = partition(
             self.traversal_node.incoming_edges(), lambda e: e.f1.collection_address()
         )
-        self.incoming_field_map: Dict[CollectionAddress, List[Tuple[str, str]]] = {
-            k: [(e.f1.field, e.f2.field) for e in t] for k, t in b.items()
-        }
+
+        self.incoming_field_map: Dict[
+            CollectionAddress, List[Tuple[FieldKey, FieldKey]]
+        ] = {k: [(e.f1.field, e.f2.field) for e in t] for k, t in b.items()}
+
         # fields that point to child nodes
-        self.outgoing_field_map: List[str] = sorted(
+        self.outgoing_field_map: List[FieldKey] = sorted(
             {e.f1.field for e in self.traversal_node.outgoing_edges()}
         )
 
@@ -128,7 +131,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         connection_config: ConnectionConfig = self.connector.configuration
         return connection_config.access == AccessLevel.write
 
-    def to_dask_input_data(self, *data: List[Row]) -> Dict[str, List[Any]]:
+    def to_dask_input_data(self, *data: List[Row]) -> Dict[FieldKey, List[Any]]:
         """Each dict in the input list represents the output of a dependent task.
         These outputs should correspond to the input key order.
         {table1: [{x:1, y:A}, {x:2, y:B}], table2: [{x:3},{x:4}],
@@ -147,7 +150,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 NotPii(len(data)),
             )
 
-        output: Dict[str, List[Any]] = {}
+        output: Dict[FieldKey, List[Any]] = {}
         for i, rowset in enumerate(data):
             collection_address = self.input_keys[i]
             field_mappings = self.incoming_field_map[collection_address]
@@ -208,7 +211,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                         "path": f"{self.traversal_node.node.address}:{f.name}",
                         "data_categories": f.data_categories,
                     }
-                    for f in self.traversal_node.node.collection.fields
+                    for f in self.traversal_node.node.collection.field_dict.values()
                 ],
                 action_type,
                 ExecutionLogStatus.complete,

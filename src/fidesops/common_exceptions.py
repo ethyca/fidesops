@@ -20,7 +20,7 @@ class FidesopsException(Exception):
 
 
 class TraversalError(FidesopsException):
-    """Fidesops error with the names of all nodes that could not be reached."""
+    """Fidesops error with the keys of all nodes that could not be reached."""
 
 
 class ValidationError(FidesopsException):

@@ -11,6 +11,7 @@ from fidesops.graph.config import (
     CollectionAddress,
     Field,
     MaskingOverride,
+    FieldKey,
 )
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
@@ -33,18 +34,17 @@ class QueryConfig(Generic[T], ABC):
     def __init__(self, node: TraversalNode):
         self.node = node
 
-    @property
-    def fields(self) -> List[str]:
-        """Fields of interest from this traversal traversal_node."""
-        return [f.name for f in self.node.node.collection.fields]
+    def field_map(self) -> Dict[FieldKey, Field]:
+        """Field Keys of interest from this traversal traversal_node."""
+        return self.node.node.collection.field_dict
 
-    def build_rule_target_fields(self, policy: Policy) -> Dict[Rule, List[str]]:
+    def build_rule_target_fields(self, policy: Policy) -> Dict[Rule, List[FieldKey]]:
         """
-        Return dictionary of rules mapped to update-able field names on a given collection
+        Return dictionary of rules mapped to update-able field keys on a given collection
         Example:
         {<fidesops.models.policy.Rule object at 0xffff9160e190>: ['name', 'code', 'ccn']}
         """
-        rule_updates: Dict[Rule, List[str]] = {}
+        rule_updates: Dict[Rule, List[FieldKey]] = {}
         for rule in policy.rules:
             if rule.action_type != ActionType.erasure:
                 continue
@@ -65,10 +65,12 @@ class QueryConfig(Generic[T], ABC):
     @property
     def primary_key_fields(self) -> List[Field]:
         """List of fields marked as primary keys"""
-        return [f for f in self.node.node.collection.fields if f.primary_key]
+        return [
+            f for f in self.node.node.collection.field_dict.values() if f.primary_key
+        ]
 
     @property
-    def query_keys(self) -> Set[str]:
+    def query_keys(self) -> Set[FieldKey]:
         """
         All of the possible keys that we can query for possible filter values.
         These are keys that are the ends of incoming edges.
@@ -84,6 +86,10 @@ class QueryConfig(Generic[T], ABC):
         """
 
         out = {}
+
+
+        for field_key in self.query_keys:
+
         for key, values in input_data.items():
             field = self.node.node.collection.field(key)
             if field and key in self.query_keys and isinstance(values, list):
@@ -149,8 +155,8 @@ class QueryConfig(Generic[T], ABC):
             for field_name in field_names:
                 masking_override: MaskingOverride = [
                     MaskingOverride(field.data_type_converter, field.length)
-                    for field in self.node.node.collection.fields
-                    if field.name == field_name
+                    for field_key, field in self.node.node.collection.field_dict.items()
+                    if field_key.value == field_name
                 ][0]
                 null_masking: bool = strategy_config.get("strategy") == NULL_REWRITE
                 if not self._supported_data_type(
@@ -381,7 +387,7 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         field_name: str,
         operator: str,
     ) -> str:
-        """Returns field names in clauses surrounded by quotation marks as required by Snowflake syntax."""
+        """Returns field keys in clauses surrounded by quotation marks as required by Snowflake syntax."""
         return f'"{field_name}" {operator} (:{field_name})'
 
     def get_formatted_query_string(
@@ -413,7 +419,7 @@ class RedshiftQueryConfig(SQLQueryConfig):
         field_list: str,
         clauses: List[str],
     ) -> str:
-        """Returns a query string with double quotation mark formatting for tables that have the same names as
+        """Returns a query string with double quotation mark formatting for tables that have the same keys as
         Redshift reserved words."""
         return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
 

@@ -2,6 +2,7 @@ import dask
 
 from fidesops.graph.config import (
     CollectionAddress,
+    FieldKey,
 )
 from fidesops.graph.traversal import Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -34,7 +35,7 @@ def test_to_dask_input_data() -> None:
         {"billing_address_id": 11, "shipping_address_id": 22},
     ]
     v = task.to_dask_input_data(customers_data, orders_data)
-    assert set(v["id"]) == {31, 32, 1, 2, 11, 22}
+    assert set(v[FieldKey("id")]) == {31, 32, 1, 2, 11, 22}
 
 
 def test_sql_dry_run_queries() -> None:
