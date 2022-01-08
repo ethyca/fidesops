@@ -150,9 +150,9 @@ class FieldKey:
     A scalar field is represented as a single-element tuple.
     """
 
-    def __init__(self, names: Tuple[str, ...]):
-        self.names = names
-        self.value = ".".join(names)
+    def __init__(self, *names: str):
+        self.names = tuple(names)
+        self.value = ".".join(self.names)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, FieldKey):
@@ -169,7 +169,7 @@ class FieldKey:
         return self.value < other.value
 
     def prepend(self, key: str) -> FieldKey:
-        return FieldKey((key,) + self.names)
+        return FieldKey(*((key,) + self.names))
 
 
 class FieldAddress:
