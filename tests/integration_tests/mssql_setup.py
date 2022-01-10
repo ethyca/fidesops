@@ -17,4 +17,5 @@ def mssql_setup():
         engine.execute(sqlalchemy.sql.text(query))
 
 
-mssql_setup()
+if __name__ == "__main__":
+    mssql_setup()
