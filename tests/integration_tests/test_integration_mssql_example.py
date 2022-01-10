@@ -5,9 +5,11 @@ import pytest
 from sqlalchemy import func, select, table
 
 from fidesops.db.session import get_db_session, get_db_engine
-from .mssql_setup import MSSQL_URL
 
 logger = logging.getLogger(__name__)
+
+MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:Mssql_pw1@mssql_example:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
+MSSQL_URL = MSSQL_URL_TEMPLATE.format("mssql_example")
 
 
 @pytest.fixture(scope="module")
