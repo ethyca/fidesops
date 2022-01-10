@@ -49,7 +49,7 @@ class TestSQLQueryConfig:
             return set(qconfig.typed_filtered_values(values).keys())
 
         config = SQLQueryConfig(payment_card_node)
-        assert config.fields == [
+        assert config.field_map().keys() == {
             FieldKey(s)
             for s in [
                 "id",
@@ -58,7 +58,7 @@ class TestSQLQueryConfig:
                 "customer_id",
                 "billing_address_id",
             ]
-        ]
+        }
         assert config.query_keys == {FieldKey("id"), FieldKey("customer_id")}
 
         # values exist for all query keys

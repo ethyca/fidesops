@@ -168,8 +168,9 @@ class FieldKey:
     def __lt__(self, other: "FieldKey") -> bool:
         return self.value < other.value
 
-    def prepend(self, key: str) -> "FieldKey":
-        return FieldKey(*((key,) + self.keys))
+    def prepend(self, prefix: str) -> "FieldKey":
+        """Return a new field key with the prefix prepended."""
+        return FieldKey(*((prefix,) + self.keys))
 
 
 class FieldAddress:
@@ -270,12 +271,12 @@ class ScalarField(Field):
 
     def getChild(self, names: Tuple[str, ...]) -> Optional["Field"]:
         """Scalar field is defined as not having children"""
-        return len(names) == 0 and self or None
+        return self if len(names) == 0 else None
 
     def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldKey, Field]:
         """Find fields or subfields satisfying the input function"""
         if f(self):
-            return {FieldKey(self.name): self}
+            return {FieldKey(self.name): self}  # pylint: disable=no-member
         return {}
 
 
@@ -288,7 +289,7 @@ class ObjectField(Field):
         """Cast the input value into the form represented by data_type."""
 
         return {
-            field.name: field.cast(value[field.name])
+            field.name: field.cast(value[field.name])  # pylint: disable=no-member
             for field in self.fields.values()
             if field.name in value
         }
@@ -299,15 +300,20 @@ class ObjectField(Field):
             return self
         if names[0] in self.fields:
             return self.fields[names[0]].getChild(names[1:])
+        return None
 
     def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldKey, Field]:
         """Find fields or subfields satisfying the input function"""
-        base: Dict[FieldKey, Field] = f(self) and {FieldKey(self.name): self} or {}
+        name = self.name  # pylint: disable=no-member
+        base = {FieldKey(name): self} if f(self) else {}  # pylint: disable=no-member
         child_dicts = merge_dicts(
             *map(lambda field: field.collect_matching(f), self.fields.values())
         )
         return merge_dicts(
-            base, {k.prepend(self.name): v for k, v in child_dicts.items()}
+            base,
+            {
+                k.prepend(name): v for k, v in child_dicts.items()
+            },  # pylint: disable=no-member
         )
 
 
@@ -381,7 +387,7 @@ class Collection(BaseModel):
         """return identity pointers included in the table"""
         return {k: v.identity for k, v in self.field_dict.items() if v.identity}
 
-    def field(self, key:FieldKey) -> Optional[Field]:
+    def field(self, key: FieldKey) -> Optional[Field]:
         """return field by name, or None if not found"""
         return self.field_dict[key] if key in self.field_dict else None
 

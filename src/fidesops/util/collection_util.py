@@ -1,4 +1,4 @@
-import functools
+from functools import reduce
 from typing import List, Dict, TypeVar, Iterable, Callable, Any, Optional
 
 T = TypeVar("T")
@@ -6,7 +6,15 @@ U = TypeVar("U")
 
 
 def merge_dicts(*dicts: Dict[T, U]) -> Dict[T, U]:
-    return dicts and functools.reduce(lambda x, y: x | y, dicts) or {}
+    """Merge any number of dictionaries.
+
+    Right-hand values take precedence. That is,
+    merge_dicts({"A": 1, "B": 2}, {"A": 2, "C": 4})
+    =>  {'A': 2, 'B': 2, 'C': 4}
+    """
+    if dicts:
+        return reduce(lambda x, y: x | y, dicts) or {}
+    return {}
 
 
 def append(d: Dict[T, List[U]], key: T, val: U) -> None:

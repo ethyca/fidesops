@@ -48,12 +48,14 @@ class QueryConfig(Generic[T], ABC):
         for rule in policy.rules:
             if rule.action_type != ActionType.erasure:
                 continue
-            rule_categories:List[str] = rule.get_target_data_categories()
+            rule_categories: List[str] = rule.get_target_data_categories()
             if not rule_categories:
                 continue
 
             targeted_fields = []
-            collection_categories:Dict[str, List[FieldKey]] = self.node.node.collection.fields_by_category
+            collection_categories: Dict[
+                str, List[FieldKey]
+            ] = self.node.node.collection.fields_by_category
             for rule_cat in rule_categories:
                 for collection_cat, fields in collection_categories.items():
                     if collection_cat.startswith(rule_cat):
@@ -86,7 +88,7 @@ class QueryConfig(Generic[T], ABC):
         """
 
         out = {}
-
+        #TBD
         for key, values in input_data.items():
             field = self.node.node.collection.field(key)
             if field and key in self.query_keys and isinstance(values, list):
@@ -245,10 +247,15 @@ class SQLQueryConfig(QueryConfig[TextClause]):
 
     def format_fields_for_query(
         self,
-        fields: List[str],
+        keys: List[FieldKey],
     ) -> List[str]:
-        """Returns fields in a format they can be added into SQL queries."""
-        return fields
+        """Returns fields in a format they can be added into SQL queries.
+
+        This currently takes no nesting into account and only returns the
+        last value from each key.It will need to be updated to support
+        nested values.
+        """
+        return list(map(lambda fk: fk.keys[-1:][0], keys))
 
     def format_clause_for_query(
         self,
@@ -286,7 +293,9 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         if filtered_data:
             clauses = []
             query_data: Dict[str, Tuple[Any, ...]] = {}
-            formatted_fields = self.format_fields_for_query(self.fields)
+            formatted_fields = self.format_fields_for_query(
+                list(self.field_map().keys())
+            )
             field_list = ",".join(formatted_fields)
             for field_name, data in filtered_data.items():
                 data = set(data)
@@ -374,10 +383,10 @@ class SnowflakeQueryConfig(SQLQueryConfig):
 
     def format_fields_for_query(
         self,
-        fields: List[str],
+        keys: List[FieldKey],
     ) -> List[str]:
         """Returns fields surrounded by quotation marks as required by Snowflake syntax."""
-        return [f'"{field}"' for field in fields]
+        return [f'"{key}"' for key in keys]
 
     def format_clause_for_query(
         self,
@@ -452,7 +461,9 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         if input_data:
             filtered_data = self.typed_filtered_values(input_data)
             if filtered_data:
-                field_list = {field_name: 1 for field_name in self.fields}
+                field_list = {
+                    field_key.value: 1 for field_key, field in self.field_map().items()
+                }
                 query_pairs = {}
                 for field_name, data in filtered_data.items():
 
