@@ -54,7 +54,7 @@ integration-env: compose-build
 	@sleep 15
 	@echo "Running additional setup for mssql integration tests"
 	@docker exec -it fidesops python tests/integration_tests/mssql_setup.py
-	@docker exec -it fidesops bash
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml logs -f -t
 
 quickstart: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
@@ -115,6 +115,8 @@ pytest-integration-access: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
 	@echo "Waiting 10s for integration containers to be ready..."
 	@sleep 10
+	@echo "Running additional setup for mssql integration tests"
+	@docker exec -it fidesops python tests/integration_tests/mssql_setup.py
 	@echo "Running pytest integration tests..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml \
 		run $(IMAGE_NAME) \
@@ -123,7 +125,7 @@ pytest-integration-access: compose-build
 
 pytest-integration-erasure: compose-build
 	@echo "Building additional Docker images for integration tests..."
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build --build-arg
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build
 	@echo "Running pytest integration tests..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml \
 		run $(IMAGE_NAME) \

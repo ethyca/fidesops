@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy import func, select, table
 
 from fidesops.db.session import get_db_session, get_db_engine
-from integration_tests.mssql_setup import MSSQL_URL
+from .mssql_setup import MSSQL_URL
 
 logger = logging.getLogger(__name__)
 
