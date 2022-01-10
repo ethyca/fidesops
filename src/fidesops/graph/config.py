@@ -360,6 +360,7 @@ class Collection(BaseModel):
     fields: List[Field]
     # an optional list of collections that this collection must run after
     after: Set[CollectionAddress] = set()
+
     field_dict: Dict[FieldKey, Field] = {}
 
     def __init__(self, **kwargs: Dict[str, Any]) -> None:
@@ -385,7 +386,7 @@ class Collection(BaseModel):
         return self.field_dict[key] if key in self.field_dict else None
 
     @property
-    def fields_by_category(self) -> Dict[Tuple[str, ...], List[FieldKey]]:
+    def fields_by_category(self) -> Dict[str, List[FieldKey]]:
         """Returns mapping of data categories to fields, flips fields -> categories
         to be categories -> fields.
 

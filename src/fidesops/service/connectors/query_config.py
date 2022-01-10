@@ -48,12 +48,12 @@ class QueryConfig(Generic[T], ABC):
         for rule in policy.rules:
             if rule.action_type != ActionType.erasure:
                 continue
-            rule_categories = rule.get_target_data_categories()
+            rule_categories:List[str] = rule.get_target_data_categories()
             if not rule_categories:
                 continue
 
             targeted_fields = []
-            collection_categories = self.node.node.collection.fields_by_category
+            collection_categories:Dict[str, List[FieldKey]] = self.node.node.collection.fields_by_category
             for rule_cat in rule_categories:
                 for collection_cat, fields in collection_categories.items():
                     if collection_cat.startswith(rule_cat):
@@ -86,9 +86,6 @@ class QueryConfig(Generic[T], ABC):
         """
 
         out = {}
-
-
-        for field_key in self.query_keys:
 
         for key, values in input_data.items():
             field = self.node.node.collection.field(key)
