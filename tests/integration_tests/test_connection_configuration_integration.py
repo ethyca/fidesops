@@ -1,7 +1,6 @@
 import pytest
 import json
 
-import sqlalchemy as sqlalchemy
 from pymongo import MongoClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
@@ -21,7 +20,6 @@ from fidesops.api.v1.scope_registry import (
 )
 
 from fidesops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
-from .test_integration_mssql_example import MASTER_MSSQL_URL
 
 
 class TestPostgresConnectionPutSecretsAPI:
@@ -531,20 +529,6 @@ class TestMySQLConnector:
 
 
 class TestMicrosoftSQLServerConnection:
-    @pytest.fixture(scope="class", autouse=True)
-    def mssql_setup(self):
-        """
-        Set up the SQL Server Database for testing.
-        The query file must have each query on a separate line.
-        Initial connection must be done to the master database.
-        """
-        engine = sqlalchemy.create_engine(MASTER_MSSQL_URL)
-        with open("data/sql/mssql_example.sql", "r") as query_file:
-            queries = [query for query in query_file.read().splitlines() if query != ""]
-        for query in queries:
-            engine.execute(sqlalchemy.sql.text(query))
-        yield engine
-        engine.dispose()
 
     @pytest.fixture(scope="function")
     def url_put_secret(self, oauth_client, policy, connection_config_mssql) -> str:

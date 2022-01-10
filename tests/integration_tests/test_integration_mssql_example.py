@@ -2,37 +2,16 @@ import logging
 from typing import Generator
 
 import pytest
-import sqlalchemy as sqlalchemy
 from sqlalchemy import func, select, table
 
 from fidesops.db.session import get_db_session, get_db_engine
+from integration_tests.mssql_setup import MSSQL_URL
 
 logger = logging.getLogger(__name__)
 
 
-MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:Mssql_pw1@mssql_example:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
-MSSQL_URL = MSSQL_URL_TEMPLATE.format("mssql_example")
-MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
-
-
 @pytest.fixture(scope="module")
-def mssql_setup():
-    """
-    Set up the SQL Server Database for testing.
-    The query file must have each query on a separate line.
-    Initial connection must be done to the master database.
-    """
-    engine = sqlalchemy.create_engine(MASTER_MSSQL_URL)
-    with open("data/sql/mssql_example.sql", "r") as query_file:
-        queries = [query for query in query_file.read().splitlines() if query != ""]
-    for query in queries:
-        engine.execute(sqlalchemy.sql.text(query))
-    yield engine
-    engine.dispose()
-
-
-@pytest.fixture(scope="module")
-def mssql_example_db(mssql_setup) -> Generator:
+def mssql_example_db() -> Generator:
     """Return a connection to the MsSQL example DB"""
     engine = get_db_engine(database_uri=MSSQL_URL)
     logger.debug(f"Connecting to MsSQL example database at: {engine.url}")

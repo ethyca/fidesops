@@ -48,7 +48,13 @@ integration-shell: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml run $(IMAGE_NAME) /bin/bash
 
 integration-env: compose-build
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up
+	@echo "Bringing up main image and images for integration testing"
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
+	@echo "Waiting 15s for integration containers to be ready..."
+	@sleep 15
+	@echo "Running additional setup for mssql integration tests"
+	@docker exec -it fidesops python tests/integration_tests/mssql_setup.py
+	@docker exec -it fidesops bash
 
 quickstart: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
