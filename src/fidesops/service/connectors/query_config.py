@@ -11,7 +11,7 @@ from fidesops.graph.config import (
     CollectionAddress,
     Field,
     MaskingOverride,
-    FieldKey,
+    FieldPath,
 )
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
@@ -34,17 +34,17 @@ class QueryConfig(Generic[T], ABC):
     def __init__(self, node: TraversalNode):
         self.node = node
 
-    def field_map(self) -> Dict[FieldKey, Field]:
+    def field_map(self) -> Dict[FieldPath, Field]:
         """Field Keys of interest from this traversal traversal_node."""
         return self.node.node.collection.field_dict
 
-    def build_rule_target_fields(self, policy: Policy) -> Dict[Rule, List[FieldKey]]:
+    def build_rule_target_fields(self, policy: Policy) -> Dict[Rule, List[FieldPath]]:
         """
         Return dictionary of rules mapped to update-able field keys on a given collection
         Example:
         {<fidesops.models.policy.Rule object at 0xffff9160e190>: ['name', 'code', 'ccn']}
         """
-        rule_updates: Dict[Rule, List[FieldKey]] = {}
+        rule_updates: Dict[Rule, List[FieldPath]] = {}
         for rule in policy.rules:
             if rule.action_type != ActionType.erasure:
                 continue
@@ -54,7 +54,7 @@ class QueryConfig(Generic[T], ABC):
 
             targeted_fields = []
             collection_categories: Dict[
-                str, List[FieldKey]
+                str, List[FieldPath]
             ] = self.node.node.collection.fields_by_category
             for rule_cat in rule_categories:
                 for collection_cat, fields in collection_categories.items():
@@ -72,41 +72,41 @@ class QueryConfig(Generic[T], ABC):
         ]
 
     @property
-    def query_keys(self) -> Set[FieldKey]:
+    def query_keys(self) -> Set[FieldPath]:
         """
         All of the possible keys that we can query for possible filter values.
         These are keys that are the ends of incoming edges.
         """
         return set(map(lambda edge: edge.f2.field, self.node.incoming_edges()))
 
-    def typed_filtered_values(self, input_data: Dict[str, List[Any]]) -> Dict[str, Any]:
+    def typed_filtered_values(
+        self, input_data: Dict[FieldPath, List[Any]]
+    ) -> Dict[FieldPath, Any]:
         """
         Return a filtered list of key/value sets of data items that are both in
         the list of incoming edge fields, and contain data in the input data set.
 
         The values are cast based on field types, if those types are specified.
         """
-
         out = {}
-        #TBD
-        for key, values in input_data.items():
-            field = self.node.node.collection.field(key)
-            if field and key in self.query_keys and isinstance(values, list):
-                cast_values = [field.cast(v) for v in values]
-                filtered = list(filter(lambda x: x is not None, cast_values))
-                if filtered:
-                    out[key] = filtered
+        for query_key in self.query_keys:
+            field = self.field_map()[query_key]
+            values = query_key in input_data and input_data[query_key] or []
+            cast_values = [field.cast(v) for v in values]
+            filtered = list(filter(lambda x: x is not None, cast_values))
+            if filtered:
+                out[query_key] = filtered
         return out
 
-    def query_sources(self) -> Dict[str, List[CollectionAddress]]:
+    def query_sources(self) -> Dict[FieldPath, List[CollectionAddress]]:
         """Display the input sources for each query key"""
-        data: Dict[str, List[CollectionAddress]] = {}
+        data: Dict[FieldPath, List[CollectionAddress]] = {}
         for edge in self.node.incoming_edges():
             append(data, edge.f2.field, edge.f1.collection_address())
 
         return data
 
-    def display_query_data(self) -> Dict[str, Any]:
+    def display_query_data(self) -> Dict[FieldPath, Any]:
         """Data to represent a display (dry-run) query. Since we don't know
         what data is available, just generate a query where the input identity
         values are assumed to be present and singular and all other values that
@@ -129,7 +129,7 @@ class QueryConfig(Generic[T], ABC):
 
     def update_value_map(
         self, row: Row, policy: Policy, request: PrivacyRequest
-    ) -> Dict[str, Any]:
+    ) -> Dict[FieldPath, Any]:
         """Map the relevant fields to be updated on the row with their masked values from Policy Rules
 
         Example return:  {'name': None, 'ccn': None, 'code': None}
@@ -139,11 +139,11 @@ class QueryConfig(Generic[T], ABC):
 
         """
         rule_to_collection_fields: Dict[
-            Rule, List[str]
+            Rule, List[FieldPath]
         ] = self.build_rule_target_fields(policy)
 
-        value_map: Dict[str, Any] = {}
-        for rule, field_names in rule_to_collection_fields.items():
+        value_map: Dict[FieldPath, Any] = {}
+        for rule, field_paths in rule_to_collection_fields.items():
             strategy_config = rule.masking_strategy
             if not strategy_config:
                 continue
@@ -151,30 +151,30 @@ class QueryConfig(Generic[T], ABC):
                 strategy_config["strategy"], strategy_config["configuration"]
             )
 
-            for field_name in field_names:
+            for field_path in field_paths:
                 masking_override: MaskingOverride = [
                     MaskingOverride(field.data_type_converter, field.length)
                     for field_key, field in self.node.node.collection.field_dict.items()
-                    if field_key.value == field_name
+                    if field_key == field_path
                 ][0]
                 null_masking: bool = strategy_config.get("strategy") == NULL_REWRITE
                 if not self._supported_data_type(
                     masking_override, null_masking, strategy
                 ):
                     logger.warning(
-                        f"Unable to generate a query for field {field_name}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type_converter.name}"
+                        f"Unable to generate a query for field {field_path.value}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
                     continue
-                val: Any = row[field_name]
+                val: Any = row[field_path]
                 masked_val = self._generate_masked_value(
                     request.id,
                     strategy,
                     val,
                     masking_override,
                     null_masking,
-                    field_name,
+                    field_path,
                 )
-                value_map[field_name] = masked_val
+                value_map[field_path] = masked_val
         return value_map
 
     @staticmethod
@@ -199,7 +199,7 @@ class QueryConfig(Generic[T], ABC):
         val: Any,
         masking_override: MaskingOverride,
         null_masking: bool,
-        field_name: str,
+        field_name: FieldPath,
     ) -> T:
         masked_val = strategy.mask(val, request_id)
         logger.debug(
@@ -247,7 +247,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
 
     def format_fields_for_query(
         self,
-        keys: List[FieldKey],
+        keys: List[FieldPath],
     ) -> List[str]:
         """Returns fields in a format they can be added into SQL queries.
 
@@ -383,7 +383,7 @@ class SnowflakeQueryConfig(SQLQueryConfig):
 
     def format_fields_for_query(
         self,
-        keys: List[FieldKey],
+        keys: List[FieldPath],
     ) -> List[str]:
         """Returns fields surrounded by quotation marks as required by Snowflake syntax."""
         return [f'"{key}"' for key in keys]

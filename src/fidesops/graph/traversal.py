@@ -12,7 +12,7 @@ from fidesops.graph.config import (
     Dataset,
     Collection,
     ROOT_COLLECTION_ADDRESS,
-    FieldKey,
+    FieldPath,
 )
 from fidesops.graph.graph import Node, Edge, DatasetGraph
 from fidesops.util.logger import NotPii
@@ -37,10 +37,10 @@ class TraversalNode:
         # address to a child that holds both a traversal_node and all possible paths
         # from this traversal_node to it: {address -> [(traversal_node, from_field, to_field)}
         self.children: Dict[
-            CollectionAddress, List[Tuple[TraversalNode, FieldKey, FieldKey]]
+            CollectionAddress, List[Tuple[TraversalNode, FieldPath, FieldPath]]
         ] = {}
         self.parents: Dict[
-            CollectionAddress, List[Tuple[TraversalNode, FieldKey, FieldKey]]
+            CollectionAddress, List[Tuple[TraversalNode, FieldPath, FieldPath]]
         ] = {}
         self.is_terminal_node = False
 

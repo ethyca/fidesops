@@ -1,7 +1,7 @@
 from typing import Dict, Any, Set
 
 
-from fidesops.graph.config import CollectionAddress, FieldKey
+from fidesops.graph.config import CollectionAddress, FieldPath
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.datasetconfig import convert_dataset_to_graph
@@ -45,12 +45,14 @@ privacy_request = PrivacyRequest(id="234544")
 
 class TestSQLQueryConfig:
     def test_extract_query_components(self):
-        def found_query_keys(qconfig: QueryConfig, values: Dict[str, Any]) -> Set[str]:
+        def found_query_keys(
+            qconfig: QueryConfig, values: Dict[FieldPath, Any]
+        ) -> Set[FieldPath]:
             return set(qconfig.typed_filtered_values(values).keys())
 
         config = SQLQueryConfig(payment_card_node)
         assert config.field_map().keys() == {
-            FieldKey(s)
+            FieldPath(s)
             for s in [
                 "id",
                 "name",
@@ -59,40 +61,40 @@ class TestSQLQueryConfig:
                 "billing_address_id",
             ]
         }
-        assert config.query_keys == {FieldKey("id"), FieldKey("customer_id")}
+        assert config.query_keys == {FieldPath("id"), FieldPath("customer_id")}
 
         # values exist for all query keys
         assert found_query_keys(
-            config, {"id": ["A"], "customer_id": ["V"], "ignore_me": ["X"]}
-        ) == {"id", "customer_id"}
+            config, {   FieldPath("id"): ["A"],  FieldPath("customer_id"): ["V"],  FieldPath("ignore_me"): ["X"]}
+        ) == { FieldPath("id"),  FieldPath("customer_id")}
         # with no values OR an empty set, these are omitted
         assert found_query_keys(
-            config, {"id": ["A"], "customer_id": [], "ignore_me": ["X"]}
-        ) == {"id"}
-        assert found_query_keys(config, {"id": ["A"], "ignore_me": ["X"]}) == {"id"}
-        assert found_query_keys(config, {"ignore_me": ["X"]}) == set()
+            config, { FieldPath("id"): ["A"],  FieldPath("customer_id"): [],  FieldPath("ignore_me"): ["X"]}
+        ) == { FieldPath("id")}
+        assert found_query_keys(config, {FieldPath("id"): ["A"], FieldPath("ignore_me"): ["X"]}) == {FieldPath("id")}
+        assert found_query_keys(config, {FieldPath("ignore_me"): ["X"]}) == set()
         assert found_query_keys(config, {}) == set()
 
     def test_typed_filtered_values(self):
         config = SQLQueryConfig(payment_card_node)
         assert config.typed_filtered_values(
-            {"id": ["A"], "customer_id": ["V"], "ignore_me": ["X"]}
-        ) == {"id": ["A"], "customer_id": ["V"]}
+            {FieldPath("id"): ["A"], FieldPath("customer_id"): ["V"], FieldPath("ignore_me"): ["X"]}
+        ) == {FieldPath("id"): ["A"], FieldPath("customer_id"): ["V"]}
 
         assert config.typed_filtered_values(
-            {"id": ["A"], "customer_id": [], "ignore_me": ["X"]}
-        ) == {"id": ["A"]}
+            {FieldPath("id"): ["A"], FieldPath("customer_id"): [], FieldPath("ignore_me"): ["X"]}
+        ) == {FieldPath("id"): ["A"]}
 
-        assert config.typed_filtered_values({"id": ["A"], "ignore_me": ["X"]}) == {
-            "id": ["A"]
+        assert config.typed_filtered_values({FieldPath("id"): ["A"], FieldPath("ignore_me"): ["X"]}) == {
+            FieldPath("id"): ["A"]
         }
 
-        assert config.typed_filtered_values({"id": [], "customer_id": ["V"]}) == {
-            "customer_id": ["V"]
+        assert config.typed_filtered_values({FieldPath("id"): [], FieldPath("customer_id"): ["V"]}) == {
+            FieldPath("customer_id"): ["V"]
         }
         # test for type casting: id has type "string":
-        assert config.typed_filtered_values({"id": [1]}) == {"id": ["1"]}
-        assert config.typed_filtered_values({"id": [1, 2]}) == {"id": ["1", "2"]}
+        assert config.typed_filtered_values({FieldPath("id"): [1]}) == {FieldPath("id"): ["1"]}
+        assert config.typed_filtered_values({FieldPath("id"): [1, 2]}) == {FieldPath("id"): ["1", "2"]}
 
     def test_generated_sql_query(self):
         """Test that the generated query depends on the input set"""

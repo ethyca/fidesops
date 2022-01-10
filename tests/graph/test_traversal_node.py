@@ -13,15 +13,15 @@ def test_add_child() -> None:
     )
     print(tn.children)
     assert tn.children == {
-        CollectionAddress("d", "e"): [(child_1, FieldKey("c"), FieldKey("f"))]
+        CollectionAddress("d", "e"): [(child_1, FieldPath("c"), FieldPath("f"))]
     }
     tn.add_child(
         child_1, Edge(FieldAddress("a", "b", "c2"), FieldAddress("d", "e", "f2"))
     )
     assert tn.children == {
         CollectionAddress("d", "e"): [
-            (child_1, FieldKey("c"), FieldKey("f")),
-            (child_1, FieldKey("c2"), FieldKey("f2")),
+            (child_1, FieldPath("c"), FieldPath("f")),
+            (child_1, FieldPath("c2"), FieldPath("f2")),
         ]
     }
     child_2 = TraversalNode(generate_node("h", "i", "j"))
@@ -30,10 +30,10 @@ def test_add_child() -> None:
     )
     assert tn.children == {
         CollectionAddress("d", "e"): [
-            (child_1, FieldKey("c"), FieldKey("f")),
-            (child_1, FieldKey("c2"), FieldKey("f2")),
+            (child_1, FieldPath("c"), FieldPath("f")),
+            (child_1, FieldPath("c2"), FieldPath("f2")),
         ],
-        CollectionAddress("h", "i"): [(child_2, FieldKey("c2"), FieldKey("j"))],
+        CollectionAddress("h", "i"): [(child_2, FieldPath("c2"), FieldPath("j"))],
     }
 
 

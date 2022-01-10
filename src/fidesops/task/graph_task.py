@@ -15,7 +15,7 @@ from fidesops.graph.config import (
     CollectionAddress,
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
-    FieldKey,
+    FieldPath,
 )
 from fidesops.graph.graph import Edge, DatasetGraph
 from fidesops.graph.traversal import TraversalNode, Row, Traversal
@@ -101,11 +101,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         )
 
         self.incoming_field_map: Dict[
-            CollectionAddress, List[Tuple[FieldKey, FieldKey]]
+            CollectionAddress, List[Tuple[FieldPath, FieldPath]]
         ] = {k: [(e.f1.field, e.f2.field) for e in t] for k, t in b.items()}
 
         # fields that point to child nodes
-        self.outgoing_field_map: List[FieldKey] = sorted(
+        self.outgoing_field_map: List[FieldPath] = sorted(
             {e.f1.field for e in self.traversal_node.outgoing_edges()}
         )
 
@@ -131,7 +131,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         connection_config: ConnectionConfig = self.connector.configuration
         return connection_config.access == AccessLevel.write
 
-    def to_dask_input_data(self, *data: List[Row]) -> Dict[FieldKey, List[Any]]:
+    def to_dask_input_data(self, *data: List[Row]) -> Dict[FieldPath, List[Any]]:
         """Each dict in the input list represents the output of a dependent task.
         These outputs should correspond to the input key order.
         {table1: [{x:1, y:A}, {x:2, y:B}], table2: [{x:3},{x:4}],
@@ -150,7 +150,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 NotPii(len(data)),
             )
 
-        output: Dict[FieldKey, List[Any]] = {}
+        output: Dict[FieldPath, List[Any]] = {}
         for i, rowset in enumerate(data):
             collection_address = self.input_keys[i]
             field_mappings = self.incoming_field_map[collection_address]

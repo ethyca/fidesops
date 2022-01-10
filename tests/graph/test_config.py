@@ -39,8 +39,8 @@ def test_collection_field_map():
         name="t3",
         fields=[ScalarField(name="f1")],
     )
-    assert c.field(FieldKey("f1")).name == "f1"
-    assert c.field(FieldKey("not found")) is None
+    assert c.field(FieldPath("f1")).name == "f1"
+    assert c.field(FieldPath("not found")) is None
 
 
 def test_collection_identities() -> None:
@@ -52,7 +52,7 @@ def test_collection_identities() -> None:
             ScalarField(name="f3"),
         ],
     )
-    assert ds.identities() == {FieldKey("f1"): "email", FieldKey("f2"): "id"}
+    assert ds.identities() == {FieldPath("f1"): "email", FieldPath("f2"): "id"}
 
 
 def test_collection_references() -> None:
@@ -71,11 +71,11 @@ def test_collection_references() -> None:
         ],
     )
     assert ds.references() == {
-        FieldKey("f1"): [
+        FieldPath("f1"): [
             (FieldAddress("a", "b", "c"), None),
             (FieldAddress("a", "b", "d"), None),
         ],
-        FieldKey("f2"): [(FieldAddress("d", "e", "f"), None)],
+        FieldPath("f2"): [(FieldAddress("d", "e", "f"), None)],
     }
 
 
@@ -95,16 +95,16 @@ def test_directional_references() -> None:
         ],
     )
     assert ds.references() == {
-        FieldKey("f1"): [
+        FieldPath("f1"): [
             (FieldAddress("a", "b", "c"), "from"),
             (FieldAddress("a", "b", "d"), "to"),
         ],
-        FieldKey("f2"): [(FieldAddress("d", "e", "f"), None)],
+        FieldPath("f2"): [(FieldAddress("d", "e", "f"), None)],
     }
 
 
 def test_field_key():
-    assert FieldKey("a", "b").value == "a.b"
-    assert FieldKey("a").keys == ("a",)
-    assert FieldKey("a").prepend("b") == FieldKey("b", "a")
-    assert FieldKey("a", "b") == FieldKey("a", "b")
+    assert FieldPath("a", "b").value == "a.b"
+    assert FieldPath("a").keys == ("a",)
+    assert FieldPath("a").prepend("b") == FieldPath("b", "a")
+    assert FieldPath("a", "b") == FieldPath("a", "b")

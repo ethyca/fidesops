@@ -133,7 +133,7 @@ class CollectionAddress:
                 f"'{address_str}' is not a valid collection address"
             )
 
-    def field_address(self, field: FieldKey) -> FieldAddress:
+    def field_address(self, field: FieldPath) -> FieldAddress:
         """Create a field address appended to this collection address."""
         return FieldAddress(self.dataset, self.collection, *field.keys)
 
@@ -144,7 +144,7 @@ TERMINATOR_ADDRESS = CollectionAddress("__TERMINATE__", "__TERMINATE__")
 """An address that corresponds to traversal termination"""
 
 
-class FieldKey:
+class FieldPath:
     """Fields are addressable by a (possibly) nested name. This key
     represents a field name held as a tuple of possibly descending keys.
     A scalar field is represented as a single-element tuple.
@@ -155,7 +155,7 @@ class FieldKey:
         self.value = ".".join(self.keys)
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, FieldKey):
+        if not isinstance(other, FieldPath):
             return False
         return other.keys == self.keys
 
@@ -165,19 +165,19 @@ class FieldKey:
     def __repr__(self) -> str:
         return self.value
 
-    def __lt__(self, other: "FieldKey") -> bool:
+    def __lt__(self, other: "FieldPath") -> bool:
         return self.value < other.value
 
-    def prepend(self, prefix: str) -> "FieldKey":
+    def prepend(self, prefix: str) -> "FieldPath":
         """Return a new field key with the prefix prepended."""
-        return FieldKey(*((prefix,) + self.keys))
+        return FieldPath(*((prefix,) + self.keys))
 
 
 class FieldAddress:
     """The representation of a field location in the graph, specified by
     (data dataset name, collection name, field name ... )
 
-    All values after the second are grouped to provide a FieldKey object.
+    All values after the second are grouped to provide a FieldPath object.
     Additional values are understood to refer to nested field values.
     e.g. ("dataset", "collection", "a", "b", "c") creates a reference to
     dataset:collection:a.b.c
@@ -186,7 +186,7 @@ class FieldAddress:
     def __init__(self, dataset: str, collection: str, *fields: str):
         self.dataset = dataset
         self.collection = collection
-        self.field = FieldKey(*fields)
+        self.field = FieldPath(*fields)
         self.value: str = ":".join((dataset, collection, self.field.value))
 
     def is_member_of(self, collection_address: CollectionAddress) -> bool:
@@ -249,7 +249,7 @@ class Field(BaseModel, ABC):
     def getChild(self, names: Tuple[str, ...]) -> Optional["Field"]:
         """Return the child field or None if it is not found"""
 
-    def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldKey, Field]:
+    def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
         """Find fields or subfields satisfying the input function"""
 
     def __repr__(self) -> str:
@@ -273,10 +273,10 @@ class ScalarField(Field):
         """Scalar field is defined as not having children"""
         return self if len(names) == 0 else None
 
-    def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldKey, Field]:
+    def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
         """Find fields or subfields satisfying the input function"""
         if f(self):
-            return {FieldKey(self.name): self}  # pylint: disable=no-member
+            return {FieldPath(self.name): self}  # pylint: disable=no-member
         return {}
 
 
@@ -302,10 +302,10 @@ class ObjectField(Field):
             return self.fields[names[0]].getChild(names[1:])
         return None
 
-    def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldKey, Field]:
+    def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
         """Find fields or subfields satisfying the input function"""
         name = self.name  # pylint: disable=no-member
-        base = {FieldKey(name): self} if f(self) else {}  # pylint: disable=no-member
+        base = {FieldPath(name): self} if f(self) else {}  # pylint: disable=no-member
         child_dicts = merge_dicts(
             *map(lambda field: field.collect_matching(f), self.fields.values())
         )
@@ -367,41 +367,41 @@ class Collection(BaseModel):
     # an optional list of collections that this collection must run after
     after: Set[CollectionAddress] = set()
 
-    field_dict: Dict[FieldKey, Field] = {}
+    field_dict: Dict[FieldPath, Field] = {}
 
     def __init__(self, **kwargs: Dict[str, Any]) -> None:
         super().__init__(**kwargs)
         self.field_dict = self._collect_matching(lambda f: True)
 
-    def _collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldKey, Field]:
+    def _collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
         matches = map(lambda field: field.collect_matching(f), self.fields)
         return merge_dicts(*matches)
 
     def references(
         self,
-    ) -> Dict[FieldKey, List[Tuple[FieldAddress, Optional[EdgeDirection]]]]:
+    ) -> Dict[FieldPath, List[Tuple[FieldAddress, Optional[EdgeDirection]]]]:
         """return references from fields in this collection to fields in any other"""
         return {k: v.references for k, v in self.field_dict.items() if v.references}
 
-    def identities(self) -> Dict[FieldKey, Tuple[str, ...]]:
+    def identities(self) -> Dict[FieldPath, Tuple[str, ...]]:
         """return identity pointers included in the table"""
         return {k: v.identity for k, v in self.field_dict.items() if v.identity}
 
-    def field(self, key: FieldKey) -> Optional[Field]:
+    def field(self, key: FieldPath) -> Optional[Field]:
         """return field by name, or None if not found"""
         return self.field_dict[key] if key in self.field_dict else None
 
     @property
-    def fields_by_category(self) -> Dict[str, List[FieldKey]]:
+    def fields_by_category(self) -> Dict[str, List[FieldPath]]:
         """Returns mapping of data categories to fields, flips fields -> categories
         to be categories -> fields.
 
         Example:
             {
-                "user.provided.identifiable.contact.city": [FieldKey("city")],
-                "user.provided.identifiable.contact.street": [FieldKey("house"), FieldKey("street")],
+                "user.provided.identifiable.contact.city": [FieldPath("city")],
+                "user.provided.identifiable.contact.street": [FieldPath("house"), FieldPath("street")],
                 "system.operations": ["id"],
-                "user.provided.identifiable.contact.state": [FieldKey("state", "code"),FieldKey("state", "full_name"), ],
+                "user.provided.identifiable.contact.state": [FieldPath("state", "code"),FieldPath("state", "full_name"), ],
                 "user.provided.identifiable.contact.postal_code": ["zip"]
             }
         """
