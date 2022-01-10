@@ -1,25 +1,27 @@
 import logging
-from json import JSONDecodeError
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.params import Security
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from pydantic import ValidationError, conlist
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND
 
 from fidesops.common_exceptions import ConnectionException, KeyOrNameAlreadyExists
-from fidesops.common_exceptions import BadRequest
 from fidesops.schemas.connection_configuration import (
     get_connection_secrets_validator,
+    connection_secrets_schemas,
 )
 from fidesops.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
     ConnectionConfigSecretsSchema,
+    ConnectionTestStatus,
 )
+
 from fidesops.service.connectors import get_connector
 from fidesops.schemas.api import BulkUpdateFailed
 from fidesops.schemas.connection_configuration.connection_config import (
@@ -32,6 +34,7 @@ from fidesops.api.v1.scope_registry import (
     CONNECTION_DELETE,
     CONNECTION_CREATE_OR_UPDATE,
 )
+from fidesops.util.logger import NotPii
 from fidesops.util.oauth_util import verify_oauth_client
 from fidesops.api import deps
 from fidesops.models.connectionconfig import ConnectionConfig
@@ -46,6 +49,20 @@ from fidesops.api.v1.urn_registry import (
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 
 logger = logging.getLogger(__name__)
+
+
+def get_connection_config_or_error(
+    db: Session, connection_key: FidesOpsKey
+) -> ConnectionConfig:
+    """Helper to load the ConnectionConfig object or throw a 404"""
+    connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
+    logger.info(f"Finding connection configuration with key '{connection_key}'")
+    if not connection_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No connection configuration found with key '{connection_key}'.",
+        )
+    return connection_config
 
 
 @router.get(
@@ -69,26 +86,19 @@ def get_connections(
     response_model=ConnectionConfigurationResponse,
 )
 def get_connection_detail(
-    connection_key: str, db: Session = Depends(deps.get_db)
+    connection_key: FidesOpsKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
     """Returns connection configuration with matching key."""
-    connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
-    logger.info(f"Finding connection configuration with key '{connection_key}'")
-    if not connection_config:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No connection configuration with key '{connection_key}'.",
-        )
-    return connection_config
+    return get_connection_config_or_error(db, connection_key)
 
 
-@router.put(
+@router.patch(
     CONNECTIONS,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
     status_code=200,
     response_model=BulkPutConnectionConfiguration,
 )
-def put_connections(
+def patch_connections(
     *,
     db: Session = Depends(deps.get_db),
     configs: conlist(CreateConnectionConfiguration, max_items=50),  # type: ignore
@@ -146,23 +156,16 @@ def put_connections(
     status_code=204,
 )
 def delete_connection(
-    connection_key: str, *, db: Session = Depends(deps.get_db)
+    connection_key: FidesOpsKey, *, db: Session = Depends(deps.get_db)
 ) -> None:
     """Removes the connection configuration with matching key."""
-    logger.info(f"Finding connection configuration with key {connection_key}")
-    connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
-    if not connection_config:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No connection configuration with key '{connection_key}'.",
-        )
-
+    connection_config = get_connection_config_or_error(db, connection_key)
     logger.info(f"Deleting connection config with key '{connection_key}'.")
     connection_config.delete(db)
 
 
 def validate_secrets(
-    request_body: Dict[str, Any], connection_config: ConnectionConfig
+    request_body: connection_secrets_schemas, connection_config: ConnectionConfig
 ) -> ConnectionConfigSecretsSchema:
     """Validate incoming connection configuration secrets."""
     logger.info(
@@ -189,22 +192,26 @@ def connection_status(
 
     connector = get_connector(connection_config)
     try:
-        connector.test_connection()
+        status: ConnectionTestStatus = connector.test_connection()
     except ConnectionException as exc:
-        logger.warning(f"Connection test failed on {connection_config.key}: {str(exc)}")
-        connection_config.update_test_status(succeeded=False, db=db)
+        logger.warning(
+            "Connection test failed on %s: %s", NotPii(connection_config.key), str(exc)
+        )
+        connection_config.update_test_status(
+            test_status=ConnectionTestStatus.failed, db=db
+        )
         return TestStatusMessage(
             msg=msg,
-            test_status="failed",
+            test_status=ConnectionTestStatus.failed,
             failure_reason=str(exc),
         )
 
-    logger.info(f"Connection test succeeded on {connection_config.key}")
-    connection_config.update_test_status(succeeded=True, db=db)
+    logger.info(f"Connection test {status.value} on {connection_config.key}")
+    connection_config.update_test_status(test_status=status, db=db)
 
     return TestStatusMessage(
         msg=msg,
-        test_status="succeeded",
+        test_status=status,
     )
 
 
@@ -215,10 +222,10 @@ def connection_status(
     response_model=TestStatusMessage,
 )
 async def put_connection_config_secrets(
-    connection_key: str,
+    connection_key: FidesOpsKey,
     *,
     db: Session = Depends(deps.get_db),
-    request: Request,
+    unvalidated_secrets: connection_secrets_schemas,
     verify: Optional[bool] = True,
 ) -> TestStatusMessage:
     """
@@ -227,20 +234,11 @@ async def put_connection_config_secrets(
     The specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB
     will differ from Dynamo DB.
     """
+    connection_config = get_connection_config_or_error(db, connection_key)
 
-    connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
-    logger.info(f"Finding connection configuration with key {connection_key}")
-    if not connection_config:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No connection configuration with key '{connection_key}'.",
-        )
-    try:
-        request_body = await request.json()
-    except JSONDecodeError:
-        raise BadRequest(detail="The request body is not valid JSON.")
-
-    connection_config.secrets = validate_secrets(request_body, connection_config).dict()
+    connection_config.secrets = validate_secrets(
+        unvalidated_secrets, connection_config
+    ).dict()
     # Save validated secrets, regardless of whether they've been verified.
     logger.info(f"Updating connection config secrets for '{connection_key}'")
     connection_config.save(db=db)
@@ -259,20 +257,13 @@ async def put_connection_config_secrets(
     response_model=TestStatusMessage,
 )
 async def test_connection_config_secrets(
-    connection_key: str,
+    connection_key: FidesOpsKey,
     *,
     db: Session = Depends(deps.get_db),
 ) -> TestStatusMessage:
     """
     Endpoint to test a connection at any time using the saved configuration secrets.
     """
-    connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
-    logger.info(f"Finding connection configuration with key {connection_key}")
-    if not connection_config:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No connection configuration with key '{connection_key}'.",
-        )
-
+    connection_config = get_connection_config_or_error(db, connection_key)
     msg = f"Test completed for ConnectionConfig with key: {connection_key}."
     return connection_status(connection_config, msg, db)

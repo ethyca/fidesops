@@ -20,7 +20,7 @@ convenience (handy if you'll be running this script multiple times).
 def create_policy(key, access_token):
     """
     Create a request policy in fidesops with the given key.Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Policy/create_or_update_policies_api_v1_policy_put
+    See http://localhost:8000/api#operations-Policy-create_or_update_policies_api_v1_policy_put
     """
 
     policy_create_data = [
@@ -29,7 +29,7 @@ def create_policy(key, access_token):
             "key": key,
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/policy",
         headers=oauth_headers(access_token=access_token),
         json=policy_create_data,
@@ -45,7 +45,7 @@ def create_policy_rule(
     """
     Create a Policy Rule to return matched data in an access request to the given Storage destination.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Policy/create_or_update_rules_api_v1_policy__policy_key__rule_put
+    See http://localhost:8000/api#operations-Policy-create_or_update_policies_api_v1_policy_put
     """
 
     rule_create_data = [
@@ -56,7 +56,7 @@ def create_policy_rule(
             "storage_destination_key": storage_destination_key,
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/policy/{policy_key}/rule",
         headers=oauth_headers(access_token=access_token),
         json=rule_create_data,
@@ -72,7 +72,7 @@ def create_policy_rule_target(policy_key, rule_key, data_category, access_token)
     """
     Create a Policy Rule Target that matches the given data_category.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Policy/create_or_update_rule_targets_api_v1_policy__policy_key__rule__rule_key__target_put
+    See http://localhost:8000/api#operations-Policy-create_or_update_rules_api_v1_policy__policy_key__rule_put
     """
 
     target_create_data = [
@@ -80,7 +80,7 @@ def create_policy_rule_target(policy_key, rule_key, data_category, access_token)
             "data_category": data_category,
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/policy/{policy_key}/rule/{rule_key}/target",
         headers=oauth_headers(access_token=access_token),
         json=target_create_data,
@@ -95,7 +95,7 @@ def delete_policy_rule(policy_key, key, access_token):
     """
     Deletes a Policy rule with the given key.
     Returns the response JSON.
-    See http://localhost:8000/docs#/Policy/delete_rule_api_v1_policy__policy_key__rule__rule_key__delete
+    See http://localhost:8000/api#operations-Policy-delete_rule_api_v1_policy__policy_key__rule__rule_key__delete
     """
     return requests.delete(
         f"{FIDESOPS_URL}/api/v1/policy/{policy_key}/rule/{key}",
@@ -108,7 +108,7 @@ def delete_policy_rule(policy_key, key, access_token):
 For simplicity's sake, let's just create one Policy, one Rule, and one Target.
 
 Our single Policy will have one Rule with type `access`, meaning we just want to *retrieve* user data, not delete it. 
-We also configure on the Rule that any results will be uploaded to our local Storage `example-storage`.
+We also configure on the Rule that any results will be uploaded to our local Storage `example_storage`.
 
 Finally, we create a RuleTarget, that is looking for all data with the category `user.provided.identifiable` (and included subcategories). 
 
@@ -117,21 +117,21 @@ if __name__ == "__main__":
   ...
  # Create a Policy that returns all user data
     policy = create_policy(
-        key="example-request-policy",
+        key="example_request_policy",
         access_token=access_token,
     )
-    delete_policy_rule("example-request-policy", "access-user-data", access_token)
+    delete_policy_rule("example_request_policy", "access_user_data", access_token)
     create_policy_rule(
-        policy_key="example-request-policy",
-        key="access-user-data",
+        policy_key="example_request_policy",
+        key="access_user_data",
         action_type="access",
-        storage_destination_key="example-storage",
+        storage_destination_key="example_storage",
         access_token=access_token,
     )
 
     data_category = "user.provided.identifiable"
     create_policy_rule_target(
-        "example-request-policy", "access-user-data", data_category, access_token
+        "example_request_policy", "access_user_data", data_category, access_token
     )
 
 ```

@@ -3,7 +3,7 @@
  representations.
 
   The language here is intended to be more general than SQL-specific language, since the intention here is to be able to
-  reference many different kinds of data resources. If we think of a traditionql SQL database as composed of
+  reference many different kinds of data resources. If we think of a traditional SQL database as composed of
  Schemas, Tables, and Fields, in this nomenclature
  Schema == Dataset: any abstract data source that may contain multiple data sets
  Table == Collection:  a set of identifiable fields (e.g. rows of data)
@@ -70,21 +70,28 @@ Field identities:
   - select all values in mysql.users where email == "test@test.com"
   - select all values in mongo.users where the username is in (any of the "name" fields in the rows found in the previous step.
 
-  Note that this makes no statements about _how_ this data is to be retrieved. In particular many datastores will need special
+  Note that this makes no statements about _how_ this data is to be retrieved. In particular many data stores will need special
   instructions (such as json paths) to extract data.
 
 
 """
 from __future__ import annotations
 
-from typing import List, Optional, Tuple, Set, Dict, Literal
+from abc import ABC, abstractmethod
+from collections import defaultdict
+from dataclasses import dataclass
+from typing import List, Optional, Tuple, Set, Dict, Literal, Any
+
 from pydantic import BaseModel
 
-from fideslang.models import FidesKey
-
 from fidesops.common_exceptions import FidesopsException
-from fidesops.graph.data_type import DataType
-
+from fidesops.graph.data_type import (
+    DataTypeConverter,
+    get_data_type_converter,
+    DataType,
+)
+from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.util.querytoken import QueryToken
 
 DatasetAddress = str
 SeedAddress = str
@@ -181,7 +188,7 @@ class FieldAddress:
         return self.__repr__()
 
 
-class Field(BaseModel):
+class Field(BaseModel, ABC):
     """A single piece of data"""
 
     name: str
@@ -190,17 +197,98 @@ class Field(BaseModel):
     """references to other fields in any other datasets"""
     identity: Optional[SeedAddress] = None
     """an optional pointer to an arbitrary key in an expected json package provided as a seed value"""
-    data_categories: Optional[List[FidesKey]]
-    """annotated data categories for the field used for policy actions"""
-    data_type: Optional[DataType]
+    data_categories: Optional[List[FidesOpsKey]]
+    data_type_converter: DataTypeConverter = DataType.no_op.value
+
     """Known type of held data"""
     length: Optional[int]
     """Known length of held data"""
+
+    is_array: bool = False
 
     class Config:
         """for pydantic incorporation of custom non-pydantic types"""
 
         arbitrary_types_allowed = True
+
+    @abstractmethod
+    def cast(self, value: Any) -> Optional[Any]:
+        """Cast the input value into the form represented by data_type."""
+
+    def data_type(self) -> str:
+        """return the data type name"""
+        return self.data_type_converter.name
+
+
+class ScalarField(Field):
+    """A field that represents a simple value. Most fields will be scalar fields."""
+
+    def cast(self, value: Any) -> Optional[Any]:
+        """Cast the input value into the form represented by data_type.
+
+        - If the data_type is None, then it has not been specified, so just return the input value.
+        - Return either a cast value or None"""
+        if not isinstance(value, QueryToken):
+            return self.data_type_converter.to_value(value)
+
+        return value
+
+
+class ObjectField(Field):
+    """A field that represents a json dict structure."""
+
+    fields: Dict[str, Field]
+
+    def cast(self, value: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Cast the input value into the form represented by data_type."""
+
+        return {
+            field.name: field.cast(value[field.name])
+            for field in self.fields.values()
+            if field.name in value
+        }
+
+
+# pylint: disable=too-many-arguments
+def generate_field(
+    name: str,
+    data_categories: List[str],
+    identity: str,
+    data_type_name: str,
+    references: List[Tuple[FieldAddress, EdgeDirection]],
+    is_pk: bool,
+    length: int,
+    is_array: bool,
+    sub_fields: List[Field],
+) -> Field:
+    """Generate a graph field."""
+
+    if sub_fields:
+        return ObjectField(
+            name=name,
+            data_categories=data_categories,
+            is_array=is_array,
+            fields={f.name: f for f in sub_fields},
+            data_type_converter=DataType.object.value,
+        )
+    return ScalarField(
+        name=name,
+        data_categories=data_categories,
+        identity=identity,
+        data_type_converter=get_data_type_converter(data_type_name),
+        references=references,
+        primary_key=is_pk,
+        length=length,
+        is_array=is_array,
+    )
+
+
+@dataclass
+class MaskingOverride:
+    """Data class to store override params related to data masking"""
+
+    data_type_converter: Optional[DataTypeConverter]
+    length: Optional[int]
 
 
 class Collection(BaseModel):
@@ -210,6 +298,11 @@ class Collection(BaseModel):
     fields: List[Field]
     # an optional list of collections that this collection must run after
     after: Set[CollectionAddress] = set()
+    field_dict: Dict[str, Field] = {}
+
+    def __init__(self, **kwargs: Dict[str, Any]) -> None:
+        super().__init__(**kwargs)
+        self.field_dict = {f.name: f for f in self.fields}
 
     def references(
         self,
@@ -222,6 +315,30 @@ class Collection(BaseModel):
         """return identity pointers included in the table"""
         flds_w_ident = filter(lambda f: f.identity, self.fields)
         return {f.name: f.identity for f in flds_w_ident}
+
+    def field(self, name: str) -> Optional[Field]:
+        """return field by name, or None if not found"""
+        return self.field_dict[name] if name in self.field_dict else None
+
+    @property
+    def fields_by_category(self) -> Dict[str, List]:
+        """Returns mapping of data categories to fields, flips fields -> categories
+        to be categories -> fields.
+
+        Example:
+            {
+                "user.provided.identifiable.contact.city": ["city"],
+                "user.provided.identifiable.contact.street": ["house", "street"],
+                "system.operations": ["id"],
+                "user.provided.identifiable.contact.state": ["state"],
+                "user.provided.identifiable.contact.postal_code": ["zip"]
+            }
+        """
+        categories = defaultdict(list)
+        for field in self.fields:
+            for category in field.data_categories or []:
+                categories[category].append(field.name)
+        return categories
 
     class Config:
         """for pydantic incorporation of custom non-pydantic types"""
@@ -237,4 +354,4 @@ class Dataset(BaseModel):
     # an optional list of datasets that this dataset must run after
     after: Set[DatasetAddress] = set()
     # ConnectionConfig key
-    connection_key: str
+    connection_key: FidesOpsKey

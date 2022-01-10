@@ -1,6 +1,8 @@
 import logging
 from typing import Dict, Any, Optional, List
 
+from fidesops.schemas.shared_schemas import FidesOpsKey
+
 from fidesops.common_exceptions import ConnectorNotFoundException
 from fidesops.db.session import get_db_session
 from fidesops.graph.config import (
@@ -12,13 +14,14 @@ from fidesops.models.privacy_request import ExecutionLog, ExecutionLogStatus
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.connectors import (
     BaseConnector,
-    PostgreSQLConnector,
     MongoDBConnector,
     MySQLConnector,
+    PostgreSQLConnector,
+    SnowflakeConnector,
+    RedshiftConnector,
 )
 from fidesops.util.cache import get_cache
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -46,9 +49,18 @@ class Connections:
             return MongoDBConnector(connection_config)
         if connection_config.connection_type == ConnectionType.mysql:
             return MySQLConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.snowflake:
+            return SnowflakeConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.redshift:
+            return RedshiftConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )
+
+    def close(self) -> None:
+        """Close all held connection resources."""
+        for connector in self.connections.values():
+            connector.close()
 
 
 class TaskResources:
@@ -74,6 +86,14 @@ class TaskResources:
             c.key: c for c in connection_configs
         }
         self.connections = Connections()
+
+    def __enter__(self) -> "TaskResources":
+        """Support 'with' useage for closing resources"""
+        return self
+
+    def __exit__(self, _type: Any, value: Any, traceback: Any) -> None:
+        """Support 'with' useage for closing resources"""
+        self.close()
 
     def cache_object(self, key: str, value: Any) -> None:
         """Store in cache. Object will be
@@ -112,8 +132,13 @@ class TaskResources:
         )
         db.close()
 
-    def get_connector(self, key: str) -> Any:
+    def get_connector(self, key: FidesOpsKey) -> Any:
         """Create or return the client corresponding to the given ConnectionConfig key"""
         if key in self.connection_configs:
             return self.connections.get_connector(self.connection_configs[key])
         raise ConnectorNotFoundException(f"No available connector for {key}")
+
+    def close(self) -> None:
+        """Close any held resources"""
+        logger.debug(f"Closing all task resources for {self.request.id}")
+        self.connections.close()

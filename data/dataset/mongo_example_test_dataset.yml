@@ -7,6 +7,8 @@ dataset:
         fields:
           - name: _id
             data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
           - name: customer_id
             data_categories: [user.derived.identifiable.unique_id]
             fidesops_meta:
@@ -16,5 +18,9 @@ dataset:
                   direction: from
           - name: gender
             data_categories: [user.provided.identifiable.gender]
+            fidesops_meta:
+              data_type: string
           - name: birthday
             data_categories: [user.provided.identifiable.date_of_birth]
+            fidesops_meta:
+              data_type: string

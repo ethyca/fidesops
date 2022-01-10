@@ -5,8 +5,8 @@ To quickly experiment with `fidesops`, it's easiest to clone the source repo and
 Fully deployed, `fidesops` has three individual systems you'll need to run:
 
 1. [**Hosted Database**](#step-1-setup-hosted-database): PostgreSQL database server used for permanent storage of configuration data for the web server
-1. [**Hosted Cache**](#step-2-setup-hosted-cache): Redis database server used as a temporary cache during execution and scheduling of tasks
-1. [**fidesops Web Server**](#step-3-setup-fidesops-web-server): Main application with API endpoints to configure, execute, and report on privacy requests
+2. [**Hosted Cache**](#step-2-setup-hosted-cache): Redis database server used as a temporary cache during execution and scheduling of tasks
+3. [**fidesops Web Server**](#step-3-setup-fidesops-web-server): Main application with API endpoints to configure, execute, and report on privacy requests
 
 ![Deployment Diagram](img/Deployment_Diagram.svg)
 
@@ -30,6 +30,9 @@ Setting up a production-grade PostgreSQL database is likely something your team 
 | `FIDESOPS__DATABASE__USER` | fidesops | username `fidesops` should use to access the database |
 | `FIDESOPS__DATABASE__PASSWORD` | fidesopssecret | password `fidesops` should use to access the database |
 | `FIDESOPS__DATABASE__DB` | fidesops | database name |
+
+### Fidesops PostgreSQL `app` database diagram
+![PostgreSQL Database](img/app_database.png)
 
 ## Step 2: Setup Hosted Cache
 
@@ -56,7 +59,7 @@ The `fidesops` web server is a [FastAPI](https://fastapi.tiangolo.com/) applicat
 
 Depending on your preferences, you can install `fidesops` in one of two ways: *Docker* or *Python*.
 
-### Option 1: Install fidesops via Docker
+### Install fidesops via Docker
 
 If you typically run your applications via Docker, you'll probably be familiar with pulling images and configuring them with environment variables. Setting up a `fidesops` container should contain no surprises.
 
@@ -133,53 +136,6 @@ docker run \
 Now, for most Docker hosts, you won't be calling `docker run` directly, and instead will be providing configuration variables to Kubernetes/Swarm/ECS/etc. As you can see in the `docker run` example above, this config is quite minimal and should just involve specifying (1) the image, (2) the port mapping, (3) all the various environment variables for configuration.
 
 Note that there's no need for a persistent volume mount for the web server, it's fully ephemeral and relies on the database for all it's permanent state.
-
-### Option 2: Install fidesops via Python
-
-Releases of `fidesops` are published to PyPI here: [fidesops](https://pypi.org/project/fidesops/). Typically you'll setup a virtual environment and then run `pip install`:
-
-```
-pip install fidesops
-```
-
-Once installed, you'll need a minimial config TOML file to specify the required config variables to run the server. Create a file called `fidesops.toml` in the working directory you'll run `fidesops` from using the following template, replacing the values as needed. For details on these config variables, refer to the table in [Option 1](#option-1-install-fidesops-via-docker) above.
-```toml
-[database]
-SERVER="postgres.internal"
-PORT="5432"
-USER="fidesops"
-PASSWORD="fidesopssecret"
-DB="fidesops"
-
-[redis]
-HOST="redis.internal"
-PORT="6379"
-PASSWORD="fidesopssecret"
-
-[security]
-APP_ENCRYPTION_KEY="averyveryverysecretencryptionkey"
-OAUTH_ROOT_CLIENT_ID="fidesopsadmin"
-OAUTH_ROOT_CLIENT_SECRET="fidesopsadminsecret"
-```
-
-Once installed, you can run `fidesops webserver` to start the server:
-
-```
-fidesops webserver
-INFO:fidesops.main:****************fidesops****************
-INFO:fidesops.main:Running any pending DB migrations...
-INFO:alembic.runtime.migration:Context impl PostgresqlImpl.
-INFO:alembic.runtime.migration:Will assume transactional DDL.
-INFO:fidesops.main:Starting scheduled request intake...
-INFO:apscheduler.scheduler:Scheduler started
-INFO:fidesops.main:Starting web server...
-INFO:uvicorn.error:Started server process [37]
-INFO:uvicorn.error:Waiting for application startup.
-INFO:uvicorn.error:Application startup complete.
-INFO:uvicorn.error:Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
-```
-
-Ensure that you set up your web server to run this command on startup and map port 8080 as necessary in your firewall rules, etc. and you should be good to go!
 
 ### Test the Web Server
 

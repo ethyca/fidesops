@@ -1,11 +1,14 @@
 import logging
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 
 from fastapi import APIRouter, Body, Depends, Security
 from fastapi_pagination import Params, Page
 
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination.bases import AbstractPage
+
+from fidesops.models.connectionconfig import ConnectionTestStatus
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from pydantic import conlist
 from requests import RequestException
 from sqlalchemy.orm import Session
@@ -44,6 +47,7 @@ from fidesops.models.storage import (
     StorageConfig,
     get_schema_for_secrets,
 )
+from fidesops.schemas.storage.storage_secrets_docs_only import possible_storage_secrets
 from fidesops.service.storage.storage_authenticator_service import secrets_are_valid
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.common_exceptions import StorageUploadError, KeyOrNameAlreadyExists
@@ -66,7 +70,7 @@ def upload_data(
     *,
     db: Session = Depends(deps.get_db),
     data: Dict = Body(...),
-    storage_key: str = Body(...),
+    storage_key: FidesOpsKey = Body(...),
 ) -> DataUpload:
     """
     Uploads data from an access request to specified storage destination.
@@ -93,13 +97,13 @@ def upload_data(
     return DataUpload(location=data_location)
 
 
-@router.put(
+@router.patch(
     STORAGE_CONFIG,
     status_code=200,
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_CREATE_OR_UPDATE])],
     response_model=BulkPutStorageConfigResponse,
 )
-def put_config(
+def patch_config(
     *,
     db: Session = Depends(deps.get_db),
     storage_configs: conlist(StorageDestination, max_items=50),  # type: ignore
@@ -155,17 +159,16 @@ def put_config(
     response_model=TestStatusMessage,
 )
 def put_config_secrets(
-    config_key: str,
+    config_key: FidesOpsKey,
     *,
     db: Session = Depends(deps.get_db),
-    storage_secrets: Dict[str, str] = Body(...),
+    unvalidated_storage_secrets: possible_storage_secrets,
     verify: Optional[bool] = True,
 ) -> TestStatusMessage:
     """
     Add or update secrets for storage config.
     """
     logger.info(f"Finding storage config with key '{config_key}'")
-
     storage_config = StorageConfig.get_by(db=db, field="key", value=config_key)
     if not storage_config:
         raise HTTPException(
@@ -176,7 +179,7 @@ def put_config_secrets(
     try:
         secrets_schema = get_schema_for_secrets(
             storage_type=storage_config.type,
-            secrets=storage_secrets,
+            secrets=unvalidated_storage_secrets,
         )
     except KeyError as exc:
         raise HTTPException(
@@ -209,7 +212,10 @@ def put_config_secrets(
             )
 
         return TestStatusMessage(
-            msg=msg, test_status="succeeded" if status else "failed"
+            msg=msg,
+            test_status=ConnectionTestStatus.succeeded
+            if status
+            else ConnectionTestStatus.failed,
         )
 
     return TestStatusMessage(msg=msg, test_status=None)
@@ -236,7 +242,7 @@ def get_configs(
     response_model=StorageDestinationResponse,
 )
 def get_config_by_key(
-    config_key: str, *, db: Session = Depends(deps.get_db)
+    config_key: FidesOpsKey, *, db: Session = Depends(deps.get_db)
 ) -> Optional[StorageConfig]:
     """
     Retrieves configs for storage by key.
@@ -258,7 +264,7 @@ def get_config_by_key(
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_DELETE])],
 )
 def delete_config_by_key(
-    config_key: str, *, db: Session = Depends(deps.get_db)
+    config_key: FidesOpsKey, *, db: Session = Depends(deps.get_db)
 ) -> None:
     """
     Deletes configs by key.

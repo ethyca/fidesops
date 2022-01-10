@@ -15,7 +15,7 @@ to upload this to a Storage location like S3.  S3 would require a follow-up step
 def create_local_storage(key, format, access_token):
     """
     Create a StorageConfig in fidesops to write to a local file. Returns the response JSON if successful.
-    See http://localhost:8000/docs#/Storage/put_config_api_v1_storage_config_put
+    See http://localhost:8000/api#operations-Storage-put_config_api_v1_storage_config_put
     """
     storage_create_data = [
         {
@@ -28,7 +28,7 @@ def create_local_storage(key, format, access_token):
             },
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/storage/config",
         headers=oauth_headers(access_token=access_token),
         json=storage_create_data,
@@ -40,14 +40,14 @@ def create_local_storage(key, format, access_token):
 
 ### Call helper method to set up Storage
 
-This will define a local Storage location called `example-storage` that expects JSON data.  
+This will define a local Storage location called `example_storage` that expects JSON data.  
 
 ```python
     if __name__ == "__main__":
         ...
         # Configure a Storage Config to upload the results
         create_local_storage(
-            key="example-storage",
+            key="example_storage",
             format="json",
             access_token=access_token,
         )

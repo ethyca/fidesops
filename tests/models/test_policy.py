@@ -16,7 +16,8 @@ from fidesops.models.policy import (
     _is_ancestor_of_contained_categories,
 )
 from fidesops.service.masking.strategy.masking_strategy_hash import HASH
-from fidesops.util.text import slugify
+from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
+from fidesops.util.text import to_snake_case
 
 
 def test_policy_sets_slug(
@@ -31,7 +32,7 @@ def test_policy_sets_slug(
             "client_id": oauth_client.id,
         },
     )
-    assert policy.key == slugify(NAME)
+    assert policy.key == to_snake_case(NAME)
     policy.delete(db=db)
 
 
@@ -39,7 +40,7 @@ def test_policy_wont_override_slug(
     db: Session,
     oauth_client: ClientDetail,
 ) -> None:
-    slug = "something-different"
+    slug = "something_different"
     policy = Policy.create(
         db=db,
         data={
@@ -211,11 +212,8 @@ def test_create_erasure_rule(
             "name": "Valid Erasure Rule",
             "policy_id": policy.id,
             "masking_strategy": {
-                "strategy": HASH,
-                "configuration": {
-                    "algorithm": "SHA-512",
-                    "format_preservation": {"suffix": "@masked.com"},
-                },
+                "strategy": NULL_REWRITE,
+                "configuration": {},
             },
         },
     )
@@ -300,7 +298,7 @@ def test_validate_policy(
         db=db,
         data={
             "name": "example erasure policy",
-            "key": "example-erasure-policy",
+            "key": "example_erasure_policy",
             "client_id": oauth_client.id,
         },
     )
@@ -313,8 +311,8 @@ def test_validate_policy(
             "name": "Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": HASH,
-                "configuration": {"algorithm": "SHA-512"},
+                "strategy": NULL_REWRITE,
+                "configuration": {},
             },
         },
     )
@@ -336,8 +334,8 @@ def test_validate_policy(
             "name": "Another Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": HASH,
-                "configuration": {"algorithm": "SHA-512"},
+                "strategy": NULL_REWRITE,
+                "configuration": {},
             },
         },
     )

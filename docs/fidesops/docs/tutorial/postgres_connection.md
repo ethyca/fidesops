@@ -16,7 +16,7 @@ Let's add a method that hits the PUT `connection` endpoint, and creates a Connec
 def create_postgres_connection(key, access_token):
     """
     Create a connection in fidesops for our PostgreSQL database. Returns the response JSON if successful.
-    See http://localhost:8000/docs#/Connections/put_connections_api_v1_connection_put
+    See http://localhost:8000/api#operations-Connections-put_connections_api_v1_connection_put
     """
     connection_create_data = [
         {
@@ -26,7 +26,7 @@ def create_postgres_connection(key, access_token):
             "access": "write",
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/connection",
         headers=oauth_headers(access_token=access_token),
         json=connection_create_data,
@@ -44,7 +44,7 @@ def configure_postgres_connection(
 ):
     """
     Configure the connection with the given `key` in fidesops with our PostgreSQL database credentials. Returns the response JSON if successful.
-    See http://localhost:8000/docs#/Connections/put_connection_config_secrets_api_v1_connection__connection_key__secret_put
+    See http://localhost:8000/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put
     """
     connection_secrets_data = {
         "host": host,
@@ -65,7 +65,7 @@ def configure_postgres_connection(
 
 ### Call helper methods to connect to Postgres
 
-Add calls for our new methods, to create a Postgres ConnectionConfig called `flaskr-postgres`, and 
+Add calls for our new methods, to create a Postgres ConnectionConfig called `flaskr_postgres`, and 
 then update that connection's secrets with individual URI components.  This will encrypt and save the URI components 
 and also attempt to make a test connection to our Flask App's Postgres Database.
 ```python
@@ -73,10 +73,10 @@ and also attempt to make a test connection to our Flask App's Postgres Database.
 if __name__ == "__main__":
     ...
     # Connect to our PostgreSQL database
-    create_postgres_connection(key="flaskr-postgres", access_token=access_token)
+    create_postgres_connection(key="flaskr_postgres", access_token=access_token)
 
     configure_postgres_connection(
-        key="flaskr-postgres",
+        key="flaskr_postgres",
         host=POSTGRES_SERVER,
         port=POSTGRES_PORT,
         dbname="flaskr",

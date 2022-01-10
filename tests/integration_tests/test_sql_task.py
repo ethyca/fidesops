@@ -8,11 +8,12 @@ from unittest.mock import Mock
 import dask
 import pytest
 
-from fidesops.common_exceptions import InsufficientDataException
 from fidesops.core.config import config
-from fidesops.graph.config import FieldAddress
+from fidesops.graph.config import FieldAddress, Collection, ScalarField, Dataset
+from fidesops.graph.data_type import DataType, StringTypeConverter
 from fidesops.graph.graph import DatasetGraph, Edge, Node
 from fidesops.graph.traversal import TraversalNode
+from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.policy import Policy
 from fidesops.models.policy import Rule, RuleTarget, ActionType
@@ -30,7 +31,6 @@ from ..graph.graph_test_util import (
 from ..task.traversal_data import integration_db_graph, integration_db_dataset
 
 dask.config.set(scheduler="processes")
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 sample_postgres_configuration_policy = erasure_policy(
     "system.operations",
@@ -113,6 +113,106 @@ def test_sql_erasure_ignores_collections_without_pk(
 
 
 @pytest.mark.integration
+def test_composite_key_erasure(
+    db,
+    integration_postgres_config: ConnectionConfig,
+) -> None:
+
+    privacy_request = PrivacyRequest(id=f"test_postgres_task_{random.randint(0,1000)}")
+    policy = erasure_policy("A")
+    customer = Collection(
+        name="customer",
+        fields=[
+            ScalarField(name="id", primary_key=True),
+            ScalarField(
+                name="email",
+                identity="email",
+                data_type_converter=StringTypeConverter(),
+            ),
+        ],
+    )
+
+    composite_pk_test = Collection(
+        name="composite_pk_test",
+        fields=[
+            ScalarField(
+                name="id_a",
+                primary_key=True,
+                data_type_converter=DataType.integer.value,
+            ),
+            ScalarField(
+                name="id_b",
+                primary_key=True,
+                data_type_converter=DataType.integer.value,
+            ),
+            ScalarField(
+                name="description",
+                data_type_converter=StringTypeConverter(),
+                data_categories=["A"],
+            ),
+            ScalarField(
+                name="customer_id",
+                data_type_converter=DataType.integer.value,
+                references=[
+                    (FieldAddress("postgres_example", "customer", "id"), "from")
+                ],
+            ),
+        ],
+    )
+
+    dataset = Dataset(
+        name="postgres_example",
+        collections=[customer, composite_pk_test],
+        connection_key=integration_postgres_config.key,
+    )
+
+    access_request_data = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        DatasetGraph(dataset),
+        [integration_postgres_config],
+        {"email": "customer-1@example.com"},
+    )
+    customer = access_request_data["postgres_example:customer"][0]
+    composite_pk_test = access_request_data["postgres_example:composite_pk_test"][0]
+
+    assert customer["id"] == 1
+    assert composite_pk_test["customer_id"] == 1
+
+    # erasure
+    erasure = graph_task.run_erasure(
+        privacy_request,
+        policy,
+        DatasetGraph(dataset),
+        [integration_postgres_config],
+        {"email": "employee-1@example.com"},
+        access_request_data,
+    )
+
+    assert erasure == {
+        "postgres_example:customer": 0,
+        "postgres_example:composite_pk_test": 1,
+    }
+
+    # re-run access request. Description has been
+    # nullified here.
+    access_request_data = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        DatasetGraph(dataset),
+        [integration_postgres_config],
+        {"email": "customer-1@example.com"},
+    )
+
+    assert access_request_data == {
+        "postgres_example:composite_pk_test": [
+            {"id_a": 1, "id_b": 10, "description": None, "customer_id": 1}
+        ],
+        "postgres_example:customer": [{"id": 1, "email": "customer-1@example.com"}],
+    }
+
+
+@pytest.mark.integration
 def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
     seed_email = postgres_inserts["customer"][0]["email"]
 
@@ -155,7 +255,9 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
 @pytest.mark.integration
 def test_sql_access_request_task(db, policy, integration_postgres_config) -> None:
 
-    privacy_request = PrivacyRequest(id=f"test_sql_access_request_task_{random.randint(0, 1000)}")
+    privacy_request = PrivacyRequest(
+        id=f"test_sql_access_request_task_{random.randint(0, 1000)}"
+    )
 
     v = graph_task.run_access_request(
         privacy_request,
@@ -258,7 +360,7 @@ def test_filter_on_data_categories(
         db,
         data={
             "name": "Test Rule 1",
-            "key": "test-rule-1",
+            "key": "test_rule_1",
             "data_category": "user.provided.identifiable.contact.street",
             "rule_id": rule.id,
         },
@@ -326,7 +428,7 @@ def test_filter_on_data_categories(
         db,
         data={
             "name": "Test Rule 2",
-            "key": "test-rule-2",
+            "key": "test_rule_2",
             "data_category": "user.provided.identifiable.contact.email",
             "rule_id": rule.id,
         },
@@ -336,7 +438,7 @@ def test_filter_on_data_categories(
         db,
         data={
             "name": "Test Rule 3",
-            "key": "test-rule-3",
+            "key": "test_rule_3",
             "data_category": "user.provided.identifiable.contact.state",
             "rule_id": rule.id,
         },
@@ -362,6 +464,84 @@ def test_filter_on_data_categories(
     rule_target_two.delete(db)
     rule_target_three.delete(db)
     rule_target.delete(db)
+
+
+@pytest.mark.integration
+def test_access_erasure_type_conversion(
+    db,
+    integration_postgres_config: ConnectionConfig,
+) -> None:
+    """Retrieve data from the type_link table. This requires retrieving data from
+    the employee id field, which is an int, and converting it into a string to query
+    against the type_link_test.id field."""
+    privacy_request = PrivacyRequest(id=f"test_postgtres_task_{random.randint(0,1000)}")
+    policy = erasure_policy("A")
+    employee = Collection(
+        name="employee",
+        fields=[
+            ScalarField(name="id", primary_key=True),
+            ScalarField(name="name", data_type_converter=StringTypeConverter()),
+            ScalarField(
+                name="email",
+                identity="email",
+                data_type_converter=StringTypeConverter(),
+            ),
+        ],
+    )
+
+    type_link = Collection(
+        name="type_link_test",
+        fields=[
+            ScalarField(
+                name="id",
+                primary_key=True,
+                data_type_converter=StringTypeConverter(),
+                references=[
+                    (FieldAddress("postgres_example", "employee", "id"), "from")
+                ],
+            ),
+            ScalarField(
+                name="name",
+                data_type_converter=StringTypeConverter(),
+                data_categories=["A"],
+            ),
+        ],
+    )
+
+    dataset = Dataset(
+        name="postgres_example",
+        collections=[employee, type_link],
+        connection_key=integration_postgres_config.key,
+    )
+
+    access_request_data = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        DatasetGraph(dataset),
+        [integration_postgres_config],
+        {"email": "employee-1@example.com"},
+    )
+
+    employee = access_request_data["postgres_example:employee"][0]
+    link = access_request_data["postgres_example:type_link_test"][0]
+
+    assert employee["id"] == 1
+    assert link["id"] == "1"
+
+    # erasure
+    erasure = graph_task.run_erasure(
+        privacy_request,
+        policy,
+        DatasetGraph(dataset),
+        [integration_postgres_config],
+        {"email": "employee-1@example.com"},
+        access_request_data,
+    )
+
+    assert erasure == {
+        "postgres_example:employee": 0,
+        "postgres_example:type_link_test": 1,
+    }
 
 
 class TestRetrievingData:

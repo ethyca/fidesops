@@ -18,9 +18,13 @@ from fidesops.graph.config import (
     FieldAddress,
     Dataset,
     CollectionAddress,
+    generate_field,
 )
+from fidesops.graph.data_type import parse_data_type_string
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
+from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.util.logger import NotPii
 
 logger = logging.getLogger(__name__)
 
@@ -77,16 +81,21 @@ class DatasetConfig(Base):
         )
 
 
-def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
+def to_graph_field(field: FidesopsDatasetField) -> Field:
     """Flattens the dataset field type into its graph representation"""
 
     # NOTE: on the dataset field, annotations like identity & references are
     # declared on the meta object, whereas in our graph representation these are
     # top-level attributes for convenience
+
     identity = None
     is_pk = False
+    is_array = False
     references = []
     meta_section = field.fidesops_meta
+    sub_fields = []
+    length = None
+    data_type_name = None
     if meta_section:
         identity = meta_section.identity
         if meta_section.primary_key:
@@ -117,16 +126,35 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
                     reference.dataset, ref_collection, ".".join(ref_fields)
                 )
                 references.append((address, reference.direction))
-    return Field(
+        if meta_section.length is not None:
+            # 'if meta_section.length' will not suffice here, we will want to pass through
+            # length for any valid integer if it has been set in the config, including 0.
+            #
+            # Currently 0 is filtered out by validations but better not to filter out 0's
+            # here in case we decide to allow it in the future.
+            length = meta_section.length
+
+        (data_type_name, is_array) = parse_data_type_string(meta_section.data_type)
+
+    if field.fields:
+        sub_fields = [to_graph_field(fld) for fld in field.fields]
+
+    return generate_field(
         name=field.name,
         data_categories=field.data_categories,
         identity=identity,
+        data_type_name=data_type_name,
         references=references,
-        primary_key=is_pk,
+        is_pk=is_pk,
+        length=length,
+        is_array=is_array,
+        sub_fields=sub_fields,
     )
 
 
-def convert_dataset_to_graph(dataset: FidesopsDataset, connection_key: str) -> Dataset:
+def convert_dataset_to_graph(
+    dataset: FidesopsDataset, connection_key: FidesOpsKey
+) -> Dataset:
     """
     Converts the given Fides dataset dataset into the concrete graph
     representation needed for query execution
@@ -139,14 +167,12 @@ def convert_dataset_to_graph(dataset: FidesopsDataset, connection_key: str) -> D
     logger.debug(f"Parsing dataset '{dataset_name}' into graph representation")
     graph_collections = []
     for collection in dataset.collections:
-        graph_fields = [
-            _convert_dataset_field_to_graph(field) for field in collection.fields
-        ]
+        graph_fields = [to_graph_field(field) for field in collection.fields]
         logger.debug(
             "Parsing dataset %s: parsed collection %s with %s fields",
-            dataset_name,
-            collection.name,
-            len(graph_fields),
+            NotPii(dataset_name),
+            NotPii(collection.name),
+            NotPii(len(graph_fields)),
         )
         collection_after: Set[CollectionAddress] = set()
         if collection.fidesops_meta and collection.fidesops_meta.after:
@@ -160,8 +186,8 @@ def convert_dataset_to_graph(dataset: FidesopsDataset, connection_key: str) -> D
         graph_collections.append(graph_collection)
     logger.debug(
         "Finished parsing dataset %s with %s collections",
-        dataset_name,
-        len(graph_collections),
+        NotPii(dataset_name),
+        NotPii(len(graph_collections)),
     )
 
     return Dataset(

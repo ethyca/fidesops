@@ -3,13 +3,10 @@
 import hashlib
 import logging
 import os
-
-from typing import Dict, List, Optional, Union, Tuple, MutableMapping, Any
-
+from typing import Dict, List, Optional, Union, Tuple, Any, MutableMapping
 
 import bcrypt
 import toml
-
 from pydantic import (
     AnyHttpUrl,
     BaseSettings,
@@ -20,6 +17,7 @@ from pydantic import (
 from pydantic.env_settings import SettingsSourceCallable
 
 from fidesops.common_exceptions import MissingConfig
+from fidesops.util.logger import NotPii
 
 logger = logging.getLogger(__name__)
 
@@ -176,66 +174,82 @@ class FidesopsConfig(FidesSettings):
     security: SecuritySettings
     execution: ExecutionSettings
 
+    is_test_mode: bool = os.getenv("TESTING") == "True"
+    hot_reloading: bool = os.getenv("DEV_MODE") == "True"
+
     class Config:  # pylint: disable=C0115
         case_sensitive = True
 
+    logger.warning(f"Startup configuration: reloading = {hot_reloading}")
+    logger.warning(
+        f'Startup configuration: pii logging = {os.getenv("LOG_PII") == "True"}'
+    )
 
-def load_toml(
-    file_name: str, config_path: str = ""
-) -> Optional[MutableMapping[str, Any]]:
-    """Load a (raw) toml file and return a dictionary of settings."""
-    possible_config_locations = [
-        config_path,
-        os.path.join(os.curdir, file_name),
-        os.path.join(os.pardir, file_name),
-        os.path.join(os.path.expanduser("~"), file_name),
+
+def load_file(file_name: str) -> str:
+    """Load a file and from the first matching location.
+
+    In order, will check:
+    - A path set at ENV variable FIDESOPS_CONFIG_PATH
+    - The current directory
+    - The parent directory
+    - users home (~) directory
+
+    raises FileNotFound if none is found
+    """
+
+    possible_directories = [
+        os.getenv("FIDESOPS_CONFIG_PATH"),
+        os.curdir,
+        os.pardir,
+        os.path.expanduser("~"),
     ]
 
-    # if FIDESOPS_CONFIG_PATH is set that should be used first:
-    fides_ops_config_path = os.getenv("FIDESOPS_CONFIG_PATH")
-    if fides_ops_config_path:
-        possible_config_locations.insert(
-            0, os.path.join(fides_ops_config_path, file_name)
-        )
-    for file_location in possible_config_locations:
-        if file_location != "" and os.path.isfile(file_location):
-            try:
-                settings = toml.load(file_location)
-                logger.info(f"Config loaded from {file_location}")
-                return settings
-            except IOError:
-                logger.info(f"Error reading config file from {file_location}")
-            break
+    directories: List[str] = [d for d in possible_directories if d]
 
-    return None
+    for dir_str in directories:
+        possible_location = os.path.join(dir_str, file_name)
+        if possible_location and os.path.isfile(possible_location):
+            logger.info("Loading file %s from %s", NotPii(file_name), NotPii(dir_str))
+            return possible_location
+        logger.debug("%s not found at %s", NotPii(file_name), NotPii(dir_str))
+    raise FileNotFoundError
 
 
-def get_config(config_path: str = "") -> FidesopsConfig:
+def load_toml(file_name: str) -> MutableMapping[str, Any]:
+    """
+    Load toml file from possible locations specified in load_file.
+
+    Will raise FileNotFoundError or ValidationError on missing or
+    bad file
+    """
+    return toml.load(load_file(file_name))
+
+
+def get_config() -> FidesopsConfig:
     """
     Attempt to read config file from:
-    a) passed in configuration, if it exists
-    b) env var FIDESOPS_CONFIG_PATH
-    c) local directory
+    a) env var FIDESOPS_CONFIG_PATH
+    b) local directory
+    c) parent directory
     d) home directory
     This will fail on the first encountered bad conf file.
     """
-    settings = load_toml("fidesops.toml", config_path)
-    if settings is not None:
-        the_config = FidesopsConfig.parse_obj(settings)
-    else:
+    try:
+        return FidesopsConfig.parse_obj(load_toml("fidesops.toml"))
+    except (FileNotFoundError, ValidationError) as e:
+        logger.warning("fidesops.toml could not be loaded: %s", NotPii(e))
         # If no path is specified Pydantic will attempt to read settings from
         # the environment. Default values will still be used if the matching
         # environment variable is not set.
         try:
-            the_config = FidesopsConfig()
+            return FidesopsConfig()
         except ValidationError as exc:
-            logger.error(exc)
+            logger.error("ValidationError: %s", exc)
             # If FidesopsConfig is missing any required values Pydantic will throw
             # an ImportError. This means the config has not been correctly specified
             # so we can throw the missing config error.
             raise MissingConfig(exc.args[0])
-
-    return the_config
 
 
 CONFIG_KEY_ALLOWLIST = {
