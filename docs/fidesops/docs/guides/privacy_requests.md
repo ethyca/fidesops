@@ -2,6 +2,7 @@
 
 In this section we'll cover:
 
+- How does a Privacy Request work in conjunction with a policy?
 - What is a Privacy Request?
 - How can I execute a Privacy Request?
 - How do I monitor Privacy Requests as they execute?
@@ -46,7 +47,10 @@ we submit  a request to apply the `a-demo-policy` Policy to all target data in t
 * `identities` is an array of objects that contain data that identify the users whose data will be affected by the Policy. Each object identifies a single user by AND'ing the object's properties. 
 
 
-A full list of attributes available to set on the Privacy Request can be found in the [API docs](/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
+- This request will submit a Privacy Request for execution that applies the `a-demo-policy` Policy to all target data in the [Identity Graph](../glossary.md) that can be generated from the email address `identity@example.com` or the phone number `+1 (123) 456 7891`.
+- Specifying a `external_id` enables us to track this Privacy Request with that `external_id` later on. See [How-To: Report on Privacy Requests](reporting.md) for more information.
+- `policy_key` should correspond to a previously configured `Policy` object. See [How-To: Configure Request Policies](policies.md) for more information.
+- A full list of attributes available to set on the Privacy Request can be found in the [API docs](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get)..
 
 
 ## How do I monitor Privacy Requests as they execute?
@@ -66,3 +70,68 @@ Alongside generic API interoperability, Fidesops provides a direct integration w
 * Generic API interoperability: Third party services can be authorized by creating additional OAuth clients. Tokens obtained from OAuth clients can be managed and revoked at any time. See [How-To: Authenticate with OAuth](oauth.md) for more information.
 
 * OneTrust: Fidesops can be configured to act as (or as part of) the fulfillment layer in OneTrust's Data Subject Request automation flow. Please see [How-To: Configure OneTrust Integration](onetrust.md) for more information.
+
+- Generic API interoperability: Third party services can be authorized by creating additional OAuth clients. Tokens obtained from OAuth clients can be managed and revoked at any time. Pleae see [How-To: Authenticate with OAuth](oauth.md) for more information.
+- OneTrust: Fidesops can be configured to act as (or as part of) the fulfilment layer in OneTrust's Data Subject Request automation flow. Please see [How-To: Configure OneTrust Integration](onetrust.md) for more information.
+
+
+## Encryption
+
+You can optionally encrypt your access request results by supplying an `encryption_key` string in the request body:
+We will use the supplied encryption_key to encrypt the contents of your JSON and CSV results using an AES-256 algorithm in GCM mode.
+When converted to bytes, your encryption_key must be 16 bytes long.  The data we return will have the nonce concatenated 
+to the encrypted data.
+
+POST /privacy-request
+```json
+[
+    {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "identity": {"email": "customer-1@example.com"},
+        "policy_key": "my_access_policy",
+        "encryption_key": "test--encryption"
+    }
+]
+
+```
+
+## Decrypting your access request results
+
+If you specified an encryption key, we encrypted the access result data using your key and an internally-generated `nonce` with an AES 
+256 algorithm in GCM mode.  The return value is a 12-byte nonce plus the encrypted data that is all b64encoded together.
+
+```
++------------------+-------------------+
+| nonce (12 bytes) | message (N bytes) |
++------------------+-------------------+
+```
+
+For example, pretend you specified an encryption key of `test--encryption`, and the resulting data was uploaded to
+S3 in a JSON file: `GPUiK9tq5k/HfBnSN+J+OvLXZ+GCisapdI2KGP7A1WK+dz1XHef+hWb/SjszdqdNVGvziyY6GF5KIrvrXgxjZuaAvgU='`.  You will
+need to implement something similar to the snippet below on your end to decrypt:
+
+```python
+import json
+import base64
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+encrypted: str = "GPUiK9tq5k/HfBnSN+J+OvLXZ+GCisapdI2KGP7A1WK+dz1XHef+hWb/SjszdqdNVGvziyY6GF5KIrvrXgxjZuaAvgU=" 
+encryption_key: str = "test--encryption".encode("utf-8")  # Only you know this
+
+encrypted_combined: bytes = base64.b64decode(encrypted)
+nonce: bytes = encrypted_combined[0:12]
+encrypted_message: bytes = encrypted_combined[12:]
+gcm = AESGCM(encryption_key)
+
+decrypted_bytes: bytes = gcm.decrypt(nonce, encrypted_message, nonce)
+decrypted_str: str = decrypted_bytes.decode("utf-8")
+
+json.loads(decrypted_str)
+```
+
+```python
+>>> {"street": "test street", "state": "NY"}
+```
+
+If CSV data was uploaded, each CSV in the zipfile was encrypted using a different nonce so you'll need to follow
+a similar process for each csv file.
