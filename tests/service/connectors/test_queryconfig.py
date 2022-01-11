@@ -101,7 +101,7 @@ class TestSQLQueryConfig:
         assert (
             str(
                 SQLQueryConfig(payment_card_node).generate_query(
-                    {"id": ["A"], "customer_id": ["V"], "ignore_me": ["X"]}
+                    {FieldPath("id"): ["A"], FieldPath("customer_id"): ["V"], FieldPath("ignore_me"): ["X"]}
                 )
             )
             == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id OR customer_id = :customer_id"
@@ -110,7 +110,7 @@ class TestSQLQueryConfig:
         assert (
             str(
                 SQLQueryConfig(payment_card_node).generate_query(
-                    {"id": ["A"], "customer_id": [], "ignore_me": ["X"]}
+                    {FieldPath("id"): ["A"], FieldPath("customer_id"): [], FieldPath("ignore_me"): ["X"]}
                 )
             )
             == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id"
@@ -119,7 +119,7 @@ class TestSQLQueryConfig:
         assert (
             str(
                 SQLQueryConfig(payment_card_node).generate_query(
-                    {"id": ["A"], "ignore_me": ["X"]}
+                    {FieldPath("id"): ["A"], FieldPath("ignore_me"): ["X"]}
                 )
             )
             == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id"
@@ -128,7 +128,7 @@ class TestSQLQueryConfig:
         assert (
             str(
                 SQLQueryConfig(payment_card_node).generate_query(
-                    {"id": [], "customer_id": ["V"]}
+                    {FieldPath("id"): [], FieldPath("customer_id"): ["V"]}
                 )
             )
             == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE customer_id = :customer_id"
@@ -148,13 +148,13 @@ class TestSQLQueryConfig:
 
         rule = erasure_policy.rules[0]
         config = SQLQueryConfig(customer_node)
-        assert config.build_rule_target_fields(erasure_policy) == {rule: ["name"]}
+        assert config.build_rule_target_fields(erasure_policy) == {rule: [FieldPath("name")]}
 
         # Make target more broad
         target = rule.targets[0]
         target.data_category = DataCategory("user.provided.identifiable").value
         assert config.build_rule_target_fields(erasure_policy) == {
-            rule: ["email", "name"]
+            rule: [FieldPath("email"), FieldPath("name")]
         }
 
         # Check different collection
@@ -163,7 +163,7 @@ class TestSQLQueryConfig:
         ]
         config = SQLQueryConfig(address_node)
         assert config.build_rule_target_fields(erasure_policy) == {
-            rule: ["city", "house", "street", "state", "zip"]
+            rule: [FieldPath(x) for x in ["city", "house", "street", "state", "zip"]]
         }
 
     def test_generate_update_stmt_one_field(

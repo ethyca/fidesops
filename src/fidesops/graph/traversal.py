@@ -22,7 +22,7 @@ from fidesops.util.collection_util import append
 logger = logging.getLogger(__name__)
 
 
-Row = Dict[str, Any]
+Row = Dict[FieldPath, Any]
 """A type expressing a single row of data from (any) collection"""
 Datastore = Dict[CollectionAddress, List[Row]]
 """A type expressing retrieved rows of data from a specified collection"""

@@ -65,11 +65,11 @@ class QueryConfig(Generic[T], ABC):
         return rule_updates
 
     @property
-    def primary_key_fields(self) -> List[Field]:
+    def primary_key_fields(self) -> Dict[FieldPath, Field]:
         """List of fields marked as primary keys"""
-        return [
-            f for f in self.node.node.collection.field_dict.values() if f.primary_key
-        ]
+        return {
+            k: v for k, v in self.node.node.collection.field_dict.items() if v.primary_key
+        }
 
     @property
     def query_keys(self) -> Set[FieldPath]:
@@ -283,7 +283,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
 
     def generate_query(
         self,
-        input_data: Dict[str, List[Any]],
+        input_data: Dict[FieldPath, List[Any]],
         policy: Optional[Policy] = None,
     ) -> Optional[TextClause]:
         """Generate a retrieval query"""
@@ -292,19 +292,19 @@ class SQLQueryConfig(QueryConfig[TextClause]):
 
         if filtered_data:
             clauses = []
-            query_data: Dict[str, Tuple[Any, ...]] = {}
+            query_data: Dict[FieldPath, Tuple[Any, ...]] = {}
             formatted_fields = self.format_fields_for_query(
                 list(self.field_map().keys())
             )
             field_list = ",".join(formatted_fields)
-            for field_name, data in filtered_data.items():
+            for path, data in filtered_data.items():
                 data = set(data)
                 if len(data) == 1:
-                    clauses.append(self.format_clause_for_query(field_name, "="))
-                    query_data[field_name] = (data.pop(),)
+                    clauses.append(self.format_clause_for_query(path, "="))
+                    query_data[path] = (data.pop(),)
                 elif len(data) > 1:
-                    clauses.append(self.format_clause_for_query(field_name, "IN"))
-                    query_data[field_name] = tuple(data)
+                    clauses.append(self.format_clause_for_query(path, "IN"))
+                    query_data[path] = tuple(data)
                 else:
                     #  if there's no data, create no clause
                     pass
@@ -317,26 +317,19 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         )
         return None
 
-    def format_key_map_for_update_stmt(self, key_map: Dict[str, Any]) -> List[str]:
+    def format_key_map_for_update_stmt(self, key_map: Dict[FieldPath, Any]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
-        return [f"{k} = :{k}" for k in key_map]
+        return [f"{k.value} = :{k.value}" for k in key_map]
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> Optional[TextClause]:
         """Returns an update statement in generic SQL dialect."""
-        update_value_map = self.update_value_map(row, policy, request)
+        update_value_map:Dict[FieldPath, Any] = self.update_value_map(row, policy, request)
         update_clauses = self.format_key_map_for_update_stmt(update_value_map)
-        non_empty_primary_keys = filter_nonempty_values(
-            {
-                f.name: f.cast(row[f.name])
-                for f in self.primary_key_fields
-                if f.name in row
-            }
-        )
-        pk_clauses = self.format_key_map_for_update_stmt(non_empty_primary_keys)
+        pk_clauses = self.format_key_map_for_update_stmt( self.primary_key_fields)
 
-        for k, v in non_empty_primary_keys.items():
+        for k, v in self.primary_key_fields.items():
             update_value_map[k] = v
 
         valid = len(pk_clauses) > 0 and len(update_clauses) > 0
@@ -493,9 +486,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         """Generate a SQL update statement in the form of Mongo update statement components"""
         update_clauses = self.update_value_map(row, policy, request)
 
-        pk_clauses = filter_nonempty_values(
-            {k.name: k.cast(row[k.name]) for k in self.primary_key_fields}
-        )
+        pk_clauses:Dict[FieldPath,Field] = self.primary_key_fields
 
         valid = len(pk_clauses) > 0 and len(update_clauses) > 0
         if not valid:
