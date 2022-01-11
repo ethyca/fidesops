@@ -174,7 +174,7 @@ class FidesopsConfig(FidesSettings):
     security: SecuritySettings
     execution: ExecutionSettings
 
-    is_test_mode: bool = os.getenv("TESTING") == "True"
+    is_test_mode: bool = True  # os.getenv("TESTING") == "True"
     hot_reloading: bool = os.getenv("DEV_MODE") == "True"
 
     class Config:  # pylint: disable=C0115

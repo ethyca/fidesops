@@ -1,5 +1,5 @@
 from typing import Dict, Any, Set
-
+import json
 
 from fidesops.graph.config import CollectionAddress, FieldPath
 from fidesops.graph.graph import DatasetGraph
@@ -64,44 +64,84 @@ class TestSQLQueryConfig:
         assert config.query_keys == {FieldPath("id"), FieldPath("customer_id")}
 
         # values exist for all query keys
-        assert found_query_keys(
-            config, {   FieldPath("id"): ["A"],  FieldPath("customer_id"): ["V"],  FieldPath("ignore_me"): ["X"]}
-        ) == { FieldPath("id"),  FieldPath("customer_id")}
+        assert (
+            found_query_keys(
+                config,
+                {
+                    FieldPath("id"): ["A"],
+                    FieldPath("customer_id"): ["V"],
+                    FieldPath("ignore_me"): ["X"],
+                },
+            )
+            == {FieldPath("id"), FieldPath("customer_id")}
+        )
         # with no values OR an empty set, these are omitted
+        assert (
+            found_query_keys(
+                config,
+                {
+                    FieldPath("id"): ["A"],
+                    FieldPath("customer_id"): [],
+                    FieldPath("ignore_me"): ["X"],
+                },
+            )
+            == {FieldPath("id")}
+        )
         assert found_query_keys(
-            config, { FieldPath("id"): ["A"],  FieldPath("customer_id"): [],  FieldPath("ignore_me"): ["X"]}
-        ) == { FieldPath("id")}
-        assert found_query_keys(config, {FieldPath("id"): ["A"], FieldPath("ignore_me"): ["X"]}) == {FieldPath("id")}
+            config, {FieldPath("id"): ["A"], FieldPath("ignore_me"): ["X"]}
+        ) == {FieldPath("id")}
         assert found_query_keys(config, {FieldPath("ignore_me"): ["X"]}) == set()
         assert found_query_keys(config, {}) == set()
 
     def test_typed_filtered_values(self):
         config = SQLQueryConfig(payment_card_node)
-        assert config.typed_filtered_values(
-            {FieldPath("id"): ["A"], FieldPath("customer_id"): ["V"], FieldPath("ignore_me"): ["X"]}
-        ) == {FieldPath("id"): ["A"], FieldPath("customer_id"): ["V"]}
+        assert (
+            config.typed_filtered_values(
+                {
+                    FieldPath("id"): ["A"],
+                    FieldPath("customer_id"): ["V"],
+                    FieldPath("ignore_me"): ["X"],
+                }
+            )
+            == {FieldPath("id"): ["A"], FieldPath("customer_id"): ["V"]}
+        )
+
+        assert (
+            config.typed_filtered_values(
+                {
+                    FieldPath("id"): ["A"],
+                    FieldPath("customer_id"): [],
+                    FieldPath("ignore_me"): ["X"],
+                }
+            )
+            == {FieldPath("id"): ["A"]}
+        )
 
         assert config.typed_filtered_values(
-            {FieldPath("id"): ["A"], FieldPath("customer_id"): [], FieldPath("ignore_me"): ["X"]}
+            {FieldPath("id"): ["A"], FieldPath("ignore_me"): ["X"]}
         ) == {FieldPath("id"): ["A"]}
 
-        assert config.typed_filtered_values({FieldPath("id"): ["A"], FieldPath("ignore_me"): ["X"]}) == {
-            FieldPath("id"): ["A"]
-        }
-
-        assert config.typed_filtered_values({FieldPath("id"): [], FieldPath("customer_id"): ["V"]}) == {
-            FieldPath("customer_id"): ["V"]
-        }
+        assert config.typed_filtered_values(
+            {FieldPath("id"): [], FieldPath("customer_id"): ["V"]}
+        ) == {FieldPath("customer_id"): ["V"]}
         # test for type casting: id has type "string":
-        assert config.typed_filtered_values({FieldPath("id"): [1]}) == {FieldPath("id"): ["1"]}
-        assert config.typed_filtered_values({FieldPath("id"): [1, 2]}) == {FieldPath("id"): ["1", "2"]}
+        assert config.typed_filtered_values({FieldPath("id"): [1]}) == {
+            FieldPath("id"): ["1"]
+        }
+        assert config.typed_filtered_values({FieldPath("id"): [1, 2]}) == {
+            FieldPath("id"): ["1", "2"]
+        }
 
     def test_generated_sql_query(self):
         """Test that the generated query depends on the input set"""
         assert (
             str(
                 SQLQueryConfig(payment_card_node).generate_query(
-                    {FieldPath("id"): ["A"], FieldPath("customer_id"): ["V"], FieldPath("ignore_me"): ["X"]}
+                    {
+                        FieldPath("id"): ["A"],
+                        FieldPath("customer_id"): ["V"],
+                        FieldPath("ignore_me"): ["X"],
+                    }
                 )
             )
             == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id OR customer_id = :customer_id"
@@ -110,7 +150,11 @@ class TestSQLQueryConfig:
         assert (
             str(
                 SQLQueryConfig(payment_card_node).generate_query(
-                    {FieldPath("id"): ["A"], FieldPath("customer_id"): [], FieldPath("ignore_me"): ["X"]}
+                    {
+                        FieldPath("id"): ["A"],
+                        FieldPath("customer_id"): [],
+                        FieldPath("ignore_me"): ["X"],
+                    }
                 )
             )
             == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id"
@@ -148,7 +192,9 @@ class TestSQLQueryConfig:
 
         rule = erasure_policy.rules[0]
         config = SQLQueryConfig(customer_node)
-        assert config.build_rule_target_fields(erasure_policy) == {rule: [FieldPath("name")]}
+        assert config.build_rule_target_fields(erasure_policy) == {
+            rule: [FieldPath("name")]
+        }
 
         # Make target more broad
         target = rule.targets[0]
@@ -180,10 +226,10 @@ class TestSQLQueryConfig:
 
         config = SQLQueryConfig(customer_node)
         row = {
-            "email": "customer-1@example.com",
-            "name": "John Customer",
-            "address_id": 1,
-            "id": 1,
+            FieldPath("email"): "customer-1@example.com",
+            FieldPath("name"): "John Customer",
+            FieldPath("address_id"): 1,
+            FieldPath("id"): 1,
         }
 
         text_clause = config.generate_update_stmt(row, erasure_policy, privacy_request)
@@ -208,10 +254,10 @@ class TestSQLQueryConfig:
 
         config = SQLQueryConfig(customer_node)
         row = {
-            "email": "customer-1@example.com",
-            "name": "John Customer",
-            "address_id": 1,
-            "id": 1,
+            FieldPath("email"): "customer-1@example.com",
+            FieldPath("name"): "John Customer",
+            FieldPath("address_id"): 1,
+            FieldPath("id"): 1,
         }
 
         text_clause = config.generate_update_stmt(
@@ -239,10 +285,10 @@ class TestSQLQueryConfig:
 
         config = SQLQueryConfig(customer_node)
         row = {
-            "email": "customer-1@example.com",
-            "name": "John Customer",
-            "address_id": 1,
-            "id": 1,
+            FieldPath("email"): "customer-1@example.com",
+            FieldPath("name"): "John Customer",
+            FieldPath("address_id"): 1,
+            FieldPath("id"): 1,
         }
 
         # Make target more broad
@@ -287,10 +333,10 @@ class TestSQLQueryConfig:
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
         row = {
-            "email": "customer-1@example.com",
-            "name": "John Customer",
-            "address_id": 1,
-            "id": 1,
+            FieldPath("email"): "customer-1@example.com",
+            FieldPath("name"): "John Customer",
+            FieldPath("address_id"): 1,
+            FieldPath("id"): 1,
         }
 
         customer_node = traversal.traversal_node_dict[
@@ -305,7 +351,7 @@ class TestSQLQueryConfig:
 
         assert (
             text_clause.text
-            == "UPDATE customer SET name = :name,email = :email WHERE id = :id"
+            == "UPDATE customer SET email = :email,name = :name WHERE id = :id"
         )
         # Two different masking strategies used for name and email
         assert text_clause._bindparams["name"].value is None  # Null masking strategy
@@ -340,10 +386,10 @@ class TestMongoQueryConfig:
 
         config = MongoQueryConfig(customer_details)
         row = {
-            "birthday": "1988-01-10",
-            "gender": "male",
-            "customer_id": 1,
-            "_id": 1,
+            FieldPath("birthday"): "1988-01-10",
+            FieldPath("gender"): "male",
+            FieldPath("customer_id"): 1,
+            FieldPath("_id"): 1,
         }
 
         # Make target more broad
@@ -382,10 +428,10 @@ class TestMongoQueryConfig:
 
         config = MongoQueryConfig(customer_details)
         row = {
-            "birthday": "1988-01-10",
-            "gender": "male",
-            "customer_id": 1,
-            "_id": 1,
+            FieldPath("birthday"): "1988-01-10",
+            FieldPath("gender"): "male",
+            FieldPath("customer_id"): 1,
+            FieldPath("_id"): 1,
         }
 
         rule = erasure_policy_two_rules.rules[0]

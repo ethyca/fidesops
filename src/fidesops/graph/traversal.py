@@ -110,14 +110,14 @@ class TraversalNode:
             if foreign.collection_address() == self.address:
                 foreign, local = local, foreign
             key = str(foreign.collection_address())
-            val = f"{foreign.field} -> {local.field}"
+            val = f"{foreign.field.value} -> {local.field.value}"
             if key in _from:
                 _from[key].add(val)
             else:
                 _from[key] = {val}
         to: Dict[str, Set[str]] = {}
         for k, v in self.children.items():
-            to[str(k)] = {f"{f[1]} -> {f[2]}" for f in v}
+            to[str(k)] = {f"{f[1].value} -> {f[2].value}" for f in v}
         return {
             "from": {k: set(v) for k, v in _from.items()},
             "to": {k: set(v) for k, v in to.items()},

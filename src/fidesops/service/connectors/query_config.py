@@ -68,7 +68,9 @@ class QueryConfig(Generic[T], ABC):
     def primary_key_fields(self) -> Dict[FieldPath, Field]:
         """List of fields marked as primary keys"""
         return {
-            k: v for k, v in self.node.node.collection.field_dict.items() if v.primary_key
+            k: v
+            for k, v in self.node.node.collection.field_dict.items()
+            if v.primary_key
         }
 
     @property
@@ -219,14 +221,14 @@ class QueryConfig(Generic[T], ABC):
 
     @abstractmethod
     def generate_query(
-        self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
+        self, input_data: Dict[FieldPath, List[Any]], policy: Optional[Policy]
     ) -> Optional[T]:
         """Generate a retrieval query. If there is no data to be queried
         (for example, if the policy identifies no fields to be queried)
         returns None"""
 
     @abstractmethod
-    def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
+    def query_to_str(self, t: T, input_data: Dict[FieldPath, List[Any]]) -> str:
         """Convert query to string"""
 
     @abstractmethod
@@ -300,10 +302,10 @@ class SQLQueryConfig(QueryConfig[TextClause]):
             for path, data in filtered_data.items():
                 data = set(data)
                 if len(data) == 1:
-                    clauses.append(self.format_clause_for_query(path, "="))
+                    clauses.append(self.format_clause_for_query(path.value, "="))
                     query_data[path] = (data.pop(),)
                 elif len(data) > 1:
-                    clauses.append(self.format_clause_for_query(path, "IN"))
+                    clauses.append(self.format_clause_for_query(path.value, "IN"))
                     query_data[path] = tuple(data)
                 else:
                     #  if there's no data, create no clause
@@ -317,21 +319,36 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         )
         return None
 
-    def format_key_map_for_update_stmt(self, key_map: Dict[FieldPath, Any]) -> List[str]:
+    def format_key_map_for_update_stmt(
+        self, fields:List[FieldPath]
+    ) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
-        return [f"{k.value} = :{k.value}" for k in key_map]
+        fields.sort()
+        return [f"{k.value} = :{k.value}" for k in fields]
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> Optional[TextClause]:
         """Returns an update statement in generic SQL dialect."""
-        update_value_map:Dict[FieldPath, Any] = self.update_value_map(row, policy, request)
-        update_clauses = self.format_key_map_for_update_stmt(update_value_map)
-        pk_clauses = self.format_key_map_for_update_stmt( self.primary_key_fields)
+        update_value_map: Dict[FieldPath, Any] = self.update_value_map(
+            row, policy, request
+        )
+        update_clauses: list[str] = self.format_key_map_for_update_stmt(
+           list( update_value_map.keys())
+        )
+        non_empty_primary_keys:Dict[FieldPath,Field] = filter_nonempty_values(
+            {
+                fpath: fld.cast(row[fpath])
+                for fpath, fld in self.primary_key_fields.items()
+                if fpath in row
+            }
+        )
+        pk_clauses: list[str] = self.format_key_map_for_update_stmt(
+            list(non_empty_primary_keys.keys())
+        )
 
         for k, v in self.primary_key_fields.items():
             update_value_map[k] = v
-
         valid = len(pk_clauses) > 0 and len(update_clauses) > 0
         if not valid:
             logger.warning(
@@ -346,7 +363,9 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         logger.info("query = %s, params = %s", query_str, update_value_map)
         return text(query_str).params(update_value_map)
 
-    def query_to_str(self, t: TextClause, input_data: Dict[str, List[Any]]) -> str:
+    def query_to_str(
+        self, t: TextClause, input_data: Dict[FieldPath, List[Any]]
+    ) -> str:
         """string representation of a query for logging/dry-run"""
 
         def transform_param(p: Any) -> str:
@@ -440,16 +459,16 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
     """Query config that translates parameters into mongo statements"""
 
     def generate_query(
-        self, input_data: Dict[str, List[Any]], policy: Optional[Policy] = None
+        self, input_data: Dict[FieldPath, List[Any]], policy: Optional[Policy] = None
     ) -> Optional[MongoStatement]:
-        def transform_query_pairs(pairs: Dict[str, Any]) -> Dict[str, Any]:
+        def transform_query_pairs(pairs: Dict[FieldPath, Any]) -> Dict[str, Any]:
             """Since we want to do an 'OR' match in mongo, transform queries of the form
             {A:1, B:2} => "{$or:[{A:1},{B:2}]}".
             Don't bother to do this if the pairs size is 1
             """
             if len(pairs) < 2:
-                return pairs
-            return {"$or": [dict([(k, v)]) for k, v in pairs.items()]}
+                return {k.value: v for k, v in pairs}
+            return {"$or": [dict([(k.value, v)]) for k, v in pairs.items()]}
 
         if input_data:
             filtered_data = self.typed_filtered_values(input_data)
@@ -458,13 +477,13 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
                     field_key.value: 1 for field_key, field in self.field_map().items()
                 }
                 query_pairs = {}
-                for field_name, data in filtered_data.items():
+                for field_path, data in filtered_data.items():
 
                     if len(data) == 1:
-                        query_pairs[field_name] = data[0]
+                        query_pairs[field_path] = data[0]
 
                     elif len(data) > 1:
-                        query_pairs[field_name] = {"$in": data}
+                        query_pairs[field_path] = {"$in": data}
 
                     else:
                         #  if there's no data, create no clause
@@ -486,7 +505,9 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         """Generate a SQL update statement in the form of Mongo update statement components"""
         update_clauses = self.update_value_map(row, policy, request)
 
-        pk_clauses:Dict[FieldPath,Field] = self.primary_key_fields
+        pk_clauses: Dict[str, Any] = filter_nonempty_values(
+            {k.value: v.cast(row[k]) for k, v in self.primary_key_fields.items()}
+        )
 
         valid = len(pk_clauses) > 0 and len(update_clauses) > 0
         if not valid:
@@ -494,9 +515,11 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
                 f"There is not enough data to generate a valid update for {self.node.address}"
             )
             return None
-        return pk_clauses, {"$set": update_clauses}
+        return pk_clauses, {"$set": {k.value: v for k, v in update_clauses.items()}}
 
-    def query_to_str(self, t: MongoStatement, input_data: Dict[str, List[Any]]) -> str:
+    def query_to_str(
+        self, t: MongoStatement, input_data: Dict[FieldPath, List[Any]]
+    ) -> str:
         """string representation of a query for logging/dry-run"""
         query_data, field_list = t
         db_name = self.node.address.dataset

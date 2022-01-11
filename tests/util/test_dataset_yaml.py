@@ -31,6 +31,7 @@ example_dataset_yaml = """dataset:
             data_categories: [system.operations]
             fidesops_meta:
               primary_key: True  
+              data_type: integer
 """
 
 example_dataset_nested_yaml = """dataset:
@@ -164,6 +165,7 @@ def test_nested_dataset_format():
 
     assert isinstance(comments_field, ObjectField)
     assert comments_field.is_array
+    assert comments_field.data_type() == "object"
     assert isinstance(comments_field.fields["text"], ScalarField)
     assert comments_field.fields["text"].data_type() == "None"
     assert isinstance(tags_field, ScalarField)
@@ -174,6 +176,7 @@ def test_nested_dataset_format():
     assert thumbnail_field.is_array is False
     assert thumbnail_field.data_type() == "object"
     assert thumbnail_field.fields["photo_id"].data_type() == "integer"
+    assert thumbnail_field.fields["name"].data_type() == "string"
 
 
 def test_nested_dataset_validation():
