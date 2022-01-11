@@ -381,9 +381,9 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         query_str = str(t)
         for k, v in input_data.items():
             if len(v) == 1:
-                query_str = re.sub(f"= :{k}", f"= {transform_param(v[0])}", query_str)
+                query_str = re.sub(f"= :{k.value}", f"= {transform_param(v[0])}", query_str)
             elif len(v) > 0:
-                query_str = re.sub(f"IN :{k}", f"IN { tuple(set(v)) }", query_str)
+                query_str = re.sub(f"IN :{k.value}", f"IN { tuple(set(v)) }", query_str)
         return query_str
 
     def dry_run_query(self) -> Optional[str]:

@@ -38,7 +38,7 @@ def test_to_dask_input_data() -> None:
     assert set(v[FieldPath("id")]) == {31, 32, 1, 2, 11, 22}
 
 
-def test_sql_dry_runtest_sql_dry_run_queries_queries() -> None:
+def test_sql_dry_run_queries() -> None:
     traversal = sample_traversal()
     env = collect_queries(
         traversal,
