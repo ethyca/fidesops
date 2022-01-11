@@ -312,16 +312,16 @@ class SQLQueryConfig(QueryConfig[TextClause]):
                     pass
             if len(clauses) > 0:
                 query_str = self.get_formatted_query_string(field_list, clauses)
-                return text(query_str).params(query_data)
+                return text(query_str).params(
+                    {k.value: v for k, v in query_data.items()}
+                )
 
         logger.warning(
             f"There is not enough data to generate a valid query for {self.node.address}"
         )
         return None
 
-    def format_key_map_for_update_stmt(
-        self, fields:List[FieldPath]
-    ) -> List[str]:
+    def format_key_map_for_update_stmt(self, fields: List[FieldPath]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
         fields.sort()
         return [f"{k.value} = :{k.value}" for k in fields]
@@ -334,9 +334,9 @@ class SQLQueryConfig(QueryConfig[TextClause]):
             row, policy, request
         )
         update_clauses: list[str] = self.format_key_map_for_update_stmt(
-           list( update_value_map.keys())
+            list(update_value_map.keys())
         )
-        non_empty_primary_keys:Dict[FieldPath,Field] = filter_nonempty_values(
+        non_empty_primary_keys: Dict[FieldPath, Field] = filter_nonempty_values(
             {
                 fpath: fld.cast(row[fpath])
                 for fpath, fld in self.primary_key_fields.items()
@@ -361,7 +361,9 @@ class SQLQueryConfig(QueryConfig[TextClause]):
             pk_clauses,
         )
 
-        output_update_value_map:Dict[str,Any]= {k.value:v for k,v in update_value_map.items()}
+        output_update_value_map: Dict[str, Any] = {
+            k.value: v for k, v in update_value_map.items()
+        }
         # translate keys from field paths to string values.
         logger.info("query = %s, params = %s", query_str, output_update_value_map)
         return text(query_str).params(output_update_value_map)
@@ -470,7 +472,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
             Don't bother to do this if the pairs size is 1
             """
             if len(pairs) < 2:
-                return {k.value: v for k, v in pairs}
+                return {k.value: v for k, v in pairs.items()}
             return {"$or": [dict([(k.value, v)]) for k, v in pairs.items()]}
 
         if input_data:
