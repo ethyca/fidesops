@@ -360,8 +360,11 @@ class SQLQueryConfig(QueryConfig[TextClause]):
             update_clauses,
             pk_clauses,
         )
-        logger.info("query = %s, params = %s", query_str, update_value_map)
-        return text(query_str).params(update_value_map)
+
+        output_update_value_map:Dict[str,Any]= {k.value:v for k,v in update_value_map.items()}
+        # translate keys from field paths to string values.
+        logger.info("query = %s, params = %s", query_str, output_update_value_map)
+        return text(query_str).params(output_update_value_map)
 
     def query_to_str(
         self, t: TextClause, input_data: Dict[FieldPath, List[Any]]
