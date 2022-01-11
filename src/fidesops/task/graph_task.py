@@ -285,10 +285,14 @@ def run_access_request(
     identity: Dict[str, Any],
 ) -> Dict[str, List[Row]]:
     """Run the access request"""
-    traversal: Traversal = Traversal(graph, identity)
+    traversal: Traversal = Traversal(
+        graph, {FieldPath.parse(k): v for k, v in identity.items()}
+    )
     with TaskResources(privacy_request, policy, connection_configs) as resources:
 
-        def start_function(seed: Dict[str, Any]) -> Callable[[], List[Dict[str, Any]]]:
+        def start_function(
+            seed: Dict[FieldPath, Any]
+        ) -> Callable[[], List[Dict[FieldPath, Any]]]:
             """Return a function that returns the seed value to kick off the dask function chain.
 
             The first traversal_node in the dask function chain is just a function that when called returns
@@ -335,7 +339,9 @@ def run_erasure(  # pylint: disable = too-many-arguments
     access_request_data: Dict[str, List[Row]],
 ) -> Dict[str, int]:
     """Run an erasure request"""
-    traversal: Traversal = Traversal(graph, identity)
+    traversal: Traversal = Traversal(
+        graph, {FieldPath.parse(k): v for k, v in identity.items()}
+    )
     with TaskResources(privacy_request, policy, connection_configs) as resources:
 
         def collect_tasks_fn(

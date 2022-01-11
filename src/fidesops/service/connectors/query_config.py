@@ -93,7 +93,7 @@ class QueryConfig(Generic[T], ABC):
         out = {}
         for query_key in self.query_keys:
             field = self.field_map()[query_key]
-            values = query_key in input_data and input_data[query_key] or []
+            values = input_data[query_key] if query_key in input_data else []
             cast_values = [field.cast(v) for v in values]
             filtered = list(filter(lambda x: x is not None, cast_values))
             if filtered:
@@ -381,7 +381,9 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         query_str = str(t)
         for k, v in input_data.items():
             if len(v) == 1:
-                query_str = re.sub(f"= :{k.value}", f"= {transform_param(v[0])}", query_str)
+                query_str = re.sub(
+                    f"= :{k.value}", f"= {transform_param(v[0])}", query_str
+                )
             elif len(v) > 0:
                 query_str = re.sub(f"IN :{k.value}", f"IN { tuple(set(v)) }", query_str)
         return query_str
@@ -421,9 +423,10 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
         return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
 
-    def format_key_map_for_update_stmt(self, key_map: Dict[str, Any]) -> List[str]:
+    def format_key_map_for_update_stmt(self, fields: List[FieldPath]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
-        return [f'"{k}" = :{k}' for k in key_map]
+        fields.sort()
+        return [f'"{k.value}" = :{k.value}' for k in fields]
 
     def get_formatted_update_stmt(
         self,

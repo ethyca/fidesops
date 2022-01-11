@@ -172,6 +172,11 @@ class FieldPath:
         """Return a new field key with the prefix prepended."""
         return FieldPath(*((prefix,) + self.keys))
 
+    @staticmethod
+    def parse(path_str: str) -> FieldPath:
+        """Create a field path from an input string"""
+        return FieldPath(*path_str.split("."))
+
 
 class FieldAddress:
     """The representation of a field location in the graph, specified by

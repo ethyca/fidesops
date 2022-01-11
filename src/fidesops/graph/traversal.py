@@ -150,7 +150,7 @@ class Traversal:
             if seed_key in self.seed_data
         }
 
-    def __init__(self, graph: DatasetGraph, data: dict[str, Any]):
+    def __init__(self, graph: DatasetGraph, data: dict[FieldPath, Any]):
         self.graph = graph
         self.seed_data = data
         self.traversal_node_dict = {k: TraversalNode(v) for k, v in graph.nodes.items()}
