@@ -22,7 +22,7 @@ from fidesops.util.collection_util import append
 logger = logging.getLogger(__name__)
 
 
-Row = Dict[FieldPath, Any]
+Row = Dict[str, Any]
 """A type expressing a single row of data from (any) collection"""
 Datastore = Dict[CollectionAddress, List[Row]]
 """A type expressing retrieved rows of data from a specified collection"""
@@ -147,12 +147,12 @@ class Traversal:
         return {
             identity_address: seed_key
             for identity_address, seed_key in self.graph.identity_keys.items()
-            if seed_key in self.seed_data
+            if FieldPath.parse(seed_key) in self.seed_data
         }
 
-    def __init__(self, graph: DatasetGraph, data: dict[FieldPath, Any]):
+    def __init__(self, graph: DatasetGraph, data: dict[str, Any]):
         self.graph = graph
-        self.seed_data = data
+        self.seed_data = {FieldPath.parse(k):v for k,v in data.items()}
         self.traversal_node_dict = {k: TraversalNode(v) for k, v in graph.nodes.items()}
         self.edges: Set[Edge] = graph.edges.copy()
         self.root_node = artificial_traversal_node(ROOT_COLLECTION_ADDRESS)
@@ -166,7 +166,7 @@ class Traversal:
                     FieldAddress(
                         ROOT_COLLECTION_ADDRESS.dataset,
                         ROOT_COLLECTION_ADDRESS.collection,
-                        seed_key,
+                        seed_key ,
                     ),
                     start_field_address,
                 )

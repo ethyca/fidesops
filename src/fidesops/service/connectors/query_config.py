@@ -292,6 +292,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
 
         filtered_data = self.typed_filtered_values(input_data)
 
+        print(f" QUERY CONFIG: \n\t{input_data}\n\t{filtered_data}")
         if filtered_data:
             clauses = []
             query_data: Dict[FieldPath, Tuple[Any, ...]] = {}
@@ -312,6 +313,8 @@ class SQLQueryConfig(QueryConfig[TextClause]):
                     pass
             if len(clauses) > 0:
                 query_str = self.get_formatted_query_string(field_list, clauses)
+                print(f" DATA ==== \n{query_str} ||| query_data=\n{query_data}")
+                print(f"   {  {k.value: v for k, v in query_data.items()}}")
                 return text(query_str).params(
                     {k.value: v for k, v in query_data.items()}
                 )

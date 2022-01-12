@@ -131,7 +131,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         connection_config: ConnectionConfig = self.connector.configuration
         return connection_config.access == AccessLevel.write
 
-    def to_dask_input_data(self, *data: List[Row]) -> Dict[FieldPath, List[Any]]:
+    def to_dask_input_data(self, *data: List[Row]) -> Dict[str, List[Any]]:
         """Each dict in the input list represents the output of a dependent task.
         These outputs should correspond to the input key order.
         {table1: [{x:1, y:A}, {x:2, y:B}], table2: [{x:3},{x:4}],
@@ -142,6 +142,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
          {id:[1,2,3,4], name:["A","B"]}
         """
 
+        print(f" TO DASK: \n\tdata={data}")
         if not len(data) == len(self.input_keys):
             logger.warning(
                 "%s expected %s input keys, received %s",
@@ -154,11 +155,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         for i, rowset in enumerate(data):
             collection_address = self.input_keys[i]
             field_mappings = self.incoming_field_map[collection_address]
-
+            print(f" COLLECTION ADDRESS={collection_address}\n\tFIELD MAPPINGS ={field_mappings}")
             for row in rowset:
                 for foreign_field, local_field in field_mappings:
-                    append(output, local_field, row.get(foreign_field))
-
+                    print(f"ROW={row}")
+                    print(f" FF == {foreign_field},\nLF={local_field}")
+                    new_value = row[foreign_field] if foreign_field in row else None
+                    if new_value:
+                        append(output, local_field , new_value)
+        print("=====\n".join([f"{k}--{v}" for k,v in output.items()]))
+        print(f"to_dask_input_data RETURNS {output}")
         return output
 
     def update_status(
@@ -220,6 +226,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run access request"""
+        print(f" ENTER ACCESS REQUEST {self.key}")
+        for i in inputs:
+            print(f" INPUT: {i}")
         output = self.connector.retrieve_data(
             self.traversal_node, self.resources.policy, self.to_dask_input_data(*inputs)
         )
@@ -285,14 +294,10 @@ def run_access_request(
     identity: Dict[str, Any],
 ) -> Dict[str, List[Row]]:
     """Run the access request"""
-    traversal: Traversal = Traversal(
-        graph, {FieldPath.parse(k): v for k, v in identity.items()}
-    )
+    traversal: Traversal = Traversal(graph, identity)
     with TaskResources(privacy_request, policy, connection_configs) as resources:
 
-        def start_function(
-            seed: Dict[FieldPath, Any]
-        ) -> Callable[[], List[Dict[FieldPath, Any]]]:
+        def start_function(seed: Dict[str, Any]) -> Callable[[], List[Dict[str, Any]]]:
             """Return a function that returns the seed value to kick off the dask function chain.
 
             The first traversal_node in the dask function chain is just a function that when called returns
@@ -339,9 +344,7 @@ def run_erasure(  # pylint: disable = too-many-arguments
     access_request_data: Dict[str, List[Row]],
 ) -> Dict[str, int]:
     """Run an erasure request"""
-    traversal: Traversal = Traversal(
-        graph, {FieldPath.parse(k): v for k, v in identity.items()}
-    )
+    traversal: Traversal = Traversal(graph, {FieldPath.parse(k): v for k, v in identity.items()})
     with TaskResources(privacy_request, policy, connection_configs) as resources:
 
         def collect_tasks_fn(

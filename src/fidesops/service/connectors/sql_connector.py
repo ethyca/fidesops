@@ -83,9 +83,12 @@ class SQLConnector(BaseConnector[Engine]):
         self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
     ) -> List[Row]:
         """Retrieve sql data"""
+        print(f"RETRIEVE DATA\n\t{node.address}\n\tinput_data={input_data}")
+
         query_config = self.query_config(node)
         client = self.client()
         stmt = query_config.generate_query(input_data, policy)
+        print(f"\n\n\n\n\tstmt={stmt}")
         if stmt is None:
             return []
 
