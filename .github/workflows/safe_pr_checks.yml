@@ -33,8 +33,5 @@ jobs:
       - name: Unit Tests
         run: make pytest
 
-      - name: Integration Tests (Access)
-        run: make pytest-integration-access
-
-      - name: Integration Tests (Erasure)
-        run: make pytest-integration-erasure
+      - name: Integration Tests (All)
+        run: make pytest-integration
