@@ -133,7 +133,7 @@ else ifneq (,$(findstring $(env),$(DOCKERFILE_ENVIRONMENTS)))
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml up -d
 	@sleep 5
-	@docker exec fidesops python tests/integration_tests/$(env)_setup.py || echo "no custom setup logic found for $(env)"
+	@docker exec fidesops python tests/integration_tests/$(env)-setup.py || echo "no custom setup logic found for $(env)"
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml \
 		run $(IMAGE_NAME) \
 		pytest $(pytestpath) -m integration_$(env)
