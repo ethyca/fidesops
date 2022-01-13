@@ -9,9 +9,11 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               primary_key: True
+              data_type: object_id
           - name: customer_id
             data_categories: [user.derived.identifiable.unique_id]
             fidesops_meta:
+              data_type: integer
               references:
                 - dataset: postgres_example_test_dataset
                   field: customer.id
@@ -22,5 +24,58 @@ dataset:
               data_type: string
           - name: birthday
             data_categories: [user.provided.identifiable.date_of_birth]
+            fidesops_meta:
+              data_type: string
+          - name: interests
+            data_categories: [ user.provided.nonidentifiable ]
+            fidesops_meta:
+              data_type: string[]
+          - name: preferences
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: security_emails
+                fidesops_meta:
+                  data_type: boolean
+              - name: informational_emails
+                fidesops_meta:
+                  data_type: boolean
+          - name: customer_complaints
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: object[]
+            fields:
+              - name: date
+                fidesops_meta:
+                  data_type: string
+              - name: issue
+                fidesops_meta:
+                  data_type: string
+              - name: order_id
+                fidesops_meta:
+                  data_type: string
+      - name: customer_feedback
+        fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
+          - name: emails
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string[]
+              identity: email
+          - name: rating
+            data_categories: [ user.provided.nonidentifiable ]
+            fidesops_meta:
+              data_type: integer
+          - name: date
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: message
+            data_categories: [ user.provided.nonidentifiable ]
             fidesops_meta:
               data_type: string

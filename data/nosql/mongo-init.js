@@ -15,20 +15,57 @@ db.customer_details.insert([
     {
         "customer_id": 1,
         "gender": "male",
-        "birthday": new ISODate("1988-01-10")
+        "birthday": new ISODate("1988-01-10"),
+        "interests": ["woodworking", "grilling", "fitness"],
+        "preferences": {
+            "security_emails": true,
+            "informational_emails": true
+        },
+        "customer_complaints": [
+            {"date": new ISODate("2022-01-01"), "issue": "package arrived damaged", "order_id": "ord_aaa-aaa"},
+            {"date": new ISODate("2022-01-02"), "issue": "order not complete", "order_id": "ord_ccc-ccc"}
+        ]
     },
      {
         "customer_id": 2,
         "gender": "female",
-        "birthday": new ISODate("1985-03-05")
+        "birthday": new ISODate("1985-03-05"),
+        "interests": ["computer science", "welding", "art"],
+        "preferences": {
+            "security_emails": true,
+            "informational_emails": false
+        },
+        "customer_complaints": [
+            {"date": new ISODate("2021-12-31"), "issue": "item not as advertised", "order_id": "ord_bbb-bbb"},
+        ]
+
     },
     {
         "customer_id": 3,
         "gender": "female",
-        "birthday": new ISODate("1990-02-28")
+        "birthday": new ISODate("1990-02-28"),
+        "interests": ["baking", "art", "hiking"],
+        "preferences": {
+            "security_emails": true,
+            "informational_emails": false
+        }
     }
 ]);
 
+db.customer_feedback.insert([
+    {
+        "emails": ["customer-1@example.com", "customer-1-alt@example.com"],
+        "rating": 3,
+        "date": new ISODate("2022-01-05"),
+        "message": "Customer service wait times have increased to over an hour."
+    },
+    {
+        "emails": ["customer-2@example.com"],
+        "rating": 5,
+        "date": new ISODate("2022-01-10"),
+        "message": "Customer service rep Virginia was extremely helpful and answered all my questions."
+    }
+])
 
 db.employee.insert([
     {
