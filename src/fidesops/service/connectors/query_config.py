@@ -13,7 +13,7 @@ from fidesops.graph.config import (
     MaskingOverride,
     FieldPath,
 )
-from fidesops.graph.traversal import TraversalNode, Row
+from fidesops.graph.traversal import TraversalNode, Row, row_extract, row_insert
 from fidesops.models.policy import Policy, ActionType, Rule
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
@@ -82,8 +82,8 @@ class QueryConfig(Generic[T], ABC):
         return set(map(lambda edge: edge.f2.field, self.node.incoming_edges()))
 
     def typed_filtered_values(
-        self, input_data: Dict[FieldPath, List[Any]]
-    ) -> Dict[FieldPath, Any]:
+        self, input_data: Dict[str, List[Any]]
+    ) -> Dict[str, Any]:
         """
         Return a filtered list of key/value sets of data items that are both in
         the list of incoming edge fields, and contain data in the input data set.
@@ -91,13 +91,13 @@ class QueryConfig(Generic[T], ABC):
         The values are cast based on field types, if those types are specified.
         """
         out = {}
-        for query_key in self.query_keys:
-            field = self.field_map()[query_key]
-            values = input_data[query_key] if query_key in input_data else []
-            cast_values = [field.cast(v) for v in values]
-            filtered = list(filter(lambda x: x is not None, cast_values))
-            if filtered:
-                out[query_key] = filtered
+        for key, values in input_data.items():
+            field = self.node.node.collection.field(FieldPath.parse(key))
+            if field and key in self.query_keys and isinstance(values, list):
+                cast_values = [field.cast(v) for v in values]
+                filtered = list(filter(lambda x: x is not None, cast_values))
+                if filtered:
+                    out[key] = filtered
         return out
 
     def query_sources(self) -> Dict[FieldPath, List[CollectionAddress]]:
@@ -131,7 +131,7 @@ class QueryConfig(Generic[T], ABC):
 
     def update_value_map(
         self, row: Row, policy: Policy, request: PrivacyRequest
-    ) -> Dict[FieldPath, Any]:
+    ) -> Dict[str, Any]:
         """Map the relevant fields to be updated on the row with their masked values from Policy Rules
 
         Example return:  {'name': None, 'ccn': None, 'code': None}
@@ -144,7 +144,7 @@ class QueryConfig(Generic[T], ABC):
             Rule, List[FieldPath]
         ] = self.build_rule_target_fields(policy)
 
-        value_map: Dict[FieldPath, Any] = {}
+        value_map: Dict[str, Any] = {}
         for rule, field_paths in rule_to_collection_fields.items():
             strategy_config = rule.masking_strategy
             if not strategy_config:
@@ -167,7 +167,7 @@ class QueryConfig(Generic[T], ABC):
                         f"Unable to generate a query for field {field_path.value}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
                     continue
-                val: Any = row[field_path]
+                val: Any = row[field_path.value]
                 masked_val = self._generate_masked_value(
                     request.id,
                     strategy,
@@ -176,7 +176,7 @@ class QueryConfig(Generic[T], ABC):
                     null_masking,
                     field_path,
                 )
-                value_map[field_path] = masked_val
+                value_map[field_path.value] = masked_val
         return value_map
 
     @staticmethod
@@ -221,7 +221,7 @@ class QueryConfig(Generic[T], ABC):
 
     @abstractmethod
     def generate_query(
-        self, input_data: Dict[FieldPath, List[Any]], policy: Optional[Policy]
+        self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
     ) -> Optional[T]:
         """Generate a retrieval query. If there is no data to be queried
         (for example, if the policy identifies no fields to be queried)
@@ -285,14 +285,14 @@ class SQLQueryConfig(QueryConfig[TextClause]):
 
     def generate_query(
         self,
-        input_data: Dict[FieldPath, List[Any]],
+        input_data: Dict[str, List[Any]],
         policy: Optional[Policy] = None,
     ) -> Optional[TextClause]:
         """Generate a retrieval query"""
 
         filtered_data = self.typed_filtered_values(input_data)
 
-        print(f" QUERY CONFIG: \n\t{input_data}\n\t{filtered_data}")
+
         if filtered_data:
             clauses = []
             query_data: Dict[FieldPath, Tuple[Any, ...]] = {}
@@ -313,8 +313,6 @@ class SQLQueryConfig(QueryConfig[TextClause]):
                     pass
             if len(clauses) > 0:
                 query_str = self.get_formatted_query_string(field_list, clauses)
-                print(f" DATA ==== \n{query_str} ||| query_data=\n{query_data}")
-                print(f"   {  {k.value: v for k, v in query_data.items()}}")
                 return text(query_str).params(
                     {k.value: v for k, v in query_data.items()}
                 )

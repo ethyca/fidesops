@@ -27,15 +27,15 @@ def test_to_dask_input_data() -> None:
 
     task = MockSqlTask(n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs))
     customers_data = [
-        {FieldPath("contact_address_id"): 31, FieldPath("foo"): "X"},
-        {FieldPath("contact_address_id"): 32, FieldPath("foo"): "Y"},
+        {"contact_address_id": 31, "foo": "X"},
+        {"contact_address_id": 32, "foo": "Y"},
     ]
     orders_data = [
-        {FieldPath("billing_address_id"): 1, FieldPath("shipping_address_id"): 2},
-        {FieldPath("billing_address_id"): 11, FieldPath("shipping_address_id"): 22},
+        {"billing_address_id": 1, "shipping_address_id": 2},
+        {"billing_address_id": 11, "shipping_address_id": 22},
     ]
     v = task.to_dask_input_data(customers_data, orders_data)
-    assert set(v[FieldPath("id")]) == {31, 32, 1, 2, 11, 22}
+    assert set(v["id"]) == {31, 32, 1, 2, 11, 22}
 
 
 def test_sql_dry_run_queries() -> None:

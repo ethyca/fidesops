@@ -27,6 +27,18 @@ Row = Dict[str, Any]
 Datastore = Dict[CollectionAddress, List[Row]]
 """A type expressing retrieved rows of data from a specified collection"""
 
+def row_insert(row:Dict[str,Any], path: FieldPath, value: Any) -> None:
+    """Insert value into row as represented by the field path.
+    e.g. row_insert({"A":1}, FieldPath("B","C"), 2) =>
+           row = {"A":1, {"B":{"C":2}}
+    """
+    pydash.objects.set_(row, path.value, value)
+
+
+def row_extract(row: Dict[str, Any], path: FieldPath) -> None:
+    """Extract value by path.
+    e.g. row_extract({"A":{"B":{"C":1}}}, FieldPath("A","B","C")) => 1"""
+    return pydash.objects.get(row, path.value)
 
 class TraversalNode:
     """Base traversal traversal_node type. This type will never be used directly."""
@@ -147,16 +159,15 @@ class Traversal:
         return {
             identity_address: seed_key
             for identity_address, seed_key in self.graph.identity_keys.items()
-            if FieldPath.parse(seed_key) in self.seed_data
+            if seed_key in self.seed_data
         }
 
-    def __init__(self, graph: DatasetGraph, data: dict[str, Any]):
+    def __init__(self, graph: DatasetGraph, data: Dict[str, Any]):
         self.graph = graph
-        self.seed_data = {FieldPath.parse(k):v for k,v in data.items()}
+        self.seed_data = data
         self.traversal_node_dict = {k: TraversalNode(v) for k, v in graph.nodes.items()}
         self.edges: Set[Edge] = graph.edges.copy()
         self.root_node = artificial_traversal_node(ROOT_COLLECTION_ADDRESS)
-
         for (
             start_field_address,
             seed_key,
@@ -166,7 +177,7 @@ class Traversal:
                     FieldAddress(
                         ROOT_COLLECTION_ADDRESS.dataset,
                         ROOT_COLLECTION_ADDRESS.collection,
-                        seed_key ,
+                        seed_key,
                     ),
                     start_field_address,
                 )

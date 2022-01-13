@@ -46,8 +46,11 @@ class SQLConnector(BaseConnector[Engine]):
         columns: List[Column] = results.cursor.description
         l = len(columns)
         rows = []
+        print(f"RECEIEVED RESULTS {results}")
         for row_tuple in results:
+            print(f"RECEIVED ROW {row_tuple}")
             rows.append({columns[i].name: row_tuple[i] for i in range(l)})
+        print(f"RETURNING ROWS {rows}")
         return rows
 
     @abstractmethod
@@ -95,6 +98,7 @@ class SQLConnector(BaseConnector[Engine]):
         logger.info(f"Starting data retrieval for {node.address}")
         with client.connect() as connection:
             results = connection.execute(stmt)
+
             return SQLConnector.cursor_result_to_rows(results)
 
     def mask_data(

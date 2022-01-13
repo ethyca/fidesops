@@ -155,15 +155,19 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         for i, rowset in enumerate(data):
             collection_address = self.input_keys[i]
             field_mappings = self.incoming_field_map[collection_address]
-            print(f" COLLECTION ADDRESS={collection_address}\n\tFIELD MAPPINGS ={field_mappings}")
+            print(
+                f" COLLECTION ADDRESS={collection_address}\n\tFIELD MAPPINGS ={field_mappings}"
+            )
             for row in rowset:
                 for foreign_field, local_field in field_mappings:
                     print(f"ROW={row}")
                     print(f" FF == {foreign_field},\nLF={local_field}")
-                    new_value = row[foreign_field] if foreign_field in row else None
+                    new_value = (
+                        row[foreign_field.value] if foreign_field.value in row else None
+                    )
                     if new_value:
-                        append(output, local_field , new_value)
-        print("=====\n".join([f"{k}--{v}" for k,v in output.items()]))
+                        append(output, local_field.value, new_value)
+        print("=====\n".join([f"{k}--{v}" for k, v in output.items()]))
         print(f"to_dask_input_data RETURNS {output}")
         return output
 
@@ -226,9 +230,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run access request"""
-        print(f" ENTER ACCESS REQUEST {self.key}")
-        for i in inputs:
-            print(f" INPUT: {i}")
+        print(f"ENTER ACCESS REQUEST {self.key}\ninputs=\n{inputs}")
         output = self.connector.retrieve_data(
             self.traversal_node, self.resources.policy, self.to_dask_input_data(*inputs)
         )
@@ -344,7 +346,9 @@ def run_erasure(  # pylint: disable = too-many-arguments
     access_request_data: Dict[str, List[Row]],
 ) -> Dict[str, int]:
     """Run an erasure request"""
-    traversal: Traversal = Traversal(graph, {FieldPath.parse(k): v for k, v in identity.items()})
+    traversal: Traversal = Traversal(
+        graph, {FieldPath.parse(k): v for k, v in identity.items()}
+    )
     with TaskResources(privacy_request, policy, connection_configs) as resources:
 
         def collect_tasks_fn(
