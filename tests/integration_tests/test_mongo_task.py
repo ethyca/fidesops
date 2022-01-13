@@ -7,6 +7,7 @@ from unittest.mock import Mock
 import dask
 import pytest
 from bson import ObjectId
+from pymongo import MongoClient
 
 from fidesops.graph.config import FieldAddress, ScalarField, Collection, Dataset
 from fidesops.graph.data_type import (
@@ -20,7 +21,7 @@ from fidesops.models.connectionconfig import (
     ConnectionConfig,
 )
 from fidesops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.models.policy import Policy
+from fidesops.models.policy import Policy, DataCategory
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.service.connectors import get_connector
@@ -473,3 +474,137 @@ class TestRetrievingDataMongo:
         )
 
         assert results == []
+
+
+@pytest.mark.integration
+def test_mongo_access_request_arrays_and_objects(
+    integration_postgres_config: ConnectionConfig,
+    integration_mongodb_config: ConnectionConfig,
+    example_datasets,
+    policy,
+    erasure_policy,
+) -> None:
+    """Large test running access and erasures on postgres + mongo graph, with array and object fields"""
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+
+    postgres_dataset = FidesopsDataset(**example_datasets[0])
+    postgres_graph = convert_dataset_to_graph(
+        postgres_dataset, integration_postgres_config.key
+    )
+
+    mongo_dataset = FidesopsDataset(**example_datasets[1])
+    mongo_graph = convert_dataset_to_graph(
+        mongo_dataset, integration_mongodb_config.key
+    )
+    dataset_graph = DatasetGraph(*[postgres_graph, mongo_graph])
+
+    # Run access request - all discovered rows returned here
+    access_request_results = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        dataset_graph,
+        [integration_postgres_config, integration_mongodb_config],
+        {"email": "customer-1@example.com"},
+    )
+
+    # Retrieved array of emails containing identity email
+    assert access_request_results["mongo_test:customer_feedback"][0]["emails"] == [
+        "customer-1@example.com",
+        "customer-1-alt@example.com",
+    ]
+
+    # Filter data categories to only return user.provided.nonidentifiable categories to user
+    # Results include an array of strings and an array of objects
+    assert filter_data_categories(
+        access_request_results, {"user.provided.nonidentifiable"}, dataset_graph
+    ) == {
+        "mongo_test:customer_details": [
+            {"interests": ["woodworking", "grilling", "fitness"]}
+        ],
+        "mongo_test:customer_feedback": [
+            {
+                "rating": 3.0,
+                "message": "Customer service wait times have increased to over an hour.",
+            }
+        ],
+        "postgres_example_test_dataset:payment_card": [{"preferred": True}],
+    }
+
+    # Override erasure policy's target to look at the user.provided.nonidentifiable category
+    target = erasure_policy.rules[0].targets[0]
+    target.data_category = DataCategory("user.provided.nonidentifiable").value
+
+    erasure_summary = graph_task.run_erasure(
+        privacy_request,
+        erasure_policy,
+        dataset_graph,
+        [integration_mongodb_config, integration_postgres_config],
+        {"email": "customer-1@example.com"},
+        access_request_results,
+    )
+
+    # "mongo_test:customer_details", "mongo_test:customer_feedback",
+    # "postgres_example_test_dataset:payment_card" have erasures
+    assert erasure_summary == {
+        "postgres_example_test_dataset:customer": 0,
+        "mongo_test:customer_feedback": 1,
+        "postgres_example_test_dataset:employee": 0,
+        "postgres_example_test_dataset:report": 0,
+        "postgres_example_test_dataset:service_request": 0,
+        "postgres_example_test_dataset:visit": 0,
+        "postgres_example_test_dataset:address": 0,
+        "postgres_example_test_dataset:orders": 0,
+        "mongo_test:customer_details": 1,
+        "postgres_example_test_dataset:login": 0,
+        "postgres_example_test_dataset:payment_card": 1,
+        "postgres_example_test_dataset:order_item": 0,
+        "postgres_example_test_dataset:product": 0,
+    }
+
+    uri = "mongodb://mongo_user:mongo_pass@mongodb_example/mongo_test"
+    client = MongoClient(uri, serverSelectionTimeoutMS=5000)
+    db = client["mongo_test"]
+
+    customer_one_detail = db.customer_details.find_one({"customer_id": 1})
+    customer_one_feedback = db.customer_feedback.find_one(
+        {"emails": {"$in": ["customer-1@example.com"]}}
+    )
+    object_id = customer_one_feedback["_id"]
+
+    # TODO This is currently broken - it sets array interests to None
+    # assert customer_one_detail['interests'] == [None, None, None]
+    assert customer_one_feedback["rating"] is None
+    assert customer_one_feedback["message"] is None
+
+    # Override erasure policy's target to look at the user.provided.identifiable category
+    target = erasure_policy.rules[0].targets[0]
+    target.data_category = DataCategory("user.provided.identifiable").value
+
+    erasure_summary = graph_task.run_erasure(
+        privacy_request,
+        erasure_policy,
+        dataset_graph,
+        [integration_mongodb_config, integration_postgres_config],
+        {"email": "customer-1@example.com"},
+        access_request_results,
+    )
+
+    # mongo customer_feedback and customer_details rows had erasures
+    assert erasure_summary == {
+        "postgres_example_test_dataset:service_request": 1,
+        "postgres_example_test_dataset:employee": 0,
+        "postgres_example_test_dataset:customer": 1,
+        "postgres_example_test_dataset:visit": 0,
+        "postgres_example_test_dataset:report": 0,
+        "mongo_test:customer_feedback": 1,
+        "postgres_example_test_dataset:address": 2,
+        "postgres_example_test_dataset:payment_card": 1,
+        "postgres_example_test_dataset:orders": 0,
+        "mongo_test:customer_details": 1,
+        "postgres_example_test_dataset:login": 0,
+        "postgres_example_test_dataset:order_item": 0,
+        "postgres_example_test_dataset:product": 0,
+    }
+    feedback = db.customer_feedback.find_one({"_id": ObjectId(object_id)})
+    # TODO Not true - currently entire identity array is overridden as None
+    # assert feedback["emails"] == [None, None]
