@@ -362,9 +362,9 @@ class MicrosoftSQLServerConnector(SQLConnector):
         # todo: log everything for mssql- config option
         # todo- try passing in schema
 
-        from sqlalchemy.dialects import mssql
-        full_stmt = stmt.compile(compile_kwargs={"literal_binds": True})
-        import pdb; pdb.set_trace()
+        # from sqlalchemy.dialects import mssql
+        # full_stmt = stmt.compile(compile_kwargs={"literal_binds": True})
+        # import pdb; pdb.set_trace()
         logger.info(f"Starting data retrieval for {node.address}")
         with client.connect() as connection:
             results = connection.execute(stmt)

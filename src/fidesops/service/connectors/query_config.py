@@ -17,7 +17,6 @@ from fidesops.models.policy import Policy, ActionType, Rule
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
-from fidesops.util.logger import NotPii
 from fidesops.util.querytoken import QueryToken
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     get_strategy,
