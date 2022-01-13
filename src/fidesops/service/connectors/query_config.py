@@ -17,6 +17,7 @@ from fidesops.models.policy import Policy, ActionType, Rule
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
+from fidesops.util.logger import NotPii
 from fidesops.util.querytoken import QueryToken
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     get_strategy,
@@ -298,6 +299,10 @@ class SQLQueryConfig(QueryConfig[TextClause]):
                     pass
             if len(clauses) > 0:
                 query_str = self.get_formatted_query_string(field_list, clauses)
+                logger.info(f"building query for {self.node.address}")
+                logger.info("query str = " + query_str)
+                logger.info("query keys = " + ''.join(query_data.keys()))
+                logger.info("query vals = " + ''.join([str(i) for i in query_data.values()]))
                 return text(query_str).params(query_data)
 
         logger.warning(
@@ -333,7 +338,6 @@ class SQLQueryConfig(QueryConfig[TextClause]):
                 f"There is not enough data to generate a valid update statement for {self.node.address}"
             )
             return None
-
         query_str = self.get_formatted_update_stmt(
             update_clauses,
             pk_clauses,

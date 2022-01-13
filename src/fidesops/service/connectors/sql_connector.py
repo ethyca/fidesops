@@ -13,6 +13,7 @@ from sqlalchemy.engine import (
 )
 from sqlalchemy.exc import OperationalError, InternalError
 from snowflake.sqlalchemy import URL as Snowflake_URL
+from sqlalchemy.sql.elements import TextClause
 
 from fidesops.common_exceptions import ConnectionException
 from fidesops.graph.traversal import Row, TraversalNode
@@ -87,10 +88,9 @@ class SQLConnector(BaseConnector[Engine]):
         """Retrieve sql data"""
         query_config = self.query_config(node)
         client = self.client()
-        stmt = query_config.generate_query(input_data, policy)
+        stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
         if stmt is None:
             return []
-
         logger.info(f"Starting data retrieval for {node.address}")
         with client.connect() as connection:
             results = connection.execute(stmt)
@@ -108,7 +108,7 @@ class SQLConnector(BaseConnector[Engine]):
         update_ct = 0
         client = self.client()
         for row in rows:
-            update_stmt = query_config.generate_update_stmt(row, policy, request)
+            update_stmt: Optional[TextClause] = query_config.generate_update_stmt(row, policy, request)
             if update_stmt is not None:
                 with client.connect() as connection:
                     results: LegacyCursorResult = connection.execute(update_stmt)
@@ -345,3 +345,27 @@ class MicrosoftSQLServerConnector(SQLConnector):
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
         )
+
+    def query_config(self, node: TraversalNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input traversal_node."""
+        return SQLQueryConfig(node)
+
+    def retrieve_data(
+            self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
+    ) -> List[Row]:
+        """Retrieve sql data"""
+        query_config = self.query_config(node)
+        client = self.client()
+        stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
+        if stmt is None:
+            return []
+        # todo: log everything for mssql- config option
+        # todo- try passing in schema
+
+        from sqlalchemy.dialects import mssql
+        full_stmt = stmt.compile(compile_kwargs={"literal_binds": True})
+        import pdb; pdb.set_trace()
+        logger.info(f"Starting data retrieval for {node.address}")
+        with client.connect() as connection:
+            results = connection.execute(stmt)
+            return SQLConnector.cursor_result_to_rows(results)
