@@ -46,11 +46,8 @@ class SQLConnector(BaseConnector[Engine]):
         columns: List[Column] = results.cursor.description
         l = len(columns)
         rows = []
-        print(f"RECEIEVED RESULTS {results}")
         for row_tuple in results:
-            print(f"RECEIVED ROW {row_tuple}")
             rows.append({columns[i].name: row_tuple[i] for i in range(l)})
-        print(f"RETURNING ROWS {rows}")
         return rows
 
     @abstractmethod
@@ -85,20 +82,18 @@ class SQLConnector(BaseConnector[Engine]):
     def retrieve_data(
         self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
     ) -> List[Row]:
+
         """Retrieve sql data"""
-        print(f"RETRIEVE DATA\n\t{node.address}\n\tinput_data={input_data}")
 
         query_config = self.query_config(node)
         client = self.client()
         stmt = query_config.generate_query(input_data, policy)
-        print(f"\n\n\n\n\tstmt={stmt}")
         if stmt is None:
             return []
 
         logger.info(f"Starting data retrieval for {node.address}")
         with client.connect() as connection:
             results = connection.execute(stmt)
-
             return SQLConnector.cursor_result_to_rows(results)
 
     def mask_data(

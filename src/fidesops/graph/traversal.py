@@ -27,7 +27,8 @@ Row = Dict[str, Any]
 Datastore = Dict[CollectionAddress, List[Row]]
 """A type expressing retrieved rows of data from a specified collection"""
 
-def row_insert(row:Dict[str,Any], path: FieldPath, value: Any) -> None:
+
+def row_insert(row: Dict[str, Any], path: FieldPath, value: Any) -> None:
     """Insert value into row as represented by the field path.
     e.g. row_insert({"A":1}, FieldPath("B","C"), 2) =>
            row = {"A":1, {"B":{"C":2}}
@@ -39,6 +40,7 @@ def row_extract(row: Dict[str, Any], path: FieldPath) -> None:
     """Extract value by path.
     e.g. row_extract({"A":{"B":{"C":1}}}, FieldPath("A","B","C")) => 1"""
     return pydash.objects.get(row, path.value)
+
 
 class TraversalNode:
     """Base traversal traversal_node type. This type will never be used directly."""

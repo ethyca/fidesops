@@ -3,9 +3,9 @@ import logging
 import traceback
 from abc import ABC
 from collections import defaultdict
+from functools import wraps
 from time import sleep
 from typing import List, Dict, Any, Tuple, Callable, Optional, Set
-from functools import wraps
 
 import dask
 from dask.threaded import get
@@ -63,6 +63,9 @@ def retry(
                     # Run access or erasure request
                     return func(*args, **kwargs)
                 except BaseException as ex:  # pylint: disable=W0703
+                    logger.error(f"ERROR IN RETRY: {ex}")
+                    print(traceback.format_exc())
+
                     func_delay *= config.execution.TASK_RETRY_BACKOFF
                     logger.warning(
                         f"Retrying {method_name} {self.traversal_node.address} in {func_delay} seconds..."
@@ -142,7 +145,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
          {id:[1,2,3,4], name:["A","B"]}
         """
 
-        print(f" TO DASK: \n\tdata={data}")
         if not len(data) == len(self.input_keys):
             logger.warning(
                 "%s expected %s input keys, received %s",
@@ -155,20 +157,14 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         for i, rowset in enumerate(data):
             collection_address = self.input_keys[i]
             field_mappings = self.incoming_field_map[collection_address]
-            print(
-                f" COLLECTION ADDRESS={collection_address}\n\tFIELD MAPPINGS ={field_mappings}"
-            )
+
             for row in rowset:
                 for foreign_field, local_field in field_mappings:
-                    print(f"ROW={row}")
-                    print(f" FF == {foreign_field},\nLF={local_field}")
                     new_value = (
                         row[foreign_field.value] if foreign_field.value in row else None
                     )
                     if new_value:
                         append(output, local_field.value, new_value)
-        print("=====\n".join([f"{k}--{v}" for k, v in output.items()]))
-        print(f"to_dask_input_data RETURNS {output}")
         return output
 
     def update_status(
@@ -230,7 +226,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run access request"""
-        print(f"ENTER ACCESS REQUEST {self.key}\ninputs=\n{inputs}")
         output = self.connector.retrieve_data(
             self.traversal_node, self.resources.policy, self.to_dask_input_data(*inputs)
         )

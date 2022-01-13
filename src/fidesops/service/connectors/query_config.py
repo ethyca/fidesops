@@ -13,16 +13,16 @@ from fidesops.graph.config import (
     MaskingOverride,
     FieldPath,
 )
-from fidesops.graph.traversal import TraversalNode, Row, row_extract, row_insert
+from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
-from fidesops.util.querytoken import QueryToken
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     get_strategy,
 )
+from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.util.collection_util import append, filter_nonempty_values
+from fidesops.util.querytoken import QueryToken
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -81,9 +81,7 @@ class QueryConfig(Generic[T], ABC):
         """
         return set(map(lambda edge: edge.f2.field, self.node.incoming_edges()))
 
-    def typed_filtered_values(
-        self, input_data: Dict[str, List[Any]]
-    ) -> Dict[str, Any]:
+    def typed_filtered_values(self, input_data: Dict[str, List[Any]]) -> Dict[str, Any]:
         """
         Return a filtered list of key/value sets of data items that are both in
         the list of incoming edge fields, and contain data in the input data set.
@@ -92,8 +90,9 @@ class QueryConfig(Generic[T], ABC):
         """
         out = {}
         for key, values in input_data.items():
-            field = self.node.node.collection.field(FieldPath.parse(key))
-            if field and key in self.query_keys and isinstance(values, list):
+            path = FieldPath.parse(key)
+            field = self.node.node.collection.field(path)
+            if field and path in self.query_keys and isinstance(values, list):
                 cast_values = [field.cast(v) for v in values]
                 filtered = list(filter(lambda x: x is not None, cast_values))
                 if filtered:
@@ -292,7 +291,6 @@ class SQLQueryConfig(QueryConfig[TextClause]):
 
         filtered_data = self.typed_filtered_values(input_data)
 
-
         if filtered_data:
             clauses = []
             query_data: Dict[FieldPath, Tuple[Any, ...]] = {}
@@ -303,19 +301,17 @@ class SQLQueryConfig(QueryConfig[TextClause]):
             for path, data in filtered_data.items():
                 data = set(data)
                 if len(data) == 1:
-                    clauses.append(self.format_clause_for_query(path.value, "="))
+                    clauses.append(self.format_clause_for_query(path, "="))
                     query_data[path] = (data.pop(),)
                 elif len(data) > 1:
-                    clauses.append(self.format_clause_for_query(path.value, "IN"))
+                    clauses.append(self.format_clause_for_query(path, "IN"))
                     query_data[path] = tuple(data)
                 else:
                     #  if there's no data, create no clause
                     pass
             if len(clauses) > 0:
                 query_str = self.get_formatted_query_string(field_list, clauses)
-                return text(query_str).params(
-                    {k.value: v for k, v in query_data.items()}
-                )
+                return text(query_str).params(query_data)
 
         logger.warning(
             f"There is not enough data to generate a valid query for {self.node.address}"
@@ -468,16 +464,16 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
     """Query config that translates parameters into mongo statements"""
 
     def generate_query(
-        self, input_data: Dict[FieldPath, List[Any]], policy: Optional[Policy] = None
+        self, input_data: Dict[str, List[Any]], policy: Optional[Policy] = None
     ) -> Optional[MongoStatement]:
-        def transform_query_pairs(pairs: Dict[FieldPath, Any]) -> Dict[str, Any]:
+        def transform_query_pairs(pairs: Dict[str, Any]) -> Dict[str, Any]:
             """Since we want to do an 'OR' match in mongo, transform queries of the form
             {A:1, B:2} => "{$or:[{A:1},{B:2}]}".
             Don't bother to do this if the pairs size is 1
             """
             if len(pairs) < 2:
-                return {k.value: v for k, v in pairs.items()}
-            return {"$or": [dict([(k.value, v)]) for k, v in pairs.items()]}
+                return pairs
+            return {"$or": [dict([(k, v)]) for k, v in pairs.items()]}
 
         if input_data:
             filtered_data = self.typed_filtered_values(input_data)
@@ -524,7 +520,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
                 f"There is not enough data to generate a valid update for {self.node.address}"
             )
             return None
-        return pk_clauses, {"$set": {k.value: v for k, v in update_clauses.items()}}
+        return pk_clauses, {"$set": update_clauses}
 
     def query_to_str(
         self, t: MongoStatement, input_data: Dict[FieldPath, List[Any]]

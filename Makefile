@@ -112,7 +112,7 @@ pytest-integration-access: compose-build
 	@echo "Running pytest integration tests..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml \
 		run $(IMAGE_NAME) \
-		pytest $(pytestpath) -m integration
+		pytest -s $(pytestpath) -m integration
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml down --remove-orphans
 
 pytest-integration-erasure: compose-build

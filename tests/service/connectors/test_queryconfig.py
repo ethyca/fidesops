@@ -45,9 +45,7 @@ privacy_request = PrivacyRequest(id="234544")
 
 class TestSQLQueryConfig:
     def test_extract_query_components(self):
-        def found_query_keys(
-            qconfig: QueryConfig, values: Dict[FieldPath, Any]
-        ) -> Set[FieldPath]:
+        def found_query_keys(qconfig: QueryConfig, values: Dict[str, Any]) -> Set[str]:
             return set(qconfig.typed_filtered_values(values).keys())
 
         config = SQLQueryConfig(payment_card_node)
@@ -68,29 +66,27 @@ class TestSQLQueryConfig:
             found_query_keys(
                 config,
                 {
-                    FieldPath("id"): ["A"],
-                    FieldPath("customer_id"): ["V"],
-                    FieldPath("ignore_me"): ["X"],
+                    "id": ["A"],
+                    "customer_id": ["V"],
+                    "ignore_me": ["X"],
                 },
             )
-            == {FieldPath("id"), FieldPath("customer_id")}
+            == {"id", "customer_id"}
         )
         # with no values OR an empty set, these are omitted
         assert (
             found_query_keys(
                 config,
                 {
-                    FieldPath("id"): ["A"],
-                    FieldPath("customer_id"): [],
-                    FieldPath("ignore_me"): ["X"],
+                    "id": ["A"],
+                    "customer_id": [],
+                    "ignore_me": ["X"],
                 },
             )
-            == {FieldPath("id")}
+            == {"id"}
         )
-        assert found_query_keys(
-            config, {FieldPath("id"): ["A"], FieldPath("ignore_me"): ["X"]}
-        ) == {FieldPath("id")}
-        assert found_query_keys(config, {FieldPath("ignore_me"): ["X"]}) == set()
+        assert found_query_keys(config, {"id": ["A"], "ignore_me": ["X"]}) == {"id"}
+        assert found_query_keys(config, {"ignore_me": ["X"]}) == set()
         assert found_query_keys(config, {}) == set()
 
     def test_typed_filtered_values(self):
