@@ -121,8 +121,10 @@ ifeq (,$(env))
 	docker-compose -f docker-compose.yml $$path build; \
 	docker-compose -f docker-compose.yml $$path up -d; \
 	sleep 5; \
+	setup_path=""; \
 	for word in $(DOCKERFILE_ENVIRONMENTS); do \
-		docker exec fidesops python tests/integration_tests/$$word_setup.py || echo "no custom setup logic found for $$word"; \
+		setup_path="fidesops python tests/integration_tests/$$word-setup.py"; \
+		docker exec $$setup_path || echo "no custom setup logic found for $$word"; \
 	done; \
 	docker-compose -f docker-compose.yml $$path run $(IMAGE_NAME) pytest $(pytestpath) -m integration; \
 	docker-compose -f docker-compose.yml $$path down --remove-orphans
