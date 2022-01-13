@@ -11,7 +11,7 @@ IMAGE_NAME := fidesops
 IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
-DOCKERFILE_ENVIRONMENTS := postgres mysql mongodb
+DOCKERFILE_ENVIRONMENTS := postgres mysql mongodb mssql
 EXTERNAL_ENVIRONMENTS := snowflake redshift
 
 
@@ -51,7 +51,13 @@ integration-shell: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml run $(IMAGE_NAME) /bin/bash
 
 integration-env: compose-build
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up
+	@echo "Bringing up main image and images for integration testing"
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
+	@echo "Waiting 15s for integration containers to be ready..."
+	@sleep 15
+	@echo "Running additional setup for mssql integration tests"
+	@docker exec -it fidesops python tests/integration_tests/mssql_setup.py
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml logs -f -t
 
 quickstart: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
@@ -115,6 +121,9 @@ ifeq (,$(env))
 	docker-compose -f docker-compose.yml $$path build; \
 	docker-compose -f docker-compose.yml $$path up -d; \
 	sleep 5; \
+	for word in $(DOCKERFILE_ENVIRONMENTS); do \
+		docker exec fidesops python tests/integration_tests/$$word_setup.py || echo "no custom setup logic found for $$word" \
+	done; \
 	docker-compose -f docker-compose.yml $$path run $(IMAGE_NAME) pytest $(pytestpath) -m integration; \
 	docker-compose -f docker-compose.yml $$path down --remove-orphans
 else ifneq (,$(findstring $(env),$(DOCKERFILE_ENVIRONMENTS)))
@@ -122,6 +131,7 @@ else ifneq (,$(findstring $(env),$(DOCKERFILE_ENVIRONMENTS)))
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml up -d
 	@sleep 5
+	@docker exec fidesops python tests/integration_tests/$(env)_setup.py || echo "no custom setup logic found for $(env)"
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml \
 		run $(IMAGE_NAME) \
 		pytest $(pytestpath) -m integration_$(env)
@@ -146,8 +156,10 @@ pytest-integration-access: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build
 	@echo "Bringing up the integration environment..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
-	@echo "Waiting 10s for integration containers to be ready..."
-	@sleep 10
+	@echo "Waiting 15s for integration containers to be ready..."
+	@sleep 15
+	@echo "Running additional setup for mssql integration tests"
+	@docker exec fidesops python tests/integration_tests/mssql_setup.py
 	@echo "Running pytest integration tests..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml \
 		run $(IMAGE_NAME) \
