@@ -372,11 +372,10 @@ class Collection(BaseModel):
     # an optional list of collections that this collection must run after
     after: Set[CollectionAddress] = set()
 
-    field_dict: Dict[FieldPath, Field] = {}
-
-    def __init__(self, **kwargs: Dict[str, Any]) -> None:
-        super().__init__(**kwargs)
-        self.field_dict = self._collect_matching(lambda f: True)
+    @property
+    def field_dict(self) -> Dict[FieldPath, Field]:
+        """Maps FieldPaths to Fields"""
+        return self._collect_matching(lambda f: True)
 
     def _collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
         matches = map(lambda field: field.collect_matching(f), self.fields)

@@ -134,9 +134,9 @@ class TestSQLQueryConfig:
             str(
                 SQLQueryConfig(payment_card_node).generate_query(
                     {
-                        FieldPath("id"): ["A"],
-                        FieldPath("customer_id"): ["V"],
-                        FieldPath("ignore_me"): ["X"],
+                        "id": ["A"],
+                        "customer_id": ["V"],
+                        "ignore_me": ["X"],
                     }
                 )
             )
@@ -147,9 +147,9 @@ class TestSQLQueryConfig:
             str(
                 SQLQueryConfig(payment_card_node).generate_query(
                     {
-                        FieldPath("id"): ["A"],
-                        FieldPath("customer_id"): [],
-                        FieldPath("ignore_me"): ["X"],
+                        "id": ["A"],
+                        "customer_id": [],
+                        "ignore_me": ["X"],
                     }
                 )
             )
@@ -159,7 +159,7 @@ class TestSQLQueryConfig:
         assert (
             str(
                 SQLQueryConfig(payment_card_node).generate_query(
-                    {FieldPath("id"): ["A"], FieldPath("ignore_me"): ["X"]}
+                    {"id": ["A"], "ignore_me": ["X"]}
                 )
             )
             == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id"
@@ -168,7 +168,7 @@ class TestSQLQueryConfig:
         assert (
             str(
                 SQLQueryConfig(payment_card_node).generate_query(
-                    {FieldPath("id"): [], FieldPath("customer_id"): ["V"]}
+                    {"id": [], "customer_id": ["V"]}
                 )
             )
             == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE customer_id = :customer_id"
@@ -222,10 +222,10 @@ class TestSQLQueryConfig:
 
         config = SQLQueryConfig(customer_node)
         row = {
-            FieldPath("email"): "customer-1@example.com",
-            FieldPath("name"): "John Customer",
-            FieldPath("address_id"): 1,
-            FieldPath("id"): 1,
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "address_id": 1,
+            "id": 1,
         }
 
         text_clause = config.generate_update_stmt(row, erasure_policy, privacy_request)
@@ -250,10 +250,10 @@ class TestSQLQueryConfig:
 
         config = SQLQueryConfig(customer_node)
         row = {
-            FieldPath("email"): "customer-1@example.com",
-            FieldPath("name"): "John Customer",
-            FieldPath("address_id"): 1,
-            FieldPath("id"): 1,
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "address_id": 1,
+            "id": 1,
         }
 
         text_clause = config.generate_update_stmt(
@@ -281,10 +281,10 @@ class TestSQLQueryConfig:
 
         config = SQLQueryConfig(customer_node)
         row = {
-            FieldPath("email"): "customer-1@example.com",
-            FieldPath("name"): "John Customer",
-            FieldPath("address_id"): 1,
-            FieldPath("id"): 1,
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "address_id": 1,
+            "id": 1,
         }
 
         # Make target more broad
@@ -329,10 +329,10 @@ class TestSQLQueryConfig:
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
         row = {
-            FieldPath("email"): "customer-1@example.com",
-            FieldPath("name"): "John Customer",
-            FieldPath("address_id"): 1,
-            FieldPath("id"): 1,
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "address_id": 1,
+            "id": 1,
         }
 
         customer_node = traversal.traversal_node_dict[
@@ -382,10 +382,10 @@ class TestMongoQueryConfig:
 
         config = MongoQueryConfig(customer_details)
         row = {
-            FieldPath("birthday"): "1988-01-10",
-            FieldPath("gender"): "male",
-            FieldPath("customer_id"): 1,
-            FieldPath("_id"): 1,
+            "birthday": "1988-01-10",
+            "gender": "male",
+            "customer_id": 1,
+            "_id": 1,
         }
 
         # Make target more broad
@@ -424,10 +424,10 @@ class TestMongoQueryConfig:
 
         config = MongoQueryConfig(customer_details)
         row = {
-            FieldPath("birthday"): "1988-01-10",
-            FieldPath("gender"): "male",
-            FieldPath("customer_id"): 1,
-            FieldPath("_id"): 1,
+            "birthday": "1988-01-10",
+            "gender": "male",
+            "customer_id": 1,
+            "_id": 1,
         }
 
         rule = erasure_policy_two_rules.rules[0]

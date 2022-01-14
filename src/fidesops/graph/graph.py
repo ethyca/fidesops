@@ -46,7 +46,7 @@ class Node:
 
     def contains_field(self, f: Callable[[Field], bool]) -> bool:
         """True if any field in this collection matches the condition of the callable"""
-        return any(map(f, self.collection.field_dict.values()))
+        return any(map(f, self.collection.fields))
 
 
 class Edge:

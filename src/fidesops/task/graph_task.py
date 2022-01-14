@@ -341,9 +341,7 @@ def run_erasure(  # pylint: disable = too-many-arguments
     access_request_data: Dict[str, List[Row]],
 ) -> Dict[str, int]:
     """Run an erasure request"""
-    traversal: Traversal = Traversal(
-        graph, {FieldPath.parse(k): v for k, v in identity.items()}
-    )
+    traversal: Traversal = Traversal(graph, identity)
     with TaskResources(privacy_request, policy, connection_configs) as resources:
 
         def collect_tasks_fn(
@@ -423,7 +421,7 @@ def filter_data_categories(
                 {
                     field: result
                     for field, result in row.items()
-                    if field in target_fields
+                    if field in {target.value for target in target_fields}
                 }
             )
 

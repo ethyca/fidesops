@@ -65,10 +65,10 @@ class QueryConfig(Generic[T], ABC):
         return rule_updates
 
     @property
-    def primary_key_fields(self) -> Dict[FieldPath, Field]:
+    def primary_key_fields(self) -> Dict[str, Field]:
         """List of fields marked as primary keys"""
         return {
-            k: v
+            k.value: v
             for k, v in self.node.node.collection.field_dict.items()
             if v.primary_key
         }
@@ -99,15 +99,17 @@ class QueryConfig(Generic[T], ABC):
                     out[key] = filtered
         return out
 
-    def query_sources(self) -> Dict[FieldPath, List[CollectionAddress]]:
-        """Display the input sources for each query key"""
-        data: Dict[FieldPath, List[CollectionAddress]] = {}
-        for edge in self.node.incoming_edges():
-            append(data, edge.f2.field, edge.f1.collection_address())
+    def query_sources(self) -> Dict[str, List[CollectionAddress]]:
+        """Display the input sources for each query key
 
+        Translate keys from field paths to string values
+        """
+        data: Dict[str, List[CollectionAddress]] = {}
+        for edge in self.node.incoming_edges():
+            append(data, edge.f2.field.value, edge.f1.collection_address())
         return data
 
-    def display_query_data(self) -> Dict[FieldPath, Any]:
+    def display_query_data(self) -> Dict[str, Any]:
         """Data to represent a display (dry-run) query. Since we don't know
         what data is available, just generate a query where the input identity
         values are assumed to be present and singular and all other values that
@@ -227,7 +229,7 @@ class QueryConfig(Generic[T], ABC):
         returns None"""
 
     @abstractmethod
-    def query_to_str(self, t: T, input_data: Dict[FieldPath, List[Any]]) -> str:
+    def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string"""
 
     @abstractmethod
@@ -288,7 +290,6 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         policy: Optional[Policy] = None,
     ) -> Optional[TextClause]:
         """Generate a retrieval query"""
-
         filtered_data = self.typed_filtered_values(input_data)
 
         if filtered_data:
@@ -318,22 +319,20 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         )
         return None
 
-    def format_key_map_for_update_stmt(self, fields: List[FieldPath]) -> List[str]:
+    def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
         fields.sort()
-        return [f"{k.value} = :{k.value}" for k in fields]
+        return [f"{k} = :{k}" for k in fields]
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> Optional[TextClause]:
         """Returns an update statement in generic SQL dialect."""
-        update_value_map: Dict[FieldPath, Any] = self.update_value_map(
-            row, policy, request
-        )
+        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
         update_clauses: list[str] = self.format_key_map_for_update_stmt(
             list(update_value_map.keys())
         )
-        non_empty_primary_keys: Dict[FieldPath, Field] = filter_nonempty_values(
+        non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
             {
                 fpath: fld.cast(row[fpath])
                 for fpath, fld in self.primary_key_fields.items()
@@ -344,8 +343,9 @@ class SQLQueryConfig(QueryConfig[TextClause]):
             list(non_empty_primary_keys.keys())
         )
 
-        for k, v in self.primary_key_fields.items():
+        for k, v in non_empty_primary_keys.items():
             update_value_map[k] = v
+
         valid = len(pk_clauses) > 0 and len(update_clauses) > 0
         if not valid:
             logger.warning(
@@ -358,16 +358,10 @@ class SQLQueryConfig(QueryConfig[TextClause]):
             pk_clauses,
         )
 
-        output_update_value_map: Dict[str, Any] = {
-            k.value: v for k, v in update_value_map.items()
-        }
-        # translate keys from field paths to string values.
-        logger.info("query = %s, params = %s", query_str, output_update_value_map)
-        return text(query_str).params(output_update_value_map)
+        logger.info("query = %s, params = %s", query_str, update_value_map)
+        return text(query_str).params(update_value_map)
 
-    def query_to_str(
-        self, t: TextClause, input_data: Dict[FieldPath, List[Any]]
-    ) -> str:
+    def query_to_str(self, t: TextClause, input_data: Dict[str, List[Any]]) -> str:
         """string representation of a query for logging/dry-run"""
 
         def transform_param(p: Any) -> str:
@@ -378,11 +372,9 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         query_str = str(t)
         for k, v in input_data.items():
             if len(v) == 1:
-                query_str = re.sub(
-                    f"= :{k.value}", f"= {transform_param(v[0])}", query_str
-                )
+                query_str = re.sub(f"= :{k}", f"= {transform_param(v[0])}", query_str)
             elif len(v) > 0:
-                query_str = re.sub(f"IN :{k.value}", f"IN { tuple(set(v)) }", query_str)
+                query_str = re.sub(f"IN :{k}", f"IN { tuple(set(v)) }", query_str)
         return query_str
 
     def dry_run_query(self) -> Optional[str]:
@@ -420,7 +412,7 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
         return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
 
-    def format_key_map_for_update_stmt(self, fields: List[FieldPath]) -> List[str]:
+    def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
         fields.sort()
         return [f'"{k.value}" = :{k.value}' for k in fields]
@@ -511,7 +503,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         update_clauses = self.update_value_map(row, policy, request)
 
         pk_clauses: Dict[str, Any] = filter_nonempty_values(
-            {k.value: v.cast(row[k]) for k, v in self.primary_key_fields.items()}
+            {k: v.cast(row[k]) for k, v in self.primary_key_fields.items()}
         )
 
         valid = len(pk_clauses) > 0 and len(update_clauses) > 0
@@ -522,9 +514,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
             return None
         return pk_clauses, {"$set": update_clauses}
 
-    def query_to_str(
-        self, t: MongoStatement, input_data: Dict[FieldPath, List[Any]]
-    ) -> str:
+    def query_to_str(self, t: MongoStatement, input_data: Dict[str, List[Any]]) -> str:
         """string representation of a query for logging/dry-run"""
         query_data, field_list = t
         db_name = self.node.address.dataset
