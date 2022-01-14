@@ -120,8 +120,8 @@ pytest-integration-access: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build
 	@echo "Bringing up the integration environment..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
-	@echo "Waiting 15s for integration containers to be ready..."
-	@sleep 15
+	@echo "Waiting 20s for integration containers to be ready..."
+	@sleep 20
 	@echo "Running additional setup for mssql integration tests"
 	@docker exec fidesops python tests/integration_tests/mssql_setup.py
 	@echo "Running pytest integration tests..."
@@ -135,8 +135,8 @@ pytest-integration-erasure: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build
 	@echo "Bringing up the integration environment..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
-	@echo "Waiting 15s for integration containers to be ready..."
-	@sleep 15
+	@echo "Waiting 20s for integration containers to be ready..."
+	@sleep 20
 	@echo "Running additional setup for mssql integration tests"
 	@docker exec fidesops python tests/integration_tests/mssql_setup.py
 	@echo "Running pytest integration tests..."
