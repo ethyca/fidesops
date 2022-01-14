@@ -56,12 +56,12 @@ def test_sql_dry_run_queries() -> None:
 
     assert (
         env[CollectionAddress("postgres", "Order")]
-        == "SELECT order_id,customer_id,shipping_address_id,billing_address_id FROM Order WHERE customer_id IN (?, ?)"
+        == "SELECT order_id,customer_id,shipping_address_id,billing_address_id FROM Order WHERE customer_id IN (:_in_stmt_generated_0, :_in_stmt_generated_1)"
     )
 
     assert (
         env[CollectionAddress("mysql", "Address")]
-        == "SELECT id,street,city,state,zip FROM Address WHERE id IN (?, ?)"
+        == "SELECT id,street,city,state,zip FROM Address WHERE id IN (:_in_stmt_generated_0, :_in_stmt_generated_1)"
     )
 
 

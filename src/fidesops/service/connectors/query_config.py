@@ -278,7 +278,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         """Returns a formatted SQL UPDATE statement to fit the Snowflake syntax."""
         return f"UPDATE {self.node.address.collection} SET {','.join(update_clauses)} WHERE {' AND '.join(pk_clauses)}"
 
-    def generate_query(
+    def generate_query(  # pylint: disable=R0914
         self,
         input_data: Dict[str, List[Any]],
         policy: Optional[Policy] = None,

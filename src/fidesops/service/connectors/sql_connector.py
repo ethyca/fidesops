@@ -351,7 +351,8 @@ class MicrosoftSQLServerConnector(SQLConnector):
         return SQLQueryConfig(node)
 
     # Overrides BaseConnector.cursor_result_to_rows
-    def cursor_result_to_rows(self, results: CursorResult) -> List[Row]:
+    @staticmethod
+    def cursor_result_to_rows(results: CursorResult) -> List[Row]:
         """Convert SQLAlchemy results to a list of dictionaries"""
         columns: List[Column] = results.cursor.description
         # For sql server, columns are in the below format:
@@ -374,4 +375,4 @@ class MicrosoftSQLServerConnector(SQLConnector):
         logger.info(f"Starting data retrieval for {node.address}")
         with client.connect() as connection:
             results: CursorResult = connection.execute(stmt)
-            return self.cursor_result_to_rows(results)
+            return MicrosoftSQLServerConnector.cursor_result_to_rows(results)
