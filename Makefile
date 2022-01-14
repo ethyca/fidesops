@@ -45,6 +45,7 @@ server-shell: compose-build
 	@docker-compose run $(IMAGE_NAME) /bin/bash
 
 integration-shell: compose-build
+	# note- does not bring up external connectors such as redshift or snowflake
 	@echo "Bringing up main image and images for integration testing"
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
 	@echo "Waiting 15s for integration containers to be ready..."

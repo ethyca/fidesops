@@ -255,6 +255,13 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         """Returns clauses in a format they can be added into SQL queries."""
         return f"{field_name} {operator} :{field_name}"
 
+    def format_clause_for_query_in(
+        self, field_name: str, query_data_names: List[str]
+    ) -> str:
+        """Returns clauses in a format they can be added into SQL queries."""
+        in_clause = ", ".join(query_data_names)
+        return f"{field_name} IN ({in_clause})"
+
     def get_formatted_query_string(
         self,
         field_list: str,
@@ -282,27 +289,44 @@ class SQLQueryConfig(QueryConfig[TextClause]):
 
         if filtered_data:
             clauses = []
-            query_data: Dict[str, Tuple[Any, ...]] = {}
+            query_data: List[Dict[str, Any]] = []
             formatted_fields = self.format_fields_for_query(self.fields)
             field_list = ",".join(formatted_fields)
+            from sqlalchemy import bindparam
+
             for field_name, data in filtered_data.items():
                 data = set(data)
                 if len(data) == 1:
                     clauses.append(self.format_clause_for_query(field_name, "="))
-                    query_data[field_name] = (data.pop(),)
+                    # SQL Alchemy + SQLServer errors when we use a tuple in "value"
+                    query_data.append({"name": field_name, "value": data.pop()})
                 elif len(data) > 1:
-                    clauses.append(self.format_clause_for_query(field_name, "IN"))
-                    query_data[field_name] = tuple(data)
+                    # converts to list so that we can generate indexes
+                    newdata = list(data)
+                    query_data_names: List[str] = []
+                    for i in newdata:
+                        # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
+                        query_data_name = "_in_stmt_generated_" + str(newdata.index(i))
+                        query_data.append({"name": query_data_name, "value": i})
+                        query_data_names.append(":" + query_data_name)
+                    # SQL Alchemy + SQLServer errors when the query_str for IN statements was structured like this:
+                    # SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN :some-params-in-tuple
+                    # Current structure of query_str:
+                    # SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN (:_in_stmt_generated_0, :_in_stmt_generated_1, :_in_stmt_generated_2)
+                    clauses.append(
+                        self.format_clause_for_query_in(field_name, query_data_names)
+                    )
                 else:
                     #  if there's no data, create no clause
                     pass
             if len(clauses) > 0:
                 query_str = self.get_formatted_query_string(field_list, clauses)
                 logger.info(f"building query for {self.node.address}")
-                logger.info("query str = " + query_str)
-                logger.info("query keys = " + ''.join(query_data.keys()))
-                logger.info("query vals = " + ''.join([str(i) for i in query_data.values()]))
-                return text(query_str).params(query_data)
+                stmt = text(query_str)
+                for i in query_data:
+                    # technically don't need to use this bindparams() method, we can go back to using just params()
+                    stmt = stmt.bindparams(bindparam(i["name"], value=i["value"]))
+                return stmt
 
         logger.warning(
             f"There is not enough data to generate a valid query for {self.node.address}"

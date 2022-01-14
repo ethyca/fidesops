@@ -18,7 +18,8 @@ from fidesops.service.connectors import (
     MySQLConnector,
     PostgreSQLConnector,
     SnowflakeConnector,
-    RedshiftConnector, MicrosoftSQLServerConnector,
+    RedshiftConnector,
+    MicrosoftSQLServerConnector,
 )
 from fidesops.util.cache import get_cache
 

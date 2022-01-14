@@ -11,9 +11,9 @@ from sqlalchemy.engine import (
     LegacyCursorResult,
     Connection,
 )
+from sqlalchemy.sql.elements import TextClause
 from sqlalchemy.exc import OperationalError, InternalError
 from snowflake.sqlalchemy import URL as Snowflake_URL
-from sqlalchemy.sql.elements import TextClause
 
 from fidesops.common_exceptions import ConnectionException
 from fidesops.graph.traversal import Row, TraversalNode
@@ -47,6 +47,8 @@ class SQLConnector(BaseConnector[Engine]):
     def cursor_result_to_rows(results: CursorResult) -> List[Row]:
         """Convert SQLAlchemy results to a list of dictionaries"""
         columns: List[Column] = results.cursor.description
+        # For most SQL connections, columns are in the below format:
+        # (Column(name='address_id', type_code=20), Column(name='email', type_code=1043), Column(name='id', type_code=23), Column(name='name', type_code=1043))
         l = len(columns)
         rows = []
         for row_tuple in results:
@@ -108,7 +110,9 @@ class SQLConnector(BaseConnector[Engine]):
         update_ct = 0
         client = self.client()
         for row in rows:
-            update_stmt: Optional[TextClause] = query_config.generate_update_stmt(row, policy, request)
+            update_stmt: Optional[TextClause] = query_config.generate_update_stmt(
+                row, policy, request
+            )
             if update_stmt is not None:
                 with client.connect() as connection:
                     results: LegacyCursorResult = connection.execute(update_stmt)
@@ -340,18 +344,26 @@ class MicrosoftSQLServerConnector(SQLConnector):
         """Returns a SQLAlchemy Engine that can be used to interact with a MicrosoftSQLServer database"""
         config = MicrosoftSQLServerSchema(**self.configuration.secrets or {})
         uri = config.url or self.build_uri()
-        return create_engine(
-            uri,
-            hide_parameters=self.hide_parameters,
-            echo=not self.hide_parameters,
-        )
+        return create_engine(uri, hide_parameters=False, echo_pool="debug")
 
     def query_config(self, node: TraversalNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input traversal_node."""
         return SQLQueryConfig(node)
 
+    # Overrides BaseConnector.cursor_result_to_rows
+    def cursor_result_to_rows(self, results: CursorResult) -> List[Row]:
+        """Convert SQLAlchemy results to a list of dictionaries"""
+        columns: List[Column] = results.cursor.description
+        # For sql server, columns are in the below format:
+        # (('address_id', <class 'int'>, None, 19, 19, 0, True), ('created', <class 'datetime.datetime'>, None, 23, 23, 3, True), ('email', <class 'str'>, None, 100, 100, 0, True), ('id', <class 'int'>, None, 10, 10, 0, False), ('name', <class 'str'>, None, 100, 100, 0, True))
+        l = len(columns)
+        rows = []
+        for row_tuple in results:
+            rows.append({columns[i][0]: row_tuple[i] for i in range(l)})
+        return rows
+
     def retrieve_data(
-            self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
+        self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
     ) -> List[Row]:
         """Retrieve sql data"""
         query_config = self.query_config(node)
@@ -359,13 +371,7 @@ class MicrosoftSQLServerConnector(SQLConnector):
         stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
         if stmt is None:
             return []
-        # todo: log everything for mssql- config option
-        # todo- try passing in schema
-
-        # from sqlalchemy.dialects import mssql
-        # full_stmt = stmt.compile(compile_kwargs={"literal_binds": True})
-        # import pdb; pdb.set_trace()
         logger.info(f"Starting data retrieval for {node.address}")
         with client.connect() as connection:
-            results = connection.execute(stmt)
-            return SQLConnector.cursor_result_to_rows(results)
+            results: CursorResult = connection.execute(stmt)
+            return self.cursor_result_to_rows(results)
