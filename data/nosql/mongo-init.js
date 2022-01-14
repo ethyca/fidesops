@@ -18,13 +18,22 @@ db.customer_details.insert([
         "birthday": new ISODate("1988-01-10"),
         "interests": ["woodworking", "grilling", "fitness"],
         "preferences": {
-            "security_emails": true,
-            "informational_emails": true
+            "notifications": {
+                "security_emails": true,
+                "informational_emails": true
+            },
+            "appearance": {
+                "font_color": "red",
+                "background_color": "blue"
+            },
+            "backups": {
+                "phone": "555-555-5555"
+            }
         },
         "customer_complaints": [
             {"date": new ISODate("2022-01-01"), "issue": "package arrived damaged", "order_id": "ord_aaa-aaa"},
             {"date": new ISODate("2022-01-02"), "issue": "order not complete", "order_id": "ord_ccc-ccc"}
-        ]
+        ],
     },
      {
         "customer_id": 2,
@@ -32,25 +41,64 @@ db.customer_details.insert([
         "birthday": new ISODate("1985-03-05"),
         "interests": ["computer science", "welding", "art"],
         "preferences": {
-            "security_emails": true,
-            "informational_emails": false
+            "notifications": {
+                "security_emails": true,
+                "informational_emails": false
+            },
+            "appearance": {
+                "font_color": "black",
+                "background_color": "white"
+            },
+            "backups": {
+                "phone": "111-111-1111"
+            }
         },
         "customer_complaints": [
             {"date": new ISODate("2021-12-31"), "issue": "item not as advertised", "order_id": "ord_bbb-bbb"},
-        ]
-
+        ],
     },
     {
         "customer_id": 3,
         "gender": "female",
         "birthday": new ISODate("1990-02-28"),
         "interests": ["baking", "art", "hiking"],
-        "preferences": {
-            "security_emails": true,
-            "informational_emails": false
+          "preferences": {
+            "notifications": {
+                "security_emails": true,
+                "informational_emails": false
+            },
+            "appearance": {
+                "font_color": "black",
+                "background_color": "cyan"
+            }
         }
     }
 ]);
+
+db.business_account.insert([
+    {
+        "members": [1, 3],
+        "account_name": "Our Business Account",
+        "account_balance": 500.0
+    }
+])
+
+db.professional_information.insert([
+    {
+        "customer": {
+            "identifier": 1,
+            "workplace": "Jane's Restaurant",
+            "title": "Head Chef"
+        }
+    },
+    {
+        "customer": {
+            "identifier": 2,
+            "workplace": "Joe's Software Company",
+            "title": "Software Engineer"
+        }
+    }
+])
 
 db.customer_feedback.insert([
     {
@@ -67,214 +115,6 @@ db.customer_feedback.insert([
     }
 ])
 
-db.employee.insert([
-    {
-        "email": "employee-1@example.com",
-        "name": "Jack Employee",
-        "id": "1",
-        "address": {
-            "house": 555,
-            "street": "Example Ave",
-            "city": "Example City",
-            "state": "NY",
-            "zip": "12000"
-        },
-	"foreign_id": "000000000000000000000001"
-    },
-    {
-        "email": "employee-2@example.com",
-        "name": "Jane Employee",
-        "id": "2",
-        "address": {
-            "house": 555,
-            "street": "Example Ave",
-            "city": "Example City",
-            "state": "NY",
-            "zip": "12000"
-        },
-	"foreign_id": "000000000000000000000002"
-    }
-])
-
-db.customer.insert([
-    {
-        "id": "1",
-        "email": "customer-1@example.com",
-        "name": "John Customer",
-        "created": Date("2020-04-01 11:47:42"),
-        "address": {
-            "house": 123,
-            "street": "Example Street",
-            "city": "Exampletown",
-            "state": "NY",
-            "zip": "12345"
-        },
-        "login": [
-            {"time": Date("2021-01-01 01:00:00")},
-            {"time": Date("2021-01-02 01:00:00")},
-            {"time": Date("2021-01-03 01:00:00")},
-            {"time": Date("2021-01-04 01:00:00")},
-            {"time": Date("2021-01-05 01:00:00")},
-            {"time": Date("2021-01-06 01:00:00")},
-        ],
-        "last_visit": Date("2021-01-06 01:00:00"),
-        "alt_email": "customer-1-alt@example.com",
-        "service_request": [
-            {"id": "ser_aaa-aaa", "opened": Date("2021-01-01"), "closed": Date("2021-01-03"), "employee_id": "1"}
-        ]
-    },
-    {
-        "id": "2",
-        "email": "customer-2@example.com",
-        "name": "Jill Customer",
-        "created": Date("2020-04-01 11:47:42"),
-        "address": {
-            "house": 4,
-            "street": "Example Lane",
-            "city": "Exampletown",
-            "state": "NY",
-            "zip": "12321"
-        },
-         "login": [
-            {"time": Date("2021-01-06 01:00:00")},
-        ],
-        "last_visit": Date("2021-01-06 01:00:00"),
-        "alt_email": null,
-         "service_request": [
-            {"id": "ser_bbb-bbb", "opened": Date("2021-01-04"), "closed": null, "employee_id": "1"}
-        ]
-    },
-     {
-        "id": "3",
-        "email": "customer-3@example.com",
-        "name": null,
-        "address": null,
-        "login": null,
-        "last_visit": null,
-        "alt_email": null,
-         "service_request": [
-            {"id": "ser_ccc-ccc", "opened": Date("2021-01-05"), "closed": Date("2021-01-07"), "employee_id": "1"},
-            {"id": "ser_ddd-ddd", "opened": Date("2021-05-05"), "closed": Date("2021-05-08"), "employee_id": "2"}
-
-        ]
-    }
-])
-
-
-
-db.payment_card.insert([
-    {
-        "id": "pay_aaa-aaa",
-        "name": "Example Card 1",
-        "ccn": "123456789",
-        "code": "321",
-        "preferred": true,
-        "customer_id": "1",
-        "billing_address": {
-            "house": 123,
-            "street": "Example Street",
-            "city": "Exampletown",
-            "state": "NY",
-            "zip": "12345"
-        }
-    },
-    {
-        "id": "pay_bbb-bbb",
-        "name": "Example Card 2",
-        "ccn": "987654321",
-        "code": "123",
-        "preferred": false,
-        "customer_id": "2",
-        "billing_address": {
-            "house": 123,
-            "street": "Example Street",
-            "city": "Exampletown",
-            "state": "NY",
-            "zip": "12345"
-        }
-    }
-])
-
-db.product.insert([
-    {"id": "1", "name": "Example Product 1", "price": 10},
-    {"id": "2", "name": "Example Product 2", "price": 20},
-    {"id": "3", "name": "Example Product 2", "price": 50}
-
-])
-
-db.orders.insert([
-    {
-        "id": "ord_aaa-aaa",
-        "customer_id": "1",
-        "shipping_address": {
-            "house": 4,
-            "street": "Example Lane",
-            "city": "Exampletown",
-            "state": "NY",
-            "zip": "12321"
-        },
-        "payment_card_id": "pay_aaa-aaa",
-        "order_item": [
-            {"item_no": 1, "product_id": "1", "quantity": 1},
-        ]
-    },
-    {
-        "id": "ord_bbb-bbb",
-        "customer_id": "2",
-            "shipping_address":  {
-            "house": 123,
-            "street": "Example Street",
-            "city": "Exampletown",
-            "state": "NY",
-            "zip": "12345",
-        },
-        "payment_card_id": "pay_bbb-bbb",
-        "order_item": [
-            {"item_no": 1, "product_id": "1", "quantity": 1},
-        ]
-    },
-      {
-        "id": "ord_ccc-ccc",
-        "customer_id": "1",
-            "shipping_address":  {
-            "house": 123,
-            "street": "Example Street",
-            "city": "Exampletown",
-            "state": "NY",
-            "zip": "12345"
-        },
-        "payment_card_id": "pay_aaa-aaa",
-         "order_item": [
-            {"item_no": 1, "product_id": "1", "quantity": 1},
-            {"item_no": 2, "product_id": "2", "quantity": 1},
-
-        ]
-
-    },
-      {
-        "id": "ord_ddd-ddd",
-        "customer_id": "1",
-            "shipping_address":  {
-            "house": 123,
-            "street": "Example Street",
-            "city": "Exampletown",
-            "state": "NY",
-            "zip": "12345"
-        },
-        "payment_card_id": "pay_bbb-bbb",
-        "order_item": [
-            {"item_no": 1, "product_id": "1", "quantity": 1},
-        ]
-
-    },
-])
-
-db.reports.insert([
-    {"email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 8, "total_visits": 100},
-    {"email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 9, "total_visits": 100},
-    {"email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 10, "total_visits": 100},
-    {"email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 11, "total_visits": 100}
-])
 
 db.composite_pk_test.insert([
     {"id_a":1, "id_b":10, "description":"linked to customer 1", "customer_id":"1"},

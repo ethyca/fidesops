@@ -31,16 +31,33 @@ dataset:
             fidesops_meta:
               data_type: string[]
           - name: preferences
-            data_categories: [ system.operations ]
             fidesops_meta:
               data_type: object
             fields:
-              - name: security_emails
-                fidesops_meta:
-                  data_type: boolean
-              - name: informational_emails
-                fidesops_meta:
-                  data_type: boolean
+              - name: notifications
+                fields:
+                  - name: security_emails
+                    data_categories: [ system.operations ]
+                    fidesops_meta:
+                      data_type: boolean
+                  - name: informational_emails
+                    fidesops_meta:
+                    data_type: boolean
+              - name: appearance
+                data_categories: [ system.operations ]
+                fields:
+                  - name: font_color
+                    fidesops_meta:
+                      data_type: string
+                  - name: background_color
+                    fidesops_meta:
+                      data_type: string
+              - name: backups
+                fields:
+                  - name: phone
+                    data_categories: [user.provided.identifiable.contact.phone_number]
+                    fidesops_meta:
+                      data_type: string
           - name: customer_complaints
             data_categories: [system.operations]
             fidesops_meta:
@@ -55,6 +72,53 @@ dataset:
               - name: order_id
                 fidesops_meta:
                   data_type: string
+      - name: professional_information
+        fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
+          - name: customer
+            fields:
+              - name: identifier
+                data_categories: [ user.derived.identifiable.unique_id ]
+                fidesops_meta:
+                  data_type: integer
+                  references:
+                    - dataset: postgres_example_test_dataset
+                      field: customer.id
+                      direction: from
+              - name: workplace
+                data_categories: [ user.provided.identifiable.job_title ]
+                fidesops_meta:
+                  data_type: string
+              - name: title
+                data_categories: [ user.provided.identifiable.workplace ]
+                fidesops_meta:
+                  data_type: string
+      - name: business_account
+        fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
+          - name: members
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              data_type: integer[]
+              references:
+                - dataset: postgres_example_test_dataset
+                  field: customer.id
+                  direction: from
+          - name: account_name
+            fidesops_meta:
+              data_type: string
+          - name: account_balance
+            data_categories: [ user.provided.identifiable.financial ]
+            fidesops_meta:
+              data_type: float
       - name: customer_feedback
         fields:
           - name: _id

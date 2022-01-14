@@ -25,20 +25,15 @@ def test_mongo_example_data(mongo_example_db):
     """Confirm that the example database is populated with simulated data"""
     db = mongo_example_db["mongo_test"]
     collection_names = set(db.collection_names())
-    assert {
-        "payment_card",
-        "orders",
-        "customer",
-        "employee",
-        "product",
-        "reports",
+    assert collection_names.difference({
+        "customer_feedback",
         "customer_details",
+        "type_link_test",
         "composite_pk_test",
-    }.difference(collection_names) == set()
+        "business_account",
+        "professional_information"
+    }) == set()
 
-    assert db.customer.count() == 3
-    assert db.payment_card.count() == 2
-    assert db.orders.count() == 4
-    assert db.employee.count() == 2
-    assert db.product.count() == 3
-    assert db.reports.count() == 4
+    assert db.customer_details.count() == 3
+    assert db.customer_feedback.count() == 2
+    assert db.business_account.count() == 1

@@ -513,6 +513,18 @@ def test_mongo_access_request_arrays_and_objects(
         "customer-1-alt@example.com",
     ]
 
+    # Retrieved business account on matching customer_id in array field
+    assert access_request_results['mongo_test:business_account'][0]['members'] == [1.0, 3.0]
+
+    assert access_request_results["mongo_test:customer_details"][0]["preferences"]["backups"]["phone"] == "555-555-555"
+
+    # TODO add filtering on subfields
+    # assert filter_data_categories(access_request_results, {"user.provided.identifiable.contact.phone_number"}, dataset_graph) == {
+    #     "mongo_test:customer_details": [
+    #         {"phone": 555-555-555}
+    #     ]
+    # }
+
     # Filter data categories to only return user.provided.nonidentifiable categories to user
     # Results include an array of strings and an array of objects
     assert filter_data_categories(
@@ -530,6 +542,9 @@ def test_mongo_access_request_arrays_and_objects(
         "postgres_example_test_dataset:payment_card": [{"preferred": True}],
     }
 
+    # Results were found from identity in nested array
+    assert filter_data_categories(access_request_results, {"user.provided.identifiable.financial"}, dataset_graph)["mongo_test:business_account"][0]["account_balance"] == 500.0
+
     # Override erasure policy's target to look at the user.provided.nonidentifiable category
     target = erasure_policy.rules[0].targets[0]
     target.data_category = DataCategory("user.provided.nonidentifiable").value
@@ -546,17 +561,18 @@ def test_mongo_access_request_arrays_and_objects(
     # "mongo_test:customer_details", "mongo_test:customer_feedback",
     # "postgres_example_test_dataset:payment_card" have erasures
     assert erasure_summary == {
-        "postgres_example_test_dataset:customer": 0,
-        "mongo_test:customer_feedback": 1,
-        "postgres_example_test_dataset:employee": 0,
-        "postgres_example_test_dataset:report": 0,
         "postgres_example_test_dataset:service_request": 0,
+        "postgres_example_test_dataset:report": 0,
+        "postgres_example_test_dataset:employee": 0,
+        "postgres_example_test_dataset:customer": 0,
         "postgres_example_test_dataset:visit": 0,
+        "mongo_test:customer_feedback": 1,
         "postgres_example_test_dataset:address": 0,
+        "postgres_example_test_dataset:payment_card": 1,
+        "postgres_example_test_dataset:login": 0,
+        "mongo_test:business_account": 0,
         "postgres_example_test_dataset:orders": 0,
         "mongo_test:customer_details": 1,
-        "postgres_example_test_dataset:login": 0,
-        "postgres_example_test_dataset:payment_card": 1,
         "postgres_example_test_dataset:order_item": 0,
         "postgres_example_test_dataset:product": 0,
     }
@@ -591,20 +607,21 @@ def test_mongo_access_request_arrays_and_objects(
 
     # mongo customer_feedback and customer_details rows had erasures
     assert erasure_summary == {
+        "mongo_test:customer_feedback": 1,
         "postgres_example_test_dataset:service_request": 1,
+        "postgres_example_test_dataset:visit": 0,
         "postgres_example_test_dataset:employee": 0,
         "postgres_example_test_dataset:customer": 1,
-        "postgres_example_test_dataset:visit": 0,
         "postgres_example_test_dataset:report": 0,
-        "mongo_test:customer_feedback": 1,
         "postgres_example_test_dataset:address": 2,
-        "postgres_example_test_dataset:payment_card": 1,
-        "postgres_example_test_dataset:orders": 0,
         "mongo_test:customer_details": 1,
+        "postgres_example_test_dataset:orders": 0,
+        "postgres_example_test_dataset:payment_card": 1,
+        "mongo_test:business_account": 0,
         "postgres_example_test_dataset:login": 0,
         "postgres_example_test_dataset:order_item": 0,
         "postgres_example_test_dataset:product": 0,
     }
     feedback = db.customer_feedback.find_one({"_id": ObjectId(object_id)})
-    # TODO Not true - currently entire identity array is overridden as None
-    # assert feedback["emails"] == [None, None]
+    # TODO Not true - currently entire identity array is overridden as None. We need to mask just the specific field.
+    # assert feedback["emails"] == [None, "customer-1-alt@example.com"]
