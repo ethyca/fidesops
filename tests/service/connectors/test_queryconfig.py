@@ -94,38 +94,38 @@ class TestSQLQueryConfig:
         assert (
             config.typed_filtered_values(
                 {
-                    FieldPath("id"): ["A"],
-                    FieldPath("customer_id"): ["V"],
-                    FieldPath("ignore_me"): ["X"],
+                    "id": ["A"],
+                     "customer_id": ["V"],
+                    "ignore_me": ["X"],
                 }
             )
-            == {FieldPath("id"): ["A"], FieldPath("customer_id"): ["V"]}
+            == {"id": ["A"], "customer_id": ["V"]}
         )
 
         assert (
             config.typed_filtered_values(
                 {
-                    FieldPath("id"): ["A"],
-                    FieldPath("customer_id"): [],
-                    FieldPath("ignore_me"): ["X"],
+                    "id": ["A"],
+                    "customer_id": [],
+                    "ignore_me": ["X"],
                 }
             )
-            == {FieldPath("id"): ["A"]}
+            == {"id": ["A"]}
         )
 
         assert config.typed_filtered_values(
-            {FieldPath("id"): ["A"], FieldPath("ignore_me"): ["X"]}
-        ) == {FieldPath("id"): ["A"]}
+            {"id": ["A"], "ignore_me": ["X"]}
+        ) == {"id": ["A"]}
 
         assert config.typed_filtered_values(
-            {FieldPath("id"): [], FieldPath("customer_id"): ["V"]}
-        ) == {FieldPath("customer_id"): ["V"]}
+            {"id": [], "customer_id": ["V"]}
+        ) == {"customer_id": ["V"]}
         # test for type casting: id has type "string":
-        assert config.typed_filtered_values({FieldPath("id"): [1]}) == {
-            FieldPath("id"): ["1"]
+        assert config.typed_filtered_values({"id": [1]}) == {
+            "id": ["1"]
         }
-        assert config.typed_filtered_values({FieldPath("id"): [1, 2]}) == {
-            FieldPath("id"): ["1", "2"]
+        assert config.typed_filtered_values({"id": [1, 2]}) == {
+            "id": ["1", "2"]
         }
 
     def test_generated_sql_query(self):
