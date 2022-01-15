@@ -150,7 +150,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 NotPii(len(data)),
             )
 
-        output: Dict[FieldPath, List[Any]] = {}
+        output: Dict[str, List[Any]] = {}
         for i, rowset in enumerate(data):
             collection_address = self.input_keys[i]
             field_mappings = self.incoming_field_map[collection_address]
@@ -212,11 +212,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 "success",
                 [
                     {
-                        "field_name": f.name,
-                        "path": f"{self.traversal_node.node.address}:{f.name}",
-                        "data_categories": f.data_categories,
+                        "field_name": field.name,
+                        "path": f"{self.traversal_node.node.address}:{field.name}",
+                        "data_categories": field.data_categories,
                     }
-                    for f in self.traversal_node.node.collection.field_dict.values()
+                    for field in self.traversal_node.node.collection.field_dict.values()
                 ],
                 action_type,
                 ExecutionLogStatus.complete,
@@ -395,18 +395,21 @@ def filter_data_categories(
         "Filtering Access Request results to return fields associated with data categories"
     )
     filtered_access_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    data_category_fields: Dict[str, Dict[str, List]] = graph.data_category_field_mapping
+    data_category_fields: Dict[
+        str, Dict[str, List[FieldPath]]
+    ] = graph.data_category_field_mapping
 
     for node_address, results in access_request_results.items():
         if not results:
             continue
 
-        # Gets all fields on this traversal_node associated with the requested data categories and sub data categories
-        target_fields = set(
+        # Gets all FieldPaths on this traversal_node associated with the requested data
+        # categories and sub data categories
+        target_fields: Set[FieldPath] = set(
             itertools.chain(
                 *[
-                    fields
-                    for cat, fields in data_category_fields[node_address].items()
+                    field_paths
+                    for cat, field_paths in data_category_fields[node_address].items()
                     if any([cat.startswith(tar) for tar in target_categories])
                 ]
             )

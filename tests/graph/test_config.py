@@ -165,6 +165,7 @@ def test_generate_field() -> None:
     assert isinstance(object_array_field, ObjectField) and object_array_field.is_array
     assert object_array_field.fields["obj"] == object_field
 
+
 def test_field_key():
     assert FieldPath("a", "b").string_path == "a.b"
     assert FieldPath("a").levels == ("a",)

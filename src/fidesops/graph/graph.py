@@ -13,6 +13,7 @@ from fidesops.graph.config import (
     Dataset,
     EdgeDirection,
     Field,
+    FieldPath,
 )
 
 logger = logging.getLogger(__name__)
@@ -203,10 +204,10 @@ class DatasetGraph:
         self.edges: Set[Edge] = set()
 
         for node_address, node in self.nodes.items():
-            for field_name, ref_list in node.collection.references().items():
+            for field_path, ref_list in node.collection.references().items():
 
                 source_field_address = FieldAddress(
-                    node_address.dataset, node_address.collection, *field_name.levels
+                    node_address.dataset, node_address.collection, *field_path.levels
                 )
                 for (dest_field_address, direction) in ref_list:
                     if dest_field_address.collection_address() not in self.nodes:
@@ -224,13 +225,15 @@ class DatasetGraph:
 
         # collect all seed references
         self.identity_keys: Dict[FieldAddress, SeedAddress] = {
-            FieldAddress(node.address.dataset, node.address.collection, *k.levels): v
+            FieldAddress(
+                node.address.dataset, node.address.collection, *field_path.levels
+            ): seed_address
             for node in nodes
-            for k, v in node.collection.identities().items()
+            for field_path, seed_address in node.collection.identities().items()
         }
 
     @property
-    def data_category_field_mapping(self) -> Dict[str, Dict[str, List]]:
+    def data_category_field_mapping(self) -> Dict[str, Dict[str, List[FieldPath]]]:
         """
         Maps the data_categories for each traversal_node to a list of fields that have that
         same data category.
@@ -247,7 +250,9 @@ class DatasetGraph:
         }
 
         """
-        mapping: Dict[str, Dict[str, List]] = defaultdict(lambda: defaultdict(list))
+        mapping: Dict[str, Dict[str, List[FieldPath]]] = defaultdict(
+            lambda: defaultdict(list)
+        )
         for node_address, node in self.nodes.items():
             mapping[str(node_address)] = node.collection.fields_by_category
         return mapping

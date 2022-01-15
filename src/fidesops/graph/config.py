@@ -169,12 +169,12 @@ class FieldPath:
         return self.string_path < other.string_path
 
     def prepend(self, prefix: str) -> "FieldPath":
-        """Return a new field key with the prefix prepended."""
+        """Return a new FieldPath with the prefix prepended."""
         return FieldPath(*((prefix,) + self.levels))
 
     @staticmethod
     def parse(path_str: str) -> FieldPath:
-        """Create a field path from an input string"""
+        """Create a FieldPath from a dot-separated input string"""
         return FieldPath(*path_str.split("."))
 
 
@@ -251,9 +251,6 @@ class Field(BaseModel, ABC):
         """return the data type name"""
         return self.data_type_converter.name
 
-    def getChild(self, names: Tuple[str, ...]) -> Optional["Field"]:
-        """Return the child field or None if it is not found"""
-
     def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
         """Find fields or subfields satisfying the input function"""
 
@@ -273,10 +270,6 @@ class ScalarField(Field):
             return self.data_type_converter.to_value(value)
 
         return value
-
-    def getChild(self, names: Tuple[str, ...]) -> Optional["Field"]:
-        """Scalar field is defined as not having children"""
-        return self if len(names) == 0 else None
 
     def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
         """Find fields or subfields satisfying the input function"""
@@ -299,14 +292,6 @@ class ObjectField(Field):
             if field.name in value
         }
 
-    def getChild(self, names: Tuple[str, ...]) -> Optional["Field"]:
-        """Return the child field or None if it is not found"""
-        if len(names) == 0:
-            return self
-        if names[0] in self.fields:
-            return self.fields[names[0]].getChild(names[1:])
-        return None
-
     def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
         """Find fields or subfields satisfying the input function"""
         name = self.name  # pylint: disable=no-member
@@ -317,7 +302,8 @@ class ObjectField(Field):
         return merge_dicts(
             base,
             {
-                k.prepend(name): v for k, v in child_dicts.items()
+                field_path.prepend(name): field
+                for field_path, field in child_dicts.items()
             },  # pylint: disable=no-member
         )
 
@@ -385,20 +371,28 @@ class Collection(BaseModel):
         self,
     ) -> Dict[FieldPath, List[Tuple[FieldAddress, Optional[EdgeDirection]]]]:
         """return references from fields in this collection to fields in any other"""
-        return {k: v.references for k, v in self.field_dict.items() if v.references}
+        return {
+            field_path: field.references
+            for field_path, field in self.field_dict.items()
+            if field.references
+        }
 
     def identities(self) -> Dict[FieldPath, Tuple[str, ...]]:
         """return identity pointers included in the table"""
-        return {k: v.identity for k, v in self.field_dict.items() if v.identity}
+        return {
+            field_path: field.identity
+            for field_path, field in self.field_dict.items()
+            if field.identity
+        }
 
-    def field(self, key: FieldPath) -> Optional[Field]:
-        """return field by name, or None if not found"""
-        return self.field_dict[key] if key in self.field_dict else None
+    def field(self, field_path: FieldPath) -> Optional[Field]:
+        """Return Field (looked up by FieldPath) if on Collection or None if not found"""
+        return self.field_dict[field_path] if field_path in self.field_dict else None
 
     @property
     def fields_by_category(self) -> Dict[str, List[FieldPath]]:
-        """Returns mapping of data categories to fields, flips fields -> categories
-        to be categories -> fields.
+        """Returns mapping of data categories to a list of FieldPaths, flips FieldPaths -> categories
+        to be categories -> FieldPaths.
 
         Example:
             {
@@ -410,9 +404,9 @@ class Collection(BaseModel):
             }
         """
         categories = defaultdict(list)
-        for field_key, field in self.field_dict.items():
+        for field_path, field in self.field_dict.items():
             for category in field.data_categories or []:
-                categories[category].append(field_key)
+                categories[category].append(field_path)
         return categories
 
     class Config:

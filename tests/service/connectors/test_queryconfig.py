@@ -59,7 +59,7 @@ class TestSQLQueryConfig:
                 "billing_address_id",
             ]
         }
-        assert config.query_keys == {FieldPath("id"), FieldPath("customer_id")}
+        assert config.query_field_paths == {FieldPath("id"), FieldPath("customer_id")}
 
         # values exist for all query keys
         assert (
@@ -95,7 +95,7 @@ class TestSQLQueryConfig:
             config.typed_filtered_values(
                 {
                     "id": ["A"],
-                     "customer_id": ["V"],
+                    "customer_id": ["V"],
                     "ignore_me": ["X"],
                 }
             )
@@ -113,20 +113,16 @@ class TestSQLQueryConfig:
             == {"id": ["A"]}
         )
 
-        assert config.typed_filtered_values(
-            {"id": ["A"], "ignore_me": ["X"]}
-        ) == {"id": ["A"]}
+        assert config.typed_filtered_values({"id": ["A"], "ignore_me": ["X"]}) == {
+            "id": ["A"]
+        }
 
-        assert config.typed_filtered_values(
-            {"id": [], "customer_id": ["V"]}
-        ) == {"customer_id": ["V"]}
+        assert config.typed_filtered_values({"id": [], "customer_id": ["V"]}) == {
+            "customer_id": ["V"]
+        }
         # test for type casting: id has type "string":
-        assert config.typed_filtered_values({"id": [1]}) == {
-            "id": ["1"]
-        }
-        assert config.typed_filtered_values({"id": [1, 2]}) == {
-            "id": ["1", "2"]
-        }
+        assert config.typed_filtered_values({"id": [1]}) == {"id": ["1"]}
+        assert config.typed_filtered_values({"id": [1, 2]}) == {"id": ["1", "2"]}
 
     def test_generated_sql_query(self):
         """Test that the generated query depends on the input set"""

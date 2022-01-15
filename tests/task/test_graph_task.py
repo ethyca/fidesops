@@ -2,7 +2,6 @@ import dask
 
 from fidesops.graph.config import (
     CollectionAddress,
-    FieldPath,
 )
 from fidesops.graph.traversal import Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType

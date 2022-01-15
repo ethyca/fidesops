@@ -28,20 +28,6 @@ Datastore = Dict[CollectionAddress, List[Row]]
 """A type expressing retrieved rows of data from a specified collection"""
 
 
-def row_insert(row: Dict[str, Any], path: FieldPath, value: Any) -> None:
-    """Insert value into row as represented by the field path.
-    e.g. row_insert({"A":1}, FieldPath("B","C"), 2) =>
-           row = {"A":1, {"B":{"C":2}}
-    """
-    pydash.objects.set_(row, path.string_path, value)
-
-
-def row_extract(row: Dict[str, Any], path: FieldPath) -> None:
-    """Extract value by path.
-    e.g. row_extract({"A":{"B":{"C":1}}}, FieldPath("A","B","C")) => 1"""
-    return pydash.objects.get(row, path.string_path)
-
-
 class TraversalNode:
     """Base traversal traversal_node type. This type will never be used directly."""
 
@@ -62,38 +48,38 @@ class TraversalNode:
         """Add other as a child to this traversal_node along the provided edge."""
         addresses = edge.split_by_address(self.address)  # (traversal_node -> other)
         if addresses:
-            self_address, other_address = addresses
+            self_field_address, other_field_address = addresses
             append(
                 self.children,
-                other_address.collection_address(),
-                (child_node, self_address.field, other_address.field),
+                other_field_address.collection_address(),
+                (child_node, self_field_address.field, other_field_address.field),
             )
             append(
                 child_node.parents,
-                self_address.collection_address(),
-                (self, self_address.field, other_address.field),
+                self_field_address.collection_address(),
+                (self, self_field_address.field, other_field_address.field),
             )
 
     def incoming_edges(self) -> Set[Edge]:
         """Return the incoming edges to this traversal_node,in (other.address -> self.address) order."""
         return {
             Edge(
-                p_address.field_address(parent_field),
-                self.address.field_address(self_field),
+                p_collection_address.field_address(parent_field_path),
+                self.address.field_address(self_field_path),
             )
-            for p_address, tuples in self.parents.items()
-            for _, parent_field, self_field in tuples
+            for p_collection_address, tuples in self.parents.items()
+            for _, parent_field_path, self_field_path in tuples
         }
 
     def outgoing_edges(self) -> Set[Edge]:
         """Return the outgoing edges to this traversal_node,in (self.address -> other.address) order."""
         return {
             Edge(
-                self.address.field_address(self_field),
-                c_address.field_address(child_field),
+                self.address.field_address(self_field_path),
+                c_collection_address.field_address(child_field_path),
             )
-            for c_address, tuples in self.children.items()
-            for _, self_field, child_field in tuples
+            for c_collection_address, tuples in self.children.items()
+            for _, self_field_path, child_field_path in tuples
         }
 
     def can_run_given(self, remaining_node_keys: Set[CollectionAddress]) -> bool:
