@@ -51,6 +51,7 @@ def _mask_pii_for_logs(parameter: Any) -> Any:
     Don't mask numeric values as this can throw errors in consumers
     format strings.
     """
+
     if isinstance(parameter, (NotPii, Number)):
         return parameter
 

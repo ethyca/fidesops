@@ -84,6 +84,6 @@ class TestConnectionConfigModel:
             )
         assert (
             str(exc.value)
-            == "Key my_postgres_db_1 already exists in ConnectionConfig. Keys will be snake-cased keys if not provided. "
+            == "Key my_postgres_db_1 already exists in ConnectionConfig. Keys will be snake-cased names if not provided. "
             "If you are seeing this error without providing a key, please provide a key or a different name."
         )

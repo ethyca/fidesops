@@ -64,7 +64,7 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         logger.info(f"Starting test connection to {self.configuration.key}")
         client = self.client()
         try:
-            # Make a couple of trivial requests - getting server info and fetching the collection keys
+            # Make a couple of trivial requests - getting server info and fetching the collection names
             client.server_info()
             if config.defaultauthdb:
                 db = client[config.defaultauthdb]

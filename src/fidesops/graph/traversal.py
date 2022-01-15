@@ -33,13 +33,13 @@ def row_insert(row: Dict[str, Any], path: FieldPath, value: Any) -> None:
     e.g. row_insert({"A":1}, FieldPath("B","C"), 2) =>
            row = {"A":1, {"B":{"C":2}}
     """
-    pydash.objects.set_(row, path.value, value)
+    pydash.objects.set_(row, path.string_path, value)
 
 
 def row_extract(row: Dict[str, Any], path: FieldPath) -> None:
     """Extract value by path.
     e.g. row_extract({"A":{"B":{"C":1}}}, FieldPath("A","B","C")) => 1"""
-    return pydash.objects.get(row, path.value)
+    return pydash.objects.get(row, path.string_path)
 
 
 class TraversalNode:
@@ -124,14 +124,14 @@ class TraversalNode:
             if foreign.collection_address() == self.address:
                 foreign, local = local, foreign
             key = str(foreign.collection_address())
-            val = f"{foreign.field.value} -> {local.field.value}"
+            val = f"{foreign.field.string_path} -> {local.field.string_path}"
             if key in _from:
                 _from[key].add(val)
             else:
                 _from[key] = {val}
         to: Dict[str, Set[str]] = {}
         for k, v in self.children.items():
-            to[str(k)] = {f"{f[1].value} -> {f[2].value}" for f in v}
+            to[str(k)] = {f"{f[1].string_path} -> {f[2].string_path}" for f in v}
         return {
             "from": {k: set(v) for k, v in _from.items()},
             "to": {k: set(v) for k, v in to.items()},

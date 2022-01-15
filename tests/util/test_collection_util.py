@@ -4,7 +4,16 @@ from fidesops.util.collection_util import (
     append,
     partition,
     filter_nonempty_values,
+    merge_dicts,
 )
+
+
+def test_merge_dicts() -> None:
+    assert merge_dicts(
+        *[{"A": 1, "B": 2}, {"A": 2, "B": 3, "C": 4}, {"A": 4, "C": 5, "D": 6}]
+    ) == {"A": 4, "B": 3, "C": 5, "D": 6}
+    assert merge_dicts(*[{"A": 1, "B": 2}, {}]) == {"A": 1, "B": 2}
+    assert merge_dicts(*[]) == {}
 
 
 def test_append() -> None:  # d: Dict[T, List[U]], key: T, val: U) -> None:

@@ -115,7 +115,7 @@ def put_webhooks(
     if len(keys) != len(set(keys)) or len(names) != len(set(names)):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail="Check request body: there are multiple webhooks whose keys or keys resolve to the same value.",
+            detail="Check request body: there are multiple webhooks whose keys or names resolve to the same value.",
         )
 
     staged_webhooks = []  # Webhooks will be committed at the end

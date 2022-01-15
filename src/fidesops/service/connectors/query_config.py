@@ -35,7 +35,7 @@ class QueryConfig(Generic[T], ABC):
         self.node = node
 
     def field_map(self) -> Dict[FieldPath, Field]:
-        """Field Keys of interest from this traversal traversal_node."""
+        """Field Paths of interest from this traversal traversal_node."""
         return self.node.node.collection.field_dict
 
     def build_rule_target_fields(self, policy: Policy) -> Dict[Rule, List[FieldPath]]:
@@ -68,7 +68,7 @@ class QueryConfig(Generic[T], ABC):
     def primary_key_fields(self) -> Dict[str, Field]:
         """List of fields marked as primary keys"""
         return {
-            k.value: v
+            k.string_path: v
             for k, v in self.node.node.collection.field_dict.items()
             if v.primary_key
         }
@@ -106,7 +106,7 @@ class QueryConfig(Generic[T], ABC):
         """
         data: Dict[str, List[CollectionAddress]] = {}
         for edge in self.node.incoming_edges():
-            append(data, edge.f2.field.value, edge.f1.collection_address())
+            append(data, edge.f2.field.string_path, edge.f1.collection_address())
         return data
 
     def display_query_data(self) -> Dict[str, Any]:
@@ -165,10 +165,10 @@ class QueryConfig(Generic[T], ABC):
                     masking_override, null_masking, strategy
                 ):
                     logger.warning(
-                        f"Unable to generate a query for field {field_path.value}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type_converter.name}"
+                        f"Unable to generate a query for field {field_path.string_path}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
                     continue
-                val: Any = row[field_path.value]
+                val: Any = row[field_path.string_path]
                 masked_val = self._generate_masked_value(
                     request.id,
                     strategy,
@@ -177,7 +177,7 @@ class QueryConfig(Generic[T], ABC):
                     null_masking,
                     field_path,
                 )
-                value_map[field_path.value] = masked_val
+                value_map[field_path.string_path] = masked_val
         return value_map
 
     @staticmethod
@@ -258,7 +258,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         last value from each key.It will need to be updated to support
         nested values.
         """
-        return list(map(lambda fk: fk.keys[-1:][0], keys))
+        return list(map(lambda fk: fk.levels[-1:][0], keys))
 
     def format_clause_for_query(
         self,
@@ -471,7 +471,8 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
             filtered_data = self.typed_filtered_values(input_data)
             if filtered_data:
                 field_list = {
-                    field_key.value: 1 for field_key, field in self.field_map().items()
+                    field_key.string_path: 1
+                    for field_key, field in self.field_map().items()
                 }
                 query_pairs = {}
                 for field_path, data in filtered_data.items():

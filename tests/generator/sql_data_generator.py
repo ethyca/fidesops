@@ -102,7 +102,7 @@ def generate_data_for_traversal(
                 )  # for row in collection_data]
 
         for fk, f in tn.node.collection.field_dict.items():
-            name = fk.value
+            name = fk.string_path
             if not name in incoming_values or len(incoming_values[name]) == 0:
                 incoming_values[name] = [generate_data(f) for i in range(ct)]
 

@@ -68,7 +68,7 @@ def snowflake_test_engine() -> Generator:
 
 @pytest.mark.integration_external
 def test_redshift_example_data(redshift_test_engine):
-    """Confirm that we can connect to the redshift test db and get table keys"""
+    """Confirm that we can connect to the redshift test db and get table names"""
     inspector = inspect(redshift_test_engine)
     assert inspector.get_table_names(schema="test") == [
         "report",
@@ -87,7 +87,7 @@ def test_redshift_example_data(redshift_test_engine):
 
 @pytest.mark.integration_external
 def test_snowflake_example_data(snowflake_test_engine):
-    """Confirm that we can connect to the snowflake test db and get table keys"""
+    """Confirm that we can connect to the snowflake test db and get table names"""
     inspector = inspect(snowflake_test_engine)
     assert inspector.get_table_names(schema="test") == [
         "cc",

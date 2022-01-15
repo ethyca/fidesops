@@ -135,7 +135,7 @@ class CollectionAddress:
 
     def field_address(self, field: FieldPath) -> FieldAddress:
         """Create a field address appended to this collection address."""
-        return FieldAddress(self.dataset, self.collection, *field.keys)
+        return FieldAddress(self.dataset, self.collection, *field.levels)
 
 
 ROOT_COLLECTION_ADDRESS: CollectionAddress = CollectionAddress("__ROOT__", "__ROOT__")
@@ -146,31 +146,31 @@ TERMINATOR_ADDRESS = CollectionAddress("__TERMINATE__", "__TERMINATE__")
 
 class FieldPath:
     """Fields are addressable by a (possibly) nested name. This key
-    represents a field name held as a tuple of possibly descending keys.
+    represents a field name held as a tuple of possibly descending levels.
     A scalar field is represented as a single-element tuple.
     """
 
     def __init__(self, *names: str):
-        self.keys = tuple(names)
-        self.value = ".".join(self.keys)
+        self.levels = tuple(names)
+        self.string_path = ".".join(self.levels)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, FieldPath):
             return False
-        return other.keys == self.keys
+        return other.levels == self.levels
 
     def __hash__(self) -> int:
-        return hash(self.value)
+        return hash(self.string_path)
 
     def __repr__(self) -> str:
-        return f"FieldKey({self.value})"
+        return f"FieldPath('{self.string_path}')"
 
     def __lt__(self, other: "FieldPath") -> bool:
-        return self.value < other.value
+        return self.string_path < other.string_path
 
     def prepend(self, prefix: str) -> "FieldPath":
         """Return a new field key with the prefix prepended."""
-        return FieldPath(*((prefix,) + self.keys))
+        return FieldPath(*((prefix,) + self.levels))
 
     @staticmethod
     def parse(path_str: str) -> FieldPath:
@@ -192,7 +192,7 @@ class FieldAddress:
         self.dataset = dataset
         self.collection = collection
         self.field = FieldPath(*fields)
-        self.value: str = ":".join((dataset, collection, self.field.value))
+        self.value: str = ":".join((dataset, collection, self.field.string_path))
 
     def is_member_of(self, collection_address: CollectionAddress) -> bool:
         """True if this field represents a field in the given collection address."""
@@ -258,7 +258,7 @@ class Field(BaseModel, ABC):
         """Find fields or subfields satisfying the input function"""
 
     def __repr__(self) -> str:
-        return f"{self.name}:{self.data_type_converter.name}"
+        return f"{self.__class__.__name__}(name='{self.name}', data_type='{self.data_type_converter.name}', is_array={self.is_array})"
 
 
 class ScalarField(Field):

@@ -63,9 +63,6 @@ def retry(
                     # Run access or erasure request
                     return func(*args, **kwargs)
                 except BaseException as ex:  # pylint: disable=W0703
-                    logger.error(f"ERROR IN RETRY: {ex}")
-                    print(traceback.format_exc())
-
                     func_delay *= config.execution.TASK_RETRY_BACKOFF
                     logger.warning(
                         f"Retrying {method_name} {self.traversal_node.address} in {func_delay} seconds..."
@@ -161,10 +158,12 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             for row in rowset:
                 for foreign_field, local_field in field_mappings:
                     new_value = (
-                        row[foreign_field.value] if foreign_field.value in row else None
+                        row[foreign_field.string_path]
+                        if foreign_field.string_path in row
+                        else None
                     )
                     if new_value:
-                        append(output, local_field.value, new_value)
+                        append(output, local_field.string_path, new_value)
         return output
 
     def update_status(
@@ -421,7 +420,7 @@ def filter_data_categories(
                 {
                     field: result
                     for field, result in row.items()
-                    if field in {target.value for target in target_fields}
+                    if field in {target.string_path for target in target_fields}
                 }
             )
 

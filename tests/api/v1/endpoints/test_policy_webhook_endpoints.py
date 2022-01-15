@@ -452,7 +452,7 @@ class TestPutPolicyPreExecutionWebhooks:
         body = json.loads(resp.text)
         assert (
             body["detail"]
-            == "Check request body: there are multiple webhooks whose keys or keys resolve to the same value."
+            == "Check request body: there are multiple webhooks whose keys or names resolve to the same value."
         )
 
         name_only = {
@@ -468,7 +468,7 @@ class TestPutPolicyPreExecutionWebhooks:
         body = json.loads(resp.text)
         assert (
             body["detail"]
-            == "Check request body: there are multiple webhooks whose keys or keys resolve to the same value."
+            == "Check request body: there are multiple webhooks whose keys or names resolve to the same value."
         )
         assert db.query(PolicyPreWebhook).count() == 0  # All must succeed or fail
 
@@ -494,7 +494,7 @@ class TestPutPolicyPreExecutionWebhooks:
         body = json.loads(resp.text)
         assert (
             body["detail"]
-            == "Check request body: there are multiple webhooks whose keys or keys resolve to the same value."
+            == "Check request body: there are multiple webhooks whose keys or names resolve to the same value."
         )
 
     def test_create_multiple_pre_execution_webhooks(

@@ -82,9 +82,7 @@ class SQLConnector(BaseConnector[Engine]):
     def retrieve_data(
         self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
     ) -> List[Row]:
-
         """Retrieve sql data"""
-
         query_config = self.query_config(node)
         client = self.client()
         stmt = query_config.generate_query(input_data, policy)

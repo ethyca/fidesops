@@ -103,8 +103,70 @@ def test_directional_references() -> None:
     }
 
 
+def test_generate_field() -> None:
+    def _is_string_field(f: Field):
+        return isinstance(f, ScalarField) and f.data_type_converter.name == "string"
+
+    string_field = generate_field(
+        name="str",
+        data_categories=["category"],
+        identity="identity",
+        data_type_name="string",
+        references=[],
+        is_pk=False,
+        length=0,
+        is_array=False,
+        sub_fields=[],
+    )
+    array_field = generate_field(
+        name="arr",
+        data_categories=["category"],
+        identity="identity",
+        data_type_name="string",
+        references=[],
+        is_pk=False,
+        length=0,
+        is_array=True,
+        sub_fields=[],
+    )
+    object_field = generate_field(
+        name="obj",
+        data_categories=["category"],
+        identity="identity",
+        data_type_name="object",
+        references=[],
+        is_pk=False,
+        length=0,
+        is_array=False,
+        sub_fields=[string_field, array_field],
+    )
+    object_array_field = generate_field(
+        name="obj_a",
+        data_categories=["category"],
+        identity="identity",
+        data_type_name="string",
+        references=[],
+        is_pk=False,
+        length=0,
+        is_array=True,
+        sub_fields=[string_field, object_field],
+    )
+
+    assert _is_string_field(string_field)
+    assert isinstance(array_field, ScalarField) and array_field.is_array
+    assert isinstance(object_field, ObjectField) and _is_string_field(
+        object_field.fields["str"]
+    )
+    assert (
+        isinstance(object_field.fields["arr"], ScalarField)
+        and object_field.fields["arr"].is_array
+        and _is_string_field(object_field.fields["str"])
+    )
+    assert isinstance(object_array_field, ObjectField) and object_array_field.is_array
+    assert object_array_field.fields["obj"] == object_field
+
 def test_field_key():
-    assert FieldPath("a", "b").value == "a.b"
-    assert FieldPath("a").keys == ("a",)
+    assert FieldPath("a", "b").string_path == "a.b"
+    assert FieldPath("a").levels == ("a",)
     assert FieldPath("a").prepend("b") == FieldPath("b", "a")
     assert FieldPath("a", "b") == FieldPath("a", "b")
