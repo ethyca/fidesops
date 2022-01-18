@@ -8,8 +8,9 @@ from fidesops.graph.config import (
     CollectionAddress,
     ScalarField,
     ObjectField,
+    FieldAddress,
 )
-from fidesops.graph.data_type import DataType
+from fidesops.graph.graph import DatasetGraph, Edge
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.schemas.dataset import FidesopsDataset
 from ..graph.graph_test_util import field
@@ -50,8 +51,8 @@ example_dataset_nested_yaml = """dataset:
             data_categories: [user.derived.identifiable.unique_id]
             fidesops_meta:
               references:
-                - dataset: postgres_example_test_dataset
-                  field: customer.id
+                - dataset: postgres_main_database
+                  field: photo_collection.id
                   direction: from
               data_type: integer
           - name: name
@@ -74,6 +75,10 @@ example_dataset_nested_yaml = """dataset:
               - name: submitter
                 fidesops_meta:
                     data_type: string
+                    references:
+                        - dataset: postgres_main_database
+                          field: users.id
+                          direction: from
                 data_categories: [user.provided.identifiable]
           - name: tags
             fidesops_meta:
@@ -172,6 +177,7 @@ def test_nested_dataset_format():
     assert tags_field.is_array
     assert isinstance(_id_field, ScalarField)
     assert _id_field.is_array is False
+
     assert isinstance(thumbnail_field, ObjectField)
     assert thumbnail_field.is_array is False
     assert thumbnail_field.data_type() == "object"
@@ -198,3 +204,51 @@ def test_invalid_datatype():
     dataset = __to_dataset__(bad_data_declaration)
     with pytest.raises(ValidationError):
         FidesopsDataset.parse_obj(dataset)
+
+
+example_postgres_yaml = """dataset:
+  - fides_key: postgres_main_database
+    name: Postgres users and photos
+    description: Example of a Postgres reference db
+    collections:
+      - name: photo_collection
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
+              data_type: integer
+      - name: users
+        fields:
+          - name: name
+            data_categories: [ user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+"""
+
+
+def test_referencing_datasets_via_nested_fields():
+    """One of the fields in the postgres dataset references a nested field in the mongo dataset"""
+    dataset = __to_dataset__(example_dataset_nested_yaml)
+    ds = FidesopsDataset.parse_obj(dataset)
+    mongo_dataset = convert_dataset_to_graph(ds, "ignore")
+
+    postgres_dataset = __to_dataset__(example_postgres_yaml)
+    ds_postgres = FidesopsDataset.parse_obj(postgres_dataset)
+    postgres_dataset = convert_dataset_to_graph(ds_postgres, "ignore")
+    dataset_graph = DatasetGraph(mongo_dataset, postgres_dataset)
+
+    assert dataset_graph.edges == {
+        Edge(
+            FieldAddress("postgres_main_database", "users", "id"),
+            FieldAddress("mongo_nested_test", "photos", "thumbnail", "submitter"),
+        ),
+        Edge(
+            FieldAddress("postgres_main_database", "photo_collection", "id"),
+            FieldAddress("mongo_nested_test", "photos", "photo_id"),
+        ),
+    }

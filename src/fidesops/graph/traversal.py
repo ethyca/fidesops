@@ -52,7 +52,11 @@ class TraversalNode:
             append(
                 self.children,
                 other_field_address.collection_address(),
-                (child_node, self_field_address.field_path, other_field_address.field_path),
+                (
+                    child_node,
+                    self_field_address.field_path,
+                    other_field_address.field_path,
+                ),
             )
             append(
                 child_node.parents,

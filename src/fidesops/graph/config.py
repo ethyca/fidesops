@@ -133,9 +133,12 @@ class CollectionAddress:
                 f"'{address_str}' is not a valid collection address"
             )
 
-    def field_address(self, field: FieldPath) -> FieldAddress:
-        """Create a field address appended to this collection address."""
-        return FieldAddress(self.dataset, self.collection, *field.levels)
+    def field_address(self, field_path: FieldPath) -> FieldAddress:
+        """Create a field address appended to this collection address.
+
+        collection_address.field_address(FieldPath('a', 'b', 'c', 'd')) = dataset_name:collection_name:a.b.c.d
+        """
+        return FieldAddress(self.dataset, self.collection, *field_path.levels)
 
 
 ROOT_COLLECTION_ADDRESS: CollectionAddress = CollectionAddress("__ROOT__", "__ROOT__")
@@ -148,11 +151,18 @@ class FieldPath:
     """Fields are addressable by a (possibly) nested name. This key
     represents a field name held as a tuple of possibly descending levels.
     A scalar field is represented as a single-element tuple.
+
+    Examples:
+    FieldPath('a', 'b', 'c', 'd').levels = ('a', 'b', 'c', 'd')
+    FieldPath('a', 'b', 'c', 'd').string_path = 'a.b.c.d'
+
+    FieldPath('a').levels = ('a',)
+    FieldPath('a').string_path = 'a'
     """
 
     def __init__(self, *names: str):
-        self.levels = tuple(names)
-        self.string_path = ".".join(self.levels)
+        self.levels: Tuple[str, ...] = tuple(names)
+        self.string_path: str = ".".join(self.levels)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, FieldPath):
@@ -163,7 +173,7 @@ class FieldPath:
         return hash(self.string_path)
 
     def __repr__(self) -> str:
-        return f"FieldPath('{self.string_path}')"
+        return f"FieldPath{self.levels}"
 
     def __lt__(self, other: "FieldPath") -> bool:
         return self.string_path < other.string_path
@@ -180,7 +190,7 @@ class FieldPath:
 
 class FieldAddress:
     """The representation of a field location in the graph, specified by
-    (data dataset name, collection name, field name ... )
+    (data dataset name, collection name, field name, subfield name, ... )
 
     All values after the second are grouped to provide a FieldPath object.
     Additional values are understood to refer to nested field values.
@@ -191,7 +201,7 @@ class FieldAddress:
     def __init__(self, dataset: str, collection: str, *fields: str):
         self.dataset = dataset
         self.collection = collection
-        self.field_path = FieldPath(*fields)
+        self.field_path: FieldPath = FieldPath(*fields)
         self.value: str = ":".join((dataset, collection, self.field_path.string_path))
 
     def is_member_of(self, collection_address: CollectionAddress) -> bool:
@@ -251,11 +261,12 @@ class Field(BaseModel, ABC):
         """return the data type name"""
         return self.data_type_converter.name
 
-    def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
+    def collect_matching(self, func: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
         """Find fields or subfields satisfying the input function"""
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(name='{self.name}', data_type='{self.data_type_converter.name}', is_array={self.is_array})"
+        """Overrides print method to be more succinct"""
+        return f"{self.__class__.__name__}(name='{self.name}', data_type='{self.data_type()}', is_array={self.is_array})"
 
 
 class ScalarField(Field):
@@ -271,9 +282,9 @@ class ScalarField(Field):
 
         return value
 
-    def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
-        """Find fields or subfields satisfying the input function"""
-        if f(self):
+    def collect_matching(self, func: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
+        """Returns the field if it satisfies the input function"""
+        if func(self):
             return {FieldPath(self.name): self}  # pylint: disable=no-member
         return {}
 
@@ -292,17 +303,21 @@ class ObjectField(Field):
             if field.name in value
         }
 
-    def collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
-        """Find fields or subfields satisfying the input function"""
-        name = self.name  # pylint: disable=no-member
-        base = {FieldPath(name): self} if f(self) else {}  # pylint: disable=no-member
+    def collect_matching(self, func: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
+        """Find fields or subfields satisfying the input function
+
+        Recursively calls collect_matching until we get to the base case, which is a ScalarField.
+        """
+        base = (
+            {FieldPath(self.name): self} if func(self) else {}  # pylint: disable=no-member
+        )  # pylint: disable=no-member
         child_dicts = merge_dicts(
-            *map(lambda field: field.collect_matching(f), self.fields.values())
+            *[field.collect_matching(func) for field in self.fields.values()]
         )
         return merge_dicts(
             base,
             {
-                field_path.prepend(name): field
+                field_path.prepend(self.name): field
                 for field_path, field in child_dicts.items()
             },  # pylint: disable=no-member
         )
@@ -360,17 +375,25 @@ class Collection(BaseModel):
 
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:
-        """Maps FieldPaths to Fields"""
+        """Maps FieldPaths to Fields
+
+        Flattens all the Fields so they are on one level: all nested fields are brought to the top.
+        """
         return self._collect_matching(lambda f: True)
 
-    def _collect_matching(self, f: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
-        matches = map(lambda field: field.collect_matching(f), self.fields)
+    def _collect_matching(
+        self, func: Callable[[Field], bool]
+    ) -> Dict[FieldPath, Field]:
+        matches = map(lambda field: field.collect_matching(func), self.fields)
         return merge_dicts(*matches)
 
     def references(
         self,
     ) -> Dict[FieldPath, List[Tuple[FieldAddress, Optional[EdgeDirection]]]]:
-        """return references from fields in this collection to fields in any other"""
+        """return references from fields in this collection to fields in any other collection
+
+        A nested field can be a reference.
+        """
         return {
             field_path: field.references
             for field_path, field in self.field_dict.items()
