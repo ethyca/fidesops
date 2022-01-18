@@ -80,6 +80,10 @@ example_dataset_nested_yaml = """dataset:
                           field: users.id
                           direction: from
                 data_categories: [user.provided.identifiable]
+              - name: camera_used
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: integer
           - name: tags
             fidesops_meta:
                 data_type: string[]
@@ -98,7 +102,6 @@ example_bad_dataset_nested_yaml = """dataset:
     description: Example of a Mongo dataset that contains nested data
     collections:
       - name: photos
-
         fields:
           - name: thumbnail
             fidesops_meta:
@@ -228,11 +231,25 @@ example_postgres_yaml = """dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: integer
+      - name: cameras
+        fields:
+          - name: name
+            data_categories: [ user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+              references:
+                - dataset: mongo_nested_test
+                  field: photos.thumbnail.camera_used
+                  direction: to
 """
 
 
 def test_referencing_datasets_via_nested_fields():
-    """One of the fields in the postgres dataset references a nested field in the mongo dataset"""
+    """Two of the fields in the postgres dataset references a nested field in the mongo dataset"""
     dataset = __to_dataset__(example_dataset_nested_yaml)
     ds = FidesopsDataset.parse_obj(dataset)
     mongo_dataset = convert_dataset_to_graph(ds, "ignore")
@@ -251,4 +268,8 @@ def test_referencing_datasets_via_nested_fields():
             FieldAddress("postgres_main_database", "photo_collection", "id"),
             FieldAddress("mongo_nested_test", "photos", "photo_id"),
         ),
+        Edge(
+            FieldAddress("postgres_main_database", "cameras", "id"),
+            FieldAddress("mongo_nested_test", "photos", "thumbnail", "camera_used")
+        )
     }

@@ -309,17 +309,19 @@ class ObjectField(Field):
         Recursively calls collect_matching until we get to the base case, which is a ScalarField.
         """
         base = (
-            {FieldPath(self.name): self} if func(self) else {}  # pylint: disable=no-member
-        )  # pylint: disable=no-member
+            {FieldPath(self.name): self}  # pylint: disable=no-member
+            if func(self)
+            else {}
+        )
         child_dicts = merge_dicts(
             *[field.collect_matching(func) for field in self.fields.values()]
         )
         return merge_dicts(
             base,
             {
-                field_path.prepend(self.name): field
+                field_path.prepend(self.name): field  # pylint: disable=no-member
                 for field_path, field in child_dicts.items()
-            },  # pylint: disable=no-member
+            },
         )
 
 
@@ -384,7 +386,7 @@ class Collection(BaseModel):
     def _collect_matching(
         self, func: Callable[[Field], bool]
     ) -> Dict[FieldPath, Field]:
-        matches = map(lambda field: field.collect_matching(func), self.fields)
+        matches = [field.collect_matching(func) for field in self.fields]
         return merge_dicts(*matches)
 
     def references(
