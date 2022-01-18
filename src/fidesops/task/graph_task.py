@@ -102,11 +102,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         self.incoming_field_map: Dict[
             CollectionAddress, List[Tuple[FieldPath, FieldPath]]
-        ] = {k: [(e.f1.field, e.f2.field) for e in t] for k, t in b.items()}
+        ] = {k: [(e.f1.field_path, e.f2.field_path) for e in t] for k, t in b.items()}
 
         # fields that point to child nodes
         self.outgoing_field_map: List[FieldPath] = sorted(
-            {e.f1.field for e in self.traversal_node.outgoing_edges()}
+            {e.f1.field_path for e in self.traversal_node.outgoing_edges()}
         )
 
         # the input keys this task will read from.These will build the dask graph

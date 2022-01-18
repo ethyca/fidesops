@@ -95,10 +95,10 @@ def generate_data_for_traversal(
         for edge in tn.incoming_edges():
             if edge.f1.collection_address() in data:
                 collection_data = data[edge.f1.collection_address()]
-                incoming_values[edge.f2.field] = (
-                    edge.f1.field in collection_data
-                    and collection_data[edge.f1.field]
-                    or []
+                incoming_values[edge.f2.field_path] = (
+                        edge.f1.field_path in collection_data
+                        and collection_data[edge.f1.field_path]
+                        or []
                 )  # for row in collection_data]
 
         for fk, f in tn.node.collection.field_dict.items():

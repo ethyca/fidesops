@@ -52,12 +52,12 @@ class TraversalNode:
             append(
                 self.children,
                 other_field_address.collection_address(),
-                (child_node, self_field_address.field, other_field_address.field),
+                (child_node, self_field_address.field_path, other_field_address.field_path),
             )
             append(
                 child_node.parents,
                 self_field_address.collection_address(),
-                (self, self_field_address.field, other_field_address.field),
+                (self, self_field_address.field_path, other_field_address.field_path),
             )
 
     def incoming_edges(self) -> Set[Edge]:
@@ -110,7 +110,7 @@ class TraversalNode:
             if foreign.collection_address() == self.address:
                 foreign, local = local, foreign
             key = str(foreign.collection_address())
-            val = f"{foreign.field.string_path} -> {local.field.string_path}"
+            val = f"{foreign.field_path.string_path} -> {local.field_path.string_path}"
             if key in _from:
                 _from[key].add(val)
             else:

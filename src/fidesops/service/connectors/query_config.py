@@ -79,7 +79,7 @@ class QueryConfig(Generic[T], ABC):
         All of the possible keys that we can query for possible filter values.
         These are keys that are the ends of incoming edges.
         """
-        return {edge.f2.field for edge in self.node.incoming_edges()}
+        return {edge.f2.field_path for edge in self.node.incoming_edges()}
 
     def typed_filtered_values(self, input_data: Dict[str, List[Any]]) -> Dict[str, Any]:
         """
@@ -108,7 +108,7 @@ class QueryConfig(Generic[T], ABC):
         """
         data: Dict[str, List[CollectionAddress]] = {}
         for edge in self.node.incoming_edges():
-            append(data, edge.f2.field.string_path, edge.f1.collection_address())
+            append(data, edge.f2.field_path.string_path, edge.f1.collection_address())
         return data
 
     def display_query_data(self) -> Dict[str, Any]:

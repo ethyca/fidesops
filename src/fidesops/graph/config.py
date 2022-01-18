@@ -191,8 +191,8 @@ class FieldAddress:
     def __init__(self, dataset: str, collection: str, *fields: str):
         self.dataset = dataset
         self.collection = collection
-        self.field = FieldPath(*fields)
-        self.value: str = ":".join((dataset, collection, self.field.string_path))
+        self.field_path = FieldPath(*fields)
+        self.value: str = ":".join((dataset, collection, self.field_path.string_path))
 
     def is_member_of(self, collection_address: CollectionAddress) -> bool:
         """True if this field represents a field in the given collection address."""
