@@ -9,6 +9,7 @@ from fidesops.graph.config import (
     ScalarField,
     ObjectField,
     FieldAddress,
+    FieldPath,
 )
 from fidesops.graph.graph import DatasetGraph, Edge
 from fidesops.models.datasetconfig import convert_dataset_to_graph
@@ -83,6 +84,7 @@ example_dataset_nested_yaml = """dataset:
               - name: camera_used
                 data_categories: [ system.operations ]
                 fidesops_meta:
+                  identity: 'camera_uuid'
                   data_type: integer
           - name: tags
             fidesops_meta:
@@ -244,11 +246,11 @@ example_postgres_yaml = """dataset:
               references:
                 - dataset: mongo_nested_test
                   field: photos.thumbnail.camera_used
-                  direction: to
+                  direction: from
 """
 
 
-def test_referencing_datasets_via_nested_fields():
+def test_dataset_graph_connected_by_nested_fields():
     """Two of the fields in the postgres dataset references a nested field in the mongo dataset"""
     dataset = __to_dataset__(example_dataset_nested_yaml)
     ds = FidesopsDataset.parse_obj(dataset)
@@ -269,7 +271,20 @@ def test_referencing_datasets_via_nested_fields():
             FieldAddress("mongo_nested_test", "photos", "photo_id"),
         ),
         Edge(
+            FieldAddress("mongo_nested_test", "photos", "thumbnail", "camera_used"),
             FieldAddress("postgres_main_database", "cameras", "id"),
-            FieldAddress("mongo_nested_test", "photos", "thumbnail", "camera_used")
-        )
+        ),
     }
+
+    assert dataset_graph.identity_keys == {
+        FieldAddress(
+            "mongo_nested_test", "photos", "thumbnail", "camera_used"
+        ): "camera_uuid"
+    }
+
+    assert [
+        field_path.string_path
+        for field_path in dataset_graph.data_category_field_mapping[
+            "mongo_nested_test:photos"
+        ]["system.operations"]
+    ] == ["_id", "thumbnail.camera_used"]

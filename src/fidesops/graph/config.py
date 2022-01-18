@@ -306,7 +306,8 @@ class ObjectField(Field):
     def collect_matching(self, func: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
         """Find fields or subfields satisfying the input function
 
-        Recursively calls collect_matching until we get to the base case, which is a ScalarField.
+        Object fields will continue to call collect_matching until we get to the base case,
+        which is a ScalarField.
         """
         base = (
             {FieldPath(self.name): self}  # pylint: disable=no-member
@@ -381,11 +382,13 @@ class Collection(BaseModel):
 
         Flattens all the Fields so they are on one level: all nested fields are brought to the top.
         """
-        return self._collect_matching(lambda f: True)
+        return self.recursively_collect_matches(lambda f: True)
 
-    def _collect_matching(
+    def recursively_collect_matches(
         self, func: Callable[[Field], bool]
     ) -> Dict[FieldPath, Field]:
+        """Recurse through fields and subfields, creating a flattened dictionary
+        of field paths mapped to fields where the function is satisfied"""
         matches = [field.collect_matching(func) for field in self.fields]
         return merge_dicts(*matches)
 
