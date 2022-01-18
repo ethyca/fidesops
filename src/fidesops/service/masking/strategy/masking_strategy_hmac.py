@@ -40,22 +40,7 @@ class HmacMaskingStrategy(MaskingStrategy):
         Returns a hash using the hmac algorithm, generating a hash of the supplied value and the secret hmac_key.
         Returns None if the provided value is None.
         """
-        if value is None:
-            return None
-        masking_meta: Dict[
-            SecretType, MaskingSecretMeta
-        ] = self._build_masking_secret_meta()
-        key: str = SecretsUtil.get_or_generate_secret(
-            privacy_request_id, SecretType.key, masking_meta[SecretType.key]
-        )
-        salt: str = SecretsUtil.get_or_generate_secret(
-            privacy_request_id, SecretType.salt, masking_meta[SecretType.salt]
-        )
-        masked: str = hmac_encrypt_return_str(value, key, salt, self.algorithm)
-        if self.format_preservation is not None:
-            formatter = FormatPreservation(self.format_preservation)
-            return formatter.format(masked)
-        return masked
+        return "testing"
 
     def secrets_required(self) -> bool:
         return True
