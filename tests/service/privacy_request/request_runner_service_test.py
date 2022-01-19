@@ -451,6 +451,7 @@ def snowflake_resources(
 
 
 @pytest.mark.integration_external
+@pytest.mark.integration_snowflake
 def test_create_and_process_access_request_snowflake(
     snowflake_resources,
     db,
@@ -477,6 +478,7 @@ def test_create_and_process_access_request_snowflake(
 
 
 @pytest.mark.integration_external
+@pytest.mark.integration_snowflake
 def test_create_and_process_erasure_request_snowflake(
     snowflake_example_test_dataset_config,
     snowflake_resources,
@@ -557,6 +559,7 @@ def redshift_resources(
 
 
 @pytest.mark.integration_external
+@pytest.mark.integration_redshift
 def test_create_and_process_access_request_redshift(
     redshift_resources,
     db,
@@ -593,6 +596,7 @@ def test_create_and_process_access_request_redshift(
 
 
 @pytest.mark.integration_external
+@pytest.mark.integration_redshift
 def test_create_and_process_erasure_request_redshift(
     redshift_example_test_dataset_config,
     redshift_resources,
