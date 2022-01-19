@@ -90,24 +90,17 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             self.traversal_node.node.dataset.connection_key  # ConnectionConfig.key
         )
 
-        # # [(foreign address, local address)]
-        # self._incoming_edge_tuples: List[Tuple[FieldAddress, FieldAddress]] = [
-        #     (e.f1, e.f2) for e in self.traversal_node.incoming_edges()
-        # ]
-
         # build incoming edges to the form : [dataset address: [(foreign field, local field)]
         b: Dict[CollectionAddress, List[Edge]] = partition(
             self.traversal_node.incoming_edges(), lambda e: e.f1.collection_address()
         )
 
-        self.incoming_field_map: Dict[
+        self.incoming_field_path_map: Dict[
             CollectionAddress, List[Tuple[FieldPath, FieldPath]]
-        ] = {k: [(e.f1.field_path, e.f2.field_path) for e in t] for k, t in b.items()}
-
-        # fields that point to child nodes
-        self.outgoing_field_map: List[FieldPath] = sorted(
-            {e.f1.field_path for e in self.traversal_node.outgoing_edges()}
-        )
+        ] = {
+            col_addr: [(edge.f1.field_path, edge.f2.field_path) for edge in edge_list]
+            for col_addr, edge_list in b.items()
+        }
 
         # the input keys this task will read from.These will build the dask graph
         self.input_keys: List[CollectionAddress] = sorted(b.keys())
@@ -153,17 +146,19 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         output: Dict[str, List[Any]] = {}
         for i, rowset in enumerate(data):
             collection_address = self.input_keys[i]
-            field_mappings = self.incoming_field_map[collection_address]
+            field_mappings: List[
+                Tuple[FieldPath, FieldPath]
+            ] = self.incoming_field_path_map[collection_address]
 
             for row in rowset:
-                for foreign_field, local_field in field_mappings:
+                for foreign_field_path, local_field_path in field_mappings:
                     new_value = (
-                        row[foreign_field.string_path]
-                        if foreign_field.string_path in row
+                        row[foreign_field_path.string_path]
+                        if foreign_field_path.string_path in row
                         else None
                     )
                     if new_value:
-                        append(output, local_field.string_path, new_value)
+                        append(output, local_field_path.string_path, new_value)
         return output
 
     def update_status(
