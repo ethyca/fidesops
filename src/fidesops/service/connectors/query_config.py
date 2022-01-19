@@ -272,10 +272,10 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         return [fk.levels[-1] for fk in field_paths]
 
     def format_clause_for_query(
-        self, field_name: str, operator: str, operand: str
+        self, string_path: str, operator: str, operand: str
     ) -> str:
         """Returns clauses in a format they can be added into SQL queries."""
-        return f"{field_name} {operator} :{operand}"
+        return f"{string_path} {operator} :{operand}"
 
     def get_formatted_query_string(
         self,
@@ -405,12 +405,12 @@ class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
     """
 
     def format_clause_for_query(
-        self, field_name: str, operator: str, operand: str
+        self, string_path: str, operator: str, operand: str
     ) -> str:
         """Returns clauses in a format they can be added into SQL queries."""
         if operator == "IN":
-            return f"{field_name} IN ({operand})"
-        return super().format_clause_for_query(field_name, operator, operand)
+            return f"{string_path} IN ({operand})"
+        return super().format_clause_for_query(string_path, operator, operand)
 
     def generate_query(  # pylint: disable=R0914
         self,
@@ -427,18 +427,18 @@ class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
             formatted_fields = self.format_fields_for_query(self.fields)
             field_list = ",".join(formatted_fields)
 
-            for field_name, data in filtered_data.items():
+            for string_path, data in filtered_data.items():
                 data = set(data)
                 if len(data) == 1:
-                    clauses.append(self.format_clause_for_query(field_name, "="))
-                    query_data[field_name] = data.pop()
+                    clauses.append(self.format_clause_for_query(string_path, "="))
+                    query_data[string_path] = data.pop()
                 elif len(data) > 1:
                     data_vals = list(data)
                     query_data_keys: List[str] = []
                     for val in data_vals:
                         # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
                         query_data_name = (
-                            field_name
+                            string_path
                             + "_in_stmt_generated_"
                             + str(data_vals.index(val))
                         )
@@ -446,7 +446,7 @@ class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
                         query_data_keys.append(":" + query_data_name)
                     operand = ", ".join(query_data_keys)
                     clauses.append(
-                        self.format_clause_for_query(field_name, "IN", operand)
+                        self.format_clause_for_query(string_path, "IN", operand)
                     )
                 else:
                     #  if there's no data, create no clause
@@ -476,11 +476,11 @@ class SnowflakeQueryConfig(SQLQueryConfig):
 
     def format_clause_for_query(
         self,
-        field_name: str,
+        string_path: str,
         operator: str,
     ) -> str:
         """Returns field names in clauses surrounded by quotation marks as required by Snowflake syntax."""
-        return f'"{field_name}" {operator} (:{field_name})'
+        return f'"{string_path}" {operator} (:{string_path})'
 
     def get_formatted_query_string(
         self,
