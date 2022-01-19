@@ -272,10 +272,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         return [fk.levels[-1] for fk in field_paths]
 
     def format_clause_for_query(
-        self,
-        field_name: str,
-        operator: str,
-        operand: str
+        self, field_name: str, operator: str, operand: str
     ) -> str:
         """Returns clauses in a format they can be added into SQL queries."""
         return f"{field_name} {operator} :{operand}"
@@ -314,10 +311,14 @@ class SQLQueryConfig(QueryConfig[TextClause]):
             for string_path, data in filtered_data.items():
                 data = set(data)
                 if len(data) == 1:
-                    clauses.append(self.format_clause_for_query(string_path, "=", string_path))
+                    clauses.append(
+                        self.format_clause_for_query(string_path, "=", string_path)
+                    )
                     query_data[string_path] = (data.pop(),)
                 elif len(data) > 1:
-                    clauses.append(self.format_clause_for_query(string_path, "IN", string_path))
+                    clauses.append(
+                        self.format_clause_for_query(string_path, "IN", string_path)
+                    )
                     query_data[string_path] = tuple(data)
                 else:
                     #  if there's no data, create no clause
@@ -404,10 +405,7 @@ class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
     """
 
     def format_clause_for_query(
-            self,
-            field_name: str,
-            operator: str,
-            operand: str
+        self, field_name: str, operator: str, operand: str
     ) -> str:
         """Returns clauses in a format they can be added into SQL queries."""
         if operator == "IN":
