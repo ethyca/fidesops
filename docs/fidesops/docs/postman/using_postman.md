@@ -8,13 +8,16 @@ mock external databases, and setting up the required prerequisite configuration.
 2. Postman > File > Import
 
 ![File_Import](../img/postman_images/import_collection.png)
+
 3. Upload the Fidesops collection found in `docs/fidesops/docs/postman/Fidesops.postman_collection.json`
 
 ![Upload Fidesops Collection](../img/postman_images/upload_files.png)
+
 4. Click on the imported `Fidesops` collection in the left pane and then find `Variables` to edit `Fidesops` collection variables.
    1. Some variables are populated for you - the authentication variables you will have to add yourself below.
 
 ![Open Fidesops Variables](../img/postman_images/open_fidesops_variables.png)
+
 5. Add your `OAUTH_ROOT_CLIENT_ID` and `OAUTH_ROOT_CLIENT_SECRET` under `CURRENT VALUE`.  I'm adding `fidesopsadmin` and `fidesopsadmin` secret, but you should add the appropriate values for your instance.
    1. Important: Click `Save`
 
@@ -29,6 +32,7 @@ mock external databases, and setting up the required prerequisite configuration.
 1. Click on the `Get Root Client Token` request and then click `Send` to send a `POST` request to fidesops to create a root token.
 
 ![Create root token](../img/postman_images/create_root_client_token.png)
+
 2. Copy the returned access token in the response body and paste it as the `Current Value` of `root_client_token` in Fidesops variables and click "Save".
 
 ![Get root token](../img/postman_images/root_token_response.png)
@@ -72,6 +76,7 @@ Now, we should have all the basic pieces need to create an Access request.
 1. SEND `Create Access Privacy Requests` - If "succeeded", note the "id" that is returned. Note that succeeded means the privacy request has been created, and is pending, not that its execution is complete.
 
 ![Succeeded Request](../img/postman_images/succeeded_privacy_request.png)
+
 2. Check your local `fides_uploads` folder that we configured earlier to see access request results.
    1. This is run asynchronously, so it may take a few moments to complete.  This particular request should have retrieved data from both the `postgres_example` and `mongodb_example` databases with the `user.provided.identifiable` data_category
 
