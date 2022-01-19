@@ -152,22 +152,6 @@ else
 endif
 
 
-# Run the pytest integration tests.
-pytest-integration-access: compose-build
-	@echo "Building additional Docker images for integration tests..."
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build
-	@echo "Bringing up the integration environment..."
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
-	@echo "Waiting 15s for integration containers to be ready..."
-	@sleep 15
-	@echo "Running additional setup for mssql integration tests"
-	@docker exec fidesops python tests/integration_tests/mssql_setup.py
-	@echo "Running pytest integration tests..."
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml \
-		run $(IMAGE_NAME) \
-		pytest $(pytestpath) -m integration
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml down --remove-orphans
-
 pytest-integration-erasure: compose-build
 	@echo "Building additional Docker images for integration tests..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build
