@@ -255,13 +255,6 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         """Returns clauses in a format they can be added into SQL queries."""
         return f"{field_name} {operator} :{field_name}"
 
-    def format_clause_for_query_in(
-        self, field_name: str, query_data_names: List[str]
-    ) -> str:
-        """Returns clauses in a format they can be added into SQL queries."""
-        in_clause = ", ".join(query_data_names)
-        return f"{field_name} IN ({in_clause})"
-
     def get_formatted_query_string(
         self,
         field_list: str,
@@ -278,7 +271,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         """Returns a formatted SQL UPDATE statement to fit the Snowflake syntax."""
         return f"UPDATE {self.node.address.collection} SET {','.join(update_clauses)} WHERE {' AND '.join(pk_clauses)}"
 
-    def generate_query(  # pylint: disable=R0914
+    def generate_query(
         self,
         input_data: Dict[str, List[Any]],
         policy: Optional[Policy] = None,
@@ -289,44 +282,23 @@ class SQLQueryConfig(QueryConfig[TextClause]):
 
         if filtered_data:
             clauses = []
-            query_data: List[Dict[str, Any]] = []
+            query_data: Dict[str, Tuple[Any, ...]] = {}
             formatted_fields = self.format_fields_for_query(self.fields)
             field_list = ",".join(formatted_fields)
-            from sqlalchemy import bindparam
-
             for field_name, data in filtered_data.items():
                 data = set(data)
                 if len(data) == 1:
                     clauses.append(self.format_clause_for_query(field_name, "="))
-                    # SQL Alchemy + SQLServer errors when we use a tuple in "value"
-                    query_data.append({"name": field_name, "value": data.pop()})
+                    query_data[field_name] = (data.pop(),)
                 elif len(data) > 1:
-                    # converts to list so that we can generate indexes
-                    newdata = list(data)
-                    query_data_names: List[str] = []
-                    for i in newdata:
-                        # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
-                        query_data_name = "_in_stmt_generated_" + str(newdata.index(i))
-                        query_data.append({"name": query_data_name, "value": i})
-                        query_data_names.append(":" + query_data_name)
-                    # SQL Alchemy + SQLServer errors when the query_str for IN statements was structured like this:
-                    # SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN :some-params-in-tuple
-                    # Current structure of query_str:
-                    # SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN (:_in_stmt_generated_0, :_in_stmt_generated_1, :_in_stmt_generated_2)
-                    clauses.append(
-                        self.format_clause_for_query_in(field_name, query_data_names)
-                    )
+                    clauses.append(self.format_clause_for_query(field_name, "IN"))
+                    query_data[field_name] = tuple(data)
                 else:
                     #  if there's no data, create no clause
                     pass
             if len(clauses) > 0:
                 query_str = self.get_formatted_query_string(field_list, clauses)
-                logger.info(f"building query for {self.node.address}")
-                stmt = text(query_str)
-                for i in query_data:
-                    # technically don't need to use this bindparams() method, we can go back to using just params()
-                    stmt = stmt.bindparams(bindparam(i["name"], value=i["value"]))
-                return stmt
+                return text(query_str).params(query_data)
 
         logger.warning(
             f"There is not enough data to generate a valid query for {self.node.address}"
@@ -361,6 +333,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
                 f"There is not enough data to generate a valid update statement for {self.node.address}"
             )
             return None
+
         query_str = self.get_formatted_update_stmt(
             update_clauses,
             pk_clauses,
@@ -390,6 +363,69 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         text_clause = self.generate_query(query_data, None)
         if text_clause is not None:
             return self.query_to_str(text_clause, query_data)
+        return None
+
+
+class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
+    """
+    Generates SQL valid for SQLServer. This way of building queries should also work for every other connector,
+    but SQLServer is separated out for 2 reasons:
+
+    1. This increases code complexity for building queries
+    2. Lack of thorough testing framework to ensure all connectors will in fact work using this code
+    """
+
+    @staticmethod
+    def format_clause_for_query_in(field_name: str, query_data_names: List[str]) -> str:
+        """Returns clauses in a format they can be added into SQL queries."""
+        in_clause = ", ".join(query_data_names)
+        return f"{field_name} IN ({in_clause})"
+
+    def generate_query(  # pylint: disable=R0914
+        self,
+        input_data: Dict[str, List[Any]],
+        policy: Optional[Policy] = None,
+    ) -> Optional[TextClause]:
+        """Generate a retrieval query"""
+
+        filtered_data = self.typed_filtered_values(input_data)
+
+        if filtered_data:
+            clauses = []
+            query_data: Dict[str, Tuple[Any, ...]] = {}
+            formatted_fields = self.format_fields_for_query(self.fields)
+            field_list = ",".join(formatted_fields)
+
+            for field_name, data in filtered_data.items():
+                data = set(data)
+                if len(data) == 1:
+                    clauses.append(self.format_clause_for_query(field_name, "="))
+                    query_data[field_name] = data.pop()
+                elif len(data) > 1:
+                    data_vals = list(data)
+                    query_data_keys: List[str] = []
+                    for val in data_vals:
+                        # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
+                        query_data_name = (
+                            field_name
+                            + "_in_stmt_generated_"
+                            + str(data_vals.index(val))
+                        )
+                        query_data[query_data_name] = val
+                        query_data_keys.append(":" + query_data_name)
+                    clauses.append(
+                        self.format_clause_for_query_in(field_name, query_data_keys)
+                    )
+                else:
+                    #  if there's no data, create no clause
+                    pass
+            if len(clauses) > 0:
+                query_str = self.get_formatted_query_string(field_list, clauses)
+                return text(query_str).params(query_data)
+
+        logger.warning(
+            f"There is not enough data to generate a valid query for {self.node.address}"
+        )
         return None
 
 

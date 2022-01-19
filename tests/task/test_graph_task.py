@@ -17,6 +17,7 @@ dask.config.set(scheduler="processes")
 connection_configs = [
     ConnectionConfig(key="mysql", connection_type=ConnectionType.postgres),
     ConnectionConfig(key="postgres", connection_type=ConnectionType.postgres),
+    ConnectionConfig(key="mssql", connection_type=ConnectionType.mssql)
 ]
 
 
@@ -56,12 +57,17 @@ def test_sql_dry_run_queries() -> None:
 
     assert (
         env[CollectionAddress("postgres", "Order")]
-        == "SELECT order_id,customer_id,shipping_address_id,billing_address_id FROM Order WHERE customer_id IN (:_in_stmt_generated_0, :_in_stmt_generated_1)"
+        == "SELECT order_id,customer_id,shipping_address_id,billing_address_id FROM Order WHERE customer_id IN (?, ?)"
     )
 
     assert (
         env[CollectionAddress("mysql", "Address")]
-        == "SELECT id,street,city,state,zip FROM Address WHERE id IN (:_in_stmt_generated_0, :_in_stmt_generated_1)"
+        == "SELECT id,street,city,state,zip FROM Address WHERE id IN (?, ?)"
+    )
+
+    assert (
+        env[CollectionAddress("mssql", "Address")]
+        == "SELECT id,street,city,state,zip FROM Address WHERE id IN (:id_in_stmt_generated_0, :id_in_stmt_generated_1)"
     )
 
 

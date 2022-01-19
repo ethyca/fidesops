@@ -34,6 +34,7 @@ from fidesops.service.connectors.query_config import (
     SnowflakeQueryConfig,
     SQLQueryConfig,
     RedshiftQueryConfig,
+    MicrosoftSQLServerQueryConfig,
 )
 
 logger = logging.getLogger(__name__)
@@ -348,7 +349,7 @@ class MicrosoftSQLServerConnector(SQLConnector):
 
     def query_config(self, node: TraversalNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input traversal_node."""
-        return SQLQueryConfig(node)
+        return MicrosoftSQLServerQueryConfig(node)
 
     # Overrides BaseConnector.cursor_result_to_rows
     @staticmethod
