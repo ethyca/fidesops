@@ -48,8 +48,6 @@ class SQLConnector(BaseConnector[Engine]):
     def cursor_result_to_rows(results: CursorResult) -> List[Row]:
         """Convert SQLAlchemy results to a list of dictionaries"""
         columns: List[Column] = results.cursor.description
-        # For most SQL connections, columns are in the below format:
-        # (Column(name='address_id', type_code=20), Column(name='email', type_code=1043), Column(name='id', type_code=23), Column(name='name', type_code=1043))
         l = len(columns)
         rows = []
         for row_tuple in results:
@@ -356,8 +354,6 @@ class MicrosoftSQLServerConnector(SQLConnector):
     def cursor_result_to_rows(results: CursorResult) -> List[Row]:
         """Convert SQLAlchemy results to a list of dictionaries"""
         columns: List[Column] = results.cursor.description
-        # For sql server, columns are in the below format:
-        # (('address_id', <class 'int'>, None, 19, 19, 0, True), ('created', <class 'datetime.datetime'>, None, 23, 23, 3, True), ('email', <class 'str'>, None, 100, 100, 0, True), ('id', <class 'int'>, None, 10, 10, 0, False), ('name', <class 'str'>, None, 100, 100, 0, True))
         l = len(columns)
         rows = []
         for row_tuple in results:
