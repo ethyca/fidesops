@@ -180,7 +180,7 @@ class TestCollection:
             FieldPath("f2"): [(FieldAddress("d", "e", "f"), None)],
         }
 
-    def test_fields_by_category(self):
+    def test_field_paths_by_category(self):
         ds = Collection(
             name="t3",
             fields=[
@@ -206,7 +206,7 @@ class TestCollection:
             ],
         )
 
-        assert ds.fields_by_category == {
+        assert ds.field_paths_by_category == {
             "test_category_apple": [
                 FieldPath("f1"),
                 FieldPath("f3"),

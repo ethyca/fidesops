@@ -29,16 +29,19 @@ T = TypeVar("T")
 
 
 class QueryConfig(Generic[T], ABC):
-    """A wrapper around a resource-type dependant query object that can generate runnable queries and string representations."""
+    """A wrapper around a resource-type dependent query object that can generate runnable queries
+    and string representations."""
 
     def __init__(self, node: TraversalNode):
         self.node = node
 
     def field_map(self) -> Dict[FieldPath, Field]:
-        """Field Paths of interest from this traversal traversal_node."""
+        """Flattened FieldPaths of interest from this traversal_node."""
         return self.node.node.collection.field_dict
 
-    def build_rule_target_fields(self, policy: Policy) -> Dict[Rule, List[FieldPath]]:
+    def build_rule_target_field_paths(
+        self, policy: Policy
+    ) -> Dict[Rule, List[FieldPath]]:
         """
         Return dictionary of rules mapped to update-able field paths on a given collection
         Example:
@@ -52,23 +55,23 @@ class QueryConfig(Generic[T], ABC):
             if not rule_categories:
                 continue
 
-            targeted_fields = []
+            targeted_field_paths = []
             collection_categories: Dict[
                 str, List[FieldPath]
-            ] = self.node.node.collection.fields_by_category
+            ] = self.node.node.collection.field_paths_by_category
             for rule_cat in rule_categories:
-                for collection_cat, fields in collection_categories.items():
+                for collection_cat, field_paths in collection_categories.items():
                     if collection_cat.startswith(rule_cat):
-                        targeted_fields.extend(fields)
-            rule_updates[rule] = targeted_fields
+                        targeted_field_paths.extend(field_paths)
+            rule_updates[rule] = targeted_field_paths
 
         return rule_updates
 
     @property
-    def primary_key_fields(self) -> Dict[str, Field]:
-        """List of fields marked as primary keys"""
+    def primary_key_field_paths(self) -> Dict[FieldPath, Field]:
+        """Mapping of FieldPaths to Fields that are marked as PK's"""
         return {
-            field_path.string_path: field
+            field_path: field
             for field_path, field in self.node.node.collection.field_dict.items()
             if field.primary_key
         }
@@ -76,8 +79,8 @@ class QueryConfig(Generic[T], ABC):
     @property
     def query_field_paths(self) -> Set[FieldPath]:
         """
-        All of the possible keys that we can query for possible filter values.
-        These are keys that are the ends of incoming edges.
+        All of the possible field paths that we can query for possible filter values.
+        These are field paths that are the ends of incoming edges.
         """
         return {edge.f2.field_path for edge in self.node.incoming_edges()}
 
@@ -138,20 +141,22 @@ class QueryConfig(Generic[T], ABC):
     def update_value_map(
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> Dict[str, Any]:
-        """Map the relevant fields to be updated on the row with their masked values from Policy Rules
+        """Map the relevant fields (as strings) to be updated on the row with their masked values from Policy Rules
 
-        Example return:  {'name': None, 'ccn': None, 'code': None}
+        Example return:  {'name': None, 'ccn': None, 'code': None, 'backup_identities.ssn': None}
 
-        In this example, a Null Masking Strategy was used to determine that the name/ccn/code fields
-        for a given customer_id will be replaced with null values.
+        In this example, a Null Masking Strategy was used to determine that the name/ccn/code fields and nested
+        backup_identities.ssn fields for a given customer_id will be replaced with null values.
+
+        FieldPaths are mapped to their dotted string path representation.
 
         """
-        rule_to_collection_fields: Dict[
+        rule_to_collection_field_paths: Dict[
             Rule, List[FieldPath]
-        ] = self.build_rule_target_fields(policy)
+        ] = self.build_rule_target_field_paths(policy)
 
         value_map: Dict[str, Any] = {}
-        for rule, field_paths in rule_to_collection_fields.items():
+        for rule, field_paths in rule_to_collection_field_paths.items():
             strategy_config = rule.masking_strategy
             if not strategy_config:
                 continue
@@ -159,30 +164,30 @@ class QueryConfig(Generic[T], ABC):
                 strategy_config["strategy"], strategy_config["configuration"]
             )
 
-            for field_path in field_paths:
+            for rule_field_path in field_paths:
                 masking_override: MaskingOverride = [
                     MaskingOverride(field.data_type_converter, field.length)
-                    for field_key, field in self.node.node.collection.field_dict.items()
-                    if field_key == field_path
+                    for field_path, field in self.node.node.collection.field_dict.items()
+                    if field_path == rule_field_path
                 ][0]
                 null_masking: bool = strategy_config.get("strategy") == NULL_REWRITE
                 if not self._supported_data_type(
                     masking_override, null_masking, strategy
                 ):
                     logger.warning(
-                        f"Unable to generate a query for field {field_path.string_path}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type_converter.name}"
+                        f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
                     continue
-                val: Any = row[field_path.string_path]
+                val: Any = row[rule_field_path.string_path]
                 masked_val = self._generate_masked_value(
                     request.id,
                     strategy,
                     val,
                     masking_override,
                     null_masking,
-                    field_path,
+                    rule_field_path,
                 )
-                value_map[field_path.string_path] = masked_val
+                value_map[rule_field_path.string_path] = masked_val
         return value_map
 
     @staticmethod
@@ -258,7 +263,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         self,
         field_paths: List[FieldPath],
     ) -> List[str]:
-        """Returns fields in a format they can be added into SQL queries.
+        """Returns field pathspaths in a format they can be added into SQL queries.
 
         This currently takes no nesting into account and only returns the
         last value from each key. It will need to be updated to support
@@ -296,23 +301,23 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         policy: Optional[Policy] = None,
     ) -> Optional[TextClause]:
         """Generate a retrieval query"""
-        filtered_data = self.typed_filtered_values(input_data)
+        filtered_data: Dict[str, Any] = self.typed_filtered_values(input_data)
 
         if filtered_data:
             clauses = []
-            query_data: Dict[FieldPath, Tuple[Any, ...]] = {}
-            formatted_fields = self.format_fields_for_query(
+            query_data: Dict[str, Tuple[Any, ...]] = {}
+            formatted_fields: List[str] = self.format_fields_for_query(
                 list(self.field_map().keys())
             )
             field_list = ",".join(formatted_fields)
-            for path, data in filtered_data.items():
+            for string_path, data in filtered_data.items():
                 data = set(data)
                 if len(data) == 1:
-                    clauses.append(self.format_clause_for_query(path, "="))
-                    query_data[path] = (data.pop(),)
+                    clauses.append(self.format_clause_for_query(string_path, "="))
+                    query_data[string_path] = (data.pop(),)
                 elif len(data) > 1:
-                    clauses.append(self.format_clause_for_query(path, "IN"))
-                    query_data[path] = tuple(data)
+                    clauses.append(self.format_clause_for_query(string_path, "IN"))
+                    query_data[string_path] = tuple(data)
                 else:
                     #  if there's no data, create no clause
                     pass
@@ -340,9 +345,9 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         )
         non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
             {
-                fpath: fld.cast(row[fpath])
-                for fpath, fld in self.primary_key_fields.items()
-                if fpath in row
+                fpath.string_path: fld.cast(row[fpath.string_path])
+                for fpath, fld in self.primary_key_field_paths.items()
+                if fpath.string_path in row
             }
         )
         pk_clauses: list[str] = self.format_key_map_for_update_stmt(
@@ -479,8 +484,8 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
             filtered_data: Dict[str, Any] = self.typed_filtered_values(input_data)
             if filtered_data:
                 field_list = {
-                    field_key.string_path: 1
-                    for field_key, field in self.field_map().items()
+                    field_path.string_path: 1
+                    for field_path, field in self.field_map().items()
                 }
                 query_pairs = {}
                 for string_field_path, data in filtered_data.items():
@@ -513,8 +518,8 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
 
         pk_clauses: Dict[str, Any] = filter_nonempty_values(
             {
-                string_field_path: field.cast(row[string_field_path])
-                for string_field_path, field in self.primary_key_fields.items()
+                field_path.string_path: field.cast(row[field_path.string_path])
+                for field_path, field in self.primary_key_field_paths.items()
             }
         )
 
