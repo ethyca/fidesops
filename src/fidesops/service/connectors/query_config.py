@@ -72,7 +72,7 @@ class QueryConfig(Generic[T], ABC):
         """Mapping of FieldPaths to Fields that are marked as PK's"""
         return {
             field_path: field
-            for field_path, field in self.node.node.collection.field_dict.items()
+            for field_path, field in self.field_map().items()
             if field.primary_key
         }
 
@@ -167,7 +167,7 @@ class QueryConfig(Generic[T], ABC):
             for rule_field_path in field_paths:
                 masking_override: MaskingOverride = [
                     MaskingOverride(field.data_type_converter, field.length)
-                    for field_path, field in self.node.node.collection.field_dict.items()
+                    for field_path, field in self.field_map().items()
                     if field_path == rule_field_path
                 ][0]
                 null_masking: bool = strategy_config.get("strategy") == NULL_REWRITE
@@ -263,7 +263,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         self,
         field_paths: List[FieldPath],
     ) -> List[str]:
-        """Returns field pathspaths in a format they can be added into SQL queries.
+        """Returns field paths in a format they can be added into SQL queries.
 
         This currently takes no nesting into account and only returns the
         last value from each key. It will need to be updated to support
