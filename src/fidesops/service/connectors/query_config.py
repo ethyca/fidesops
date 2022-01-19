@@ -424,13 +424,15 @@ class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
         if filtered_data:
             clauses = []
             query_data: Dict[str, Tuple[Any, ...]] = {}
-            formatted_fields = self.format_fields_for_query(self.fields)
+            formatted_fields = self.format_fields_for_query(
+                list(self.field_map().keys())
+            )
             field_list = ",".join(formatted_fields)
 
             for string_path, data in filtered_data.items():
                 data = set(data)
                 if len(data) == 1:
-                    clauses.append(self.format_clause_for_query(string_path, "="))
+                    clauses.append(self.format_clause_for_query(string_path, "=", string_path))
                     query_data[string_path] = data.pop()
                 elif len(data) > 1:
                     data_vals = list(data)
@@ -478,9 +480,10 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         self,
         string_path: str,
         operator: str,
+        operand: str
     ) -> str:
         """Returns field names in clauses surrounded by quotation marks as required by Snowflake syntax."""
-        return f'"{string_path}" {operator} (:{string_path})'
+        return f'"{string_path}" {operator} (:{operand})'
 
     def get_formatted_query_string(
         self,
