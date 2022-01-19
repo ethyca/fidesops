@@ -251,9 +251,10 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         self,
         field_name: str,
         operator: str,
+        operand: str
     ) -> str:
         """Returns clauses in a format they can be added into SQL queries."""
-        return f"{field_name} {operator} :{field_name}"
+        return f"{field_name} {operator} :{operand}"
 
     def get_formatted_query_string(
         self,
@@ -288,10 +289,10 @@ class SQLQueryConfig(QueryConfig[TextClause]):
             for field_name, data in filtered_data.items():
                 data = set(data)
                 if len(data) == 1:
-                    clauses.append(self.format_clause_for_query(field_name, "="))
+                    clauses.append(self.format_clause_for_query(field_name, "=", field_name))
                     query_data[field_name] = (data.pop(),)
                 elif len(data) > 1:
-                    clauses.append(self.format_clause_for_query(field_name, "IN"))
+                    clauses.append(self.format_clause_for_query(field_name, "IN", field_name))
                     query_data[field_name] = tuple(data)
                 else:
                     #  if there's no data, create no clause
@@ -369,17 +370,19 @@ class SQLQueryConfig(QueryConfig[TextClause]):
 class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
     """
     Generates SQL valid for SQLServer. This way of building queries should also work for every other connector,
-    but SQLServer is separated out for 2 reasons:
-
-    1. This increases code complexity for building queries
-    2. Lack of thorough testing framework to ensure all connectors will in fact work using this code
+    but SQLServer is separated due to increased code complexity for building queries
     """
 
-    @staticmethod
-    def format_clause_for_query_in(field_name: str, query_data_names: List[str]) -> str:
+    def format_clause_for_query(
+            self,
+            field_name: str,
+            operator: str,
+            operand: str
+    ) -> str:
         """Returns clauses in a format they can be added into SQL queries."""
-        in_clause = ", ".join(query_data_names)
-        return f"{field_name} IN ({in_clause})"
+        if operator == "IN":
+            return f"{field_name} IN ({operand})"
+        return super().format_clause_for_query(field_name, operator, operand)
 
     def generate_query(  # pylint: disable=R0914
         self,
@@ -413,8 +416,9 @@ class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
                         )
                         query_data[query_data_name] = val
                         query_data_keys.append(":" + query_data_name)
+                    operand = ", ".join(query_data_keys)
                     clauses.append(
-                        self.format_clause_for_query_in(field_name, query_data_keys)
+                        self.format_clause_for_query(field_name, "IN", operand)
                     )
                 else:
                     #  if there's no data, create no clause
