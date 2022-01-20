@@ -154,11 +154,20 @@ endif
 
 pytest-integration-erasure: compose-build
 	@echo "Building additional Docker images for integration tests..."
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build
-	@echo "Running pytest integration tests..."
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml \
-		run $(IMAGE_NAME) \
-		pytest $(pytestpath) -m "integration_erasure"
+	@path=""; \
+	for word in $(DOCKERFILE_ENVIRONMENTS); do \
+		path="$$path -f docker-compose.integration-$$word.yml"; \
+	done; \
+	docker-compose -f docker-compose.yml $$path build; \
+	docker-compose -f docker-compose.yml $$path up -d; \
+	sleep 5; \
+	setup_path=""; \
+	for word in $(DOCKERFILE_ENVIRONMENTS); do \
+		setup_path="fidesops python tests/integration_tests/$$word-setup.py"; \
+		docker exec $$setup_path || echo "no custom setup logic found for $$word"; \
+	done; \
+	docker-compose -f docker-compose.yml $$path run $(IMAGE_NAME) pytest $(pytestpath) -m "integration_erasure"; \
+	docker-compose -f docker-compose.yml $$path down --remove-orphans
 
 # These tests connect to external third-party test databases
 pytest-integration-external: compose-build
