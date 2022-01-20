@@ -207,21 +207,8 @@ def test_create_and_process_access_request_mssql(
 
     visit_key = result_key_prefix + "visit"
     assert results[visit_key][0]["email"] == customer_email
-    log_id = pr.execution_logs[0].id
-    pr_id = pr.id
     # Both pre-execution webhooks and both post-execution webhooks were called
     assert trigger_webhook_mock.call_count == 4
-
-    for webhook in policy_pre_execution_webhooks:
-        webhook.delete(db=db)
-
-    for webhook in policy_post_execution_webhooks:
-        webhook.delete(db=db)
-
-    policy.delete(db=db)
-    pr.delete(db=db)
-    assert not pr in db  # Check that `pr` has been expunged from the session
-    assert ExecutionLog.get(db, id=log_id).privacy_request_id == pr_id
 
 
 @pytest.mark.integration_erasure
