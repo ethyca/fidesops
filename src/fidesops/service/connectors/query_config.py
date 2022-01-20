@@ -479,7 +479,10 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         return [f'"{field_path.levels[-1]}"' for field_path in field_paths]
 
     def format_clause_for_query(
-        self, string_path: str, operator: str, operand: str
+        self,
+        string_path: str,
+        operator: str,
+        operand: str,
     ) -> str:
         """Returns field names in clauses surrounded by quotation marks as required by Snowflake syntax."""
         return f'"{string_path}" {operator} (:{operand})'

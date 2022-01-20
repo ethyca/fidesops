@@ -343,7 +343,11 @@ class MicrosoftSQLServerConnector(SQLConnector):
         """Returns a SQLAlchemy Engine that can be used to interact with a MicrosoftSQLServer database"""
         config = MicrosoftSQLServerSchema(**self.configuration.secrets or {})
         uri = config.url or self.build_uri()
-        return create_engine(uri, hide_parameters=False, echo_pool="debug")
+        return create_engine(
+            uri,
+            hide_parameters=self.hide_parameters,
+            echo=not self.hide_parameters,
+        )
 
     def query_config(self, node: TraversalNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input traversal_node."""

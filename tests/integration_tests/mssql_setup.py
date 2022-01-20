@@ -10,9 +10,7 @@ def mssql_setup():
     The query file must have each query on a separate line.
     Initial connection must be done to the master database.
     """
-    engine = sqlalchemy.create_engine(MASTER_MSSQL_URL,
-                                      hide_parameters=False,
-                                      echo_pool='debug')
+    engine = sqlalchemy.create_engine(MASTER_MSSQL_URL)
     with open("data/sql/mssql_example.sql", "r") as query_file:
         queries = [query for query in query_file.read().splitlines() if query != ""]
     for query in queries:
