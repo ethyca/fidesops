@@ -253,10 +253,10 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
 
 
 @pytest.mark.integration
-def test_sql_access_request_task(db, policy, integration_postgres_config) -> None:
+def test_postgres_access_request_task(db, policy, integration_postgres_config) -> None:
 
     privacy_request = PrivacyRequest(
-        id=f"test_sql_access_request_task_{random.randint(0, 1000)}"
+        id=f"test_postgres_access_request_task_{random.randint(0, 1000)}"
     )
 
     v = graph_task.run_access_request(
@@ -331,6 +331,89 @@ def test_sql_access_request_task(db, policy, integration_postgres_config) -> Non
             )
         )
         > 0
+    )
+
+# todo- add mssql test
+
+@pytest.mark.integration
+def test_mysql_access_request_task(db, policy, connection_config_mysql) -> None:
+
+    privacy_request = PrivacyRequest(
+        id=f"test_mysql_access_request_task_{random.randint(0, 1000)}"
+    )
+
+    v = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        integration_db_graph("my_mysql_db_1"),
+        [connection_config_mysql],
+        {"email": "customer-1@example.com"},
+    )
+
+    assert_rows_match(
+        v["mysql_example:address"],
+        min_size=2,
+        keys=["id", "street", "city", "state", "zip"],
+    )
+    assert_rows_match(
+        v["mysql_example:orders"],
+        min_size=3,
+        keys=["id", "customer_id", "shipping_address_id", "payment_card_id"],
+    )
+    assert_rows_match(
+        v["mysql_example:payment_card"],
+        min_size=2,
+        keys=["id", "name", "ccn", "customer_id", "billing_address_id"],
+    )
+    assert_rows_match(
+        v["mysql_example:customer"],
+        min_size=1,
+        keys=["id", "name", "email", "address_id"],
+    )
+
+    # links
+    assert v["mysql_example:customer"][0]["email"] == "customer-1@example.com"
+
+    logs = (
+        ExecutionLog.query(db=db)
+            .filter(ExecutionLog.privacy_request_id == privacy_request.id)
+            .all()
+    )
+
+    logs = [log.__dict__ for log in logs]
+    assert (
+            len(
+                records_matching_fields(
+                    logs, dataset_name="mysql_example", collection_name="customer"
+                )
+            )
+            > 0
+    )
+    assert (
+            len(
+                records_matching_fields(
+                    logs, dataset_name="mysql_example", collection_name="address"
+                )
+            )
+            > 0
+    )
+    assert (
+            len(
+                records_matching_fields(
+                    logs, dataset_name="mysql_example", collection_name="orders"
+                )
+            )
+            > 0
+    )
+    assert (
+            len(
+                records_matching_fields(
+                    logs,
+                    dataset_name="mysql_example",
+                    collection_name="payment_card",
+                )
+            )
+            > 0
     )
 
 

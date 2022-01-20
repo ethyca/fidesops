@@ -13,6 +13,7 @@ from sqlalchemy.engine import (
 )
 from sqlalchemy.exc import OperationalError, InternalError
 from snowflake.sqlalchemy import URL as Snowflake_URL
+from sqlalchemy.sql.elements import TextClause
 
 from fidesops.common_exceptions import ConnectionException
 from fidesops.graph.traversal import Row, TraversalNode
@@ -179,6 +180,32 @@ class MySQLConnector(SQLConnector):
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
         )
+
+    # Overrides BaseConnector.cursor_result_to_rows
+    @staticmethod
+    def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
+        """Convert SQLAlchemy results to a list of dictionaries"""
+        columns: List[Column] = results.cursor.description
+        l = len(columns)
+        rows = []
+        for row_tuple in results:
+            rows.append({columns[i][0]: row_tuple[i] for i in range(l)})
+        return rows
+
+    def retrieve_data(
+            self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
+    ) -> List[Row]:
+        """Retrieve sql data"""
+        query_config = self.query_config(node)
+        client = self.client()
+        stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
+        if stmt is None:
+            return []
+        logger.info(f"Starting data retrieval for {node.address}")
+        with client.connect() as connection:
+            # fixme: update mssql type too to LegacyCursorResult
+            results: LegacyCursorResult = connection.execute(stmt)
+            return MicrosoftSQLServerConnector.cursor_result_to_rows(results)
 
 
 class RedshiftConnector(SQLConnector):
