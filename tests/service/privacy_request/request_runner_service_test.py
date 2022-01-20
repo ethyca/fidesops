@@ -209,6 +209,7 @@ def test_create_and_process_access_request_mssql(
     assert results[visit_key][0]["email"] == customer_email
     # Both pre-execution webhooks and both post-execution webhooks were called
     assert trigger_webhook_mock.call_count == 4
+    pr.delete(db=db)
 
 
 @pytest.mark.integration_erasure
