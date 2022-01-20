@@ -48,16 +48,70 @@ server-shell: compose-build
 	@docker-compose run $(IMAGE_NAME) /bin/bash
 
 integration-shell: compose-build
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml run $(IMAGE_NAME) /bin/bash
+ifeq (,$(env))
+	@echo "no environment specified"
+	@path=""; \
+	for word in $(DOCKERFILE_ENVIRONMENTS); do \
+		path="$$path -f docker-compose.integration-$$word.yml"; \
+	done; \
+	docker-compose -f docker-compose.yml $$path build; \
+	docker-compose -f docker-compose.yml $$path up -d; \
+	sleep 5; \
+	setup_path=""; \
+	for word in $(DOCKERFILE_ENVIRONMENTS); do \
+		setup_path="fidesops python tests/integration_tests/$$word-setup.py"; \
+		docker exec $$setup_path || echo "no custom setup logic found for $$word"; \
+	done; \
+	docker-compose -f docker-compose.yml $$path run $(IMAGE_NAME) /bin/bash
+else ifneq (,$(findstring $(env),$(DOCKERFILE_ENVIRONMENTS)))
+	@echo "$(env) is a Dockerfile environment"
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml build
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml up -d
+	@sleep 5
+	@docker exec fidesops python tests/integration_tests/$(env)-setup.py || echo "no custom setup logic found for $(env)"
+	@docker-compose -f docker-compose.yml run $(IMAGE_NAME) /bin/bash
+else ifneq (,$(findstring $(env),$(EXTERNAL_ENVIRONMENTS)))
+	@echo "$(env) is an external environment"
+	@docker-compose -f docker-compose.yml build
+	@docker-compose -f docker-compose.yml up -d
+	@sleep 5
+	@docker-compose -f docker-compose.yml run $(IMAGE_NAME) /bin/bash
+else
+	@echo "$(env) is not currently supported"
+endif
 
 integration-env: compose-build
-	@echo "Bringing up main image and images for integration testing"
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
-	@echo "Waiting 15s for integration containers to be ready..."
-	@sleep 15
-	@echo "Running additional setup for mssql integration tests"
-	@docker exec -it fidesops python tests/integration_tests/mssql_setup.py
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml logs -f -t
+ifeq (,$(env))
+	@echo "no environment specified"
+	@path=""; \
+	for word in $(DOCKERFILE_ENVIRONMENTS); do \
+		path="$$path -f docker-compose.integration-$$word.yml"; \
+	done; \
+	docker-compose -f docker-compose.yml $$path build; \
+	docker-compose -f docker-compose.yml $$path up -d; \
+	sleep 5; \
+	setup_path=""; \
+	for word in $(DOCKERFILE_ENVIRONMENTS); do \
+		setup_path="fidesops python tests/integration_tests/$$word-setup.py"; \
+		docker exec $$setup_path || echo "no custom setup logic found for $$word"; \
+	done; \
+	docker-compose -f docker-compose.yml $$path logs -f -t
+else ifneq (,$(findstring $(env),$(DOCKERFILE_ENVIRONMENTS)))
+	@echo "$(env) is a Dockerfile environment"
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml build
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml up -d
+	@sleep 5
+	@docker exec fidesops python tests/integration_tests/$(env)-setup.py || echo "no custom setup logic found for $(env)"
+	@docker-compose -f docker-compose.yml logs -f -t
+else ifneq (,$(findstring $(env),$(EXTERNAL_ENVIRONMENTS)))
+	@echo "$(env) is an external environment"
+	@docker-compose -f docker-compose.yml build
+	@docker-compose -f docker-compose.yml up -d
+	@sleep 5
+	@docker-compose -f docker-compose.yml logs -f -t
+else
+	@echo "$(env) is not currently supported"
+endif
 
 quickstart: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
