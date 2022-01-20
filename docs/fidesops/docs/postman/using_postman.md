@@ -72,7 +72,7 @@ Inspect the `Body` of each request to see what we're sending to fidesops:
 
 
 ## Run a privacy request
-Now, we should have all the basic pieces need to create an Access request.
+Now, we should have all the basic pieces needed to create an Access request.
 1. SEND `Create Access Privacy Requests` - If "succeeded", note the "id" that is returned. Note that succeeded means the privacy request has been created, and is pending, not that its execution is complete.
 
 ![Succeeded Request](../img/postman_images/succeeded_privacy_request.png)
