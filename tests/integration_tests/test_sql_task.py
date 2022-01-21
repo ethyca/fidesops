@@ -380,7 +380,7 @@ def test_filter_on_data_categories(
 
     target_categories = {target.data_category for target in rule.targets}
     filtered_results = filter_data_categories(
-        access_request_results, target_categories, dataset_graph
+        access_request_results, target_categories, dataset_graph.data_category_field_mapping
     )
 
     # One rule target, with data category that maps to house/street on address collection only.
@@ -394,7 +394,7 @@ def test_filter_on_data_categories(
     # Specify the target category:
     target_categories = {"user.provided.identifiable.contact"}
     filtered_results = filter_data_categories(
-        access_request_results, target_categories, dataset_graph
+        access_request_results, target_categories, dataset_graph.data_category_field_mapping
     )
 
     assert filtered_results == {
@@ -446,7 +446,7 @@ def test_filter_on_data_categories(
 
     target_categories = {target.data_category for target in rule.targets}
     filtered_results = filter_data_categories(
-        access_request_results, target_categories, dataset_graph
+        access_request_results, target_categories, dataset_graph.data_category_field_mapping
     )
     assert filtered_results == {
         "postgres_example_test_dataset:service_request": [

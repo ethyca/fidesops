@@ -7,6 +7,7 @@ from functools import wraps
 from time import sleep
 from typing import List, Dict, Any, Tuple, Callable, Optional, Set
 
+import pandas as pd
 import dask
 from dask.threaded import get
 
@@ -26,6 +27,7 @@ from fidesops.service.connectors import BaseConnector
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.collection_util import partition, append
 from fidesops.util.logger import NotPii
+from fidesops.util.nested_utils import unflatten_dict
 
 logger = logging.getLogger(__name__)
 
@@ -377,7 +379,7 @@ def run_erasure(  # pylint: disable = too-many-arguments
 def filter_data_categories(
     access_request_results: Dict[str, Optional[Any]],
     target_categories: Set[str],
-    graph: DatasetGraph,
+    data_category_fields: Dict[str, Dict[str, List[FieldPath]]],
 ) -> Dict[str, List[Dict[str, Any]]]:
     """Filter access request results to only return fields associated with the target data categories
     and subcategories
@@ -390,17 +392,13 @@ def filter_data_categories(
         "Filtering Access Request results to return fields associated with data categories"
     )
     filtered_access_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    data_category_fields: Dict[
-        str, Dict[str, List[FieldPath]]
-    ] = graph.data_category_field_mapping
-
     for node_address, results in access_request_results.items():
         if not results:
             continue
 
         # Gets all FieldPaths on this traversal_node associated with the requested data
         # categories and sub data categories
-        target_fields: Set[FieldPath] = set(
+        target_field_paths: Set[FieldPath] = set(
             itertools.chain(
                 *[
                     field_paths
@@ -410,16 +408,17 @@ def filter_data_categories(
             )
         )
 
-        if not target_fields:
+        if not target_field_paths:
             continue
 
-        for row in results:
-            filtered_access_results[node_address].append(
-                {
-                    field: result
-                    for field, result in row.items()
-                    if field in {target.string_path for target in target_fields}
-                }
-            )
+        # Normalize nested data into a flat dataframe
+        df = pd.json_normalize(results, sep=".")
+        # Only keep dataframe columns that match the target field paths
+        df = df[[field_path.string_path for field_path in target_field_paths]]
+        # Turn the filtered results back into a list of dictionaries
+        filtered_flattened_results = df.to_dict(orient="records")
+        for row in filtered_flattened_results:
+            # For each row, unflatten the dictionary
+            filtered_access_results[node_address].append(unflatten_dict(row))
 
     return filtered_access_results

@@ -24,3 +24,12 @@ dataset:
             data_categories: [user.provided.identifiable.date_of_birth]
             fidesops_meta:
               data_type: string
+          - name: backup_identities
+            fields:
+              - name: ssn
+                fidesops_meta:
+                  data_type: string
+              - name: phone
+                data_categories: [ user.provided.identifiable.contact.phone_number ]
+                fidesops_meta:
+                  data_type: string

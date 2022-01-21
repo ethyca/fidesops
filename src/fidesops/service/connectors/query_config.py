@@ -39,6 +39,10 @@ class QueryConfig(Generic[T], ABC):
         """Flattened FieldPaths of interest from this traversal_node."""
         return self.node.node.collection.field_dict
 
+    def top_level_field_map(self) -> Dict[FieldPath, Field]:
+        """Top level FieldPaths on this traversal_node."""
+        return self.node.node.collection.top_level_field_dict
+
     def build_rule_target_field_paths(
         self, policy: Policy
     ) -> Dict[Rule, List[FieldPath]]:
@@ -178,7 +182,7 @@ class QueryConfig(Generic[T], ABC):
                         f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
                     continue
-                val: Any = row[rule_field_path.string_path]
+                val: Any = rule_field_path.retrieve_from(row)
                 masked_val = self._generate_masked_value(
                     request.id,
                     strategy,
@@ -318,9 +322,6 @@ class SQLQueryConfig(QueryConfig[TextClause]):
                 elif len(data) > 1:
                     clauses.append(self.format_clause_for_query(string_path, "IN"))
                     query_data[string_path] = tuple(data)
-                else:
-                    #  if there's no data, create no clause
-                    pass
             if len(clauses) > 0:
                 query_str = self.get_formatted_query_string(field_list, clauses)
                 return text(query_str).params(query_data)
@@ -483,13 +484,8 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         if input_data:
             filtered_data: Dict[str, Any] = self.typed_filtered_values(input_data)
             if filtered_data:
-                field_list = {
-                    field_path.string_path: 1
-                    for field_path, field in self.field_map().items()
-                }
                 query_pairs = {}
                 for string_field_path, data in filtered_data.items():
-
                     if len(data) == 1:
                         query_pairs[string_field_path] = data[0]
 
@@ -499,6 +495,10 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
                     else:
                         #  if there's no data, create no clause
                         pass
+                field_list = {  # Get top-level fields to avoid path collisions
+                    field_path.string_path: 1
+                    for field_path, field in self.top_level_field_map().items()
+                }
                 query_fields, return_fields = (
                     transform_query_pairs(query_pairs),
                     field_list,

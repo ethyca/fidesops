@@ -77,6 +77,7 @@ Field identities:
 """
 from __future__ import annotations
 
+import copy
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
@@ -186,6 +187,19 @@ class FieldPath:
     def parse(path_str: str) -> FieldPath:
         """Create a FieldPath from a dot-separated input string"""
         return FieldPath(*path_str.split("."))
+
+    def retrieve_from(self, input_data: Dict[str, Any]) -> Any:
+        """Retrieve input data along the FieldPath
+
+        Example:
+            input_data = {"A": {"B": {"C": 2, "D": 3}}}
+            field_path = FieldPath("A", "B", "C")
+            field_path.retrieve_from(input_data) = 2
+        """
+        sub_data = copy.deepcopy(input_data)
+        for level in self.levels:
+            sub_data = sub_data[level]
+        return sub_data
 
 
 class FieldAddress:
@@ -383,6 +397,11 @@ class Collection(BaseModel):
         Flattens all the Fields so they are on one level: all nested fields are brought to the top.
         """
         return self.recursively_collect_matches(lambda f: True)
+
+    @property
+    def top_level_field_dict(self) -> Dict[FieldPath, Field]:
+        """Returns a map of top-level FieldPaths mapped to fields"""
+        return {FieldPath(field.name): field for field in self.fields}
 
     def recursively_collect_matches(
         self, func: Callable[[Field], bool]

@@ -339,6 +339,48 @@ def test_access_erasure_type_conversion(
 
 
 @pytest.mark.integration
+def test_access_nested_objects_mongo(
+    db,
+    privacy_request,
+    example_datasets,
+    policy,
+    integration_mongodb_config,
+    integration_postgres_config,
+):
+    postgres_config = copy.copy(integration_postgres_config)
+
+    dataset_postgres = FidesopsDataset(**example_datasets[0])
+    graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
+    dataset_mongo = FidesopsDataset(**example_datasets[1])
+    mongo_graph = convert_dataset_to_graph(
+        dataset_mongo, integration_mongodb_config.key
+    )
+    dataset_graph = DatasetGraph(*[graph, mongo_graph])
+
+    access_request_results = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        dataset_graph,
+        [postgres_config, integration_mongodb_config],
+        {"email": "customer-1@example.com"},
+    )
+
+    target_categories = {"user.provided.identifiable"}
+    filtered_results = filter_data_categories(
+        access_request_results,
+        target_categories,
+        dataset_graph.data_category_field_mapping,
+    )
+
+    assert len(filtered_results["mongo_test:customer_details"]) == 1
+    assert filtered_results["mongo_test:customer_details"][0] == {
+        "birthday": datetime(1988, 1, 10),
+        "gender": "male",
+        "backup_identities": {"phone": "333-333-3333"},
+    }
+
+
+@pytest.mark.integration
 def test_filter_on_data_categories_mongo(
     db,
     privacy_request,
@@ -371,7 +413,9 @@ def test_filter_on_data_categories_mongo(
         "user.provided.identifiable.date_of_birth",
     }
     filtered_results = filter_data_categories(
-        access_request_results, target_categories, dataset_graph
+        access_request_results,
+        target_categories,
+        dataset_graph.data_category_field_mapping,
     )
 
     # Mongo results obtained via customer_id field from postgres_example_test_dataset.customer.id

@@ -1,12 +1,20 @@
+import copy
+
 import dask
 
 from fidesops.graph.config import (
     CollectionAddress,
+    FieldPath,
 )
 from fidesops.graph.traversal import Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.models.policy import Policy
-from fidesops.task.graph_task import collect_queries, TaskResources, EMPTY_REQUEST
+from fidesops.task.graph_task import (
+    collect_queries,
+    TaskResources,
+    EMPTY_REQUEST,
+    filter_data_categories,
+)
 from .traversal_data import sample_traversal
 from ..graph.graph_test_util import (
     MockSqlTask,
@@ -97,3 +105,92 @@ def test_mongo_dry_run_queries() -> None:
         env[CollectionAddress("postgres", "address")]
         == "db.postgres.address.find({'id': {'$in': [?, ?]}}, {'id': 1, 'street': 1, 'city': 1, 'state': 1, 'zip': 1})"
     )
+
+
+def test_filter_data_categories():
+    """Test different combinations of data categories to ensure the access_request_results are filtered properly"""
+    access_request_results = {
+        "postgres_example:supplies": [
+            {
+                "foods": {
+                    "vegetables": True,
+                    "fruits": {
+                        "apples": True,
+                        "oranges": False,
+                        "berries": {"strawberries": True, "blueberries": False},
+                    },
+                    "grains": {"rice": False, "wheat": True},
+                },
+                "clothing": True,
+            }
+        ]
+    }
+
+    data_category_fields = {
+        "postgres_example:supplies": {
+            "A": [FieldPath("foods", "fruits", "apples"), FieldPath("clothing")],
+            "B": [FieldPath("foods", "vegetables")],
+            "C": [
+                FieldPath("foods", "grains", "rice"),
+                FieldPath("foods", "grains", "wheat"),
+            ],
+            "D": [],
+            "E": [
+                FieldPath("foods", "fruits", "berries", "strawberries"),
+                FieldPath("foods", "fruits", "oranges"),
+            ],
+        }
+    }
+
+    only_a_categories = filter_data_categories(
+        copy.deepcopy(access_request_results), {"A"}, data_category_fields
+    )
+
+    assert only_a_categories == {
+        "postgres_example:supplies": [
+            {"foods": {"fruits": {"apples": True}}, "clothing": True}
+        ]
+    }
+
+    only_b_categories = filter_data_categories(
+        copy.deepcopy(access_request_results), {"B"}, data_category_fields
+    )
+    assert only_b_categories == {
+        "postgres_example:supplies": [
+            {
+                "foods": {
+                    "vegetables": True,
+                }
+            }
+        ]
+    }
+
+    only_c_categories = filter_data_categories(
+        copy.deepcopy(access_request_results), {"C"}, data_category_fields
+    )
+    assert only_c_categories == {
+        "postgres_example:supplies": [
+            {"foods": {"grains": {"rice": False, "wheat": True}}}
+        ]
+    }
+
+    only_d_categories = filter_data_categories(
+        copy.deepcopy(access_request_results), {"D"}, data_category_fields
+    )
+    assert only_d_categories == {}
+
+    only_e_categories = filter_data_categories(
+        copy.deepcopy(access_request_results), {"E"}, data_category_fields
+    )
+    assert only_e_categories == {
+        "postgres_example:supplies": [
+            {
+                "foods": {
+                    "fruits": {
+                        "oranges": False,
+                        "berries": {"strawberries": True},
+                    }
+                }
+            }
+        ]
+    }

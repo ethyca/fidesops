@@ -1,7 +1,14 @@
 from typing import Dict, Any, Set
 import pytest
 
-from fidesops.graph.config import CollectionAddress, FieldPath, ObjectField, ScalarField, Collection, FieldAddress
+from fidesops.graph.config import (
+    CollectionAddress,
+    FieldPath,
+    ObjectField,
+    ScalarField,
+    Collection,
+    FieldAddress,
+)
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.datasetconfig import convert_dataset_to_graph
@@ -23,8 +30,13 @@ from fidesops.service.masking.strategy.masking_strategy_hash import (
     HASH,
 )
 
-from ...task.traversal_data import integration_db_graph, combined_mongo_posgresql_graph, str_converter, obj_converter, \
-    customer_details_collection
+from ...task.traversal_data import (
+    integration_db_graph,
+    combined_mongo_posgresql_graph,
+    str_converter,
+    obj_converter,
+    customer_details_collection,
+)
 from ...test_helpers.cache_secrets_helper import clear_cache_secrets, cache_secret
 
 # customers -> address, order
@@ -354,14 +366,21 @@ class TestSQLQueryConfig:
 
 class TestMongoQueryConfig:
     @pytest.fixture(scope="function")
-    def customer_details_node(self, integration_postgres_config, integration_mongodb_config):
+    def customer_details_node(
+        self, integration_postgres_config, integration_mongodb_config
+    ):
         mongo_dataset, postgres_dataset = combined_mongo_posgresql_graph(
             integration_postgres_config, integration_mongodb_config
         )
         mongo_dataset.collections.append(customer_details_collection)
         combined_dataset_graph = DatasetGraph(mongo_dataset, postgres_dataset)
-        combined_traversal = Traversal(combined_dataset_graph, {"ssn": "111-111-1111", "email": "customer-1@examplecom"})
-        return combined_traversal.traversal_node_dict[CollectionAddress("mongo_test", "customer_details")]
+        combined_traversal = Traversal(
+            combined_dataset_graph,
+            {"ssn": "111-111-1111", "email": "customer-1@examplecom"},
+        )
+        return combined_traversal.traversal_node_dict[
+            CollectionAddress("mongo_test", "customer_details")
+        ]
 
     def test_field_map_nested(self, customer_details_node):
         config = MongoQueryConfig(customer_details_node)
@@ -373,21 +392,23 @@ class TestMongoQueryConfig:
     def test_primary_key_field_paths(self, customer_details_node):
         config = MongoQueryConfig(customer_details_node)
         assert list(config.primary_key_field_paths.keys()) == [FieldPath("_id")]
-        assert isinstance(config.primary_key_field_paths[FieldPath('_id')], ScalarField)
+        assert isinstance(config.primary_key_field_paths[FieldPath("_id")], ScalarField)
 
     def test_nested_query_field_paths(self, customer_details_node):
         # Two potential identities
         config = SQLQueryConfig(customer_details_node)
-        assert config.query_field_paths == {FieldPath('backup_identities', 'ssn'), FieldPath('customer_id')}
+        assert config.query_field_paths == {
+            FieldPath("backup_identities", "ssn"),
+            FieldPath("customer_id"),
+        }
 
     def test_nested_typed_filtered_values(self, customer_details_node):
         """Identity data is located on a nested object"""
         config = SQLQueryConfig(customer_details_node)
-        input_data = {
-            "backup_identities.ssn": ["111-111-1111"],
-            "ignore": ["abcde"]
+        input_data = {"backup_identities.ssn": ["111-111-1111"], "ignore": ["abcde"]}
+        assert config.typed_filtered_values(input_data) == {
+            "backup_identities.ssn": ["111-111-1111"]
         }
-        assert config.typed_filtered_values(input_data) == {'backup_identities.ssn': ['111-111-1111']}
 
     def test_generate_update_stmt_multiple_fields(
         self,
@@ -418,6 +439,7 @@ class TestMongoQueryConfig:
             "gender": "male",
             "customer_id": 1,
             "_id": 1,
+            "backup_identities": {"phone": "333-333-3333"},
         }
 
         # Make target more broad
@@ -429,7 +451,9 @@ class TestMongoQueryConfig:
             row, erasure_policy, privacy_request
         )
         assert mongo_statement[0] == {"_id": 1}
-        assert mongo_statement[1] == {"$set": {"birthday": None, "gender": None}}
+        assert mongo_statement[1] == {
+            "$set": {"backup_identities.phone": None, "birthday": None, "gender": None}
+        }
 
     def test_generate_update_stmt_multiple_rules(
         self,
