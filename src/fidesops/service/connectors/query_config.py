@@ -147,10 +147,10 @@ class QueryConfig(Generic[T], ABC):
     ) -> Dict[str, Any]:
         """Map the relevant fields (as strings) to be updated on the row with their masked values from Policy Rules
 
-        Example return:  {'name': None, 'ccn': None, 'code': None, 'backup_identities.ssn': None}
+        Example return:  {'name': None, 'ccn': None, 'code': None, 'workplace_info.employer': None}
 
         In this example, a Null Masking Strategy was used to determine that the name/ccn/code fields and nested
-        backup_identities.ssn fields for a given customer_id will be replaced with null values.
+        workplace_info.employer fields for a given customer_id will be replaced with null values.
 
         FieldPaths are mapped to their dotted string path representation.
 

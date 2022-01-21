@@ -24,12 +24,41 @@ dataset:
             data_categories: [user.provided.identifiable.date_of_birth]
             fidesops_meta:
               data_type: string
-          - name: backup_identities
+          - name: workplace_info
             fields:
-              - name: ssn
+              - name: employer
                 fidesops_meta:
+                  data_type: string
+              - name: position
+                data_categories: [ user.provided.identifiable.job_title ]
+                fidesops_meta:
+                  data_type: string
+      - name: customer_feedback
+        fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
+          - name: customer_information
+            fields:
+              - name: email
+                fidesops_meta:
+                  identity: email
                   data_type: string
               - name: phone
                 data_categories: [ user.provided.identifiable.contact.phone_number ]
                 fidesops_meta:
                   data_type: string
+          - name: rating
+            data_categories: [ user.provided.nonidentifiable ]
+            fidesops_meta:
+              data_type: integer
+          - name: date
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: message
+            data_categories: [ user.provided.nonidentifiable ]
+            fidesops_meta:
+              data_type: string

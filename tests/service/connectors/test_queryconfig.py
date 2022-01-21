@@ -6,8 +6,6 @@ from fidesops.graph.config import (
     FieldPath,
     ObjectField,
     ScalarField,
-    Collection,
-    FieldAddress,
 )
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal, TraversalNode
@@ -32,10 +30,7 @@ from fidesops.service.masking.strategy.masking_strategy_hash import (
 
 from ...task.traversal_data import (
     integration_db_graph,
-    combined_mongo_posgresql_graph,
-    str_converter,
-    obj_converter,
-    customer_details_collection,
+    combined_mongo_postgresql_graph,
 )
 from ...test_helpers.cache_secrets_helper import clear_cache_secrets, cache_secret
 
@@ -366,48 +361,67 @@ class TestSQLQueryConfig:
 
 class TestMongoQueryConfig:
     @pytest.fixture(scope="function")
-    def customer_details_node(
+    def combined_traversal(
         self, integration_postgres_config, integration_mongodb_config
     ):
-        mongo_dataset, postgres_dataset = combined_mongo_posgresql_graph(
+        mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
             integration_postgres_config, integration_mongodb_config
         )
-        mongo_dataset.collections.append(customer_details_collection)
         combined_dataset_graph = DatasetGraph(mongo_dataset, postgres_dataset)
         combined_traversal = Traversal(
             combined_dataset_graph,
-            {"ssn": "111-111-1111", "email": "customer-1@examplecom"},
+            {"email": "customer-1@examplecom"},
         )
+        return combined_traversal
+
+    @pytest.fixture(scope="function")
+    def customer_details_node(self, combined_traversal):
         return combined_traversal.traversal_node_dict[
             CollectionAddress("mongo_test", "customer_details")
+        ]
+
+    @pytest.fixture(scope="function")
+    def customer_feedback_node(self, combined_traversal):
+        return combined_traversal.traversal_node_dict[
+            CollectionAddress("mongo_test", "customer_feedback")
         ]
 
     def test_field_map_nested(self, customer_details_node):
         config = MongoQueryConfig(customer_details_node)
 
         field_map = config.field_map()
-        assert isinstance(field_map[FieldPath("backup_identities")], ObjectField)
-        assert isinstance(field_map[FieldPath("backup_identities", "ssn")], ScalarField)
+        assert isinstance(field_map[FieldPath("workplace_info")], ObjectField)
+        assert isinstance(
+            field_map[FieldPath("workplace_info", "employer")], ScalarField
+        )
 
     def test_primary_key_field_paths(self, customer_details_node):
         config = MongoQueryConfig(customer_details_node)
         assert list(config.primary_key_field_paths.keys()) == [FieldPath("_id")]
         assert isinstance(config.primary_key_field_paths[FieldPath("_id")], ScalarField)
 
-    def test_nested_query_field_paths(self, customer_details_node):
-        # Two potential identities
+    def test_nested_query_field_paths(
+        self, customer_details_node, customer_feedback_node
+    ):
         config = SQLQueryConfig(customer_details_node)
         assert config.query_field_paths == {
-            FieldPath("backup_identities", "ssn"),
             FieldPath("customer_id"),
         }
 
-    def test_nested_typed_filtered_values(self, customer_details_node):
+        other_config = SQLQueryConfig(customer_feedback_node)
+        assert other_config.query_field_paths == {
+            FieldPath("customer_information", "email")
+        }
+
+    def test_nested_typed_filtered_values(self, customer_feedback_node):
         """Identity data is located on a nested object"""
-        config = SQLQueryConfig(customer_details_node)
-        input_data = {"backup_identities.ssn": ["111-111-1111"], "ignore": ["abcde"]}
+        config = SQLQueryConfig(customer_feedback_node)
+        input_data = {
+            "customer_information.email": ["test@example.com"],
+            "ignore": ["abcde"],
+        }
         assert config.typed_filtered_values(input_data) == {
-            "backup_identities.ssn": ["111-111-1111"]
+            "customer_information.email": ["test@example.com"]
         }
 
     def test_generate_update_stmt_multiple_fields(
@@ -439,7 +453,7 @@ class TestMongoQueryConfig:
             "gender": "male",
             "customer_id": 1,
             "_id": 1,
-            "backup_identities": {"phone": "333-333-3333"},
+            "workplace_info": {"position": "Chief Strategist"},
         }
 
         # Make target more broad
@@ -452,7 +466,7 @@ class TestMongoQueryConfig:
         )
         assert mongo_statement[0] == {"_id": 1}
         assert mongo_statement[1] == {
-            "$set": {"backup_identities.phone": None, "birthday": None, "gender": None}
+            "$set": {"workplace_info.position": None, "birthday": None, "gender": None}
         }
 
     def test_generate_update_stmt_multiple_rules(
