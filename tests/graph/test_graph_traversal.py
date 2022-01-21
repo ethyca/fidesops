@@ -212,18 +212,34 @@ def test_tree_1() -> None:
             ),
         ],
     )
+    t4 = Collection(
+        name="t4",
+        fields=[
+            ObjectField(
+                name="f4",
+                fields={
+                    "f5": ScalarField(name="f5", identity="email"),
+                    "f6": ScalarField(name="f6"),
+                },
+            )
+        ],
+    )
     seed = {"email": "foo@bar.com"}
     traversal_map, terminators = generate_traversal(
         seed,
         Dataset(
             name="s1",
-            collections=[t1, t2, t3],
+            collections=[t1, t2, t3, t4],
             connection_key="mock_connection_config_key",
         ),
     )
 
     assert traversal_map == {
-        "__ROOT__:__ROOT__": {"from": {}, "to": {"s1:t1": {"email -> f2"}}},
+        "__ROOT__:__ROOT__": {
+            "from": {},
+            "to": {"s1:t4": {"email -> f4.f5"}, "s1:t1": {"email -> f2"}},
+        },
+        "s1:t4": {"from": {"__ROOT__:__ROOT__": {"email -> f4.f5"}}, "to": {}},
         "s1:t1": {
             "from": {"__ROOT__:__ROOT__": {"email -> f2"}},
             "to": {"s1:t2": {"f3 -> f1"}},
@@ -231,7 +247,11 @@ def test_tree_1() -> None:
         "s1:t2": {"from": {"s1:t1": {"f3 -> f1"}}, "to": {"s1:t3": {"f1 -> f3"}}},
         "s1:t3": {"from": {"s1:t2": {"f1 -> f3"}}, "to": {}},
     }
-    assert terminators == [CollectionAddress("s1", "t3")]
+
+    assert set(terminators) == {
+        CollectionAddress("s1", "t3"),
+        CollectionAddress("s1", "t4"),
+    }
 
 
 def test_traversal_ordering() -> None:

@@ -6,8 +6,9 @@ from fidesops.graph.config import (
     FieldPath,
     ObjectField,
     ScalarField,
+    FieldAddress,
 )
-from fidesops.graph.graph import DatasetGraph
+from fidesops.graph.graph import DatasetGraph, Edge
 from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.policy import DataCategory
@@ -423,6 +424,65 @@ class TestMongoQueryConfig:
         assert config.typed_filtered_values(input_data) == {
             "customer_information.email": ["test@example.com"]
         }
+
+    def test_generate_query(
+        self,
+        policy,
+        example_datasets,
+        integration_mongodb_config,
+        integration_postgres_config,
+    ):
+        dataset_postgres = FidesopsDataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(
+            dataset_postgres, integration_postgres_config.key
+        )
+        dataset_mongo = FidesopsDataset(**example_datasets[1])
+        mongo_graph = convert_dataset_to_graph(
+            dataset_mongo, integration_mongodb_config.key
+        )
+        dataset_graph = DatasetGraph(*[graph, mongo_graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+        # Edge created from Root to nested customer_information.email field
+        assert (
+            Edge(
+                FieldAddress("__ROOT__", "__ROOT__", "email"),
+                FieldAddress(
+                    "mongo_test", "customer_feedback", "customer_information", "email"
+                ),
+            )
+            in traversal.edges
+        )
+
+        # Test query on nested field
+        customer_feedback = traversal.traversal_node_dict[
+            CollectionAddress("mongo_test", "customer_feedback")
+        ]
+        config = MongoQueryConfig(customer_feedback)
+        input_data = {"customer_information.email": ["customer-1@example.com"]}
+        # Tuple of query, projection - Searching for documents with nested
+        # customer_information.email = customer-1@example.com
+        assert config.generate_query(input_data, policy) == (
+            {"customer_information.email": "customer-1@example.com"},
+            {"_id": 1, "customer_information": 1, "date": 1, "message": 1, "rating": 1},
+        )
+
+        # Test query nested data
+        customer_details = traversal.traversal_node_dict[
+            CollectionAddress("mongo_test", "customer_details")
+        ]
+        config = MongoQueryConfig(customer_details)
+        input_data = {"customer_id": [1]}
+        # Tuple of query, projection - Projection is specifying fields at the top-level. Nested data will be filtered later.
+        assert config.generate_query(input_data, policy) == (
+            {"customer_id": 1},
+            {
+                "_id": 1,
+                "birthday": 1,
+                "customer_id": 1,
+                "gender": 1,
+                "workplace_info": 1,
+            },
+        )
 
     def test_generate_update_stmt_multiple_fields(
         self,
