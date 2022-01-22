@@ -116,9 +116,9 @@ def combined_mongo_postgresql_graph(
                 "internal_id": ScalarField(name="internal_id", data_type_converter=str_converter, references=[
                     (FieldAddress("mongo_test", "customer_feedback", "customer_information", "internal_customer_id"), "from")
                 ],),
-                "derived_interests": ScalarField(name="derived_interests", data_type_converter=str_converter),
-            })
-        ]
+            }),
+            ScalarField(name="derived_interests", data_type_converter=str_converter),
+    ]
     )
 
     mongo_dataset = Dataset(

@@ -168,10 +168,10 @@ def test_nested_dataset_format():
     ds = FidesopsDataset.parse_obj(dataset)
     graph = convert_dataset_to_graph(ds, "ignore")
 
-    comments_field = field([graph], ("mongo_nested_test", "photos", "comments"))
-    tags_field = field([graph], ("mongo_nested_test", "photos", "tags"))
-    _id_field = field([graph], ("mongo_nested_test", "photos", "_id"))
-    thumbnail_field = field([graph], ("mongo_nested_test", "photos", "thumbnail"))
+    comments_field = field([graph], "mongo_nested_test", "photos", "comments")
+    tags_field = field([graph], "mongo_nested_test", "photos", "tags")
+    _id_field = field([graph], "mongo_nested_test", "photos", "_id")
+    thumbnail_field = field([graph], "mongo_nested_test", "photos", "thumbnail")
 
     assert isinstance(comments_field, ObjectField)
     assert comments_field.is_array
