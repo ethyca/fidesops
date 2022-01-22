@@ -99,7 +99,8 @@ def combined_mongo_postgresql_graph(
             ScalarField(name="_id", primary_key=True),
             ObjectField(name="customer_information", data_type_converter=obj_converter, fields={
                 "email": ScalarField(name="email", data_type_converter=str_converter, identity="email"),
-                "phone": ScalarField(name="phone", data_type_converter=str_converter)
+                "phone": ScalarField(name="phone", data_type_converter=str_converter),
+                "internal_customer_id": ScalarField(name="internal_customer_id", data_type_converter=str_converter)
             }),
             ScalarField(name="rating", data_type_converter=int_converter),
             ScalarField(name="date", data_type_converter=str_converter),
@@ -107,9 +108,22 @@ def combined_mongo_postgresql_graph(
         ]
     )
 
+    mongo_internal_customer_profile = Collection(
+        name="internal_customer_profile",
+        fields=[
+            ScalarField(name="_id", primary_key=True),
+            ObjectField(name="customer_identifiers", data_type_converter=obj_converter, fields={
+                "internal_id": ScalarField(name="internal_id", data_type_converter=str_converter, references=[
+                    (FieldAddress("mongo_test", "customer_feedback", "customer_information", "internal_customer_id"), "from")
+                ],),
+                "derived_interests": ScalarField(name="derived_interests", data_type_converter=str_converter),
+            })
+        ]
+    )
+
     mongo_dataset = Dataset(
         name="mongo_test",
-        collections=[mongo_addresses, mongo_orders, mongo_customer_details, mongo_customer_feedback],
+        collections=[mongo_addresses, mongo_orders, mongo_customer_details, mongo_customer_feedback, mongo_internal_customer_profile],
         connection_key=mongo_config.key,
     )
 

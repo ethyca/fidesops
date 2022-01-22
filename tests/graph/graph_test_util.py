@@ -13,7 +13,7 @@ from fidesops.graph.traversal import Traversal, Row, TraversalNode
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.policy import Policy, RuleTarget, Rule, ActionType
 from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.service.connectors import BaseConnector
+from fidesops.service.connectors import BaseConnector, MongoDBConnector
 from fidesops.service.connectors.sql_connector import SQLConnector
 from fidesops.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
@@ -58,6 +58,10 @@ class MockSqlTask(GraphTask):
     def connector(self) -> BaseConnector:
         return MockSqlConnector(ConnectionConfig())
 
+
+class MockMongoTask(GraphTask):
+    def connector(self) -> BaseConnector:
+        return MongoDBConnector(ConnectionConfig())
 
 #  -------------------------------------------
 #   test utility functions

@@ -97,6 +97,7 @@ def test_combined_erasure_task(
         "postgres_example:payment_card": 0,
         "mongo_test:customer_feedback": 0,
         "mongo_test:customer_details": 0,
+        "mongo_test:internal_customer_profile": 0,
     }
 
 
@@ -408,6 +409,17 @@ def test_filter_on_data_categories_mongo(
         "birthday": datetime(1988, 1, 10),
         "gender": "male",
         "workplace_info": {"position": "Chief Strategist"},
+    }
+
+    # Includes data retrieved from a nested field that was joined with a nested field from another table
+    target_categories = {"user.derived"}
+    filtered_results = filter_data_categories(
+        access_request_results,
+        target_categories,
+        dataset_graph.data_category_field_mapping,
+    )
+    assert filtered_results["mongo_test:internal_customer_profile"][0] == {
+        "derived_interests": ["marketing", "food"]
     }
 
 

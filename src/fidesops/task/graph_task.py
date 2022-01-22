@@ -127,16 +127,22 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return connection_config.access == AccessLevel.write
 
     def to_dask_input_data(self, *data: List[Row]) -> Dict[str, List[Any]]:
-        """Each dict in the input list represents the output of a dependent task.
-        These outputs should correspond to the input key order.
-        {table1: [{x:1, y:A}, {x:2, y:B}], table2: [{x:3},{x:4}],
+        """
+        Consolidates the outputs of queries from potentially multiple collections whose
+        data is needed as input into the current collection.
+
+        Each dict in the input list represents the output of a dependent task.
+        These outputs should correspond to the input key order.  Any nested fields are
+        converted into dot-separated paths in the return.
+
+         table1: [{x:1, y:A}, {x:2, y:B}], table2: [{x:3},{x:4}], table3: [{z: {a: C}}]
            where table1.x => self.id,
            table1.y=> self.name,
            table2.x=>self.id
+           table3.z.a => self.contact.address
          becomes
-         {id:[1,2,3,4], name:["A","B"]}
+         {id:[1,2,3,4], name:["A","B"], contact.address:["C"]}
         """
-
         if not len(data) == len(self.input_keys):
             logger.warning(
                 "%s expected %s input keys, received %s",
@@ -154,11 +160,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
             for row in rowset:
                 for foreign_field_path, local_field_path in field_mappings:
-                    new_value = (
-                        row[foreign_field_path.string_path]
-                        if foreign_field_path.string_path in row
-                        else None
-                    )
+                    new_value = foreign_field_path.retrieve_from(row)
                     if new_value:
                         append(output, local_field_path.string_path, new_value)
         return output

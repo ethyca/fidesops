@@ -198,7 +198,10 @@ class FieldPath:
         """
         sub_data = copy.deepcopy(input_data)
         for level in self.levels:
-            sub_data = sub_data[level]
+            try:
+                sub_data = sub_data[level]
+            except KeyError:
+                return None
         return sub_data
 
 

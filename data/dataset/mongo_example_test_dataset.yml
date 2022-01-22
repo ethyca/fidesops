@@ -33,6 +33,21 @@ dataset:
                 data_categories: [ user.provided.identifiable.job_title ]
                 fidesops_meta:
                   data_type: string
+      - name: internal_customer_profile
+        fields:
+          - name: customer_identifiers
+            fields:
+              - name: internal_id
+                fidesops_meta:
+                  data_type: string
+                  references:
+                    - dataset: mongo_test
+                      field: customer_feedback.customer_information.internal_customer_id
+                      direction: from
+          - name: derived_interests
+            data_categories: [ user.derived ]
+            fidesops_meta:
+              data_type: string[]
       - name: customer_feedback
         fields:
           - name: _id
@@ -48,6 +63,10 @@ dataset:
                   data_type: string
               - name: phone
                 data_categories: [ user.provided.identifiable.contact.phone_number ]
+                fidesops_meta:
+                  data_type: string
+              - name: internal_customer_id
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
           - name: rating

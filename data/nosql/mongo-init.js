@@ -41,7 +41,8 @@ db.customer_feedback.insert([
     {
         "customer_information": {
             "email": "customer-1@example.com",
-            "phone": "333-333-3333"
+            "phone": "333-333-3333",
+            "internal_customer_id": "cust_001"
         },
         "rating": 3,
         "date": new ISODate("2022-01-05"),
@@ -50,7 +51,8 @@ db.customer_feedback.insert([
     {
         "customer_information": {
             "email": "customer-2@example.com",
-            "phone": "111-111-1111"
+            "phone": "111-111-1111",
+            "internal_customer_id": "cust_002"
         },
         "rating": 5,
         "date": new ISODate("2022-01-10"),
@@ -58,7 +60,20 @@ db.customer_feedback.insert([
     }
 ])
 
-
+db.internal_customer_profile.insert([
+    {
+        "customer_identifiers": {
+            "internal_id": "cust_001"
+        },
+        "derived_interests": ["marketing", "food"]
+    },
+    {
+         "customer_identifiers": {
+            "internal_id": "cust_002"
+        },
+        "derived_interests": ["programming", "hiking", "skateboarding"]
+    }
+])
 
 db.employee.insert([
     {

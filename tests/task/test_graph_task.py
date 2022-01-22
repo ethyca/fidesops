@@ -1,23 +1,32 @@
 import copy
+from datetime import datetime
+from typing import Dict, Any
 
 import dask
+from bson import ObjectId
 
 from fidesops.graph.config import (
     CollectionAddress,
     FieldPath,
 )
-from fidesops.graph.traversal import Traversal
+from fidesops.graph.graph import DatasetGraph
+from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.policy import Policy
+from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.task.graph_task import (
     collect_queries,
     TaskResources,
     EMPTY_REQUEST,
     filter_data_categories,
+    GraphTask,
 )
-from .traversal_data import sample_traversal
+from .traversal_data import sample_traversal, combined_mongo_postgresql_graph
+from ..fixtures import example_datasets
 from ..graph.graph_test_util import (
     MockSqlTask,
+    MockMongoTask,
 )
 
 dask.config.set(scheduler="processes")
@@ -28,7 +37,7 @@ connection_configs = [
 ]
 
 
-def test_to_dask_input_data() -> None:
+def test_to_dask_input_data_scalar() -> None:
     t = sample_traversal()
     n = t.traversal_node_dict[CollectionAddress("mysql", "Address")]
 
@@ -43,6 +52,47 @@ def test_to_dask_input_data() -> None:
     ]
     v = task.to_dask_input_data(customers_data, orders_data)
     assert set(v["id"]) == {31, 32, 1, 2, 11, 22}
+
+
+def test_to_dask_input_data_nested(
+    integration_postgres_config, integration_mongodb_config
+):
+
+    mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
+        integration_postgres_config, integration_mongodb_config
+    )
+    graph = DatasetGraph(mongo_dataset, postgres_dataset)
+    identity = {"email": "customer-1@example.com"}
+    combined_traversal = Traversal(graph, identity)
+    n = combined_traversal.traversal_node_dict[
+        CollectionAddress("mongo_test", "internal_customer_profile")
+    ]
+
+    customer_feedback_data = [
+        {
+            "_id": ObjectId("61eb388ecfb4a3721238a39b"),
+            "customer_information": {
+                "email": "customer-1@example.com",
+                "phone": "333-333-3333",
+                "internal_customer_id": "cust_001",
+            },
+            "rating": 3.0,
+            "date": datetime(2022, 1, 5, 0, 0),
+            "message": "Product was cracked!",
+        }
+    ]
+    task = MockMongoTask(
+        n,
+        TaskResources(
+            EMPTY_REQUEST,
+            Policy(),
+            [integration_postgres_config, integration_mongodb_config],
+        ),
+    )
+
+    dask_input_data = task.to_dask_input_data(customer_feedback_data)
+    # Output of function returns nested keys as dot-separated where applicable.
+    assert dask_input_data == {"customer_identifiers.internal_id": ["cust_001"]}
 
 
 def test_sql_dry_run_queries() -> None:

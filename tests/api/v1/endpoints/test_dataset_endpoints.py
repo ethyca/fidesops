@@ -39,7 +39,7 @@ def test_example_datasets(example_datasets):
     assert example_datasets[0]["fides_key"] == "postgres_example_test_dataset"
     assert len(example_datasets[0]["collections"]) == 11
     assert example_datasets[1]["fides_key"] == "mongo_test"
-    assert len(example_datasets[1]["collections"]) == 2
+    assert len(example_datasets[1]["collections"]) == 3
 
 
 class TestValidateDataset:
@@ -457,7 +457,7 @@ class TestPutDatasets:
         assert mongo_dataset["fides_key"] == "mongo_test"
         assert mongo_dataset["name"] == "Mongo Example Test Dataset"
         assert "Example of a Mongo dataset" in mongo_dataset["description"]
-        assert len(mongo_dataset["collections"]) == 2
+        assert len(mongo_dataset["collections"]) == 3
 
         postgres_config.delete(db)
         mongo_config.delete(db)

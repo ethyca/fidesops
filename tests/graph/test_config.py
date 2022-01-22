@@ -413,8 +413,9 @@ class TestFieldPath:
         assert FieldPath("A", "B").retrieve_from(input_data) == {"C": 2}
         assert FieldPath("A", "B", "C").retrieve_from(input_data) == 2
 
-        with pytest.raises(KeyError):
-            FieldPath("D").retrieve_from(input_data)
+        assert (
+            FieldPath("D").retrieve_from(input_data) is None
+        )  # FieldPath not in input data
 
         assert (
             FieldPath().retrieve_from(input_data) == input_data
