@@ -1,5 +1,7 @@
+import pydantic
 import pytest
 
+from fidesops.common_exceptions import ValidationError
 from fidesops.graph.config import *
 from fidesops.graph.data_type import (
     IntTypeConverter,
@@ -263,7 +265,7 @@ class TestField:
         )
         object_field = generate_field(
             name="obj",
-            data_categories=["category"],
+            data_categories=[],
             identity="identity",
             data_type_name="object",
             references=[],
@@ -274,7 +276,7 @@ class TestField:
         )
         object_array_field = generate_field(
             name="obj_a",
-            data_categories=["category"],
+            data_categories=[],
             identity="identity",
             data_type_name="string",
             references=[],
@@ -343,8 +345,8 @@ class TestField:
 
         street_field = ObjectField(
             name="street",
+            data_categories=[],
             primary_key=False,
-            data_categories=["user.provided.identifiable.contact.street"],
             fields={
                 "street_address": street_address_sub_field,
                 "apt_no": apt_no_sub_field,
@@ -354,7 +356,7 @@ class TestField:
 
         contact_info_field = ObjectField(
             name="contact",
-            data_categories=["user.provided.identifiable.contact.street"],
+            data_categories=[],
             fields={"address": street_field},
         )
 
@@ -363,13 +365,11 @@ class TestField:
                 field.data_categories or []
             )
 
-        # ObjectField collect_matching
+        # ObjectField collect_matching - nested fields selected.
         results = contact_info_field.collect_matching(is_street_category)
         assert results == {
             FieldPath("contact", "street", "street_address"): street_address_sub_field,
             FieldPath("contact", "street", "apartment_no"): apt_no_sub_field,
-            FieldPath("contact", "street"): street_field,
-            FieldPath("contact"): contact_info_field,
         }
 
         # ScalarField collect_matching
@@ -377,6 +377,27 @@ class TestField:
         assert apt_no_sub_field.collect_matching(is_street_category) == {
             FieldPath("apartment_no"): apt_no_sub_field
         }
+
+    def test_generate_object_field_with_data_categories(self):
+        apt_no_sub_field = ScalarField(
+            name="apartment_no",
+            primary_key=False,
+            data_type_converter=IntTypeConverter(),
+            data_categories=["user.provided.identifiable.contact.street"],
+        )
+
+        with pytest.raises(pydantic.error_wrappers.ValidationError):
+            generate_field(
+                name="obj",
+                data_categories=["A.B.C"],
+                identity="identity",
+                data_type_name="object",
+                references=[],
+                is_pk=False,
+                length=0,
+                is_array=False,
+                sub_fields=[apt_no_sub_field],
+            )
 
 
 class TestFieldPath:

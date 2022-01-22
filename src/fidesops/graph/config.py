@@ -83,7 +83,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Optional, Tuple, Set, Dict, Literal, Any, Callable
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.data_type import (
@@ -195,6 +195,9 @@ class FieldPath:
             input_data = {"A": {"B": {"C": 2, "D": 3}}}
             field_path = FieldPath("A", "B", "C")
             field_path.retrieve_from(input_data) = 2
+
+        Used when handling query results where we need to extract a (potentially
+        nested value), to mask it for example, or use it to build a query for another collection.
         """
         sub_data = copy.deepcopy(input_data)
         for level in self.levels:
@@ -311,6 +314,21 @@ class ObjectField(Field):
 
     fields: Dict[str, Field]
 
+    @validator("data_categories")
+    def validate_data_categories(
+        cls: "ObjectField", value: Optional[List[FidesOpsKey]]
+    ) -> Optional[List[FidesOpsKey]]:
+        """To prevent mismatches between data categories on an ObjectField and a nested ScalarField, only
+        allow data categories to be defined on the individual fields.
+
+        This shouldn't be hit unless an ObjectField is declared directly.
+        """
+        if value:
+            raise ValueError(
+                "ObjectFields cannot be given data_categories; annotate the sub-fields instead."
+            )
+        return value
+
     def cast(self, value: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Cast the input value into the form represented by data_type."""
 
@@ -346,12 +364,12 @@ class ObjectField(Field):
 # pylint: disable=too-many-arguments
 def generate_field(
     name: str,
-    data_categories: List[str],
-    identity: str,
+    data_categories: Optional[List[str]],
+    identity: Optional[str],
     data_type_name: str,
     references: List[Tuple[FieldAddress, EdgeDirection]],
     is_pk: bool,
-    length: int,
+    length: Optional[int],
     is_array: bool,
     sub_fields: List[Field],
 ) -> Field:

@@ -288,3 +288,28 @@ def test_dataset_graph_connected_by_nested_fields():
             "mongo_nested_test:photos"
         ]["system.operations"]
     ] == ["_id", "thumbnail.camera_used"]
+
+
+example_object_with_data_categories_nested_yaml = """dataset:
+  - fides_key: mongo_nested_test 
+    name: Mongo Example Nested Test Dataset
+    description: Example of a Mongo dataset that has a data_category incorrectly declared at the object level
+    collections:
+      - name: photos
+        fields:
+          - name: thumbnail
+            data_categories: [user.derived]    
+            fidesops_meta:
+                data_type: object
+            fields:
+              - name: photo_id
+                data_type: integer
+              - name: name
+                data_categories: [user.provided.identifiable]    
+"""
+
+
+def test_object_data_category_validation():
+    """Test trying to validate object with data category specified"""
+    with pytest.raises(ValidationError):
+        FidesopsDataset.parse_obj(__to_dataset__(example_object_with_data_categories_nested_yaml))
