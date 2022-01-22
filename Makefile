@@ -164,46 +164,18 @@ pytest: compose-build
 	@docker-compose run $(IMAGE_NAME) \
 		pytest $(pytestpath) -m "not integration and not integration_erasure and not integration_external"
 
+configure-infrastructure: compose-build
+	@echo "creating virtualenv"
+	@virtualenv -p python3 fidesops_test_dispatch
+	@echo "activating virutalenv"; \
+		source fidesops_test_dispatch/bin/activate; \
+		python configure_infrastructure.py datastores=$(datastores)
+
 
 pytest-integration: compose-build
-ifeq (,$(env))
-	@echo "no environment specified"
-	@path=""; \
-	for word in $(DOCKERFILE_ENVIRONMENTS); do \
-		path="$$path -f docker-compose.integration-$$word.yml"; \
-	done; \
-	docker-compose -f docker-compose.yml $$path build; \
-	docker-compose -f docker-compose.yml $$path up -d; \
-	sleep 5; \
-	setup_path=""; \
-	for word in $(DOCKERFILE_ENVIRONMENTS); do \
-		setup_path="fidesops python tests/integration_tests/$$word-setup.py"; \
-		docker exec $$setup_path || echo "no custom setup logic found for $$word"; \
-	done; \
-	docker-compose -f docker-compose.yml $$path run $(IMAGE_NAME) pytest $(pytestpath) -m integration; \
-	docker-compose -f docker-compose.yml $$path down --remove-orphans
-else ifneq (,$(findstring $(env),$(DOCKERFILE_ENVIRONMENTS)))
-	@echo "$(env) is a Dockerfile environment"
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml build
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml up -d
-	@sleep 5
-	@docker exec fidesops python tests/integration_tests/$(env)-setup.py || echo "no custom setup logic found for $(env)"
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml \
-		run $(IMAGE_NAME) \
-		pytest $(pytestpath) -m integration_$(env)
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-$(env).yml down --remove-orphans
-else ifneq (,$(findstring $(env),$(EXTERNAL_ENVIRONMENTS)))
-	@echo "$(env) is an external environment"
-	@docker-compose -f docker-compose.yml build
-	@docker-compose -f docker-compose.yml up -d
-	@sleep 5
-	@docker-compose -f docker-compose.yml \
-		run $(IMAGE_NAME) \
-		pytest $(pytestpath) -m integration_$(env)
-	@docker-compose -f docker-compose.yml down --remove-orphans
-else
-	@echo "$(env) is not currently supported"
-endif
+	@virtualenv -p python3 fidesops_test_dispatch; \
+		source fidesops_test_dispatch/bin/activate; \
+		python configure_infrastructure.py run_tests=true datastores=$(datastores)
 
 
 pytest-integration-erasure: compose-build
