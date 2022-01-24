@@ -50,12 +50,12 @@ server-shell: compose-build
 integration-shell: compose-build
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python configure_infrastructure.py open_shell=true datastores=$(datastores)
+		python configure_infrastructure.py --open_shell --datastores $(datastores)
 
 integration-env: compose-build
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python configure_infrastructure.py run_application=true datastores=$(datastores)
+		python configure_infrastructure.py --run_application --datastores $(datastores)
 
 quickstart: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
@@ -113,13 +113,13 @@ configure-infrastructure: compose-build
 	@virtualenv -p python3 fidesops_test_dispatch
 	@echo "activating virutalenv"; \
 		source fidesops_test_dispatch/bin/activate; \
-		python configure_infrastructure.py datastores=$(datastores)
+		python configure_infrastructure.py --datastores $(datastores)
 
 
 pytest-integration: compose-build
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python configure_infrastructure.py run_tests=true datastores=$(datastores)
+		python configure_infrastructure.py --run_tests --datastores $(datastores)
 
 
 pytest-integration-erasure: compose-build
