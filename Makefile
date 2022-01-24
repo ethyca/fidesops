@@ -58,8 +58,9 @@ integration-env: compose-build
 		python configure_infrastructure.py --run_application --datastores $(datastores)
 
 quickstart: compose-build
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
-	@docker exec -it fidesops python quickstart.py
+	@virtualenv -p python3 fidesops_test_dispatch; \
+		source fidesops_test_dispatch/bin/activate; \
+		python configure_infrastructure.py --datastores $(datastores) --run_quickstart
 
 ####################
 # Docker

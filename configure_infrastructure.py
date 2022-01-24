@@ -25,9 +25,10 @@ IMAGE_NAME = "fidesops"
 def configure_infrastructure(
     datastores: List[str] = [],  # Which infra should we create? If empty, we create all
     open_shell: bool = False,  # Should we open a bash shell?
-    run_application: bool = False,  # Should we run the Fidesops webserver?
-    run_tests: bool = False,  # Should we run the tests after creating the infra?
     pytest_path: str = "",  # Which subset of tests should we run?
+    run_application: bool = False,  # Should we run the Fidesops webserver?
+    run_quickstart: bool = False,  # Should we run the quickstart command?
+    run_tests: bool = False,  # Should we run the tests after creating the infra?
 ) -> None:
     """
     - Create a Docker Compose file path for all datastores specified in `datastores`.
@@ -56,6 +57,9 @@ def configure_infrastructure(
 
     elif run_application:
         return _run_application(path)
+
+    elif run_quickstart:
+        return _run_quickstart(path, IMAGE_NAME)
 
     elif run_tests:
         # Now run the tests
@@ -107,6 +111,15 @@ def get_path_for_datastores(datastores: List[str]) -> str:
     return path
 
 
+def _run_quickstart(
+    path: str,
+    image_name: str,
+) -> None:
+    os.system(f'echo "Running the quickstart..."')
+    os.system(f"docker-compose {path} up -d")
+    os.system(f"docker exec -it {image_name} python quickstart.py")
+
+
 def _open_shell(
     path: str,
     image_name: str,
@@ -148,7 +161,6 @@ def _run_tests(
 
     pytest_path += f' -m "{pytest_markers}"'
 
-    # os.system(f"docker-compose {path} up -d")
     os.system(f'echo "running pytest for markers: {pytest_path}"')
     os.system(
         f"docker-compose {docker_compose_path} run {IMAGE_NAME} pytest {pytest_path}"
@@ -190,16 +202,18 @@ if __name__ == "__main__":
         "--run_application",
         action="store_true",
     )
+    parser.add_argument(
+        "-q",
+        "--run_quickstart",
+        action="store_true",
+    )
     config_args = parser.parse_args()
 
-    import pdb
-
-    pdb.set_trace()
-
     configure_infrastructure(
-        config_args.datastores,
-        config_args.open_shell,
-        config_args.run_application,
-        config_args.run_tests,
-        config_args.pytest_path,
+        datastores=config_args.datastores,
+        open_shell=config_args.open_shell,
+        pytest_path=config_args.pytest_path,
+        run_application=config_args.run_application,
+        run_quickstart=config_args.run_quickstart,
+        run_tests=config_args.run_tests,
     )
