@@ -107,7 +107,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         for arg in sys.argv[1:]:
             kw, value = arg.split("=")
-            if len(value.split(",")) > 1:
+            if kw == "datastores":
                 value = value.split(",")
             if value:
                 kwargs[kw] = value
