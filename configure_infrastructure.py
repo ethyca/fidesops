@@ -37,6 +37,53 @@ def configure_infrastructure(
     """
 
     # Configure docker-compose path
+    path: str = get_path_for_datastores(datastores)
+
+    os.system(f'echo "infrastructure path: {path}"')
+    os.system(f"docker-compose {path} build")
+    os.system(f'echo "sleeping for: {DOCKER_WAIT} while infrastructure loads"')
+    os.system(f"sleep {DOCKER_WAIT}")
+
+    seed_initial_data(
+        datastores,
+        path,
+        base_image=IMAGE_NAME,
+    )
+
+    if open_shell:
+        return _open_shell(path, IMAGE_NAME)
+
+    elif run_application:
+        return _run_application(path)
+
+    elif run_tests:
+        # Now run the tests
+        return _run_tests(
+            datastores,
+            path,
+        )
+
+
+def seed_initial_data(
+    datastores: List[str],
+    path: str,
+    base_image: str,
+) -> None:
+    """
+    Seed the datastores with initial data as defined in the file at `setup_path`
+    """
+    for datastore in datastores:
+        if datastore in DOCKERFILE_DATASTORES:
+            setup_path = f"tests/integration_tests/{datastore}_setup.py"
+            os.system(
+                f'docker-compose {path} run {base_image} python {setup_path} || echo "no custom setup logic found for {datastore}"'
+            )
+
+
+def get_path_for_datastores(datastores: List[str]) -> str:
+    """
+    Returns the docker-compose file paths for the specified datastores
+    """
     path: str = "-f docker-compose.yml"
     if len(datastores) == 0:
         os.system(
@@ -55,50 +102,51 @@ def configure_infrastructure(
             # If the specified datastore is not known to us
             os.system(f'echo "Datastore {datastore} is currently not supported"')
 
-    os.system(f'echo "infrastructure path: {path}"')
-    os.system(f"docker-compose {path} build")
-    os.system(f'echo "sleeping for: {DOCKER_WAIT} while infrastructure loads"')
-    os.system(f"sleep {DOCKER_WAIT}")
+    return path
 
-    # Seed datastores with data
+
+def _open_shell(
+    path: str,
+    image_name: str,
+) -> None:
+    """
+    Opens a bash shell on the container at `image_name`
+    """
+    os.system(f'echo "Opening bash shell on {image_name}"')
+    os.system(f"docker-compose {path} run {image_name} /bin/bash")
+
+
+def _run_application(docker_compose_path: str) -> None:
+    """
+    Runs the application at `docker_compose_path` without detaching it from the shell
+    """
+    os.system(f'echo "Running application"')
+    os.system(f"docker-compose {docker_compose_path} up")
+
+
+def _run_tests(
+    datastores: List[str],
+    docker_compose_path: str,
+) -> None:
+    """
+    Runs unit tests against the specified datastores
+    """
+    pytest_markers: str = ""
     for datastore in datastores:
-        if datastore in DOCKERFILE_DATASTORES:
-            setup_path = f"tests/integration_tests/{datastore}_setup.py"
-            os.system(
-                f'docker-compose {path} run {IMAGE_NAME} python {setup_path} || echo "no custom setup logic found for {datastore}"'
-            )
+        if len(pytest_markers) == 0:
+            pytest_markers += f"integration_{datastore}"
+        else:
+            pytest_markers += f" or integration_{datastore}"
 
-    if open_shell:
-        # Open a bash shell on the container `IMAGE_NAME`
-        os.system(f'echo "Opening bash shell on {IMAGE_NAME}"')
-        os.system(f"docker-compose {path} run {IMAGE_NAME} /bin/bash")
-        return
+    # os.system(f"docker-compose {path} up -d")
+    os.system(f'echo "running pytest for markers: {pytest_markers}"')
+    os.system(
+        f'docker-compose {docker_compose_path} run {IMAGE_NAME} pytest -m "{pytest_markers}"'
+    )
 
-    elif run_application:
-        # Open a bash shell on the container `IMAGE_NAME`
-        os.system(f'echo "Running application"')
-        os.system(f"docker-compose {path} up")
-        return
-
-    elif run_tests:
-        pytest_markers: str = ""
-        # Now run the tests
-        for datastore in datastores:
-            if len(pytest_markers) == 0:
-                pytest_markers += f"integration_{datastore}"
-            else:
-                pytest_markers += f" or integration_{datastore}"
-
-        # os.system(f"docker-compose {path} up -d")
-        os.system(f'echo "running pytest for markers: {pytest_markers}"')
-        os.system(
-            f'docker-compose {path} run {IMAGE_NAME} pytest -m "{pytest_markers}"'
-        )
-
-        # Now tear down the infrastructure
-        os.system(f"docker-compose {path} down --remove-orphans")
-        os.system(f'echo "fin."')
-        return
+    # Now tear down the infrastructure
+    os.system(f"docker-compose {docker_compose_path} down --remove-orphans")
+    os.system(f'echo "fin."')
 
 
 if __name__ == "__main__":
