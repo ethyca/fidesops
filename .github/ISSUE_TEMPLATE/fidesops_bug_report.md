@@ -1,6 +1,6 @@
 ---
-name: Fidesctl Bug report
-about: Problems and issues with the code of Fidesctl
+name: Fidesops Bug report
+about: Problems and issues with the code of Fidesops
 title: ''
 labels: bug
 
