@@ -88,6 +88,7 @@ def configure_infrastructure(
             else:
                 pytest_markers += f" or integration_{datastore}"
 
+        os.system(f"docker-compose {path} up -d")
         os.system(f'echo "running pytest for markers: {pytest_markers}"')
         os.system(
             f'docker-compose {path} run {IMAGE_NAME} pytest -m "{pytest_markers}"'
@@ -109,6 +110,8 @@ if __name__ == "__main__":
             kw, value = arg.split("=")
             if kw == "datastores":
                 value = value.split(",")
+                if value[0] == "":
+                    value = []
             if value:
                 kwargs[kw] = value
 
