@@ -1,13 +1,14 @@
 """
 ...
 """
+import argparse
 import os
 import sys
 from typing import (
     List,
 )
 
-DOCKER_WAIT = 5
+DOCKER_WAIT = 15
 DOCKERFILE_DATASTORES = [
     "postgres",
     "mysql",
@@ -22,10 +23,10 @@ IMAGE_NAME = "fidesops"
 
 
 def configure_infrastructure(
+    datastores: List[str] = [],  # Which infra should we create? If empty, we create all
+    open_shell: bool = False,  # Should we open a bash shell?
     run_application: bool = False,  # Should we run the Fidesops webserver?
     run_tests: bool = False,  # Should we run the tests after creating the infra?
-    open_shell: bool = False,  # Should we open a bash shell?
-    datastores: List[str] = [],  # Which infra should we create? If empty, we create all
 ) -> None:
     """
     - Create a Docker Compose file path for all datastores specified in `datastores`.
@@ -88,7 +89,7 @@ def configure_infrastructure(
             else:
                 pytest_markers += f" or integration_{datastore}"
 
-        os.system(f"docker-compose {path} up -d")
+        # os.system(f"docker-compose {path} up -d")
         os.system(f'echo "running pytest for markers: {pytest_markers}"')
         os.system(
             f'docker-compose {path} run {IMAGE_NAME} pytest -m "{pytest_markers}"'
@@ -104,15 +105,34 @@ if __name__ == "__main__":
     if sys.version_info.major < 3:
         raise Exception("Python3 is required to configure Fidesops.")
 
-    kwargs = {}
-    if len(sys.argv) > 1:
-        for arg in sys.argv[1:]:
-            kw, value = arg.split("=")
-            if kw == "datastores":
-                value = value.split(",")
-                if value[0] == "":
-                    value = []
-            if value:
-                kwargs[kw] = value
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-d",
+        "--datastores",
+        action="extend",
+        nargs="*",
+        type=str,
+    )
+    parser.add_argument(
+        "-t",
+        "--run_tests",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-s",
+        "--open_shell",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-r",
+        "--run_application",
+        action="store_true",
+    )
+    config_args = parser.parse_args()
 
-    configure_infrastructure(**kwargs)
+    configure_infrastructure(
+        config_args.datastores,
+        config_args.open_shell,
+        config_args.run_application,
+        config_args.run_tests,
+    )
