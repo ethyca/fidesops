@@ -18,7 +18,6 @@ from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     FieldPath,
-    CollectionAddressRepr,
 )
 from fidesops.graph.graph import Edge, DatasetGraph
 from fidesops.graph.traversal import TraversalNode, Row, Traversal
@@ -384,9 +383,7 @@ def run_erasure(  # pylint: disable = too-many-arguments
 def filter_data_categories(
     access_request_results: Dict[str, Optional[Any]],
     target_categories: Set[str],
-    data_category_fields: Dict[
-        CollectionAddressRepr, Dict[FidesOpsKey, List[FieldPath]]
-    ],
+    data_category_fields: Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]],
 ) -> Dict[str, List[Dict[str, Optional[Any]]]]:
     """Filter access request results to only return fields associated with the target data categories
     and subcategories
