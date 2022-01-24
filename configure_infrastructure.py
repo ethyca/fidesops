@@ -63,7 +63,7 @@ def configure_infrastructure(
     # Seed datastores with data
     for datastore in datastores:
         if datastore in DOCKERFILE_DATASTORES:
-            setup_path = f"tests/integration_tests/{datastore}-setup.py"
+            setup_path = f"tests/integration_tests/{datastore}_setup.py"
             os.system(
                 f'docker-compose {path} run {IMAGE_NAME} python {setup_path} || echo "no custom setup logic found for {datastore}"'
             )
