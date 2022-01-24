@@ -27,6 +27,7 @@ def configure_infrastructure(
     open_shell: bool = False,  # Should we open a bash shell?
     run_application: bool = False,  # Should we run the Fidesops webserver?
     run_tests: bool = False,  # Should we run the tests after creating the infra?
+    pytest_path: str = "",  # Which subset of tests should we run?
 ) -> None:
     """
     - Create a Docker Compose file path for all datastores specified in `datastores`.
@@ -60,7 +61,8 @@ def configure_infrastructure(
         # Now run the tests
         return _run_tests(
             datastores,
-            path,
+            docker_compose_path=path,
+            pytest_path=pytest_path,
         )
 
 
@@ -127,21 +129,29 @@ def _run_application(docker_compose_path: str) -> None:
 def _run_tests(
     datastores: List[str],
     docker_compose_path: str,
+    pytest_path: str = "",
 ) -> None:
     """
     Runs unit tests against the specified datastores
     """
+    if pytest_path is None:
+        pytest_path = ""
+
+    path_includes_markers = "-m" in pytest_path
     pytest_markers: str = ""
-    for datastore in datastores:
-        if len(pytest_markers) == 0:
-            pytest_markers += f"integration_{datastore}"
-        else:
-            pytest_markers += f" or integration_{datastore}"
+    if not path_includes_markers:
+        for datastore in datastores:
+            if len(pytest_markers) == 0:
+                pytest_markers += f"integration_{datastore}"
+            else:
+                pytest_markers += f" or integration_{datastore}"
+
+    pytest_path += f' -m "{pytest_markers}"'
 
     # os.system(f"docker-compose {path} up -d")
-    os.system(f'echo "running pytest for markers: {pytest_markers}"')
+    os.system(f'echo "running pytest for markers: {pytest_path}"')
     os.system(
-        f'docker-compose {docker_compose_path} run {IMAGE_NAME} pytest -m "{pytest_markers}"'
+        f"docker-compose {docker_compose_path} run {IMAGE_NAME} pytest {pytest_path}"
     )
 
     # Now tear down the infrastructure
@@ -167,6 +177,10 @@ if __name__ == "__main__":
         action="store_true",
     )
     parser.add_argument(
+        "-p",
+        "--pytest_path",
+    )
+    parser.add_argument(
         "-s",
         "--open_shell",
         action="store_true",
@@ -178,9 +192,14 @@ if __name__ == "__main__":
     )
     config_args = parser.parse_args()
 
+    import pdb
+
+    pdb.set_trace()
+
     configure_infrastructure(
         config_args.datastores,
         config_args.open_shell,
         config_args.run_application,
         config_args.run_tests,
+        config_args.pytest_path,
     )
