@@ -1,5 +1,5 @@
 ---
-name: Fidesctl Feature request
+name: Fidesops Feature request
 about: Suggest a new feature/enhancement for this project
 title: ''
 labels: enhancement
