@@ -11,10 +11,9 @@ from sqlalchemy.engine import (
     LegacyCursorResult,
     Connection,
 )
-from sqlalchemy.sql.elements import TextClause
 from sqlalchemy.exc import OperationalError, InternalError
-from snowflake.sqlalchemy import URL as Snowflake_URL
 from sqlalchemy.sql.elements import TextClause
+from snowflake.sqlalchemy import URL as Snowflake_URL
 
 from fidesops.common_exceptions import ConnectionException
 from fidesops.graph.traversal import Row, TraversalNode
@@ -196,7 +195,7 @@ class MySQLConnector(SQLConnector):
         return rows
 
     def retrieve_data(
-            self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
+        self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
     ) -> List[Row]:
         """Retrieve sql data"""
         query_config = self.query_config(node)
