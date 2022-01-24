@@ -453,9 +453,6 @@ class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
                     clauses.append(
                         self.format_clause_for_query(string_path, "IN", operand)
                     )
-                else:
-                    #  if there's no data, create no clause
-                    pass
             if len(clauses) > 0:
                 query_str = self.get_formatted_query_string(field_list, clauses)
                 return text(query_str).params(query_data)
@@ -562,9 +559,6 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
                     elif len(data) > 1:
                         query_pairs[string_field_path] = {"$in": data}
 
-                    else:
-                        #  if there's no data, create no clause
-                        pass
                 field_list = {  # Get top-level fields to avoid path collisions
                     field_path.string_path: 1
                     for field_path, field in self.top_level_field_map().items()

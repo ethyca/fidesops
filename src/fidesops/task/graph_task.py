@@ -4,6 +4,7 @@ import traceback
 from abc import ABC
 from collections import defaultdict
 from functools import wraps
+
 from time import sleep
 from typing import List, Dict, Any, Tuple, Callable, Optional, Set
 
@@ -17,12 +18,14 @@ from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     FieldPath,
+    CollectionAddressRepr,
 )
 from fidesops.graph.graph import Edge, DatasetGraph
 from fidesops.graph.traversal import TraversalNode, Row, Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, AccessLevel
 from fidesops.models.policy import ActionType, Policy
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLogStatus
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.connectors import BaseConnector
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.collection_util import partition, append
@@ -381,8 +384,10 @@ def run_erasure(  # pylint: disable = too-many-arguments
 def filter_data_categories(
     access_request_results: Dict[str, Optional[Any]],
     target_categories: Set[str],
-    data_category_fields: Dict[str, Dict[str, List[FieldPath]]],
-) -> Dict[str, List[Dict[str, Any]]]:
+    data_category_fields: Dict[
+        CollectionAddressRepr, Dict[FidesOpsKey, List[FieldPath]]
+    ],
+) -> Dict[str, List[Dict[str, Optional[Any]]]]:
     """Filter access request results to only return fields associated with the target data categories
     and subcategories
 
@@ -404,7 +409,9 @@ def filter_data_categories(
             itertools.chain(
                 *[
                     field_paths
-                    for cat, field_paths in data_category_fields[node_address].items()
+                    for cat, field_paths in data_category_fields[
+                        CollectionAddress.from_string(node_address)
+                    ].items()
                     if any([cat.startswith(tar) for tar in target_categories])
                 ]
             )
@@ -414,11 +421,13 @@ def filter_data_categories(
             continue
 
         # Normalize nested data into a flat dataframe
-        df = pd.json_normalize(results, sep=".")
+        df: pd.DataFrame = pd.json_normalize(results, sep=".")
         # Only keep dataframe columns that match the target field paths
         df = df[[field_path.string_path for field_path in target_field_paths]]
         # Turn the filtered results back into a list of dictionaries
-        filtered_flattened_results = df.to_dict(orient="records")
+        filtered_flattened_results: List[Dict[str, Optional[Any]]] = df.to_dict(
+            orient="records"
+        )
         for row in filtered_flattened_results:
             # For each row, unflatten the dictionary
             filtered_access_results[node_address].append(unflatten_dict(row))

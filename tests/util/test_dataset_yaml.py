@@ -285,7 +285,7 @@ def test_dataset_graph_connected_by_nested_fields():
     assert [
         field_path.string_path
         for field_path in dataset_graph.data_category_field_mapping[
-            "mongo_nested_test:photos"
+           CollectionAddress("mongo_nested_test", "photos")
         ]["system.operations"]
     ] == ["_id", "thumbnail.camera_used"]
 

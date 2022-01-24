@@ -458,7 +458,7 @@ class Collection(BaseModel):
         return self.field_dict[field_path] if field_path in self.field_dict else None
 
     @property
-    def field_paths_by_category(self) -> Dict[str, List[FieldPath]]:
+    def field_paths_by_category(self) -> Dict[FidesOpsKey, List[FieldPath]]:
         """Returns mapping of data categories to a list of FieldPaths, flips FieldPaths -> categories
         to be categories -> FieldPaths.
 

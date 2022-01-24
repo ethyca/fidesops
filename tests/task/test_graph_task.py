@@ -183,7 +183,7 @@ def test_filter_data_categories():
     }
 
     data_category_fields = {
-        "postgres_example:supplies": {
+        CollectionAddress("postgres_example", "supplies"): {
             "A": [FieldPath("foods", "fruits", "apples"), FieldPath("clothing")],
             "B": [FieldPath("foods", "vegetables")],
             "C": [
