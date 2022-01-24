@@ -205,7 +205,7 @@ class MySQLConnector(SQLConnector):
         with client.connect() as connection:
             # fixme: update mssql type too to LegacyCursorResult
             results: LegacyCursorResult = connection.execute(stmt)
-            return MicrosoftSQLServerConnector.cursor_result_to_rows(results)
+            return MySQLConnector.cursor_result_to_rows(results)
 
 
 class RedshiftConnector(SQLConnector):

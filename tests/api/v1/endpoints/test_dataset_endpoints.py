@@ -40,6 +40,8 @@ def test_example_datasets(example_datasets):
     assert len(example_datasets[0]["collections"]) == 11
     assert example_datasets[1]["fides_key"] == "mongo_test"
     assert len(example_datasets[1]["collections"]) == 1
+    assert example_datasets[4]["fides_key"] == "mysql_example_test_dataset"
+    assert len(example_datasets[4]["collections"]) == 11
 
 
 class TestValidateDataset:
@@ -434,7 +436,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 4
+        assert len(response_body["succeeded"]) == 5
         assert len(response_body["failed"]) == 0
 
         # Confirm that the created dataset matches the values we provided
@@ -458,6 +460,17 @@ class TestPutDatasets:
         assert mongo_dataset["name"] == "Mongo Example Test Dataset"
         assert "Example of a Mongo dataset" in mongo_dataset["description"]
         assert len(mongo_dataset["collections"]) == 1
+
+        # check the mysql dataset
+        mysql_dataset = response_body["succeeded"][4]
+        mysql_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="mysql_example_test_dataset"
+        )
+        assert mysql_config is not None
+        assert mysql_dataset["fides_key"] == "mysql_example_test_dataset"
+        assert mysql_dataset["name"] == "MySQL Example Test Dataset"
+        assert "Example of a MySQL dataset" in mysql_dataset["description"]
+        assert len(mysql_dataset["collections"]) == 11
 
         postgres_config.delete(db)
         mongo_config.delete(db)

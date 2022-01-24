@@ -351,28 +351,28 @@ def test_mysql_access_request_task(db, policy, connection_config_mysql) -> None:
     )
 
     assert_rows_match(
-        v["mysql_example:address"],
+        v["my_mysql_db_1:address"],
         min_size=2,
         keys=["id", "street", "city", "state", "zip"],
     )
     assert_rows_match(
-        v["mysql_example:orders"],
+        v["my_mysql_db_1:orders"],
         min_size=3,
         keys=["id", "customer_id", "shipping_address_id", "payment_card_id"],
     )
     assert_rows_match(
-        v["mysql_example:payment_card"],
+        v["my_mysql_db_1:payment_card"],
         min_size=2,
         keys=["id", "name", "ccn", "customer_id", "billing_address_id"],
     )
     assert_rows_match(
-        v["mysql_example:customer"],
+        v["my_mysql_db_1:customer"],
         min_size=1,
         keys=["id", "name", "email", "address_id"],
     )
 
     # links
-    assert v["mysql_example:customer"][0]["email"] == "customer-1@example.com"
+    assert v["my_mysql_db_1:customer"][0]["email"] == "customer-1@example.com"
 
     logs = (
         ExecutionLog.query(db=db)
@@ -384,7 +384,7 @@ def test_mysql_access_request_task(db, policy, connection_config_mysql) -> None:
     assert (
             len(
                 records_matching_fields(
-                    logs, dataset_name="mysql_example", collection_name="customer"
+                    logs, dataset_name="my_mysql_db_1", collection_name="customer"
                 )
             )
             > 0
@@ -392,7 +392,7 @@ def test_mysql_access_request_task(db, policy, connection_config_mysql) -> None:
     assert (
             len(
                 records_matching_fields(
-                    logs, dataset_name="mysql_example", collection_name="address"
+                    logs, dataset_name="my_mysql_db_1", collection_name="address"
                 )
             )
             > 0
@@ -400,7 +400,7 @@ def test_mysql_access_request_task(db, policy, connection_config_mysql) -> None:
     assert (
             len(
                 records_matching_fields(
-                    logs, dataset_name="mysql_example", collection_name="orders"
+                    logs, dataset_name="my_mysql_db_1", collection_name="orders"
                 )
             )
             > 0
@@ -409,7 +409,7 @@ def test_mysql_access_request_task(db, policy, connection_config_mysql) -> None:
             len(
                 records_matching_fields(
                     logs,
-                    dataset_name="mysql_example",
+                    dataset_name="my_mysql_db_1",
                     collection_name="payment_card",
                 )
             )
