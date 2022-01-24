@@ -22,7 +22,9 @@ IMAGE_NAME = "fidesops"
 
 
 def configure_infrastructure(
+    run_application: bool = False,  # Should we run the Fidesops webserver?
     run_tests: bool = False,  # Should we run the tests after creating the infra?
+    open_shell: bool = False,  # Should we open a bash shell?
     datastores: List[str] = [],  # Which infra should we create? If empty, we create all
 ) -> None:
     """
@@ -54,7 +56,6 @@ def configure_infrastructure(
 
     os.system(f'echo "infrastructure path: {path}"')
     os.system(f"docker-compose {path} build")
-    os.system(f"docker-compose {path} up -d")
     os.system(f'echo "sleeping for: {DOCKER_WAIT} while infrastructure loads"')
     os.system(f"sleep {DOCKER_WAIT}")
 
@@ -65,7 +66,19 @@ def configure_infrastructure(
             f'docker-compose {path} run {IMAGE_NAME} python {setup_path} || echo "no custom setup logic found for {datastore}"'
         )
 
-    if run_tests:
+    if open_shell:
+        # Open a bash shell on the container `IMAGE_NAME`
+        os.system(f'echo "Opening bash shell on {IMAGE_NAME}"')
+        os.system(f"docker-compose {path} run {IMAGE_NAME} /bin/bash")
+        return
+
+    elif run_application:
+        # Open a bash shell on the container `IMAGE_NAME`
+        os.system(f'echo "Running application"')
+        os.system(f"docker-compose {path} up")
+        return
+
+    elif run_tests:
         pytest_markers: str = ""
         # Now run the tests
         for datastore in datastores:
@@ -82,18 +95,20 @@ def configure_infrastructure(
         # Now tear down the infrastructure
         os.system(f"docker-compose {path} down --remove-orphans")
         os.system(f'echo "fin."')
+        return
 
 
 if __name__ == "__main__":
-    # Check for Python3 existing
-    datastores = []
-    run_tests = False
-    if len(sys.argv) > 1:
-        run_tests = sys.argv[1].split("=") == "true"
-        datastores_input = sys.argv[2].split("=")[1].split(",")
-        datastores = [ds for ds in datastores_input if ds]
+    if sys.version_info.major < 3:
+        raise Exception("Python3 is required to configure Fidesops.")
 
-    configure_infrastructure(
-        run_tests,
-        datastores,
-    )
+    kwargs = {}
+    if len(sys.argv) > 1:
+        for arg in sys.argv[1:]:
+            kw, value = arg.split("=")
+            if len(value.split(",")) > 1:
+                value = value.split(",")
+            if value:
+                kwargs[kw] = value
+
+    configure_infrastructure(**kwargs)
