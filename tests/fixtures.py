@@ -982,6 +982,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/snowflake_example_test_dataset.yml",
         "data/dataset/redshift_example_test_dataset.yml",
         "data/dataset/mysql_example_test_dataset.yml",
+        "data/dataset/mssql_example_test_dataset.yml"
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
@@ -1052,6 +1053,29 @@ def postgres_example_test_dataset_config(
 
 
 @pytest.fixture
+def mssql_example_test_dataset_config(
+        connection_config_mssql: ConnectionConfig,
+        db: Session,
+        example_datasets: List[Dict],
+) -> Generator:
+    mssql_dataset = example_datasets[4]
+    fides_key = mssql_dataset["fides_key"]
+    connection_config_mssql.name = fides_key
+    connection_config_mssql.key = fides_key
+    connection_config_mssql.save(db=db)
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config_mssql.id,
+            "fides_key": fides_key,
+            "dataset": mssql_dataset,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+
+
+@pytest.fixture
 def postgres_example_test_dataset_config_read_access(
     read_connection_config: ConnectionConfig,
     db: Session,
@@ -1077,8 +1101,7 @@ def mysql_example_test_dataset_config(
     db: Session,
     example_datasets: List[Dict],
 ) -> Generator:
-    # todo: update index once merge in latest from main
-    mysql_dataset = example_datasets[4]
+    mysql_dataset = example_datasets[5]
     fides_key = mysql_dataset["fides_key"]
     connection_config_mysql.name = fides_key
     connection_config_mysql.key = fides_key
