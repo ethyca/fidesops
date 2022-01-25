@@ -1,5 +1,6 @@
 """
-...
+This file invokes a command used to setup infrastructure for use in testing Fidesops
+and related workflows.
 """
 import argparse
 import os
@@ -116,6 +117,9 @@ def _run_quickstart(
     path: str,
     image_name: str,
 ) -> None:
+    """
+    Invokes the Fidesops command line quickstart
+    """
     os.system(f'echo "Running the quickstart..."')
     os.system(f"docker-compose {path} up -d")
     os.system(f"docker exec -it {image_name} python quickstart.py")
