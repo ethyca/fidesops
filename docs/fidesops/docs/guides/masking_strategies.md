@@ -109,55 +109,69 @@ Issue a PATCH request to `/policy/policy_key/rule`:
 
 ## Supported Masking Strategies and Associated Configuration options
 
-`null_rewrite`
+### Null Rewrite
 
-Masks the input value with a null value. No config needed.
+Masks the input value with a null value.
 
-`string_rewrite`
+`strategy`: `null_rewrite`
+
+No config needed.
+
+### String Rewrite
 
 Masks the input value with a default string value.
 
-Configuration:
+`strategy`: `string_rewrite`
+
+`configuration`:
 
 - `rewrite_value`: `str` that will replace input values
 - `format_preservation` (optional): `Dict` with the following key/vals:
     - `suffix`: `str` that specifies suffix to append to masked value
 
-`hash`
+### Hash
 
 Masks the input value by returning a hashed version of the input value. Is deterministic such that the same input value will mask to the same value within the same privacy request. This is not the case when the masking service is called as standalone service (outside of a privacy request).
 
-Configuration:
+`strategy`: `hash`
+
+`configuration`:
 
 - `algorithm` (optional): `str` that specifies Hash masking algorithm. Options include `SHA-512` or `SHA_256`. Default = `SHA_256`
 - `format_preservation` (optional): `Dict` with the following key/vals:
     - `suffix`: `str` that specifies suffix to append to masked value
 
-`random_string_rewrite`
+### Random String Rewrite
 
 Masks the input value with a random string of a specified length.
 
-Configuration:
+`strategy`: `random_string_rewrite`
+
+`configuration`:
 
 - `length` (optional): `int` that specifies length of randomly generated string. Default = `30`
 - `format_preservation` (optional): `Dict` with the following key/vals:
     - `suffix`: `str` that specifies suffix to append to masked value
 
-`aes_encrypt`
+### AES Encrypt
 
 Masks by encrypting the value using AES. Is deterministic such that the same input value will mask to the same value within the same privacy request. This is not the case when the masking service is called as standalone service (outside of a privacy request).
 
-Configuration:
+`strategy`: `aes_encrypt`
+
+`configuration`:
 
 - `mode` (optional): `str` that specifies AES encryption mode. Only supported option is `GCM`. Default = `GCM`
 - `format_preservation` (optional): `Dict` with the following key/vals:
     - `suffix`: `str` that specifies suffix to append to masked value
 
-`hmac`
+### HMAC
 
 Masks the input value by using the HMAC algorithm along with a hashed version of the data and a secret key. Is deterministic such that the same input value will mask to the same value within the same privacy request. This is not the case when the masking service is called as standalone service (outside of a privacy request).
 
-Configuration:
+`strategy`: `hmac`
+
+`configuration`:
 
 - `algorithm` (optional): `str` that specifies HMAC masking algorithm. Options include `SHA-512` or `SHA_256`. Default = `SHA_256`
 - `format_preservation` (optional): `Dict` with the following key/vals:
