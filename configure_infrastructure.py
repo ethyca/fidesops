@@ -38,6 +38,14 @@ def configure_infrastructure(
     with `IMAGE_NAME`.
     """
 
+    if len(datastores) == 0:
+        os.system(
+            f'echo "no datastores specified, configuring infrastructure for all datastores"'
+        )
+        datastores = DOCKERFILE_DATASTORES + EXTERNAL_DATASTORES
+    else:
+        os.system(f'echo "datastores specified: {", ".join(datastores)}"')
+
     # Configure docker-compose path
     path: str = get_path_for_datastores(datastores)
 
@@ -91,14 +99,6 @@ def get_path_for_datastores(datastores: List[str]) -> str:
     Returns the docker-compose file paths for the specified datastores
     """
     path: str = "-f docker-compose.yml"
-    if len(datastores) == 0:
-        os.system(
-            f'echo "no datastores specified, configuring infrastructure for all datastores"'
-        )
-        datastores = DOCKERFILE_DATASTORES + EXTERNAL_DATASTORES
-    else:
-        os.system(f'echo "datastores specified: {", ".join(datastores)}"')
-
     for datastore in datastores:
         os.system(f'echo "configuring infrastructure for {datastore}"')
         if datastore in DOCKERFILE_DATASTORES:
@@ -153,15 +153,21 @@ def _run_tests(
     path_includes_markers = "-m" in pytest_path
     pytest_markers: str = ""
     if not path_includes_markers:
-        for datastore in datastores:
-            if len(pytest_markers) == 0:
-                pytest_markers += f"integration_{datastore}"
-            else:
-                pytest_markers += f" or integration_{datastore}"
+        # If the path manually specified already uses markers, don't add more here
+        if set(datastores) == set(DOCKERFILE_DATASTORES + EXTERNAL_DATASTORES):
+            # If all datastores have been specified use the generic `integration` flag
+            pytest_markers += "integration"
+        else:
+            # Otherwise only include the datastores provided
+            for datastore in datastores:
+                if len(pytest_markers) == 0:
+                    pytest_markers += f"integration_{datastore}"
+                else:
+                    pytest_markers += f" or integration_{datastore}"
 
     pytest_path += f' -m "{pytest_markers}"'
 
-    os.system(f'echo "running pytest for markers: {pytest_path}"')
+    os.system(f'echo "running pytest for conditions: {pytest_path}"')
     os.system(
         f"docker-compose {docker_compose_path} run {IMAGE_NAME} pytest {pytest_path}"
     )
