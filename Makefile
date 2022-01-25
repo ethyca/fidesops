@@ -12,7 +12,6 @@ IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
 DOCKERFILE_ENVIRONMENTS := postgres mysql mongodb mssql
-EXTERNAL_ENVIRONMENTS := snowflake redshift
 
 
 ####################
@@ -108,14 +107,6 @@ pytest: compose-build
 	@echo "Running pytest unit tests..."
 	@docker-compose run $(IMAGE_NAME) \
 		pytest $(pytestpath) -m "not integration and not integration_erasure and not integration_external"
-
-configure-infrastructure: compose-build
-	@echo "creating virtualenv"
-	@virtualenv -p python3 fidesops_test_dispatch
-	@echo "activating virutalenv"; \
-		source fidesops_test_dispatch/bin/activate; \
-		python run_infrastructure.py --datastores $(datastores)
-
 
 pytest-integration: compose-build
 	@virtualenv -p python3 fidesops_test_dispatch; \
