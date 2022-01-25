@@ -50,17 +50,17 @@ server-shell: compose-build
 integration-shell: compose-build
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python configure_infrastructure.py --open_shell --datastores $(datastores)
+		python run_infrastructure.py --open_shell --datastores $(datastores)
 
 integration-env: compose-build
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python configure_infrastructure.py --run_application --datastores $(datastores)
+		python run_infrastructure.py --run_application --datastores $(datastores)
 
 quickstart: compose-build
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python configure_infrastructure.py --datastores $(datastores) --run_quickstart
+		python run_infrastructure.py --datastores $(datastores) --run_quickstart
 
 ####################
 # Docker
@@ -114,13 +114,13 @@ configure-infrastructure: compose-build
 	@virtualenv -p python3 fidesops_test_dispatch
 	@echo "activating virutalenv"; \
 		source fidesops_test_dispatch/bin/activate; \
-		python configure_infrastructure.py --datastores $(datastores)
+		python run_infrastructure.py --datastores $(datastores)
 
 
 pytest-integration: compose-build
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python configure_infrastructure.py --run_tests --datastores $(datastores)
+		python run_infrastructure.py --run_tests --datastores $(datastores)
 
 
 pytest-integration-erasure: compose-build

@@ -23,7 +23,7 @@ EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
 IMAGE_NAME = "fidesops"
 
 
-def configure_infrastructure(
+def run_infrastructure(
     datastores: List[str] = [],  # Which infra should we create? If empty, we create all
     open_shell: bool = False,  # Should we open a bash shell?
     pytest_path: str = "",  # Which subset of tests should we run?
@@ -224,7 +224,7 @@ if __name__ == "__main__":
     )
     config_args = parser.parse_args()
 
-    configure_infrastructure(
+    run_infrastructure(
         datastores=config_args.datastores,
         open_shell=config_args.open_shell,
         pytest_path=config_args.pytest_path,
