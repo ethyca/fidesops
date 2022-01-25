@@ -15,10 +15,11 @@ DOCKERFILE_DATASTORES = [
     "mongodb",
     "mssql",
 ]
-EXTERNAL_DATASTORES = [
-    "snowflake",
-    "redshift",
-]
+EXTERNAL_DATASTORE_CONFIG = {
+    "snowflake": ["SNOWFLAKE_TEST_URI"],
+    "redshift": ["REDSHIFT_TEST_URI", "REDSHIFT_TEST_DB_SCHEMA"],
+}
+EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
 IMAGE_NAME = "fidesops"
 
 
@@ -165,11 +166,19 @@ def _run_tests(
                 else:
                     pytest_markers += f" or integration_{datastore}"
 
+    environment_variables = ""
+    for datastore in EXTERNAL_DATASTORES:
+        if datastore in datastores:
+            for env_var in EXTERNAL_DATASTORE_CONFIG[datastore]:
+                environment_variables += f"-e {env_var} "
+
     pytest_path += f' -m "{pytest_markers}"'
 
-    os.system(f'echo "running pytest for conditions: {pytest_path}"')
     os.system(
-        f"docker-compose {docker_compose_path} run {IMAGE_NAME} pytest {pytest_path}"
+        f'echo "running pytest for conditions: {pytest_path} with environment variables: {environment_variables}"'
+    )
+    os.system(
+        f"docker-compose {docker_compose_path} run {environment_variables} {IMAGE_NAME} pytest {pytest_path}"
     )
 
     # Now tear down the infrastructure
