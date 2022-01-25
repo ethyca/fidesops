@@ -24,9 +24,7 @@ pseudonymized in most cases, and (at worst) may still be identifiable if the mas
 which is a common mistake!
 
 In fidesops, your options to pseudonymize data are captured in "masking strategies". Fidesops supports a wide variety
-of masking strategies for different purposes when used directly as an API including HMAC, hashing, encryption, and 
-randomization. However, note that fidesops only supports the `null_rewrite` strategy when processing privacy requests right now,
-but we'll be adding support for all masking strategies in an upcoming release!
+of masking strategies for different purposes when used directly as an API including HMAC, Hash, AES encryption, string rewrite, random string rewrite, and null rewrite.
 
 
 ### Why mask instead of delete?
