@@ -5,8 +5,8 @@ In this section we'll cover:
 - What is data masking?
 - Why might you want to mask personally identifiable information rather than delete?
 - How do you use fidesops as a masking service only?
-- What are the currently-supported masking strategies in fidesops?
 - How do you configure masking strategies for your fidesops policies?
+- What are the current supported masking strategies in fidesops?
 - How do you create your own masking strategies?
 
 
@@ -25,7 +25,7 @@ which is a common mistake!
 
 In fidesops, your options to pseudonymize data are captured in "masking strategies". Fidesops supports a wide variety
 of masking strategies for different purposes when used directly as an API including HMAC, hashing, encryption, and 
-randomization. However, note that fidesops only supports the "null" strategy when processing privacy requests right now,
+randomization. However, note that fidesops only supports the `null_rewrite` strategy when processing privacy requests right now,
 but we'll be adding support for all masking strategies in an upcoming release!
 
 
@@ -48,7 +48,7 @@ Other reasons to mask instead of delete include legal requirements that have you
 
 ## Using fidesops as a masking service
 
-If you just want to use fidesops as a masking service, you can send a PUT request to the masking endpoint with the 
+If you just want to use fidesops as a masking service, you can send a `PUT` request to the masking endpoint with the 
 value you'd like pseudonymized. This endpoint is also useful for getting a feel of how the different masking strategies work.
 
 Example: `PUT /masking/mask?value=test@example.com`
@@ -80,27 +80,11 @@ The email has been replaced with a random string of 20 characters, while still p
 See [Masking values API docs](/fidesops/api#operations-tag-Masking) on how to use fidesops to as a masking service .
 
 
-## Supported Masking Strategies
-
-### Supported by fidesops policies
-
-  - `NullMaskingStrategy`: Masks the input value with a null value.
-  - ... More strategies coming soon
-
-### Supported by masking service only
-
-  - `StringRewriteMaskingStrategy`: Masks the input value with a default string value
-  - `HashMaskingStrategy`: Masks the input value by returning a hashed version of the input value
-  - `RandomStringRewriteMaskingStrategy`: Masks the input value with a random string of a specified length
-  - `AesEncryptionMaskingStrategy`: Masks by encrypting the value using AES
-  - `HmacMaskingStrategy`: Masks the input value by using the HMAC algorithm along with a hashed version of the data and a secret key
-
 ## Configuration
 
-Only null value masking is currently supported by fidesops policies, but support for other strategies is coming.
-Currently, erasure requests will replace customer data with null values.
+Erasure requests will replace mask data with the chosen masking strategy.
 
-In the future, to configure a specific masking strategy to be used for a Policy, you will create an `erasure` rule
+To configure a specific masking strategy to be used for a Policy, you will create an `erasure` rule
 that captures that strategy for the Policy.
 
 Issue a PATCH request to `/policy/policy_key/rule`:
@@ -123,6 +107,63 @@ Issue a PATCH request to `/policy/policy_key/rule`:
 
 ```
 
+## Supported Masking Strategies and Associated Configuration options
+
+`null_rewrite`
+
+Masks the input value with a null value. No config needed.
+
+`string_rewrite`
+
+Masks the input value with a default string value.
+
+Configuration:
+
+- `rewrite_value`: `str` that will replace input values
+- `format_preservation` (optional): `Dict` with the following key/vals:
+    - `suffix`: `str` that specifies suffix to append to masked value
+
+`hash`
+
+Masks the input value by returning a hashed version of the input value. Is deterministic such that the same input value will mask to the same value within the same privacy request. This is not the case when the masking service is called as standalone service (outside of a privacy request).
+
+Configuration:
+
+- `algorithm` (optional): `str` that specifies Hash masking algorithm. Options include `SHA-512` or `SHA_256`. Default = `SHA_256`
+- `format_preservation` (optional): `Dict` with the following key/vals:
+    - `suffix`: `str` that specifies suffix to append to masked value
+
+`random_string_rewrite`
+
+Masks the input value with a random string of a specified length.
+
+Configuration:
+
+- `length` (optional): `int` that specifies length of randomly generated string. Default = `30`
+- `format_preservation` (optional): `Dict` with the following key/vals:
+    - `suffix`: `str` that specifies suffix to append to masked value
+
+`aes_encrypt`
+
+Masks by encrypting the value using AES. Is deterministic such that the same input value will mask to the same value within the same privacy request. This is not the case when the masking service is called as standalone service (outside of a privacy request).
+
+Configuration:
+
+- `mode` (optional): `str` that specifies AES encryption mode. Only supported option is `GCM`. Default = `GCM`
+- `format_preservation` (optional): `Dict` with the following key/vals:
+    - `suffix`: `str` that specifies suffix to append to masked value
+
+`hmac`
+
+Masks the input value by using the HMAC algorithm along with a hashed version of the data and a secret key. Is deterministic such that the same input value will mask to the same value within the same privacy request. This is not the case when the masking service is called as standalone service (outside of a privacy request).
+
+Configuration:
+
+- `algorithm` (optional): `str` that specifies HMAC masking algorithm. Options include `SHA-512` or `SHA_256`. Default = `SHA_256`
+- `format_preservation` (optional): `Dict` with the following key/vals:
+    - `suffix`: `str` that specifies suffix to append to masked value
+
+    
 See the [Policy guide](policies.md) for more detailed instructions on creating Policies and Rules.
 
 
@@ -179,6 +220,10 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
 
     @staticmethod
     def get_description() -> MaskingStrategyDescription:
+        """Not covered in this example"""
+
+    @staticmethod
+    def data_type_supported(data_type: Optional[str]) -> bool:
         """Not covered in this example"""
 ```
 
