@@ -386,6 +386,8 @@ def test_filter_on_data_categories_mongo(
     }
 
 
+@pytest.mark.integration_mongodb
+@pytest.mark.integration
 class TestRetrievingDataMongo:
     @pytest.fixture
     def connector(self, integration_mongodb_config):
@@ -399,7 +401,6 @@ class TestRetrievingDataMongo:
         traversal_node = TraversalNode(node)
         return traversal_node
 
-    @pytest.mark.integration
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data(
         self,
@@ -421,7 +422,6 @@ class TestRetrievingDataMongo:
 
         assert results[0]["customer_id"] == 1
 
-    @pytest.mark.integration
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_no_input(
         self,
@@ -453,7 +453,6 @@ class TestRetrievingDataMongo:
         results = connector.retrieve_data(traversal_node, Policy(), {"email": None})
         assert results == []
 
-    @pytest.mark.integration
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
         self,
