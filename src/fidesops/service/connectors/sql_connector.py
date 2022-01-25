@@ -50,7 +50,9 @@ class SQLConnector(BaseConnector[Engine]):
         columns: List[Column] = results.cursor.description
         rows = []
         for row_tuple in results:
-            rows.append({col.name: row_tuple[count] for count, col in enumerate(columns)})
+            rows.append(
+                {col.name: row_tuple[count] for count, col in enumerate(columns)}
+            )
         return rows
 
     @abstractmethod
@@ -377,4 +379,3 @@ class MicrosoftSQLServerConnector(SQLConnector):
         for row_tuple in results:
             rows.append({col[0]: row_tuple[count] for count, col in enumerate(columns)})
         return rows
-
