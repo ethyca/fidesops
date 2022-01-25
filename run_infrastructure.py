@@ -48,6 +48,9 @@ def run_infrastructure(
     else:
         os.system(f'echo "datastores specified: {", ".join(datastores)}"')
 
+    # De-duplicate datastores
+    datastores = set(datastores)
+
     # Configure docker-compose path
     path: str = get_path_for_datastores(datastores)
 
