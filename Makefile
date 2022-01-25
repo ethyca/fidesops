@@ -60,7 +60,7 @@ integration-env: compose-build
 quickstart: compose-build
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python run_infrastructure.py --datastores $(datastores) --run_quickstart
+		python run_infrastructure.py --datastores mongodb postgres --run_quickstart
 
 ####################
 # Docker
