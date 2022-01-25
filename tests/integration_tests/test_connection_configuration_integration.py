@@ -25,13 +25,13 @@ from fidesops.api.v1.scope_registry import (
 from fidesops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
 
 
+@pytest.mark.integration_postgres
+@pytest.mark.integration
 class TestPostgresConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/secret"
 
-    @pytest.mark.integration_postgres
-    @pytest.mark.integration
     def test_postgres_db_connection_incorrect_secrets(
         self,
         api_client: TestClient,
@@ -68,8 +68,6 @@ class TestPostgresConnectionPutSecretsAPI:
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is False
 
-    @pytest.mark.integration_postgres
-    @pytest.mark.integration
     def test_postgres_db_connection_connect_with_components(
         self,
         url,
@@ -112,8 +110,6 @@ class TestPostgresConnectionPutSecretsAPI:
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is True
 
-    @pytest.mark.integration_postgres
-    @pytest.mark.integration
     def test_postgres_db_connection_connect_with_url(
         self,
         url,
