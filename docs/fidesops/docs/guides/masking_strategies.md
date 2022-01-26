@@ -80,7 +80,7 @@ See [Masking values API docs](/fidesops/api#operations-tag-Masking) on how to us
 
 ## Configuration
 
-Erasure requests will replace mask data with the chosen masking strategy.
+Erasure requests will mask data with the chosen masking strategy.
 
 To configure a specific masking strategy to be used for a Policy, you will create an `erasure` rule
 that captures that strategy for the Policy.
@@ -129,7 +129,7 @@ Masks the input value with a default string value.
 
 ### Hash
 
-Masks the input value by returning a hashed version of the input value. Is deterministic such that the same input value will mask to the same value within the same privacy request. This is not the case when the masking service is called as standalone service (outside of a privacy request).
+Masks the data by hashing the input before returning it. The hash is deterministic such that the same input will return the same output within the context of the same privacy request. This is not the case when the masking service is called as a standalone service, outside the context of a privacy request.
 
 `strategy`: `hash`
 
@@ -153,7 +153,7 @@ Masks the input value with a random string of a specified length.
 
 ### AES Encrypt
 
-Masks by encrypting the value using AES. Is deterministic such that the same input value will mask to the same value within the same privacy request. This is not the case when the masking service is called as standalone service (outside of a privacy request).
+Masks the data using AES encryption before returning it. The AES encryption strategy is deterministic such that the same input will return the same output within the context of the same privacy request. This is not the case when the masking service is called as a standalone service, outside the context of a privacy request.
 
 `strategy`: `aes_encrypt`
 
@@ -165,7 +165,7 @@ Masks by encrypting the value using AES. Is deterministic such that the same inp
 
 ### HMAC
 
-Masks the input value by using the HMAC algorithm along with a hashed version of the data and a secret key. Is deterministic such that the same input value will mask to the same value within the same privacy request. This is not the case when the masking service is called as standalone service (outside of a privacy request).
+Masks the data using HMAC before returning it. The HMAC encryption strategy is deterministic such that the same input will return the same output within the context of the same privacy request. This is not the case when the masking service is called as a standalone service, outside the context of a privacy request.
 
 `strategy`: `hmac`
 
