@@ -179,13 +179,13 @@ def test_create_and_process_access_request(
 @pytest.mark.integration
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_mssql(
-        trigger_webhook_mock,
-        mssql_example_test_dataset_config,
-        db,
-        cache,
-        policy,
-        policy_pre_execution_webhooks,
-        policy_post_execution_webhooks,
+    trigger_webhook_mock,
+    mssql_example_test_dataset_config,
+    db,
+    cache,
+    policy,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
 ):
 
     customer_email = "customer-1@example.com"
@@ -218,13 +218,13 @@ def test_create_and_process_access_request_mssql(
 @pytest.mark.integration
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_mysql(
-        trigger_webhook_mock,
-        mysql_example_test_dataset_config,
-        db,
-        cache,
-        policy,
-        policy_pre_execution_webhooks,
-        policy_post_execution_webhooks,
+    trigger_webhook_mock,
+    mysql_example_test_dataset_config,
+    db,
+    cache,
+    policy,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
 ):
 
     customer_email = "customer-1@example.com"
@@ -295,12 +295,12 @@ def test_create_and_process_erasure_request_specific_category(
 
 @pytest.mark.integration_erasure
 def test_create_and_process_erasure_request_specific_category_mssql(
-        mssql_example_test_dataset_config,
-        cache,
-        db,
-        generate_auth_header,
-        erasure_policy,
-        connection_config_mssql,
+    mssql_example_test_dataset_config,
+    cache,
+    db,
+    generate_auth_header,
+    erasure_policy,
+    connection_config_mssql,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
@@ -334,12 +334,12 @@ def test_create_and_process_erasure_request_specific_category_mssql(
 
 @pytest.mark.integration_erasure
 def test_create_and_process_erasure_request_specific_category_mysql(
-        mysql_example_test_dataset_config,
-        cache,
-        db,
-        generate_auth_header,
-        erasure_policy,
-        connection_config_mysql,
+    mysql_example_test_dataset_config,
+    cache,
+    db,
+    generate_auth_header,
+    erasure_policy,
+    connection_config_mysql,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
@@ -528,6 +528,7 @@ def test_create_and_process_erasure_request_with_table_joins(
 
 @pytest.mark.integration_erasure
 def test_create_and_process_erasure_request_read_access(
+    postgres_integration_db,
     postgres_example_test_dataset_config_read_access,
     db,
     cache,
@@ -552,15 +553,11 @@ def test_create_and_process_erasure_request_read_access(
     )
     pr.delete(db=db)
 
-    example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
-    engine = get_db_engine(database_uri=example_postgres_uri)
-    SessionLocal = get_db_session(engine=engine)
-    integration_db = SessionLocal()
     stmt = select(
         column("id"),
         column("name"),
     ).select_from(table("customer"))
-    res = integration_db.execute(stmt).all()
+    res = postgres_integration_db.execute(stmt).all()
 
     customer_found = False
     for row in res:
