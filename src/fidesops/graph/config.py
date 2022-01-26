@@ -452,3 +452,41 @@ class Dataset(BaseModel):
     after: Set[DatasetAddress] = set()
     # ConnectionConfig key
     connection_key: FidesOpsKey
+
+
+class ConnectorParam(BaseModel):
+    name: str
+    is_secret: bool
+
+
+class Parameter(BaseModel):
+    name: str
+    type: str
+
+
+class Request(BaseModel):
+    path: str
+    parameters: List[Parameter]
+
+
+class Endpoint(BaseModel):
+    name: str
+    request_params: Dict[
+        str, Request
+    ]  # TODO constrain dictionary keys to read, update, delete
+
+
+class TestConnection(BaseModel):
+    path: str
+
+
+class SaasConnectorConfig(BaseModel):
+    """List of endpoints and connector params used to define a SaaS connector"""
+
+    fides_key: FidesOpsKey
+    name: str
+    description: str
+    version: str
+    connector_params: List[ConnectorParam]
+    endpoints: List[Endpoint]
+    test_connection: TestConnection

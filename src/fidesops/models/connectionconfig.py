@@ -42,6 +42,7 @@ class ConnectionType(enum.Enum):
     mongodb = "mongodb"
     mysql = "mysql"
     https = "https"
+    saas = "saas"
     redshift = "redshift"
     snowflake = "snowflake"
     mssql = "mssql"
