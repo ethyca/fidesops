@@ -25,6 +25,11 @@ def unflatten_dict(input_row: Dict[str, Any], separator: str = ".") -> Dict[str,
     unpacked_results = _create_dict()
 
     for key, value in input_row.items():
+        if isinstance(value, dict):
+            raise FidesopsException(
+                "`unflatten_dict` expects a flattened dictionary as input."
+            )
+
         levels = key.split(separator)
         subdict = unpacked_results
         for level in levels[:-1]:
@@ -32,9 +37,9 @@ def unflatten_dict(input_row: Dict[str, Any], separator: str = ".") -> Dict[str,
 
         try:
             subdict[levels[-1]] = value
-        except TypeError:
+        except TypeError as exc:
             raise FidesopsException(
-                "Error unflattening dictionary, conflicting levels detected."
+                f"Error unflattening dictionary, conflicting levels detected: {exc}"
             )
 
     return unpacked_results
