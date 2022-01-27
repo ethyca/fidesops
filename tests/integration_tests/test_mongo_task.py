@@ -54,24 +54,34 @@ def test_combined_erasure_task(
         integration_postgres_config, integration_mongodb_config
     )
 
-    field(
-        [postgres_dataset], "postgres_example", "address", "city"
-    ).data_categories = ["A"]
+    field([postgres_dataset], "postgres_example", "address", "city").data_categories = [
+        "A"
+    ]
     field(
         [postgres_dataset], "postgres_example", "address", "state"
     ).data_categories = ["B"]
-    field(
-        [postgres_dataset], "postgres_example", "address", "zip"
-    ).data_categories = ["C"]
+    field([postgres_dataset], "postgres_example", "address", "zip").data_categories = [
+        "C"
+    ]
     field(
         [postgres_dataset], "postgres_example", "customer", "name"
     ).data_categories = ["A"]
     field([mongo_dataset], "mongo_test", "address", "city").data_categories = ["A"]
     field([mongo_dataset], "mongo_test", "address", "state").data_categories = ["B"]
     field([mongo_dataset], "mongo_test", "address", "zip").data_categories = ["C"]
-    field([mongo_dataset], "mongo_test", "customer_details", "workplace_info", "position").data_categories = ["A"]
-    field([mongo_dataset], "mongo_test", "internal_customer_profile", "derived_interests").data_categories = ["B"]
-    field([mongo_dataset], "mongo_test", "customer_feedback", "customer_information", "phone").data_categories = ["A"]
+    field(
+        [mongo_dataset], "mongo_test", "customer_details", "workplace_info", "position"
+    ).data_categories = ["A"]
+    field(
+        [mongo_dataset], "mongo_test", "internal_customer_profile", "derived_interests"
+    ).data_categories = ["B"]
+    field(
+        [mongo_dataset],
+        "mongo_test",
+        "customer_feedback",
+        "customer_information",
+        "phone",
+    ).data_categories = ["A"]
 
     graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
@@ -113,18 +123,34 @@ def test_combined_erasure_task(
     )
 
     # Nested resource deleted
-    assert rerun_access["mongo_test:customer_details"][0]["workplace_info"]["position"] is None
-    assert rerun_access["mongo_test:customer_details"][0]["workplace_info"]["employer"] is not None
+    assert (
+        rerun_access["mongo_test:customer_details"][0]["workplace_info"]["position"]
+        is None
+    )
+    assert (
+        rerun_access["mongo_test:customer_details"][0]["workplace_info"]["employer"]
+        is not None
+    )
 
     # This will change when array handling is added - array was just set to None
-    assert rerun_access["mongo_test:internal_customer_profile"][0]["derived_interests"] is None
-    assert rerun_access["mongo_test:internal_customer_profile"][0]["customer_identifiers"] is not None
+    assert (
+        rerun_access["mongo_test:internal_customer_profile"][0]["derived_interests"]
+        is None
+    )
+    assert (
+        rerun_access["mongo_test:internal_customer_profile"][0]["customer_identifiers"]
+        is not None
+    )
 
     # Nested resource deleted
-    assert rerun_access["mongo_test:customer_feedback"][0]["customer_information"]["phone"] is None
-    assert rerun_access["mongo_test:customer_feedback"][0]["customer_information"]["email"] is not None
-
-
+    assert (
+        rerun_access["mongo_test:customer_feedback"][0]["customer_information"]["phone"]
+        is None
+    )
+    assert (
+        rerun_access["mongo_test:customer_feedback"][0]["customer_information"]["email"]
+        is not None
+    )
 
 
 @pytest.mark.integration_mongodb

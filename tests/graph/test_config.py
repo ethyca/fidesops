@@ -438,6 +438,4 @@ class TestFieldPath:
             FieldPath("D").retrieve_from(input_data) is None
         )  # FieldPath not in input data
 
-        assert (
-            FieldPath().retrieve_from(input_data) == input_data
-        )  # No levels specified
+        assert FieldPath().retrieve_from(input_data) is None  # No levels specified

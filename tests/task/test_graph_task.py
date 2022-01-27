@@ -34,7 +34,7 @@ dask.config.set(scheduler="processes")
 connection_configs = [
     ConnectionConfig(key="mysql", connection_type=ConnectionType.postgres),
     ConnectionConfig(key="postgres", connection_type=ConnectionType.postgres),
-    ConnectionConfig(key="mssql", connection_type=ConnectionType.mssql)
+    ConnectionConfig(key="mssql", connection_type=ConnectionType.mssql),
 ]
 
 
@@ -249,4 +249,374 @@ def test_filter_data_categories():
                 }
             }
         ]
+    }
+
+
+def test_filter_data_categories_limited_results():
+    """
+    Test scenario where the related data for a given identity is only a small subset of all the annotated fields.
+    """
+    jane_results = {
+        "mongo_test:customer_details": [
+            {
+                "_id": ObjectId("61f2bc8d6362fd78d72d8791"),
+                "customer_id": 3.0,
+                "gender": "female",
+                "birthday": datetime(1990, 2, 28, 0, 0),
+            }
+        ],
+        "postgres_example:order_item": [],
+        "postgres_example:report": [],
+        "postgres_example:orders": [
+            {"customer_id": 3, "id": "ord_ddd-eee", "shipping_address_id": 4}
+        ],
+        "postgres_example:employee": [],
+        "postgres_example:address": [
+            {
+                "city": "Example Mountain",
+                "house": 1111,
+                "id": 4,
+                "state": "TX",
+                "street": "Example Place",
+                "zip": "54321",
+            }
+        ],
+        "postgres_example:visit": [],
+        "postgres_example:product": [],
+        "postgres_example:customer": [
+            {
+                "address_id": 4,
+                "created": datetime(2020, 4, 1, 11, 47, 42),
+                "email": "jane@example.com",
+                "id": 3,
+                "name": "Jane Customer",
+            }
+        ],
+        "postgres_example:service_request": [],
+        "postgres_example:payment_card": [
+            {
+                "billing_address_id": 4,
+                "ccn": 373719391,
+                "code": 222,
+                "customer_id": 3,
+                "id": "pay_ccc-ccc",
+                "name": "Example Card 3",
+                "preferred": False,
+            }
+        ],
+        "mongo_test:customer_feedback": [],
+        "postgres_example:login": [
+            {"customer_id": 3, "id": 8, "time": datetime(2021, 1, 6, 1, 0)}
+        ],
+        "mongo_test:internal_customer_profile": [],
+    }
+
+    target_categories = {"user.provided.identifiable"}
+
+    data_category_fields = {
+        CollectionAddress.from_string("postgres_example:address"): {
+            "user.provided.identifiable.contact.city": [
+                FieldPath(
+                    "city",
+                )
+            ],
+            "user.provided.identifiable.contact.street": [
+                FieldPath(
+                    "house",
+                ),
+                FieldPath(
+                    "street",
+                ),
+            ],
+            "system.operations": [
+                FieldPath(
+                    "id",
+                )
+            ],
+            "user.provided.identifiable.contact.state": [
+                FieldPath(
+                    "state",
+                )
+            ],
+            "user.provided.identifiable.contact.postal_code": [
+                FieldPath(
+                    "zip",
+                )
+            ],
+        },
+        CollectionAddress.from_string("postgres_example:customer"): {
+            "system.operations": [
+                FieldPath(
+                    "address_id",
+                ),
+                FieldPath(
+                    "created",
+                ),
+            ],
+            "user.provided.identifiable.contact.email": [
+                FieldPath(
+                    "email",
+                )
+            ],
+            "user.derived.identifiable.unique_id": [
+                FieldPath(
+                    "id",
+                )
+            ],
+            "user.provided.identifiable.name": [
+                FieldPath(
+                    "name",
+                )
+            ],
+        },
+        CollectionAddress.from_string("postgres_example:employee"): {
+            "system.operations": [
+                FieldPath(
+                    "address_id",
+                )
+            ],
+            "user.provided.identifiable.contact.email": [
+                FieldPath(
+                    "email",
+                )
+            ],
+            "user.derived.identifiable.unique_id": [
+                FieldPath(
+                    "id",
+                )
+            ],
+            "user.provided.identifiable.name": [
+                FieldPath(
+                    "name",
+                )
+            ],
+        },
+        CollectionAddress.from_string("postgres_example:login"): {
+            "user.derived.identifiable.unique_id": [
+                FieldPath(
+                    "customer_id",
+                )
+            ],
+            "system.operations": [
+                FieldPath(
+                    "id",
+                )
+            ],
+            "user.derived.nonidentifiable.sensor": [
+                FieldPath(
+                    "time",
+                )
+            ],
+        },
+        CollectionAddress.from_string("postgres_example:order_item"): {
+            "system.operations": [
+                FieldPath(
+                    "order_id",
+                ),
+                FieldPath(
+                    "product_id",
+                ),
+                FieldPath(
+                    "quantity",
+                ),
+            ]
+        },
+        CollectionAddress.from_string("postgres_example:orders"): {
+            "user.derived.identifiable.unique_id": [
+                FieldPath(
+                    "customer_id",
+                )
+            ],
+            "system.operations": [
+                FieldPath(
+                    "id",
+                ),
+                FieldPath(
+                    "shipping_address_id",
+                ),
+            ],
+        },
+        CollectionAddress.from_string("postgres_example:payment_card"): {
+            "system.operations": [
+                FieldPath(
+                    "billing_address_id",
+                ),
+                FieldPath(
+                    "id",
+                ),
+            ],
+            "user.provided.identifiable.financial.account_number": [
+                FieldPath(
+                    "ccn",
+                )
+            ],
+            "user.provided.identifiable.financial": [
+                FieldPath(
+                    "code",
+                ),
+                FieldPath(
+                    "name",
+                ),
+            ],
+            "user.derived.identifiable.unique_id": [
+                FieldPath(
+                    "customer_id",
+                )
+            ],
+            "user.provided.nonidentifiable": [
+                FieldPath(
+                    "preferred",
+                )
+            ],
+        },
+        CollectionAddress.from_string("postgres_example:product"): {
+            "system.operations": [
+                FieldPath(
+                    "id",
+                ),
+                FieldPath(
+                    "name",
+                ),
+                FieldPath(
+                    "price",
+                ),
+            ]
+        },
+        CollectionAddress.from_string("postgres_example:report"): {
+            "user.provided.identifiable.contact.email": [
+                FieldPath(
+                    "email",
+                )
+            ],
+            "system.operations": [
+                FieldPath(
+                    "id",
+                ),
+                FieldPath(
+                    "month",
+                ),
+                FieldPath(
+                    "name",
+                ),
+                FieldPath(
+                    "total_visits",
+                ),
+                FieldPath(
+                    "year",
+                ),
+            ],
+        },
+        CollectionAddress.from_string("postgres_example:service_request"): {
+            "user.provided.identifiable.contact.email": [
+                FieldPath(
+                    "alt_email",
+                )
+            ],
+            "system.operations": [
+                FieldPath(
+                    "closed",
+                ),
+                FieldPath(
+                    "email",
+                ),
+                FieldPath(
+                    "id",
+                ),
+                FieldPath(
+                    "opened",
+                ),
+            ],
+            "user.derived.identifiable.unique_id": [
+                FieldPath(
+                    "employee_id",
+                )
+            ],
+        },
+        CollectionAddress.from_string("postgres_example:visit"): {
+            "user.provided.identifiable.contact.email": [
+                FieldPath(
+                    "email",
+                )
+            ],
+            "system.operations": [
+                FieldPath(
+                    "last_visit",
+                )
+            ],
+        },
+        CollectionAddress.from_string("mongo_test:customer_details"): {
+            "system.operations": [
+                FieldPath(
+                    "_id",
+                )
+            ],
+            "user.provided.identifiable.date_of_birth": [
+                FieldPath(
+                    "birthday",
+                )
+            ],
+            "user.derived.identifiable.unique_id": [
+                FieldPath(
+                    "customer_id",
+                )
+            ],
+            "user.provided.identifiable.gender": [
+                FieldPath(
+                    "gender",
+                )
+            ],
+            "user.provided.identifiable.job_title": [
+                FieldPath("workplace_info", "position")
+            ],
+        },
+        CollectionAddress.from_string("mongo_test:customer_feedback"): {
+            "system.operations": [
+                FieldPath(
+                    "_id",
+                )
+            ],
+            "user.provided.identifiable.contact.phone_number": [
+                FieldPath("customer_information", "phone")
+            ],
+            "user.provided.nonidentifiable": [
+                FieldPath(
+                    "message",
+                ),
+                FieldPath(
+                    "rating",
+                ),
+            ],
+        },
+        CollectionAddress.from_string("mongo_test:internal_customer_profile"): {
+            "user.derived": [
+                FieldPath(
+                    "derived_interests",
+                )
+            ]
+        },
+    }
+
+    filtered_results = filter_data_categories(
+        copy.deepcopy(jane_results), target_categories, data_category_fields
+    )
+
+    assert filtered_results == {
+        "mongo_test:customer_details": [
+            {"gender": "female", "birthday": datetime(1990, 2, 28)}
+        ],
+        "postgres_example:address": [
+            {
+                "city": "Example Mountain",
+                "house": 1111,
+                "state": "TX",
+                "street": "Example Place",
+                "zip": "54321",
+            }
+        ],
+        "postgres_example:customer": [
+            {"email": "jane@example.com", "name": "Jane Customer"}
+        ],
+        "postgres_example:payment_card": [
+            {"ccn": 373719391, "code": 222, "name": "Example Card 3"}
+        ],
     }

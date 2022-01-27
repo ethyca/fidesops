@@ -77,12 +77,12 @@ Field identities:
 """
 from __future__ import annotations
 
-import copy
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Optional, Tuple, Set, Dict, Literal, Any, Callable
 
+import pydash
 from pydantic import BaseModel, validator
 
 from fidesops.common_exceptions import FidesopsException
@@ -198,14 +198,10 @@ class FieldPath:
 
         Used when handling query results where we need to extract a (potentially
         nested value), to mask it for example, or use it to build a query for another collection.
+
+        If path isn't found, None is returned by default.
         """
-        sub_data = copy.deepcopy(input_data)
-        for level in self.levels:
-            try:
-                sub_data = sub_data[level]
-            except KeyError:
-                return None
-        return sub_data
+        return pydash.objects.get(input_data, self.string_path)
 
 
 class FieldAddress:

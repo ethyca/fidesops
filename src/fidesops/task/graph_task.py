@@ -419,8 +419,10 @@ def filter_data_categories(
 
         # Normalize nested data into a flat dataframe
         df: pd.DataFrame = pd.json_normalize(results, sep=".")
-        # Only keep dataframe columns that match the target field paths
-        df = df[[field_path.string_path for field_path in target_field_paths]]
+        # Only keep intersection of dataframe columns and target field paths
+        df = df[
+            df.columns & [field_path.string_path for field_path in target_field_paths]
+        ]
         # Turn the filtered results back into a list of dictionaries
         filtered_flattened_results: List[Dict[str, Optional[Any]]] = df.to_dict(
             orient="records"
