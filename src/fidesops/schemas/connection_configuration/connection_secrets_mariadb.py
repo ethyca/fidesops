@@ -7,7 +7,7 @@ from fidesops.schemas.connection_configuration.connection_secrets import (
 
 
 class MariaDBSchema(ConnectionConfigSecretsSchema):
-    """Schema to validate the secrets needed to connect to a MySQL Database"""
+    """Schema to validate the secrets needed to connect to a MariaDB Database"""
 
     username: Optional[str] = None
     password: Optional[str] = None
@@ -21,4 +21,4 @@ class MariaDBSchema(ConnectionConfigSecretsSchema):
 
 
 class MariaDBDocsSchema(MariaDBSchema, NoValidationSchema):
-    """MySQL Secrets Schema for API Docs"""
+    """MariaDB Secrets Schema for API Docs"""
