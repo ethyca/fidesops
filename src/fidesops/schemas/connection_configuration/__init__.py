@@ -1,6 +1,8 @@
 from typing import Dict, Any, Union
 
-from fidesops.schemas.connection_configuration.connection_secrets_mariadb import MariaDBSchema
+from fidesops.schemas.connection_configuration.connection_secrets_mariadb import (
+    MariaDBSchema,
+)
 from fidesops.schemas.connection_configuration.connection_secrets_mongodb import (
     MongoDBSchema,
     MongoDBDocsSchema,
