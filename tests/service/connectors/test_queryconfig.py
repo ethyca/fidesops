@@ -472,14 +472,19 @@ class TestMongoQueryConfig:
         ]
         config = MongoQueryConfig(customer_details)
         input_data = {"customer_id": [1]}
-        # Tuple of query, projection - Projection is specifying fields at the top-level. Nested data will be filtered later.
+        # Tuple of query, projection - Projection is specifying fields at the top-level. Nested data will
+        # be filtered later.
         assert config.generate_query(input_data, policy) == (
             {"customer_id": 1},
             {
                 "_id": 1,
                 "birthday": 1,
+                "comments": 1,
                 "customer_id": 1,
+                "emergency_contacts": 1,
+                "children": 1,
                 "gender": 1,
+                "travel_identifiers": 1,
                 "workplace_info": 1,
             },
         )
@@ -513,7 +518,12 @@ class TestMongoQueryConfig:
             "gender": "male",
             "customer_id": 1,
             "_id": 1,
-            "workplace_info": {"position": "Chief Strategist"},
+            "workplace_info": {
+                "position": "Chief Strategist",
+                "direct_reports": ["Robbie Margo", "Sully Hunter"],
+            },
+            "emergency_contacts": [{"name": "June Customer", "phone": "444-444-4444"}],
+            "children": ["Christopher Customer", "Courtney Customer"]
         }
 
         # Make target more broad
@@ -525,8 +535,17 @@ class TestMongoQueryConfig:
             row, erasure_policy, privacy_request
         )
         assert mongo_statement[0] == {"_id": 1}
+        # TODO lots of this update statmement is wrong
         assert mongo_statement[1] == {
-            "$set": {"workplace_info.position": None, "birthday": None, "gender": None}
+            "$set": {
+                "birthday": None,
+                "emergency_contacts.name": None,
+                "workplace_info.direct_reports": None,
+                "emergency_contacts.phone": None,
+                "gender": None,
+                "workplace_info.position": None,
+                "children": None
+            }
         }
 
     def test_generate_update_stmt_multiple_rules(
@@ -558,6 +577,12 @@ class TestMongoQueryConfig:
             "gender": "male",
             "customer_id": 1,
             "_id": 1,
+            "workplace_info": {
+                "position": "Chief Strategist",
+                "direct_reports": ["Robbie Margo", "Sully Hunter"],
+            },
+            "emergency_contacts": [{"name": "June Customer", "phone": "444-444-4444"}],
+            "children": ["Christopher Customer", "Courtney Customer"]
         }
 
         rule = erasure_policy_two_rules.rules[0]
@@ -577,11 +602,15 @@ class TestMongoQueryConfig:
         }
         target = rule_two.targets[0]
         target.data_category = DataCategory("user.provided.identifiable.gender").value
+        # cache secrets for hash strategy
+        secret = MaskingSecretCache[str](
+            secret="adobo", masking_strategy=HASH, secret_type=SecretType.salt
+        )
+        cache_secret(secret, privacy_request.id)
 
         mongo_statement = config.generate_update_stmt(
             row, erasure_policy_two_rules, privacy_request
         )
-        print(mongo_statement)
         assert mongo_statement[0] == {"_id": 1}
         assert len(mongo_statement[1]["$set"]["gender"]) == 30
         assert mongo_statement[1]["$set"]["birthday"] == HashMaskingStrategy(

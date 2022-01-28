@@ -16,10 +16,17 @@ db.customer_details.insert([
         "customer_id": 1,
         "gender": "male",
         "birthday": new ISODate("1988-01-10"),
-        "workplace_info": {
+        "workplace_info": {  // Discovered object field
             "employer": "Mountain Baking Company",
-            "position": "Chief Strategist"
-        }
+            "position": "Chief Strategist",
+            "direct_reports": ["Robbie Margo", "Sully Hunter"]  // Discovered nested array of scalars
+        },
+        "emergency_contacts": [  // Discovered array of objects
+            {"name": "June Customer", "relationship": "mother", "phone": "444-444-4444"},
+        ],
+        "children": ["Christopher Customer", "Courtney Customer"],  // Discovered array of scalars
+        "travel_identifiers": ["A111-11111", "B111-11111"], // References a nested array field, flights.passenger_information.passenger_ids
+        "comments": ["com_0001", "com_0003", "com_0005"] // References a nested object field, mongo_test.conversations.thread.comment
     },
      {
         "customer_id": 2,
@@ -27,22 +34,32 @@ db.customer_details.insert([
         "birthday": new ISODate("1985-03-05"),
         "workplace_info": {
             "employer": "Incline Software Company",
-            "position": "Software Engineer"
-        }
+            "position": "Software Engineer",
+            "direct_reports": ["Langdon Jeanne", "Dorothy Faron"]
+        },
+        "emergency_contacts": [
+            {"name": "Jesse Customer", "relationship": "spouse", "phone": "111-111-1111"},
+            {"name": "Jonathan Customer", "relationship": "brother", "phone": "222-222-2222"}
+        ],
+         "children": ["Connie Customer"],
+        "travel_identifiers": ["C222-222222"]
     },
     {
         "customer_id": 3,
         "gender": "female",
-        "birthday": new ISODate("1990-02-28")
+        "birthday": new ISODate("1990-02-28"),
+        "travel_identifiers": ["D111-11111"],
+        "children": ["Erica Example"],
+        "comments": ["com_0002", "com_0004", "com_0006"]
     }
 ]);
 
 db.customer_feedback.insert([
     {
         "customer_information": {
-            "email": "customer-1@example.com",
+            "email": "customer-1@example.com",  // Nested identity
             "phone": "333-333-3333",
-            "internal_customer_id": "cust_001"
+            "internal_customer_id": "cust_001"  // References nested field internal_customer_profile.customer_identifiers.internal_id
         },
         "rating": 3,
         "date": new ISODate("2022-01-05"),
@@ -63,17 +80,71 @@ db.customer_feedback.insert([
 db.internal_customer_profile.insert([
     {
         "customer_identifiers": {
-            "internal_id": "cust_001"
+            "internal_id": "cust_001"  // Nested field referenced by another nested field (customer_information.internal_customer_id)
         },
-        "derived_interests": ["marketing", "food"]
+        "derived_interests": ["marketing", "food"]  // Discovered simple array
     },
     {
          "customer_identifiers": {
             "internal_id": "cust_002"
         },
         "derived_interests": ["programming", "hiking", "skateboarding"]
+    },
+    {
+        "customer_identifiers": {
+            "internal_id": "cust_003",
+            "derived_emails": ["jane1@example.com", "jane@example.com"]  // Identity within an array field
+        },
+        "derived_interests": ["interior design", "travel", "photography"]
     }
 ])
+
+db.conversations.insert([
+    {
+        "thread": [
+            {"comment": "com_0001", "message": "hello, testing in-flight chat feature", "chat_name": "John"},
+            {"comment": "com_0002", "message": "yep, got your message, looks like it works", "chat_name": "Jane C"}
+        ]
+    },
+    {
+        "thread": [
+            {"comment": "com_0003", "message": "can I borrow your headphones?", "chat_name": "John"},
+            {"comment": "com_0004", "message": "no, sorry I'm using them.", "chat_name": "Jane C"},
+            {"comment": "com_0005", "message": "did you bring anything to read?", "chat_name": "John"},
+            {"comment": "com_0006", "message": "try reading the informational brochure in the seat pouch.", "chat_name": "Jane C"}
+        ]
+    }
+]);
+
+db.flights.insert([
+    {
+        "passenger_information": {
+            "passenger_ids": ["old_travel_number", "A111-11111"],  // Array field referenced by another array field (customer_details.travel_identifiers)
+            "full_name": "John Customer"
+        },
+        "flight_no": "AA230",
+        "date": "2021-01-01",
+        "pilots": ["1", "2"],  // Array field referencing a scalar field mongo_test.employee.id
+        "plane": 10002 // Scalar field referenced *by* an array field mongo_test.aircraft.planes
+    },
+    {
+        "passenger_information": {
+            "passenger_ids": ["E111-11111", "D111-11111"],
+            "full_name": "Jane Customer"
+        },
+        "flight_no": "AA240",
+        "date": "2021-02-01",
+        "pilots": ["2"],
+        "plane": 30005
+    }
+]);
+
+
+db.aircraft.insert([
+    {"model": "Airbus A350", "planes": [10001, 10002, 10003, 10004, 10005]},
+    {"model": "Boeing 747-8", "planes": [30005, 30006, 30007]}
+]);
+
 
 db.employee.insert([
     {
@@ -102,7 +173,7 @@ db.employee.insert([
         },
 	"foreign_id": "000000000000000000000002"
     }
-])
+]);
 
 db.customer.insert([
     {
