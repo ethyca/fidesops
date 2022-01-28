@@ -89,6 +89,13 @@ integration_secrets = {
         "username": pydash.get(integration_config, "mssql_example.USER"),
         "password": pydash.get(integration_config, "mssql_example.PASSWORD"),
     },
+    "mariadb_example": {
+        "host": pydash.get(integration_config, "mariadb_example.SERVER"),
+        "port": pydash.get(integration_config, "mariadb_example.PORT"),
+        "dbname": pydash.get(integration_config, "mariadb_example.DB"),
+        "username": pydash.get(integration_config, "mariadb_example.USER"),
+        "password": pydash.get(integration_config, "mariadb_example.PASSWORD"),
+    },
 }
 
 
@@ -204,6 +211,23 @@ def connection_config_mysql(db: Session) -> Generator:
     )
     yield connection_config
     connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def connection_config_mariadb(db: Session) -> Generator:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "my_maria_db_1",
+            "connection_type": ConnectionType.mariadb,
+            "access": AccessLevel.write,
+            "secrets": integration_secrets["mariadb_example"],
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
 
 
 @pytest.fixture(scope="function")
