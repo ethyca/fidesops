@@ -254,14 +254,15 @@ def test_create_and_process_access_request_mysql(
     pr.delete(db=db)
 
 
-@pytest.mark.integration_erasure
+@pytest.mark.integration_postgres
+@pytest.mark.integration
 def test_create_and_process_erasure_request_specific_category(
+    postgres_integration_db,
     postgres_example_test_dataset_config,
     cache,
     db,
     generate_auth_header,
     erasure_policy,
-    read_connection_config,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
@@ -274,15 +275,11 @@ def test_create_and_process_erasure_request_specific_category(
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
     pr.delete(db=db)
 
-    example_postgres_uri = PostgreSQLConnector(read_connection_config).build_uri()
-    engine = get_db_engine(database_uri=example_postgres_uri)
-    SessionLocal = get_db_session(engine=engine)
-    integration_db = SessionLocal()
     stmt = select(
         column("id"),
         column("name"),
     ).select_from(table("customer"))
-    res = integration_db.execute(stmt).all()
+    res = postgres_integration_db.execute(stmt).all()
 
     customer_found = False
     for row in res:
@@ -371,14 +368,15 @@ def test_create_and_process_erasure_request_specific_category_mysql(
     assert customer_found
 
 
-@pytest.mark.integration_erasure
+@pytest.mark.integration_postgres
+@pytest.mark.integration
 def test_create_and_process_erasure_request_generic_category(
+    postgres_integration_db,
     postgres_example_test_dataset_config,
     cache,
     db,
     generate_auth_header,
     erasure_policy,
-    connection_config,
 ):
     # It's safe to change this here since the `erasure_policy` fixture is scoped
     # at function level
@@ -397,16 +395,12 @@ def test_create_and_process_erasure_request_generic_category(
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
     pr.delete(db=db)
 
-    example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
-    engine = get_db_engine(database_uri=example_postgres_uri)
-    SessionLocal = get_db_session(engine=engine)
-    integration_db = SessionLocal()
     stmt = select(
         column("id"),
         column("email"),
         column("name"),
     ).select_from(table("customer"))
-    res = integration_db.execute(stmt).all()
+    res = postgres_integration_db.execute(stmt).all()
 
     customer_found = False
     for row in res:
@@ -423,14 +417,15 @@ def test_create_and_process_erasure_request_generic_category(
     assert customer_found
 
 
-@pytest.mark.integration_erasure
+@pytest.mark.integration_postgres
+@pytest.mark.integration
 def test_create_and_process_erasure_request_aes_generic_category(
+    postgres_integration_db,
     postgres_example_test_dataset_config,
     cache,
     db,
     generate_auth_header,
     erasure_policy_aes,
-    connection_config,
 ):
     # It's safe to change this here since the `erasure_policy` fixture is scoped
     # at function level
@@ -449,16 +444,12 @@ def test_create_and_process_erasure_request_aes_generic_category(
     pr = get_privacy_request_results(db, erasure_policy_aes, cache, data)
     pr.delete(db=db)
 
-    example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
-    engine = get_db_engine(database_uri=example_postgres_uri)
-    SessionLocal = get_db_session(engine=engine)
-    integration_db = SessionLocal()
     stmt = select(
         column("id"),
         column("email"),
         column("name"),
     ).select_from(table("customer"))
-    res = integration_db.execute(stmt).all()
+    res = postgres_integration_db.execute(stmt).all()
 
     customer_found = False
     for row in res:
@@ -477,13 +468,14 @@ def test_create_and_process_erasure_request_aes_generic_category(
     assert customer_found
 
 
-@pytest.mark.integration_erasure
+@pytest.mark.integration_postgres
+@pytest.mark.integration
 def test_create_and_process_erasure_request_with_table_joins(
+    postgres_integration_db,
     postgres_example_test_dataset_config,
     db,
     cache,
     erasure_policy,
-    connection_config,
 ):
     # It's safe to change this here since the `erasure_policy` fixture is scoped
     # at function level
@@ -502,10 +494,6 @@ def test_create_and_process_erasure_request_with_table_joins(
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
     pr.delete(db=db)
 
-    example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
-    engine = get_db_engine(database_uri=example_postgres_uri)
-    SessionLocal = get_db_session(engine=engine)
-    integration_db = SessionLocal()
     stmt = select(
         column("customer_id"),
         column("id"),
@@ -513,7 +501,7 @@ def test_create_and_process_erasure_request_with_table_joins(
         column("code"),
         column("name"),
     ).select_from(table("payment_card"))
-    res = integration_db.execute(stmt).all()
+    res = postgres_integration_db.execute(stmt).all()
 
     card_found = False
     for row in res:
@@ -526,14 +514,14 @@ def test_create_and_process_erasure_request_with_table_joins(
     assert card_found is True
 
 
-@pytest.mark.integration_erasure
+@pytest.mark.integration_postgres
+@pytest.mark.integration
 def test_create_and_process_erasure_request_read_access(
     postgres_integration_db,
     postgres_example_test_dataset_config_read_access,
     db,
     cache,
     erasure_policy,
-    connection_config,
 ):
     customer_email = "customer-2@example.com"
     customer_id = 2
