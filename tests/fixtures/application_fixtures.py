@@ -214,23 +214,6 @@ def connection_config_mysql(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def connection_config_mariadb(db: Session) -> Generator:
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "name": str(uuid4()),
-            "key": "my_maria_db_1",
-            "connection_type": ConnectionType.mariadb,
-            "access": AccessLevel.write,
-            "secrets": integration_secrets["mariadb_example"],
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
-
-
-
-@pytest.fixture(scope="function")
 def connection_config_mssql(db: Session) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
@@ -1006,7 +989,8 @@ def example_datasets() -> List[Dict]:
         "data/dataset/snowflake_example_test_dataset.yml",
         "data/dataset/redshift_example_test_dataset.yml",
         "data/dataset/mssql_example_test_dataset.yml",
-        "data/dataset/mysql_example_test_dataset.yml"
+        "data/dataset/mysql_example_test_dataset.yml",
+        "data/dataset/mariadb_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
