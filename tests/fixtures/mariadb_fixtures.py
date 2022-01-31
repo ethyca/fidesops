@@ -10,7 +10,7 @@ from fidesops.db.session import get_db_session, get_db_engine
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType, AccessLevel
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.service.connectors import MariaDBConnector
-from fixtures.application_fixtures import integration_secrets
+from .application_fixtures import integration_secrets
 
 logger = logging.getLogger(__name__)
 
