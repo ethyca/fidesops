@@ -22,6 +22,7 @@ from fidesops.service.connectors import (
     MicrosoftSQLServerConnector,
 )
 from fidesops.util.cache import get_cache
+from src.fidesops.service.connectors.saas_connector import SaaSConnector
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,8 @@ class Connections:
             return RedshiftConnector(connection_config)
         if connection_config.connection_type == ConnectionType.mssql:
             return MicrosoftSQLServerConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.saas:
+            return SaaSConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )

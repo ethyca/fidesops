@@ -80,7 +80,10 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, Set, Dict, Literal, Any, Callable
+from typing import List, Optional, Tuple, Set, Dict, Literal, Any, Callable, Union
+from urllib.request import Request
+from sqlalchemy import Column, ForeignKey, String
+from fidesops.models.connectionconfig import ConnectionConfig
 
 from pydantic import BaseModel
 
@@ -454,39 +457,61 @@ class Dataset(BaseModel):
     connection_key: FidesOpsKey
 
 
-class ConnectorParam(BaseModel):
+class ConnectorParams(BaseModel):
     name: str
+    default_value: str
+    from_user: bool
     is_secret: bool
 
 
-class Parameter(BaseModel):
+# class Parameter(BaseModel):
+#     name: str
+#     type: str
+
+
+# class Request(BaseModel):
+#     path: str
+#     parameters: Optional(List[Parameter])
+
+
+# class Endpoint(BaseModel):
+#     name: str  # corresponds to the datset collection name
+#     request_params: Dict[
+#         str, Request
+#     ]  # TODO constrain dictionary keys to read, update, delete
+
+
+class ConnectorParam(BaseModel):
     name: str
-    type: str
+    from_user: bool
+    is_secret: bool
 
 
-class Request(BaseModel):
+class ConnectorParamRef(BaseModel):
+    connector_param: str
+
+
+class Authentication(BaseModel):
+    strategy_name: str
+    configuration: Dict[str, Union[str, ConnectorParamRef]]
+
+
+class ClientConfig(BaseModel):
+    protocol: str
+    host: Union[str, ConnectorParamRef]
+    authentication: Authentication
+
+
+class TestRequest(BaseModel):
     path: str
-    parameters: List[Parameter]
 
 
-class Endpoint(BaseModel):
-    name: str
-    request_params: Dict[
-        str, Request
-    ]  # TODO constrain dictionary keys to read, update, delete
+class SaaSConfig(BaseModel):
+    """Extended fields for SaaS connections"""
 
-
-class TestConnection(BaseModel):
-    path: str
-
-
-class SaasConnectorConfig(BaseModel):
-    """List of endpoints and connector params used to define a SaaS connector"""
-
-    fides_key: FidesOpsKey
-    name: str
     description: str
     version: str
     connector_params: List[ConnectorParam]
-    endpoints: List[Endpoint]
-    test_connection: TestConnection
+    client_config: ClientConfig
+    # endpoints: List[Endpoint]
+    test_connection: TestRequest

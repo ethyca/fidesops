@@ -57,7 +57,7 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
 integration_config = load_toml("fidesops-integration.toml")
-
+saas_config = load_toml("saas.toml")
 
 # Unified list of connections to integration dbs specified from fidesops-integration.toml
 
@@ -973,6 +973,12 @@ def load_dataset(filename: str) -> Dict:
         return yaml.safe_load(file).get("dataset", [])
 
 
+def load_config(filename: str) -> Dict:
+    yaml_file = load_file(filename)
+    with open(yaml_file, "r") as file:
+        return yaml.safe_load(file).get("saas_config")[0]
+
+
 @pytest.fixture
 def example_datasets() -> List[Dict]:
     example_datasets = []
@@ -982,11 +988,23 @@ def example_datasets() -> List[Dict]:
         "data/dataset/snowflake_example_test_dataset.yml",
         "data/dataset/redshift_example_test_dataset.yml",
         "data/dataset/mssql_example_test_dataset.yml",
-        "data/dataset/mysql_example_test_dataset.yml"
+        "data/dataset/mysql_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
     return example_datasets
+
+
+@pytest.fixture()
+def example_saas_configs() -> Dict[str, Dict]:
+    example_saas_configs = {}
+    example_saas_configs["mailchimp"] = load_config(
+        "data/saas_config/mailchimp_config.yml"
+    )
+    example_saas_configs["stripe"] = load_config(
+        "data/saas_config/stripe_config.yml"
+    )
+    return example_saas_configs
 
 
 @pytest.fixture
@@ -1054,9 +1072,9 @@ def postgres_example_test_dataset_config(
 
 @pytest.fixture
 def mssql_example_test_dataset_config(
-        connection_config_mssql: ConnectionConfig,
-        db: Session,
-        example_datasets: List[Dict],
+    connection_config_mssql: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
 ) -> Generator:
     mssql_dataset = example_datasets[4]
     fides_key = mssql_dataset["fides_key"]

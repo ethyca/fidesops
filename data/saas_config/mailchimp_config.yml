@@ -1,0 +1,31 @@
+saas_config:
+  - fides_key: mailchimp_connector
+    name: Mailchimp Connector
+    description: A sample schema representing the Mailchimp connector for Fidesops
+    version: 1.0
+
+    connector_params:
+    - name: domain
+      from_user: true
+      is_secret: false
+    - name: username
+      from_user: true
+      is_secret: false
+    - name: api_key
+      from_user: true
+      is_secret: true
+
+    client_config:
+      protocol: https
+      host:
+        connector_param: domain
+      authentication:
+        strategy_name: basic_authentication
+        configuration:
+          username:
+            connector_param: username
+          password:
+            connector_param: api_key
+    
+    test_connection:
+      path: /3.0/lists

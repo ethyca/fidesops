@@ -12,6 +12,7 @@ from fidesops.service.connectors import MongoDBConnector
 from fidesops.service.connectors.sql_connector import MySQLConnector, MicrosoftSQLServerConnector
 from fidesops.common_exceptions import ConnectionException
 from fidesops.service.connectors import PostgreSQLConnector
+from fidesops.service.connectors import SaaSConnector
 from fidesops.service.connectors import get_connector
 from fidesops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
@@ -935,3 +936,16 @@ class TestMongoConnectionPutSecretsAPI:
 
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is True
+
+"""This is meant to be simple test, need to implement more generic way to run a connection tests for entire suite of saas connectors"""
+class TestSaaSConnector:
+    @pytest.mark.integration
+    def test_saas_connector(
+        self,
+        integration_saas_configs
+    ) -> None:
+        print(integration_saas_configs["stripe"])
+        connector = get_connector(integration_saas_configs["stripe"])
+        print(connector.__dict__)
+        assert connector.__class__ == SaaSConnector
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
