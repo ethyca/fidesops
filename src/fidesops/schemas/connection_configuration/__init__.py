@@ -1,5 +1,6 @@
 from typing import Dict, Any, Union
 
+from fidesops.schemas.connection_configuration.connection_secrets_bigquery import BigQuerySchema
 from fidesops.schemas.connection_configuration.connection_secrets_mongodb import (
     MongoDBSchema,
     MongoDBDocsSchema,
@@ -40,6 +41,7 @@ secrets_validators: Dict[str, Any] = {
     ConnectionType.redshift.value: RedshiftSchema,
     ConnectionType.snowflake.value: SnowflakeSchema,
     ConnectionType.mssql.value: MicrosoftSQLServerSchema,
+    ConnectionType.bigquery.value: BigQuerySchema,
 }
 
 

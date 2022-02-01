@@ -26,6 +26,7 @@ from fidesops.schemas.connection_configuration import (
     SnowflakeSchema,
     MicrosoftSQLServerSchema,
 )
+from fidesops.schemas.connection_configuration.connection_secrets_bigquery import BigQuerySchema
 from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
@@ -281,6 +282,30 @@ class RedshiftConnector(SQLConnector):
     def query_config(self, node: TraversalNode) -> RedshiftQueryConfig:
         """Query wrapper corresponding to the input traversal_node."""
         return RedshiftQueryConfig(node)
+
+
+class BigQueryConnector(SQLConnector):
+    """Connector specific to Google BigQuery"""
+
+    # Overrides BaseConnector.build_uri
+    def build_uri(self) -> str:
+        """Build URI of format """
+        config = BigQuerySchema(**self.configuration.secrets or {})
+        dataset = f"/{config.dataset}" if config.dataset else ""
+        return f"bigquery://{config.project_id}{dataset}"
+
+    # Overrides SQLConnector.create_client
+    def create_client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with Google BigQuery"""
+        config = BigQuerySchema(**self.configuration.secrets or {})
+        uri = config.url or self.build_uri()
+        return create_engine(
+            uri,
+            credentials_path='gcp_credentials.json',
+            hide_parameters=self.hide_parameters,
+            echo=not self.hide_parameters,
+        )
+
 
 
 class SnowflakeConnector(SQLConnector):

@@ -10,6 +10,7 @@ from fidesops.service.connectors.sql_connector import (
     RedshiftConnector,
     SnowflakeConnector,
     MicrosoftSQLServerConnector,
+    BigQueryConnector,
 )
 
 supported_connectors: Dict[str, Any] = {
@@ -20,6 +21,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.snowflake.value: SnowflakeConnector,
     ConnectionType.https.value: HTTPSConnector,
     ConnectionType.mssql.value: MicrosoftSQLServerConnector,
+    ConnectionType.bigquery.value: BigQueryConnector,
 }
 
 
