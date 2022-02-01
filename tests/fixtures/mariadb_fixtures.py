@@ -31,6 +31,23 @@ def connection_config_mariadb(db: Session) -> Generator:
     connection_config.delete(db)
 
 
+@pytest.fixture(scope="session")
+def mariadb_example_db() -> Generator:
+    """Return a connection to the MariaDB example DB"""
+    example_mariadb_uri = (
+        "mariadb+pymysql://mariadb_user:mariadb_pw@mariadb_example/mariadb_example"
+    )
+    engine = get_db_engine(database_uri=example_mariadb_uri)
+    logger.debug(f"Connecting to MariaDB example database at: {engine.url}")
+    SessionLocal = get_db_session(engine=engine)
+    the_session = SessionLocal()
+    # Setup above...
+    yield the_session
+    # Teardown below...
+    the_session.close()
+    engine.dispose()
+
+
 @pytest.fixture
 def mariadb_example_test_dataset_config(
         connection_config_mariadb: ConnectionConfig,
