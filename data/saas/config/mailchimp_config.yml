@@ -1,0 +1,88 @@
+saas_config:
+  - fides_key: mailchimp_connector
+    name: mailchimp_connector
+    description: A sample schema representing the Mailchimp connector for Fidesops
+    version: 1.0
+
+    connector_params:
+    - name: domain
+      from_user: true
+      is_secret: false
+    - name: username
+      from_user: true
+      is_secret: false
+    - name: api_key
+      from_user: true
+      is_secret: true
+
+    client_config:
+      protocol: https
+      host:
+        connector_param: domain
+      authentication:
+        strategy_name: basic_authentication
+        configuration:
+          username:
+            connector_param: username
+          password:
+            connector_param: api_key
+    
+    test_connection:
+      path: /3.0/lists
+
+    endpoints:
+    - name: messages
+      request_params:
+        read:
+          path: /3.0/conversations/<conversation_id>/messages
+          parameters:
+            - name: conversation_id
+              type: path
+              references:
+              - dataset: mailchimp_connector
+                field: conversations.id
+                direction: from
+    - name: conversations
+      request_params:
+        read:
+          path: /3.0/conversations
+          parameters:
+            - name: count
+              type: query
+              default_value: 1000
+            - name: offset
+              type: query
+            - name: placeholder
+              type: query
+              identity: email
+              data_type: string
+      pagination:
+        strategy: basic_pagination
+        configuration:
+          incremental_param: offset
+          increment_by: 1000
+          initial_value: 0
+    - name: member
+      request_params:
+        read:
+          path: /3.0/search-members
+          parameters:
+            - name: query
+              type: query
+              identity: email
+              data_type: string
+        delete:
+          path: /3.0/lists/{list_id}/members/<subscriber_hash>/actions/delete-permanent
+          parameters:
+            - name: list_id
+              type: path
+              references:
+                - dataset: mailchimp_connector
+                  field: member.list_id
+                  direction: from
+            - name: subscriber_hash
+              type: path
+              references:
+                - dataset: mailchimp_connector
+                  field: member.id
+                  direction: from

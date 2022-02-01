@@ -102,6 +102,8 @@ DatasetAddress = str
 SeedAddress = str
 EdgeDirection = Literal["from", "to"]
 
+from fidesops.schemas.dataset import FidesopsDatasetReference
+
 
 class CollectionAddress:
     """The representation of a collection in the graph, specified by
@@ -500,25 +502,34 @@ class ConnectorParams(BaseModel):
     is_secret: bool
 
 
-# class Parameter(BaseModel):
-#     name: str
-#     type: str
+class Parameter(BaseModel):
+    name: str
+    type: Literal["query", "path", "body"]
+    default_value: Optional[Any]
+    identity: Optional[str]
+    data_type: Optional[str]
+    references: Optional[List[FidesopsDatasetReference]]
 
 
-# class Request(BaseModel):
-#     path: str
-#     parameters: Optional(List[Parameter])
+class Request(BaseModel):
+    path: str
+    parameters: Optional[List[Parameter]]
 
 
-# class Endpoint(BaseModel):
-#     name: str  # corresponds to the datset collection name
-#     request_params: Dict[
-#         str, Request
-#     ]  # TODO constrain dictionary keys to read, update, delete
+class Pagination(BaseModel):
+    strategy: str
+    configuration: Dict
+
+
+class Endpoint(BaseModel):
+    name: str  # corresponds to the datset collection name
+    request_params: Dict[Literal["read", "update", "delete"], Request]
+    pagination: Optional[Pagination]
 
 
 class ConnectorParam(BaseModel):
     name: str
+    default_value: Optional[Any]
     from_user: bool
     is_secret: bool
 
@@ -545,9 +556,11 @@ class TestRequest(BaseModel):
 class SaaSConfig(BaseModel):
     """Extended fields for SaaS connections"""
 
+    fides_key: FidesOpsKey
+    name: str
     description: str
     version: str
     connector_params: List[ConnectorParam]
     client_config: ClientConfig
-    # endpoints: List[Endpoint]
+    endpoints: List[Endpoint]
     test_connection: TestRequest

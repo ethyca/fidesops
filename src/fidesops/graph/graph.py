@@ -120,7 +120,7 @@ class Edge:
         cls,
         addr_1: FieldAddress,
         addr_2: FieldAddress,
-        direction: [Optional[EdgeDirection]] = None,
+        direction: List[Optional[EdgeDirection]] = None,
     ) -> Edge:
         """Create an edge from addr_1 to addr_2 with the given direction."""
         if direction == "from":

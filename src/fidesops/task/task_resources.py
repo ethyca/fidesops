@@ -22,7 +22,7 @@ from fidesops.service.connectors import (
     MicrosoftSQLServerConnector,
 )
 from fidesops.util.cache import get_cache
-from src.fidesops.service.connectors.saas_connector import SaaSConnector
+from fidesops.service.connectors.saas_connector import SaaSConnector
 
 logger = logging.getLogger(__name__)
 

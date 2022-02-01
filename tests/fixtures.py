@@ -976,7 +976,7 @@ def load_dataset(filename: str) -> Dict:
 def load_config(filename: str) -> Dict:
     yaml_file = load_file(filename)
     with open(yaml_file, "r") as file:
-        return yaml.safe_load(file).get("saas_config")[0]
+        return yaml.safe_load(file).get("saas_config", [])
 
 
 @pytest.fixture
@@ -999,12 +999,20 @@ def example_datasets() -> List[Dict]:
 def example_saas_configs() -> Dict[str, Dict]:
     example_saas_configs = {}
     example_saas_configs["mailchimp"] = load_config(
-        "data/saas_config/mailchimp_config.yml"
-    )
+        "data/saas/config/mailchimp_config.yml"
+    )[0]
     example_saas_configs["stripe"] = load_config(
-        "data/saas_config/stripe_config.yml"
-    )
+        "data/saas/config/stripe_config.yml"
+    )[0]
     return example_saas_configs
+
+@pytest.fixture
+def example_saas_datasets() -> Dict[str, Dict]:
+    example_saas_datasets = {}
+    example_saas_datasets["mailchimp"] = load_dataset(
+        "data/saas/dataset/mailchimp_dataset.yml"
+    )[0]
+    return example_saas_datasets
 
 
 @pytest.fixture
