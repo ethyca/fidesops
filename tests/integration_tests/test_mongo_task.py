@@ -30,7 +30,7 @@ from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
 from ..task.traversal_data import (
     integration_db_graph,
     integration_db_mongo_graph,
-    combined_mongo_posgresql_graph,
+    combined_mongo_postgresql_graph,
 )
 
 dask.config.set(scheduler="processes")
@@ -50,25 +50,39 @@ def test_combined_erasure_task(
     privacy_request = PrivacyRequest(
         id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
     )
-    mongo_dataset, postgres_dataset = combined_mongo_posgresql_graph(
+    mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
         integration_postgres_config, integration_mongodb_config
     )
 
+    field([postgres_dataset], "postgres_example", "address", "city").data_categories = [
+        "A"
+    ]
     field(
-        [postgres_dataset], ("postgres_example", "address", "city")
+        [postgres_dataset], "postgres_example", "address", "state"
+    ).data_categories = ["B"]
+    field([postgres_dataset], "postgres_example", "address", "zip").data_categories = [
+        "C"
+    ]
+    field(
+        [postgres_dataset], "postgres_example", "customer", "name"
+    ).data_categories = ["A"]
+    field([mongo_dataset], "mongo_test", "address", "city").data_categories = ["A"]
+    field([mongo_dataset], "mongo_test", "address", "state").data_categories = ["B"]
+    field([mongo_dataset], "mongo_test", "address", "zip").data_categories = ["C"]
+    field(
+        [mongo_dataset], "mongo_test", "customer_details", "workplace_info", "position"
     ).data_categories = ["A"]
     field(
-        [postgres_dataset], ("postgres_example", "address", "state")
+        [mongo_dataset], "mongo_test", "internal_customer_profile", "derived_interests"
     ).data_categories = ["B"]
     field(
-        [postgres_dataset], ("postgres_example", "address", "zip")
-    ).data_categories = ["C"]
-    field(
-        [postgres_dataset], ("postgres_example", "customer", "name")
+        [mongo_dataset],
+        "mongo_test",
+        "customer_feedback",
+        "customer_information",
+        "phone",
     ).data_categories = ["A"]
-    field([mongo_dataset], ("mongo_test", "address", "city")).data_categories = ["A"]
-    field([mongo_dataset], ("mongo_test", "address", "state")).data_categories = ["B"]
-    field([mongo_dataset], ("mongo_test", "address", "zip")).data_categories = ["C"]
+
     graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
     access_request_data = graph_task.run_access_request(
@@ -95,9 +109,51 @@ def test_combined_erasure_task(
         "postgres_example:address": 2,
         "mongo_test:address": 1,
         "postgres_example:payment_card": 0,
+        "mongo_test:customer_feedback": 1,
+        "mongo_test:customer_details": 1,
+        "mongo_test:internal_customer_profile": 1,
     }
 
+    rerun_access = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [integration_mongodb_config, integration_postgres_config],
+        {"email": seed_email},
+    )
 
+    # Nested resource deleted
+    assert (
+        rerun_access["mongo_test:customer_details"][0]["workplace_info"]["position"]
+        is None
+    )
+    assert (
+        rerun_access["mongo_test:customer_details"][0]["workplace_info"]["employer"]
+        is not None
+    )
+
+    # This will change when array handling is added - array was just set to None
+    assert (
+        rerun_access["mongo_test:internal_customer_profile"][0]["derived_interests"]
+        is None
+    )
+    assert (
+        rerun_access["mongo_test:internal_customer_profile"][0]["customer_identifiers"]
+        is not None
+    )
+
+    # Nested resource deleted
+    assert (
+        rerun_access["mongo_test:customer_feedback"][0]["customer_information"]["phone"]
+        is None
+    )
+    assert (
+        rerun_access["mongo_test:customer_feedback"][0]["customer_information"]["email"]
+        is not None
+    )
+
+
+@pytest.mark.integration_mongodb
 @pytest.mark.integration
 def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
     policy = erasure_policy("A", "B")
@@ -109,10 +165,10 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
     dataset, graph = integration_db_mongo_graph(
         "mongo_test", integration_mongodb_config.key
     )
-    field([dataset], ("mongo_test", "address", "city")).data_categories = ["A"]
-    field([dataset], ("mongo_test", "address", "state")).data_categories = ["B"]
-    field([dataset], ("mongo_test", "address", "zip")).data_categories = ["C"]
-    field([dataset], ("mongo_test", "customer", "name")).data_categories = ["A"]
+    field([dataset], "mongo_test", "address", "city").data_categories = ["A"]
+    field([dataset], "mongo_test", "address", "state").data_categories = ["B"]
+    field([dataset], "mongo_test", "address", "zip").data_categories = ["C"]
+    field([dataset], "mongo_test", "customer", "name").data_categories = ["A"]
 
     access_request_data = graph_task.run_access_request(
         privacy_request,
@@ -138,6 +194,7 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
     }
 
 
+@pytest.mark.integration_mongodb
 @pytest.mark.integration
 def test_dask_mongo_task(integration_mongodb_config: ConnectionConfig) -> None:
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
@@ -170,6 +227,7 @@ def test_dask_mongo_task(integration_mongodb_config: ConnectionConfig) -> None:
     assert v["mongo_test:customer"][0]["email"] == "customer-1@example.com"
 
 
+@pytest.mark.integration_mongodb
 @pytest.mark.integration
 def test_composite_key_erasure(
     db,
@@ -261,6 +319,7 @@ def test_composite_key_erasure(
     assert access_request_data["mongo_test:composite_pk_test"][0]["description"] == None
 
 
+@pytest.mark.integration_mongodb
 @pytest.mark.integration
 def test_access_erasure_type_conversion(
     db,
@@ -371,17 +430,57 @@ def test_filter_on_data_categories_mongo(
         "user.provided.identifiable.date_of_birth",
     }
     filtered_results = filter_data_categories(
-        access_request_results, target_categories, dataset_graph
+        access_request_results,
+        target_categories,
+        dataset_graph.data_category_field_mapping,
     )
 
-    # Mongo results obtained via customer_id field from postgres_example_test_dataset.customer.id
+    # Mongo results obtained via customer_id relationship from postgres_example_test_dataset.customer.id
     assert filtered_results == {
         "mongo_test:customer_details": [
             {"gender": "male", "birthday": datetime(1988, 1, 10, 0, 0)}
         ]
     }
 
+    # mongo_test:customer_feedback collection reached via nested identity
+    target_categories = {"user.provided.identifiable.contact.phone_number"}
+    filtered_results = filter_data_categories(
+        access_request_results,
+        target_categories,
+        dataset_graph.data_category_field_mapping,
+    )
+    assert filtered_results["mongo_test:customer_feedback"][0] == {
+        "customer_information": {"phone": "333-333-3333"}
+    }
 
+    # Includes nested workplace_info.position field
+    target_categories = {"user.provided.identifiable"}
+    filtered_results = filter_data_categories(
+        access_request_results,
+        target_categories,
+        dataset_graph.data_category_field_mapping,
+    )
+    assert len(filtered_results["mongo_test:customer_details"]) == 1
+    assert filtered_results["mongo_test:customer_details"][0] == {
+        "birthday": datetime(1988, 1, 10),
+        "gender": "male",
+        "workplace_info": {"position": "Chief Strategist"},
+    }
+
+    # Includes data retrieved from a nested field that was joined with a nested field from another table
+    target_categories = {"user.derived"}
+    filtered_results = filter_data_categories(
+        access_request_results,
+        target_categories,
+        dataset_graph.data_category_field_mapping,
+    )
+    assert filtered_results["mongo_test:internal_customer_profile"][0] == {
+        "derived_interests": ["marketing", "food"]
+    }
+
+
+@pytest.mark.integration_mongodb
+@pytest.mark.integration
 class TestRetrievingDataMongo:
     @pytest.fixture
     def connector(self, integration_mongodb_config):
@@ -395,7 +494,6 @@ class TestRetrievingDataMongo:
         traversal_node = TraversalNode(node)
         return traversal_node
 
-    @pytest.mark.integration
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data(
         self,
@@ -417,7 +515,6 @@ class TestRetrievingDataMongo:
 
         assert results[0]["customer_id"] == 1
 
-    @pytest.mark.integration
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_no_input(
         self,
@@ -449,7 +546,6 @@ class TestRetrievingDataMongo:
         results = connector.retrieve_data(traversal_node, Policy(), {"email": None})
         assert results == []
 
-    @pytest.mark.integration
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
         self,

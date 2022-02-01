@@ -48,6 +48,7 @@ sample_postgres_configuration_policy = erasure_policy(
 )
 
 
+@pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_sql_erasure_ignores_collections_without_pk(
     db, postgres_inserts, integration_postgres_config
@@ -58,13 +59,13 @@ def test_sql_erasure_ignores_collections_without_pk(
     )  # makes an erasure policy with two data categories to match against
     dataset = integration_db_dataset("postgres_example", "postgres_example")
 
-    field([dataset], ("postgres_example", "address", "id")).primary_key = False
+    field([dataset], "postgres_example", "address", "id").primary_key = False
 
     # set categories: A,B will be marked erasable, C will not
-    field([dataset], ("postgres_example", "address", "city")).data_categories = ["A"]
-    field([dataset], ("postgres_example", "address", "state")).data_categories = ["B"]
-    field([dataset], ("postgres_example", "address", "zip")).data_categories = ["C"]
-    field([dataset], ("postgres_example", "customer", "name")).data_categories = ["A"]
+    field([dataset], "postgres_example", "address", "city").data_categories = ["A"]
+    field([dataset], "postgres_example", "address", "state").data_categories = ["B"]
+    field([dataset], "postgres_example", "address", "zip").data_categories = ["C"]
+    field([dataset], "postgres_example", "customer", "name").data_categories = ["A"]
 
     graph = DatasetGraph(dataset)
     privacy_request = PrivacyRequest(
@@ -112,6 +113,7 @@ def test_sql_erasure_ignores_collections_without_pk(
     }
 
 
+@pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_composite_key_erasure(
     db,
@@ -212,18 +214,19 @@ def test_composite_key_erasure(
     }
 
 
+@pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
     seed_email = postgres_inserts["customer"][0]["email"]
 
     policy = erasure_policy("A", "B")
     dataset = integration_db_dataset("postgres_example", "postgres_example")
-    field([dataset], ("postgres_example", "address", "id")).primary_key = True
+    field([dataset], "postgres_example", "address", "id").primary_key = True
     # set categories: A,B will be marked erasable, C will not
-    field([dataset], ("postgres_example", "address", "city")).data_categories = ["A"]
-    field([dataset], ("postgres_example", "address", "state")).data_categories = ["B"]
-    field([dataset], ("postgres_example", "address", "zip")).data_categories = ["C"]
-    field([dataset], ("postgres_example", "customer", "name")).data_categories = ["A"]
+    field([dataset], "postgres_example", "address", "city").data_categories = ["A"]
+    field([dataset], "postgres_example", "address", "state").data_categories = ["B"]
+    field([dataset], "postgres_example", "address", "zip").data_categories = ["C"]
+    field([dataset], "postgres_example", "customer", "name").data_categories = ["A"]
     graph = DatasetGraph(dataset)
     privacy_request = PrivacyRequest(
         id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
@@ -252,6 +255,7 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
     }
 
 
+@pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_postgres_access_request_task(db, policy, integration_postgres_config) -> None:
 
@@ -334,6 +338,7 @@ def test_postgres_access_request_task(db, policy, integration_postgres_config) -
     )
 
 
+@pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_mssql_access_request_task(db, policy, connection_config_mssql) -> None:
 
@@ -544,7 +549,7 @@ def test_filter_on_data_categories(
 
     target_categories = {target.data_category for target in rule.targets}
     filtered_results = filter_data_categories(
-        access_request_results, target_categories, dataset_graph
+        access_request_results, target_categories, dataset_graph.data_category_field_mapping
     )
 
     # One rule target, with data category that maps to house/street on address collection only.
@@ -558,7 +563,7 @@ def test_filter_on_data_categories(
     # Specify the target category:
     target_categories = {"user.provided.identifiable.contact"}
     filtered_results = filter_data_categories(
-        access_request_results, target_categories, dataset_graph
+        access_request_results, target_categories, dataset_graph.data_category_field_mapping
     )
 
     assert filtered_results == {
@@ -610,7 +615,7 @@ def test_filter_on_data_categories(
 
     target_categories = {target.data_category for target in rule.targets}
     filtered_results = filter_data_categories(
-        access_request_results, target_categories, dataset_graph
+        access_request_results, target_categories, dataset_graph.data_category_field_mapping
     )
     assert filtered_results == {
         "postgres_example_test_dataset:service_request": [
@@ -630,6 +635,7 @@ def test_filter_on_data_categories(
     rule_target.delete(db)
 
 
+@pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_access_erasure_type_conversion(
     db,
@@ -708,6 +714,8 @@ def test_access_erasure_type_conversion(
     }
 
 
+@pytest.mark.integration_postgres
+@pytest.mark.integration
 class TestRetrievingData:
     @pytest.fixture
     def connector(self, integration_postgres_config):
@@ -722,7 +730,6 @@ class TestRetrievingData:
         traversal_node = TraversalNode(node)
         return traversal_node
 
-    @pytest.mark.integration
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data(
         self,
@@ -752,7 +759,6 @@ class TestRetrievingData:
             }
         ]
 
-    @pytest.mark.integration
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_no_input(
         self,
@@ -782,7 +788,6 @@ class TestRetrievingData:
 
         assert [] == connector.retrieve_data(traversal_node, Policy(), {"email": None})
 
-    @pytest.mark.integration
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
         self,
@@ -806,8 +811,9 @@ class TestRetrievingData:
         assert results == []
 
 
+@pytest.mark.integration_postgres
+@pytest.mark.integration
 class TestRetryIntegration:
-    @pytest.mark.integration
     @mock.patch("fidesops.service.connectors.sql_connector.SQLConnector.retrieve_data")
     def test_retry_access_request(
         self,
@@ -890,7 +896,6 @@ class TestRetryIntegration:
         # No results were accessible because all retrieve_data calls failed.
         assert access_request_results == {}
 
-    @pytest.mark.integration
     @mock.patch("fidesops.service.connectors.sql_connector.SQLConnector.mask_data")
     def test_retry_erasure(
         self,
