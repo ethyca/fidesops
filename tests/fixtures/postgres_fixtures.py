@@ -130,9 +130,6 @@ def postgres_integration_db(postgres_integration_session):
     """
     )
     yield postgres_integration_session
-    import pdb
-
-    pdb.set_trace()
     postgres_integration_session.execute(
         """
         TRUNCATE
