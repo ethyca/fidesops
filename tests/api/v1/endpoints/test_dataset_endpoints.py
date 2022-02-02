@@ -39,7 +39,7 @@ def test_example_datasets(example_datasets):
     assert example_datasets[0]["fides_key"] == "postgres_example_test_dataset"
     assert len(example_datasets[0]["collections"]) == 11
     assert example_datasets[1]["fides_key"] == "mongo_test"
-    assert len(example_datasets[1]["collections"]) == 1
+    assert len(example_datasets[1]["collections"]) == 3
     assert example_datasets[2]["fides_key"] == "snowflake_example_test_dataset"
     assert len(example_datasets[2]["collections"]) == 11
     assert example_datasets[3]["fides_key"] == "redshift_example_test_dataset"
@@ -442,7 +442,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 6
+        assert len(response_body["succeeded"]) == 7
         assert len(response_body["failed"]) == 0
 
         # Confirm that postgres dataset matches the values we provided
@@ -465,7 +465,7 @@ class TestPutDatasets:
         assert mongo_dataset["fides_key"] == "mongo_test"
         assert mongo_dataset["name"] == "Mongo Example Test Dataset"
         assert "Example of a Mongo dataset" in mongo_dataset["description"]
-        assert len(mongo_dataset["collections"]) == 1
+        assert len(mongo_dataset["collections"]) == 3
 
         # Check the mssql dataset
         mssql_dataset = response_body["succeeded"][4]
@@ -489,9 +489,22 @@ class TestPutDatasets:
         assert "Example of a MySQL dataset" in mysql_dataset["description"]
         assert len(mysql_dataset["collections"]) == 11
 
+        # check the mariadb dataset
+        mariadb_dataset = response_body["succeeded"][6]
+        mariadb_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="mariadb_example_test_dataset"
+        )
+        assert mariadb_config is not None
+        assert mariadb_dataset["fides_key"] == "mariadb_example_test_dataset"
+        assert mariadb_dataset["name"] == "MariaDB Example Test Dataset"
+        assert "Example of a MariaDB dataset" in mariadb_dataset["description"]
+        assert len(mariadb_dataset["collections"]) == 11
+
         postgres_config.delete(db)
         mongo_config.delete(db)
         mssql_config.delete(db)
+        mysql_config.delete(db)
+        mariadb_config.delete(db)
 
     def test_patch_datasets_bulk_update(
         self,
@@ -540,7 +553,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 6
+        assert len(response_body["succeeded"]) == 7
         assert len(response_body["failed"]) == 0
 
         # test postgres
@@ -613,7 +626,7 @@ class TestPutDatasets:
         assert response.status_code == 200  # Returns 200 regardless
         response_body = json.loads(response.text)
         assert len(response_body["succeeded"]) == 0
-        assert len(response_body["failed"]) == 6
+        assert len(response_body["failed"]) == 7
 
         for failed_response in response_body["failed"]:
             assert "Dataset create/update failed" in failed_response["message"]

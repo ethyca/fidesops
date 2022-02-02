@@ -21,6 +21,7 @@ PORT=3306
 
 [redshift]
 external_uri=""
+db_schema=""
 
 [snowflake]
 external_uri=""
@@ -32,3 +33,9 @@ PASSWORD="Mssql_pw1"
 DB="mssql_example"
 PORT=1433
 
+[mariadb_example]
+SERVER="mariadb_example"
+USER="mariadb_user"
+PASSWORD="mariadb_pw"
+DB="mariadb_example"
+PORT=3306
