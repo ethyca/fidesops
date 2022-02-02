@@ -8,7 +8,13 @@ import dask
 import pytest
 from bson import ObjectId
 
-from fidesops.graph.config import FieldAddress, ScalarField, Collection, Dataset
+from fidesops.graph.config import (
+    FieldAddress,
+    ScalarField,
+    Collection,
+    Dataset,
+    CollectionAddress, FieldPath,
+)
 from fidesops.graph.data_type import (
     IntTypeConverter,
     StringTypeConverter,
@@ -25,7 +31,10 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.service.connectors import get_connector
 from fidesops.task import graph_task
-from fidesops.task.graph_task import filter_data_categories
+from fidesops.task.graph_task import (
+    filter_data_categories,
+    get_collection_inputs_from_cache,
+)
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
 from ..task.traversal_data import (
     integration_db_graph,
@@ -225,6 +234,33 @@ def test_dask_mongo_task(integration_mongodb_config: ConnectionConfig) -> None:
 
     # links
     assert v["mongo_test:customer"][0]["email"] == "customer-1@example.com"
+
+
+@pytest.mark.integration_mongodb
+@pytest.mark.integration
+def test_cached_inputs(integration_mongodb_config: ConnectionConfig) -> None:
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+
+    graph_task.run_access_request(
+        privacy_request,
+        policy,
+        integration_db_graph("mongo_test", integration_mongodb_config.key),
+        [integration_mongodb_config],
+        {"email": "customer-1@example.com"},
+    )
+    cached_inputs = get_collection_inputs_from_cache(privacy_request)
+
+    assert cached_inputs == {
+        CollectionAddress("mongo_test", "orders"): {FieldPath("customer_id"): ["1"]},
+        CollectionAddress("mongo_test", "customer"): {
+            FieldPath("email"): ["customer-1@example.com"]
+        },
+        CollectionAddress("mongo_test", "payment_card"): {
+             FieldPath("customer_id"): ["1"],
+             FieldPath("id"): ["pay_aaa-aaa", "pay_aaa-aaa", "pay_bbb-bbb"],
+        },
+        CollectionAddress("mongo_test", "address"): {},
+    }
 
 
 @pytest.mark.integration_mongodb
@@ -463,7 +499,7 @@ def test_filter_on_data_categories_mongo(
     assert len(filtered_results["mongo_test:customer_details"]) == 1
 
     assert filtered_results["mongo_test:customer_details"][0] == {
-        "birthday": datetime.datetime(1988, 1, 10, 0, 0),
+        "birthday": datetime(1988, 1, 10, 0, 0),
         "gender": "male",
         "children": ["Christopher Customer", "Courtney Customer"],
         "emergency_contacts": [{"phone": "444-444-4444", "name": "June Customer"}],

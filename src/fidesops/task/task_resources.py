@@ -103,6 +103,11 @@ class TaskResources:
         stored in redis under 'REQUEST_ID__TYPE__ADDRESS'"""
         self.cache.set_encoded_object(f"{self.request.id}__{key}", value)
 
+    def cache_inputs(self, key: str, value: Any) -> None:
+        """Cache input data that was used to query data on the given node. Store in cache. Object will be
+        stored in redis under 'INPUT__PRIVACY_REQUEST_ID__TYPE__COLLECTION_ADDRESS'"""
+        self.cache.set_encoded_object(f"INPUT__{self.request.id}__{key}", value)
+
     def get_all_cached_objects(self) -> Dict[str, Optional[Any]]:
         """Retrieve the results of all steps"""
         value_dict = self.cache.get_encoded_objects_by_prefix(self.request.id)

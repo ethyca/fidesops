@@ -12,6 +12,7 @@ import dask
 from dask.threaded import get
 
 from fidesops.core.config import config
+from fidesops.util.cache import get_cache
 from fidesops.graph.config import (
     CollectionAddress,
     ROOT_COLLECTION_ADDRESS,
@@ -225,9 +226,12 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run access request"""
+        formatted_input_data = self.to_dask_input_data(*inputs)
         output = self.connector.retrieve_data(
-            self.traversal_node, self.resources.policy, self.to_dask_input_data(*inputs)
+            self.traversal_node, self.resources.policy, formatted_input_data
         )
+
+        self.resources.cache_inputs(f"access_request__{self.key}", formatted_input_data)
         self.resources.cache_object(f"access_request__{self.key}", output)
         self.log_end(ActionType.access)
         return output
@@ -423,3 +427,32 @@ def filter_data_categories(
             filtered_access_results[node_address].append(filtered_results)
 
     return filtered_access_results
+
+
+def get_collection_inputs_from_cache(
+    privacy_request: PrivacyRequest,
+) -> Dict[CollectionAddress, Dict[FieldPath, List]]:
+    """
+    After an access request has run, use this method to get the input data from the cache that flowed into each collection
+    that was used to query for corresponding records.
+
+    In the example return below, we can see that customer_id 1 was used to find records in the mongo_test orders
+    collection, and the emails "customer-1@example.com" and "customer@example.com" were used to locate records
+    on the mongo_test customer collection.
+    {
+        CollectionAddress("mongo_test", "orders"): {FieldPath("customer_id"): ["1"]},
+        CollectionAddress("mongo_test", "customer"): {
+            FieldPath("email"): ["customer-1@example.com", "customer@example.com"]
+        }
+    }
+
+    """
+    cache = get_cache()
+    value_dict = cache.get_encoded_objects_by_prefix(f"INPUT__{privacy_request.id}")
+    return {
+        CollectionAddress.from_string(collection_name.split("__")[-1]): {
+            FieldPath.parse(field): inputs
+            for field, inputs in collection_inputs.items()
+        }
+        for collection_name, collection_inputs in value_dict.items()
+    }
