@@ -333,14 +333,15 @@ def test_create_and_process_erasure_request_specific_category_mssql(
     assert customer_found
 
 
-@pytest.mark.integration_erasure
+@pytest.mark.integration_mysql
+@pytest.mark.integration
 def test_create_and_process_erasure_request_specific_category_mysql(
+    mysql_integration_db,
     mysql_example_test_dataset_config,
     cache,
     db,
     generate_auth_header,
     erasure_policy,
-    connection_config_mysql,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
@@ -353,15 +354,11 @@ def test_create_and_process_erasure_request_specific_category_mysql(
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
     pr.delete(db=db)
 
-    example_mysql_uri = MySQLConnector(connection_config_mysql).build_uri()
-    engine = get_db_engine(database_uri=example_mysql_uri)
-    SessionLocal = get_db_session(engine=engine)
-    integration_db = SessionLocal()
     stmt = select(
         column("id"),
         column("name"),
     ).select_from(table("customer"))
-    res = integration_db.execute(stmt).all()
+    res = mysql_integration_db.execute(stmt).all()
 
     customer_found = False
     for row in res:
