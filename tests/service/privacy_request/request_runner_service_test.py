@@ -256,13 +256,14 @@ def test_create_and_process_access_request_mysql(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-def test_create_and_process_erasure_request_specific_category(
+def test_create_and_process_erasure_request_specific_category_postgres(
     postgres_integration_db,
     postgres_example_test_dataset_config,
     cache,
     db,
     generate_auth_header,
     erasure_policy,
+    read_connection_config,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
@@ -271,6 +272,9 @@ def test_create_and_process_erasure_request_specific_category(
         "policy_key": erasure_policy.key,
         "identity": {"email": customer_email},
     }
+
+    stmt = select("*").select_from(table("customer"))
+    res = postgres_integration_db.execute(stmt).all()
 
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
     pr.delete(db=db)

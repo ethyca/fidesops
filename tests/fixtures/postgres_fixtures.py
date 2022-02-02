@@ -8,15 +8,42 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="function")
-def postgres_integration_session(connection_config):
+def postgres_integration_session_cls(connection_config):
     example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
     engine = get_db_engine(database_uri=example_postgres_uri)
-    SessionLocal = get_db_session(engine=engine)
-    yield SessionLocal()
+    SessionLocal = get_db_session(
+        engine=engine,
+        autocommit=True,
+        autoflush=True,
+    )
+    yield SessionLocal
+
+
+@pytest.fixture(scope="function")
+def postgres_integration_session(postgres_integration_session_cls):
+    yield postgres_integration_session_cls()
 
 
 @pytest.fixture(scope="function")
 def postgres_integration_db(postgres_integration_session):
+    postgres_integration_session.execute(
+        """
+        TRUNCATE
+        public.type_link_test,
+        public.report,
+        public.service_request,
+        public.login,
+        public.visit,
+        public.order_item,
+        public.orders,
+        public.payment_card,
+        public.employee,
+        public.customer,
+        public.address,
+        public.product,
+        public.composite_pk_test;
+    """
+    )
     postgres_integration_session.execute(
         """
         INSERT INTO public.composite_pk_test VALUES
@@ -103,19 +130,24 @@ def postgres_integration_db(postgres_integration_session):
     """
     )
     yield postgres_integration_session
+    import pdb
+
+    pdb.set_trace()
     postgres_integration_session.execute(
         """
-        DELETE FROM public.type_link_test *;
-        DELETE FROM public.report *;
-        DELETE FROM public.login *;
-        DELETE FROM public.visit *;
-        DELETE FROM public.order_item *;
-        DELETE FROM public.orders *;
-        DELETE FROM public.payment_card *;
-        DELETE FROM public.employee *;
-        DELETE FROM public.customer *;
-        DELETE FROM public.address *;
-        DELETE FROM public.product *;
-        DELETE FROM public.composite_pk_test *;
+        TRUNCATE
+        public.type_link_test,
+        public.report,
+        public.service_request,
+        public.login,
+        public.visit,
+        public.order_item,
+        public.orders,
+        public.payment_card,
+        public.employee,
+        public.customer,
+        public.address,
+        public.product,
+        public.composite_pk_test;
     """
     )
