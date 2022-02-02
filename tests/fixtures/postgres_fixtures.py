@@ -63,12 +63,10 @@ def postgres_integration_db(postgres_integration_session):
         (3, '555', 'Example Ave', 'Example City', 'NY', '12000'),
         (4, '1111', 'Example Place', 'Example Mountain', 'TX', '54321');
 
-
         INSERT INTO public.customer VALUES
         (1, 'customer-1@example.com', 'John Customer', '2020-04-01 11:47:42', 1),
         (2, 'customer-2@example.com', 'Jill Customer', '2020-04-01 11:47:42', 2),
         (3, 'jane@example.com', 'Jane Customer', '2020-04-01 11:47:42', 4);
-
 
         INSERT INTO public.employee VALUES
         (1, 'employee-1@example.com', 'Jack Employee', 3),
@@ -79,14 +77,12 @@ def postgres_integration_db(postgres_integration_session):
         ('pay_bbb-bbb', 'Example Card 2', 987654321, 123, false, 2, 1),
         ('pay_ccc-ccc', 'Example Card 3', 373719391, 222, false, 3, 4);
 
-
         INSERT INTO public.orders VALUES
         ('ord_aaa-aaa', 1, 2, 'pay_aaa-aaa'),
         ('ord_bbb-bbb', 2, 1, 'pay_bbb-bbb'),
         ('ord_ccc-ccc', 1, 1, 'pay_aaa-aaa'),
         ('ord_ddd-ddd', 1, 1, 'pay_bbb-bbb'),
         ('ord_ddd-eee', 3, 4, 'pay-ccc-ccc');
-
 
         INSERT INTO public.order_item VALUES
         ('ord_aaa-aaa', 1, 1, 1),
@@ -95,7 +91,6 @@ def postgres_integration_db(postgres_integration_session):
         ('ord_ccc-ccc', 2, 2, 1),
         ('ord_ddd-ddd', 1, 1, 1),
         ('ord_eee-eee', 3, 4, 3);
-
 
         INSERT INTO public.visit VALUES
         ('customer-1@example.com', '2021-01-06 01:00:00'),
@@ -110,7 +105,6 @@ def postgres_integration_db(postgres_integration_session):
         (6, 1, '2021-01-06 01:00:00'),
         (7, 2, '2021-01-06 01:00:00'),
         (8, 3, '2021-01-06 01:00:00');
-
 
         INSERT INTO public.service_request VALUES
         ('ser_aaa-aaa', 'customer-1@example.com', 'customer-1-alt@example.com', '2021-01-01', '2021-01-03', 1),
