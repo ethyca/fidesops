@@ -1,4 +1,5 @@
 import logging
+from os import truncate
 import pytest
 
 from fidesops.db.session import get_db_session, get_db_engine
@@ -24,8 +25,7 @@ def postgres_integration_session(postgres_integration_session_cls):
     yield postgres_integration_session_cls()
 
 
-@pytest.fixture(scope="function")
-def postgres_integration_db(postgres_integration_session):
+def truncate_all_tables(postgres_integration_session):
     postgres_integration_session.execute(
         """
         TRUNCATE
@@ -44,6 +44,11 @@ def postgres_integration_db(postgres_integration_session):
         public.composite_pk_test;
     """
     )
+
+
+@pytest.fixture(scope="function")
+def postgres_integration_db(postgres_integration_session):
+    truncate_all_tables(postgres_integration_session)
     postgres_integration_session.execute(
         """
         INSERT INTO public.composite_pk_test VALUES
@@ -124,21 +129,4 @@ def postgres_integration_db(postgres_integration_session):
     """
     )
     yield postgres_integration_session
-    postgres_integration_session.execute(
-        """
-        TRUNCATE
-        public.type_link_test,
-        public.report,
-        public.service_request,
-        public.login,
-        public.visit,
-        public.order_item,
-        public.orders,
-        public.payment_card,
-        public.employee,
-        public.customer,
-        public.address,
-        public.product,
-        public.composite_pk_test;
-    """
-    )
+    truncate_all_tables(postgres_integration_session)
