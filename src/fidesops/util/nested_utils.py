@@ -1,45 +1,65 @@
-from collections import defaultdict
-from typing import Dict, Any
-
-from fidesops.common_exceptions import FidesopsException
+from typing import List, Dict, Any
 
 
-def unflatten_dict(input_row: Dict[str, Any], separator: str = ".") -> Dict[str, Any]:
+from fidesops.graph.config import FieldPath
+
+
+def _get_starter(obj: Any) -> Any:
     """
-    Takes a dictionary that has been normalized to level 1 and reconstitutes:
+    Used in recursive 'select_field_from_input_data' as we're adding fields that match
+    desired data categories to the filtered results we'll return to the user.
+    """
+    if isinstance(obj, list):
+        return []
+    if isinstance(obj, dict):
+        return {}
+    return obj
 
-    {
-       "a": 1,
-       "b.c": 2,
-       "b.d": 3
-    }
 
-    and turns it into:
-    {"a": 1, "b": {"c": 2, "d": 3}
+def _skip_unmatched_scalar(element: Any, only: List, base: List) -> bool:
+    """
+    Data in one collection can be used to lookup data inside arrays inside another collection.  For some identities
+    or referenced fields contained in arrays, the user may only want to return the "matched" result.
+
+    If the given element is a scalar value within an array, that is in the "only" list and hasn't already been
+    added to the "base" list, we want to add it.
+    """
+    return bool(
+        only
+        and not type(element) in [list, dict]
+        and (element not in only or element in base)
+    )
+
+
+def select_field_from_input_data(
+    base: Any, input_data: Any, target_path: FieldPath, only: List = []
+) -> Dict:
+    """Extract input_data along the target_path and add to "base"
+
+    Used to incrementally filter a record retrieved from a collection to only contain the target field paths with the
+    relevant data categories.  To use, you might start with a base that is an empty dict, and loop through a list of
+    FieldPaths you want, continuing to pass in the ever-growing new base that was returned from the previous iteration.
     """
 
-    def _create_dict() -> defaultdict:
-        """Can create a defaultdict at every level"""
-        return defaultdict(_create_dict)
+    if isinstance(input_data, list):
+        for i, elem in enumerate(input_data):
+            if _skip_unmatched_scalar(elem, only, base):
+                continue
+            try:
+                base[i] = select_field_from_input_data(base[i], elem, target_path, only)
+            except IndexError:
+                base.append(
+                    select_field_from_input_data(
+                        _get_starter(elem), elem, target_path, only
+                    )
+                )
 
-    unpacked_results = _create_dict()
-
-    for key, value in input_row.items():
-        if isinstance(value, dict):
-            raise FidesopsException(
-                "`unflatten_dict` expects a flattened dictionary as input."
-            )
-
-        levels = key.split(separator)
-        subdict = unpacked_results
-        for level in levels[:-1]:
-            subdict = subdict[level]
-
-        try:
-            subdict[levels[-1]] = value
-        except TypeError as exc:
-            raise FidesopsException(
-                f"Error unflattening dictionary, conflicting levels detected: {exc}"
-            )
-
-    return unpacked_results
+    elif isinstance(input_data, dict):
+        for key in input_data:
+            if key == target_path.levels[0]:
+                if key not in base:
+                    base[key] = _get_starter(input_data[key])
+                base[key] = select_field_from_input_data(
+                    base[key], input_data[key], FieldPath(*target_path.levels[1:]), only
+                )
+    return base

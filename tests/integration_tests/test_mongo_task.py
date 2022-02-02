@@ -461,10 +461,16 @@ def test_filter_on_data_categories_mongo(
         dataset_graph.data_category_field_mapping,
     )
     assert len(filtered_results["mongo_test:customer_details"]) == 1
+
     assert filtered_results["mongo_test:customer_details"][0] == {
-        "birthday": datetime(1988, 1, 10),
+        "birthday": datetime.datetime(1988, 1, 10, 0, 0),
         "gender": "male",
-        "workplace_info": {"position": "Chief Strategist"},
+        "children": ["Christopher Customer", "Courtney Customer"],
+        "emergency_contacts": [{"phone": "444-444-4444", "name": "June Customer"}],
+        "workplace_info": {
+            "position": "Chief Strategist",
+            "direct_reports": ["Robbie Margo", "Sully Hunter"],
+        },
     }
 
     # Includes data retrieved from a nested field that was joined with a nested field from another table
@@ -474,9 +480,55 @@ def test_filter_on_data_categories_mongo(
         target_categories,
         dataset_graph.data_category_field_mapping,
     )
+
+    # Test for accessing array
     assert filtered_results["mongo_test:internal_customer_profile"][0] == {
         "derived_interests": ["marketing", "food"]
     }
+
+
+@pytest.mark.integration
+def test_filter_on_array_data_categories_mongo(
+    db,
+    privacy_request,
+    example_datasets,
+    policy,
+    integration_mongodb_config,
+    integration_postgres_config,
+):
+
+    postgres_config = copy.copy(integration_postgres_config)
+
+    dataset_postgres = FidesopsDataset(**example_datasets[0])
+    graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
+    dataset_mongo = FidesopsDataset(**example_datasets[1])
+    mongo_graph = convert_dataset_to_graph(
+        dataset_mongo, integration_mongodb_config.key
+    )
+    dataset_graph = DatasetGraph(*[graph, mongo_graph])
+
+    access_request_results = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        dataset_graph,
+        [postgres_config, integration_mongodb_config],
+        {"email": "jane@example.com"},
+    )
+
+    target_categories = {"user.derived"}
+    filtered_results = filter_data_categories(
+        access_request_results,
+        target_categories,
+        dataset_graph.data_category_field_mapping,
+    )
+    # This record was accessed because jane@example.com matched identity data, but the entire array has "derived" data category.
+    # Query built of format db.internal_customer_profile.find({'customer_identifiers.derived_emails': 'jane@example.com'} {'customer_identifiers': 1, 'derived_interests': 1})
+    assert filtered_results["mongo_test:internal_customer_profile"][0][
+        "customer_identifiers"
+    ]["derived_emails"] == ["jane1@example.com", "jane@example.com"]
+
+    # {'passenger_information.passenger_ids': "['D111-11111']"} {'date': 1, 'flight_no': 1, 'passenger_information': 1}
+    # Trying to access array field from array field
 
 
 @pytest.mark.integration_mongodb

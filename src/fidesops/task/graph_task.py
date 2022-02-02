@@ -8,7 +8,6 @@ from functools import wraps
 from time import sleep
 from typing import List, Dict, Any, Tuple, Callable, Optional, Set
 
-import pandas as pd
 import dask
 from dask.threaded import get
 
@@ -29,7 +28,7 @@ from fidesops.service.connectors import BaseConnector
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.collection_util import partition, append
 from fidesops.util.logger import NotPii
-from fidesops.util.nested_utils import unflatten_dict
+from fidesops.util.nested_utils import select_field_from_input_data
 
 logger = logging.getLogger(__name__)
 
@@ -417,18 +416,10 @@ def filter_data_categories(
         if not target_field_paths:
             continue
 
-        # Normalize nested data into a flat dataframe
-        df: pd.DataFrame = pd.json_normalize(results, sep=".")
-        # Only keep intersection of dataframe columns and target field paths
-        df = df[
-            df.columns & [field_path.string_path for field_path in target_field_paths]
-        ]
-        # Turn the filtered results back into a list of dictionaries
-        filtered_flattened_results: List[Dict[str, Optional[Any]]] = df.to_dict(
-            orient="records"
-        )
-        for row in filtered_flattened_results:
-            # For each row, unflatten the dictionary
-            filtered_access_results[node_address].append(unflatten_dict(row))
+        for row in results:
+            filtered_results: Dict = {}
+            for field_path in target_field_paths:
+                select_field_from_input_data(filtered_results, row, field_path)
+            filtered_access_results[node_address].append(filtered_results)
 
     return filtered_access_results
