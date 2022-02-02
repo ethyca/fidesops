@@ -10,17 +10,16 @@ from fidesops.graph.config import (
     FieldPath,
 )
 from fidesops.graph.graph import DatasetGraph
-from fidesops.graph.traversal import Traversal, TraversalNode
+from fidesops.graph.traversal import Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.policy import Policy
-from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.task.graph_task import (
     collect_queries,
     TaskResources,
     EMPTY_REQUEST,
     filter_data_categories,
 )
+from fidesops.util.cache import get_cache
 from .traversal_data import sample_traversal, combined_mongo_postgresql_graph
 from ..graph.graph_test_util import (
     MockSqlTask,
@@ -161,6 +160,13 @@ def test_mongo_dry_run_queries() -> None:
     )
 
 
+def cache_input_helper(privacy_request_id, collection_address_str, value):
+    """Test helper for caching input data into a collection for a given privacy request in Redis"""
+    cache = get_cache()
+    key = f"INPUT__{privacy_request_id}__access_request__{collection_address_str}"
+    cache.set_encoded_object(key, value)
+
+
 def test_filter_data_categories():
     """Test different combinations of data categories to ensure the access_request_results are filtered properly"""
     access_request_results = {
@@ -197,7 +203,7 @@ def test_filter_data_categories():
     }
 
     only_a_categories = filter_data_categories(
-        copy.deepcopy(access_request_results), {"A"}, data_category_fields
+        copy.deepcopy(access_request_results), {"A"}, data_category_fields, "test_id"
     )
 
     assert only_a_categories == {
@@ -207,7 +213,7 @@ def test_filter_data_categories():
     }
 
     only_b_categories = filter_data_categories(
-        copy.deepcopy(access_request_results), {"B"}, data_category_fields
+        copy.deepcopy(access_request_results), {"B"}, data_category_fields, "test_id"
     )
     assert only_b_categories == {
         "postgres_example:supplies": [
@@ -220,7 +226,7 @@ def test_filter_data_categories():
     }
 
     only_c_categories = filter_data_categories(
-        copy.deepcopy(access_request_results), {"C"}, data_category_fields
+        copy.deepcopy(access_request_results), {"C"}, data_category_fields, "test_id"
     )
     assert only_c_categories == {
         "postgres_example:supplies": [
@@ -229,12 +235,12 @@ def test_filter_data_categories():
     }
 
     only_d_categories = filter_data_categories(
-        copy.deepcopy(access_request_results), {"D"}, data_category_fields
+        copy.deepcopy(access_request_results), {"D"}, data_category_fields, "test_id"
     )
     assert only_d_categories == {}
 
     only_e_categories = filter_data_categories(
-        copy.deepcopy(access_request_results), {"E"}, data_category_fields
+        copy.deepcopy(access_request_results), {"E"}, data_category_fields, "test_id"
     )
     assert only_e_categories == {
         "postgres_example:supplies": [
@@ -247,6 +253,51 @@ def test_filter_data_categories():
                 }
             }
         ]
+    }
+
+
+def test_filter_data_categories_arrays():
+    access_request_results = {
+        "postgres_example:flights": [
+            {
+                "people": {
+                    "passenger_ids": [222, 445, 311, 4444],
+                    "pilot_ids": [123, 12, 112],
+                },
+                "flight_number": 101,
+            }
+        ]
+    }
+
+    data_category_fields = {
+        CollectionAddress("postgres_example", "flights"): {
+            "A": [FieldPath("people", "passenger_ids")],
+            "B": [FieldPath("people", "pilot_ids")],
+        }
+    }
+
+    only_a_category = filter_data_categories(
+        copy.deepcopy(access_request_results), {"A"}, data_category_fields, "test_id"
+    )
+
+    # Nested array field retrieved
+    assert only_a_category == {
+        "postgres_example:flights": [
+            {"people": {"passenger_ids": [222, 445, 311, 4444]}}
+        ]
+    }
+
+    # Only matching cached value in nested array retrieved
+    cache_input_helper(
+        privacy_request_id="test_id",
+        collection_address_str="postgres_example:flights",
+        value={"people.pilot_ids": [112]},
+    )
+    only_b_category = filter_data_categories(
+        copy.deepcopy(access_request_results), {"B"}, data_category_fields, "test_id"
+    )
+    assert only_b_category == {
+        "postgres_example:flights": [{"people": {"pilot_ids": [112]}}]
     }
 
 
@@ -595,7 +646,7 @@ def test_filter_data_categories_limited_results():
     }
 
     filtered_results = filter_data_categories(
-        copy.deepcopy(jane_results), target_categories, data_category_fields
+        copy.deepcopy(jane_results), target_categories, data_category_fields, "test_id"
     )
 
     assert filtered_results == {

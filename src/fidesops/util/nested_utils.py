@@ -21,8 +21,12 @@ def _skip_unmatched_scalar(element: Any, only: List, base: List) -> bool:
     Data in one collection can be used to lookup data inside arrays inside another collection.  For some identities
     or referenced fields contained in arrays, the user may only want to return the "matched" result.
 
-    If the given element is a scalar value within an array, that is in the "only" list and hasn't already been
+    If the given element is a scalar value *within an array*, and is in the "only" list and hasn't already been
     added to the "base" list, we want to add it.
+
+    For example, we might *only* want to retrieve the identity data ["customer-1@example.com"] from an array.
+    If this element is "customer-1@example.com" and is contained in an array, and we haven't already saved this off,
+    we'll add it to our staged array.
     """
     return bool(
         only

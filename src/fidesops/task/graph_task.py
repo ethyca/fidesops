@@ -230,7 +230,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         output = self.connector.retrieve_data(
             self.traversal_node, self.resources.policy, formatted_input_data
         )
-
         self.resources.cache_inputs(f"access_request__{self.key}", formatted_input_data)
         self.resources.cache_object(f"access_request__{self.key}", output)
         self.log_end(ActionType.access)
@@ -387,6 +386,7 @@ def filter_data_categories(
     access_request_results: Dict[str, Optional[Any]],
     target_categories: Set[str],
     data_category_fields: Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]],
+    privacy_request_id: str,
 ) -> Dict[str, List[Dict[str, Optional[Any]]]]:
     """Filter access request results to only return fields associated with the target data categories
     and subcategories
@@ -399,6 +399,7 @@ def filter_data_categories(
         "Filtering Access Request results to return fields associated with data categories"
     )
     filtered_access_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    collection_inputs = get_collection_inputs_from_cache(privacy_request_id)
     for node_address, results in access_request_results.items():
         if not results:
             continue
@@ -423,14 +424,21 @@ def filter_data_categories(
         for row in results:
             filtered_results: Dict = {}
             for field_path in target_field_paths:
-                select_field_from_input_data(filtered_results, row, field_path)
+                select_field_from_input_data(
+                    filtered_results,
+                    row,
+                    field_path,
+                    collection_inputs.get(
+                        CollectionAddress.from_string(node_address), {}
+                    ).get(field_path, []),
+                )
             filtered_access_results[node_address].append(filtered_results)
 
     return filtered_access_results
 
 
 def get_collection_inputs_from_cache(
-    privacy_request: PrivacyRequest,
+    privacy_request_id: str,
 ) -> Dict[CollectionAddress, Dict[FieldPath, List]]:
     """
     After an access request has run, use this method to get the input data from the cache that flowed into each collection
@@ -448,7 +456,7 @@ def get_collection_inputs_from_cache(
 
     """
     cache = get_cache()
-    value_dict = cache.get_encoded_objects_by_prefix(f"INPUT__{privacy_request.id}")
+    value_dict = cache.get_encoded_objects_by_prefix(f"INPUT__{privacy_request_id}")
     return {
         CollectionAddress.from_string(collection_name.split("__")[-1]): {
             FieldPath.parse(field): inputs

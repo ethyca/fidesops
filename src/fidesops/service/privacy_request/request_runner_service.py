@@ -166,6 +166,7 @@ class PrivacyRequestRunner:
                         access_result,
                         target_categories,
                         dataset_graph.data_category_field_mapping,
+                        privacy_request.id,
                     )
                     logging.info(
                         f"Starting access request upload for rule {rule.key} for privacy request {privacy_request.id}"

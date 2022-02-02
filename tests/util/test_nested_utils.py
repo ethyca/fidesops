@@ -63,6 +63,7 @@ def test_select_field():
         "A": "a",
         "C": ["d", "e", "f"],
     }
+
     # Test only certain scalar fields selected and added to final results
     assert select_field_from_input_data(
         final_results, flat, FieldPath("D"), only=["h", "j"]
@@ -213,3 +214,29 @@ def test_select_field():
         },
         "J": {"K": {"L": {"M": {"N": {"O": ["customer@gmail.com"]}}}}},
     }
+
+    # Test "only" param does not apply to regular scalar fields
+    assert select_field_from_input_data(
+        final_results,
+        flat,
+        FieldPath("B"),
+        only=["invalid_selector"],
+    ) == {
+        "A": "a",
+        "C": ["d", "e", "f"],
+        "D": ["h", "j"],
+        "E": {"F": "g", "J": {"K": {"L": {"M": ["n"]}}}},
+        "F": [{"G": "g"}, {"G": "h"}, {"G": "i"}],
+        "H": [
+            [{"M": [2], "N": "n"}, {"M": [2], "N": "o"}, {"M": [], "N": "p"}],
+            [{"M": [], "N": "q"}, {"M": [2], "N": "s"}, {"M": [], "N": "u"}],
+            [{"M": [], "N": "w"}, {"M": [], "N": "y"}, {"M": [2], "N": "z"}],
+        ],
+        "I": {
+            "X": [{"J": "j", "K": []}, {"J": "m", "K": ["customer-1@example.com"]}],
+            "Y": [{"K": ["n"]}, {"K": []}],
+        },
+        "J": {"K": {"L": {"M": {"N": {"O": ["customer@gmail.com"]}}}}},
+        "B": "b"
+    }
+
