@@ -327,11 +327,12 @@ def test_strip_empty_dicts():
     strip_empty_dicts(results)
     assert results == {}
 
-    # Empty dicts from arrays removed
+    # Empty dict *not* removed entirely from array - unclear what expected behavior
+    # is here. Original version was removing it, but I think that may be too aggressive.
     orig = {"A": [[{"B": "C", "D": [{"F": {}}, {"G": []}]}, {"B": "D"}, {"B": "G"}]]}
     results = copy.deepcopy(orig)
     strip_empty_dicts(results)
     assert (
         results
-        == {"A": [[{"B": "C", "D": [{"G": []}]}, {"B": "D"}, {"B": "G"}]]}
+        == {"A": [[{"B": "C", "D": [{}, {"G": []}]}, {"B": "D"}, {"B": "G"}]]}
     )

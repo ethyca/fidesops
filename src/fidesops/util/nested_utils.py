@@ -104,7 +104,11 @@ def flatten_and_merge_matches(
 def strip_empty_dicts(data: Any) -> Dict:
     """
     Recursively updates data in place to remove empty dictionaries at any level in a nested
-    dictionary or within an array
+    dictionary or within an array.
+
+    `select_field_from_input_data` recursively builds a nested structure based on desired field paths.
+    If no input data was found along a deeply nested field path, we may have empty dicts to clean up
+    before supplying response to user.
     """
     if isinstance(data, dict):
         for k, v in data.copy().items():
@@ -115,12 +119,7 @@ def strip_empty_dicts(data: Any) -> Dict:
                 del data[k]
 
     elif isinstance(data, list):
-        for index, elem in reversed(list(enumerate(data))):
-
-            if isinstance(elem, (dict, list)):
-                elem = strip_empty_dicts(elem)
-
-            if elem == {}:
-                data.pop(index)
+        for elem in data:
+            strip_empty_dicts(elem)
 
     return data
