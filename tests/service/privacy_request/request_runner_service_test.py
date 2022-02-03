@@ -294,14 +294,15 @@ def test_create_and_process_erasure_request_specific_category_postgres(
     assert customer_found
 
 
-@pytest.mark.integration_erasure
+@pytest.mark.integration_mssql
+@pytest.mark.integration
 def test_create_and_process_erasure_request_specific_category_mssql(
+    mssql_integration_db,
     mssql_example_test_dataset_config,
     cache,
     db,
     generate_auth_header,
     erasure_policy,
-    connection_config_mssql,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
@@ -314,15 +315,11 @@ def test_create_and_process_erasure_request_specific_category_mssql(
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
     pr.delete(db=db)
 
-    example_mssql_uri = MicrosoftSQLServerConnector(connection_config_mssql).build_uri()
-    engine = get_db_engine(database_uri=example_mssql_uri)
-    SessionLocal = get_db_session(engine=engine)
-    integration_db = SessionLocal()
     stmt = select(
         column("id"),
         column("name"),
     ).select_from(table("customer"))
-    res = integration_db.execute(stmt).all()
+    res = mssql_integration_db.execute(stmt).all()
 
     customer_found = False
     for row in res:
