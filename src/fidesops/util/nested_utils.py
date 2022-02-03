@@ -1,5 +1,4 @@
-from typing import List, Dict, Any
-
+from typing import List, Dict, Any, Optional
 
 from fidesops.graph.config import FieldPath
 
@@ -30,7 +29,7 @@ def _skip_unmatched_scalar(element: Any, only: List, base: List) -> bool:
     """
     return bool(
         only
-        and not type(element) in [list, dict]
+        and not isinstance(element, (dict, list))
         and (element not in only or element in base)
     )
 
@@ -67,3 +66,61 @@ def select_field_from_input_data(
                     base[key], input_data[key], FieldPath(*target_path.levels[1:]), only
                 )
     return base
+
+
+def flatten_and_merge_matches(
+    input_data: Dict[str, Any],
+    target_path: FieldPath,
+    flattened_matches: Optional[List] = None,
+) -> List[Any]:
+    """
+    Uses target_path from the previous collection to locate specific value(s) in input_data, and returns matches
+    as a flattened array. These values are used to locate records in a subsequent collection.
+
+    Multiple values are possible when a target_path corresponds to multiple sub-fields, for example,
+    in an array of objects.
+
+    """
+    if flattened_matches is None:
+        flattened_matches = []
+
+    if isinstance(input_data, list):
+        for elem in input_data:
+            flatten_and_merge_matches(elem, target_path, flattened_matches)
+
+    elif isinstance(input_data, dict):
+        for key, value in input_data.items():
+            if target_path.levels and key == target_path.levels[0]:
+                flatten_and_merge_matches(
+                    value, FieldPath(*target_path.levels[1:]), flattened_matches
+                )
+
+    else:
+        flattened_matches.append(input_data)
+
+    return flattened_matches
+
+
+def strip_empty_dicts(data: Any) -> Dict:
+    """
+    Recursively updates data in place to remove empty dictionaries at any level in a nested
+    dictionary or within an array
+    """
+    if isinstance(data, dict):
+        for k, v in data.copy().items():
+            if isinstance(v, (dict, list)):
+                v = strip_empty_dicts(v)
+
+            if v == {}:
+                del data[k]
+
+    elif isinstance(data, list):
+        for index, elem in reversed(list(enumerate(data))):
+
+            if isinstance(elem, (dict, list)):
+                elem = strip_empty_dicts(elem)
+
+            if elem == {}:
+                data.pop(index)
+
+    return data

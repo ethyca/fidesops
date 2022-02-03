@@ -29,7 +29,11 @@ from fidesops.service.connectors import BaseConnector
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.collection_util import partition, append
 from fidesops.util.logger import NotPii
-from fidesops.util.nested_utils import select_field_from_input_data
+from fidesops.util.nested_utils import (
+    select_field_from_input_data,
+    flatten_and_merge_matches,
+    strip_empty_dicts,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -137,13 +141,14 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         These outputs should correspond to the input key order.  Any nested fields are
         converted into dot-separated paths in the return.
 
-         table1: [{x:1, y:A}, {x:2, y:B}], table2: [{x:3},{x:4}], table3: [{z: {a: C}}]
+         table1: [{x:1, y:A}, {x:2, y:B}], table2: [{x:3},{x:4}], table3: [{z: {a: C}, "y": [4, 5]}]
            where table1.x => self.id,
            table1.y=> self.name,
            table2.x=>self.id
            table3.z.a => self.contact.address
+           table3.y => self.contact.email
          becomes
-         {id:[1,2,3,4], name:["A","B"], contact.address:["C"]}
+         {id:[1,2,3,4], name:["A","B"], contact.address:["C"], "contact.email": [4, 5]}
         """
         if not len(data) == len(self.input_keys):
             logger.warning(
@@ -162,9 +167,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
             for row in rowset:
                 for foreign_field_path, local_field_path in field_mappings:
-                    new_value = foreign_field_path.retrieve_from(row)
-                    if new_value:
-                        append(output, local_field_path.string_path, new_value)
+                    new_values: List = flatten_and_merge_matches(
+                        input_data=row, target_path=foreign_field_path
+                    )
+                    if new_values:
+                        append(output, local_field_path.string_path, new_values)
         return output
 
     def update_status(
@@ -432,6 +439,7 @@ def filter_data_categories(
                         CollectionAddress.from_string(node_address), {}
                     ).get(field_path, []),
                 )
+            strip_empty_dicts(filtered_results)
             filtered_access_results[node_address].append(filtered_results)
 
     return filtered_access_results

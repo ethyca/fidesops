@@ -1,5 +1,11 @@
+import copy
+
 from fidesops.graph.config import FieldPath
-from fidesops.util.nested_utils import select_field_from_input_data
+from fidesops.util.nested_utils import (
+    select_field_from_input_data,
+    flatten_and_merge_matches,
+    strip_empty_dicts,
+)
 
 
 def test_select_field():
@@ -237,6 +243,95 @@ def test_select_field():
             "Y": [{"K": ["n"]}, {"K": []}],
         },
         "J": {"K": {"L": {"M": {"N": {"O": ["customer@gmail.com"]}}}}},
-        "B": "b"
+        "B": "b",
     }
 
+
+def test_flatten_and_merge_matches():
+    # Matching scalar returned
+    input_data = {"B": 55}
+    target_path = FieldPath("B")
+    assert flatten_and_merge_matches(input_data, target_path) == [55]
+
+    # Matching array returned as-is
+    input_data = {"A": [1, 2, 3]}
+    target_path = FieldPath("A")
+    assert flatten_and_merge_matches(input_data, target_path) == [1, 2, 3]
+
+    # Array of dicts have multiple matching sub-paths merged
+    field_path = FieldPath("A", "B")
+    input_data = {"A": [{"B": 1, "C": 2}, {"B": 3, "C": 4}, {"B": 5, "C": 6}]}
+    assert flatten_and_merge_matches(input_data, field_path) == [1, 3, 5]
+
+    # Nested array returned
+    input_data = {"A": {"B": {"C": [9, 8, 7]}}, "D": {"E": {"F"}}}
+    field_path = FieldPath("A", "B", "C")
+    assert flatten_and_merge_matches(input_data, field_path) == [9, 8, 7]
+
+    # Array of arrays are merged
+    input_data = {"A": [[5, 6], [7, 8], [9, 10]], "B": [[5, 6], [7, 8], [9, 10]]}
+    field_path = FieldPath("A")
+    assert flatten_and_merge_matches(input_data, field_path) == [5, 6, 7, 8, 9, 10]
+
+    # Array of arrays of dicts are merged
+    input_data = {
+        "A": [
+            [{"B": 1, "C": 2, "D": [3]}, {}],
+            [{"B": 3, "C": 4, "D": [5]}, {"B": 77, "C": 88, "D": [99]}],
+        ],
+        "B": [[5, 6], [7, 8], [9, 10]],
+    }
+    field_path = FieldPath("A", "D")
+    assert flatten_and_merge_matches(input_data, field_path) == [3, 5, 99]
+
+    # Target path doesn't exist in data
+    field_path = FieldPath("A", "E", "X")
+    input_data = {"A": [{"B": 1, "C": 2}, {"B": 3, "C": 4}, {"B": 5, "C": 6}]}
+    assert flatten_and_merge_matches(input_data, field_path) == []
+
+    # No field path
+    field_path = FieldPath()
+    input_data = {"A": [{"B": 1, "C": 2}, {"B": 3, "C": 4}, {"B": 5, "C": 6}]}
+    assert flatten_and_merge_matches(input_data, field_path) == []
+
+
+def test_strip_empty_dicts():
+    # No empty dicts, strip_empty_dicts has no effect
+    orig = {"A": {"B": {"C": []}, "G": {"H": None}}, "I": 0, "J": False}
+    results = copy.deepcopy(orig)
+    strip_empty_dicts(results)
+    assert results == orig
+
+    # Deeply nested dicts with no values removed - G - H - I levels gone.
+    orig = {"A": {"B": {"C": []}, "G": {"H": {"I": {}}}}, "I": 0}
+    results = copy.deepcopy(orig)
+    strip_empty_dicts(results)
+    assert results == {"A": {"B": {"C": []}}, "I": 0}
+
+    orig = {
+        "A": [{"B": "C", "D": {}}, {"B": "G", "D": {}}, {"B": "J", "D": {"J": "K"}}]
+    }
+    results = copy.deepcopy(orig)
+    strip_empty_dicts(results)
+    assert results == {"A": [{"B": "C"}, {"B": "G"}, {"B": "J", "D": {"J": "K"}}]}
+
+    # Empty dict returns original empty dict
+    orig = {}
+    results = copy.deepcopy(orig)
+    strip_empty_dicts(results)
+    assert results == {}
+
+    # Empty dict returned
+    orig = {"A": {}}
+    results = copy.deepcopy(orig)
+    strip_empty_dicts(results)
+    assert results == {}
+
+    # Empty dicts from arrays removed
+    orig = {"A": [[{"B": "C", "D": [{"F": {}}, {"G": []}]}, {"B": "D"}, {"B": "G"}]]}
+    results = copy.deepcopy(orig)
+    strip_empty_dicts(results)
+    assert (
+        results
+        == {"A": [[{"B": "C", "D": [{"G": []}]}, {"B": "D"}, {"B": "G"}]]}
+    )

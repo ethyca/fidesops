@@ -179,7 +179,9 @@ class QueryConfig(Generic[T], ABC):
                     masking_override, null_masking, strategy
                 ):
                     logger.warning(
-                        f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type_converter.name}"
+                        f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not "
+                        f"present on the field or not supported for the {strategy_config['strategy']} masking "
+                        f"strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
                     continue
                 val: Any = rule_field_path.retrieve_from(row)

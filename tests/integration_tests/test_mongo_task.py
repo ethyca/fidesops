@@ -13,7 +13,8 @@ from fidesops.graph.config import (
     ScalarField,
     Collection,
     Dataset,
-    CollectionAddress, FieldPath,
+    CollectionAddress,
+    FieldPath,
 )
 from fidesops.graph.data_type import (
     IntTypeConverter,
@@ -256,8 +257,8 @@ def test_cached_inputs(integration_mongodb_config: ConnectionConfig) -> None:
             FieldPath("email"): ["customer-1@example.com"]
         },
         CollectionAddress("mongo_test", "payment_card"): {
-             FieldPath("customer_id"): ["1"],
-             FieldPath("id"): ["pay_aaa-aaa", "pay_aaa-aaa", "pay_bbb-bbb"],
+            FieldPath("customer_id"): ["1"],
+            FieldPath("id"): ["pay_aaa-aaa", "pay_aaa-aaa", "pay_bbb-bbb"],
         },
         CollectionAddress("mongo_test", "address"): {},
     }
@@ -469,7 +470,7 @@ def test_filter_on_data_categories_mongo(
         access_request_results,
         target_categories,
         dataset_graph.data_category_field_mapping,
-        privacy_request.id
+        privacy_request.id,
     )
 
     # Mongo results obtained via customer_id relationship from postgres_example_test_dataset.customer.id
@@ -485,7 +486,7 @@ def test_filter_on_data_categories_mongo(
         access_request_results,
         target_categories,
         dataset_graph.data_category_field_mapping,
-        privacy_request.id
+        privacy_request.id,
     )
     assert filtered_results["mongo_test:customer_feedback"][0] == {
         "customer_information": {"phone": "333-333-3333"}
@@ -497,7 +498,7 @@ def test_filter_on_data_categories_mongo(
         access_request_results,
         target_categories,
         dataset_graph.data_category_field_mapping,
-        privacy_request.id
+        privacy_request.id,
     )
     assert len(filtered_results["mongo_test:customer_details"]) == 1
 
@@ -518,7 +519,7 @@ def test_filter_on_data_categories_mongo(
         access_request_results,
         target_categories,
         dataset_graph.data_category_field_mapping,
-        privacy_request.id
+        privacy_request.id,
     )
 
     # Test for accessing array
@@ -560,13 +561,13 @@ def test_filter_on_array_data_categories_mongo(
         access_request_results,
         target_categories,
         dataset_graph.data_category_field_mapping,
-        privacy_request.id
+        privacy_request.id,
     )
-    # This record was accessed because jane@example.com matched identity data, but the entire array has "derived" data category.
-    # Query built of format db.internal_customer_profile.find({'customer_identifiers.derived_emails': 'jane@example.com'} {'customer_identifiers': 1, 'derived_interests': 1})
+
+    # Array field mongo_test:internal_customer_profile.customer_identifiers contains identity, only matching identity returned
     assert filtered_results["mongo_test:internal_customer_profile"][0][
         "customer_identifiers"
-    ]["derived_emails"] == ["jane1@example.com", "jane@example.com"]
+    ]["derived_emails"] == ["jane@example.com"]
 
     # {'passenger_information.passenger_ids': "['D111-11111']"} {'date': 1, 'flight_no': 1, 'passenger_information': 1}
     # Trying to access array field from array field
