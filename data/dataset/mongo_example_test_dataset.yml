@@ -64,11 +64,15 @@ dataset:
               data_categories: [system.operations]
           - name: comments
             fidesops_meta:
-              data_type: string[]
-#              references:
-#                - dataset: mongo_test
-#                  field: conversations.thread.comment
-#                  direction: to
+              data_type: object[]
+            fields:
+              - name: comment_id
+                fidesops_meta:
+                  data_type: string
+                  references:
+                    - dataset: mongo_test
+                      field: conversations.thread.comment
+                      direction: to
       - name: internal_customer_profile
         fields:
           - name: _id
@@ -127,87 +131,87 @@ dataset:
             data_categories: [ user.provided.nonidentifiable ]
             fidesops_meta:
               data_type: string
-#      - name: flights
-#        fields:
-#          - name: _id
-#            data_categories: [ system.operations ]
-#            fidesops_meta:
-#              primary_key: True
-#              data_type: object_id
-#          - name: passenger_information
-#            fields:
-#              - name: passenger_ids
-#                fidesops_meta:
-#                  data_type: string[]
-#                  references:
-#                    - dataset: mongo_test
-#                      field: customer_details.travel_identifiers
-#                      direction: from
-#              - name: full_name
-#                data_categories: [user.provided.identifiable.name]
-#                fidesops_meta:
-#                  data_type: string
-#          - name: flight_no
-#          - name: date
-#          - name: pilots
-#            data_categories: [ system.operations ]
-#            fidesops_meta:
-#              data_type: string[]
-#          - name: plane
-#            data_categories: [ system.operations ]
-#            fidesops_meta:
-#              data_type: integer
-#      - name: conversations
-#        fidesops_meta:
-#          data_type: object[]
-#        fields:
-#          - name: thread
-#            fields:
-#              - name: comment
-#                fidesops_meta:
-#                  data_type: string
-#              - name: message
-#                fidesops_meta:
-#                  data_type: string
-#              - name: chat_name
-#                data_categories: [ user.provided.identifiable.name ]
-#                fidesops_meta:
-#                  data_type: string
-#      - name: employee
-#        fields:
-#          - name: email
-#            data_categories: [ user.provided.identifiable.contact.email ]
-#            fidesops_meta:
-#              identity: email
-#              data_type: string
-#          - name: id
-#            data_categories: [ user.derived.identifiable.unique_id ]
-#            fidesops_meta:
-#              primary_key: True
-#              references:
-#                - dataset: mongo_test
-#                  field: flights.pilots
-#                  direction: from
-#          - name: name
-#            data_categories: [ user.provided.identifiable.name ]
-#            fidesops_meta:
-#              data_type: string
-#      - name: aircraft
-#        fields:
-#          - name: _id
-#            data_categories: [ system.operations ]
-#            fidesops_meta:
-#              primary_key: True
-#              data_type: object_id
-#          - name: planes
-#            data_categories: [ system.operations ]
-#            fidesops_meta:
-#              data_type: integer[]
-#              references:
-#                - dataset: mongo_test
-#                  field: flights.plane
-#                  direction: from
-#          - name: model
-#            data_categories: [ system.operations ]
-#            fidesops_meta:
-#              data_type: string
+      - name: flights
+        fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
+          - name: passenger_information
+            fields:
+              - name: passenger_ids
+                fidesops_meta:
+                  data_type: string[]
+                  references:
+                    - dataset: mongo_test
+                      field: customer_details.travel_identifiers
+                      direction: from
+              - name: full_name
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+          - name: flight_no
+          - name: date
+          - name: pilots
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string[]
+          - name: plane
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: integer
+      - name: conversations
+        fidesops_meta:
+          data_type: object[]
+        fields:
+          - name: thread
+            fields:
+              - name: comment
+                fidesops_meta:
+                  data_type: string
+              - name: message
+                fidesops_meta:
+                  data_type: string
+              - name: chat_name
+                data_categories: [ user.provided.identifiable.name ]
+                fidesops_meta:
+                  data_type: string
+      - name: employee
+        fields:
+          - name: email
+            data_categories: [ user.provided.identifiable.contact.email ]
+            fidesops_meta:
+              identity: email
+              data_type: string
+          - name: id
+            data_categories: [ user.derived.identifiable.unique_id ]
+            fidesops_meta:
+              primary_key: True
+              references:
+                - dataset: mongo_test
+                  field: flights.pilots
+                  direction: from
+          - name: name
+            data_categories: [ user.provided.identifiable.name ]
+            fidesops_meta:
+              data_type: string
+      - name: aircraft
+        fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
+          - name: planes
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: integer[]
+              references:
+                - dataset: mongo_test
+                  field: flights.plane
+                  direction: from
+          - name: model
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string

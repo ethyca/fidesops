@@ -112,6 +112,7 @@ def test_combined_erasure_task(
         access_request_data,
     )
 
+    # TODO complex erasures not yet addressed
     assert x == {
         "postgres_example:customer": 1,
         "postgres_example:orders": 0,
@@ -122,6 +123,10 @@ def test_combined_erasure_task(
         "mongo_test:customer_feedback": 1,
         "mongo_test:customer_details": 1,
         "mongo_test:internal_customer_profile": 1,
+        'mongo_test:aircraft': 0,
+        'mongo_test:conversations': 0,
+        'mongo_test:employee': 0,
+        'mongo_test:flights': 0
     }
 
     rerun_access = graph_task.run_access_request(
@@ -142,7 +147,7 @@ def test_combined_erasure_task(
         is not None
     )
 
-    # This will change when array handling is added - array was just set to None
+    # TODO This will change when array handling is added - array was just set to None
     assert (
         rerun_access["mongo_test:internal_customer_profile"][0]["derived_interests"]
         is None
@@ -584,7 +589,8 @@ class TestRetrievingDataMongo:
     def traversal_node(self, example_datasets, integration_mongodb_config):
         dataset = FidesopsDataset(**example_datasets[1])
         graph = convert_dataset_to_graph(dataset, integration_mongodb_config.key)
-        node = Node(graph, graph.collections[0])  # customer collection
+        customer_details_collection = [collection for collection in graph.collections if collection.name=='customer_details'][0]
+        node = Node(graph, customer_details_collection)
         traversal_node = TraversalNode(node)
         return traversal_node
 

@@ -26,7 +26,7 @@ db.customer_details.insert([
         ],
         "children": ["Christopher Customer", "Courtney Customer"],  // Discovered array of scalars
         "travel_identifiers": ["A111-11111", "B111-11111"], // References a nested array field, flights.passenger_information.passenger_ids
-        "comments": ["com_0001", "com_0003", "com_0005"] // References a nested object field, mongo_test.conversations.thread.comment
+        "comments": [{"comment_id": "com_0001"}, {"comment_id": "com_0003"}, {"comment_id": "com_0005"}] // Array of objects references a nested object field, mongo_test.conversations.thread.comment
     },
      {
         "customer_id": 2,
@@ -50,7 +50,7 @@ db.customer_details.insert([
         "birthday": new ISODate("1990-02-28"),
         "travel_identifiers": ["D111-11111"],
         "children": ["Erica Example"],
-        "comments": ["com_0002", "com_0004", "com_0006"]
+        "comments": [{"comment_id": "com_0002"}, {"comment_id": "com_0004"}, {"comment_id": "com_0006"}]
     }
 ]);
 

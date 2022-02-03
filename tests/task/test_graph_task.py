@@ -1,6 +1,6 @@
 import copy
+import pytest
 from datetime import datetime
-from typing import Dict, Any
 
 import dask
 from bson import ObjectId
@@ -35,62 +35,192 @@ connection_configs = [
 ]
 
 
-def test_to_dask_input_data_scalar() -> None:
-    t = sample_traversal()
-    n = t.traversal_node_dict[CollectionAddress("mysql", "Address")]
+class TestToDaskInput:
+    @pytest.fixture(scope="function")
+    def combined_traversal_node_dict(
+        self, integration_mongodb_config, integration_postgres_config
+    ):
+        mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
+            integration_postgres_config, integration_mongodb_config
+        )
+        graph = DatasetGraph(mongo_dataset, postgres_dataset)
+        identity = {"email": "customer-1@example.com"}
+        combined_traversal = Traversal(graph, identity)
+        return combined_traversal.traversal_node_dict
 
-    task = MockSqlTask(n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs))
-    customers_data = [
-        {"contact_address_id": 31, "foo": "X"},
-        {"contact_address_id": 32, "foo": "Y"},
-    ]
-    orders_data = [
-        {"billing_address_id": 1, "shipping_address_id": 2},
-        {"billing_address_id": 11, "shipping_address_id": 22},
-    ]
-    v = task.to_dask_input_data(customers_data, orders_data)
-    assert set(v["id"]) == {31, 32, 1, 2, 11, 22}
+    @pytest.fixture(scope="function")
+    def make_graph_task(self, integration_mongodb_config, integration_postgres_config):
+        def task(node):
+            return MockMongoTask(
+                node,
+                TaskResources(
+                    EMPTY_REQUEST,
+                    Policy(),
+                    [integration_postgres_config, integration_mongodb_config],
+                ),
+            )
 
+        return task
 
-def test_to_dask_input_data_nested(
-    integration_postgres_config, integration_mongodb_config
-):
+    def test_to_dask_input_data_scalar(self) -> None:
+        t = sample_traversal()
+        n = t.traversal_node_dict[CollectionAddress("mysql", "Address")]
 
-    mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-        integration_postgres_config, integration_mongodb_config
-    )
-    graph = DatasetGraph(mongo_dataset, postgres_dataset)
-    identity = {"email": "customer-1@example.com"}
-    combined_traversal = Traversal(graph, identity)
-    n = combined_traversal.traversal_node_dict[
-        CollectionAddress("mongo_test", "internal_customer_profile")
-    ]
+        task = MockSqlTask(n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs))
+        customers_data = [
+            {"contact_address_id": 31, "foo": "X"},
+            {"contact_address_id": 32, "foo": "Y"},
+        ]
+        orders_data = [
+            {"billing_address_id": 1, "shipping_address_id": 2},
+            {"billing_address_id": 11, "shipping_address_id": 22},
+        ]
+        v = task.to_dask_input_data(customers_data, orders_data)
+        assert set(v["id"]) == {31, 32, 1, 2, 11, 22}
 
-    customer_feedback_data = [
-        {
-            "_id": ObjectId("61eb388ecfb4a3721238a39b"),
-            "customer_information": {
-                "email": "customer-1@example.com",
-                "phone": "333-333-3333",
-                "internal_customer_id": "cust_001",
-            },
-            "rating": 3.0,
-            "date": datetime(2022, 1, 5, 0, 0),
-            "message": "Product was cracked!",
+    def test_to_dask_input_nested_identity(
+        self, combined_traversal_node_dict, make_graph_task
+    ):
+        """
+        Identity data used to locate record on nested email
+
+        Customer feedback node has one input:
+        ROOT.email -> customer_feedback.customer_information.email
+        """
+        node = combined_traversal_node_dict[
+            CollectionAddress("mongo_test", "customer_feedback")
+        ]
+        root_email_input = [{"email": "customer-1@example.com"}]
+        assert make_graph_task(node).to_dask_input_data(root_email_input) == {
+            "customer_information.email": ["customer-1@example.com"],
         }
-    ]
-    task = MockMongoTask(
-        n,
-        TaskResources(
-            EMPTY_REQUEST,
-            Policy(),
-            [integration_postgres_config, integration_mongodb_config],
-        ),
-    )
 
-    dask_input_data = task.to_dask_input_data(customer_feedback_data)
-    # Output of function returns nested keys as dot-separated where applicable.
-    assert dask_input_data == {"customer_identifiers.internal_id": ["cust_001"]}
+    def test_to_dask_input_customer_feedback_collection(
+        self, combined_traversal_node_dict, make_graph_task
+    ):
+        """
+        Nested internal_customer_id used to locate record matching nested internal_id
+
+        Internal customer profile node has two inputs:
+        ROOT.email -> internal_customer_profile.derived_emails(string[])
+        customer_feedback.customer_information.internal_customer_id -> internal_customer_profile.customer_identifiers.internal_id
+        """
+        node = combined_traversal_node_dict[
+            CollectionAddress("mongo_test", "internal_customer_profile")
+        ]
+        internal_customer_profile_task = make_graph_task(node)
+        root_email_input = [{"email": "customer-1@example.com"}]
+        customer_feedback_input = [
+            {
+                "_id": ObjectId("61eb388ecfb4a3721238a39b"),
+                "customer_information": {
+                    "email": "customer-1@example.com",
+                    "phone": "333-333-3333",
+                    "internal_customer_id": "cust_001",
+                },
+            }
+        ]
+
+        assert internal_customer_profile_task.to_dask_input_data(
+            root_email_input, customer_feedback_input
+        ) == {
+            "customer_identifiers.derived_emails": ["customer-1@example.com"],
+            "customer_identifiers.internal_id": ["cust_001"],
+        }
+
+    def test_to_dask_input_flights_collection(
+        self, make_graph_task, combined_traversal_node_dict
+    ):
+        """
+        Array of strings used to locate record with matching value in nested array of strings
+
+        Flights node has one input:
+        mongo_test.customer_details.travel_identifiers -> mongo_test.passenger_information.passenger_ids
+        """
+        node = combined_traversal_node_dict[CollectionAddress("mongo_test", "flights")]
+        task = make_graph_task(node)
+        truncated_customer_details_output = [
+            {
+                "_id": ObjectId("61f422e0ddc2559e0c300e95"),
+                "travel_identifiers": ["A111-11111", "B111-11111"],
+            },
+            {
+                "_id": ObjectId("61f422e0ddc2559e0c300e95"),
+                "travel_identifiers": ["C111-11111"],
+            }
+        ]
+        assert task.to_dask_input_data(truncated_customer_details_output) == {
+            "passenger_information.passenger_ids": ["A111-11111", "B111-11111", "C111-11111"],
+        }
+
+    def test_to_dask_input_aircraft_collection(
+        self, make_graph_task, combined_traversal_node_dict
+    ):
+        """
+        Integer used to locate record with matching value in array of integers
+
+        Aircraft node has one input:
+        mongo_test:flights.plane -> mongo_test:aircraft.planes
+        """
+        node = combined_traversal_node_dict[CollectionAddress("mongo_test", "aircraft")]
+        task = make_graph_task(node)
+        truncated_flights_output = [
+            {"pilots": ["1", "2"], "plane": 10002.0},
+            {"pilots": ["3", "4"], "plane": 101010},
+        ]
+        assert task.to_dask_input_data(truncated_flights_output) == {
+            "planes": [10002, 101010],
+        }
+
+    def test_to_dask_input_employee_collection(
+        self, make_graph_task, combined_traversal_node_dict
+    ):
+        """
+        Array of integers used to locate record with matching integer
+
+        Mongo employee node has two inputs:
+        root.email -> mongo_test.employee.email
+        mongo_test.flights.pilots -> mongo_test.employee.id
+        """
+        node = combined_traversal_node_dict[CollectionAddress("mongo_test", "employee")]
+        task = make_graph_task(node)
+        root_email_input = [{"email": "customer-1@example.com"}]
+        truncated_flights_output = [
+            {"pilots": ["1", "2"], "plane": 10002.0},
+            {"pilots": ["3", "4"], "plane": 101010},
+        ]
+        assert task.to_dask_input_data(root_email_input, truncated_flights_output) == {
+            "id": ["1", "2", "3", "4"],
+            "email": ["customer-1@example.com"],
+        }
+
+    def test_to_dask_input_conversation_collection(
+        self, make_graph_task, combined_traversal_node_dict
+    ):
+        """
+        Array of objects of strings used to locate record within array of objects of scalars
+
+        Mongo conversation node has one input:
+        mongo_test:customer_details.comments.comment_id -> mongo_test:conversations.thread.comment
+        """
+        node = combined_traversal_node_dict[
+            CollectionAddress("mongo_test", "conversations")
+        ]
+        task = make_graph_task(node)
+        truncated_customer_details_output = [
+            {
+                "comments": [
+                    {"comment_id": "com_0001"},
+                    {"comment_id": "com_0003"},
+                    {"comment_id": "com_0005"},
+                ]
+            },
+            {"comments": [{"comment_id": "com_0007"}]},
+        ]
+
+        assert task.to_dask_input_data(truncated_customer_details_output) == {
+            "thread.comment": ["com_0001", "com_0003", "com_0005", "com_0007"],
+        }
 
 
 def test_sql_dry_run_queries() -> None:
