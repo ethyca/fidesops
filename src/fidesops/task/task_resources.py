@@ -19,7 +19,9 @@ from fidesops.service.connectors import (
     PostgreSQLConnector,
     SnowflakeConnector,
     RedshiftConnector,
-    MicrosoftSQLServerConnector, BigQueryConnector,
+    MicrosoftSQLServerConnector,
+    MariaDBConnector,
+    BigQueryConnector,
 )
 from fidesops.util.cache import get_cache
 
@@ -42,7 +44,9 @@ class Connections:
         return self.connections[key]
 
     @staticmethod
-    def build_connector(connection_config: ConnectionConfig) -> BaseConnector:
+    def build_connector(  # pylint: disable=R0911
+        connection_config: ConnectionConfig,
+    ) -> BaseConnector:
         """Factory method to build the appropriately typed connector from the config."""
         if connection_config.connection_type == ConnectionType.postgres:
             return PostgreSQLConnector(connection_config)
@@ -56,6 +60,8 @@ class Connections:
             return RedshiftConnector(connection_config)
         if connection_config.connection_type == ConnectionType.mssql:
             return MicrosoftSQLServerConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.mariadb:
+            return MariaDBConnector(connection_config)
         if connection_config.connection_type == ConnectionType.bigquery:
             return BigQueryConnector(connection_config)
         raise NotImplementedError(
