@@ -112,16 +112,16 @@ def test_snowflake_example_data(snowflake_test_engine):
 def test_bigquery_example_data(bigquery_test_engine):
     """Confirm that we can connect to the bigquery test db and get table names"""
     inspector = inspect(bigquery_test_engine)
-    assert inspector.get_table_names(schema="test") == [
+    assert inspector.get_table_names(schema="fidesopstest") == [
+        "address",
+        "customer",
+        "employee",
+        "login",
+        "order_item",
+        "orders",
+        "payment_card",
+        "product",
         "report",
         "service_request",
-        "login",
         "visit",
-        "order_item",
-        "order",
-        "payment_card",
-        "employee",
-        "customer",
-        "address",
-        "product",
     ]
