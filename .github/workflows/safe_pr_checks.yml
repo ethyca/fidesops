@@ -35,6 +35,3 @@ jobs:
 
       - name: Integration Tests
         run: make pytest-integration
-
-      - name: Integration Tests (Erasure)
-        run: make pytest-integration-erasure
