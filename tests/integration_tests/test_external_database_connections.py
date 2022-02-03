@@ -8,13 +8,11 @@ from typing import Generator
 from fidesops.core.config import load_toml
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.schemas.connection_configuration import RedshiftSchema, SnowflakeSchema
-from fidesops.schemas.connection_configuration.connection_secrets_bigquery import BigQuerySchema
 from fidesops.service.connectors import (
     get_connector,
     RedshiftConnector,
     SnowflakeConnector,
 )
-from fidesops.service.connectors.sql_connector import BigQueryConnector
 
 logger = logging.getLogger(__name__)
 
@@ -43,33 +41,6 @@ def redshift_test_engine() -> Generator:
         connection_config.secrets = schema.dict()
 
     connector: RedshiftConnector = get_connector(connection_config)
-    engine = connector.client()
-    yield engine
-    engine.dispose()
-
-
-@pytest.fixture(scope="session")
-def bigquery_test_engine() -> Generator:
-    """Return a connection to a Google BigQuery Warehouse"""
-
-    connection_config = ConnectionConfig(
-        name="My BigQuery Config",
-        key="test_bigquery_key",
-        connection_type=ConnectionType.bigquery,
-    )
-
-    # Pulling from integration config file or GitHub secrets
-    uri = integration_config.get("bigquery", {}).get("external_uri") or os.environ.get(
-        "BIGQUERY_TEST_URI"
-    )
-    db_schema = integration_config.get("bigquery", {}).get(
-        "db_schema"
-    ) or os.environ.get("BIGQUERY_TEST_DB_SCHEMA")
-    if uri and db_schema:
-        schema = BigQuerySchema(url=uri, db_schema=db_schema)
-        connection_config.secrets = schema.dict()
-
-    connector: BigQueryConnector = get_connector(connection_config)
     engine = connector.client()
     yield engine
     engine.dispose()

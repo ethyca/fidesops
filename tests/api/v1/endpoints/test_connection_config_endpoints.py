@@ -324,6 +324,10 @@ class TestPatchConnections:
         mongo_resource.delete(db)
         redshift_resource.delete(db)
         snowflake_resource.delete(db)
+        mariadb_resource.delete(db)
+        mysql_resource.delete(db)
+        mssql_resource.delete(db)
+        bigquery_resource.delete(db)
 
     @mock.patch("fidesops.db.base_class.OrmWrappedFidesopsBase.create_or_update")
     def test_patch_connections_failed_response(

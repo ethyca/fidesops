@@ -27,7 +27,8 @@ db_schema=""
 external_uri=""
 
 [bigquery]
-
+keyfile_creds=""
+dataset=""
 
 [mssql_example]
 SERVER="mssql_example"
