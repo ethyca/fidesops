@@ -15,8 +15,7 @@ from fidesops.models.connectionconfig import (
     AccessLevel,
 )
 from fidesops.service.connectors import PostgreSQLConnector, MongoDBConnector
-from fidesops.models.saasconnectionconfig import SaaSConnectionConfig
-from .fixtures import faker, integration_secrets, saas_config
+from .application_fixtures import faker, integration_secrets
 
 logger = logging.getLogger(__name__)
 
