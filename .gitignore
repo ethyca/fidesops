@@ -135,6 +135,3 @@ envfiles/
 
 # Access request package local upload destination, generated at runtime
 fides_uploads
-
-# GCP (BigQuery) creds
-gcp_credentials.json
