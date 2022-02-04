@@ -46,8 +46,12 @@ def test_example_datasets(example_datasets):
     assert len(example_datasets[3]["collections"]) == 11
     assert example_datasets[4]["fides_key"] == "mssql_example_test_dataset"
     assert len(example_datasets[4]["collections"]) == 11
-    assert example_datasets[6]["fides_key"] == "bigquery_example_test_dataset"
+    assert example_datasets[5]["fides_key"] == "mysql_example_test_dataset"
+    assert len(example_datasets[5]["collections"]) == 11
+    assert example_datasets[6]["fides_key"] == "mariadb_example_test_dataset"
     assert len(example_datasets[6]["collections"]) == 11
+    assert example_datasets[7]["fides_key"] == "bigquery_example_test_dataset"
+    assert len(example_datasets[7]["collections"]) == 11
 
 
 class TestValidateDataset:
@@ -543,6 +547,12 @@ class TestPutDatasets:
         ]
         # Remove city field from mssql example
         updated_datasets[4]["collections"][0]["fields"] = [
+            f
+            for f in updated_datasets[1]["collections"][0]["fields"]
+            if f["name"] != "city"
+        ]
+        # Remove city field from bigquery example
+        updated_datasets[7]["collections"][0]["fields"] = [
             f
             for f in updated_datasets[1]["collections"][0]["fields"]
             if f["name"] != "city"

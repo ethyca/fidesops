@@ -7,7 +7,6 @@ import pytest
 
 from sqlalchemy.orm import Session
 
-from fidesops.db.session import get_db_session
 from fidesops.models.connectionconfig import AccessLevel, ConnectionType, ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.schemas.connection_configuration import BigQuerySchema
@@ -94,7 +93,11 @@ def bigquery_test_engine() -> Generator:
 
 
 def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
-    """This helper only needs to be run once EVER, but just in case we need it in the future"""
+    """
+    Currently unused.
+    This helper function has already been run once, and data has been populated in the test BigQuery dataset.
+    We may need this later for integration erasure tests, or in case tables are accidentally removed.
+    """
     logger.info(f"Seeding bigquery db")
     statements = [
         """

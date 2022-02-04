@@ -285,12 +285,12 @@ class TestPatchConnections:
         assert "secrets" not in mssql_connection
 
         mariadb_connection = response_body["succeeded"][4]
-        assert mariadb_connection["access"] == "read"
+        assert mariadb_connection["access"] == "write"
         assert mariadb_connection["updated_at"] is not None
         mariadb_resource = (
             db.query(ConnectionConfig).filter_by(key="my_mariadb_db").first()
         )
-        assert mariadb_resource.access.value == "read"
+        assert mariadb_resource.access.value == "write"
         assert "secrets" not in mariadb_connection
 
         bigquery_connection = response_body["succeeded"][5]
@@ -723,6 +723,7 @@ class TestPutConnectionConfigSecrets:
         )
         db.refresh(bigquery_connection_config)
         assert bigquery_connection_config.secrets == {
+            "url": None,
             "dataset": "some-dataset",
             "keyfile_creds": {
                 "type": "service_account",

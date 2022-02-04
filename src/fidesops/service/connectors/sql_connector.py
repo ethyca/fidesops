@@ -1,6 +1,4 @@
-import json
 import logging
-import tempfile
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional
 
@@ -31,7 +29,9 @@ from fidesops.schemas.connection_configuration import (
 from fidesops.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBSchema,
 )
-from fidesops.schemas.connection_configuration.connection_secrets_bigquery import BigQuerySchema, KeyfileCreds
+from fidesops.schemas.connection_configuration.connection_secrets_bigquery import (
+    BigQuerySchema,
+)
 from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
@@ -337,7 +337,7 @@ class BigQueryConnector(SQLConnector):
 
     # Overrides BaseConnector.build_uri
     def build_uri(self) -> str:
-        """Build URI of format """
+        """Build URI of format"""
         config = BigQuerySchema(**self.configuration.secrets or {})
         dataset = f"/{config.dataset}" if config.dataset else ""
         return f"bigquery://{config.keyfile_creds.project_id}{dataset}"
