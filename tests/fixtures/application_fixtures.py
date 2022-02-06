@@ -1007,7 +1007,6 @@ def example_datasets() -> List[Dict]:
 def example_saas_configs() -> Dict[str, Dict]:
     example_saas_configs = {}
     example_saas_configs["mailchimp"] = load_config("data/saas/config/mailchimp_config.yml")[0]
-    example_saas_configs["stripe"] = load_config("data/saas/config/stripe_config.yml")[0]
     return example_saas_configs
 
 @pytest.fixture

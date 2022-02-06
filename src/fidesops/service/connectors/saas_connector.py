@@ -50,9 +50,7 @@ class AuthenticatedClient:
             req, self.client_config.authentication.strategy_name
         )
 
-    def get(
-        self, path: str, params: Optional[Dict] = None, data: Optional[Dict] = None
-    ) -> Response:
+    def get(self, path: str, params: Dict, data: Dict) -> Response:
         req = self.getBaseRequest(path=path, params=params, data=data)
         req.method = "GET"
         return self.s.send(req)
