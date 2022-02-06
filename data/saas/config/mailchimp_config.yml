@@ -27,26 +27,27 @@ saas_config:
           password:
             connector_param: api_key
     
-    test_connection:
+    test_request:
       path: /3.0/lists
 
     endpoints:
     - name: messages
-      request_params:
+      requests:
         read:
           path: /3.0/conversations/<conversation_id>/messages
-          parameters:
+          request_params:
             - name: conversation_id
               type: path
               references:
               - dataset: mailchimp_connector
                 field: conversations.id
                 direction: from
+          data_path: conversation_messages
     - name: conversations
-      request_params:
+      requests:
         read:
           path: /3.0/conversations
-          parameters:
+          request_params:
             - name: count
               type: query
               default_value: 1000
@@ -54,26 +55,29 @@ saas_config:
               type: query
             - name: placeholder
               type: query
-              identity: email
-              data_type: string
-      pagination:
-        strategy: basic_pagination
-        configuration:
-          incremental_param: offset
-          increment_by: 1000
-          initial_value: 0
+              references:
+              - dataset: mailchimp_connector
+                field: member.unique_email_id
+                direction: from
+          pagination:
+            strategy_name: basic_pagination
+            configuration:
+              incremental_param: offset
+              increment_by: 1000
+              initial_value: 0
     - name: member
-      request_params:
+      requests:
         read:
           path: /3.0/search-members
-          parameters:
+          request_params:
             - name: query
               type: query
               identity: email
               data_type: string
+          data_path: exact_matches/members
         delete:
-          path: /3.0/lists/{list_id}/members/<subscriber_hash>/actions/delete-permanent
-          parameters:
+          path: /3.0/lists/<list_id>/members/<subscriber_hash>/actions/delete-permanent
+          request_params:
             - name: list_id
               type: path
               references:

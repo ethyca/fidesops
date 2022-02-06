@@ -23,5 +23,5 @@ saas_config:
           token:
             connector_param: api_key
     
-    test_connection:
+    test_request:
       path: /v1/customers

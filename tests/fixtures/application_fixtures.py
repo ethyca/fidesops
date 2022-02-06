@@ -57,7 +57,7 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
 integration_config = load_toml("fidesops-integration.toml")
-saas_config = load_toml("saas.toml")
+saas_secrets = load_toml("saas_secrets.toml")
 
 # Unified list of connections to integration dbs specified from fidesops-integration.toml
 
@@ -1003,23 +1003,17 @@ def example_datasets() -> List[Dict]:
     return example_datasets
 
 
-@pytest.fixture()
+@pytest.fixture
 def example_saas_configs() -> Dict[str, Dict]:
     example_saas_configs = {}
-    example_saas_configs["mailchimp"] = load_config(
-        "data/saas/config/mailchimp_config.yml"
-    )[0]
-    example_saas_configs["stripe"] = load_config(
-        "data/saas/config/stripe_config.yml"
-    )[0]
+    example_saas_configs["mailchimp"] = load_config("data/saas/config/mailchimp_config.yml")[0]
+    example_saas_configs["stripe"] = load_config("data/saas/config/stripe_config.yml")[0]
     return example_saas_configs
 
 @pytest.fixture
 def example_saas_datasets() -> Dict[str, Dict]:
     example_saas_datasets = {}
-    example_saas_datasets["mailchimp"] = load_dataset(
-        "data/saas/dataset/mailchimp_dataset.yml"
-    )[0]
+    example_saas_datasets["mailchimp"] = load_dataset("data/saas/dataset/mailchimp_dataset.yml")[0]
     return example_saas_datasets
 
 

@@ -608,3 +608,21 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         if mongo_query is not None:
             return self.query_to_str(mongo_query, data)
         return None
+
+
+class SaaSQueryConfig(QueryConfig[None]):
+    def dry_run_query(self) -> Optional[str]:
+        return None
+
+    def generate_query(
+        self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
+    ) -> Optional[T]:
+        return None
+
+    def generate_update_stmt(
+        self, row: Row, policy: Policy, request: PrivacyRequest
+    ) -> Optional[T]:
+        return None
+
+    def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
+        return None

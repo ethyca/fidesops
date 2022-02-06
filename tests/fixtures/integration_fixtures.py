@@ -15,7 +15,8 @@ from fidesops.models.connectionconfig import (
     AccessLevel,
 )
 from fidesops.service.connectors import PostgreSQLConnector, MongoDBConnector
-from .application_fixtures import faker, integration_secrets
+from fidesops.models.saasconnectionconfig import SaaSConnectionConfig
+from .application_fixtures import faker, integration_secrets, saas_secrets
 
 logger = logging.getLogger(__name__)
 
@@ -280,15 +281,11 @@ def mongo_inserts(integration_mongodb_connector):
 
 
 @pytest.fixture(scope="function")
-def integration_saas_configs(
-    example_saas_configs: Dict[str, Dict]
+def integration_saas_connection_configs(
+    example_saas_configs
 ) -> Dict[str, SaaSConnectionConfig]:
     configs = {}
-    for name, config in saas_config.items():
-        secrets = {}
-        for key, value in config.items():
-            secrets[key] = value
-
+    for name, secrets in saas_secrets.items():
         configs[name] = SaaSConnectionConfig(
             key=f"{name}_connector",
             name=f"{name}_connector",
@@ -298,3 +295,7 @@ def integration_saas_configs(
             saas_config=example_saas_configs[name],
         )
     return configs
+
+@pytest.fixture(scope="function")
+def mailchimp_account_email():
+    return saas_secrets["mailchimp"]["account_email"]

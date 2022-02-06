@@ -1179,16 +1179,3 @@ class TestMongoConnectionPutSecretsAPI:
 
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is True
-
-"""This is meant to be simple test, need to implement more generic way to run a connection tests for entire suite of saas connectors"""
-class TestSaaSConnector:
-    @pytest.mark.integration
-    def test_saas_connector(
-        self,
-        integration_saas_configs
-    ) -> None:
-        print(integration_saas_configs["stripe"])
-        connector = get_connector(integration_saas_configs["stripe"])
-        print(connector.__dict__)
-        assert connector.__class__ == SaaSConnector
-        assert connector.test_connection() == ConnectionTestStatus.succeeded

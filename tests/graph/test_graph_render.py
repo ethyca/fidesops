@@ -1,197 +1,25 @@
-from collections import defaultdict
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict
 import graphviz
 import pytest
 
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
-from fidesops.graph.config import (
-    Collection,
-    Dataset,
-    Field,
-    FieldAddress,
-    SaaSConfig,
-    ScalarField,
-)
 from fidesops.models.datasetconfig import convert_dataset_to_graph
+from fidesops.models.saasconfig import SaaSConfig
 from fidesops.schemas.dataset import FidesopsDataset
+from fidesops.util.saas_util import merge_datasets
 
 from ..task.traversal_data import combined_mongo_postgresql_graph
 
 logger = logging.getLogger(__name__)
 
-
-def saas_config_to_dataset(saas_config: SaaSConfig):
-    collections = []
-    for endpoint in saas_config.endpoints:
-        fields = []
-        for parameter in endpoint.request_params["read"].parameters:
-            if parameter.references:
-                references = []
-                for reference in parameter.references:
-                    first, *rest = reference.field.split(".")
-                    references.append(
-                        (
-                            FieldAddress(reference.dataset, first, *rest),
-                            reference.direction,
-                        )
-                    )
-                fields.append(ScalarField(name=parameter.name, references=references))
-            if parameter.identity:
-                fields.append(
-                    ScalarField(name=parameter.name, identity=parameter.identity)
-                )
-        if fields:
-            collections.append(Collection(name=endpoint.name, fields=fields))
-    return Dataset(
-        name=saas_config.name,
-        collections=collections,
-        connection_key=saas_config.fides_key,
-    )
-
-
-@pytest.mark.integration
-def test_saas_config_to_dataset(example_saas_configs: Dict[str, Dict]):
-    # convert endpoint references to datset references to be able to hook SaaS connectors into the graph traversal
-    saas_config = SaaSConfig(**example_saas_configs["mailchimp"])
-    mailchimp_dataset = saas_config_to_dataset(saas_config)
-
-    messages_collection = mailchimp_dataset.collections[0]
-    member_collection = mailchimp_dataset.collections[1]
-    query_field = member_collection.fields[0]
-    conversation_id_field = messages_collection.fields[0]
-    conversations_reference = conversation_id_field.references[0]
-    field_address, direction = conversations_reference
-
-    assert messages_collection.name == "messages"
-    assert conversation_id_field.name == "conversation_id"
-    assert field_address == FieldAddress("mailchimp_connector", "conversations", "id")
-    assert direction == "from"
-
-    assert query_field.name == "query"
-    assert query_field.identity == "email"
-
-
-def merge_fields(target: Field, source: Field):
-    """Merges all references and identities into a single field"""
-    target.references.extend(source.references)
-    if not target.identity:
-        target.identity = source.identity
-    return target
-
-
-def extract_fields(aggregate: Dict, collections: List[Collection]) -> None:
-    """
-    Takes all of the Fields in the given Collection and places them into an
-    dictionary (dict[collection.name][field.name) merging Fields when necessary
-    """
-    for collection in collections:
-        field_dict = aggregate[collection.name]
-        for field in collection.fields:
-            if field_dict.get(field.name):
-                field_dict[field.name] = merge_fields(field_dict[field.name], field)
-            else:
-                field_dict[field.name] = field
-
-
-def merge_datasets(target: Dataset, source: Dataset) -> Dataset:
-    """Merges all Collections and Fields of two Datasets into a single Dataset"""
-    field_aggregate = defaultdict(dict)
-    extract_fields(field_aggregate, target.collections)
-    extract_fields(field_aggregate, source.collections)
-
-    collections = []
-    for collection_name, field_dict in field_aggregate.items():
-        collections.append(
-            Collection(name=collection_name, fields=list(field_dict.values()))
-        )
-
-    return Dataset(
-        name=target.name,
-        collections=collections,
-        connection_key=target.connection_key,
-    )
-
-
-def mailchimp_dataset() -> Dataset:
-    conversations = Collection(
-        name="conversations",
-        fields=[ScalarField(name="id")],
-    )
-
-    return Dataset(
-        name="mailchimp_connector",
-        collections=[conversations],
-        connection_key="mailchimp_connector",
-    )
-
-
-def mailchimp_config() -> Dataset:
-    member = Collection(
-        name="member",
-        fields=[ScalarField(name="query", identity="email")],
-    )
-    conversations = Collection(
-        name="conversations",
-        fields=[ScalarField(name="placeholder", identity="email")],
-    )
-    messages = Collection(
-        name="messages",
-        fields=[
-            ScalarField(
-                name="conversation_id",
-                references=[
-                    (FieldAddress("mailchimp_connector", "conversations", "id"), "from")
-                ],
-            ),
-        ],
-    )
-
-    return Dataset(
-        name="mailchimp_connector",
-        collections=[member, conversations, messages],
-        connection_key="mailchimp_connector",
-    )
-
-
-def manually_merged_dataset() -> Dataset:
-    member = Collection(
-        name="member",
-        fields=[ScalarField(name="query", identity="email")],
-    )
-    conversations = Collection(
-        name="conversations",
-        fields=[
-            ScalarField(name="placeholder", identity="email"),
-            ScalarField(name="id"),
-        ],
-    )
-    messages = Collection(
-        name="messages",
-        fields=[
-            ScalarField(
-                name="conversation_id",
-                references=[
-                    (FieldAddress("mailchimp_connector", "conversations", "id"), "from")
-                ],
-            ),
-        ],
-    )
-
-    return Dataset(
-        name="mailchimp_connector",
-        collections=[member, conversations, messages],
-        connection_key="mailchimp_connector",
-    )
-
-
-@pytest.mark.integration
+@pytest.mark.saas_connector
 def test_saas_render(
     example_saas_configs: Dict[str, Dict], example_saas_datasets
 ) -> None:
     saas_config = SaaSConfig(**example_saas_configs["mailchimp"])
-    mailchimp_config_dataset = saas_config_to_dataset(saas_config)
+    mailchimp_config_dataset = saas_config.generate_dataset()
     mailchimp_dataset = convert_dataset_to_graph(
         FidesopsDataset(**example_saas_datasets["mailchimp"]), "mailchimp_connector"
     )
@@ -203,10 +31,8 @@ def test_saas_render(
     traversal_map, _ = traversal.traversal_map()
 
     graph_nodes = generate_graph_nodes(traversal_map)
-    render_graph(graph_nodes)
+    render_graph(graph_nodes, "mailchimp")
 
-
-@pytest.mark.integration
 def test_mongo_postgres_render(
     integration_mongodb_config, integration_postgres_config
 ) -> None:
@@ -218,7 +44,7 @@ def test_mongo_postgres_render(
     traversal_map, _ = traversal.traversal_map()
 
     graph_nodes = generate_graph_nodes(traversal_map)
-    render_graph(graph_nodes)
+    render_graph(graph_nodes, "mongo+postgres")
 
 
 def generate_graph_nodes(traversal_map: Any):
@@ -237,8 +63,8 @@ def generate_graph_nodes(traversal_map: Any):
     return graph_nodes
 
 
-def render_graph(nodes):
-    g = graphviz.Digraph("graph", filename="postgres+mongo", format="png")
+def render_graph(nodes, filename):
+    g = graphviz.Digraph("graph", filename=filename, format="png")
     g.attr(rankdir="LR")
     g.attr("node", shape="doublecircle")
     g.node("ROOT")
