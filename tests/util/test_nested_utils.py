@@ -1,4 +1,5 @@
 import copy
+import pytest
 
 from fidesops.graph.config import FieldPath
 from fidesops.util.nested_utils import (
@@ -6,7 +7,9 @@ from fidesops.util.nested_utils import (
     flatten_and_merge_matches,
     strip_empty_dicts,
     refine_target_path,
-    build_incoming_refined_target_paths,
+    _build_incoming_refined_target_paths,
+    _build_array_path_preservation,
+    remove_unmatched_array_paths,
 )
 
 
@@ -367,68 +370,70 @@ def test_strip_empty_dicts():
     }
 
 
-sample_data = {
-    "_id": 12345,
-    "thread": [
-        {
-            "comment": "com_0001",
-            "message": "hello, testing in-flight chat feature",
-            "chat_name": "John",
-            "messages": {},
-        },
-        {
-            "comment": "com_0002",
-            "message": "yep, got your message, looks like it works",
-            "chat_name": "Jane",
-        },
-        {"comment": "com_0002", "message": "hello!", "chat_name": "Jeanne"},
-    ],
-    "snacks": ["pizza", "chips"],
-    "seats": {"first_choice": "A2", "second_choice": "B3"},
-    "upgrades": {
-        "magazines": ["Time", "People"],
-        "books": ["Once upon a Time", "SICP"],
-        "earplugs": True,
-    },
-    "other_flights": [
-        {"DFW": ["11 AM", "12 PM"], "CHO": ["12 PM", "1 PM"]},
-        {"DFW": ["2 AM", "12 PM"], "CHO": ["2 PM", "1 PM"]},
-        {"DFW": ["3 AM", "2 AM"], "CHO": ["2 PM", "1:30 PM"]},
-    ],
-    "months": {
-        "july": [
+@pytest.fixture(scope="function")
+def sample_data():
+    return {
+        "_id": 12345,
+        "thread": [
             {
-                "activities": ["swimming", "hiking"],
-                "crops": ["watermelon", "cheese", "grapes"],
+                "comment": "com_0001",
+                "message": "hello, testing in-flight chat feature",
+                "chat_name": "John",
+                "messages": {},
             },
-            {"activities": ["tubing"], "crops": ["corn"]},
-        ],
-        "march": [
             {
-                "activities": ["skiing", "bobsledding"],
-                "crops": ["swiss chard", "swiss chard"],
+                "comment": "com_0002",
+                "message": "yep, got your message, looks like it works",
+                "chat_name": "Jane",
             },
-            {"activities": ["hiking"], "crops": ["spinach"]},
+            {"comment": "com_0002", "message": "hello!", "chat_name": "Jeanne"},
         ],
-    },
-    "hello": [1, 2, 3, 4, 2],
-    "weights": [[1, 2], [3, 4]],
-    "toppings": [[["pepperoni", "salami"], ["pepperoni", "cheese", "cheese"]]],
-    "A": {"C": [{"M": ["p", "n", "n"]}]},
-    "C": [["A", "B", "C", "B"], ["G", "H", "B", "B"]],  # Double lists
-    "D": [
-        [["A", "B", "C", "B"], ["G", "H", "B", "B"]],
-        [["A", "B", "C", "B"], ["G", "H", "B", "B"]],
-    ],  # Triple lists
-    "E": [[["B"], [["A", "B", "C", "B"], ["G", "H", "B", "B"]]]],  # Irregular lists
-    "F": [
-        "a",
-        ["1", "a", [["z", "a", "a"]]],
-    ],  # Lists elems are different types, not officially supported
-}
+        "snacks": ["pizza", "chips"],
+        "seats": {"first_choice": "A2", "second_choice": "B3"},
+        "upgrades": {
+            "magazines": ["Time", "People"],
+            "books": ["Once upon a Time", "SICP"],
+            "earplugs": True,
+        },
+        "other_flights": [
+            {"DFW": ["11 AM", "12 PM"], "CHO": ["12 PM", "1 PM"]},
+            {"DFW": ["2 AM", "12 PM"], "CHO": ["2 PM", "1 PM"]},
+            {"DFW": ["3 AM", "2 AM"], "CHO": ["2 PM", "1:30 PM"]},
+        ],
+        "months": {
+            "july": [
+                {
+                    "activities": ["swimming", "hiking"],
+                    "crops": ["watermelon", "cheese", "grapes"],
+                },
+                {"activities": ["tubing"], "crops": ["corn"]},
+            ],
+            "march": [
+                {
+                    "activities": ["skiing", "bobsledding"],
+                    "crops": ["swiss chard", "swiss chard"],
+                },
+                {"activities": ["hiking"], "crops": ["spinach"]},
+            ],
+        },
+        "hello": [1, 2, 3, 4, 2],
+        "weights": [[1, 2], [3, 4]],
+        "toppings": [[["pepperoni", "salami"], ["pepperoni", "cheese", "cheese"]]],
+        "A": {"C": [{"M": ["p", "n", "n"]}]},
+        "C": [["A", "B", "C", "B"], ["G", "H", "B", "B"]],  # Double lists
+        "D": [
+            [["A", "B", "C", "B"], ["G", "H", "B", "B"]],
+            [["A", "B", "C", "B"], ["G", "H", "B", "B"]],
+        ],  # Triple lists
+        "E": [[["B"], [["A", "B", "C", "B"], ["G", "H", "B", "B"]]]],  # Irregular lists
+        "F": [
+            "a",
+            ["1", "a", [["z", "a", "a"]]],
+        ],  # Lists elems are different types, not officially supported
+    }
 
 
-def test_refine_target_path():
+def test_refine_target_path(sample_data):
     result = refine_target_path(
         sample_data, ["months", "march", "crops"], ["swiss chard"]
     )
@@ -509,7 +514,7 @@ def test_refine_target_path():
     assert result == [["F", 0], ["F", 1, 1], ["F", 1, 2, 0, 1], ["F", 1, 2, 0, 2]]
 
 
-def test_build_incoming_refined_target_paths():
+def test_build_incoming_refined_target_paths(sample_data):
     incoming_paths = {
         FieldPath(
             "F",
@@ -517,7 +522,7 @@ def test_build_incoming_refined_target_paths():
         FieldPath("snacks"): ["pizza"],
         FieldPath("thread", "comment"): ["com_0002"],
     }
-    result = build_incoming_refined_target_paths(sample_data, incoming_paths)
+    result = _build_incoming_refined_target_paths(sample_data, incoming_paths)
     assert result == [
         ["F", 0],
         ["snacks", 0],
@@ -527,3 +532,87 @@ def test_build_incoming_refined_target_paths():
         ["F", 1, 2, 0, 1],
         ["F", 1, 2, 0, 2],
     ]
+
+
+def test_build_array_path_preservation():
+    expanded_field_paths = [
+        ["F", 0],
+        ["snacks", 0],
+        ["F", 1, 1],
+        ["thread", 1, "comment"],
+        ["thread", 2, "comment"],
+        ["F", 1, 2, 0, 1],
+        ["F", 1, 2, 0, 2],
+        ["Non", "integer"],
+    ]
+
+    assert _build_array_path_preservation(expanded_field_paths) == {
+        "F": [0, 1],
+        "snacks": [0],
+        "F.1": [1, 2],
+        "thread": [1, 2],
+        "F.1.2": [0],
+        "F.1.2.0": [1, 2],
+    }
+
+
+def test_removed_unmatched_array_paths(sample_data):
+    incoming_paths = {
+        FieldPath(
+            "F",
+        ): ["a"],
+        FieldPath("snacks"): ["pizza"],
+        FieldPath("thread", "comment"): ["com_0002"],
+    }
+
+    filtered_record = remove_unmatched_array_paths(sample_data, incoming_paths)
+    assert filtered_record == {
+        "_id": 12345,
+        "thread": [
+            {
+                "comment": "com_0002",
+                "message": "yep, got your message, looks like it works",
+                "chat_name": "Jane",
+            },
+            {"comment": "com_0002", "message": "hello!", "chat_name": "Jeanne"},
+        ],
+        "snacks": ["pizza"],
+        "seats": {"first_choice": "A2", "second_choice": "B3"},
+        "upgrades": {
+            "magazines": ["Time", "People"],
+            "books": ["Once upon a Time", "SICP"],
+            "earplugs": True,
+        },
+        "other_flights": [
+            {"DFW": ["11 AM", "12 PM"], "CHO": ["12 PM", "1 PM"]},
+            {"DFW": ["2 AM", "12 PM"], "CHO": ["2 PM", "1 PM"]},
+            {"DFW": ["3 AM", "2 AM"], "CHO": ["2 PM", "1:30 PM"]},
+        ],
+        "months": {
+            "july": [
+                {
+                    "activities": ["swimming", "hiking"],
+                    "crops": ["watermelon", "cheese", "grapes"],
+                },
+                {"activities": ["tubing"], "crops": ["corn"]},
+            ],
+            "march": [
+                {
+                    "activities": ["skiing", "bobsledding"],
+                    "crops": ["swiss chard", "swiss chard"],
+                },
+                {"activities": ["hiking"], "crops": ["spinach"]},
+            ],
+        },
+        "hello": [1, 2, 3, 4, 2],
+        "weights": [[1, 2], [3, 4]],
+        "toppings": [[["pepperoni", "salami"], ["pepperoni", "cheese", "cheese"]]],
+        "A": {"C": [{"M": ["p", "n", "n"]}]},
+        "C": [["A", "B", "C", "B"], ["G", "H", "B", "B"]],
+        "D": [
+            [["A", "B", "C", "B"], ["G", "H", "B", "B"]],
+            [["A", "B", "C", "B"], ["G", "H", "B", "B"]],
+        ],
+        "E": [[["B"], [["A", "B", "C", "B"], ["G", "H", "B", "B"]]]],
+        "F": ["a", ["a", [["a", "a"]]]],
+    }

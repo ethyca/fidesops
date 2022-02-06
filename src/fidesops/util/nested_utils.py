@@ -1,5 +1,8 @@
+import copy
+from collections import defaultdict
 from typing import List, Dict, Any, Optional, Union, Sequence
 
+import pydash
 
 from fidesops.graph.config import FieldPath
 
@@ -126,11 +129,56 @@ def strip_empty_dicts(data: Any) -> Dict:
     return data
 
 
-def build_incoming_refined_target_paths(
+def remove_unmatched_array_paths(
     row: Dict[str, Any], incoming_paths: Dict[FieldPath, List]
-) -> List[List]:
+):
+    """Remove unmatched embedded documents and array indices from the given row"""
+    refined_array_paths: List[List[Union[str, int]]] = _build_incoming_refined_target_paths(row, incoming_paths)
+    array_paths_to_preserve: Dict[str, List[int]] = _build_array_path_preservation(refined_array_paths)
+
+    desc_path_length = dict(
+        sorted(
+            array_paths_to_preserve.items(),
+            key=lambda item: item[0].count("."),
+            reverse=True,
+        )
+    )
+    for path, preserve_indices in desc_path_length.items():
+        matched_array: List = pydash.objects.get(row, path)
+        for i, _ in enumerate(reversed(matched_array)):
+            if i not in preserve_indices:
+                matched_array.pop(i)
+    return row
+
+
+def _build_array_path_preservation(
+    paths: List[List[Union[str, int]]]
+) -> Dict[str, List[int]]:
+    """Merge paths to array indices we want to preserve"""
+    # Break path into multiple paths if array elements in path
+    expanded = []
+    for path in paths:
+        while path != [] and not isinstance(path[-1], int):
+            path.pop()
+        new_path = []
+        for elem in path:
+            new_path.append(elem)
+            if isinstance(elem, int) and new_path not in expanded:
+                expanded.append(copy.deepcopy(new_path))
+
+    # Combine paths where the key is a dot-separated path to the array, and the value are the elements in that
+    # array we want to preserve
+    merge_paths = defaultdict(list)
+    for path in expanded:
+        merge_paths[".".join(map(str, path[0:-1]))].append(path[-1])
+    return merge_paths
+
+
+def _build_incoming_refined_target_paths(
+    row: Dict[str, Any], incoming_paths: Dict[FieldPath, List]
+) -> List[List[Union[str, int]]]:
     """
-    Expand incoming field paths to be more detailed field paths with
+    Expand incoming field paths to be more detailed field paths with indices inserted where applicable.
     """
     found_paths = []
     for target_path, only in incoming_paths.items():
