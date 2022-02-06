@@ -5,6 +5,8 @@ from fidesops.util.nested_utils import (
     select_field_from_input_data,
     flatten_and_merge_matches,
     strip_empty_dicts,
+    refine_target_path,
+    build_incoming_refined_target_paths,
 )
 
 
@@ -58,6 +60,7 @@ def test_select_field():
                 }
             }
         },
+        "K": [{"L": "l", "M": "m"}, {"L": "n", "M": "o"}],
     }
 
     # Test simple scalar field selected
@@ -246,6 +249,33 @@ def test_select_field():
         "B": "b",
     }
 
+    assert select_field_from_input_data(
+        final_results,
+        flat,
+        FieldPath("K", "L"),
+        only=["l"],
+    ) == {
+        "A": "a",
+        "C": ["d", "e", "f"],
+        "D": ["h", "j"],
+        "E": {"F": "g", "J": {"K": {"L": {"M": ["n"]}}}},
+        "F": [{"G": "g"}, {"G": "h"}, {"G": "i"}],
+        "H": [
+            [{"M": [2], "N": "n"}, {"M": [2], "N": "o"}, {"M": [], "N": "p"}],
+            [{"M": [], "N": "q"}, {"M": [2], "N": "s"}, {"M": [], "N": "u"}],
+            [{"M": [], "N": "w"}, {"M": [], "N": "y"}, {"M": [2], "N": "z"}],
+        ],
+        "I": {
+            "X": [{"J": "j", "K": []}, {"J": "m", "K": ["customer-1@example.com"]}],
+            "Y": [{"K": ["n"]}, {"K": []}],
+        },
+        "J": {"K": {"L": {"M": {"N": {"O": ["customer@gmail.com"]}}}}},
+        "B": "b",
+        "K": [
+            {"L": "l", "M": "m"}
+        ],  # Only this array element should return - not yet working
+    }
+
 
 def test_flatten_and_merge_matches():
     # Matching scalar returned
@@ -332,7 +362,168 @@ def test_strip_empty_dicts():
     orig = {"A": [[{"B": "C", "D": [{"F": {}}, {"G": []}]}, {"B": "D"}, {"B": "G"}]]}
     results = copy.deepcopy(orig)
     strip_empty_dicts(results)
-    assert (
-        results
-        == {"A": [[{"B": "C", "D": [{}, {"G": []}]}, {"B": "D"}, {"B": "G"}]]}
+    assert results == {
+        "A": [[{"B": "C", "D": [{}, {"G": []}]}, {"B": "D"}, {"B": "G"}]]
+    }
+
+
+sample_data = {
+    "_id": 12345,
+    "thread": [
+        {
+            "comment": "com_0001",
+            "message": "hello, testing in-flight chat feature",
+            "chat_name": "John",
+            "messages": {},
+        },
+        {
+            "comment": "com_0002",
+            "message": "yep, got your message, looks like it works",
+            "chat_name": "Jane",
+        },
+        {"comment": "com_0002", "message": "hello!", "chat_name": "Jeanne"},
+    ],
+    "snacks": ["pizza", "chips"],
+    "seats": {"first_choice": "A2", "second_choice": "B3"},
+    "upgrades": {
+        "magazines": ["Time", "People"],
+        "books": ["Once upon a Time", "SICP"],
+        "earplugs": True,
+    },
+    "other_flights": [
+        {"DFW": ["11 AM", "12 PM"], "CHO": ["12 PM", "1 PM"]},
+        {"DFW": ["2 AM", "12 PM"], "CHO": ["2 PM", "1 PM"]},
+        {"DFW": ["3 AM", "2 AM"], "CHO": ["2 PM", "1:30 PM"]},
+    ],
+    "months": {
+        "july": [
+            {
+                "activities": ["swimming", "hiking"],
+                "crops": ["watermelon", "cheese", "grapes"],
+            },
+            {"activities": ["tubing"], "crops": ["corn"]},
+        ],
+        "march": [
+            {
+                "activities": ["skiing", "bobsledding"],
+                "crops": ["swiss chard", "swiss chard"],
+            },
+            {"activities": ["hiking"], "crops": ["spinach"]},
+        ],
+    },
+    "hello": [1, 2, 3, 4, 2],
+    "weights": [[1, 2], [3, 4]],
+    "toppings": [[["pepperoni", "salami"], ["pepperoni", "cheese", "cheese"]]],
+    "A": {"C": [{"M": ["p", "n", "n"]}]},
+    "C": [["A", "B", "C", "B"], ["G", "H", "B", "B"]],  # Double lists
+    "D": [
+        [["A", "B", "C", "B"], ["G", "H", "B", "B"]],
+        [["A", "B", "C", "B"], ["G", "H", "B", "B"]],
+    ],  # Triple lists
+    "E": [[["B"], [["A", "B", "C", "B"], ["G", "H", "B", "B"]]]],  # Irregular lists
+    "F": [
+        "a",
+        ["1", "a", [["z", "a", "a"]]],
+    ],  # Lists elems are different types, not officially supported
+}
+
+
+def test_refine_target_path():
+    result = refine_target_path(
+        sample_data, ["months", "march", "crops"], ["swiss chard"]
     )
+    assert result == [
+        ["months", "march", 0, "crops", 0],
+        ["months", "march", 0, "crops", 1],
+    ]
+
+    result = refine_target_path(sample_data, ["_id"], [12345])
+    assert result == ["_id"]
+
+    result = refine_target_path(sample_data, ["snacks"], ["pizza"])
+    assert result == ["snacks", 0]
+
+    result = refine_target_path(sample_data, ["thread", "comment"], ["com_0002"])
+    assert result == [["thread", 1, "comment"], ["thread", 2, "comment"]]
+
+    result = refine_target_path(sample_data, ["seats", "first_choice"], ["A2"])
+    assert result == ["seats", "first_choice"]
+
+    result = refine_target_path(sample_data, ["upgrades", "books"], ["SICP"])
+    assert result == ["upgrades", "books", 1]
+
+    result = refine_target_path(sample_data, ["other_flights", "CHO"], ["1 PM"])
+    assert result == [["other_flights", 0, "CHO", 1], ["other_flights", 1, "CHO", 1]]
+
+    result = refine_target_path(sample_data, ["bad_path"], ["bad match"])
+    assert result == []
+
+    result = refine_target_path(sample_data, ["hello"], only=[2])
+    assert result == [["hello", 1], ["hello", 4]]
+
+    result = refine_target_path(
+        sample_data, ["months", "july", "crops"], ["watermelon", "grapes"]
+    )
+    assert result == [
+        ["months", "july", 0, "crops", 0],
+        ["months", "july", 0, "crops", 2],
+    ]
+
+    result = refine_target_path(sample_data, ["weights"], [4])
+    assert result == ["weights", 1, 1]
+
+    result = refine_target_path(sample_data, ["toppings"], ["cheese"])
+    assert result == [["toppings", 0, 1, 1], ["toppings", 0, 1, 2]]
+
+    result = refine_target_path(sample_data, ["A", "C", "M"], ["n"])
+    assert result == [["A", "C", 0, "M", 1], ["A", "C", 0, "M", 2]]
+
+    result = refine_target_path(sample_data, [], ["pizza"])
+    assert result == []
+
+    result = refine_target_path(sample_data, ["C"], ["B"])
+    assert result == [["C", 0, 1], ["C", 0, 3], ["C", 1, 2], ["C", 1, 3]]
+
+    result = refine_target_path(sample_data, ["D"], ["B"])
+    assert result == [
+        ["D", 0, 0, 1],
+        ["D", 0, 0, 3],
+        ["D", 0, 1, 2],
+        ["D", 0, 1, 3],
+        ["D", 1, 0, 1],
+        ["D", 1, 0, 3],
+        ["D", 1, 1, 2],
+        ["D", 1, 1, 3],
+    ]
+
+    result = refine_target_path(sample_data, ["E"], ["B"])
+    assert result == [
+        ["E", 0, 0, 0],
+        ["E", 0, 1, 0, 1],
+        ["E", 0, 1, 0, 3],
+        ["E", 0, 1, 1, 2],
+        ["E", 0, 1, 1, 3],
+    ]
+
+    result = refine_target_path(sample_data, ["F"], ["a"])
+    assert result == [["F", 0], ["F", 1, 1], ["F", 1, 2, 0, 1], ["F", 1, 2, 0, 2]]
+
+
+def test_build_incoming_refined_target_paths():
+    incoming_paths = {
+        FieldPath(
+            "F",
+        ): ["a"],
+        FieldPath("snacks"): ["pizza"],
+        FieldPath("thread", "comment"): ["com_0002"],
+    }
+    result = build_incoming_refined_target_paths(sample_data, incoming_paths)
+    assert result == [
+        ["F", 0],
+        ["snacks", 0],
+        ["F", 1, 1],
+        ["thread", 1, "comment"],
+        ["thread", 2, "comment"],
+        ["F", 1, 2, 0, 1],
+        ["F", 1, 2, 0, 2],
+    ]

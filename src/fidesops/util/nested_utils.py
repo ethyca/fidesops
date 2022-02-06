@@ -1,4 +1,5 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union, Sequence
+
 
 from fidesops.graph.config import FieldPath
 
@@ -123,3 +124,111 @@ def strip_empty_dicts(data: Any) -> Dict:
             strip_empty_dicts(elem)
 
     return data
+
+
+def build_incoming_refined_target_paths(
+    row: Dict[str, Any], incoming_paths: Dict[FieldPath, List]
+) -> List[List]:
+    """
+    Expand incoming field paths to be more detailed field paths with
+    """
+    found_paths = []
+    for target_path, only in incoming_paths.items():
+        path = refine_target_path(row, list(target_path.levels), only)
+        if path:
+            if isinstance(path[0], list):
+                found_paths.extend(path)
+            else:
+                found_paths.append(path)
+    found_paths.sort(key=len)
+    return found_paths
+
+
+def refine_target_path(
+    record: Dict[str, Any], field_path: List[str], only=Sequence[Any]
+) -> List:
+    """
+    Expand target path to be more accurately target data within arrays by inserting indices
+    into path where applicable.  If one match, returns a list, otherwise returns a list of lists
+
+    For example:
+    refine_target_path({"A": {"B": [{"C": "D"}, {"C": "F"}, {"C": "G"}]}}, ["A", "B", "C"], only=["F", "G"])
+
+    -> [['A', 'B', 1, 'C'], ['A', 'B', 2, 'C']]
+    """
+    try:
+        current_level = field_path[0]
+        current_elem = record[current_level]
+    except (IndexError, KeyError):  # No field path or field path not found in record
+        return []
+
+    if isinstance(current_elem, dict):
+        next_levels = refine_target_path(current_elem, field_path[1:], only)
+        return _update_path(current_level, next_levels)
+
+    if isinstance(current_elem, list):
+        next_levels = _enter_array(current_elem, field_path[1:], only)
+        return _update_path(current_level, next_levels)
+
+    # Simple case - value is a scalar
+    return [current_level] if _match_found(current_elem, only) else []
+
+
+def _enter_array(array: List[Any], field_path: List[str], only=Sequence[Any]) -> List:
+    """
+    Used by recursive "refine_target_path" whenever arrays are encountered in the record.
+    """
+    results = []
+    for index, elem in enumerate(array):
+        current_result = []
+
+        if field_path:
+            next_result = refine_target_path(elem, field_path, only)
+            current_result = _update_path(index, next_result)
+        else:
+            if isinstance(elem, list):
+                next_result = _enter_array(
+                    elem, field_path, only
+                )  # Nested enter_array calls needed for lists in lists
+                current_result = _update_path(index, next_result)
+            else:
+                if _match_found(elem, only):
+                    current_result = [index]
+
+        if current_result:  # Match found at lower level
+            if isinstance(current_result[0], list):
+                # Keeps nested lists at most list of lists
+                results.extend(current_result)
+            else:
+                results.append(current_result)
+
+    return results[0] if len(results) == 1 else results
+
+
+def _match_found(elem: Any, only: Sequence[Any]) -> bool:
+    """The given scalar element matches one of the input values"""
+    return elem in only
+
+
+def _update_path(
+    current_level: Union[str, int], deeper_levels: List[Union[str, int]]
+) -> List[Union[str, int]]:
+    """
+    Used by "refine_target_path" and "_enter_array" to recursively build a
+    more refined target path to the desired data.
+    """
+    if not deeper_levels:
+        # Element did not contain a match
+        return []
+
+    if isinstance(deeper_levels[0], list):
+        result = []
+        for item in deeper_levels:
+            # Builds multiple possible paths
+            result.append(_update_path(current_level, item))
+        return result
+
+    # Consolidates current level with deeper levels
+    result = [current_level]
+    result.extend(deeper_levels)
+    return result
