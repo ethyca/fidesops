@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional, TypeVar
+from typing import Any, Dict, List, Optional, Tuple
 from requests import Session, Request, PreparedRequest, Response
 
 from fidesops.service.connectors.base_connector import BaseConnector
@@ -18,6 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 class AuthenticatedClient:
+    """
+    A helper class to build authenticated HTTP requests based on
+    authentication and parameter configurations
+    """
+
     def __init__(self, secrets: Dict, client_config: ClientConfig):
         self.s = Session()
         self.secrets = secrets
@@ -26,6 +31,7 @@ class AuthenticatedClient:
     def addAuthentication(
         self, req: PreparedRequest, strategy_name: str
     ) -> PreparedRequest:
+        """Uses the incoming strategy to add the appropriate authentication method to the base request"""
         # TODO: keeping this simple for now since we only have two auth methods
         configuration = self.client_config.authentication.configuration
         if strategy_name == "basic_authentication":
@@ -39,7 +45,10 @@ class AuthenticatedClient:
             req.headers["Authorization"] = "Bearer " + self.secrets[token_key]
         return req
 
-    def getBaseRequest(self, path: str, params: Dict, data: Dict) -> PreparedRequest:
+    def getAuthenticatedRequest(
+        self, path: str, params: Dict, data: Dict
+    ) -> PreparedRequest:
+        """Returns an authenticated request based on the client config and incoming path, query, and body params"""
         host_key = self.client_config.host.connector_param
         req = Request(
             url=f"{self.client_config.protocol}://{self.secrets[host_key]}{path}",
@@ -51,23 +60,29 @@ class AuthenticatedClient:
         )
 
     def get(self, path: str, params: Dict, data: Dict) -> Response:
-        req = self.getBaseRequest(path=path, params=params, data=data)
+        """Executes a GET request using the derived authenticated request"""
+        req = self.getAuthenticatedRequest(path=path, params=params, data=data)
         req.method = "GET"
         return self.s.send(req)
 
 
 class SaaSConnector(BaseConnector[None]):
+    """A connector type to integrate with third-party SaaS APIs"""
+
     def __init__(self, configuration: SaaSConnectionConfig):
+        # pylint: disable=super-init-not-called
         self.name = configuration.name
         self.secrets = configuration.secrets
         self.saas_config = SaaSConfig(**configuration.saas_config)
         self.endpoints = self.saas_config.top_level_endpoint_dict
-        self.http_client = None
+        self.http_client: Optional[AuthenticatedClient] = None
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
+        """Returns the query config for a SaaS connector"""
         return SaaSQueryConfig(node)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
+        """Generates and executes a test connection based on the SaaS config"""
         try:
             test_request_path = self.saas_config.test_request.path
             response = self.client().get(path=test_request_path, params={}, data={})
@@ -79,17 +94,25 @@ class SaaSConnector(BaseConnector[None]):
         return ConnectionTestStatus.succeeded
 
     def create_client(self) -> AuthenticatedClient:
+        """Creates an authenticated client builder"""
         return AuthenticatedClient(self.secrets, self.saas_config.client_config)
 
     def client(self) -> AuthenticatedClient:
+        """Returns an authenticated client builder (or creates one if it doesn't exist)"""
         if not self.http_client:
             self.http_client = self.create_client()
         return self.http_client
 
-    def populate_parameters(self, request: Request, param_values: Dict[str, Any]):
+    def populate_parameters(
+        self, request: Request, param_values: Dict[str, Any]
+    ) -> Tuple[str, Dict, Dict]:
+        """
+        Generates the path and query/path/body params for a given Request
+        based on incoming data from the graph traversal
+        """
         path = request.path
-        params = {}
-        data = {}
+        params: Dict[str, Any] = {}
+        data: Dict[str, Any] = {}
 
         for param in request.request_params:
             if param.type == "query":
@@ -103,8 +126,9 @@ class SaaSConnector(BaseConnector[None]):
 
         return (path, params, data)
 
-    def get_value_by_path(self, dict: Dict, path: str):
-        value = dict
+    def get_value_by_path(self, dictionary: Dict, path: str) -> Dict:
+        """Helper method to extract an arbitrary data path from a given dictionary"""
+        value = dictionary
         for key in path.split("/"):
             value = value[key]
         return value
@@ -112,6 +136,12 @@ class SaaSConnector(BaseConnector[None]):
     def retrieve_data(
         self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
     ) -> List[Row]:
+        # pylint: disable=too-many-locals
+        """
+        Uses the incoming node to determine which SaaS config endpoint corresponds to the associated collection.
+        The endpoint information is used to build an authenticated request which is called for every entry in
+        the input_data dictionary. The data is aggregated and post-processed as defined in the SaaS config.
+        """
         # filter data using base methods
         query_config = self.query_config(node)
         filtered_data = query_config.typed_filtered_values(input_data)
@@ -120,7 +150,7 @@ class SaaSConnector(BaseConnector[None]):
         collection_name = node.address.collection
         read_request = self.endpoints[collection_name].requests["read"]
 
-        processed_responses = []
+        processed_responses: List[Dict] = []
         for key, values in filtered_data.items():
             for value in values:
                 # generate path, query params, and body data based on request description and filtered data

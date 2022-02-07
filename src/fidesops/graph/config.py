@@ -80,10 +80,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, Set, Dict, Literal, Any, Callable, Union
-from urllib.request import Request
-from sqlalchemy import Column, ForeignKey, String
-from fidesops.models.connectionconfig import ConnectionConfig
+from typing import List, Optional, Tuple, Set, Dict, Literal, Any, Callable
 
 import pydash
 from pydantic import BaseModel, validator
@@ -101,8 +98,6 @@ from fidesops.util.querytoken import QueryToken
 DatasetAddress = str
 SeedAddress = str
 EdgeDirection = Literal["from", "to"]
-
-from fidesops.schemas.dataset import FidesopsDatasetReference
 
 
 class CollectionAddress:

@@ -9,7 +9,6 @@ from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.service.connectors import get_connector
 from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.task import graph_task
-from fidesops.task.graph_task import GraphTask
 from fidesops.util.saas_util import merge_datasets
 
 from tests.graph.graph_test_util import assert_rows_match, records_matching_fields
@@ -17,6 +16,7 @@ from tests.graph.graph_test_util import assert_rows_match, records_matching_fiel
 
 @pytest.mark.saas_connector
 def test_saas_test_connection(integration_saas_connection_configs) -> None:
+    """Dynamic connection test based on the SaaS config"""
     for saas_connection_config in integration_saas_connection_configs.values():
         connector = get_connector(saas_connection_config)
         assert connector.test_connection() == ConnectionTestStatus.succeeded
@@ -25,6 +25,7 @@ def test_saas_test_connection(integration_saas_connection_configs) -> None:
 def test_saas_access_request_task(
     db, policy, integration_saas_connection_configs, example_saas_configs, example_saas_datasets, mailchimp_account_email
 ) -> None:
+    """Full access request based on the Mailchimp SaaS config"""
 
     privacy_request = PrivacyRequest(
         id=f"test_saas_access_request_task_{random.randint(0, 1000)}"

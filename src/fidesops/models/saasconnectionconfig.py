@@ -5,12 +5,13 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship
 
 from fidesops.models.connectionconfig import ConnectionConfig
 
 
 class SaaSConnectionConfig(ConnectionConfig):
+    """An extension of the base ConnectionConfig used to store SaaS Connector configs"""
+
     connection_config_id = Column(
         String, ForeignKey(ConnectionConfig.id_field_path), nullable=False
     )

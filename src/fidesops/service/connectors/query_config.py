@@ -611,6 +611,8 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
 
 
 class SaaSQueryConfig(QueryConfig[None]):
+    """Query config to expose base functionality to SaaS connectors"""
+
     def dry_run_query(self) -> Optional[str]:
         return None
 
@@ -625,4 +627,4 @@ class SaaSQueryConfig(QueryConfig[None]):
         return None
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
-        return None
+        return ""

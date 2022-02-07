@@ -3,7 +3,7 @@ from typing import Dict, List
 from fidesops.graph.config import Collection, Dataset, Field
 
 
-def merge_fields(target: Field, source: Field):
+def merge_fields(target: Field, source: Field) -> Field:
     """Merges all references and identities into a single field"""
     target.references.extend(source.references)
     if not target.identity:
@@ -27,7 +27,7 @@ def extract_fields(aggregate: Dict, collections: List[Collection]) -> None:
 
 def merge_datasets(target: Dataset, source: Dataset) -> Dataset:
     """Merges all Collections and Fields of two Datasets into a single Dataset"""
-    field_aggregate = defaultdict(dict)
+    field_aggregate: Dict[str, Dict] = defaultdict(dict)
     extract_fields(field_aggregate, target.collections)
     extract_fields(field_aggregate, source.collections)
 

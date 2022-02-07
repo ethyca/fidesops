@@ -8,6 +8,11 @@ from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
 class ConnectorParams(BaseModel):
+    """
+    Required information for the given SaaS connector, can either be user provided or default to a given value.
+    Secret values should NOT be specified with a default_value
+    """
+
     name: str
     default_value: str
     from_user: bool
@@ -15,6 +20,11 @@ class ConnectorParams(BaseModel):
 
 
 class RequestParam(BaseModel):
+    """
+    A request parameter which includes the type (query, path, or body) along with a default value or
+    a reference to an identity value or a value in another dataset
+    """
+
     name: str
     type: Literal[
         "query", "path", "body"
@@ -33,6 +43,11 @@ class Strategy(BaseModel):
 
 
 class Request(BaseModel):
+    """
+    A single request with a static or dynamic path, and the request params needed to build the request.
+    Also includes optional startegies for pre/postprocessing and pagination
+    """
+
     path: str
     request_params: Optional[List[RequestParam]]
     data_path: Optional[str]  # defaults to collection name if not specified
@@ -42,7 +57,7 @@ class Request(BaseModel):
 
 
 class Endpoint(BaseModel):
-    """The name is the corresponding collection name in the associated Dataset"""
+    """An collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"""
 
     name: str
     requests: Dict[Literal["read", "update", "delete"], Request]
@@ -58,11 +73,13 @@ class ConnectorParam(BaseModel):
 
 
 class ConnectorParamRef(BaseModel):
+    """A reference to a value in the connector params (by name)"""
+
     connector_param: str
 
 
 class ClientConfig(BaseModel):
-    """Definition for base HTTP client"""
+    """Definition for an authenticated base HTTP client"""
 
     protocol: str
     host: Union[
@@ -102,7 +119,7 @@ class SaaSConfig(BaseModel):
         for endpoint in self.endpoints:
             fields = []
             # TODO parametrize this method to account for update and delete
-            for param in endpoint.requests["read"].request_params:
+            for param in endpoint.requests["read"].request_params or []:
                 if param.references:
                     references = []
                     for reference in param.references:
