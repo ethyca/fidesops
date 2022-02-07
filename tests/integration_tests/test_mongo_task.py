@@ -32,10 +32,8 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.service.connectors import get_connector
 from fidesops.task import graph_task
-from fidesops.task.graph_task import (
-    filter_data_categories,
-    get_collection_inputs_from_cache,
-)
+from fidesops.task.filter_results import filter_data_categories, get_collection_inputs_from_cache
+
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
 from ..task.traversal_data import (
     integration_db_graph,

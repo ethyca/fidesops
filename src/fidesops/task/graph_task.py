@@ -1,18 +1,15 @@
-import itertools
 import logging
 import traceback
 from abc import ABC
-from collections import defaultdict
 from functools import wraps
 
 from time import sleep
-from typing import List, Dict, Any, Tuple, Callable, Optional, Set
+from typing import List, Dict, Any, Tuple, Callable, Optional
 
 import dask
 from dask.threaded import get
 
 from fidesops.core.config import config
-from fidesops.util.cache import get_cache
 from fidesops.graph.config import (
     CollectionAddress,
     ROOT_COLLECTION_ADDRESS,
@@ -24,17 +21,10 @@ from fidesops.graph.traversal import TraversalNode, Row, Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, AccessLevel
 from fidesops.models.policy import ActionType, Policy
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLogStatus
-from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.connectors import BaseConnector
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.collection_util import partition, append
 from fidesops.util.logger import NotPii
-from fidesops.util.nested_utils import (
-    select_field_from_input_data,
-    flatten_and_merge_matches,
-    strip_empty_dicts,
-    remove_unmatched_array_paths,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -168,8 +158,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
             for row in rowset:
                 for foreign_field_path, local_field_path in field_mappings:
-                    new_values: List = flatten_and_merge_matches(
-                        input_data=row, target_path=foreign_field_path
+                    new_values: List = consolidate_query_matches(
+                        row=row, target_path=foreign_field_path
                     )
                     if new_values:
                         append(output, local_field_path.string_path, new_values)
@@ -390,83 +380,33 @@ def run_erasure(  # pylint: disable = too-many-arguments
         return erasure_update_map
 
 
-def filter_data_categories(
-    access_request_results: Dict[str, Optional[Any]],
-    target_categories: Set[str],
-    data_category_fields: Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]],
-    privacy_request_id: str,
-) -> Dict[str, List[Dict[str, Optional[Any]]]]:
-    """Filter access request results to only return fields associated with the target data categories
-    and subcategories
-
-    For example, if data category "user.provided.identifiable.contact" is specified on one of the rule targets,
-    all fields on subcategories also apply, so ["user.provided.identifiable.contact.city",
-    "user.provided.identifiable.contact.street", ...], etc.
+def consolidate_query_matches(
+    row: Dict[str, Any],
+    target_path: FieldPath,
+    flattened_matches: Optional[List] = None,
+) -> List[Any]:
     """
-    logger.info(
-        "Filtering Access Request results to return fields associated with data categories"
-    )
-    filtered_access_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    collection_inputs = get_collection_inputs_from_cache(privacy_request_id)
-    for node_address, results in access_request_results.items():
-        if not results:
-            continue
+    Recursively consolidates values along from the target_path into a single array.
 
-        # Gets all FieldPaths on this traversal_node associated with the requested data
-        # categories and sub data categories
-        target_field_paths: Set[FieldPath] = set(
-            itertools.chain(
-                *[
-                    field_paths
-                    for cat, field_paths in data_category_fields[
-                        CollectionAddress.from_string(node_address)
-                    ].items()
-                    if any([cat.startswith(tar) for tar in target_categories])
-                ]
-            )
-        )
-
-        if not target_field_paths:
-            continue
-
-        for row in results:
-            row = remove_unmatched_array_paths(
-                row,
-                collection_inputs.get(CollectionAddress.from_string(node_address), {}),
-            )
-            filtered_results: Dict = {}
-            for field_path in target_field_paths:
-                select_field_from_input_data(filtered_results, row, field_path)
-            strip_empty_dicts(filtered_results)
-            filtered_access_results[node_address].append(filtered_results)
-
-    return filtered_access_results
-
-
-def get_collection_inputs_from_cache(
-    privacy_request_id: str,
-) -> Dict[CollectionAddress, Dict[FieldPath, List]]:
+    A target_path can point to a single scalar value, an array, or even multiple values within arrays of embedded
+    documents. We consolidate all values into a single flattened list, that are used in subsequent queries
+    to locate records in another collection.
     """
-    After an access request has run, use this method to get the input data from the cache that flowed into each collection
-    that was used to query for corresponding records.
+    if flattened_matches is None:
+        flattened_matches = []
 
-    In the example return below, we can see that customer_id 1 was used to find records in the mongo_test orders
-    collection, and the emails "customer-1@example.com" and "customer@example.com" were used to locate records
-    on the mongo_test customer collection.
-    {
-        CollectionAddress("mongo_test", "orders"): {FieldPath("customer_id"): ["1"]},
-        CollectionAddress("mongo_test", "customer"): {
-            FieldPath("email"): ["customer-1@example.com", "customer@example.com"]
-        }
-    }
+    if isinstance(row, list):
+        for elem in row:
+            consolidate_query_matches(elem, target_path, flattened_matches)
 
-    """
-    cache = get_cache()
-    value_dict = cache.get_encoded_objects_by_prefix(f"INPUT__{privacy_request_id}")
-    return {
-        CollectionAddress.from_string(collection_name.split("__")[-1]): {
-            FieldPath.parse(field): inputs
-            for field, inputs in collection_inputs.items()
-        }
-        for collection_name, collection_inputs in value_dict.items()
-    }
+    elif isinstance(row, dict):
+        for key, value in row.items():
+            if target_path.levels and key == target_path.levels[0]:
+                consolidate_query_matches(
+                    value, FieldPath(*target_path.levels[1:]), flattened_matches
+                )
+
+    else:
+        flattened_matches.append(row)
+
+    return flattened_matches
