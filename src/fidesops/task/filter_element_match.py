@@ -1,4 +1,5 @@
 import copy
+import logging
 from collections import defaultdict
 
 from typing import List, Any, Dict
@@ -10,6 +11,8 @@ from fidesops.task.refine_target_path import (
     build_incoming_refined_target_paths,
     DetailedPath,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def filter_element_match(
@@ -74,6 +77,12 @@ def _remove_paths_from_row(
     )
     for path, preserve_index_list in desc_path_length.items():
         matched_array: List = pydash.objects.get(row, path)
+        if matched_array is None:
+            # This case shouldn't happen - if this gets logged, we've done something wrong
+            logger.info(
+                f"_remove_paths_from_row call: Path {path} in row {row} not found."
+            )
+            continue
         # Loop through array in reverse to delete indices
         for i, _ in reversed(list(enumerate(matched_array))):
             if i not in preserve_index_list:
@@ -83,7 +92,8 @@ def _remove_paths_from_row(
 
 
 def _expand_array_paths_to_preserve(paths: List[DetailedPath]) -> Dict[str, List[int]]:
-    """Used by "filter_element_match" - Returns a dictionary of string paths mapped to array indices that we want
+    """
+    Used by "filter_element_match" - Returns a dictionary of string paths mapped to array indices that we want
     to preserve.
 
     :param paths: A list of lists of detailed paths (containing strings and array indices) to elements that matched query criteria

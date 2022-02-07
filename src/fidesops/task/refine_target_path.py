@@ -5,7 +5,7 @@ from fidesops.graph.config import FieldPath
 Level = Union[str, int]
 DetailedPath = List[
     Level
-]  # A more detailed path to pinpoint a field in a record, potentially containing indices
+]  # A more detailed path to a field, potentially containing indices
 
 
 def build_incoming_refined_target_paths(
@@ -68,7 +68,11 @@ def refine_target_path(
     try:
         current_level = target_path[0]
         current_elem = row[current_level]
-    except (IndexError, KeyError):  # No field path or field path not found in record
+    except (
+        IndexError,
+        KeyError,
+        TypeError,
+    ):  # No field path, field path not found in record, or invalid field path
         return []
 
     if isinstance(current_elem, dict):
