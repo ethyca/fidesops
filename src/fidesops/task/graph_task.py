@@ -33,6 +33,7 @@ from fidesops.util.nested_utils import (
     select_field_from_input_data,
     flatten_and_merge_matches,
     strip_empty_dicts,
+    remove_unmatched_array_paths,
 )
 
 logger = logging.getLogger(__name__)
@@ -429,16 +430,13 @@ def filter_data_categories(
             continue
 
         for row in results:
+            row = remove_unmatched_array_paths(
+                row,
+                collection_inputs.get(CollectionAddress.from_string(node_address), {}),
+            )
             filtered_results: Dict = {}
             for field_path in target_field_paths:
-                select_field_from_input_data(
-                    filtered_results,
-                    row,
-                    field_path,
-                    collection_inputs.get(
-                        CollectionAddress.from_string(node_address), {}
-                    ).get(field_path, []),
-                )
+                select_field_from_input_data(filtered_results, row, field_path)
             strip_empty_dicts(filtered_results)
             filtered_access_results[node_address].append(filtered_results)
 

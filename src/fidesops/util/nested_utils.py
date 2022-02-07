@@ -19,27 +19,8 @@ def _get_starter(obj: Any) -> Any:
     return obj
 
 
-def _skip_unmatched_scalar(element: Any, only: List, base: List) -> bool:
-    """
-    Data in one collection can be used to lookup data inside arrays inside another collection.  For some identities
-    or referenced fields contained in arrays, the user may only want to return the "matched" result.
-
-    If the given element is a scalar value *within an array*, and is in the "only" list and hasn't already been
-    added to the "base" list, we want to add it.
-
-    For example, we might *only* want to retrieve the identity data ["customer-1@example.com"] from an array.
-    If this element is "customer-1@example.com" and is contained in an array, and we haven't already saved this off,
-    we'll add it to our staged array.
-    """
-    return bool(
-        only
-        and not isinstance(element, (dict, list))
-        and (element not in only or element in base)
-    )
-
-
 def select_field_from_input_data(
-    base: Any, input_data: Any, target_path: FieldPath, only: List = []
+    base: Any, input_data: Any, target_path: FieldPath
 ) -> Dict:
     """Extract input_data along the target_path and add to "base"
 
@@ -50,15 +31,11 @@ def select_field_from_input_data(
 
     if isinstance(input_data, list):
         for i, elem in enumerate(input_data):
-            if _skip_unmatched_scalar(elem, only, base):
-                continue
             try:
-                base[i] = select_field_from_input_data(base[i], elem, target_path, only)
+                base[i] = select_field_from_input_data(base[i], elem, target_path)
             except IndexError:
                 base.append(
-                    select_field_from_input_data(
-                        _get_starter(elem), elem, target_path, only
-                    )
+                    select_field_from_input_data(_get_starter(elem), elem, target_path)
                 )
 
     elif isinstance(input_data, dict):
@@ -67,7 +44,7 @@ def select_field_from_input_data(
                 if key not in base:
                     base[key] = _get_starter(input_data[key])
                 base[key] = select_field_from_input_data(
-                    base[key], input_data[key], FieldPath(*target_path.levels[1:]), only
+                    base[key], input_data[key], FieldPath(*target_path.levels[1:])
                 )
     return base
 
@@ -131,10 +108,14 @@ def strip_empty_dicts(data: Any) -> Dict:
 
 def remove_unmatched_array_paths(
     row: Dict[str, Any], incoming_paths: Dict[FieldPath, List]
-):
+) -> Dict[str, Any]:
     """Remove unmatched embedded documents and array indices from the given row"""
-    refined_array_paths: List[List[Union[str, int]]] = _build_incoming_refined_target_paths(row, incoming_paths)
-    array_paths_to_preserve: Dict[str, List[int]] = _build_array_path_preservation(refined_array_paths)
+    refined_array_paths: List[
+        List[Union[str, int]]
+    ] = _build_incoming_refined_target_paths(copy.deepcopy(row), incoming_paths)
+    array_paths_to_preserve: Dict[str, List[int]] = _build_array_path_preservation(
+        refined_array_paths
+    )
 
     desc_path_length = dict(
         sorted(
@@ -145,7 +126,8 @@ def remove_unmatched_array_paths(
     )
     for path, preserve_indices in desc_path_length.items():
         matched_array: List = pydash.objects.get(row, path)
-        for i, _ in enumerate(reversed(matched_array)):
+        # Loop through array in reverse to delete indices
+        for i, _ in reversed(list(enumerate(matched_array))):
             if i not in preserve_indices:
                 matched_array.pop(i)
     return row

@@ -102,16 +102,22 @@ db.internal_customer_profile.insert([
 db.conversations.insert([
     {
         "thread": [
-            {"comment": "com_0001", "message": "hello, testing in-flight chat feature", "chat_name": "John"},
+            {"comment": "com_0001", "message": "hello, testing in-flight chat feature", "chat_name": "John A"},
             {"comment": "com_0002", "message": "yep, got your message, looks like it works", "chat_name": "Jane C"}
         ]
     },
     {
         "thread": [
-            {"comment": "com_0003", "message": "can I borrow your headphones?", "chat_name": "John"},
+            {"comment": "com_0003", "message": "can I borrow your headphones?", "chat_name": "John B"},
             {"comment": "com_0004", "message": "no, sorry I'm using them.", "chat_name": "Jane C"},
-            {"comment": "com_0005", "message": "did you bring anything to read?", "chat_name": "John"},
+            {"comment": "com_0005", "message": "did you bring anything to read?", "chat_name": "John C"},
             {"comment": "com_0006", "message": "try reading the informational brochure in the seat pouch.", "chat_name": "Jane C"}
+        ]
+    },
+    {
+       "thread": [
+            {"comment": "com_0007", "message": "Flight attendants, prepare for take-off please.", "chat_name": "Pilot 1"},
+            {"comment": "com_0008", "message": "Airliner A, runway 12 cleared for takeoff", "chat_name": "ATC 2"},
         ]
     }
 ]);

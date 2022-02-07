@@ -123,10 +123,10 @@ def test_combined_erasure_task(
         "mongo_test:customer_feedback": 1,
         "mongo_test:customer_details": 1,
         "mongo_test:internal_customer_profile": 1,
-        'mongo_test:aircraft': 0,
-        'mongo_test:conversations': 0,
-        'mongo_test:employee': 0,
-        'mongo_test:flights': 0
+        "mongo_test:aircraft": 0,
+        "mongo_test:conversations": 0,
+        "mongo_test:employee": 0,
+        "mongo_test:flights": 0,
     }
 
     rerun_access = graph_task.run_access_request(
@@ -568,14 +568,34 @@ def test_filter_on_array_data_categories_mongo(
         dataset_graph.data_category_field_mapping,
         privacy_request.id,
     )
-
-    # Array field mongo_test:internal_customer_profile.customer_identifiers contains identity, only matching identity returned
+    # Array field mongo_test:internal_customer_profile.customer_identifiers contains identity
+    # Only matching identity returned
     assert filtered_results["mongo_test:internal_customer_profile"][0][
         "customer_identifiers"
     ]["derived_emails"] == ["jane@example.com"]
 
-    # {'passenger_information.passenger_ids': "['D111-11111']"} {'date': 1, 'flight_no': 1, 'passenger_information': 1}
-    # Trying to access array field from array field
+    # # Entire derived_interests array returned - this is not an identity or "to" reference field
+    assert filtered_results["mongo_test:internal_customer_profile"][0][
+        "derived_interests"
+    ] == ["interior design", "travel", "photography"]
+
+    filtered_identifiable = filter_data_categories(
+        access_request_results,
+        {"user.provided.identifiable"},
+        dataset_graph.data_category_field_mapping,
+        privacy_request.id,
+    )
+    # items in array mongo_test:customer_details.travel_identifiers used to lookup matching array elements
+    # in mongo_test:flights:passenger_information.passenger_ids.  passenger_information.full_name has relevant data category.
+    assert filtered_identifiable["mongo_test:flights"][0] == {
+        "passenger_information": {"full_name": "Jane Customer"}
+    }
+
+    # Unmatched embedded documents were excluded
+    assert filtered_identifiable["mongo_test:conversations"] == [
+        {"thread": [{"chat_name": "Jane C"}]},
+        {"thread": [{"chat_name": "Jane C"}, {"chat_name": "Jane C"}]},
+    ]
 
 
 @pytest.mark.integration_mongodb
@@ -589,7 +609,11 @@ class TestRetrievingDataMongo:
     def traversal_node(self, example_datasets, integration_mongodb_config):
         dataset = FidesopsDataset(**example_datasets[1])
         graph = convert_dataset_to_graph(dataset, integration_mongodb_config.key)
-        customer_details_collection = [collection for collection in graph.collections if collection.name=='customer_details'][0]
+        customer_details_collection = [
+            collection
+            for collection in graph.collections
+            if collection.name == "customer_details"
+        ][0]
         node = Node(graph, customer_details_collection)
         traversal_node = TraversalNode(node)
         return traversal_node

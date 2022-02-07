@@ -77,18 +77,16 @@ def test_select_field():
     }
 
     # Test only certain scalar fields selected and added to final results
-    assert select_field_from_input_data(
-        final_results, flat, FieldPath("D"), only=["h", "j"]
-    ) == {
+    assert select_field_from_input_data(final_results, flat, FieldPath("D")) == {
         "A": "a",
         "C": ["d", "e", "f"],
-        "D": ["h", "j"],
+        "D": ["g", "h", "i", "j"],
     }
     # Test nested field selected and added to final results
     assert select_field_from_input_data(final_results, flat, FieldPath("E", "F")) == {
         "A": "a",
         "C": ["d", "e", "f"],
-        "D": ["h", "j"],
+        "D": ["g", "h", "i", "j"],
         "E": {"F": "g"},
     }
     # Test select field not in results
@@ -97,35 +95,40 @@ def test_select_field():
     ) == {
         "A": "a",
         "C": ["d", "e", "f"],
-        "D": ["h", "j"],
+        "D": ["g", "h", "i", "j"],
         "E": {"F": "g"},
     }
 
     # Test more deeply nested scalar from previous dict
     assert select_field_from_input_data(
-        final_results, flat, FieldPath("E", "J", "K", "L", "M"), only=["n"]
+        final_results,
+        flat,
+        FieldPath("E", "J", "K", "L", "M"),
     ) == {
         "A": "a",
         "C": ["d", "e", "f"],
-        "D": ["h", "j"],
-        "E": {"F": "g", "J": {"K": {"L": {"M": ["n"]}}}},
+        "D": ["g", "h", "i", "j"],
+        "E": {"F": "g", "J": {"K": {"L": {"M": ["m", "n", "o"]}}}},
     }
 
     # Test get matching dict key for each element in array
     assert select_field_from_input_data(final_results, flat, FieldPath("F", "G")) == {
         "A": "a",
         "C": ["d", "e", "f"],
-        "D": ["h", "j"],
-        "E": {"F": "g", "J": {"K": {"L": {"M": ["n"]}}}},
+        "D": ["g", "h", "i", "j"],
+        "E": {"F": "g", "J": {"K": {"L": {"M": ["m", "n", "o"]}}}},
         "F": [{"G": "g"}, {"G": "h"}, {"G": "i"}],
     }
 
+    import pdb
+
+    pdb.set_trace()
     # Test get nested fields inside nested arrays
     assert select_field_from_input_data(final_results, flat, FieldPath("H", "N")) == {
         "A": "a",
         "C": ["d", "e", "f"],
-        "D": ["h", "j"],
-        "E": {"F": "g", "J": {"K": {"L": {"M": ["n"]}}}},
+        "D": ["g", "h", "i", "j"],
+        "E": {"F": "g", "J": {"K": {"L": {"M": ["m", "n", "o"]}}}},
         "F": [{"G": "g"}, {"G": "h"}, {"G": "i"}],
         "H": [
             [{"N": "n"}, {"N": "o"}, {"N": "p"}],
@@ -134,19 +137,32 @@ def test_select_field():
         ],
     }
 
+    import pdb
+
+    pdb.set_trace()
     # Test get nested fields inside nested arrays
-    assert select_field_from_input_data(
-        final_results, flat, FieldPath("H", "M"), only=[2]
-    ) == {
+    assert select_field_from_input_data(final_results, flat, FieldPath("H", "M")) == {
         "A": "a",
         "C": ["d", "e", "f"],
-        "D": ["h", "j"],
-        "E": {"F": "g", "J": {"K": {"L": {"M": ["n"]}}}},
+        "D": ["g", "h", "i", "j"],
+        "E": {"F": "g", "J": {"K": {"L": {"M": ["m", "n", "o"]}}}},
         "F": [{"G": "g"}, {"G": "h"}, {"G": "i"}],
         "H": [
-            [{"M": [2], "N": "n"}, {"M": [2], "N": "o"}, {"M": [], "N": "p"}],
-            [{"M": [], "N": "q"}, {"M": [2], "N": "s"}, {"M": [], "N": "u"}],
-            [{"M": [], "N": "w"}, {"M": [], "N": "y"}, {"M": [2], "N": "z"}],
+            [
+                {"N": "n", "M": [1, 2, 3]},
+                {"N": "o", "M": [3, 2, 1]},
+                {"N": "p", "M": [1, 1, 1]},
+            ],
+            [
+                {"N": "q", "M": [4, 5, 6]},
+                {"N": "s", "M": [2, 2, 2]},
+                {"N": "u", "M": []},
+            ],
+            [
+                {"N": "w", "M": [7, 8, 9]},
+                {"N": "y", "M": [6, 6, 6]},
+                {"N": "z", "M": [2]},
+            ],
         ],
     }
 
@@ -156,51 +172,95 @@ def test_select_field():
     ) == {
         "A": "a",
         "C": ["d", "e", "f"],
-        "D": ["h", "j"],
-        "E": {"F": "g", "J": {"K": {"L": {"M": ["n"]}}}},
+        "D": ["g", "h", "i", "j"],
+        "E": {"F": "g", "J": {"K": {"L": {"M": ["m", "n", "o"]}}}},
         "F": [{"G": "g"}, {"G": "h"}, {"G": "i"}],
         "H": [
-            [{"M": [2], "N": "n"}, {"M": [2], "N": "o"}, {"M": [], "N": "p"}],
-            [{"M": [], "N": "q"}, {"M": [2], "N": "s"}, {"M": [], "N": "u"}],
-            [{"M": [], "N": "w"}, {"M": [], "N": "y"}, {"M": [2], "N": "z"}],
+            [
+                {"N": "n", "M": [1, 2, 3]},
+                {"N": "o", "M": [3, 2, 1]},
+                {"N": "p", "M": [1, 1, 1]},
+            ],
+            [
+                {"N": "q", "M": [4, 5, 6]},
+                {"N": "s", "M": [2, 2, 2]},
+                {"N": "u", "M": []},
+            ],
+            [
+                {"N": "w", "M": [7, 8, 9]},
+                {"N": "y", "M": [6, 6, 6]},
+                {"N": "z", "M": [2]},
+            ],
         ],
         "I": {"X": [{"J": "j"}, {"J": "m"}]},
     }
 
     # Test get deeply nested array field with only matching data, array in arrays
     assert select_field_from_input_data(
-        final_results, flat, FieldPath("I", "X", "K"), only=["customer-1@example.com"]
+        final_results, flat, FieldPath("I", "X", "K")
     ) == {
         "A": "a",
         "C": ["d", "e", "f"],
-        "D": ["h", "j"],
-        "E": {"F": "g", "J": {"K": {"L": {"M": ["n"]}}}},
+        "D": ["g", "h", "i", "j"],
+        "E": {"F": "g", "J": {"K": {"L": {"M": ["m", "n", "o"]}}}},
         "F": [{"G": "g"}, {"G": "h"}, {"G": "i"}],
         "H": [
-            [{"M": [2], "N": "n"}, {"M": [2], "N": "o"}, {"M": [], "N": "p"}],
-            [{"M": [], "N": "q"}, {"M": [2], "N": "s"}, {"M": [], "N": "u"}],
-            [{"M": [], "N": "w"}, {"M": [], "N": "y"}, {"M": [2], "N": "z"}],
+            [
+                {"N": "n", "M": [1, 2, 3]},
+                {"N": "o", "M": [3, 2, 1]},
+                {"N": "p", "M": [1, 1, 1]},
+            ],
+            [
+                {"N": "q", "M": [4, 5, 6]},
+                {"N": "s", "M": [2, 2, 2]},
+                {"N": "u", "M": []},
+            ],
+            [
+                {"N": "w", "M": [7, 8, 9]},
+                {"N": "y", "M": [6, 6, 6]},
+                {"N": "z", "M": [2]},
+            ],
         ],
-        "I": {"X": [{"J": "j", "K": []}, {"J": "m", "K": ["customer-1@example.com"]}]},
+        "I": {
+            "X": [
+                {"J": "j", "K": ["k"]},
+                {"J": "m", "K": ["customer@example.com", "customer-1@example.com"]},
+            ]
+        },
     }
 
     # Get deeply nested array inside of dicts, with only matching data
     assert select_field_from_input_data(
-        final_results, flat, FieldPath("I", "Y", "K"), only=["n"]
+        final_results, flat, FieldPath("I", "Y", "K")
     ) == {
         "A": "a",
         "C": ["d", "e", "f"],
-        "D": ["h", "j"],
-        "E": {"F": "g", "J": {"K": {"L": {"M": ["n"]}}}},
+        "D": ["g", "h", "i", "j"],
+        "E": {"F": "g", "J": {"K": {"L": {"M": ["m", "n", "o"]}}}},
         "F": [{"G": "g"}, {"G": "h"}, {"G": "i"}],
         "H": [
-            [{"M": [2], "N": "n"}, {"M": [2], "N": "o"}, {"M": [], "N": "p"}],
-            [{"M": [], "N": "q"}, {"M": [2], "N": "s"}, {"M": [], "N": "u"}],
-            [{"M": [], "N": "w"}, {"M": [], "N": "y"}, {"M": [2], "N": "z"}],
+            [
+                {"N": "n", "M": [1, 2, 3]},
+                {"N": "o", "M": [3, 2, 1]},
+                {"N": "p", "M": [1, 1, 1]},
+            ],
+            [
+                {"N": "q", "M": [4, 5, 6]},
+                {"N": "s", "M": [2, 2, 2]},
+                {"N": "u", "M": []},
+            ],
+            [
+                {"N": "w", "M": [7, 8, 9]},
+                {"N": "y", "M": [6, 6, 6]},
+                {"N": "z", "M": [2]},
+            ],
         ],
         "I": {
-            "X": [{"J": "j", "K": []}, {"J": "m", "K": ["customer-1@example.com"]}],
-            "Y": [{"K": ["n"]}, {"K": []}],
+            "X": [
+                {"J": "j", "K": ["k"]},
+                {"J": "m", "K": ["customer@example.com", "customer-1@example.com"]},
+            ],
+            "Y": [{"K": ["n"]}, {"K": ["customer@example.com"]}],
         },
     }
 
@@ -208,75 +268,119 @@ def test_select_field():
         final_results,
         flat,
         FieldPath("J", "K", "L", "M", "N", "O"),
-        only=["customer@gmail.com"],
     ) == {
         "A": "a",
         "C": ["d", "e", "f"],
-        "D": ["h", "j"],
-        "E": {"F": "g", "J": {"K": {"L": {"M": ["n"]}}}},
+        "D": ["g", "h", "i", "j"],
+        "E": {"F": "g", "J": {"K": {"L": {"M": ["m", "n", "o"]}}}},
         "F": [{"G": "g"}, {"G": "h"}, {"G": "i"}],
         "H": [
-            [{"M": [2], "N": "n"}, {"M": [2], "N": "o"}, {"M": [], "N": "p"}],
-            [{"M": [], "N": "q"}, {"M": [2], "N": "s"}, {"M": [], "N": "u"}],
-            [{"M": [], "N": "w"}, {"M": [], "N": "y"}, {"M": [2], "N": "z"}],
+            [
+                {"N": "n", "M": [1, 2, 3]},
+                {"N": "o", "M": [3, 2, 1]},
+                {"N": "p", "M": [1, 1, 1]},
+            ],
+            [
+                {"N": "q", "M": [4, 5, 6]},
+                {"N": "s", "M": [2, 2, 2]},
+                {"N": "u", "M": []},
+            ],
+            [
+                {"N": "w", "M": [7, 8, 9]},
+                {"N": "y", "M": [6, 6, 6]},
+                {"N": "z", "M": [2]},
+            ],
         ],
         "I": {
-            "X": [{"J": "j", "K": []}, {"J": "m", "K": ["customer-1@example.com"]}],
-            "Y": [{"K": ["n"]}, {"K": []}],
+            "X": [
+                {"J": "j", "K": ["k"]},
+                {"J": "m", "K": ["customer@example.com", "customer-1@example.com"]},
+            ],
+            "Y": [{"K": ["n"]}, {"K": ["customer@example.com"]}],
         },
-        "J": {"K": {"L": {"M": {"N": {"O": ["customer@gmail.com"]}}}}},
+        "J": {
+            "K": {
+                "L": {"M": {"N": {"O": ["customer@example.com", "customer@gmail.com"]}}}
+            }
+        },
     }
 
     # Test "only" param does not apply to regular scalar fields
-    assert select_field_from_input_data(
-        final_results,
-        flat,
-        FieldPath("B"),
-        only=["invalid_selector"],
-    ) == {
+    assert select_field_from_input_data(final_results, flat, FieldPath("B")) == {
         "A": "a",
         "C": ["d", "e", "f"],
-        "D": ["h", "j"],
-        "E": {"F": "g", "J": {"K": {"L": {"M": ["n"]}}}},
+        "D": ["g", "h", "i", "j"],
+        "E": {"F": "g", "J": {"K": {"L": {"M": ["m", "n", "o"]}}}},
         "F": [{"G": "g"}, {"G": "h"}, {"G": "i"}],
         "H": [
-            [{"M": [2], "N": "n"}, {"M": [2], "N": "o"}, {"M": [], "N": "p"}],
-            [{"M": [], "N": "q"}, {"M": [2], "N": "s"}, {"M": [], "N": "u"}],
-            [{"M": [], "N": "w"}, {"M": [], "N": "y"}, {"M": [2], "N": "z"}],
+            [
+                {"N": "n", "M": [1, 2, 3]},
+                {"N": "o", "M": [3, 2, 1]},
+                {"N": "p", "M": [1, 1, 1]},
+            ],
+            [
+                {"N": "q", "M": [4, 5, 6]},
+                {"N": "s", "M": [2, 2, 2]},
+                {"N": "u", "M": []},
+            ],
+            [
+                {"N": "w", "M": [7, 8, 9]},
+                {"N": "y", "M": [6, 6, 6]},
+                {"N": "z", "M": [2]},
+            ],
         ],
         "I": {
-            "X": [{"J": "j", "K": []}, {"J": "m", "K": ["customer-1@example.com"]}],
-            "Y": [{"K": ["n"]}, {"K": []}],
+            "X": [
+                {"J": "j", "K": ["k"]},
+                {"J": "m", "K": ["customer@example.com", "customer-1@example.com"]},
+            ],
+            "Y": [{"K": ["n"]}, {"K": ["customer@example.com"]}],
         },
-        "J": {"K": {"L": {"M": {"N": {"O": ["customer@gmail.com"]}}}}},
+        "J": {
+            "K": {
+                "L": {"M": {"N": {"O": ["customer@example.com", "customer@gmail.com"]}}}
+            }
+        },
         "B": "b",
     }
 
-    assert select_field_from_input_data(
-        final_results,
-        flat,
-        FieldPath("K", "L"),
-        only=["l"],
-    ) == {
+    assert select_field_from_input_data(final_results, flat, FieldPath("K", "L"),) == {
         "A": "a",
         "C": ["d", "e", "f"],
-        "D": ["h", "j"],
-        "E": {"F": "g", "J": {"K": {"L": {"M": ["n"]}}}},
+        "D": ["g", "h", "i", "j"],
+        "E": {"F": "g", "J": {"K": {"L": {"M": ["m", "n", "o"]}}}},
         "F": [{"G": "g"}, {"G": "h"}, {"G": "i"}],
         "H": [
-            [{"M": [2], "N": "n"}, {"M": [2], "N": "o"}, {"M": [], "N": "p"}],
-            [{"M": [], "N": "q"}, {"M": [2], "N": "s"}, {"M": [], "N": "u"}],
-            [{"M": [], "N": "w"}, {"M": [], "N": "y"}, {"M": [2], "N": "z"}],
+            [
+                {"N": "n", "M": [1, 2, 3]},
+                {"N": "o", "M": [3, 2, 1]},
+                {"N": "p", "M": [1, 1, 1]},
+            ],
+            [
+                {"N": "q", "M": [4, 5, 6]},
+                {"N": "s", "M": [2, 2, 2]},
+                {"N": "u", "M": []},
+            ],
+            [
+                {"N": "w", "M": [7, 8, 9]},
+                {"N": "y", "M": [6, 6, 6]},
+                {"N": "z", "M": [2]},
+            ],
         ],
         "I": {
-            "X": [{"J": "j", "K": []}, {"J": "m", "K": ["customer-1@example.com"]}],
-            "Y": [{"K": ["n"]}, {"K": []}],
+            "X": [
+                {"J": "j", "K": ["k"]},
+                {"J": "m", "K": ["customer@example.com", "customer-1@example.com"]},
+            ],
+            "Y": [{"K": ["n"]}, {"K": ["customer@example.com"]}],
         },
-        "J": {"K": {"L": {"M": {"N": {"O": ["customer@gmail.com"]}}}}},
+        "J": {
+            "K": {
+                "L": {"M": {"N": {"O": ["customer@example.com", "customer@gmail.com"]}}}
+            }
+        },
         "B": "b",
-        "K": [
-            {"L": "l", "M": "m"}
-        ],  # Only this array element should return - not yet working
+        "K": [{"L": "l"}, {"L": "n"}],
     }
 
 
