@@ -1,10 +1,105 @@
 import logging
 import pytest
+from typing import Dict, Generator, List
+from uuid import uuid4
+
+from sqlalchemy.orm import Session
 
 from fidesops.db.session import get_db_session, get_db_engine
+from fidesops.models.connectionconfig import (
+    ConnectionConfig,
+    AccessLevel,
+    ConnectionType,
+)
+from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.service.connectors import MySQLConnector
 
+from .application_fixtures import integration_secrets
+
 logger = logging.getLogger(__name__)
+
+
+@pytest.fixture(scope="function")
+def dataset_config_mysql(
+    connection_config: ConnectionConfig,
+    db: Session,
+) -> Generator:
+    dataset_config = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config.id,
+            "fides_key": "mysql_example_subscriptions_dataset",
+            "dataset": {
+                "fides_key": "mysql_example_subscriptions_dataset",
+                "name": "Mysql Example Subscribers Dataset",
+                "description": "Example Mysql dataset created in test fixtures",
+                "dataset_type": "MySQL",
+                "location": "mysql_example.test",
+                "collections": [
+                    {
+                        "name": "subscriptions",
+                        "fields": [
+                            {
+                                "name": "id",
+                                "data_categories": ["system.operations"],
+                            },
+                            {
+                                "name": "email",
+                                "data_categories": [
+                                    "user.provided.identifiable.contact.email"
+                                ],
+                                "fidesops_meta": {
+                                    "identity": "email",
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    )
+    yield dataset_config
+    dataset_config.delete(db)
+
+
+# TODO: Consolidate these
+@pytest.fixture
+def mysql_example_test_dataset_config(
+    connection_config_mysql: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    mysql_dataset = example_datasets[5]
+    fides_key = mysql_dataset["fides_key"]
+    connection_config_mysql.name = fides_key
+    connection_config_mysql.key = fides_key
+    connection_config_mysql.save(db=db)
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config_mysql.id,
+            "fides_key": fides_key,
+            "dataset": mysql_dataset,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def connection_config_mysql(db: Session) -> Generator:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "my_mysql_db_1",
+            "connection_type": ConnectionType.mysql,
+            "access": AccessLevel.write,
+            "secrets": integration_secrets["mysql_example"],
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
 
 
 @pytest.fixture(scope="function")

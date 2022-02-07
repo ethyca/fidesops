@@ -1,10 +1,61 @@
 import logging
 import pytest
+from typing import Dict, Generator, List
+from uuid import uuid4
+
+from sqlalchemy.orm import Session
 
 from fidesops.db.session import get_db_session, get_db_engine
+from fidesops.models.connectionconfig import (
+    ConnectionConfig,
+    AccessLevel,
+    ConnectionType,
+)
+from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.service.connectors import MicrosoftSQLServerConnector
 
+from .application_fixtures import integration_secrets
+
 logger = logging.getLogger(__name__)
+
+
+@pytest.fixture
+def mssql_example_test_dataset_config(
+    connection_config_mssql: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    mssql_dataset = example_datasets[4]
+    fides_key = mssql_dataset["fides_key"]
+    connection_config_mssql.name = fides_key
+    connection_config_mssql.key = fides_key
+    connection_config_mssql.save(db=db)
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config_mssql.id,
+            "fides_key": fides_key,
+            "dataset": mssql_dataset,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def connection_config_mssql(db: Session) -> Generator:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "my_mssql_db_1",
+            "connection_type": ConnectionType.mssql,
+            "access": AccessLevel.write,
+            "secrets": integration_secrets["mssql_example"],
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
 
 
 @pytest.fixture(scope="function")
