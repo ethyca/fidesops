@@ -75,7 +75,10 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
 
 
 def get_privacy_request_results(
-    db, policy, cache, privacy_request_data: Dict[str, Any]
+    db,
+    policy,
+    cache,
+    privacy_request_data: Dict[str, Any],
 ) -> PrivacyRequest:
     """Utility method to run a privacy request and return results after waiting for
     the returned future."""
@@ -130,13 +133,13 @@ def get_privacy_request_results(
 def test_create_and_process_access_request(
     trigger_webhook_mock,
     postgres_example_test_dataset_config_read_access,
+    postgres_integration_db,
     db,
     cache,
     policy,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
 ):
-
     customer_email = "customer-1@example.com"
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
@@ -181,6 +184,7 @@ def test_create_and_process_access_request(
 def test_create_and_process_access_request_mssql(
     trigger_webhook_mock,
     mssql_example_test_dataset_config,
+    mssql_integration_db,
     db,
     cache,
     policy,
@@ -220,6 +224,7 @@ def test_create_and_process_access_request_mssql(
 def test_create_and_process_access_request_mysql(
     trigger_webhook_mock,
     mysql_example_test_dataset_config,
+    mysql_integration_db,
     db,
     cache,
     policy,
