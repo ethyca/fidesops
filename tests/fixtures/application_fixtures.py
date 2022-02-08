@@ -650,12 +650,12 @@ def dataset_config(
 
 @pytest.fixture(scope="function")
 def dataset_config_preview(
-    connection_config_dry_run: ConnectionConfig, db: Session
+    connection_config: ConnectionConfig, db: Session
 ) -> Generator:
     dataset_config = DatasetConfig.create(
         db=db,
         data={
-            "connection_config_id": connection_config_dry_run.id,
+            "connection_config_id": connection_config.id,
             "fides_key": "postgres",
             "dataset": {
                 "fides_key": "postgres",
