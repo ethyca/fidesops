@@ -79,19 +79,19 @@ def mssql_integration_session(mssql_integration_session_cls):
 
 def truncate_all_tables(mssql_integration_session):
     tables = [
-        "product",
-        "customer",
-        "employee",
-        "address",
-        "customer",
-        "employee",
-        "payment_card",
-        "orders",
-        "order_item",
-        "visit",
-        "login",
-        "service_request",
-        "report",
+        "dbo.product",
+        "dbo.customer",
+        "dbo.employee",
+        "dbo.address",
+        "dbo.customer",
+        "dbo.employee",
+        "dbo.payment_card",
+        "dbo.orders",
+        "dbo.order_item",
+        "dbo.visit",
+        "dbo.login",
+        "dbo.service_request",
+        "dbo.report",
     ]
     [mssql_integration_session.execute(f"TRUNCATE TABLE {table};") for table in tables]
 

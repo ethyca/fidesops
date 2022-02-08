@@ -43,7 +43,11 @@ def mariadb_example_db() -> Generator:
     )
     engine = get_db_engine(database_uri=example_mariadb_uri)
     logger.debug(f"Connecting to MariaDB example database at: {engine.url}")
-    SessionLocal = get_db_session(engine=engine)
+    SessionLocal = get_db_session(
+        engine=engine,
+        autocommit=True,
+        autoflush=True,
+    )
     the_session = SessionLocal()
     # Setup above...
     yield the_session
