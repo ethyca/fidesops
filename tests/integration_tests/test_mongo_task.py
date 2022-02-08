@@ -34,7 +34,6 @@ from fidesops.service.connectors import get_connector
 from fidesops.task import graph_task
 from fidesops.task.filter_results import (
     filter_data_categories,
-    get_collection_inputs_from_cache,
 )
 
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
@@ -245,33 +244,6 @@ def test_dask_mongo_task(integration_mongodb_config: ConnectionConfig) -> None:
 
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
-def test_cached_inputs(integration_mongodb_config: ConnectionConfig) -> None:
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
-
-    graph_task.run_access_request(
-        privacy_request,
-        policy,
-        integration_db_graph("mongo_test", integration_mongodb_config.key),
-        [integration_mongodb_config],
-        {"email": "customer-1@example.com"},
-    )
-    cached_inputs = get_collection_inputs_from_cache(privacy_request.id)
-
-    assert cached_inputs == {
-        CollectionAddress("mongo_test", "orders"): {FieldPath("customer_id"): ["1"]},
-        CollectionAddress("mongo_test", "customer"): {
-            FieldPath("email"): ["customer-1@example.com"]
-        },
-        CollectionAddress("mongo_test", "payment_card"): {
-            FieldPath("customer_id"): ["1"],
-            FieldPath("id"): ["pay_aaa-aaa", "pay_aaa-aaa", "pay_bbb-bbb"],
-        },
-        CollectionAddress("mongo_test", "address"): {},
-    }
-
-
-@pytest.mark.integration_mongodb
-@pytest.mark.integration
 def test_composite_key_erasure(
     db,
     integration_mongodb_config: ConnectionConfig,
@@ -476,7 +448,6 @@ def test_object_querying_mongo(
         access_request_results,
         target_categories,
         dataset_graph.data_category_field_mapping,
-        privacy_request.id,
     )
 
     # Mongo results obtained via customer_id relationship from postgres_example_test_dataset.customer.id
@@ -492,7 +463,6 @@ def test_object_querying_mongo(
         access_request_results,
         target_categories,
         dataset_graph.data_category_field_mapping,
-        privacy_request.id,
     )
     assert filtered_results["mongo_test:customer_feedback"][0] == {
         "customer_information": {"phone": "333-333-3333"}
@@ -504,7 +474,6 @@ def test_object_querying_mongo(
         access_request_results,
         target_categories,
         dataset_graph.data_category_field_mapping,
-        privacy_request.id,
     )
     assert len(filtered_results["mongo_test:customer_details"]) == 1
 
@@ -529,7 +498,6 @@ def test_object_querying_mongo(
         access_request_results,
         target_categories,
         dataset_graph.data_category_field_mapping,
-        privacy_request.id,
     )
 
     # Test for accessing array
@@ -571,7 +539,6 @@ def test_array_querying_mongo(
         access_request_results,
         target_categories,
         dataset_graph.data_category_field_mapping,
-        privacy_request.id,
     )
     # Array field mongo_test:internal_customer_profile.customer_identifiers contains identity
     # Only matching identity returned
@@ -588,7 +555,6 @@ def test_array_querying_mongo(
         access_request_results,
         {"user.provided.identifiable"},
         dataset_graph.data_category_field_mapping,
-        privacy_request.id,
     )
 
     # Includes array field
@@ -614,12 +580,8 @@ def test_array_querying_mongo(
         {"thread": [{"chat_name": "Jane C"}, {"chat_name": "Jane C"}]},
     ]
 
-    # Integer field mongo_test:flights.plane used to locate matching elem in mongo_test:aircraft:planes array field
-    assert access_request_results["mongo_test:aircraft"][0]["planes"] == [
-        30005,
-        30006,
-        30007,
-    ]
+    # Integer field mongo_test:flights.plane used to locate only matching elem in mongo_test:aircraft:planes array field
+    assert access_request_results["mongo_test:aircraft"][0]["planes"] == [30005]
     # Filtered out, however, because there's no relevant matched data category
     assert filtered_identifiable["mongo_test:aircraft"] == []
 
@@ -630,6 +592,9 @@ def test_array_querying_mongo(
 
     # No data for identity in this collection
     assert access_request_results["mongo_test:customer_feedback"] == []
+
+    # Only matched embedded document in mongo_test:conversations.thread.ccn used to locate mongo_test:payment_card
+    assert filtered_identifiable["mongo_test:payment_card"] == [{'code': '123', 'name': 'Example Card 2', 'ccn': '987654321'}]
 
     # Run again with different email
     access_request_results = graph_task.run_access_request(
@@ -643,7 +608,6 @@ def test_array_querying_mongo(
         access_request_results,
         {"user.provided.identifiable"},
         dataset_graph.data_category_field_mapping,
-        privacy_request.id,
     )
 
     # Two values in mongo_test:flights:pilots array field mapped to mongo_test:employee ids

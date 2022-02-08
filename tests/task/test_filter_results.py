@@ -9,7 +9,6 @@ from fidesops.task.filter_results import (
     remove_empty_objects,
     filter_data_categories,
 )
-from tests.task.test_graph_task import cache_input_helper
 
 
 def test_select_and_save_field():
@@ -447,7 +446,7 @@ def test_filter_data_categories():
     }
 
     only_a_categories = filter_data_categories(
-        copy.deepcopy(access_request_results), {"A"}, data_category_fields, "test_id"
+        copy.deepcopy(access_request_results), {"A"}, data_category_fields
     )
 
     assert only_a_categories == {
@@ -457,7 +456,7 @@ def test_filter_data_categories():
     }
 
     only_b_categories = filter_data_categories(
-        copy.deepcopy(access_request_results), {"B"}, data_category_fields, "test_id"
+        copy.deepcopy(access_request_results), {"B"}, data_category_fields
     )
     assert only_b_categories == {
         "postgres_example:supplies": [
@@ -470,7 +469,7 @@ def test_filter_data_categories():
     }
 
     only_c_categories = filter_data_categories(
-        copy.deepcopy(access_request_results), {"C"}, data_category_fields, "test_id"
+        copy.deepcopy(access_request_results), {"C"}, data_category_fields
     )
     assert only_c_categories == {
         "postgres_example:supplies": [
@@ -479,12 +478,12 @@ def test_filter_data_categories():
     }
 
     only_d_categories = filter_data_categories(
-        copy.deepcopy(access_request_results), {"D"}, data_category_fields, "test_id"
+        copy.deepcopy(access_request_results), {"D"}, data_category_fields
     )
     assert only_d_categories == {}
 
     only_e_categories = filter_data_categories(
-        copy.deepcopy(access_request_results), {"E"}, data_category_fields, "test_id"
+        copy.deepcopy(access_request_results), {"E"}, data_category_fields
     )
     assert only_e_categories == {
         "postgres_example:supplies": [
@@ -521,7 +520,7 @@ def test_filter_data_categories_arrays():
     }
 
     only_a_category = filter_data_categories(
-        copy.deepcopy(access_request_results), {"A"}, data_category_fields, "test_id"
+        copy.deepcopy(access_request_results), {"A"}, data_category_fields
     )
 
     # Nested array field retrieved
@@ -531,17 +530,11 @@ def test_filter_data_categories_arrays():
         ]
     }
 
-    # Only matching cached value in nested array retrieved
-    cache_input_helper(
-        privacy_request_id="test_id",
-        collection_address_str="postgres_example:flights",
-        value={"people.pilot_ids": [112]},
-    )
     only_b_category = filter_data_categories(
-        copy.deepcopy(access_request_results), {"B"}, data_category_fields, "test_id"
+        copy.deepcopy(access_request_results), {"B"}, data_category_fields
     )
     assert only_b_category == {
-        "postgres_example:flights": [{"people": {"pilot_ids": [112]}}]
+        "postgres_example:flights": [{"people": {"pilot_ids": [123, 12, 112]}}]
     }
 
 
@@ -890,7 +883,7 @@ def test_filter_data_categories_limited_results():
     }
 
     filtered_results = filter_data_categories(
-        copy.deepcopy(jane_results), target_categories, data_category_fields, "test_id"
+        copy.deepcopy(jane_results), target_categories, data_category_fields
     )
 
     assert filtered_results == {

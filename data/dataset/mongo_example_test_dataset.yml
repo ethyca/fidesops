@@ -215,3 +215,26 @@ dataset:
             data_categories: [ system.operations ]
             fidesops_meta:
               data_type: string
+      - name: payment_card
+        fields:
+          - name: billing_address_id
+            data_categories: [ system.operations ]
+          - name: ccn
+            data_categories: [ user.provided.identifiable.financial.account_number ]
+            fidesops_meta:
+              references:
+                - dataset: mongo_test
+                  field: conversations.thread.ccn
+                  direction: from
+          - name: code
+            data_categories: [ user.provided.identifiable.financial ]
+          - name: customer_id
+            data_categories: [ user.derived.identifiable.unique_id ]
+          - name: id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+          - name: name
+            data_categories: [ user.provided.identifiable.financial ]
+          - name: preferred
+            data_categories: [ user.provided.nonidentifiable ]

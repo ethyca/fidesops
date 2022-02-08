@@ -288,13 +288,6 @@ def test_mongo_dry_run_queries() -> None:
     )
 
 
-def cache_input_helper(privacy_request_id, collection_address_str, value):
-    """Test helper for caching input data into a collection for a given privacy request in Redis"""
-    cache = get_cache()
-    key = f"INPUT__{privacy_request_id}__access_request__{collection_address_str}"
-    cache.set_encoded_object(key, value)
-
-
 def test_consolidate_query_matches():
     # Matching scalar returned
     input_data = {"B": 55}

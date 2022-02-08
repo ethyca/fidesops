@@ -22,6 +22,7 @@ from fidesops.models.connectionconfig import ConnectionConfig, AccessLevel
 from fidesops.models.policy import ActionType, Policy
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLogStatus
 from fidesops.service.connectors import BaseConnector
+from fidesops.task.filter_element_match import filter_element_match
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.collection_util import partition, append
 from fidesops.util.logger import NotPii
@@ -228,7 +229,15 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         output = self.connector.retrieve_data(
             self.traversal_node, self.resources.policy, formatted_input_data
         )
-        self.resources.cache_inputs(f"access_request__{self.key}", formatted_input_data)
+        for row in output:
+            # In code, filter out non-matching sub-documents and array elements
+            filter_element_match(
+                row,
+                {
+                    FieldPath.parse(field): inputs
+                    for field, inputs in formatted_input_data.items()
+                },
+            )
         self.resources.cache_object(f"access_request__{self.key}", output)
         self.log_end(ActionType.access)
         return output

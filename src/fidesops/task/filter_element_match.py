@@ -19,7 +19,7 @@ def filter_element_match(
     row: Dict[str, Any], query_paths: Dict[FieldPath, List[Any]]
 ) -> Dict[str, Any]:
     """
-    Filter row to only contain matched elements or matched embedded documents within arrays.
+    Modifies row in place to only contain matched elements or matched embedded documents within arrays.
 
     :param row: Record retrieved from a dataset
     :param query_paths: FieldPaths mapped to query values
@@ -39,7 +39,7 @@ def filter_element_match(
 
     """
     detailed_target_paths: List[DetailedPath] = build_incoming_refined_target_paths(
-        copy.deepcopy(row), query_paths
+        row, query_paths
     )
 
     array_paths_to_preserve: Dict[str, List[int]] = _expand_array_paths_to_preserve(

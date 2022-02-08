@@ -5,8 +5,6 @@ from typing import List, Dict, Any, Optional, Union, Set
 
 from fidesops.graph.config import FieldPath, CollectionAddress
 from fidesops.schemas.shared_schemas import FidesOpsKey
-from fidesops.task.filter_element_match import filter_element_match
-from fidesops.util.cache import get_cache
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +13,6 @@ def filter_data_categories(
     access_request_results: Dict[str, List[Dict[str, Optional[Any]]]],
     target_categories: Set[str],
     data_category_fields: Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]],
-    privacy_request_id: str,
 ) -> Dict[str, List[Dict[str, Optional[Any]]]]:
     """Filter access request results to only return fields associated with the target data categories
     and subcategories.
@@ -27,7 +24,6 @@ def filter_data_categories(
     :param access_request_results: Dictionary of access request results for each of your collections
     :param target_categories: A set of data categories that we'd like to extract from access_request_results
     :param data_category_fields: Data categories mapped to applicable fields for each collection
-    :param privacy_request_id: The id of the privacy request
 
     :return: Filtered access request results that only contain fields matching the desired data categories.
     """
@@ -35,7 +31,6 @@ def filter_data_categories(
         "Filtering Access Request results to return fields associated with data categories"
     )
     filtered_access_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    collection_inputs = get_collection_inputs_from_cache(privacy_request_id)
     for node_address, results in access_request_results.items():
         if not results:
             continue
@@ -58,10 +53,6 @@ def filter_data_categories(
             continue
 
         for row in results:
-            row = filter_element_match(
-                row,
-                collection_inputs.get(CollectionAddress.from_string(node_address), {}),
-            )
             filtered_results: Dict[str, Any] = {}
             for field_path in target_field_paths:
                 select_and_save_field(filtered_results, row, field_path)
@@ -69,37 +60,6 @@ def filter_data_categories(
             filtered_access_results[node_address].append(filtered_results)
 
     return filtered_access_results
-
-
-def get_collection_inputs_from_cache(
-    privacy_request_id: str,
-) -> Dict[CollectionAddress, Dict[FieldPath, List]]:
-    """
-    Retrieve the inputs that was used to build queries for each collection from the cache for the given privacy request.
-
-    In the example return below, we can see that customer_id 1 was used to find records in the mongo_test orders
-    collection, and the nested_resource.email values "customer-1@example.com" and "customer@example.com" were used to
-    locate records on the mongo_test customer collection.
-    {
-        CollectionAddress("mongo_test", "orders"): {FieldPath("customer_id"): ["1"]},
-        CollectionAddress("mongo_test", "customer"): {
-            FieldPath("nested_resource.email"): ["customer-1@example.com", "customer@example.com"]
-        }
-    }
-
-    :param privacy_request_id: the id of the privacy request so we can retrieve inputs from the cache
-    :return: FieldPaths mapped to input data for each collection.
-
-    """
-    cache = get_cache()
-    value_dict = cache.get_encoded_objects_by_prefix(f"INPUT__{privacy_request_id}")
-    return {
-        CollectionAddress.from_string(collection_name.split("__")[-1]): {
-            FieldPath.parse(field): inputs
-            for field, inputs in collection_inputs.items()
-        }
-        for collection_name, collection_inputs in value_dict.items()
-    }
 
 
 def select_and_save_field(saved: Any, row: Any, target_path: FieldPath) -> Dict:
