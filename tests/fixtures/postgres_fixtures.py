@@ -127,7 +127,9 @@ def second_postgres_execution_log(
 
 
 @pytest.fixture(scope="function")
-def connection_config(db: Session) -> Generator:
+def connection_config(
+    db: Session,
+) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -143,7 +145,9 @@ def connection_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def read_connection_config(db: Session) -> Generator:
+def read_connection_config(
+    db: Session,
+) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -159,8 +163,8 @@ def read_connection_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def postgres_integration_session_cls(connection_config_postgres):
-    example_postgres_uri = PostgreSQLConnector(connection_config_postgres).build_uri()
+def postgres_integration_session_cls(connection_config):
+    example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
     engine = get_db_engine(database_uri=example_postgres_uri)
     SessionLocal = get_db_session(
         engine=engine,
