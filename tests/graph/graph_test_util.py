@@ -18,7 +18,7 @@ from fidesops.service.connectors.sql_connector import SQLConnector
 
 from fidesops.task.graph_task import GraphTask
 from fidesops.task.task_resources import TaskResources
-from ..fixtures import faker
+from ..fixtures.application_fixtures import faker
 
 
 class MockResources(TaskResources):
