@@ -162,6 +162,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 Tuple[FieldPath, FieldPath]
             ] = self.incoming_field_path_map[collection_address]
 
+            logger.info(
+                f"Consolidating incoming data into {self.traversal_node.node.address} from {collection_address}."
+            )
             for row in rowset:
                 for foreign_field_path, local_field_path in field_mappings:
                     new_values: List = consolidate_query_matches(
@@ -234,8 +237,12 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         output = self.connector.retrieve_data(
             self.traversal_node, self.resources.policy, formatted_input_data
         )
+
         for row in output:
             # In code, filter out non-matching sub-documents and array elements
+            logger.info(
+                f"Filtering row in {self.traversal_node.node.address} for matching array elements."
+            )
             filter_element_match(
                 row,
                 {

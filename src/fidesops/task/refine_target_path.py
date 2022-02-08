@@ -1,3 +1,4 @@
+import logging
 from typing import Dict, Any, List, Union
 
 from fidesops.graph.config import FieldPath
@@ -6,6 +7,8 @@ Level = Union[str, int]
 DetailedPath = List[
     Level
 ]  # A more detailed path to a field, potentially containing indices
+
+logger = logging.getLogger(__name__)
 
 
 def build_incoming_refined_target_paths(
@@ -68,11 +71,10 @@ def refine_target_path(
     try:
         current_level = target_path[0]
         current_elem = row[current_level]
-    except (
-        IndexError,
-        KeyError,
-        TypeError,
-    ):  # No field path, field path not found in record, or invalid field path
+    except KeyError:  # FieldPath not found in record, this is expected to happen when data doesn't exist in collection
+        return []
+    except (IndexError, TypeError):  # No field path or invalid field path
+        logger.warning(f"Error with locating {target_path} on row")
         return []
 
     if isinstance(current_elem, dict):
