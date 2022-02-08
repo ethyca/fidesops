@@ -57,7 +57,7 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
 integration_config = load_toml("fidesops-integration.toml")
-saas_secrets = load_toml("saas_secrets.toml")
+saas_config = load_toml("saas_config.toml")
 
 # Unified list of connections to integration dbs specified from fidesops-integration.toml
 
@@ -96,6 +96,15 @@ integration_secrets = {
         "username": pydash.get(integration_config, "mariadb_example.USER"),
         "password": pydash.get(integration_config, "mariadb_example.PASSWORD"),
     },
+}
+
+saas_secrets = {
+    "mailchimp": {
+        "domain": pydash.get(saas_config, "mailchimp.domain") or os.environ.get("MAILCHIMP_DOMAIN"),
+        "username": pydash.get(saas_config, "mailchimp.username") or os.environ.get("MAILCHIMP_USERNAME"),
+        "api_key": pydash.get(saas_config, "mailchimp.api_key") or os.environ.get("MAILCHIMP_API_KEY"),
+        "account_email": pydash.get(saas_config, "mailchimp.account_email") or os.environ.get("MAILCHIMP_ACCOUNT_EMAIL"),
+    }
 }
 
 
