@@ -316,7 +316,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\"name\": \"Application PostgreSQL DB\",\n    \"key\": \"{{postgres_key}}\",\n    \"connection_type\": \"postgres\",\n    \"access\": \"read\"\n}]",
+							"raw": "[\n    {\"name\": \"Application PostgreSQL DB\",\n    \"key\": \"{{postgres_key}}\",\n    \"connection_type\": \"postgres\",\n    \"access\": \"write\"\n}]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -353,7 +353,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\n    \"name\": \"My Mongo DB\",\n    \"key\": \"{{mongo_key}}\",\n    \"connection_type\": \"mongodb\",\n    \"access\": \"read\"\n    }\n]",
+							"raw": "[\n    {\n    \"name\": \"My Mongo DB\",\n    \"key\": \"{{mongo_key}}\",\n    \"connection_type\": \"mongodb\",\n    \"access\": \"write\"\n    }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -705,7 +705,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\n        \"requested_at\": \"2021-08-30T16:09:37.359Z\",\n        \"identity\": {\"email\": \"customer-2@example.com\"},\n        \"policy_key\": \"{{separate_policy_key}}\"\n    }\n]",
+							"raw": "[\n    {\n        \"requested_at\": \"2021-08-30T16:09:37.359Z\",\n        \"identity\": {\"email\": \"customer-1@example.com\"},\n        \"policy_key\": \"{{separate_policy_key}}\"\n    }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2074,8 +2074,7 @@
 		},
 		{
 			"key": "mysql_key",
-			"value": "app_mysql_db",
-			"type": "string"
+			"value": "app_mysql_db"
 		},
 		{
 			"key": "mongo_key",
