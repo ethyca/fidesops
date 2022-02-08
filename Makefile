@@ -106,7 +106,7 @@ mypy: compose-build
 pytest: compose-build
 	@echo "Running pytest unit tests..."
 	@docker-compose run $(IMAGE_NAME) \
-		pytest $(pytestpath) -m "not integration and not integration_erasure and not integration_external"
+		pytest $(pytestpath) -m "not integration and not integration_external"
 
 pytest-integration: compose-build
 	@virtualenv -p python3 fidesops_test_dispatch; \
