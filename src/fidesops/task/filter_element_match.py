@@ -36,7 +36,6 @@ def filter_element_match(
     )
 
     {"A": [2], "B": 2, "C": [{"D": 5, "E": 6}, {"D": 5, "E": 7}]}
-
     """
     detailed_target_paths: List[DetailedPath] = build_incoming_refined_target_paths(
         row, query_paths

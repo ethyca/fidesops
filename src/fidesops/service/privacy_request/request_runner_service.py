@@ -22,8 +22,8 @@ from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.service.storage.storage_uploader_service import upload
 from fidesops.task.graph_task import (
     run_access_request,
-    run_erasure,
     filter_data_categories,
+    run_erasure,
 )
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.util.async_util import run_async
