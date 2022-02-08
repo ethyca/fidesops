@@ -23,6 +23,7 @@ db.customer_details.insert([
         },
         "emergency_contacts": [  // Discovered array of objects
             {"name": "June Customer", "relationship": "mother", "phone": "444-444-4444"},
+            {"name": "Josh Customer", "relationship": "brother", "phone": "111-111-111"},
         ],
         "children": ["Christopher Customer", "Courtney Customer"],  // Discovered array of scalars
         "travel_identifiers": ["A111-11111", "B111-11111"], // References a nested array field, flights.passenger_information.passenger_ids

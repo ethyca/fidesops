@@ -12,17 +12,24 @@ logger = logging.getLogger(__name__)
 
 
 def filter_data_categories(
-    access_request_results: Dict[str, Optional[Any]],
+    access_request_results: Dict[str, List[Dict[str, Optional[Any]]]],
     target_categories: Set[str],
     data_category_fields: Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]],
     privacy_request_id: str,
 ) -> Dict[str, List[Dict[str, Optional[Any]]]]:
     """Filter access request results to only return fields associated with the target data categories
-    and subcategories
+    and subcategories.
 
-    If data category "user.provided.identifiable.contact" is specified on one of the rule targets,
-    all fields on subcategories also apply, so ["user.provided.identifiable.contact.city",
+    Regarding subcategories,if data category "user.provided.identifiable.contact" is specified on one of the rule
+    targets, for example, all fields on subcategories also apply, so ["user.provided.identifiable.contact.city",
     "user.provided.identifiable.contact.street", ...], etc.
+
+    :param access_request_results: Dictionary of access request results for each of your collections
+    :param target_categories: A set of data categories that we'd like to extract from access_request_results
+    :param data_category_fields: Data categories mapped to applicable fields for each collection
+    :param privacy_request_id: The id of the privacy request
+
+    :return: Filtered access request results that only contain fields matching the desired data categories.
     """
     logger.info(
         "Filtering Access Request results to return fields associated with data categories"
@@ -68,7 +75,7 @@ def get_collection_inputs_from_cache(
     privacy_request_id: str,
 ) -> Dict[CollectionAddress, Dict[FieldPath, List]]:
     """
-    Retrieve the inputs to each collection from the cache that was used to build queries for the given privacy request.
+    Retrieve the inputs that was used to build queries for each collection from the cache for the given privacy request.
 
     In the example return below, we can see that customer_id 1 was used to find records in the mongo_test orders
     collection, and the nested_resource.email values "customer-1@example.com" and "customer@example.com" were used to
@@ -79,6 +86,9 @@ def get_collection_inputs_from_cache(
             FieldPath("nested_resource.email"): ["customer-1@example.com", "customer@example.com"]
         }
     }
+
+    :param privacy_request_id: the id of the privacy request so we can retrieve inputs from the cache
+    :return: FieldPaths mapped to input data for each collection.
 
     """
     cache = get_cache()
@@ -100,6 +110,13 @@ def select_and_save_field(saved: Any, row: Any, target_path: FieldPath) -> Dict:
 
     To use, you might start with a base that is an empty dict, and loop through a list of FieldPaths you want,
     continuing to pass in the ever-growing new "saved" collection that was returned from the previous iteration.
+
+    :param saved: Call with an empty dict to start, it will recursively update as data along the target_path is added to it.
+    :param row: Call with retrieved row to start, it will recursively be called with a variety of object types until we
+    reach the most deeply nested value.
+    :param target_path: FieldPath to the data we want to retrieve
+
+    :return: modified saved dictionary with given field path if found
     """
 
     def _defaultdict_or_array(resource: Any) -> Any:
@@ -139,6 +156,9 @@ def remove_empty_objects(row: RecursiveRow) -> RecursiveRow:
     `select_and_save_field` recursively builds a nested structure based on desired field paths.
     If no input data was found along a deeply nested field path, we may have empty dicts to clean up
     before supplying response to user.
+
+    :param row: Pass in retrieved row, and it will recursively go through objects and arrays and filter out empty objects.
+    :return: Updated row with empty objects removed
     """
     if isinstance(row, dict):
         for key, value in row.copy().items():

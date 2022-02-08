@@ -1,7 +1,6 @@
 import copy
 from datetime import datetime
 
-import pytest
 from bson import ObjectId
 
 from fidesops.graph.config import FieldPath, CollectionAddress
@@ -67,16 +66,14 @@ def test_select_and_save_field():
     }
 
     # Test simple scalar field selected
-    assert select_and_save_field(final_results, flat, FieldPath("A")) == {
-        "A": "a"
-    }
+    assert select_and_save_field(final_results, flat, FieldPath("A")) == {"A": "a"}
     # Test array field selected, and added to final results
     assert select_and_save_field(final_results, flat, FieldPath("C")) == {
         "A": "a",
         "C": ["d", "e", "f"],
     }
 
-    # Test only certain scalar fields selected and added to final results
+    # Test array field selected and added to results
     assert select_and_save_field(final_results, flat, FieldPath("D")) == {
         "A": "a",
         "C": ["d", "e", "f"],
@@ -89,7 +86,7 @@ def test_select_and_save_field():
         "D": ["g", "h", "i", "j"],
         "E": {"F": "g"},
     }
-    # Test select field not in results
+    # Test select field not in results - no error
     assert select_and_save_field(
         final_results, flat, FieldPath("E", "F", "Z", "X")
     ) == {
@@ -161,9 +158,7 @@ def test_select_and_save_field():
     }
 
     # Test get dict of array of dict fields
-    assert select_and_save_field(
-        final_results, flat, FieldPath("I", "X", "J")
-    ) == {
+    assert select_and_save_field(final_results, flat, FieldPath("I", "X", "J")) == {
         "A": "a",
         "C": ["d", "e", "f"],
         "D": ["g", "h", "i", "j"],
@@ -190,9 +185,7 @@ def test_select_and_save_field():
     }
 
     # Test get deeply nested array field with only matching data, array in arrays
-    assert select_and_save_field(
-        final_results, flat, FieldPath("I", "X", "K")
-    ) == {
+    assert select_and_save_field(final_results, flat, FieldPath("I", "X", "K")) == {
         "A": "a",
         "C": ["d", "e", "f"],
         "D": ["g", "h", "i", "j"],
@@ -224,9 +217,7 @@ def test_select_and_save_field():
     }
 
     # Get deeply nested array inside of dicts, with only matching data
-    assert select_and_save_field(
-        final_results, flat, FieldPath("I", "Y", "K")
-    ) == {
+    assert select_and_save_field(final_results, flat, FieldPath("I", "Y", "K")) == {
         "A": "a",
         "C": ["d", "e", "f"],
         "D": ["g", "h", "i", "j"],
@@ -338,7 +329,7 @@ def test_select_and_save_field():
         "B": "b",
     }
 
-    assert select_and_save_field(final_results, flat, FieldPath("K", "L"), ) == {
+    assert select_and_save_field(final_results, flat, FieldPath("K", "L"),) == {
         "A": "a",
         "C": ["d", "e", "f"],
         "D": ["g", "h", "i", "j"],

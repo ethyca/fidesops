@@ -32,7 +32,10 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.service.connectors import get_connector
 from fidesops.task import graph_task
-from fidesops.task.filter_results import filter_data_categories, get_collection_inputs_from_cache
+from fidesops.task.filter_results import (
+    filter_data_categories,
+    get_collection_inputs_from_cache,
+)
 
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
 from ..task.traversal_data import (
@@ -438,7 +441,7 @@ def test_access_erasure_type_conversion(
 
 
 @pytest.mark.integration
-def test_filter_on_data_categories_mongo(
+def test_object_querying_mongo(
     db,
     privacy_request,
     example_datasets,
@@ -505,11 +508,15 @@ def test_filter_on_data_categories_mongo(
     )
     assert len(filtered_results["mongo_test:customer_details"]) == 1
 
+    # Array of embedded emergency contacts returned, array of children, nested array of workplace_info.direct_reports
     assert filtered_results["mongo_test:customer_details"][0] == {
         "birthday": datetime(1988, 1, 10, 0, 0),
         "gender": "male",
         "children": ["Christopher Customer", "Courtney Customer"],
-        "emergency_contacts": [{"phone": "444-444-4444", "name": "June Customer"}],
+        "emergency_contacts": [
+            {"name": "June Customer", "phone": "444-444-4444"},
+            {"name": "Josh Customer", "phone": "111-111-111"},
+        ],
         "workplace_info": {
             "position": "Chief Strategist",
             "direct_reports": ["Robbie Margo", "Sully Hunter"],
@@ -532,7 +539,7 @@ def test_filter_on_data_categories_mongo(
 
 
 @pytest.mark.integration
-def test_filter_on_array_data_categories_mongo(
+def test_array_querying_mongo(
     db,
     privacy_request,
     example_datasets,
@@ -583,16 +590,72 @@ def test_filter_on_array_data_categories_mongo(
         dataset_graph.data_category_field_mapping,
         privacy_request.id,
     )
+
+    # Includes array field
+    assert filtered_identifiable["mongo_test:customer_details"] == [
+        {
+            "birthday": datetime(1990, 2, 28, 0, 0),
+            "gender": "female",
+            "children": ["Erica Example"],
+        }
+    ]
+
     # items in array mongo_test:customer_details.travel_identifiers used to lookup matching array elements
-    # in mongo_test:flights:passenger_information.passenger_ids.  passenger_information.full_name has relevant data category.
+    # in mongo_test:flights:passenger_information.passenger_ids.  passenger_information.full_name has relevant
+    # data category.
     assert filtered_identifiable["mongo_test:flights"][0] == {
         "passenger_information": {"full_name": "Jane Customer"}
     }
 
-    # Unmatched embedded documents were excluded
+    # Nested customer_details:comments.comment_id field used to find embedded objects conversations.thread.comment
+    # fields. Only matching embedded documents queried for relevant data categories
     assert filtered_identifiable["mongo_test:conversations"] == [
         {"thread": [{"chat_name": "Jane C"}]},
         {"thread": [{"chat_name": "Jane C"}, {"chat_name": "Jane C"}]},
+    ]
+
+    # Integer field mongo_test:flights.plane used to locate matching elem in mongo_test:aircraft:planes array field
+    assert access_request_results["mongo_test:aircraft"][0]["planes"] == [
+        30005,
+        30006,
+        30007,
+    ]
+    # Filtered out, however, because there's no relevant matched data category
+    assert filtered_identifiable["mongo_test:aircraft"] == []
+
+    # Values in mongo_test:flights:pilots array field used to locate scalar field in mongo_test:employee.id
+    assert filtered_identifiable["mongo_test:employee"] == [
+        {"email": "employee-2@example.com", "name": "Jane Employee"}
+    ]
+
+    # No data for identity in this collection
+    assert access_request_results["mongo_test:customer_feedback"] == []
+
+    # Run again with different email
+    access_request_results = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        dataset_graph,
+        [postgres_config, integration_mongodb_config],
+        {"email": "customer-1@example.com"},
+    )
+    filtered_identifiable = filter_data_categories(
+        access_request_results,
+        {"user.provided.identifiable"},
+        dataset_graph.data_category_field_mapping,
+        privacy_request.id,
+    )
+
+    # Two values in mongo_test:flights:pilots array field mapped to mongo_test:employee ids
+    assert filtered_identifiable["mongo_test:employee"] == [
+        {"name": "Jack Employee", "email": "employee-1@example.com"},
+        {"name": "Jane Employee", "email": "employee-2@example.com"},
+    ]
+
+    # Only embedded documents matching mongo_test:conversations.thread.comment returned
+    assert filtered_identifiable["mongo_test:conversations"] == [
+        {"thread": [{"chat_name": "John A"}]},
+        {"thread": [{"chat_name": "John B"}, {"chat_name": "John C"}]},
     ]
 
 
