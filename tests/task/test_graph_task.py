@@ -5,7 +5,6 @@ from bson import ObjectId
 
 from fidesops.graph.config import (
     CollectionAddress,
-    FieldPath,
 )
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
@@ -15,9 +14,7 @@ from fidesops.task.graph_task import (
     collect_queries,
     TaskResources,
     EMPTY_REQUEST,
-    consolidate_query_matches,
 )
-from fidesops.util.cache import get_cache
 from .traversal_data import sample_traversal, combined_mongo_postgresql_graph
 from ..graph.graph_test_util import (
     MockSqlTask,
@@ -64,7 +61,9 @@ class TestToDaskInput:
         t = sample_traversal()
         n = t.traversal_node_dict[CollectionAddress("mysql", "Address")]
 
-        task = MockSqlTask(n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs))
+        task = MockSqlTask(
+            n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs)
+        )
         customers_data = [
             {"contact_address_id": 31, "foo": "X"},
             {"contact_address_id": 32, "foo": "Y"},
@@ -145,10 +144,14 @@ class TestToDaskInput:
             {
                 "_id": ObjectId("61f422e0ddc2559e0c300e95"),
                 "travel_identifiers": ["C111-11111"],
-            }
+            },
         ]
         assert task.to_dask_input_data(truncated_customer_details_output) == {
-            "passenger_information.passenger_ids": ["A111-11111", "B111-11111", "C111-11111"],
+            "passenger_information.passenger_ids": [
+                "A111-11111",
+                "B111-11111",
+                "C111-11111",
+            ],
         }
 
     def test_to_dask_input_aircraft_collection(
@@ -286,51 +289,3 @@ def test_mongo_dry_run_queries() -> None:
         env[CollectionAddress("postgres", "address")]
         == "db.postgres.address.find({'id': {'$in': [?, ?]}}, {'id': 1, 'street': 1, 'city': 1, 'state': 1, 'zip': 1})"
     )
-
-
-def test_consolidate_query_matches():
-    # Matching scalar returned
-    input_data = {"B": 55}
-    target_path = FieldPath("B")
-    assert consolidate_query_matches(input_data, target_path) == [55]
-
-    # Matching array returned as-is
-    input_data = {"A": [1, 2, 3]}
-    target_path = FieldPath("A")
-    assert consolidate_query_matches(input_data, target_path) == [1, 2, 3]
-
-    # Array of embedded objects have multiple matching sub-paths merged
-    field_path = FieldPath("A", "B")
-    input_data = {"A": [{"B": 1, "C": 2}, {"B": 3, "C": 4}, {"B": 5, "C": 6}]}
-    assert consolidate_query_matches(input_data, field_path) == [1, 3, 5]
-
-    # Nested array returned
-    input_data = {"A": {"B": {"C": [9, 8, 7]}}, "D": {"E": {"F"}}}
-    field_path = FieldPath("A", "B", "C")
-    assert consolidate_query_matches(input_data, field_path) == [9, 8, 7]
-
-    # Array of arrays are merged
-    input_data = {"A": [[5, 6], [7, 8], [9, 10]], "B": [[5, 6], [7, 8], [9, 10]]}
-    field_path = FieldPath("A")
-    assert consolidate_query_matches(input_data, field_path) == [5, 6, 7, 8, 9, 10]
-
-    # Array of arrays of embedded objects are merged
-    input_data = {
-        "A": [
-            [{"B": 1, "C": 2, "D": [3]}, {}],
-            [{"B": 3, "C": 4, "D": [5]}, {"B": 77, "C": 88, "D": [99]}],
-        ],
-        "B": [[5, 6], [7, 8], [9, 10]],
-    }
-    field_path = FieldPath("A", "D")
-    assert consolidate_query_matches(input_data, field_path) == [3, 5, 99]
-
-    # Target path doesn't exist in data
-    field_path = FieldPath("A", "E", "X")
-    input_data = {"A": [{"B": 1, "C": 2}, {"B": 3, "C": 4}, {"B": 5, "C": 6}]}
-    assert consolidate_query_matches(input_data, field_path) == []
-
-    # No field path
-    field_path = FieldPath()
-    input_data = {"A": [{"B": 1, "C": 2}, {"B": 3, "C": 4}, {"B": 5, "C": 6}]}
-    assert consolidate_query_matches(input_data, field_path) == []

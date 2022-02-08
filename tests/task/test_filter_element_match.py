@@ -219,9 +219,7 @@ class TestExpandArrayPathsToPreserve:
 
     def test_multiple_matching_embedded_objects(self):
         expanded_field_paths = [["J", 3, "K"], ["J", 1, "J"], ["J", 3, "J"]]
-        assert _expand_array_paths_to_preserve(expanded_field_paths) == {
-            "J": [3, 1]
-        }
+        assert _expand_array_paths_to_preserve(expanded_field_paths) == {"J": [3, 1]}
 
     def test_nested_arrays_of_arrays(self):
         expanded_field_paths = [
@@ -243,4 +241,3 @@ class TestExpandArrayPathsToPreserve:
             "F.1.2": [0],
             "F.1.2.0": [1, 2],
         }
-

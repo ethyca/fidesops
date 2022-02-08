@@ -76,7 +76,7 @@ db.customer_feedback.insert([
         "date": new ISODate("2022-01-10"),
         "message": "Customer service rep was very helpful and answered all my questions."
     }
-])
+]);
 
 db.internal_customer_profile.insert([
     {
@@ -98,7 +98,7 @@ db.internal_customer_profile.insert([
         },
         "derived_interests": ["interior design", "travel", "photography"]
     }
-])
+]);
 
 db.conversations.insert([
     {
@@ -244,7 +244,7 @@ db.customer.insert([
 
         ]
     }
-])
+]);
 
 
 
@@ -279,14 +279,14 @@ db.payment_card.insert([
             "zip": "12345"
         }
     }
-])
+]);
 
 db.product.insert([
     {"id": "1", "name": "Example Product 1", "price": 10},
     {"id": "2", "name": "Example Product 2", "price": 20},
     {"id": "3", "name": "Example Product 2", "price": 50}
 
-])
+]);
 
 db.orders.insert([
     {
@@ -353,20 +353,20 @@ db.orders.insert([
         ]
 
     },
-])
+]);
 
 db.reports.insert([
     {"email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 8, "total_visits": 100},
     {"email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 9, "total_visits": 100},
     {"email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 10, "total_visits": 100},
     {"email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 11, "total_visits": 100}
-])
+]);
 
 db.composite_pk_test.insert([
     {"id_a":1, "id_b":10, "description":"linked to customer 1", "customer_id":"1"},
     {"id_a":1, "id_b":11, "description":"linked to customer 2", "customer_id":"2"},
     {"id_a":2, "id_b":10, "description":"linked to customer 3", "customer_id":"3"}
-    ])
+]);
 
 //values to support test by specific objectId search
 
@@ -374,4 +374,4 @@ db.type_link_test.insert([
     {"_id":ObjectId("000000000000000000000001"), "name":"v1", "key":1, "email":"test1@example.com"},
     {"_id":ObjectId("000000000000000000000002"), "name":"v2", "key":2, "email":"test1@example.com"},
     {"_id":ObjectId("000000000000000000000003"), "name":"v3", "key":3, "email":"test1@example.com"}
-])
+]);

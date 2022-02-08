@@ -1,10 +1,12 @@
+import itertools
 import logging
 import traceback
 from abc import ABC
+from collections import defaultdict
 from functools import wraps
 
 from time import sleep
-from typing import List, Dict, Any, Tuple, Callable, Optional
+from typing import List, Dict, Any, Tuple, Callable, Optional, Set
 
 import dask
 from dask.threaded import get
@@ -21,8 +23,11 @@ from fidesops.graph.traversal import TraversalNode, Row, Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, AccessLevel
 from fidesops.models.policy import ActionType, Policy
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLogStatus
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.connectors import BaseConnector
+from fidesops.task.consolidate_query_matches import consolidate_query_matches
 from fidesops.task.filter_element_match import filter_element_match
+from fidesops.task.filter_results import select_and_save_field, remove_empty_objects
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.collection_util import partition, append
 from fidesops.util.logger import NotPii
@@ -389,33 +394,55 @@ def run_erasure(  # pylint: disable = too-many-arguments
         return erasure_update_map
 
 
-def consolidate_query_matches(
-    row: Dict[str, Any],
-    target_path: FieldPath,
-    flattened_matches: Optional[List] = None,
-) -> List[Any]:
+def filter_data_categories(
+    access_request_results: Dict[str, List[Dict[str, Optional[Any]]]],
+    target_categories: Set[str],
+    data_category_fields: Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]],
+) -> Dict[str, List[Dict[str, Optional[Any]]]]:
+    """Filter access request results to only return fields associated with the target data categories
+    and subcategories.
+
+    Regarding subcategories,if data category "user.provided.identifiable.contact" is specified on one of the rule
+    targets, for example, all fields on subcategories also apply, so ["user.provided.identifiable.contact.city",
+    "user.provided.identifiable.contact.street", ...], etc.
+
+    :param access_request_results: Dictionary of access request results for each of your collections
+    :param target_categories: A set of data categories that we'd like to extract from access_request_results
+    :param data_category_fields: Data categories mapped to applicable fields for each collection
+
+    :return: Filtered access request results that only contain fields matching the desired data categories.
+    TODO move to fidesops.task.filter_results.py, leaving for now to make the diff more clear
     """
-    Recursively consolidates values along from the target_path into a single array.
+    logger.info(
+        "Filtering Access Request results to return fields associated with data categories"
+    )
+    filtered_access_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for node_address, results in access_request_results.items():
+        if not results:
+            continue
 
-    A target_path can point to a single scalar value, an array, or even multiple values within arrays of embedded
-    documents. We consolidate all values into a single flattened list, that are used in subsequent queries
-    to locate records in another collection.
-    """
-    if flattened_matches is None:
-        flattened_matches = []
+        # Gets all FieldPaths on this traversal_node associated with the requested data
+        # categories and sub data categories
+        target_field_paths: Set[FieldPath] = set(
+            itertools.chain(
+                *[
+                    field_paths
+                    for cat, field_paths in data_category_fields[
+                        CollectionAddress.from_string(node_address)
+                    ].items()
+                    if any([cat.startswith(tar) for tar in target_categories])
+                ]
+            )
+        )
 
-    if isinstance(row, list):
-        for elem in row:
-            consolidate_query_matches(elem, target_path, flattened_matches)
+        if not target_field_paths:
+            continue
 
-    elif isinstance(row, dict):
-        for key, value in row.items():
-            if target_path.levels and key == target_path.levels[0]:
-                consolidate_query_matches(
-                    value, FieldPath(*target_path.levels[1:]), flattened_matches
-                )
+        for row in results:
+            filtered_results: Dict[str, Any] = {}
+            for field_path in target_field_paths:
+                select_and_save_field(filtered_results, row, field_path)
+            remove_empty_objects(filtered_results)
+            filtered_access_results[node_address].append(filtered_results)
 
-    else:
-        flattened_matches.append(row)
-
-    return flattened_matches
+    return filtered_access_results

@@ -185,7 +185,9 @@ class TestRefineTargetPath:
 class TestBuildIncomingRefinedTargetPaths:
     def test_build_refined_paths_bad_path(self):
         row = {"A": [1, 2, 3], "B": "C"}
-        result = build_incoming_refined_target_paths(row, {FieldPath("A", "B", "C"): ["F"]})
+        result = build_incoming_refined_target_paths(
+            row, {FieldPath("A", "B", "C"): ["F"]}
+        )
         assert result == []
 
     def test_one_match_makes_list_of_lists(self):

@@ -1,65 +1,9 @@
 import logging
-import itertools
-from collections import defaultdict
-from typing import List, Dict, Any, Optional, Union, Set
+from typing import List, Dict, Any, Union
 
-from fidesops.graph.config import FieldPath, CollectionAddress
-from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.graph.config import FieldPath
 
 logger = logging.getLogger(__name__)
-
-
-def filter_data_categories(
-    access_request_results: Dict[str, List[Dict[str, Optional[Any]]]],
-    target_categories: Set[str],
-    data_category_fields: Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]],
-) -> Dict[str, List[Dict[str, Optional[Any]]]]:
-    """Filter access request results to only return fields associated with the target data categories
-    and subcategories.
-
-    Regarding subcategories,if data category "user.provided.identifiable.contact" is specified on one of the rule
-    targets, for example, all fields on subcategories also apply, so ["user.provided.identifiable.contact.city",
-    "user.provided.identifiable.contact.street", ...], etc.
-
-    :param access_request_results: Dictionary of access request results for each of your collections
-    :param target_categories: A set of data categories that we'd like to extract from access_request_results
-    :param data_category_fields: Data categories mapped to applicable fields for each collection
-
-    :return: Filtered access request results that only contain fields matching the desired data categories.
-    """
-    logger.info(
-        "Filtering Access Request results to return fields associated with data categories"
-    )
-    filtered_access_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    for node_address, results in access_request_results.items():
-        if not results:
-            continue
-
-        # Gets all FieldPaths on this traversal_node associated with the requested data
-        # categories and sub data categories
-        target_field_paths: Set[FieldPath] = set(
-            itertools.chain(
-                *[
-                    field_paths
-                    for cat, field_paths in data_category_fields[
-                        CollectionAddress.from_string(node_address)
-                    ].items()
-                    if any([cat.startswith(tar) for tar in target_categories])
-                ]
-            )
-        )
-
-        if not target_field_paths:
-            continue
-
-        for row in results:
-            filtered_results: Dict[str, Any] = {}
-            for field_path in target_field_paths:
-                select_and_save_field(filtered_results, row, field_path)
-            remove_empty_objects(filtered_results)
-            filtered_access_results[node_address].append(filtered_results)
-
-    return filtered_access_results
 
 
 def select_and_save_field(saved: Any, row: Any, target_path: FieldPath) -> Dict:

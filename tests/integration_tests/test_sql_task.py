@@ -21,7 +21,7 @@ from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.service.connectors import get_connector
 from fidesops.task import graph_task
-from fidesops.task.filter_results import filter_data_categories
+from fidesops.task.graph_task import filter_data_categories
 from ..graph.graph_test_util import (
     assert_rows_match,
     records_matching_fields,
