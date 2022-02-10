@@ -9,7 +9,7 @@ from typing import (
     List,
 )
 
-DOCKER_WAIT = 5
+DOCKER_WAIT = 15
 DOCKERFILE_DATASTORES = [
     "mssql",
     "postgres",
