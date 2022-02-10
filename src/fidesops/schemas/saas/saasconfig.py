@@ -135,7 +135,7 @@ class SaaSConfig(BaseModel):
                     fields.append(ScalarField(name=param.name, identity=param.identity))
             if fields:
                 collections.append(Collection(name=endpoint.name, fields=fields))
-                
+
         return Dataset(
             name=self.name,
             collections=collections,

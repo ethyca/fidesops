@@ -10,6 +10,7 @@ from sqlalchemy import (
     Boolean,
 )
 
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -84,10 +85,9 @@ class ConnectionConfig(Base):
     last_test_timestamp = Column(DateTime(timezone=True))
     last_test_succeeded = Column(Boolean)
 
-    __mapper_args__ = {
-        'polymorphic_on': connection_type,
-        'polymorphic_identity': 'connectionconfig'
-    }
+    saas_config = Column(
+        MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
+    )
 
     def update_test_status(
         self, test_status: ConnectionTestStatus, db: Session

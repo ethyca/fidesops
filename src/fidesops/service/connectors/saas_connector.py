@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 from requests import Session, Request, PreparedRequest, Response
 
 from fidesops.service.connectors.base_connector import BaseConnector
@@ -9,7 +9,7 @@ from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.common_exceptions import ConnectionException
 from fidesops.schemas.saas.saasconfig import SaaSConfig
-from fidesops.models.saasconnectionconfig import SaaSConnectionConfig
+from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.saasconfig import ClientConfig
 
 from fidesops.service.connectors.query_config import SaaSQueryConfig, SaaSRequestParams
@@ -47,13 +47,18 @@ class AuthenticatedClient:
             req.headers["Authorization"] = "Bearer " + self.secrets[token_key]
         return req
 
-    def get_authenticated_request(self, request_params: SaaSRequestParams) -> PreparedRequest:
+    def get_authenticated_request(
+        self, request_params: SaaSRequestParams
+    ) -> PreparedRequest:
         """Returns an authenticated request based on the client config and incoming path, query, and body params"""
         (path, params, data) = request_params
         req = Request(url=f"{self.uri}{path}", params=params, data=data).prepare()
-        return self.add_authentication(req, self.client_config.authentication.strategy_name)
+        return self.add_authentication(
+            req, self.client_config.authentication.strategy_name
+        )
 
     def get(self, request_params: SaaSRequestParams) -> Response:
+        """Builds and executes an authenticated GET request"""
         prepared_request = self.get_authenticated_request(request_params)
         prepared_request.method = "GET"
         return self.session.send(prepared_request)
@@ -62,7 +67,7 @@ class AuthenticatedClient:
 class SaaSConnector(BaseConnector[AuthenticatedClient]):
     """A connector type to integrate with third-party SaaS APIs"""
 
-    def __init__(self, configuration: SaaSConnectionConfig):
+    def __init__(self, configuration: ConnectionConfig):
         super().__init__(configuration)
         self.secrets = configuration.secrets
         self.saas_config = SaaSConfig(**configuration.saas_config)
@@ -74,7 +79,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """Returns the query config for a SaaS connector"""
         return SaaSQueryConfig(node, self.request)
 
-
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
         try:
@@ -82,7 +86,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             prepared_request: SaaSRequestParams = (test_request_path, {}, {})
             self.client().get(prepared_request)
         except Exception:
-            raise ConnectionException(f"Connection Error connecting to {self.saas_config.name}")
+            raise ConnectionException(
+                f"Connection Error connecting to {self.saas_config.name}"
+            )
 
         logger.info(f"Successfully connected to {self.saas_config.name}")
         return ConnectionTestStatus.succeeded
@@ -91,7 +97,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """Build base URI for the given connector"""
         host_key = self.client_config.host.connector_param
         return f"{self.client_config.protocol}://{self.secrets[host_key]}"
-
 
     def create_client(self) -> AuthenticatedClient:
         """Creates an authenticated client builder"""
@@ -124,7 +129,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
             # process response
             if read_request.data_path:
-                processed_response = self.get_value_by_path(response.json(), read_request.data_path)
+                processed_response = self.get_value_by_path(
+                    response.json(), read_request.data_path
+                )
             else:
                 # by default, we expect the collection_name to be one of the root fields in the response
                 processed_response = response.json()[collection_name]

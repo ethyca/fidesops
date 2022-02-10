@@ -611,8 +611,8 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         return None
 
 
-"""Custom type to represent a tuple of path, params, and body values for a SaaS request"""
 SaaSRequestParams = Tuple[str, Dict[str, Any], Dict[str, Any]]
+"""Custom type to represent a tuple of path, params, and body values for a SaaS request"""
 
 
 class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
