@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Any, List, Union
+from typing import Dict, Any, List, Union, Optional
 
 from fidesops.graph.config import FieldPath
 
@@ -11,16 +11,20 @@ DetailedPath = List[
 logger = logging.getLogger(__name__)
 
 
-def build_incoming_refined_target_paths(
-    row: Dict[str, Any], query_paths: Dict[FieldPath, List[Any]]
+def join_detailed_path(detailed_path: DetailedPath) -> str:
+    """Helper method to turn a detailed path of strings and arrays ["A", 0, "B", 1] into "A.0.B.1" """
+    return ".".join(map(str, detailed_path))
+
+
+def build_refined_target_paths(
+    row: Dict[str, Any], query_paths: Dict[FieldPath, Optional[List[Any]]]
 ) -> List[DetailedPath]:
     """
-    Return a list of more detailed path(s) to the matched data that caused that row to be returned. Runs
-    recursive `refine_target_path` for each FieldPath in query_paths. If there are no array paths, the paths
-    will not change.
+    Return a list of more detailed path(s) to data in "row". Runs recursive `refine_target_path` for
+    each FieldPath in query_paths. If there are no array paths, the paths will not change.
 
     :param row: Record retrieved from a dataset
-    :param query_paths: FieldPaths mapped to query values
+    :param query_paths: FieldPaths mapped to values you want to match. If you want to match all values, map FieldPath to None.
     :return: A list of lists containing more detailed paths to the matched data
 
     :Example:
@@ -32,7 +36,7 @@ def build_incoming_refined_target_paths(
     }
     incoming_paths= {FieldPath("A"): [2], FieldPath("C", "E"): [4], FieldPath("G"): [3]}
 
-    build_incoming_refined_target_paths(row, incoming_paths)
+    build_refined_target_paths(row, incoming_paths)
     [["G"], ["A", 1], ["C", 1, "E"], ["C", 2, "E"]]
     """
     found_paths: List[DetailedPath] = []
@@ -48,7 +52,7 @@ def build_incoming_refined_target_paths(
 
 
 def refine_target_path(
-    row: Dict[str, Any], target_path: List[str], only: List[Any]
+    row: Dict[str, Any], target_path: List[str], only: Optional[List[Any]] = None
 ) -> DetailedPath:  # Can also return a list of DetailedPaths if there are multiple matches.
     """
     Recursively modify the target_path to be more detailed path(s) to the referenced data. Instead of just strings,
@@ -56,17 +60,22 @@ def refine_target_path(
 
     :param row: Record retrieved from a dataset
     :param target_path: A list of strings representing the path to the desired field.
-    :param only: A list of values that were used to build the query.
-    :return: A list or a list of lists containing more detailed path(s) to the data in "only".  If there
-    was just one path, we return one list.
+    :param only: A list of values that you want to match. If you want to match all values, you can omit "only".
+    :return: A list or a list of lists containing more detailed path(s) to the data in "only". If data isn't limited in
+     "only", we expand the target_path to all possible target_paths.  If there was just one path, we return one list.
 
     :Example:
-    In this example, path ["A", "B", "C"] points to two elements that match values "F" or "G".  We update
+    In this example, we want to expand path ["A", "B", "C"] to paths that match values "F" or "G".  We update
     the path to insert the indices to locate the appropriate value.
 
     refine_target_path({"A": {"B": [{"C": "D"}, {"C": "F"}, {"C": "G"}]}}, ["A", "B", "C"], only=["F", "G"])
 
     [["A", "B", 1, "C"], ["A", "B", 2, "C"]]
+
+    In this separate example, we want to expand the path to all possible options:
+    refine_target_path({"A": {"B": [{"C": "D"}, {"C": "F"}, {"C": "G"}]}}, ["A", "B", "C"])
+
+    [['A', 'B', 0, 'C'], ['A', 'B', 1, 'C'], ['A', 'B', 2, 'C']]
     """
     try:
         current_level = target_path[0]
@@ -89,7 +98,9 @@ def refine_target_path(
     return [current_level] if _match_found(current_elem, only) else []
 
 
-def _enter_array(array: List[Any], field_path: List[str], only: List[Any]) -> List:
+def _enter_array(
+    array: List[Any], field_path: List[str], only: Optional[List[Any]]
+) -> List:
     """
     Used by recursive "refine_target_path" whenever arrays are encountered in the row.
     """
@@ -120,8 +131,12 @@ def _enter_array(array: List[Any], field_path: List[str], only: List[Any]) -> Li
     return results[0] if len(results) == 1 else results
 
 
-def _match_found(elem: Any, only: List[Any]) -> bool:
-    """The given scalar element matches one of the input values"""
+def _match_found(elem: Any, only: Optional[List[Any]] = None) -> bool:
+    """The given scalar element matches a value in "only", or no values specified"""
+    if not only:
+        # If no values are specified to match, we're just going to return all possible paths
+        return True
+
     return elem in only
 
 

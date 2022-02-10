@@ -537,13 +537,16 @@ class TestMongoQueryConfig:
             row, erasure_policy, privacy_request
         )
         assert mongo_statement[0] == {"_id": 1}
-        # TODO lots of this update statmement is wrong
+
         assert mongo_statement[1] == {
             "$set": {
                 "birthday": None,
-                "emergency_contacts.name": None,
-                "workplace_info.direct_reports": None,
-                "emergency_contacts.phone": None,
+                "children.0": None,
+                "children.1": None,
+                "emergency_contacts.0.name": None,
+                "workplace_info.direct_reports.0": None,
+                "workplace_info.direct_reports.1": None,
+                "emergency_contacts.0.phone": None,
                 "gender": None,
                 "workplace_info.position": None,
                 "children": None,

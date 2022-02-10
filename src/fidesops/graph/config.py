@@ -188,21 +188,6 @@ class FieldPath:
         """Create a FieldPath from a dot-separated input string"""
         return FieldPath(*path_str.split("."))
 
-    def retrieve_from(self, input_data: Dict[str, Any]) -> Any:
-        """Retrieve input data along the FieldPath
-
-        Example:
-            input_data = {"A": {"B": {"C": 2, "D": 3}}}
-            field_path = FieldPath("A", "B", "C")
-            field_path.retrieve_from(input_data) = 2
-
-        Used when handling query results where we need to extract a (potentially
-        nested value), to mask it for example, or use it to build a query for another collection.
-
-        If path isn't found, None is returned by default.
-        """
-        return pydash.objects.get(input_data, self.string_path)
-
 
 class FieldAddress:
     """The representation of a field location in the graph, specified by

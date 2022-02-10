@@ -108,21 +108,20 @@ def test_combined_erasure_task(
         access_request_data,
     )
 
-    # TODO complex erasures not yet addressed
     assert x == {
-        "postgres_example:customer": 1,
-        "postgres_example:orders": 0,
-        "mongo_test:orders": 0,
-        "postgres_example:address": 2,
-        "mongo_test:address": 1,
-        "postgres_example:payment_card": 0,
-        "mongo_test:customer_feedback": 1,
-        "mongo_test:customer_details": 1,
-        "mongo_test:internal_customer_profile": 1,
-        "mongo_test:aircraft": 0,
-        "mongo_test:conversations": 0,
         "mongo_test:employee": 0,
+        "mongo_test:internal_customer_profile": 1,
+        "mongo_test:customer_feedback": 1,
+        "postgres_example:customer": 1,
+        "mongo_test:orders": 0,
+        "mongo_test:customer_details": 1,
+        "postgres_example:payment_card": 0,
+        "mongo_test:address": 1,
+        "postgres_example:orders": 0,
+        "postgres_example:address": 2,
         "mongo_test:flights": 0,
+        "mongo_test:conversations": 0,
+        "mongo_test:aircraft": 0,
     }
 
     rerun_access = graph_task.run_access_request(
@@ -143,15 +142,12 @@ def test_combined_erasure_task(
         is not None
     )
 
-    # TODO This will change when array handling is added - array was just set to None
-    assert (
-        rerun_access["mongo_test:internal_customer_profile"][0]["derived_interests"]
-        is None
-    )
-    assert (
-        rerun_access["mongo_test:internal_customer_profile"][0]["customer_identifiers"]
-        is not None
-    )
+    assert rerun_access["mongo_test:internal_customer_profile"][0][
+        "derived_interests"
+    ] == [None, None]
+    assert rerun_access["mongo_test:internal_customer_profile"][0][
+        "customer_identifiers"
+    ] == {"internal_id": "cust_004"}
 
     # Nested resource deleted
     assert (
@@ -591,7 +587,9 @@ def test_array_querying_mongo(
     assert access_request_results["mongo_test:customer_feedback"] == []
 
     # Only matched embedded document in mongo_test:conversations.thread.ccn used to locate mongo_test:payment_card
-    assert filtered_identifiable["mongo_test:payment_card"] == [{'code': '123', 'name': 'Example Card 2', 'ccn': '987654321'}]
+    assert filtered_identifiable["mongo_test:payment_card"] == [
+        {"code": "123", "name": "Example Card 2", "ccn": "987654321"}
+    ]
 
     # Run again with different email
     access_request_results = graph_task.run_access_request(

@@ -3,6 +3,7 @@ import re
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple
 
+import pydash
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
 
@@ -21,6 +22,10 @@ from fidesops.service.masking.strategy.masking_strategy_factory import (
     get_strategy,
 )
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
+from fidesops.task.refine_target_path import (
+    build_refined_target_paths,
+    join_detailed_path,
+)
 from fidesops.util.collection_util import append, filter_nonempty_values
 from fidesops.util.querytoken import QueryToken
 
@@ -158,16 +163,21 @@ class QueryConfig(Generic[T], ABC):
                         f"strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
                     continue
-                val: Any = rule_field_path.retrieve_from(row)
-                masked_val = self._generate_masked_value(
-                    request.id,
-                    strategy,
-                    val,
-                    masking_override,
-                    null_masking,
-                    rule_field_path,
-                )
-                value_map[rule_field_path.string_path] = masked_val
+                refined_paths: List[str] = [
+                    join_detailed_path(path)
+                    for path in build_refined_target_paths(
+                        row, query_paths={rule_field_path: None}
+                    )
+                ]
+                for detailed_path in refined_paths:
+                    value_map[detailed_path] = self._generate_masked_value(
+                        request_id=request.id,
+                        strategy=strategy,
+                        val=pydash.objects.get(row, detailed_path),
+                        masking_override=masking_override,
+                        null_masking=null_masking,
+                        field_path=detailed_path,
+                    )
         return value_map
 
     @staticmethod
@@ -192,17 +202,17 @@ class QueryConfig(Generic[T], ABC):
         val: Any,
         masking_override: MaskingOverride,
         null_masking: bool,
-        field_path: FieldPath,
+        field_path: str,
     ) -> T:
         masked_val = strategy.mask(val, request_id)
         logger.debug(
-            f"Generated the following masked val for field {field_path.string_path}: {masked_val}"
+            f"Generated the following masked val for field {field_path}: {masked_val}"
         )
         if null_masking:
             return masked_val
         if masking_override.length:
             logger.warning(
-                f"Because a length has been specified for field {field_path.string_path}, we will truncate length "
+                f"Because a length has been specified for field {field_path}, we will truncate length "
                 f"of masked value to match, regardless of masking strategy"
             )
             #  for strategies other than null masking we assume that masked data type is the same as specified data type

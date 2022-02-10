@@ -8,8 +8,9 @@ import pydash
 
 from fidesops.graph.config import FieldPath
 from fidesops.task.refine_target_path import (
-    build_incoming_refined_target_paths,
+    build_refined_target_paths,
     DetailedPath,
+    join_detailed_path,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ def filter_element_match(
 
     {"A": [2], "B": 2, "C": [{"D": 5, "E": 6}, {"D": 5, "E": 7}]}
     """
-    detailed_target_paths: List[DetailedPath] = build_incoming_refined_target_paths(
+    detailed_target_paths: List[DetailedPath] = build_refined_target_paths(
         row, query_paths
     )
 
@@ -123,5 +124,5 @@ def _expand_array_paths_to_preserve(paths: List[DetailedPath]) -> Dict[str, List
     # of the array we want to preserve
     merge_paths: Dict[str, List[int]] = defaultdict(list)
     for path in expanded:
-        merge_paths[".".join(map(str, path[0:-1]))].append(path[-1])  # type: ignore
+        merge_paths[join_detailed_path(path[0:-1])].append(path[-1])  # type: ignore
     return merge_paths
