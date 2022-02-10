@@ -614,8 +614,8 @@ def test_array_querying_mongo(
 
     # Only embedded documents matching mongo_test:conversations.thread.comment returned
     assert filtered_identifiable["mongo_test:conversations"] == [
-        {"thread": [{"chat_name": "John A"}]},
-        {"thread": [{"chat_name": "John B"}, {"chat_name": "John C"}]},
+        {"thread": [{"chat_name": "John C"}]},
+        {"thread": [{"chat_name": "John C"}, {"chat_name": "John C"}]},
     ]
 
 
