@@ -65,6 +65,59 @@ def bigquery_example_test_dataset_config(
     dataset.delete(db=db)
 
 
+@pytest.fixture(scope="function")
+def bigquery_resources(
+        bigquery_example_test_dataset_config,
+):
+    bigquery_connection_config = bigquery_example_test_dataset_config.connection_config
+    connector = BigQueryConnector(bigquery_connection_config)
+    bigquery_client = connector.client()
+    with bigquery_client.connect() as connection:
+        connector.set_schema(connection)
+        uuid = str(uuid4())
+        customer_email = f"customer-{uuid}@example.com"
+        customer_name = f"{uuid}"
+
+        stmt = "select max(id) from customer;"
+        res = connection.execute(stmt)
+        customer_id = res.all()[0][0] + 1
+
+        stmt = "select max(id) from address;"
+        res = connection.execute(stmt)
+        address_id = res.all()[0][0] + 1
+
+        city = "Test City"
+        state = "TX"
+        stmt = f"""
+        insert into address (id, house, street, city, state, zip)
+        values ({address_id}, '{111}', 'Test Street', '{city}', '{state}', '55555');
+        """
+        connection.execute(stmt)
+
+        stmt = f"""
+            insert into customer (id, email, name, address_id)
+            values ({customer_id}, '{customer_email}', '{customer_name}', '{address_id}');
+        """
+        connection.execute(stmt)
+
+        yield {
+            "email": customer_email,
+            "name": customer_name,
+            "id": customer_id,
+            "client": bigquery_client,
+            "address_id": address_id,
+            "city": city,
+            "state": state,
+            "connector": connector,
+        }
+        # Remove test data and close BigQuery connection in teardown
+        stmt = f"delete from customer where email = '{customer_email}';"
+        connection.execute(stmt)
+
+        stmt = f'delete from address where "id" = {address_id};'
+        connection.execute(stmt)
+
+
 @pytest.fixture(scope="session")
 def bigquery_test_engine() -> Generator:
     """Return a connection to a Google BigQuery Warehouse"""
