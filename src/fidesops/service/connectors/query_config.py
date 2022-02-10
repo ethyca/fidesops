@@ -2,6 +2,7 @@ import logging
 import re
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Set, Optional, Generic, TypeVar, Tuple
+from requests import Request
 
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
@@ -610,21 +611,63 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         return None
 
 
-class SaaSQueryConfig(QueryConfig[None]):
-    """Query config to expose base functionality to SaaS connectors"""
+"""Custom type to represent a tuple of path, params, and body values for a SaaS request"""
+SaaSRequestParams = Tuple[str, Dict[str, Any], Dict[str, Any]]
 
-    def dry_run_query(self) -> Optional[str]:
-        return None
+
+class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
+    """Query config that converts SaaS request configurations into populated request params"""
+
+    def __init__(self, node: TraversalNode, request: Request):
+        super().__init__(node)
+        self.request = request
+
+    @staticmethod
+    def prepare_params(
+        request: Request, param_values: Dict[str, Any]
+    ) -> SaaSRequestParams:
+        """
+        Populates the placeholders in the request with the given param_values
+        """
+        path = request.path
+        params: Dict[str, Any] = {}
+        data: Dict[str, Any] = {}
+
+        for param in request.request_params:
+            if param.type == "query":
+                if param.default_value:
+                    params[param.name] = param.default_value
+                elif param.references or param.identity:
+                    params[param.name] = param_values[param.name][0]
+            if param.type == "path":
+                path = path.replace(f"<{param.name}>", param_values[param.name][0])
+
+        return (path, params, data)
 
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
-    ) -> Optional[T]:
-        return None
+    ) -> Optional[List[SaaSRequestParams]]:
+
+        filtered_data = self.typed_filtered_values(input_data)
+
+        request_params = []
+        # populate the SaaS request with reference values from other datasets provided to this node
+        for string_path, reference_values in filtered_data.items():
+            for value in reference_values:
+                request_params.append(
+                    self.prepare_params(self.request, {string_path: [value]})
+                )
+        return request_params
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
-    ) -> Optional[T]:
+    ) -> Optional[List[SaaSRequestParams]]:
         return None
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
-        return ""
+        """Convert query to string"""
+        return "Not supported for SaaSQueryConfig"
+
+    def dry_run_query(self) -> Optional[str]:
+        """dry run query for display"""
+        return None

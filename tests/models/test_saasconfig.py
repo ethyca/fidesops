@@ -2,7 +2,7 @@ from typing import Dict
 import pytest
 
 from fidesops.graph.config import FieldAddress
-from fidesops.models.saasconfig import SaaSConfig
+from fidesops.schemas.saas.saasconfig import SaaSConfig
 
 
 @pytest.mark.saas_connector

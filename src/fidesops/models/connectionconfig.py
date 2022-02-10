@@ -84,6 +84,11 @@ class ConnectionConfig(Base):
     last_test_timestamp = Column(DateTime(timezone=True))
     last_test_succeeded = Column(Boolean)
 
+    __mapper_args__ = {
+        'polymorphic_on': connection_type,
+        'polymorphic_identity': 'connectionconfig'
+    }
+
     def update_test_status(
         self, test_status: ConnectionTestStatus, db: Session
     ) -> None:

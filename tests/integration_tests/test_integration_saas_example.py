@@ -3,7 +3,7 @@ import pytest
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
-from fidesops.models.saasconfig import SaaSConfig
+from fidesops.schemas.saas.saasconfig import SaaSConfig
 from fidesops.schemas.dataset import FidesopsDataset
 
 from fidesops.service.connectors import get_connector

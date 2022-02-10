@@ -10,8 +10,7 @@ RUN apt-get update && \
     curl \
     g++ \
     gnupg \
-    gcc \
-    graphviz
+    gcc
 
 # SQL Server (MS SQL)
 # https://docs.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server?view=sql-server-ver15

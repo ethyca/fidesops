@@ -8,11 +8,11 @@ from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.common_exceptions import ConnectionException
-from fidesops.models.saasconfig import SaaSConfig
+from fidesops.schemas.saas.saasconfig import SaaSConfig
 from fidesops.models.saasconnectionconfig import SaaSConnectionConfig
-from fidesops.models.saasconfig import ClientConfig
+from fidesops.schemas.saas.saasconfig import ClientConfig
 
-from fidesops.service.connectors.query_config import SaaSQueryConfig
+from fidesops.service.connectors.query_config import SaaSQueryConfig, SaaSRequestParams
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +23,14 @@ class AuthenticatedClient:
     authentication and parameter configurations
     """
 
-    def __init__(self, secrets: Dict, client_config: ClientConfig):
-        self.s = Session()
+    def __init__(self, uri: str, secrets: Dict, client_config: ClientConfig):
+        self.session = Session()
+        self.uri = uri
         self.secrets = secrets
         self.client_config = client_config
+        self.authentication_strategy = client_config.authentication.strategy_name
 
-    def addAuthentication(
+    def add_authentication(
         self, req: PreparedRequest, strategy_name: str
     ) -> PreparedRequest:
         """Uses the incoming strategy to add the appropriate authentication method to the base request"""
@@ -45,88 +47,58 @@ class AuthenticatedClient:
             req.headers["Authorization"] = "Bearer " + self.secrets[token_key]
         return req
 
-    def getAuthenticatedRequest(
-        self, path: str, params: Dict, data: Dict
-    ) -> PreparedRequest:
+    def get_authenticated_request(self, request_params: SaaSRequestParams) -> PreparedRequest:
         """Returns an authenticated request based on the client config and incoming path, query, and body params"""
-        host_key = self.client_config.host.connector_param
-        req = Request(
-            url=f"{self.client_config.protocol}://{self.secrets[host_key]}{path}",
-            params=params,
-            data=data,
-        ).prepare()
-        return self.addAuthentication(
-            req, self.client_config.authentication.strategy_name
-        )
+        (path, params, data) = request_params
+        req = Request(url=f"{self.uri}{path}", params=params, data=data).prepare()
+        return self.add_authentication(req, self.client_config.authentication.strategy_name)
 
-    def get(self, path: str, params: Dict, data: Dict) -> Response:
-        """Executes a GET request using the derived authenticated request"""
-        req = self.getAuthenticatedRequest(path=path, params=params, data=data)
-        req.method = "GET"
-        return self.s.send(req)
+    def get(self, request_params: SaaSRequestParams) -> Response:
+        prepared_request = self.get_authenticated_request(request_params)
+        prepared_request.method = "GET"
+        return self.session.send(prepared_request)
 
 
-class SaaSConnector(BaseConnector[None]):
+class SaaSConnector(BaseConnector[AuthenticatedClient]):
     """A connector type to integrate with third-party SaaS APIs"""
 
     def __init__(self, configuration: SaaSConnectionConfig):
-        # pylint: disable=super-init-not-called
-        self.name = configuration.name
+        super().__init__(configuration)
         self.secrets = configuration.secrets
         self.saas_config = SaaSConfig(**configuration.saas_config)
+        self.client_config = self.saas_config.client_config
         self.endpoints = self.saas_config.top_level_endpoint_dict
-        self.http_client: Optional[AuthenticatedClient] = None
+        self.request: Optional[Request] = None
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
         """Returns the query config for a SaaS connector"""
-        return SaaSQueryConfig(node)
+        return SaaSQueryConfig(node, self.request)
+
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
         try:
             test_request_path = self.saas_config.test_request.path
-            response = self.client().get(path=test_request_path, params={}, data={})
-            print(response.json())
+            prepared_request: SaaSRequestParams = (test_request_path, {}, {})
+            self.client().get(prepared_request)
         except Exception:
-            raise ConnectionException(f"Connection Error connecting to {self.name}")
+            raise ConnectionException(f"Connection Error connecting to {self.saas_config.name}")
 
-        logger.info(f"Successfully connected to {self.name}")
+        logger.info(f"Successfully connected to {self.saas_config.name}")
         return ConnectionTestStatus.succeeded
+
+    def build_uri(self) -> str:
+        """Build base URI for the given connector"""
+        host_key = self.client_config.host.connector_param
+        return f"{self.client_config.protocol}://{self.secrets[host_key]}"
+
 
     def create_client(self) -> AuthenticatedClient:
         """Creates an authenticated client builder"""
-        return AuthenticatedClient(self.secrets, self.saas_config.client_config)
+        return AuthenticatedClient(self.build_uri(), self.secrets, self.client_config)
 
-    def client(self) -> AuthenticatedClient:
-        """Returns an authenticated client builder (or creates one if it doesn't exist)"""
-        if not self.http_client:
-            self.http_client = self.create_client()
-        return self.http_client
-
-    def populate_parameters(
-        self, request: Request, param_values: Dict[str, Any]
-    ) -> Tuple[str, Dict, Dict]:
-        """
-        Generates the path and query/path/body params for a given Request
-        based on incoming data from the graph traversal
-        """
-        path = request.path
-        params: Dict[str, Any] = {}
-        data: Dict[str, Any] = {}
-
-        for param in request.request_params:
-            if param.type == "query":
-                if param.default_value:
-                    params[param.name] = param.default_value
-                elif param.references or param.identity:
-                    # TODO: update for scenario with multiple references
-                    params[param.name] = param_values[param.name][0]
-            if param.type == "path":
-                path = path.replace(f"<{param.name}>", param_values[param.name][0])
-
-        return (path, params, data)
-
-    def get_value_by_path(self, dictionary: Dict, path: str) -> Dict:
+    @staticmethod
+    def get_value_by_path(dictionary: Dict, path: str) -> Dict:
         """Helper method to extract an arbitrary data path from a given dictionary"""
         value = dictionary
         for key in path.split("/"):
@@ -136,42 +108,29 @@ class SaaSConnector(BaseConnector[None]):
     def retrieve_data(
         self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
     ) -> List[Row]:
-        # pylint: disable=too-many-locals
-        """
-        Uses the incoming node to determine which SaaS config endpoint corresponds to the associated collection.
-        The endpoint information is used to build an authenticated request which is called for every entry in
-        the input_data dictionary. The data is aggregated and post-processed as defined in the SaaS config.
-        """
-        # filter data using base methods
-        query_config = self.query_config(node)
-        filtered_data = query_config.typed_filtered_values(input_data)
+        """Retrieve data from SaaS APIs"""
 
-        # get the request information for the given collection
+        # get the corresponding read request for the given collection
         collection_name = node.address.collection
         read_request = self.endpoints[collection_name].requests["read"]
+        self.request = read_request
 
-        processed_responses: List[Dict] = []
-        for key, values in filtered_data.items():
-            for value in values:
-                # generate path, query params, and body data based on request description and filtered data
-                (path, params, data) = self.populate_parameters(
-                    read_request, {key: [value]}
-                )
+        query_config = self.query_config(node)
+        prepared_requests = query_config.generate_query(input_data, policy)
 
-                # make request
-                response = self.client().get(path=path, params=params, data=data)
+        rows: List[Row] = []
+        for prepared_request in prepared_requests:
+            response = self.client().get(prepared_request)
 
-                # process response
-                if read_request.data_path:
-                    processed_response = self.get_value_by_path(
-                        response.json(), read_request.data_path
-                    )
-                else:
-                    # by default, we expect the collection_name to be one of the root fields in the response
-                    processed_response = response.json()[collection_name]
+            # process response
+            if read_request.data_path:
+                processed_response = self.get_value_by_path(response.json(), read_request.data_path)
+            else:
+                # by default, we expect the collection_name to be one of the root fields in the response
+                processed_response = response.json()[collection_name]
 
-                processed_responses.extend(processed_response)
-        return processed_responses
+            rows.extend(processed_response)
+        return rows
 
     def mask_data(
         self,

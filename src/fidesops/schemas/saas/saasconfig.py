@@ -45,14 +45,14 @@ class Strategy(BaseModel):
 class Request(BaseModel):
     """
     A single request with a static or dynamic path, and the request params needed to build the request.
-    Also includes optional startegies for pre/postprocessing and pagination
+    Also includes optional strategies for pre/postprocessing and pagination
     """
 
     path: str
     request_params: Optional[List[RequestParam]]
     data_path: Optional[str]  # defaults to collection name if not specified
     preprocessor: Optional[Strategy]
-    postprocessor: Optional[Strategy]
+    postprocessor: Optional[List[Strategy]]
     pagination: Optional[Strategy]
 
 
@@ -135,6 +135,7 @@ class SaaSConfig(BaseModel):
                     fields.append(ScalarField(name=param.name, identity=param.identity))
             if fields:
                 collections.append(Collection(name=endpoint.name, fields=fields))
+                
         return Dataset(
             name=self.name,
             collections=collections,
