@@ -41,6 +41,7 @@ from fidesops.service.connectors.query_config import (
     SQLQueryConfig,
     RedshiftQueryConfig,
     MicrosoftSQLServerQueryConfig,
+    BigQueryQueryConfig,
 )
 
 logger = logging.getLogger(__name__)
@@ -356,6 +357,11 @@ class BigQueryConnector(SQLConnector):
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
         )
+
+    # Overrides SQLConnector.query_config
+    def query_config(self, node: TraversalNode) -> BigQueryQueryConfig:
+        """Query wrapper corresponding to the input traversal_node."""
+        return BigQueryQueryConfig(node)
 
 
 class SnowflakeConnector(SQLConnector):

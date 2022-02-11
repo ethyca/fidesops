@@ -520,6 +520,69 @@ class RedshiftQueryConfig(SQLQueryConfig):
         return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
 
 
+class BigQueryQueryConfig(SQLQueryConfig):
+    """
+    Generates SQL valid for BigQuery
+    """
+
+    def format_clause_for_query(
+        self, string_path: str, operator: str, operand: str
+    ) -> str:
+        """Returns clauses in a format they can be added into SQL queries."""
+        if operator == "IN":
+            return f"{string_path} IN ({operand})"
+        return super().format_clause_for_query(string_path, operator, operand)
+
+    def generate_query(  # pylint: disable=R0914
+        self,
+        input_data: Dict[str, List[Any]],
+        policy: Optional[Policy] = None,
+    ) -> Optional[TextClause]:
+        """Generate a retrieval query"""
+
+        filtered_data = self.typed_filtered_values(input_data)
+
+        if filtered_data:
+            clauses = []
+            query_data: Dict[str, Tuple[Any, ...]] = {}
+            formatted_fields = self.format_fields_for_query(
+                list(self.field_map().keys())
+            )
+            field_list = ",".join(formatted_fields)
+
+            for string_path, data in filtered_data.items():
+                data = set(data)
+                if len(data) == 1:
+                    clauses.append(
+                        self.format_clause_for_query(string_path, "=", string_path)
+                    )
+                    query_data[string_path] = data.pop()
+                elif len(data) > 1:
+                    data_vals = list(data)
+                    query_data_keys: List[str] = []
+                    for val in data_vals:
+                        # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
+                        query_data_name = (
+                            string_path
+                            + "_in_stmt_generated_"
+                            + str(data_vals.index(val))
+                        )
+                        query_data[query_data_name] = val
+                        query_data_keys.append(":" + query_data_name)
+                    operand = ", ".join(query_data_keys)
+                    clauses.append(
+                        self.format_clause_for_query(string_path, "IN", operand)
+                    )
+            if len(clauses) > 0:
+                query_str = self.get_formatted_query_string(field_list, clauses)
+                return text(query_str).params(query_data)
+
+        logger.warning(
+            f"There is not enough data to generate a valid query for {self.node.address}"
+        )
+        return None
+
+
 MongoStatement = Tuple[Dict[str, Any], Dict[str, Any]]
 """A mongo query is expressed in the form of 2 dicts, the first of which represents
   the query object(s) and the second of which represents fields to return.

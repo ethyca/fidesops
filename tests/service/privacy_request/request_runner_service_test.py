@@ -831,6 +831,7 @@ def test_create_and_process_access_request_bigquery(
     }
     pr = get_privacy_request_results(db, policy, cache, data)
     results = pr.get_results()
+    import pdb; pdb.set_trace()
     customer_table_key = (
         f"EN_{pr.id}__access_request__bigquery_example_test_dataset:customer"
     )
@@ -872,10 +873,8 @@ def test_create_and_process_erasure_request_bigquery(
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
     pr.delete(db=db)
 
-    connector = bigquery_resources["connector"]
     bigquery_client = bigquery_resources["client"]
     with bigquery_client.connect() as connection:
-        connector.set_schema(connection)
         stmt = f"select name from customer where email = '{customer_email}';"
         res = connection.execute(stmt).all()
         for row in res:
@@ -897,10 +896,8 @@ def test_create_and_process_erasure_request_bigquery(
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
     pr.delete(db=db)
 
-    connector = bigquery_resources["connector"]
     bigquery_client = bigquery_resources["client"]
     with bigquery_client.connect() as connection:
-        connector.set_schema(connection)
 
         address_id = bigquery_resources["address_id"]
         stmt = f"select 'id', city, state from address where id = {address_id};"

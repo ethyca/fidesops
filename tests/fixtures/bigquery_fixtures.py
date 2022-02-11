@@ -44,19 +44,19 @@ def bigquery_connection_config(db: Session) -> Generator:
 
 @pytest.fixture
 def bigquery_example_test_dataset_config(
-        connection_config: ConnectionConfig,
+        bigquery_connection_config: ConnectionConfig,
         db: Session,
         example_datasets: List[Dict],
 ) -> Generator:
-    bigquery_dataset = example_datasets[6]
+    bigquery_dataset = example_datasets[7]
     fides_key = bigquery_dataset["fides_key"]
-    connection_config.name = fides_key
-    connection_config.key = fides_key
-    connection_config.save(db=db)
+    bigquery_connection_config.name = fides_key
+    bigquery_connection_config.key = fides_key
+    bigquery_connection_config.save(db=db)
     dataset = DatasetConfig.create(
         db=db,
         data={
-            "connection_config_id": connection_config.id,
+            "connection_config_id": bigquery_connection_config.id,
             "fides_key": fides_key,
             "dataset": bigquery_dataset,
         },
@@ -73,7 +73,6 @@ def bigquery_resources(
     connector = BigQueryConnector(bigquery_connection_config)
     bigquery_client = connector.client()
     with bigquery_client.connect() as connection:
-        connector.set_schema(connection)
         uuid = str(uuid4())
         customer_email = f"customer-{uuid}@example.com"
         customer_name = f"{uuid}"
@@ -96,7 +95,7 @@ def bigquery_resources(
 
         stmt = f"""
             insert into customer (id, email, name, address_id)
-            values ({customer_id}, '{customer_email}', '{customer_name}', '{address_id}');
+            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id});
         """
         connection.execute(stmt)
 
@@ -114,7 +113,7 @@ def bigquery_resources(
         stmt = f"delete from customer where email = '{customer_email}';"
         connection.execute(stmt)
 
-        stmt = f'delete from address where "id" = {address_id};'
+        stmt = f'delete from address where id = {address_id};'
         connection.execute(stmt)
 
 
