@@ -30,7 +30,9 @@ ENGINE = get_db_engine()
 
 
 def get_db_session(
-    autocommit: bool = False, autoflush: bool = False, engine: Optional[Engine] = None
+    autocommit: bool = False,
+    autoflush: bool = False,
+    engine: Optional[Engine] = None,
 ) -> sessionmaker:
     """Return a database SessionLocal"""
     return sessionmaker(
