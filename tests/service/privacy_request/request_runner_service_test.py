@@ -261,6 +261,7 @@ def test_create_and_process_access_request_mysql(
 def test_create_and_process_access_request_mariadb(
     trigger_webhook_mock,
     mariadb_example_test_dataset_config,
+    mariadb_integration_db,
     db,
     cache,
     policy,
