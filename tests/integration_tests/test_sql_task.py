@@ -505,8 +505,12 @@ def test_mysql_access_request_task(db, policy, connection_config_mysql) -> None:
 
 @pytest.mark.integration_mariadb
 @pytest.mark.integration
-def test_mariadb_access_request_task(db, policy, connection_config_mariadb) -> None:
-
+def test_mariadb_access_request_task(
+    db,
+    policy,
+    connection_config_mariadb,
+    mariadb_integration_db,
+) -> None:
     privacy_request = PrivacyRequest(
         id=f"test_mariadb_access_request_task_{random.randint(0, 1000)}"
     )
