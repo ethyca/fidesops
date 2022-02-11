@@ -30,6 +30,7 @@ from fidesops.service.connectors.sql_connector import (
     RedshiftConnector,
     MicrosoftSQLServerConnector,
     MySQLConnector,
+    MariaDBConnector,
 )
 from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
@@ -177,13 +178,13 @@ def test_create_and_process_access_request(
 @pytest.mark.integration
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_mssql(
-        trigger_webhook_mock,
-        mssql_example_test_dataset_config,
-        db,
-        cache,
-        policy,
-        policy_pre_execution_webhooks,
-        policy_post_execution_webhooks,
+    trigger_webhook_mock,
+    mssql_example_test_dataset_config,
+    db,
+    cache,
+    policy,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
 ):
 
     customer_email = "customer-1@example.com"
@@ -216,13 +217,13 @@ def test_create_and_process_access_request_mssql(
 @pytest.mark.integration
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_mysql(
-        trigger_webhook_mock,
-        mysql_example_test_dataset_config,
-        db,
-        cache,
-        policy,
-        policy_pre_execution_webhooks,
-        policy_post_execution_webhooks,
+    trigger_webhook_mock,
+    mysql_example_test_dataset_config,
+    db,
+    cache,
+    policy,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
 ):
 
     customer_email = "customer-1@example.com"
@@ -242,6 +243,47 @@ def test_create_and_process_access_request_mysql(
         assert results[key] != {}
 
     result_key_prefix = f"EN_{pr.id}__access_request__mysql_example_test_dataset:"
+    customer_key = result_key_prefix + "customer"
+    assert results[customer_key][0]["email"] == customer_email
+
+    visit_key = result_key_prefix + "visit"
+    assert results[visit_key][0]["email"] == customer_email
+    # Both pre-execution webhooks and both post-execution webhooks were called
+    assert trigger_webhook_mock.call_count == 4
+    pr.delete(db=db)
+
+
+@pytest.mark.integration_mariadb
+@pytest.mark.integration
+@mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+def test_create_and_process_access_request_mariadb(
+    trigger_webhook_mock,
+    mariadb_example_test_dataset_config,
+    mariadb_integration_db,
+    db,
+    cache,
+    policy,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
+):
+
+    customer_email = "customer-1@example.com"
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    pr = get_privacy_request_results(db, policy, cache, data)
+
+    results = pr.get_results()
+    assert len(results.keys()) == 11
+
+    for key in results.keys():
+        assert results[key] is not None
+        assert results[key] != {}
+
+    result_key_prefix = f"EN_{pr.id}__access_request__mariadb_example_test_dataset:"
     customer_key = result_key_prefix + "customer"
     assert results[customer_key][0]["email"] == customer_email
 
@@ -293,12 +335,12 @@ def test_create_and_process_erasure_request_specific_category(
 
 @pytest.mark.integration_erasure
 def test_create_and_process_erasure_request_specific_category_mssql(
-        mssql_example_test_dataset_config,
-        cache,
-        db,
-        generate_auth_header,
-        erasure_policy,
-        connection_config_mssql,
+    mssql_example_test_dataset_config,
+    cache,
+    db,
+    generate_auth_header,
+    erasure_policy,
+    connection_config_mssql,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
@@ -332,12 +374,12 @@ def test_create_and_process_erasure_request_specific_category_mssql(
 
 @pytest.mark.integration_erasure
 def test_create_and_process_erasure_request_specific_category_mysql(
-        mysql_example_test_dataset_config,
-        cache,
-        db,
-        generate_auth_header,
-        erasure_policy,
-        connection_config_mysql,
+    mysql_example_test_dataset_config,
+    cache,
+    db,
+    generate_auth_header,
+    erasure_policy,
+    connection_config_mysql,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
@@ -352,6 +394,45 @@ def test_create_and_process_erasure_request_specific_category_mysql(
 
     example_mysql_uri = MySQLConnector(connection_config_mysql).build_uri()
     engine = get_db_engine(database_uri=example_mysql_uri)
+    SessionLocal = get_db_session(engine=engine)
+    integration_db = SessionLocal()
+    stmt = select(
+        column("id"),
+        column("name"),
+    ).select_from(table("customer"))
+    res = integration_db.execute(stmt).all()
+
+    customer_found = False
+    for row in res:
+        if customer_id in row:
+            customer_found = True
+            # Check that the `name` field is `None`
+            assert row.name is None
+    assert customer_found
+
+
+@pytest.mark.integration_erasure
+def test_create_and_process_erasure_request_specific_category_mariadb(
+    mariadb_example_test_dataset_config,
+    cache,
+    db,
+    generate_auth_header,
+    erasure_policy,
+    connection_config_mariadb,
+):
+    customer_email = "customer-1@example.com"
+    customer_id = 1
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr.delete(db=db)
+
+    example_mariadb_uri = MariaDBConnector(connection_config_mariadb).build_uri()
+    engine = get_db_engine(database_uri=example_mariadb_uri)
     SessionLocal = get_db_session(engine=engine)
     integration_db = SessionLocal()
     stmt = select(
