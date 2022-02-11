@@ -82,7 +82,6 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Optional, Tuple, Set, Dict, Literal, Any, Callable
 
-import pydash
 from pydantic import BaseModel, validator
 
 from fidesops.common_exceptions import FidesopsException

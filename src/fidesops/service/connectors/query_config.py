@@ -25,8 +25,10 @@ from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWR
 from fidesops.task.refine_target_path import (
     build_refined_target_paths,
     join_detailed_path,
+    DetailedPath,
 )
-from fidesops.util.collection_util import append, filter_nonempty_values
+from fidesops.util.cache import get_cache
+from fidesops.util.collection_util import append, filter_nonempty_values, NodeInput
 from fidesops.util.querytoken import QueryToken
 
 logger = logging.getLogger(__name__)
@@ -39,6 +41,7 @@ class QueryConfig(Generic[T], ABC):
 
     def __init__(self, node: TraversalNode):
         self.node = node
+        self.cache = get_cache()
 
     def field_map(self) -> Dict[FieldPath, Field]:
         """Flattened FieldPaths of interest from this traversal_node."""
@@ -47,6 +50,22 @@ class QueryConfig(Generic[T], ABC):
     def top_level_field_map(self) -> Dict[FieldPath, Field]:
         """Top level FieldPaths on this traversal_node."""
         return self.node.node.collection.top_level_field_dict
+
+    def get_cached_inputs_for_node(
+        self, node_address: str, privacy_request_id: str
+    ) -> NodeInput:
+        """Retrieve the cached input data for the node - used for erasures"""
+        node_input_values: Dict[
+            str, NodeInput
+        ] = self.cache.get_encoded_objects_by_prefix(
+            f"INPUT__{privacy_request_id}__access_request__{node_address}"
+        )
+        # extract request id to return a map of address:value
+        return (
+            next(iter(node_input_values.values()))
+            if node_input_values.values()
+            else node_input_values
+        )
 
     def build_rule_target_field_paths(
         self, policy: Policy
@@ -121,6 +140,30 @@ class QueryConfig(Generic[T], ABC):
 
         return data
 
+    def build_paths_to_mask(
+        self, row: Row, privacy_request: PrivacyRequest, field_path: FieldPath
+    ) -> List[str]:
+        """
+        Expand the field_path into all the detailed path(s) to specific data we want to mask.
+
+        If the field path points to an array, that field_path will be expanded into paths targeting all elements of the
+        array.  If an array field was an entry point to the node, only matched elements to that array are targeted.
+
+        :returns: A list of dot-separated strings containing paths to all the values we intend to mask from this field_path
+        e.g. ["A.1.B", "A.1.C"]
+        """
+        node_input_values: NodeInput = self.get_cached_inputs_for_node(
+            self.node.address.value, privacy_request.id
+        )
+        detailed_paths: List[DetailedPath] = build_refined_target_paths(
+            row,
+            query_paths={
+                field_path: node_input_values.get(field_path.string_path, None)
+            },
+        )
+
+        return [join_detailed_path(path) for path in detailed_paths]
+
     def update_value_map(
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> Dict[str, Any]:
@@ -163,13 +206,10 @@ class QueryConfig(Generic[T], ABC):
                         f"strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
                     continue
-                refined_paths: List[str] = [
-                    join_detailed_path(path)
-                    for path in build_refined_target_paths(
-                        row, query_paths={rule_field_path: None}
-                    )
-                ]
-                for detailed_path in refined_paths:
+
+                for detailed_path in self.build_paths_to_mask(
+                    row, request, rule_field_path
+                ):
                     value_map[detailed_path] = self._generate_masked_value(
                         request_id=request.id,
                         strategy=strategy,

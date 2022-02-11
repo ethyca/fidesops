@@ -4,6 +4,8 @@ from typing import List, Dict, TypeVar, Iterable, Callable, Any, Optional
 T = TypeVar("T")
 U = TypeVar("U")
 
+NodeInput = Dict[str, List[Any]]  # Of format {node_address: []}
+
 
 def merge_dicts(*dicts: Dict[T, U]) -> Dict[T, U]:
     """Merge any number of dictionaries.

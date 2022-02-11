@@ -24,6 +24,7 @@ from fidesops.service.connectors import (
     BigQueryConnector,
 )
 from fidesops.util.cache import get_cache
+from fidesops.util.collection_util import NodeInput
 
 logger = logging.getLogger(__name__)
 
@@ -106,13 +107,22 @@ class TaskResources:
         """Support 'with' usage for closing resources"""
         self.close()
 
+    def cache_raw_results(self, key: str, value: Any) -> None:
+        """Cache raw results from node. Object will be
+        stored in redis under 'RAW_RESULTS__PRIVACY_REQUEST_ID__TYPE__COLLECTION_ADDRESS"""
+        self.cache.set_encoded_object(f"RAW_RESULTS__{self.request.id}__{key}", value)
+
+    def cache_inputs(self, key: str, value: NodeInput) -> None:
+        """Cache input data that was used to query data on the given node. Store in cache. Object will be
+        stored in redis under 'INPUT__PRIVACY_REQUEST_ID__TYPE__COLLECTION_ADDRESS'"""
+        self.cache.set_encoded_object(f"INPUT__{self.request.id}__{key}", value)
+
     def cache_object(self, key: str, value: Any) -> None:
-        """Store in cache. Object will be
-        stored in redis under 'REQUEST_ID__TYPE__ADDRESS'"""
+        """Store in cache. Object will be stored in redis under 'REQUEST_ID__TYPE__ADDRESS'"""
         self.cache.set_encoded_object(f"{self.request.id}__{key}", value)
 
     def get_all_cached_objects(self) -> Dict[str, Optional[Any]]:
-        """Retrieve the results of all steps"""
+        """Retrieve the results of all steps (cache_object)"""
         value_dict = self.cache.get_encoded_objects_by_prefix(self.request.id)
         # extract request id to return a map of address:value
         return {k.split("__")[-1]: v for k, v in value_dict.items()}

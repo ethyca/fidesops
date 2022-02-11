@@ -29,7 +29,8 @@ from fidesops.task.consolidate_query_matches import consolidate_query_matches
 from fidesops.task.filter_element_match import filter_element_match
 from fidesops.task.filter_results import select_and_save_field, remove_empty_containers
 from fidesops.task.task_resources import TaskResources
-from fidesops.util.collection_util import partition, append
+from fidesops.util.cache import get_cache
+from fidesops.util.collection_util import partition, append, NodeInput
 from fidesops.util.logger import NotPii
 
 logger = logging.getLogger(__name__)
@@ -129,7 +130,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         connection_config: ConnectionConfig = self.connector.configuration
         return connection_config.access == AccessLevel.write
 
-    def to_dask_input_data(self, *data: List[Row]) -> Dict[str, List[Any]]:
+    def to_dask_input_data(self, *data: List[Row]) -> NodeInput:
         """
         Consolidates the outputs of queries from potentially multiple collections whose
         data is needed as input into the current collection.
@@ -232,8 +233,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:
-        """Run access request"""
-        formatted_input_data = self.to_dask_input_data(*inputs)
+        """Run an access request on a single node.
+
+        Caches the original raw results and the inputs into the node for use with erasures later.
+        We need the original results to preserve array indices where applicable.
+
+        Then, potentially filters data and saves to the cache to return for access requests, and
+        passes on that filtered data for use in querying other nodes.
+
+        """
+        formatted_input_data: NodeInput = self.to_dask_input_data(*inputs)
         output = self.connector.retrieve_data(
             self.traversal_node, self.resources.policy, formatted_input_data
         )
@@ -241,6 +250,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         coerced_input_data = self.traversal_node.typed_filtered_values(
             formatted_input_data  # Cast incoming values to correct type
         )
+        self.resources.cache_raw_results(f"access_request__{self.key}", output)
+        self.resources.cache_inputs(f"access_request__{self.key}", coerced_input_data)
         for row in output:
             # In code, filter out non-matching sub-documents and array elements
             logger.info(
@@ -354,6 +365,23 @@ def run_access_request(
         v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
 
         return v.compute()
+
+
+def get_raw_access_request_results_from_cache(
+    privacy_request_id: str,
+) -> Dict[str, Any]:
+    """
+    Get the raw access request results from all nodes for a privacy request.
+
+    GraphTask.run_access_request potentially filters out unmatched array results before saving in the cache, and
+    passing those query results onto other nodes for more discovery. This fetches the original results before any
+    filtering was done, particularly so array indices are preserved for masking.
+    """
+    cache = get_cache()
+    value_dict = cache.get_encoded_objects_by_prefix(
+        f"RAW_RESULTS__{privacy_request_id}"
+    )
+    return {k.split("__")[-1]: v for k, v in value_dict.items()}
 
 
 def run_erasure(  # pylint: disable = too-many-arguments

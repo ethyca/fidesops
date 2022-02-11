@@ -24,6 +24,7 @@ from fidesops.task.graph_task import (
     run_access_request,
     filter_data_categories,
     run_erasure,
+    get_raw_access_request_results_from_cache,
 )
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.util.async_util import run_async
@@ -191,7 +192,9 @@ class PrivacyRequestRunner:
                         graph=dataset_graph,
                         connection_configs=connection_configs,
                         identity=identity_data,
-                        access_request_data=access_result,
+                        access_request_data=get_raw_access_request_results_from_cache(
+                            privacy_request.id
+                        ),
                     )
 
             except BaseException as exc:  # pylint: disable=broad-except

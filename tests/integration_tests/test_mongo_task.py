@@ -30,7 +30,11 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.service.connectors import get_connector
 from fidesops.task import graph_task
-from fidesops.task.graph_task import filter_data_categories
+from fidesops.task.graph_task import (
+    filter_data_categories,
+    get_raw_access_request_results_from_cache,
+)
+from fidesops.task.task_resources import TaskResources
 
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
 from ..task.traversal_data import (
@@ -497,6 +501,53 @@ def test_object_querying_mongo(
         "derived_interests": ["marketing", "food"]
     }
 
+
+@pytest.mark.integration
+def test_cached_raw_access_results_and_inputs(
+    integration_postgres_config, integration_mongodb_config
+) -> None:
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+
+    mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
+        integration_postgres_config, integration_mongodb_config
+    )
+    graph = DatasetGraph(mongo_dataset, postgres_dataset)
+
+    access_request_results = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [integration_mongodb_config, integration_postgres_config],
+        {"email": "customer-1@example.com"},
+    )
+    cached_raw_results = get_raw_access_request_results_from_cache(privacy_request.id)
+
+    # Cached raw results are the top-level records returned from the db
+    assert cached_raw_results["mongo_test:conversations"][0]["thread"] == [
+        {
+            "comment": "com_0001",
+            "message": "hello, testing in-flight chat feature",
+            "chat_name": "John C",
+            "ccn": "123456789",
+        },
+        {
+            "comment": "com_0002",
+            "message": "yep, got your message, looks like it works",
+            "chat_name": "Jane C",
+            "ccn": "987654321",
+        },
+    ]
+
+    # The access request results are filtered on array data, because it was an entrypoint into the node.
+    assert access_request_results["mongo_test:conversations"][0]["thread"] == [
+        {
+            "comment": "com_0001",
+            "message": "hello, testing in-flight chat feature",
+            "chat_name": "John C",
+            "ccn": "123456789",
+        }
+    ]
+b
 
 @pytest.mark.integration
 def test_array_querying_mongo(

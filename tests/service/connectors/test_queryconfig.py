@@ -27,6 +27,7 @@ from fidesops.service.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
     HASH,
 )
+from fidesops.util.cache import get_cache
 
 from ...task.traversal_data import (
     integration_db_graph,
@@ -49,6 +50,13 @@ payment_card_node = traversal_nodes[
 ]
 user_node = traversal_nodes[CollectionAddress("postgres_example", "payment_card")]
 privacy_request = PrivacyRequest(id="234544")
+
+
+def cache_input_helper(privacy_request_id, node_address, value):
+    """Test helper for caching input data into a collection for a given privacy request in Redis"""
+    cache = get_cache()
+    key = f"INPUT__{privacy_request_id}__access_request__{node_address}"
+    cache.set_encoded_object(key, value)
 
 
 class TestSQLQueryConfig:
@@ -491,6 +499,21 @@ class TestMongoQueryConfig:
             },
         )
 
+    def test_get_cached_inputs_for_node(self, customer_details_node):
+        cache_input_helper(
+            privacy_request.id,
+            "mongo_test:customer_details",
+            {"children": ["Courtney Customer"]},
+        )
+        config = MongoQueryConfig(customer_details_node)
+        assert config.get_cached_inputs_for_node(
+            "mongo_test:customer_details", privacy_request.id
+        ) == {"children": ["Courtney Customer"]}
+        assert (
+            config.get_cached_inputs_for_node("does_not_exist", privacy_request.id)
+            == {}
+        )
+
     def test_generate_update_stmt_multiple_fields(
         self,
         erasure_policy,
@@ -509,11 +532,9 @@ class TestMongoQueryConfig:
         dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
-
         customer_details = traversal.traversal_node_dict[
             CollectionAddress("mongo_test", "customer_details")
         ]
-
         config = MongoQueryConfig(customer_details)
         row = {
             "birthday": "1988-01-10",
@@ -533,6 +554,35 @@ class TestMongoQueryConfig:
         target = rule.targets[0]
         target.data_category = DataCategory("user.provided.identifiable").value
 
+        # Mock children being the entry point to the customer_details node. In other words, pretend that this
+        # record was retrieved because one of the customer's children in the array matched the name "Courtney Customer".
+        cache_input_helper(
+            privacy_request.id,
+            "mongo_test:customer_details",
+            {"children": ["Courtney Customer"]},
+        )
+
+        # Sanity check
+        entrypoint_array_path = config.build_paths_to_mask(
+            row, privacy_request, FieldPath("children")
+        )
+        assert entrypoint_array_path == ["children.1"]
+        non_entrypoint_array_path = config.build_paths_to_mask(
+            row, privacy_request, FieldPath("workplace_info", "direct_reports")
+        )
+        assert non_entrypoint_array_path == [
+            "workplace_info.direct_reports.0",
+            "workplace_info.direct_reports.1",
+        ]
+        scalar_path = config.build_paths_to_mask(
+            row, privacy_request, FieldPath("birthday")
+        )
+        assert scalar_path == ["birthday"]  # No change
+        object_path = config.build_paths_to_mask(
+            row, privacy_request, FieldPath("workplace_info", "position")
+        )
+        assert object_path == ["workplace_info.position"]  # No change
+
         mongo_statement = config.generate_update_stmt(
             row, erasure_policy, privacy_request
         )
@@ -541,10 +591,9 @@ class TestMongoQueryConfig:
         assert mongo_statement[1] == {
             "$set": {
                 "birthday": None,
-                "children.0": None,
-                "children.1": None,
+                "children.1": None,  # Note only Courtney Customer is masked, not the other child, because this is an entrypoint
                 "emergency_contacts.0.name": None,
-                "workplace_info.direct_reports.0": None,
+                "workplace_info.direct_reports.0": None,  # Both direct reports are masked.
                 "workplace_info.direct_reports.1": None,
                 "emergency_contacts.0.phone": None,
                 "gender": None,
