@@ -2,6 +2,7 @@ import logging
 from typing import Dict, Any, List, Union, Optional
 
 from fidesops.graph.config import FieldPath
+from fidesops.util.collection_util import PRESERVE_INDEX_TEXT
 
 Level = Union[str, int]
 DetailedPath = List[
@@ -80,10 +81,10 @@ def refine_target_path(
     try:
         current_level = target_path[0]
         current_elem = row[current_level]
-    except KeyError:  # FieldPath not found in record, this is expected to happen when data doesn't exist in collection
-        return []
-    except (IndexError, TypeError):  # No field path or invalid field path
-        logger.warning(f"Error with locating {target_path} on row")
+    except (IndexError, TypeError, KeyError):
+        # KeyError - FieldPath not found, expected when data doesn't exist in collection
+        # IndexError - No FieldPath
+        # TypeError - Bad FieldPath, expected when we're trying to select a path we've already eliminated
         return []
 
     if isinstance(current_elem, dict):
@@ -132,7 +133,13 @@ def _enter_array(
 
 
 def _match_found(elem: Any, only: Optional[List[Any]] = None) -> bool:
-    """The given scalar element matches a value in "only", or no values specified"""
+    """The given scalar element matches a value in "only", or no values specified
+    TODO pass in match_found lambda instead? this is getting too bulky
+    """
+    if elem == PRESERVE_INDEX_TEXT:
+        # This element was not matched in an array query so we skip
+        return False
+
     if not only:
         # If no values are specified to match, we're just going to return all possible paths
         return True

@@ -9,6 +9,7 @@ import pydash
 import pytest
 import yaml
 from faker import Faker
+from pymongo import MongoClient
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
@@ -57,6 +58,8 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
 integration_config = load_toml("fidesops-integration.toml")
+
+logger = logging.getLogger(__name__)
 
 
 # Unified list of connections to integration dbs specified from fidesops-integration.toml
@@ -1199,3 +1202,16 @@ def sample_data():
             ["1", "a", [["z", "a", "a"]]],
         ],  # Lists elems are different types, not officially supported
     }
+
+
+@pytest.fixture(scope="session")
+def mongo_example_db() -> Generator:
+    """Return a connection to the MongoDB example DB"""
+    uri = "mongodb://mongo_user:mongo_pass@mongodb_example/mongo_test"
+
+    client = MongoClient(uri, serverSelectionTimeoutMS=5000)
+    logger.debug(f"Connecting to MongoDB example database at: {uri}")
+    # Setup above...
+    yield client
+    # Teardown below...
+    client.close()

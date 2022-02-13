@@ -109,6 +109,12 @@ def combined_mongo_postgresql_graph(
     conversations = Collection(
         name="conversations",
         fields=[
+            ScalarField(
+                name="_id",
+                data_type_converter=ObjectIdTypeConverter(),
+                is_array=False,
+                primary_key=True,
+            ),
             ObjectField(
                 name="thread",
                 data_type_converter=ObjectTypeConverter(),
@@ -126,6 +132,11 @@ def combined_mongo_postgresql_graph(
                     ),
                     "chat_name": ScalarField(
                         name="chat_name",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                    ),
+                    "ccn": ScalarField(
+                        name="ccn",
                         data_type_converter=StringTypeConverter(),
                         is_array=False,
                     ),
@@ -295,6 +306,12 @@ def combined_mongo_postgresql_graph(
     employee = Collection(
         name="employee",
         fields=[
+            ScalarField(
+                name="_id",
+                data_type_converter=ObjectIdTypeConverter(),
+                is_array=False,
+                primary_key=True,
+            ),
             ScalarField(
                 name="email",
                 data_type_converter=StringTypeConverter(),

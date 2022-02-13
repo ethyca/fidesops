@@ -1,3 +1,5 @@
+import copy
+
 import itertools
 import logging
 import traceback
@@ -246,24 +248,28 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         output = self.connector.retrieve_data(
             self.traversal_node, self.resources.policy, formatted_input_data
         )
-
         coerced_input_data = self.traversal_node.typed_filtered_values(
             formatted_input_data  # Cast incoming values to correct type
         )
-        self.resources.cache_raw_results(f"access_request__{self.key}", output)
-        self.resources.cache_inputs(f"access_request__{self.key}", coerced_input_data)
+        parsed_inputs = {
+            FieldPath.parse(field): inputs
+            for field, inputs in coerced_input_data.items()
+        }
+
+        # Cache results with non-matched indices replaced with dummy data (for erasures)
+        preserved_index_output = copy.deepcopy(output)
+        for row in preserved_index_output:
+            filter_element_match(row, query_paths=parsed_inputs, delete_elements=False)
+        self.resources.cache_raw_results(
+            f"access_request__{self.key}", preserved_index_output
+        )
+
         for row in output:
             # In code, filter out non-matching sub-documents and array elements
             logger.info(
                 f"Filtering row in {self.traversal_node.node.address} for matching array elements."
             )
-            filter_element_match(
-                row,
-                {
-                    FieldPath.parse(field): inputs
-                    for field, inputs in coerced_input_data.items()
-                },
-            )
+            filter_element_match(row, parsed_inputs)
         self.resources.cache_object(f"access_request__{self.key}", output)
         self.log_end(ActionType.access)
         return output
@@ -274,6 +280,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # if there is no primary key specified in the graph node configuration
         # note this in the execution log and perform no erasures on this node
         if not self.traversal_node.node.contains_field(lambda f: f.primary_key):
+            logger.warning(
+                f"No erasures on {self.traversal_node.node.address} as there is no PK defined."
+            )
             self.update_status(
                 "No values were erased since no primary key was defined for this collection",
                 None,
@@ -283,6 +292,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             return 0
 
         if not self.can_write_data():
+            logger.warning(
+                f"No erasures on {self.traversal_node.node.address} as its ConnectionConfig does not have write accessx."
+            )
             self.update_status(
                 f"No values were erased since this connection {self.connector.configuration.key} has not been "
                 f"given write access",

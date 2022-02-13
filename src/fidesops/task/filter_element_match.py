@@ -12,18 +12,23 @@ from fidesops.task.refine_target_path import (
     DetailedPath,
     join_detailed_path,
 )
+from fidesops.util.collection_util import PRESERVE_INDEX_TEXT
 
 logger = logging.getLogger(__name__)
 
 
 def filter_element_match(
-    row: Dict[str, Any], query_paths: Dict[FieldPath, List[Any]]
+    row: Dict[str, Any],
+    query_paths: Dict[FieldPath, List[Any]],
+    delete_elements: bool = True,
 ) -> Dict[str, Any]:
     """
     Modifies row in place to remove unmatched array elements or unmatched embedded documents within arrays.
 
     :param row: Record retrieved from a dataset
     :param query_paths: FieldPaths mapped to query values
+    :param delete_elements: If True, removes unmatched indices from array. If False, replaces the data, so the original
+    indices are preserved.
     :return: A modified record with array elements potentially eliminated if array data was targeted by a query path
 
     :Example:
@@ -46,11 +51,13 @@ def filter_element_match(
         detailed_target_paths
     )
 
-    return _remove_paths_from_row(row, array_paths_to_preserve)
+    return _remove_paths_from_row(row, array_paths_to_preserve, delete_elements)
 
 
 def _remove_paths_from_row(
-    row: Dict[str, Any], preserve_indices: Dict[str, List[int]]
+    row: Dict[str, Any],
+    preserve_indices: Dict[str, List[int]],
+    delete_elements: bool = True,
 ) -> Dict[str, Any]:
     """
     Used by filter_element_match, remove array elements from row that are not specified in preserve_indices
@@ -58,6 +65,7 @@ def _remove_paths_from_row(
     :param row: Record retrieved from a dataset
     :param preserve_indices: A dictionary of dot-separated paths to arrays, where the values are the list of indices
     we want to *keep*
+    :param delete_elements: True if we just want to remove the element at the given index, otherwise we replace with specified text
     :return: A filtered row that has removed non-specified indices from arrays
 
     :Example:
@@ -86,7 +94,12 @@ def _remove_paths_from_row(
         # Loop through array in reverse to delete indices
         for i, _ in reversed(list(enumerate(matched_array))):
             if i not in preserve_index_list:
-                matched_array.pop(i)
+                if delete_elements:
+                    matched_array.pop(i)  # We delete the element (for access requests)
+                else:
+                    matched_array[
+                        i
+                    ] = PRESERVE_INDEX_TEXT  # We replace the element (for erasures)
 
     return row
 

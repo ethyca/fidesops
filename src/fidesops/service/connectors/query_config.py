@@ -28,7 +28,7 @@ from fidesops.task.refine_target_path import (
     DetailedPath,
 )
 from fidesops.util.cache import get_cache
-from fidesops.util.collection_util import append, filter_nonempty_values, NodeInput
+from fidesops.util.collection_util import append, filter_nonempty_values
 from fidesops.util.querytoken import QueryToken
 
 logger = logging.getLogger(__name__)
@@ -50,22 +50,6 @@ class QueryConfig(Generic[T], ABC):
     def top_level_field_map(self) -> Dict[FieldPath, Field]:
         """Top level FieldPaths on this traversal_node."""
         return self.node.node.collection.top_level_field_dict
-
-    def get_cached_inputs_for_node(
-        self, node_address: str, privacy_request_id: str
-    ) -> NodeInput:
-        """Retrieve the cached input data for the node - used for erasures"""
-        node_input_values: Dict[
-            str, NodeInput
-        ] = self.cache.get_encoded_objects_by_prefix(
-            f"INPUT__{privacy_request_id}__access_request__{node_address}"
-        )
-        # extract request id to return a map of address:value
-        return (
-            next(iter(node_input_values.values()))
-            if node_input_values.values()
-            else node_input_values
-        )
 
     def build_rule_target_field_paths(
         self, policy: Policy
@@ -140,9 +124,7 @@ class QueryConfig(Generic[T], ABC):
 
         return data
 
-    def build_paths_to_mask(
-        self, row: Row, privacy_request: PrivacyRequest, field_path: FieldPath
-    ) -> List[str]:
+    def build_paths_to_mask(self, row: Row, field_path: FieldPath) -> List[str]:
         """
         Expand the field_path into all the detailed path(s) to specific data we want to mask.
 
@@ -152,16 +134,9 @@ class QueryConfig(Generic[T], ABC):
         :returns: A list of dot-separated strings containing paths to all the values we intend to mask from this field_path
         e.g. ["A.1.B", "A.1.C"]
         """
-        node_input_values: NodeInput = self.get_cached_inputs_for_node(
-            self.node.address.value, privacy_request.id
-        )
         detailed_paths: List[DetailedPath] = build_refined_target_paths(
-            row,
-            query_paths={
-                field_path: node_input_values.get(field_path.string_path, None)
-            },
+            row, query_paths={field_path: None}
         )
-
         return [join_detailed_path(path) for path in detailed_paths]
 
     def update_value_map(
@@ -207,9 +182,7 @@ class QueryConfig(Generic[T], ABC):
                     )
                     continue
 
-                for detailed_path in self.build_paths_to_mask(
-                    row, request, rule_field_path
-                ):
+                for detailed_path in self.build_paths_to_mask(row, rule_field_path):
                     value_map[detailed_path] = self._generate_masked_value(
                         request_id=request.id,
                         strategy=strategy,
@@ -592,6 +565,9 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
                 query_fields, return_fields = (
                     transform_query_pairs(query_pairs),
                     field_list,
+                )
+                logger.info(
+                    f"MONGO QUERY {self.node.node.address} {query_fields} {return_fields}"
                 )
                 return query_fields, return_fields
 

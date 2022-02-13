@@ -1,23 +1,6 @@
-import logging
-from typing import Generator
 
 import pytest
-from pymongo import MongoClient
 
-logger = logging.getLogger(__name__)
-
-
-@pytest.fixture(scope="session")
-def mongo_example_db() -> Generator:
-    """Return a connection to the MongoDB example DB"""
-    uri = "mongodb://mongo_user:mongo_pass@mongodb_example/mongo_test"
-
-    client = MongoClient(uri, serverSelectionTimeoutMS=5000)
-    logger.debug(f"Connecting to MongoDB example database at: {uri}")
-    # Setup above...
-    yield client
-    # Teardown below...
-    client.close()
 
 
 @pytest.mark.integration_mongodb
