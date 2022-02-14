@@ -106,10 +106,12 @@ class TaskResources:
         """Support 'with' usage for closing resources"""
         self.close()
 
-    def cache_raw_results(self, key: str, value: Any) -> None:
+    def cache_results_with_placeholders(self, key: str, value: Any) -> None:
         """Cache raw results from node. Object will be
-        stored in redis under 'RAW_RESULTS__PRIVACY_REQUEST_ID__TYPE__COLLECTION_ADDRESS"""
-        self.cache.set_encoded_object(f"RAW_RESULTS__{self.request.id}__{key}", value)
+        stored in redis under 'PLACEHOLDER_RESULTS__PRIVACY_REQUEST_ID__TYPE__COLLECTION_ADDRESS"""
+        self.cache.set_encoded_object(
+            f"PLACEHOLDER_RESULTS__{self.request.id}__{key}", value
+        )
 
     def cache_object(self, key: str, value: Any) -> None:
         """Store in cache. Object will be stored in redis under 'REQUEST_ID__TYPE__ADDRESS'"""

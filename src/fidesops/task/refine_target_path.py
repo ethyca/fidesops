@@ -2,7 +2,7 @@ import logging
 from typing import Dict, Any, List, Union, Optional
 
 from fidesops.graph.config import FieldPath
-from fidesops.util.collection_util import PRESERVE_INDEX_TEXT
+from fidesops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
 
 Level = Union[str, int]
 DetailedPath = List[
@@ -136,7 +136,7 @@ def _match_found(elem: Any, only: Optional[List[Any]] = None) -> bool:
     """The given scalar element matches a value in "only", or no values specified
     TODO pass in match_found lambda instead? this is getting too bulky
     """
-    if elem == PRESERVE_INDEX_TEXT:
+    if elem == FIDESOPS_DO_NOT_MASK_INDEX:
         # This element was not matched in an array query so we skip
         return False
 

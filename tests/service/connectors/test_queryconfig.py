@@ -532,28 +532,6 @@ class TestMongoQueryConfig:
         target = rule.targets[0]
         target.data_category = DataCategory("user.provided.identifiable").value
 
-        # Sanity check
-        entrypoint_array_path = config.build_paths_to_mask(
-            row, FieldPath("children")
-        )
-
-        assert entrypoint_array_path == ["children.0", "children.1"]
-        non_entrypoint_array_path = config.build_paths_to_mask(
-            row, FieldPath("workplace_info", "direct_reports")
-        )
-        assert non_entrypoint_array_path == [
-            "workplace_info.direct_reports.0",
-            "workplace_info.direct_reports.1",
-        ]
-        scalar_path = config.build_paths_to_mask(
-            row, FieldPath("birthday")
-        )
-        assert scalar_path == ["birthday"]  # No change
-        object_path = config.build_paths_to_mask(
-            row, FieldPath("workplace_info", "position")
-        )
-        assert object_path == ["workplace_info.position"]  # No change
-
         mongo_statement = config.generate_update_stmt(
             row, erasure_policy, privacy_request
         )

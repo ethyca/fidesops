@@ -25,7 +25,6 @@ from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWR
 from fidesops.task.refine_target_path import (
     build_refined_target_paths,
     join_detailed_path,
-    DetailedPath,
 )
 from fidesops.util.cache import get_cache
 from fidesops.util.collection_util import append, filter_nonempty_values
@@ -124,21 +123,6 @@ class QueryConfig(Generic[T], ABC):
 
         return data
 
-    def build_paths_to_mask(self, row: Row, field_path: FieldPath) -> List[str]:
-        """
-        Expand the field_path into all the detailed path(s) to specific data we want to mask.
-
-        If the field path points to an array, that field_path will be expanded into paths targeting all elements of the
-        array.  If an array field was an entry point to the node, only matched elements to that array are targeted.
-
-        :returns: A list of dot-separated strings containing paths to all the values we intend to mask from this field_path
-        e.g. ["A.1.B", "A.1.C"]
-        """
-        detailed_paths: List[DetailedPath] = build_refined_target_paths(
-            row, query_paths={field_path: None}
-        )
-        return [join_detailed_path(path) for path in detailed_paths]
-
     def update_value_map(
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> Dict[str, Any]:
@@ -182,14 +166,20 @@ class QueryConfig(Generic[T], ABC):
                     )
                     continue
 
-                for detailed_path in self.build_paths_to_mask(row, rule_field_path):
+                paths_to_mask: List[str] = [
+                    join_detailed_path(path)
+                    for path in build_refined_target_paths(
+                        row, query_paths={rule_field_path: None}
+                    )
+                ]
+                for detailed_path in paths_to_mask:
                     value_map[detailed_path] = self._generate_masked_value(
                         request_id=request.id,
                         strategy=strategy,
                         val=pydash.objects.get(row, detailed_path),
                         masking_override=masking_override,
                         null_masking=null_masking,
-                        field_path=detailed_path,
+                        str_field_path=detailed_path,
                     )
         return value_map
 
@@ -215,17 +205,17 @@ class QueryConfig(Generic[T], ABC):
         val: Any,
         masking_override: MaskingOverride,
         null_masking: bool,
-        field_path: str,
+        str_field_path: str,
     ) -> T:
         masked_val = strategy.mask(val, request_id)
         logger.debug(
-            f"Generated the following masked val for field {field_path}: {masked_val}"
+            f"Generated the following masked val for field {str_field_path}: {masked_val}"
         )
         if null_masking:
             return masked_val
         if masking_override.length:
             logger.warning(
-                f"Because a length has been specified for field {field_path}, we will truncate length "
+                f"Because a length has been specified for field {str_field_path}, we will truncate length "
                 f"of masked value to match, regardless of masking strategy"
             )
             #  for strategies other than null masking we assume that masked data type is the same as specified data type

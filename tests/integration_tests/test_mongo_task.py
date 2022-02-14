@@ -32,7 +32,7 @@ from fidesops.service.connectors import get_connector
 from fidesops.task import graph_task
 from fidesops.task.graph_task import (
     filter_data_categories,
-    get_raw_access_request_results_from_cache,
+    get_cached_data_for_erasures,
 )
 
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
@@ -128,7 +128,7 @@ def test_combined_erasure_task(
         graph,
         [integration_mongodb_config, integration_postgres_config],
         {"email": seed_email},
-        get_raw_access_request_results_from_cache(privacy_request.id),
+        get_cached_data_for_erasures(privacy_request.id),
     )
 
     assert x == {
@@ -193,7 +193,6 @@ def test_combined_erasure_task(
     mongo_db = mongo_example_db["mongo_test"]
     thread_one = mongo_db.conversations.find_one({"id": "thread_1"})
     thread_two = mongo_db.conversations.find_one({"id": "thread_2"})
-    import pdb; pdb.set_trace()
     assert thread_one["thread"] == [
         {
             "comment": "com_0011",
@@ -269,7 +268,7 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
     field([dataset], "mongo_test", "address", "zip").data_categories = ["C"]
     field([dataset], "mongo_test", "customer", "name").data_categories = ["A"]
 
-    access_request_data = graph_task.run_access_request(
+    graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -282,7 +281,7 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
         graph,
         [integration_mongodb_config],
         {"email": seed_email},
-        access_request_data,
+        get_cached_data_for_erasures(privacy_request.id),
     )
 
     assert v == {
@@ -400,7 +399,7 @@ def test_composite_key_erasure(
         DatasetGraph(dataset),
         [integration_mongodb_config],
         {"email": "employee-1@example.com"},
-        access_request_data,
+        get_cached_data_for_erasures(privacy_request.id),
     )
 
     assert erasure == {"mongo_test:customer": 0, "mongo_test:composite_pk_test": 1}
@@ -490,7 +489,7 @@ def test_access_erasure_type_conversion(
         DatasetGraph(dataset),
         [integration_mongodb_config],
         {"email": "employee-1@example.com"},
-        access_request_data,
+        get_cached_data_for_erasures(privacy_request.id),
     )
 
     assert erasure == {"mongo_test:employee": 0, "mongo_test:type_link_test": 1}
@@ -591,7 +590,7 @@ def test_object_querying_mongo(
 
 
 @pytest.mark.integration
-def test_cached_raw_access_results_and_inputs(
+def test_get_cached_data_for_erasures(
     integration_postgres_config, integration_mongodb_config
 ) -> None:
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
@@ -608,13 +607,28 @@ def test_cached_raw_access_results_and_inputs(
         [integration_mongodb_config, integration_postgres_config],
         {"email": "customer-1@example.com"},
     )
-    cached_raw_results = get_raw_access_request_results_from_cache(privacy_request.id)
+    cached_data_for_erasures = get_cached_data_for_erasures(privacy_request.id)
 
     # Cached raw results preserve the indices
-    assert cached_raw_results["mongo_test:conversations"][0]["thread"] == [{'comment': 'com_0001', 'message': 'hello, testing in-flight chat feature', 'chat_name': 'John C', 'ccn': '123456789'}, 'FIDESOPS_DO_NOT_MATCH']
+    assert cached_data_for_erasures["mongo_test:conversations"][0]["thread"] == [
+        {
+            "comment": "com_0001",
+            "message": "hello, testing in-flight chat feature",
+            "chat_name": "John C",
+            "ccn": "123456789",
+        },
+        "FIDESOPS_DO_NOT_MASK",
+    ]
 
     # The access request results are filtered on array data, because it was an entrypoint into the node.
-    assert access_request_results["mongo_test:conversations"][0]["thread"] == [{'comment': 'com_0001', 'message': 'hello, testing in-flight chat feature', 'chat_name': 'John C', 'ccn': '123456789'}]
+    assert access_request_results["mongo_test:conversations"][0]["thread"] == [
+        {
+            "comment": "com_0001",
+            "message": "hello, testing in-flight chat feature",
+            "chat_name": "John C",
+            "ccn": "123456789",
+        }
+    ]
 
 
 @pytest.mark.integration
@@ -688,7 +702,12 @@ def test_array_querying_mongo(
     # fields. Only matching embedded documents queried for relevant data categories
     assert filtered_identifiable["mongo_test:conversations"] == [
         {"thread": [{"chat_name": "Jane C", "ccn": "987654321"}]},
-        {"thread": [{"chat_name": "Jane C", 'ccn': '987654321'}, {"chat_name": "Jane C"}]},
+        {
+            "thread": [
+                {"chat_name": "Jane C", "ccn": "987654321"},
+                {"chat_name": "Jane C"},
+            ]
+        },
     ]
 
     # Integer field mongo_test:flights.plane used to locate only matching elem in mongo_test:aircraft:planes array field
@@ -697,7 +716,9 @@ def test_array_querying_mongo(
     assert filtered_identifiable["mongo_test:aircraft"] == []
 
     # Values in mongo_test:flights:pilots array field used to locate scalar field in mongo_test:employee.id
-    assert filtered_identifiable["mongo_test:employee"] == [{'email': 'employee-2@example.com', 'name': 'Jane Employee'}]
+    assert filtered_identifiable["mongo_test:employee"] == [
+        {"email": "employee-2@example.com", "name": "Jane Employee"}
+    ]
 
     # No data for identity in this collection
     assert access_request_results["mongo_test:customer_feedback"] == []
@@ -728,7 +749,15 @@ def test_array_querying_mongo(
     ]
 
     # Only embedded documents matching mongo_test:conversations.thread.comment returned
-    assert filtered_identifiable["mongo_test:conversations"] == [{'thread': [{'ccn': '123456789', 'chat_name': 'John C'}]}, {'thread': [{'ccn': '123456789', 'chat_name': 'John C'}, {'ccn': '123456789', 'chat_name': 'John C'}]}]
+    assert filtered_identifiable["mongo_test:conversations"] == [
+        {"thread": [{"ccn": "123456789", "chat_name": "John C"}]},
+        {
+            "thread": [
+                {"ccn": "123456789", "chat_name": "John C"},
+                {"ccn": "123456789", "chat_name": "John C"},
+            ]
+        },
+    ]
 
 
 @pytest.mark.integration_mongodb

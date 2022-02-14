@@ -237,12 +237,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run an access request on a single node.
 
-        Caches the original raw results and the inputs into the node for use with erasures later.
-        We need the original results to preserve array indices where applicable.
+        Takes the output, and replaces non-matched array elements with placeholder text for use in follow-up
+        erasure requests where applicable, because we need to preserve which indices the original data was located.
 
-        Then, potentially filters data and saves to the cache to return for access requests, and
-        passes on that filtered data for use in querying other nodes.
-
+        Then, takes the original output and *removes* the non-matched array elements as the results for the current
+        node and to be used to locate data on other nodes.
         """
         formatted_input_data: NodeInput = self.to_dask_input_data(*inputs)
         output = self.connector.retrieve_data(
@@ -256,16 +255,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             for field, inputs in coerced_input_data.items()
         }
 
-        # Cache results with non-matched indices replaced with dummy data (for erasures)
-        preserved_index_output = copy.deepcopy(output)
-        for row in preserved_index_output:
+        # Cache results with non-matching sub-documents and array elements replaced with placeholder text
+        placeholder_output = copy.deepcopy(output)
+        for row in placeholder_output:
             filter_element_match(row, query_paths=parsed_inputs, delete_elements=False)
-        self.resources.cache_raw_results(
-            f"access_request__{self.key}", preserved_index_output
+        self.resources.cache_results_with_placeholders(
+            f"access_request__{self.key}", placeholder_output
         )
 
+        # Cache results with non-matching sub-documents and array elements removed
         for row in output:
-            # In code, filter out non-matching sub-documents and array elements
             logger.info(
                 f"Filtering row in {self.traversal_node.node.address} for matching array elements."
             )
@@ -281,7 +280,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # note this in the execution log and perform no erasures on this node
         if not self.traversal_node.node.contains_field(lambda f: f.primary_key):
             logger.warning(
-                f"No erasures on {self.traversal_node.node.address} as there is no PK defined."
+                f"No erasures on {self.traversal_node.node.address} as there is no primary_key defined."
             )
             self.update_status(
                 "No values were erased since no primary key was defined for this collection",
@@ -293,7 +292,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         if not self.can_write_data():
             logger.warning(
-                f"No erasures on {self.traversal_node.node.address} as its ConnectionConfig does not have write accessx."
+                f"No erasures on {self.traversal_node.node.address} as its ConnectionConfig does not have write access."
             )
             self.update_status(
                 f"No values were erased since this connection {self.connector.configuration.key} has not been "
@@ -379,19 +378,20 @@ def run_access_request(
         return v.compute()
 
 
-def get_raw_access_request_results_from_cache(
+def get_cached_data_for_erasures(
     privacy_request_id: str,
 ) -> Dict[str, Any]:
     """
-    Get the raw access request results from all nodes for a privacy request.
+    Fetch the access request results with placeholders from all nodes for a given privacy request from the cache.
+    This data should be the starting point for erasures, not the access request results returned from the node.
 
-    GraphTask.run_access_request potentially filters out unmatched array results before saving in the cache, and
-    passing those query results onto other nodes for more discovery. This fetches the original results before any
-    filtering was done, particularly so array indices are preserved for masking.
+    GraphTask.run_access_request results may have array elements with indices or sub-documents that were not matched
+    in the query. These are cached with placeholder text to preserve the indices of all elements, so we make
+    sure we mask the correct element.
     """
     cache = get_cache()
     value_dict = cache.get_encoded_objects_by_prefix(
-        f"RAW_RESULTS__{privacy_request_id}"
+        f"PLACEHOLDER_RESULTS__{privacy_request_id}"
     )
     return {k.split("__")[-1]: v for k, v in value_dict.items()}
 

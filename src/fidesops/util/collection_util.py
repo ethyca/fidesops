@@ -5,7 +5,7 @@ T = TypeVar("T")
 U = TypeVar("U")
 
 NodeInput = Dict[str, List[Any]]  # Of format {node_address: []}
-PRESERVE_INDEX_TEXT = "FIDESOPS_DO_NOT_MATCH"
+FIDESOPS_DO_NOT_MASK_INDEX = "FIDESOPS_DO_NOT_MASK"
 
 
 def merge_dicts(*dicts: Dict[T, U]) -> Dict[T, U]:

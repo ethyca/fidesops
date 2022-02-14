@@ -12,7 +12,7 @@ from fidesops.task.refine_target_path import (
     DetailedPath,
     join_detailed_path,
 )
-from fidesops.util.collection_util import PRESERVE_INDEX_TEXT
+from fidesops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,8 @@ def filter_element_match(
 
     :param row: Record retrieved from a dataset
     :param query_paths: FieldPaths mapped to query values
-    :param delete_elements: If True, removes unmatched indices from array. If False, replaces the data, so the original
-    indices are preserved.
+    :param delete_elements: If True, *removes* unmatched indices from array. If False, just *replaces* the data,
+    so the original indices are preserved.
     :return: A modified record with array elements potentially eliminated if array data was targeted by a query path
 
     :Example:
@@ -38,10 +38,24 @@ def filter_element_match(
 
     filter_element_match(
         row={"A": [1, 2, 3], "B": 2, "C": [{"D": 3, "E": 4}, {"D": 5, "E": 6}, {"D": 5, "E": 7}]},
-        query_paths={FieldPath("A"): [2], FieldPath("C, "D"): 5}
+        query_paths={FieldPath("A"): [2], FieldPath("C, "D"): [5]}
     )
 
     {"A": [2], "B": 2, "C": [{"D": 5, "E": 6}, {"D": 5, "E": 7}]}
+
+    :Example:
+    With delete_elements=False, we replace elements with placeholder text instead.
+    filter_element_match(
+        row={"A": [1, 2, 3], "B": 2, "C": [{"D": 3, "E": 4}, {"D": 5, "E": 6}, {"D": 5, "E": 7}]},
+        query_paths={FieldPath("A"): [2], FieldPath("C, "D"): [5]},
+        delete_elements=False
+    )
+
+    {
+     'A': ['FIDESOPS_DO_NOT_MASK', 2, 'FIDESOPS_DO_NOT_MASK'],
+     'B': 2,
+     'C': ['FIDESOPS_DO_NOT_MASK', {'D': 5, 'E': 6}, {'D': 5, 'E': 7}]
+    }
     """
     detailed_target_paths: List[DetailedPath] = build_refined_target_paths(
         row, query_paths
@@ -94,12 +108,10 @@ def _remove_paths_from_row(
         # Loop through array in reverse to delete indices
         for i, _ in reversed(list(enumerate(matched_array))):
             if i not in preserve_index_list:
-                if delete_elements:
-                    matched_array.pop(i)  # We delete the element (for access requests)
-                else:
-                    matched_array[
-                        i
-                    ] = PRESERVE_INDEX_TEXT  # We replace the element (for erasures)
+                if delete_elements:  # We delete the element (for access requests)
+                    matched_array.pop(i)
+                else:  # We replace the element (for erasures)
+                    matched_array[i] = FIDESOPS_DO_NOT_MASK_INDEX
 
     return row
 

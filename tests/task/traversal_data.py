@@ -141,7 +141,7 @@ def combined_mongo_postgresql_graph(
                         is_array=False,
                     ),
                 },
-            )
+            ),
         ],
         after=set(),
     )
