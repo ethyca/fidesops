@@ -1,5 +1,4 @@
-import json
-import logging
+import pytest
 import time
 from typing import Any, Dict, List, Set
 from unittest import mock
@@ -7,7 +6,6 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import pydash
-import pytest
 from sqlalchemy import (
     column,
     table,
@@ -292,6 +290,28 @@ def test_create_and_process_access_request_mariadb(
     assert trigger_webhook_mock.call_count == 4
     pr.delete(db=db)
 
+@pytest.mark.saas_connector
+@mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+def test_create_and_process_access_request_saas(
+    trigger_webhook_mock,
+    connection_config_saas,
+    dataset_config_saas,
+    db,
+    cache,
+    policy,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
+):
+    customer_email = "***REMOVED***"
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    pr = get_privacy_request_results(db, policy, cache, data)
+
+    results = pr.get_results()
 
 @pytest.mark.integration_erasure
 def test_create_and_process_erasure_request_specific_category(
@@ -547,7 +567,7 @@ def test_create_and_process_erasure_request_aes_generic_category(
             # category ("user.provided.identifiable.contact").
             # masked val for `email` field will change per new privacy request, so the best
             # we can do here is test that the original val has been changed
-            assert row[1] is not "customer-2@example.com"
+            assert row[1] != "customer-2@example.com"
             assert row[2] is not None
         else:
             # There are two rows other rows, and they should not have been erased

@@ -11,7 +11,6 @@ from fidesops.db.session import get_db_session
 from fidesops.common_exceptions import PrivacyRequestPaused, ClientUnsuccessfulException
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import (
     ActionType,
     WebhookTypes,
@@ -127,11 +126,14 @@ class PrivacyRequestRunner:
                 session.close()
                 return
 
-            datasets = DatasetConfig.all(db=session)
-            dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+            connection_configs = ConnectionConfig.all(db=session)
+            dataset_graphs = [
+                graph
+                for connection_config in connection_configs
+                for graph in connection_config.get_dataset_graphs()
+            ]
             dataset_graph = DatasetGraph(*dataset_graphs)
             identity_data = privacy_request.get_cached_identity_data()
-            connection_configs = ConnectionConfig.all(db=session)
             policy = privacy_request.policy
             try:
                 policy.rules[0]

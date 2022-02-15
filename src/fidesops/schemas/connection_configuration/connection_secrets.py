@@ -18,7 +18,7 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
 
     def __init_subclass__(cls: BaseModel, **kwargs: Any):
         super().__init_subclass__(**kwargs)
-        if not getattr(cls, "_required_components"):
+        if getattr(cls, "_required_components") is None:
             raise TypeError(f"Class {cls.__name__} must define '_required_components.'")
 
     @root_validator

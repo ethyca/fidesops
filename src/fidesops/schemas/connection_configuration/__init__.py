@@ -34,6 +34,7 @@ from fidesops.schemas.connection_configuration.connection_secrets_snowflake impo
 from fidesops.schemas.connection_configuration.connections_secrets_https import (
     HttpsSchema,
 )
+from fidesops.schemas.connection_configuration.connection_secrets_saas import SaaSSchema
 
 secrets_validators: Dict[str, Any] = {
     ConnectionType.postgres.value: PostgreSQLSchema,
@@ -44,6 +45,7 @@ secrets_validators: Dict[str, Any] = {
     ConnectionType.snowflake.value: SnowflakeSchema,
     ConnectionType.mssql.value: MicrosoftSQLServerSchema,
     ConnectionType.mariadb.value: MariaDBSchema,
+    ConnectionType.saas.value: SaaSSchema,
 }
 
 

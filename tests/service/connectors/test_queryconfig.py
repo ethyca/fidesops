@@ -17,17 +17,18 @@ from fidesops.schemas.dataset import FidesopsDataset
 
 from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-
 from fidesops.service.connectors.query_config import (
     QueryConfig,
     SQLQueryConfig,
     MongoQueryConfig,
+    SaaSQueryConfig,
 )
 
 from fidesops.service.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
     HASH,
 )
+from fidesops.util.saas_util import merge_datasets
 
 from ...task.traversal_data import (
     integration_db_graph,
@@ -587,3 +588,52 @@ class TestMongoQueryConfig:
         assert mongo_statement[1]["$set"]["birthday"] == HashMaskingStrategy(
             HashMaskingConfiguration(algorithm="SHA-512")
         ).mask("1988-01-10", privacy_request_id=privacy_request.id)
+
+@pytest.mark.saas_connector
+class TestSaaSQueryConfig:
+    @pytest.fixture(scope="function")
+    def combined_traversal(self, connection_config_saas, dataset_config_saas):
+        merged_graphs = connection_config_saas.get_dataset_graphs()
+        graph = DatasetGraph(*merged_graphs)
+        return Traversal(graph, {"email": "customer-1@example.com"})
+
+    def test_generate_query(self, policy, combined_traversal, connection_config_saas):
+        saas_config = connection_config_saas.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+
+        member = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "member")
+        ]
+        conversations = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "conversations")
+        ]
+        messages = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "messages")
+        ]
+
+        # static path with single query param
+        config = SaaSQueryConfig(member, endpoints)
+        prepared_requests = config.generate_query({"query": ["customer-1@example.com"]}, policy)
+        assert prepared_requests[0] == (
+            "/3.0/search-members",
+            {"query": "customer-1@example.com"},
+            {}
+        )
+
+        # static path with multiple query params with default values
+        config = SaaSQueryConfig(conversations, endpoints)
+        prepared_requests = config.generate_query({"placeholder": ["customer-1@example.com"]}, policy)
+        assert prepared_requests[0] == (
+            "/3.0/conversations",
+            {"count": 1000, "placeholder": "customer-1@example.com"},
+            {}
+        )
+
+        # dynamic path with no query params
+        config = SaaSQueryConfig(messages, endpoints)
+        prepared_requests = config.generate_query({"conversation_id": ["abc"]}, policy)
+        assert prepared_requests[0] == (
+            "/3.0/conversations/abc/messages",
+            {},
+            {}
+        )

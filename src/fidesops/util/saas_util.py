@@ -4,9 +4,10 @@ from fidesops.graph.config import Collection, Dataset, Field
 
 
 def merge_fields(target: Field, source: Field) -> Field:
-    """Merges all references and identities into a single field"""
-    target.references.extend(source.references)
-    if not target.identity:
+    """Replaces source references and identities if they are available from the target"""
+    if source.references is not None:
+        target.references = source.references
+    if source.identity is not None:
         target.identity = source.identity
     return target
 
@@ -25,11 +26,16 @@ def extract_fields(aggregate: Dict, collections: List[Collection]) -> None:
                 field_dict[field.name] = field
 
 
-def merge_datasets(target: Dataset, source: Dataset) -> Dataset:
-    """Merges all Collections and Fields of two Datasets into a single Dataset"""
+def merge_datasets(dataset: Dataset, config_dataset: Dataset) -> Dataset:
+    """
+    Merges all Collections and Fields from the config_dataset into the dataset.
+    In the event of a collection/field name collision, the target field
+    will inherit the identity and field references. This is by design since
+    dataset references for SaaS connectors should not have any references.
+    """
     field_aggregate: Dict[str, Dict] = defaultdict(dict)
-    extract_fields(field_aggregate, target.collections)
-    extract_fields(field_aggregate, source.collections)
+    extract_fields(field_aggregate, dataset.collections)
+    extract_fields(field_aggregate, config_dataset.collections)
 
     collections = []
     for collection_name, field_dict in field_aggregate.items():
@@ -38,7 +44,7 @@ def merge_datasets(target: Dataset, source: Dataset) -> Dataset:
         )
 
     return Dataset(
-        name=target.name,
+        name=dataset.name,
         collections=collections,
-        connection_key=target.connection_key,
+        connection_key=dataset.connection_key,
     )

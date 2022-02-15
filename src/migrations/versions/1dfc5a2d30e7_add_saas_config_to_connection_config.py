@@ -24,7 +24,20 @@ def upgrade():
             "saas_config", postgresql.JSONB(astext_type=sa.Text()), nullable=True
         ),
     )
+    op.execute("alter type connectiontype add value 'saas'")
 
 
 def downgrade():
     op.drop_column("connectionconfig", "saas_config")
+    op.execute("delete from connectionconfig where connection_type in ('saas')")
+    op.execute("alter type connectiontype rename to connectiontype_old")
+    op.execute(
+        "create type connectiontype as enum('postgres', 'mongodb', 'mysql', 'https', 'snowflake', 'redshift', 'mssql', 'mariadb')"
+    )
+    op.execute(
+        (
+            "alter table connectionconfig alter column connection_type type connectiontype using "
+            "connection_type::text::connectiontype"
+        )
+    )
+    op.execute("drop type connectiontype_old")

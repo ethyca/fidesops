@@ -80,7 +80,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, Set, Dict, Literal, Any, Callable
+from typing import List, Optional, Tuple, Set, Dict, Any, Callable
 
 import pydash
 from pydantic import BaseModel, validator
@@ -91,13 +91,12 @@ from fidesops.graph.data_type import (
     get_data_type_converter,
     DataType,
 )
-from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.schemas.shared_schemas import EdgeDirection, FidesOpsKey
 from fidesops.util.collection_util import merge_dicts
 from fidesops.util.querytoken import QueryToken
 
 DatasetAddress = str
 SeedAddress = str
-EdgeDirection = Literal["from", "to"]
 
 
 class CollectionAddress:

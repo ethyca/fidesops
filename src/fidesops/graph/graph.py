@@ -11,11 +11,10 @@ from fidesops.graph.config import (
     SeedAddress,
     Collection,
     Dataset,
-    EdgeDirection,
     Field,
     FieldPath,
 )
-from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.schemas.shared_schemas import EdgeDirection, FidesOpsKey
 
 logger = logging.getLogger(__name__)
 
