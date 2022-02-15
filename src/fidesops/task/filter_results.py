@@ -12,8 +12,8 @@ def select_and_save_field(saved: Any, row: Any, target_path: FieldPath) -> Dict:
     Entire rows are returned from your collections; this function will incrementally just pull the PII from the rows,
     by retrieving data along target_paths to relevant data categories.
 
-    To use, you might start with a "saved" that is an empty dict, and loop through a list of FieldPaths you want,
-    continuing to pass in the ever-growing new "saved" collection that was returned from the previous iteration.
+    To use, pass in an empty dict for "saved" and loop through a list of FieldPaths you want,
+    continuing to pass in the ever-growing new "saved" dict that was returned from the previous iteration.
 
     :param saved: Call with an empty dict to start, it will recursively update as data along the target_path is added to it.
     :param row: Call with retrieved row to start, it will recursively be called with a variety of object types until we
