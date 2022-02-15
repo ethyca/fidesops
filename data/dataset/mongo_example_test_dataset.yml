@@ -206,7 +206,7 @@ dataset:
           - name: planes
             data_categories: [ system.operations ]
             fidesops_meta:
-              data_type: integer[]
+              data_type: string[]
               references:
                 - dataset: mongo_test
                   field: flights.plane

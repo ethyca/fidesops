@@ -28,7 +28,7 @@ def filter_element_match(
     :Example:
     The given row was retrieved from a dataset because an element in row["A"] matched 2 or an element in
     row["C"]["D"] matched 5.  row["A"] is filtered to just contain the matching element, and row["C"] is filtered
-    to just contain the objects where "D" = 5.
+    to just contain the objects where "D" = 5. Non-array elements should not be touched.
 
     filter_element_match(
         row={"A": [1, 2, 3], "B": 2, "C": [{"D": 3, "E": 4}, {"D": 5, "E": 6}, {"D": 5, "E": 7}]},
@@ -61,7 +61,7 @@ def _remove_paths_from_row(
 
     :Example:
     The first element in row["A"]["B"] was the only one specified to preserve, so we remove the other two.
-    _remove_paths_from_row(_remove_paths_from_row({"A": {"B": [{"C": "D"}, {"C": "F"}, {"C": "G"}]}}, {"A.B": [0]})
+    _remove_paths_from_row({"A": {"B": [{"C": "D"}, {"C": "F"}, {"C": "G"}]}}, {"A.B": [0]})
 
     {'A': {'B': [{'C': 'D'}]}}
     """

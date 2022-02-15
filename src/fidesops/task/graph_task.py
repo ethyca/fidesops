@@ -238,6 +238,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             self.traversal_node, self.resources.policy, formatted_input_data
         )
 
+        coerced_input_data = self.traversal_node.typed_filtered_values(
+            formatted_input_data  # Cast incoming values to correct type
+        )
         for row in output:
             # In code, filter out non-matching sub-documents and array elements
             logger.info(
@@ -247,7 +250,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 row,
                 {
                     FieldPath.parse(field): inputs
-                    for field, inputs in formatted_input_data.items()
+                    for field, inputs in coerced_input_data.items()
                 },
             )
         self.resources.cache_object(f"access_request__{self.key}", output)

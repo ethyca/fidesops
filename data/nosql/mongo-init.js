@@ -132,7 +132,7 @@ db.flights.insert([
         "flight_no": "AA230",
         "date": "2021-01-01",
         "pilots": ["1", "2"],  // Array field referencing a scalar field mongo_test.employee.id
-        "plane": 10002 // Scalar field referenced *by* an array field mongo_test.aircraft.planes
+        "plane": NumberInt(10002) // Scalar field referenced *by* an array field mongo_test.aircraft.planes
     },
     {
         "passenger_information": {
@@ -142,14 +142,14 @@ db.flights.insert([
         "flight_no": "AA240",
         "date": "2021-02-01",
         "pilots": ["2"],
-        "plane": 30005
+        "plane": NumberInt(30005)
     }
 ]);
 
 
 db.aircraft.insert([
-    {"model": "Airbus A350", "planes": [10001, 10002, 10003, 10004, 10005]},
-    {"model": "Boeing 747-8", "planes": [30005, 30006, 30007]}
+    {"model": "Airbus A350", "planes": ["10001", "10002", "10003", "10004", "10005"]},
+    {"model": "Boeing 747-8", "planes": ["30005", "30006", "30007"]}
 ]);
 
 

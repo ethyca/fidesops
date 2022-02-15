@@ -565,6 +565,7 @@ def test_array_querying_mongo(
     # items in array mongo_test:customer_details.travel_identifiers used to lookup matching array elements
     # in mongo_test:flights:passenger_information.passenger_ids.  passenger_information.full_name has relevant
     # data category.
+    assert len(filtered_identifiable["mongo_test:flights"]) == 1
     assert filtered_identifiable["mongo_test:flights"][0] == {
         "passenger_information": {"full_name": "Jane Customer"}
     }
@@ -577,7 +578,7 @@ def test_array_querying_mongo(
     ]
 
     # Integer field mongo_test:flights.plane used to locate only matching elem in mongo_test:aircraft:planes array field
-    assert access_request_results["mongo_test:aircraft"][0]["planes"] == [30005]
+    assert access_request_results["mongo_test:aircraft"][0]["planes"] == ['30005']
     # Filtered out, however, because there's no relevant matched data category
     assert filtered_identifiable["mongo_test:aircraft"] == []
 
