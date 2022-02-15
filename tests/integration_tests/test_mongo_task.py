@@ -631,11 +631,11 @@ class TestRetrievingDataMongo:
     def traversal_node(self, example_datasets, integration_mongodb_config):
         dataset = FidesopsDataset(**example_datasets[1])
         graph = convert_dataset_to_graph(dataset, integration_mongodb_config.key)
-        customer_details_collection = [
-            collection
-            for collection in graph.collections
-            if collection.name == "customer_details"
-        ][0]
+        customer_details_collection = None
+        for collection in graph.collections:
+            if collection.name == "customer_details":
+                customer_details_collection = collection
+                break
         node = Node(graph, customer_details_collection)
         traversal_node = TraversalNode(node)
         return traversal_node

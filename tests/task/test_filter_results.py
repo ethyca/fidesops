@@ -6,7 +6,7 @@ from bson import ObjectId
 from fidesops.graph.config import FieldPath, CollectionAddress
 from fidesops.task.filter_results import (
     select_and_save_field,
-    remove_empty_objects,
+    remove_empty_containers,
 )
 from fidesops.task.graph_task import filter_data_categories
 
@@ -368,45 +368,60 @@ def test_select_and_save_field():
     }
 
 
-def test_strip_empty_dicts():
-    # No empty dicts, strip_empty_dicts has no effect
-    orig = {"A": {"B": {"C": []}, "G": {"H": None}}, "I": 0, "J": False}
+def test_remove_empty_containers():
+    # No empty dicts or arrays
+    orig = {"A": {"B": {"C": 0}, "G": {"H": None}}, "I": 0, "J": False}
     results = copy.deepcopy(orig)
-    remove_empty_objects(results)
+    remove_empty_containers(results)
     assert results == orig
 
-    # Deeply nested dicts with no values removed - G - H - I levels gone.
-    orig = {"A": {"B": {"C": []}, "G": {"H": {"I": {}}}}, "I": 0}
+    # Empty arrays
+    results = {"A": [], "B": [], "C": False}
+    remove_empty_containers(results)
+    assert results == {"C": False}
+
+    # Empty dicts
+    results = {"A": {}, "B": {}, "C": {}}
+    remove_empty_containers(results)
+    assert results == {}
+
+    # Empty array removed, which causes "C" key to be popped, which causes "B" to be popped
+    orig = {"A": {"B": {"C": []}, "G": {"H": None}}, "I": 0, "J": False}
     results = copy.deepcopy(orig)
-    remove_empty_objects(results)
-    assert results == {"A": {"B": {"C": []}}, "I": 0}
+    remove_empty_containers(results)
+    assert results == {"A": {"G": {"H": None}}, "I": 0, "J": False}
+
+    # Deeply nested empty array and deeply nested empty dict removed - G - H - I levels gone and A - B - C levels gone
+    orig = {"A": {"B": {"C": []}, "G": {"H": {"I": {}}}}, "J": 0}
+    results = copy.deepcopy(orig)
+    remove_empty_containers(results)
+    assert results == {"J": 0}
 
     orig = {
         "A": [{"B": "C", "D": {}}, {"B": "G", "D": {}}, {"B": "J", "D": {"J": "K"}}]
     }
     results = copy.deepcopy(orig)
-    remove_empty_objects(results)
+    remove_empty_containers(results)
     assert results == {"A": [{"B": "C"}, {"B": "G"}, {"B": "J", "D": {"J": "K"}}]}
 
     # Empty dict returns original empty dict
     orig = {}
     results = copy.deepcopy(orig)
-    remove_empty_objects(results)
+    remove_empty_containers(results)
     assert results == {}
 
     # Empty dict returned
     orig = {"A": {}}
     results = copy.deepcopy(orig)
-    remove_empty_objects(results)
+    remove_empty_containers(results)
     assert results == {}
 
-    # Empty dict *not* removed entirely from array - unclear what expected behavior
-    # is here. Original version was removing it, but I think that may be too aggressive.
+    # Removing multiple levels of empty arrays and empty dicts
     orig = {"A": [[{"B": "C", "D": [{"F": {}}, {"G": []}]}, {"B": "D"}, {"B": "G"}]]}
     results = copy.deepcopy(orig)
-    remove_empty_objects(results)
+    remove_empty_containers(results)
     assert results == {
-        "A": [[{"B": "C", "D": [{}, {"G": []}]}, {"B": "D"}, {"B": "G"}]]
+        "A": [[{"B": "C"}, {"B": "D"}, {"B": "G"}]]
     }
 
 

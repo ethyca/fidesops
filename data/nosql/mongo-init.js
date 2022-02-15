@@ -184,7 +184,7 @@ db.employee.insert([
 
 db.customer.insert([
     {
-        "id": "1",
+        "id": 1,
         "email": "customer-1@example.com",
         "name": "John Customer",
         "created": Date("2020-04-01 11:47:42"),
@@ -210,7 +210,7 @@ db.customer.insert([
         ]
     },
     {
-        "id": "2",
+        "id": 2,
         "email": "customer-2@example.com",
         "name": "Jill Customer",
         "created": Date("2020-04-01 11:47:42"),
@@ -231,7 +231,7 @@ db.customer.insert([
         ]
     },
      {
-        "id": "3",
+        "id": 3,
         "email": "customer-3@example.com",
         "name": null,
         "address": null,

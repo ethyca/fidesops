@@ -19,7 +19,7 @@ def test_consolidate_query_matches():
     assert consolidate_query_matches(input_data, field_path) == [1, 3, 5]
 
     # Nested array returned
-    input_data = {"A": {"B": {"C": [9, 8, 7]}}, "D": {"E": {"F"}}}
+    input_data = {"A": {"B": {"C": [9, 8, 7]}}, "D": {"E": {"F": "G"}}}
     field_path = FieldPath("A", "B", "C")
     assert consolidate_query_matches(input_data, field_path) == [9, 8, 7]
 

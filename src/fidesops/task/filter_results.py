@@ -52,28 +52,32 @@ def select_and_save_field(saved: Any, row: Any, target_path: FieldPath) -> Dict:
 RecursiveRow = Union[Dict[Any, Any], List[Any]]
 
 
-def remove_empty_objects(row: RecursiveRow) -> RecursiveRow:
+def remove_empty_containers(row: RecursiveRow) -> RecursiveRow:
     """
-    Recursively updates row in place to remove empty dictionaries at any level in collection or
+    Recursively updates row in place to remove empty dictionaries and empty arrays at any level in collection or
     from embedded collections in arrays.
 
     `select_and_save_field` recursively builds a nested structure based on desired field paths.
     If no input data was found along a deeply nested field path, we may have empty dicts to clean up
-    before supplying response to user.
+    before supplying response to user.  Also empty arrays and empty dicts do not contain PII.
 
-    :param row: Pass in retrieved row, and it will recursively go through objects and arrays and filter out empty objects.
-    :return: Updated row with empty objects removed
+    :param row: Pass in retrieved row, and it will recursively go through objects and arrays and filter out empty collections.
+    :return: Updated row with empty objects and arrays removed
     """
     if isinstance(row, dict):
         for key, value in row.copy().items():
             if isinstance(value, (dict, list)):
-                value = remove_empty_objects(value)
+                value = remove_empty_containers(value)
 
-            if value == {}:
+            if value in [{}, []]:
                 del row[key]
 
     elif isinstance(row, list):
-        for elem in row:
-            remove_empty_objects(elem)
+        for index, elem in reversed(list(enumerate(row))):
+            if isinstance(elem, (dict, list)):
+                elem = remove_empty_containers(elem)
+
+            if elem in [{}, []]:
+                row.pop(index)
 
     return row

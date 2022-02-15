@@ -19,7 +19,7 @@ def filter_element_match(
     row: Dict[str, Any], query_paths: Dict[FieldPath, List[Any]]
 ) -> Dict[str, Any]:
     """
-    Modifies row in place to only contain matched elements or matched embedded documents within arrays.
+    Modifies row in place to remove unmatched array elements or unmatched embedded documents within arrays.
 
     :param row: Record retrieved from a dataset
     :param query_paths: FieldPaths mapped to query values

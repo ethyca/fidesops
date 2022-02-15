@@ -27,7 +27,7 @@ from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.connectors import BaseConnector
 from fidesops.task.consolidate_query_matches import consolidate_query_matches
 from fidesops.task.filter_element_match import filter_element_match
-from fidesops.task.filter_results import select_and_save_field, remove_empty_objects
+from fidesops.task.filter_results import select_and_save_field, remove_empty_containers
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.collection_util import partition, append
 from fidesops.util.logger import NotPii
@@ -452,7 +452,7 @@ def filter_data_categories(
             filtered_results: Dict[str, Any] = {}
             for field_path in target_field_paths:
                 select_and_save_field(filtered_results, row, field_path)
-            remove_empty_objects(filtered_results)
+            remove_empty_containers(filtered_results)
             filtered_access_results[node_address].append(filtered_results)
 
     return filtered_access_results
