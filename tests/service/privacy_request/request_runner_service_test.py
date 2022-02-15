@@ -304,8 +304,9 @@ def test_create_and_process_access_request_saas(
     policy,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
+    mailchimp_account_email
 ):
-    customer_email = "***REMOVED***"
+    customer_email = mailchimp_account_email
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": policy.key,
@@ -313,8 +314,21 @@ def test_create_and_process_access_request_saas(
     }
 
     pr = get_privacy_request_results(db, policy, cache, data)
-
     results = pr.get_results()
+    assert len(results.keys()) == 3
+
+    for key in results.keys():
+        assert results[key] is not None
+        assert results[key] != {}
+
+    result_key_prefix = f"EN_{pr.id}__access_request__mailchimp_connector_example:"
+    member_key = result_key_prefix + "member"
+    assert results[member_key][0]["email_address"] == customer_email
+
+    # Both pre-execution webhooks and both post-execution webhooks were called
+    assert trigger_webhook_mock.call_count == 4
+
+    pr.delete(db=db)
 
 @pytest.mark.integration_erasure
 def test_create_and_process_erasure_request_specific_category(

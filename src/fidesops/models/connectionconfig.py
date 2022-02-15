@@ -100,7 +100,7 @@ class ConnectionConfig(Base):
     def get_dataset_graphs(self) -> List[Dataset]:
         """
         Returns a list of graphs for all the associated datasets and augments
-        them with a matching (by fides_key) saas config information if one is available
+        them with a matching (by fides_key) saas config if one is available
         """
         graphs = []
         for dataset in self.datasets:
