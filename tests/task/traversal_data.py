@@ -442,7 +442,7 @@ def integration_db_dataset(db_name: str, connection_key: FidesOpsKey) -> Dataset
     customers = Collection(
         name="customer",
         fields=[
-            ScalarField(name="id", primary_key=True),
+            ScalarField(name="id", primary_key=True, data_type_converter=int_converter),
             ScalarField(name="name", data_type_converter=str_converter),
             ScalarField(
                 name="email", identity="email", data_type_converter=str_converter

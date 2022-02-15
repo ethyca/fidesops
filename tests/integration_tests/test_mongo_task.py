@@ -279,7 +279,7 @@ def test_composite_key_erasure(
             ),
             ScalarField(
                 name="customer_id",
-                data_type_converter=StringTypeConverter(),
+                data_type_converter=IntTypeConverter(),
                 references=[(FieldAddress("mongo_test", "customer", "id"), "from")],
             ),
         ],
@@ -302,8 +302,8 @@ def test_composite_key_erasure(
     customer = access_request_data["mongo_test:customer"][0]
     composite_pk_test = access_request_data["mongo_test:composite_pk_test"][0]
 
-    assert customer["id"] == "1"
-    assert composite_pk_test["customer_id"] == "1"
+    assert customer["id"] == 1
+    assert composite_pk_test["customer_id"] == 1
 
     # erasure
     erasure = graph_task.run_erasure(

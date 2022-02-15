@@ -184,7 +184,7 @@ db.employee.insert([
 
 db.customer.insert([
     {
-        "id": 1,
+        "id": NumberInt(1),
         "email": "customer-1@example.com",
         "name": "John Customer",
         "created": Date("2020-04-01 11:47:42"),
@@ -210,7 +210,7 @@ db.customer.insert([
         ]
     },
     {
-        "id": 2,
+        "id": NumberInt(2),
         "email": "customer-2@example.com",
         "name": "Jill Customer",
         "created": Date("2020-04-01 11:47:42"),
@@ -231,7 +231,7 @@ db.customer.insert([
         ]
     },
      {
-        "id": 3,
+        "id": NumberInt(3),
         "email": "customer-3@example.com",
         "name": null,
         "address": null,
@@ -255,7 +255,7 @@ db.payment_card.insert([
         "ccn": "123456789",
         "code": "321",
         "preferred": true,
-        "customer_id": "1",
+        "customer_id": NumberInt(1),
         "billing_address": {
             "house": 123,
             "street": "Example Street",
@@ -270,7 +270,7 @@ db.payment_card.insert([
         "ccn": "987654321",
         "code": "123",
         "preferred": false,
-        "customer_id": "2",
+        "customer_id": NumberInt(2),
         "billing_address": {
             "house": 123,
             "street": "Example Street",
@@ -291,7 +291,7 @@ db.product.insert([
 db.orders.insert([
     {
         "id": "ord_aaa-aaa",
-        "customer_id": "1",
+        "customer_id": NumberInt(1),
         "shipping_address": {
             "house": 4,
             "street": "Example Lane",
@@ -306,7 +306,7 @@ db.orders.insert([
     },
     {
         "id": "ord_bbb-bbb",
-        "customer_id": "2",
+        "customer_id": NumberInt(2),
             "shipping_address":  {
             "house": 123,
             "street": "Example Street",
@@ -321,7 +321,7 @@ db.orders.insert([
     },
       {
         "id": "ord_ccc-ccc",
-        "customer_id": "1",
+        "customer_id": NumberInt(1),
             "shipping_address":  {
             "house": 123,
             "street": "Example Street",
@@ -339,7 +339,7 @@ db.orders.insert([
     },
       {
         "id": "ord_ddd-ddd",
-        "customer_id": "1",
+        "customer_id": NumberInt(1),
             "shipping_address":  {
             "house": 123,
             "street": "Example Street",
@@ -363,9 +363,9 @@ db.reports.insert([
 ]);
 
 db.composite_pk_test.insert([
-    {"id_a":1, "id_b":10, "description":"linked to customer 1", "customer_id":"1"},
-    {"id_a":1, "id_b":11, "description":"linked to customer 2", "customer_id":"2"},
-    {"id_a":2, "id_b":10, "description":"linked to customer 3", "customer_id":"3"}
+    {"id_a":1, "id_b":10, "description":"linked to customer 1", "customer_id": NumberInt(1)},
+    {"id_a":1, "id_b":11, "description":"linked to customer 2", "customer_id": NumberInt(2)},
+    {"id_a":2, "id_b":10, "description":"linked to customer 3", "customer_id": NumberInt(3)}
 ]);
 
 //values to support test by specific objectId search
