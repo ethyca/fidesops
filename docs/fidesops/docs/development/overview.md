@@ -29,8 +29,8 @@ commands to give you different functionality.
 - `make black`, `make mypy`, and `make pylint` - auto-formats code
 - `make check-all` - runs the CI checks locally and verifies that your code meets project standards
 - `make server-shell`-  opens a shell on the Docker container, from here you can run useful commands like:
-   - `ipython` - open a Python shell
-   - `cd src` then `alembic revision --autogenerate -m "adds enum for mysql connection type"` - auto-generates DB migration
+    - `ipython` - open a Python shell
+    - `cd src` then `alembic revision --autogenerate -m "adds enum for mysql connection type"` - auto-generates DB migration
 - `make pytest` - runs all unit tests except those that talk to integration databases
 - `make pytest-integration` - runs access integration tests.
 - `make pytest-integration datastores="postgres snowflake mssql"` - runs access integration tests for the Postgres, Snowflake and MSSQL environments.
@@ -38,7 +38,7 @@ commands to give you different functionality.
 - `make reset-db` - tears down the Fidesops postgres db, then recreates and re-runs migrations.
 - `make quickstart` - runs a quick, five minute quickstart that talks to the Fidesops API to execute privacy requests
 - `make check-migrations` - verifies there are no un-run migrations 
-- `make docs-serve` - spins up just the docs
+- `make docs-serve` - spins up just the docs, which you can visit at `http://0.0.0.0:8000/fidesops/`
 
 See [Makefile](https://github.com/ethyca/fidesops/blob/main/Makefile) for more options. 
 
@@ -53,7 +53,7 @@ and then run `pip install -e .`. Verify Fidesops is installed with `pip list`.
 
 ## Write your code
 
-See the [contributing details](contributing_details.md) guide for more 
+See the [contributing details](contributing_details.md) guide to get familiar with writing and testing API endpoints, database models, and more. 
 
 We want to help you ensure your code plays nicely with the rest of the Fidesops ecosystem. Many projects describe code style and documentation as a suggestion; in Fidesops it's a CI-checked requirement.
 
