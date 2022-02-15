@@ -1182,7 +1182,7 @@ class TestMongoConnectionPutSecretsAPI:
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is True
 
-
+@pytest.mark.saas_connector
 class TestSaaSConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, connection_config_saas) -> str:
