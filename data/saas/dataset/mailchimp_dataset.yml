@@ -1,6 +1,6 @@
 dataset:
-  - fides_key: mailchimp_connector
-    name: mailchimp_connector
+  - fides_key: mailchimp_connector_example
+    name: Mailchimp Dataset
     description: A sample dataset representing the Mailchimp connector for Fidesops
     collections:
       - name: messages

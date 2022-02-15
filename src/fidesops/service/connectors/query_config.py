@@ -17,6 +17,7 @@ from fidesops.graph.config import (
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
 from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.schemas.saas.saas_config import Endpoint
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     get_strategy,
@@ -616,18 +617,26 @@ SaaSRequestParams = Tuple[str, Dict[str, Any], Dict[str, Any]]
 
 
 class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
-    """Query config that converts SaaS request configurations into populated request params"""
+    """Query config that generates populated SaaS requests for a given collection"""
 
-    def __init__(self, node: TraversalNode, request: Request):
+    def __init__(self, node: TraversalNode, endpoints: Dict[str, Endpoint]):
         super().__init__(node)
-        self.request = request
+        self.endpoints = endpoints
+
+    def get_request_by_action(self, action: str) -> Request:
+        """
+        Returns the appropriate request config based on the
+        current collection and prefered action (read, update, delete)
+        """
+        collection_name = self.node.address.collection
+        return self.endpoints[collection_name].requests[action]
 
     @staticmethod
     def prepare_params(
         request: Request, param_values: Dict[str, Any]
     ) -> SaaSRequestParams:
         """
-        Populates the placeholders in the request with the given param_values
+        Populates the placeholders in the request with the given param values
         """
         path = request.path
         params: Dict[str, Any] = {}
@@ -639,23 +648,27 @@ class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
                     params[param.name] = param.default_value
                 elif param.references or param.identity:
                     params[param.name] = param_values[param.name][0]
-            if param.type == "path":
+            elif param.type == "path":
                 path = path.replace(f"<{param.name}>", param_values[param.name][0])
+            elif param.type == "body":
+                data[param.name] = param_values[param.name][0]
 
         return (path, params, data)
 
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
     ) -> Optional[List[SaaSRequestParams]]:
+        """Returns a list of prepared request params"""
 
         filtered_data = self.typed_filtered_values(input_data)
+        current_request = self.get_request_by_action("read")
 
         request_params = []
         # populate the SaaS request with reference values from other datasets provided to this node
         for string_path, reference_values in filtered_data.items():
             for value in reference_values:
                 request_params.append(
-                    self.prepare_params(self.request, {string_path: [value]})
+                    self.prepare_params(current_request, {string_path: [value]})
                 )
         return request_params
 

@@ -1,6 +1,9 @@
-from typing import Optional
+from typing import Literal, Optional
 
 from fideslang.validation import FidesKey
+from pydantic import BaseModel
+
+EdgeDirection = Literal["from", "to"]
 
 
 class FidesOpsKey(FidesKey):
@@ -17,3 +20,13 @@ class FidesOpsKey(FidesKey):
             )
 
         return value
+
+
+# NOTE: this extends pydantic.BaseModel instead of our BaseSchema, for
+# consistency with other fideslang models
+class FidesopsDatasetReference(BaseModel):
+    """Reference to a field from another Collection"""
+
+    dataset: FidesOpsKey
+    field: str
+    direction: Optional[EdgeDirection]

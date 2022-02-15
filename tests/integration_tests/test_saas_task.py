@@ -1,29 +1,19 @@
-import random
 import pytest
+import random
 from fidesops.graph.graph import DatasetGraph
-from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
-from fidesops.schemas.saas.saasconfig import SaaSConfig
-from fidesops.schemas.dataset import FidesopsDataset
 
-from fidesops.service.connectors import get_connector
-from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.task import graph_task
-from fidesops.util.saas_util import merge_datasets
 
 from tests.graph.graph_test_util import assert_rows_match, records_matching_fields
 
-
-@pytest.mark.saas_connector
-def test_saas_test_connection(integration_saas_connection_configs) -> None:
-    """Dynamic connection test based on the SaaS config"""
-    for saas_connection_config in integration_saas_connection_configs.values():
-        connector = get_connector(saas_connection_config)
-        assert connector.test_connection() == ConnectionTestStatus.succeeded
-
 @pytest.mark.saas_connector
 def test_saas_access_request_task(
-    db, policy, integration_saas_connection_configs, example_saas_configs, example_saas_datasets, mailchimp_account_email
+    db,
+    policy,
+    connection_config_saas,
+    dataset_config_saas,
+    mailchimp_account_email,
 ) -> None:
     """Full access request based on the Mailchimp SaaS config"""
 
@@ -31,24 +21,20 @@ def test_saas_access_request_task(
         id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
     )
 
-    saas_config = SaaSConfig(**example_saas_configs["mailchimp"])
-    mailchimp_config_dataset = saas_config.generate_dataset()
-    mailchimp_dataset = convert_dataset_to_graph(
-        FidesopsDataset(**example_saas_datasets["mailchimp"]), "mailchimp_connector"
-    )
-    merged_dataset = merge_datasets(mailchimp_dataset, mailchimp_config_dataset)
-    graph = DatasetGraph(merged_dataset)
+    dataset_name = connection_config_saas.get_saas_config().fides_key
+    merged_graphs = connection_config_saas.get_dataset_graphs()
+    graph = DatasetGraph(*merged_graphs)
 
     v = graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
-        [integration_saas_connection_configs["mailchimp"]],
+        [connection_config_saas],
         {"email": mailchimp_account_email},
     )
 
     assert_rows_match(
-        v["mailchimp_connector:member"],
+        v[f"{dataset_name}:member"],
         min_size=1,
         keys=[
             "id",
@@ -71,12 +57,12 @@ def test_saas_access_request_task(
         ],
     )
     assert_rows_match(
-        v["mailchimp_connector:conversations"],
+        v[f"{dataset_name}:conversations"],
         min_size=2,
         keys=["id", "campaign_id", "list_id"],
     )
     assert_rows_match(
-        v["mailchimp_connector:messages"],
+        v[f"{dataset_name}:messages"],
         min_size=7,
         keys=[
             "id",
@@ -91,7 +77,7 @@ def test_saas_access_request_task(
     )
 
     # links
-    assert v["mailchimp_connector:member"][0]["email_address"] == mailchimp_account_email
+    assert v[f"{dataset_name}:member"][0]["email_address"] == mailchimp_account_email
 
     logs = (
         ExecutionLog.query(db=db)
@@ -103,7 +89,7 @@ def test_saas_access_request_task(
     assert (
         len(
             records_matching_fields(
-                logs, dataset_name="mailchimp_connector", collection_name="member"
+                logs, dataset_name=dataset_name, collection_name="member"
             )
         )
         > 0
@@ -111,7 +97,9 @@ def test_saas_access_request_task(
     assert (
         len(
             records_matching_fields(
-                logs, dataset_name="mailchimp_connector", collection_name="conversations"
+                logs,
+                dataset_name=dataset_name,
+                collection_name="conversations",
             )
         )
         > 0
@@ -119,7 +107,7 @@ def test_saas_access_request_task(
     assert (
         len(
             records_matching_fields(
-                logs, dataset_name="mailchimp_connector", collection_name="messages"
+                logs, dataset_name=dataset_name, collection_name="messages"
             )
         )
         > 0

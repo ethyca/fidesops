@@ -57,7 +57,6 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
 integration_config = load_toml("fidesops-integration.toml")
-saas_config = load_toml("saas_config.toml")
 
 # Unified list of connections to integration dbs specified from fidesops-integration.toml
 
@@ -96,15 +95,6 @@ integration_secrets = {
         "username": pydash.get(integration_config, "mariadb_example.USER"),
         "password": pydash.get(integration_config, "mariadb_example.PASSWORD"),
     },
-}
-
-saas_secrets = {
-    "mailchimp": {
-        "domain": pydash.get(saas_config, "mailchimp.domain") or os.environ.get("MAILCHIMP_DOMAIN"),
-        "username": pydash.get(saas_config, "mailchimp.username") or os.environ.get("MAILCHIMP_USERNAME"),
-        "api_key": pydash.get(saas_config, "mailchimp.api_key") or os.environ.get("MAILCHIMP_API_KEY"),
-        "account_email": pydash.get(saas_config, "mailchimp.account_email") or os.environ.get("MAILCHIMP_ACCOUNT_EMAIL"),
-    }
 }
 
 
@@ -989,12 +979,6 @@ def load_dataset(filename: str) -> Dict:
         return yaml.safe_load(file).get("dataset", [])
 
 
-def load_config(filename: str) -> Dict:
-    yaml_file = load_file(filename)
-    with open(yaml_file, "r") as file:
-        return yaml.safe_load(file).get("saas_config", [])
-
-
 @pytest.fixture
 def example_datasets() -> List[Dict]:
     example_datasets = []
@@ -1010,19 +994,6 @@ def example_datasets() -> List[Dict]:
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
     return example_datasets
-
-
-@pytest.fixture
-def example_saas_configs() -> Dict[str, Dict]:
-    example_saas_configs = {}
-    example_saas_configs["mailchimp"] = load_config("data/saas/config/mailchimp_config.yml")[0]
-    return example_saas_configs
-
-@pytest.fixture
-def example_saas_datasets() -> Dict[str, Dict]:
-    example_saas_datasets = {}
-    example_saas_datasets["mailchimp"] = load_dataset("data/saas/dataset/mailchimp_dataset.yml")[0]
-    return example_saas_datasets
 
 
 @pytest.fixture

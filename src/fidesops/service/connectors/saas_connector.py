@@ -8,10 +8,8 @@ from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.common_exceptions import ConnectionException
-from fidesops.schemas.saas.saasconfig import SaaSConfig
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.saasconfig import ClientConfig
-
+from fidesops.schemas.saas.saas_config import ClientConfig
 from fidesops.service.connectors.query_config import SaaSQueryConfig, SaaSRequestParams
 
 logger = logging.getLogger(__name__)
@@ -70,14 +68,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     def __init__(self, configuration: ConnectionConfig):
         super().__init__(configuration)
         self.secrets = configuration.secrets
-        self.saas_config = SaaSConfig(**configuration.saas_config)
+        self.saas_config = configuration.get_saas_config()
         self.client_config = self.saas_config.client_config
         self.endpoints = self.saas_config.top_level_endpoint_dict
-        self.request: Optional[Request] = None
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
         """Returns the query config for a SaaS connector"""
-        return SaaSQueryConfig(node, self.request)
+        return SaaSQueryConfig(node, self.endpoints)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
@@ -87,10 +84,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             self.client().get(prepared_request)
         except Exception:
             raise ConnectionException(
-                f"Connection Error connecting to {self.saas_config.name}"
+                f"Operational Error connecting to {self.configuration.key}."
             )
 
-        logger.info(f"Successfully connected to {self.saas_config.name}")
         return ConnectionTestStatus.succeeded
 
     def build_uri(self) -> str:
@@ -99,8 +95,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         return f"{self.client_config.protocol}://{self.secrets[host_key]}"
 
     def create_client(self) -> AuthenticatedClient:
-        """Creates an authenticated client builder"""
-        return AuthenticatedClient(self.build_uri(), self.secrets, self.client_config)
+        """Creates an authenticated request builder"""
+        url = (
+            self.build_uri()
+            if self.secrets.get("url") is None
+            else self.secrets.get("url")
+        )
+        return AuthenticatedClient(url, self.secrets, self.client_config)
 
     @staticmethod
     def get_value_by_path(dictionary: Dict, path: str) -> Dict:
@@ -118,7 +119,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         # get the corresponding read request for the given collection
         collection_name = node.address.collection
         read_request = self.endpoints[collection_name].requests["read"]
-        self.request = read_request
 
         query_config = self.query_config(node)
         prepared_requests = query_config.generate_query(input_data, policy)

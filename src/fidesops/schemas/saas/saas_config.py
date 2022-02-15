@@ -1,10 +1,9 @@
+from __future__ import annotations
+
 from typing import Any, Dict, List, Literal, Optional, Union
 from pydantic import BaseModel
-from fidesops.graph.config import Collection, FieldAddress, ScalarField
-
-from fidesops.graph.traversal import Dataset
-from fidesops.schemas.dataset import FidesopsDatasetReference
-from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
+from fidesops.schemas.shared_schemas import FidesOpsKey, FidesopsDatasetReference
 
 
 class ConnectorParams(BaseModel):
@@ -113,7 +112,7 @@ class SaaSConfig(BaseModel):
         """Returns a map of endpoint names mapped to Endpoints"""
         return {endpoint.name: endpoint for endpoint in self.endpoints}
 
-    def generate_dataset(self) -> Dataset:
+    def get_graph(self) -> Dataset:
         """Converts endpoints to a Dataset with collections and field references"""
         collections = []
         for endpoint in self.endpoints:
