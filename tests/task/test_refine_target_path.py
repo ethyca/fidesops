@@ -2,8 +2,9 @@ from fidesops.graph.config import FieldPath
 from fidesops.task.refine_target_path import (
     refine_target_path,
     build_refined_target_paths,
-    join_detailed_path,
+    join_detailed_path, _match_found,
 )
+from fidesops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
 
 
 class TestRefineTargetPathToValue:
@@ -299,3 +300,15 @@ def test_join_detailed_path():
     assert join_detailed_path(["A"]) == "A"
 
     assert join_detailed_path([]) == ""
+
+
+def test_match_found():
+    assert _match_found(FIDESOPS_DO_NOT_MASK_INDEX) is False
+
+    assert _match_found("A") is True
+
+    assert _match_found(1) is True
+
+    assert _match_found("A", ["B"]) is False
+
+    assert _match_found("A", ["A", "B"]) is True

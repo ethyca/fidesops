@@ -133,17 +133,16 @@ def _enter_array(
 
 
 def _match_found(elem: Any, only: Optional[List[Any]] = None) -> bool:
-    """The given scalar element matches a value in "only", or no values specified
-    TODO pass in match_found lambda instead? this is getting too bulky
-    """
+    """Returns True if the given element is considered a match."""
     if elem == FIDESOPS_DO_NOT_MASK_INDEX:
-        # This element was not matched in an array query so we skip
+        # This element has already been marked as one that shouldn't be considered a match
         return False
 
     if not only:
         # If no values are specified to match, we're just going to return all possible paths
         return True
 
+    # Otherwise, is this element specified in the "only" array?
     return elem in only
 
 
