@@ -53,10 +53,18 @@ def run_infrastructure(
     # De-duplicate datastores
     datastores = set(datastores)
 
+    # import pdb
+
+    # pdb.set_trace()
+
     # Configure docker-compose path
     path: str = get_path_for_datastores(datastores)
 
     _run_cmd_or_err(f'echo "infrastructure path: {path}"')
+    if "mssql" in datastores:
+        _run_cmd_or_err(
+            f'docker-compose {path} build --build-arg MSSQL_REQUIRED="true"'
+        )
     _run_cmd_or_err(f"docker-compose {path} up -d")
     _run_cmd_or_err(f'echo "sleeping for: {DOCKER_WAIT} while infrastructure loads"')
     _run_cmd_or_err(f"sleep {DOCKER_WAIT}")
