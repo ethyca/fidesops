@@ -43,6 +43,10 @@ saas_config:
                 field: conversations.id
                 direction: from
           data_path: conversation_messages
+          postprocessors:
+            - strategy_name: unwrap
+              configuration:
+                data_path: exact_matches.members
     - name: conversations
       requests:
         read:

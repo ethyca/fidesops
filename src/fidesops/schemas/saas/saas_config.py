@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Literal, Optional, Union
 from pydantic import BaseModel
 from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
+from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
 from fidesops.schemas.shared_schemas import FidesOpsKey, FidesopsDatasetReference
 
 
@@ -38,7 +39,7 @@ class Strategy(BaseModel):
     """General shape for swappable strategies (ex: auth, pagination, postprocessing, etc.)"""
 
     strategy_name: str
-    configuration: Dict[str, Any]
+    configuration: StrategyConfiguration
 
 
 class Request(BaseModel):
