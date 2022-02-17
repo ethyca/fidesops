@@ -233,45 +233,60 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 ExecutionLogStatus.complete,
             )
 
-    @retry(action_type=ActionType.access, default_return=[])
-    def access_request(self, *inputs: List[Row]) -> List[Row]:
-        """Run an access request on a single node.
-
-        Takes the output, and replaces non-matched array elements with placeholder text for use in follow-up
-        erasure requests where applicable, because we need to preserve which indices the original data was located.
-
-        Then, takes the original output and *removes* the non-matched array elements as the results for the current
-        node and to be used to locate data on other nodes.
+    def access_results_post_processing(
+        self, formatted_input_data: NodeInput, output: List[Row]
+    ) -> List[Row]:
         """
-        formatted_input_data: NodeInput = self.to_dask_input_data(*inputs)
-        output = self.connector.retrieve_data(
-            self.traversal_node, self.resources.policy, formatted_input_data
-        )
-        coerced_input_data = self.traversal_node.typed_filtered_values(
-            formatted_input_data  # Cast incoming values to correct type
-        )
-        parsed_inputs = {
+        Does post-processing filtering of access request results for a node to remove non-matching array elements before
+        caching and passing onto the next node to make further queries.
+
+        If an array was an entrypoint into the node, only *matched* array elements are returned on the node,
+        used to find data on other nodes, and masked.
+
+        Caches the data in two separate formats: one with placeholders for non-matched array elements and sub-documents
+        for use in masking later, because we need to preserve the original indices.The second format has the non-matched
+        array elements and sub-documents *removed*.
+        """
+        coerced_input_data: Dict[FieldPath, List[Any]] = {
             FieldPath.parse(field): inputs
-            for field, inputs in coerced_input_data.items()
+            for field, inputs in self.traversal_node.typed_filtered_values(
+                formatted_input_data  # Cast incoming values to correct type
+            ).items()
         }
 
-        # Cache results with non-matching sub-documents and array elements replaced with placeholder text
-        placeholder_output = copy.deepcopy(output)
+        # For future erasures: cache results with non-matching array elements *replaced* with placeholder text
+        placeholder_output: List[Row] = copy.deepcopy(output)
         for row in placeholder_output:
-            filter_element_match(row, query_paths=parsed_inputs, delete_elements=False)
+            filter_element_match(
+                row, query_paths=coerced_input_data, delete_elements=False
+            )
         self.resources.cache_results_with_placeholders(
             f"access_request__{self.key}", placeholder_output
         )
 
-        # Cache results with non-matching sub-documents and array elements removed
+        # For access request results, cache results with non-matching array elements *removed*
         for row in output:
             logger.info(
                 f"Filtering row in {self.traversal_node.node.address} for matching array elements."
             )
-            filter_element_match(row, parsed_inputs)
+            filter_element_match(row, coerced_input_data)
         self.resources.cache_object(f"access_request__{self.key}", output)
-        self.log_end(ActionType.access)
+
+        # Return filtered rows with non-matched array data removed.
         return output
+
+    @retry(action_type=ActionType.access, default_return=[])
+    def access_request(self, *inputs: List[Row]) -> List[Row]:
+        """Run an access request on a single node."""
+        formatted_input_data: NodeInput = self.to_dask_input_data(*inputs)
+        output: List[Row] = self.connector.retrieve_data(
+            self.traversal_node, self.resources.policy, formatted_input_data
+        )
+        filtered_output: List[Row] = self.access_results_post_processing(
+            formatted_input_data, output
+        )
+        self.log_end(ActionType.access)
+        return filtered_output
 
     @retry(action_type=ActionType.erasure, default_return=0)
     def erasure_request(self, retrieved_data: List[Row]) -> int:

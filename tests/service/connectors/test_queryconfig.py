@@ -547,8 +547,7 @@ class TestMongoQueryConfig:
                 "workplace_info.direct_reports.1": None,
                 "emergency_contacts.0.phone": None,
                 "gender": None,
-                "workplace_info.position": None,
-                "children": None,
+                "workplace_info.position": None
             }
         }
 
