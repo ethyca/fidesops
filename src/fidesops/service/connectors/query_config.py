@@ -26,7 +26,6 @@ from fidesops.task.refine_target_path import (
     build_refined_target_paths,
     join_detailed_path,
 )
-from fidesops.util.cache import get_cache
 from fidesops.util.collection_util import append, filter_nonempty_values
 from fidesops.util.querytoken import QueryToken
 
@@ -40,7 +39,6 @@ class QueryConfig(Generic[T], ABC):
 
     def __init__(self, node: TraversalNode):
         self.node = node
-        self.cache = get_cache()
 
     def field_map(self) -> Dict[FieldPath, Field]:
         """Flattened FieldPaths of interest from this traversal_node."""
@@ -126,14 +124,13 @@ class QueryConfig(Generic[T], ABC):
     def update_value_map(
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> Dict[str, Any]:
-        """Map the relevant fields (as strings) to be updated on the row with their masked values from Policy Rules
+        """Map the relevant field (as strings) to be updated on the row with their masked values from Policy Rules
 
-        Example return:  {'name': None, 'ccn': None, 'code': None, 'workplace_info.employer': None}
+        Example return:  {'name': None, 'ccn': None, 'code': None, 'workplace_info.employer': None, 'children.0': None}
 
-        In this example, a Null Masking Strategy was used to determine that the name/ccn/code fields and nested
-        workplace_info.employer fields for a given customer_id will be replaced with null values.
-
-        FieldPaths are mapped to their dotted string path representation.
+        In this example, a Null Masking Strategy was used to determine that the name/ccn/code fields, nested
+        workplace_info.employer field, and the first element in 'children' for a given customer_id will be replaced
+        with null values.
 
         """
         rule_to_collection_field_paths: Dict[
@@ -555,9 +552,6 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
                 query_fields, return_fields = (
                     transform_query_pairs(query_pairs),
                     field_list,
-                )
-                logger.info(
-                    f"MONGO QUERY {self.node.node.address} {query_fields} {return_fields}"
                 )
                 return query_fields, return_fields
 

@@ -1,14 +1,12 @@
 import copy
 
-import itertools
 import logging
 import traceback
 from abc import ABC
-from collections import defaultdict
 from functools import wraps
 
 from time import sleep
-from typing import List, Dict, Any, Tuple, Callable, Optional, Set
+from typing import List, Dict, Any, Tuple, Callable, Optional
 
 import dask
 from dask.threaded import get
@@ -21,18 +19,16 @@ from fidesops.graph.config import (
     FieldPath,
 )
 from fidesops.graph.graph import Edge, DatasetGraph
-from fidesops.graph.traversal import TraversalNode, Row, Traversal
+from fidesops.graph.traversal import TraversalNode, Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, AccessLevel
 from fidesops.models.policy import ActionType, Policy
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLogStatus
-from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.connectors import BaseConnector
 from fidesops.task.consolidate_query_matches import consolidate_query_matches
 from fidesops.task.filter_element_match import filter_element_match
-from fidesops.task.filter_results import select_and_save_field, remove_empty_containers
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.cache import get_cache
-from fidesops.util.collection_util import partition, append, NodeInput
+from fidesops.util.collection_util import partition, append, NodeInput, Row
 from fidesops.util.logger import NotPii
 
 logger = logging.getLogger(__name__)
@@ -237,20 +233,19 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self, formatted_input_data: NodeInput, output: List[Row]
     ) -> List[Row]:
         """
-        Does post-processing filtering of access request results for a node to remove non-matching array elements before
-        caching and passing onto the next node to make further queries.
+        Does some post-processing filtering of access request results to remove non-matched array elements before
+        passing on to the next node for discovering other records.
 
         If an array was an entrypoint into the node, only *matched* array elements are returned on the node,
         used to find data on other nodes, and masked.
 
-        Caches the data in two separate formats: one with placeholders for non-matched array elements and sub-documents
-        for use in masking later, because we need to preserve the original indices.The second format has the non-matched
-        array elements and sub-documents *removed*.
+        Caches the data in TWO separate formats: one with placeholders indicating which array elements should not be
+        masked, where applicable. The second format removes these elements from the arrays altogether.
         """
         coerced_input_data: Dict[FieldPath, List[Any]] = {
             FieldPath.parse(field): inputs
             for field, inputs in self.traversal_node.typed_filtered_values(
-                formatted_input_data  # Cast incoming values to correct type
+                formatted_input_data  # Cast incoming values to correct type where possible
             ).items()
         }
 
@@ -397,12 +392,9 @@ def get_cached_data_for_erasures(
     privacy_request_id: str,
 ) -> Dict[str, Any]:
     """
-    Fetch the access request results with placeholders from all nodes for a given privacy request from the cache.
-    This data should be the starting point for erasures, not the access request results returned from the node.
+    Fetches processed access request results to be used for erasures.
 
-    GraphTask.run_access_request results may have array elements with indices or sub-documents that were not matched
-    in the query. These are cached with placeholder text to preserve the indices of all elements, so we make
-    sure we mask the correct element.
+    Processing may have have added indicators to not mask certain elements in array data.
     """
     cache = get_cache()
     value_dict = cache.get_encoded_objects_by_prefix(
@@ -457,57 +449,3 @@ def run_erasure(  # pylint: disable = too-many-arguments
         )
 
         return erasure_update_map
-
-
-def filter_data_categories(
-    access_request_results: Dict[str, List[Dict[str, Optional[Any]]]],
-    target_categories: Set[str],
-    data_category_fields: Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]],
-) -> Dict[str, List[Dict[str, Optional[Any]]]]:
-    """Filter access request results to only return fields associated with the target data categories
-    and subcategories.
-
-    Regarding subcategories,if data category "user.provided.identifiable.contact" is specified on one of the rule
-    targets, for example, all fields on subcategories also apply, so ["user.provided.identifiable.contact.city",
-    "user.provided.identifiable.contact.street", ...], etc.
-
-    :param access_request_results: Dictionary of access request results for each of your collections
-    :param target_categories: A set of data categories that we'd like to extract from access_request_results
-    :param data_category_fields: Data categories mapped to applicable fields for each collection
-
-    :return: Filtered access request results that only contain fields matching the desired data categories.
-    TODO move to fidesops.task.filter_results.py, leaving for now to make the diff more clear
-    """
-    logger.info(
-        "Filtering Access Request results to return fields associated with data categories"
-    )
-    filtered_access_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    for node_address, results in access_request_results.items():
-        if not results:
-            continue
-
-        # Gets all FieldPaths on this traversal_node associated with the requested data
-        # categories and sub data categories
-        target_field_paths: Set[FieldPath] = set(
-            itertools.chain(
-                *[
-                    field_paths
-                    for cat, field_paths in data_category_fields[
-                        CollectionAddress.from_string(node_address)
-                    ].items()
-                    if any([cat.startswith(tar) for tar in target_categories])
-                ]
-            )
-        )
-
-        if not target_field_paths:
-            continue
-
-        for row in results:
-            filtered_results: Dict[str, Any] = {}
-            for field_path in target_field_paths:
-                select_and_save_field(filtered_results, row, field_path)
-            remove_empty_containers(filtered_results)
-            filtered_access_results[node_address].append(filtered_results)
-
-    return filtered_access_results

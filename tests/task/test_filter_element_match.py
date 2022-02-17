@@ -263,7 +263,7 @@ class TestFilterElementMatchReplaceIndices:
         }
 
 
-class TestRemovePathsFromRowDeleteElementsTrue:
+class TestRemovePathsFromRowDeleteElements:
     """Test sub-method remove_paths_from_row. Non-matching targeted array elements are removed."""
 
     @pytest.fixture(scope="function")
@@ -307,7 +307,7 @@ class TestRemovePathsFromRowDeleteElementsTrue:
         assert row["G"] == [{"H": [{"I": {"J": ["a", "c"]}}]}]
 
 
-class TestRemovePathsFromRowDeleteElementsFalse:
+class TestRemovePathsFromRowReplaceElements:
     """Test sub-method remove_paths_from_row with delete_elements=False.  Elements are replaced instead of removed"""
 
     @pytest.fixture(scope="function")

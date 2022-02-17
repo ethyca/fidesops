@@ -12,13 +12,13 @@ from fidesops.task.refine_target_path import (
     DetailedPath,
     join_detailed_path,
 )
-from fidesops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
+from fidesops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
 
 logger = logging.getLogger(__name__)
 
 
 def filter_element_match(
-    row: Dict[str, Any],
+    row: Row,
     query_paths: Dict[FieldPath, List[Any]],
     delete_elements: bool = True,
 ) -> Dict[str, Any]:
@@ -26,7 +26,7 @@ def filter_element_match(
     Modifies row in place to remove unmatched array elements or unmatched embedded documents within arrays.
 
     :param row: Record retrieved from a dataset
-    :param query_paths: FieldPaths mapped to query values
+    :param query_paths: FieldPaths mapped to a list of values you want to match.
     :param delete_elements: If True, *removes* unmatched indices from array. If False, just *replaces* the data,
     so the original indices are preserved.
     :return: A modified record with array elements potentially eliminated if array data was targeted by a query path
@@ -78,8 +78,9 @@ def _remove_paths_from_row(
 
     :param row: Record retrieved from a dataset
     :param preserve_indices: A dictionary of dot-separated paths to arrays, where the values are the list of indices
-    we want to *keep*
-    :param delete_elements: True if we just want to remove the element at the given index, otherwise we replace with specified text
+     we want to *keep*
+    :param delete_elements: True if we just want to remove the element at the given index, otherwise we replace
+     the element with some placeholder text.
     :return: A filtered row that has removed non-specified indices from arrays
 
     :Example:
