@@ -414,7 +414,7 @@ def test_composite_key_erasure(
         {"email": "customer-1@example.com"},
     )
 
-    assert access_request_data["mongo_test:composite_pk_test"][0]["description"] == None
+    assert access_request_data["mongo_test:composite_pk_test"][0]["description"] is None
 
 
 @pytest.mark.integration_mongodb
