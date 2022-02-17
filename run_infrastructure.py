@@ -20,6 +20,7 @@ DOCKERFILE_DATASTORES = [
 EXTERNAL_DATASTORE_CONFIG = {
     "snowflake": ["SNOWFLAKE_TEST_URI"],
     "redshift": ["REDSHIFT_TEST_URI", "REDSHIFT_TEST_DB_SCHEMA"],
+    "bigquery": ["BIGQUERY_TEST_URI", "BIGQUERY_TEST_DB_SCHEMA"],
 }
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
 IMAGE_NAME = "fidesops"
@@ -56,6 +57,10 @@ def run_infrastructure(
     path: str = get_path_for_datastores(datastores)
 
     _run_cmd_or_err(f'echo "infrastructure path: {path}"')
+    if "mssql" in datastores:
+        _run_cmd_or_err(
+            f'docker-compose {path} build --build-arg MSSQL_REQUIRED="true"'
+        )
     _run_cmd_or_err(f"docker-compose {path} up -d")
     _run_cmd_or_err(f'echo "sleeping for: {DOCKER_WAIT} while infrastructure loads"')
     _run_cmd_or_err(f"sleep {DOCKER_WAIT}")

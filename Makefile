@@ -46,17 +46,17 @@ server: compose-build
 server-shell: compose-build
 	@docker-compose run $(IMAGE_NAME) /bin/bash
 
-integration-shell: compose-build
+integration-shell:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --open_shell --datastores $(datastores)
 
-integration-env: compose-build
+integration-env:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --run_application --datastores $(datastores)
 
-quickstart: compose-build
+quickstart:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --datastores mongodb postgres --run_quickstart
@@ -108,7 +108,7 @@ pytest: compose-build
 	@docker-compose run $(IMAGE_NAME) \
 		pytest $(pytestpath) -m "not integration and not integration_external"
 
-pytest-integration: compose-build
+pytest-integration:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --run_tests --datastores $(datastores)
@@ -116,8 +116,11 @@ pytest-integration: compose-build
 # These tests connect to external third-party test databases
 pytest-integration-external: compose-build
 	@echo "Running tests that connect to external third party test databases"
-	@docker-compose run -e REDSHIFT_TEST_URI -e SNOWFLAKE_TEST_URI -e REDSHIFT_TEST_DB_SCHEMA $(IMAGE_NAME) \
-		pytest $(pytestpath) -m "integration_external"
+	@docker-compose run \
+		-e REDSHIFT_TEST_URI \
+		-e SNOWFLAKE_TEST_URI -e REDSHIFT_TEST_DB_SCHEMA \
+		-e BIGQUERY_KEYFILE_CREDS -e BIGQUERY_DATASET \
+		$(IMAGE_NAME) pytest $(pytestpath) -m "integration_external"
 
 
 ####################
@@ -140,7 +143,7 @@ clean:
 compose-build:
 	@echo "Tearing down the docker compose images, network, etc..."
 	@docker-compose down --remove-orphans
-	@docker-compose build
+	@docker-compose build --build-arg REQUIRE_MSSQL="true"
 
 .PHONY: teardown
 teardown:

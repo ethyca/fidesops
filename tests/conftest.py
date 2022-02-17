@@ -37,6 +37,7 @@ from .fixtures.mssql_fixtures import *
 from .fixtures.postgres_fixtures import *
 from .fixtures.redshift_fixtures import *
 from .fixtures.snowflake_fixtures import *
+from .fixtures.bigquery_fixtures import *
 
 logger = logging.getLogger(__name__)
 
