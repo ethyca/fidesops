@@ -53,10 +53,6 @@ def run_infrastructure(
     # De-duplicate datastores
     datastores = set(datastores)
 
-    # import pdb
-
-    # pdb.set_trace()
-
     # Configure docker-compose path
     path: str = get_path_for_datastores(datastores)
 
