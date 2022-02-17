@@ -292,7 +292,7 @@ def snowflake_connection_config_without_secrets(
 ) -> Generator:
     """
     Returns a Snowflake ConnectionConfig without secrets
-    attached that is safe to usein any tests.
+    attached that is safe to use in any tests.
     """
     connection_config = ConnectionConfig.create(
         db=db,
@@ -314,7 +314,7 @@ def snowflake_connection_config(
     snowflake_connection_config_without_secrets: ConnectionConfig,
 ) -> Generator:
     """
-    Returns a Snowflake ConectionConfig with secrets attached if secrets are present
+    Returns a Snowflake ConnectionConfig with secrets attached if secrets are present
     in the configuration.
     """
     snowflake_connection_config = snowflake_connection_config_without_secrets
@@ -990,6 +990,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/mssql_example_test_dataset.yml",
         "data/dataset/mysql_example_test_dataset.yml",
         "data/dataset/mariadb_example_test_dataset.yml",
+        "data/dataset/bigquery_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
@@ -1134,3 +1135,66 @@ def privacy_request_runner(
         cache=cache,
         privacy_request=privacy_request,
     )
+
+
+@pytest.fixture(scope="function")
+def sample_data():
+    return {
+        "_id": 12345,
+        "thread": [
+            {
+                "comment": "com_0001",
+                "message": "hello, testing in-flight chat feature",
+                "chat_name": "John",
+                "messages": {},
+            },
+            {
+                "comment": "com_0002",
+                "message": "yep, got your message, looks like it works",
+                "chat_name": "Jane",
+            },
+            {"comment": "com_0002", "message": "hello!", "chat_name": "Jeanne"},
+        ],
+        "snacks": ["pizza", "chips"],
+        "seats": {"first_choice": "A2", "second_choice": "B3"},
+        "upgrades": {
+            "magazines": ["Time", "People"],
+            "books": ["Once upon a Time", "SICP"],
+            "earplugs": True,
+        },
+        "other_flights": [
+            {"DFW": ["11 AM", "12 PM"], "CHO": ["12 PM", "1 PM"]},
+            {"DFW": ["2 AM", "12 PM"], "CHO": ["2 PM", "1 PM"]},
+            {"DFW": ["3 AM", "2 AM"], "CHO": ["2 PM", "1:30 PM"]},
+        ],
+        "months": {
+            "july": [
+                {
+                    "activities": ["swimming", "hiking"],
+                    "crops": ["watermelon", "cheese", "grapes"],
+                },
+                {"activities": ["tubing"], "crops": ["corn"]},
+            ],
+            "march": [
+                {
+                    "activities": ["skiing", "bobsledding"],
+                    "crops": ["swiss chard", "swiss chard"],
+                },
+                {"activities": ["hiking"], "crops": ["spinach"]},
+            ],
+        },
+        "hello": [1, 2, 3, 4, 2],
+        "weights": [[1, 2], [3, 4]],
+        "toppings": [[["pepperoni", "salami"], ["pepperoni", "cheese", "cheese"]]],
+        "A": {"C": [{"M": ["p", "n", "n"]}]},
+        "C": [["A", "B", "C", "B"], ["G", "H", "B", "B"]],  # Double lists
+        "D": [
+            [["A", "B", "C", "B"], ["G", "H", "B", "B"]],
+            [["A", "B", "C", "B"], ["G", "H", "B", "B"]],
+        ],  # Triple lists
+        "E": [[["B"], [["A", "B", "C", "B"], ["G", "H", "B", "B"]]]],  # Irregular lists
+        "F": [
+            "a",
+            ["1", "a", [["z", "a", "a"]]],
+        ],  # Lists elems are different types, not officially supported
+    }
