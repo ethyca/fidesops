@@ -1,6 +1,4 @@
 -- Example Postgres schema matching the dataset in public/data/dataset/postgres_example_dataset.yml
-DROP DATABASE IF EXISTS postgres_example;
-CREATE DATABASE postgres_example;
 
 CREATE TABLE public.product (
     id INT PRIMARY KEY,

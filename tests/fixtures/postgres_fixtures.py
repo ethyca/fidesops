@@ -7,6 +7,11 @@ from sqlalchemy.orm import (
     Session,
 )
 from sqlalchemy.sql import text
+from sqlalchemy_utils.functions import (
+    create_database,
+    database_exists,
+    drop_database,
+)
 
 from fidesops.db.session import get_db_session, get_db_engine
 from fidesops.models.connectionconfig import (
@@ -184,6 +189,11 @@ def postgres_integration_session(postgres_integration_session_cls):
 
 @pytest.fixture(scope="function")
 def postgres_integration_db(postgres_integration_session):
+    if database_exists(postgres_integration_session.bind.url):
+        # Postgres cannot drop databases from within a transaction block, so
+        # we should drop the DB this way instead
+        drop_database(postgres_integration_session.bind.url)
+    create_database(postgres_integration_session.bind.url)
     with open("./data/sql/postgres_example.sql", "r") as query_file:
         lines = query_file.read().splitlines()
         filtered = [line for line in lines if not line.startswith("--")]
@@ -194,3 +204,4 @@ def postgres_integration_db(postgres_integration_session):
             if query
         ]
     yield postgres_integration_session
+    drop_database(postgres_integration_session.bind.url)
