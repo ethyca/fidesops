@@ -431,8 +431,14 @@ def test_mssql_access_request_task(
     )
 
 
+@pytest.mark.integration_mysql
 @pytest.mark.integration
-def test_mysql_access_request_task(db, policy, connection_config_mysql) -> None:
+def test_mysql_access_request_task(
+    db,
+    policy,
+    connection_config_mysql,
+    mysql_integration_db,
+) -> None:
 
     privacy_request = PrivacyRequest(
         id=f"test_mysql_access_request_task_{random.randint(0, 1000)}"
