@@ -1,33 +1,8 @@
 import logging
-from typing import (
-    Any,
-    Dict,
-    Generator,
-)
-
 import pytest
 from sqlalchemy import func, select, table
 
-from fidesops.db.session import get_db_session, get_db_engine
-
 logger = logging.getLogger(__name__)
-
-
-# @pytest.fixture(scope="session")
-# def postgres_example_db() -> Generator:
-#     """Return a connection to the PostgreSQL example DB"""
-#     example_postgres_uri = (
-#         "postgresql://postgres:postgres@postgres_example/postgres_example"
-#     )
-#     engine = get_db_engine(database_uri=example_postgres_uri)
-#     logger.debug(f"Connecting to PostgreSQL example database at: {engine.url}")
-#     SessionLocal = get_db_session(engine=engine)
-#     the_session = SessionLocal()
-#     # Setup above...
-#     yield the_session
-#     # Teardown below...
-#     the_session.close()
-#     engine.dispose()
 
 
 @pytest.mark.integration_postgres
