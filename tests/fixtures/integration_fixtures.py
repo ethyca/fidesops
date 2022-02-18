@@ -396,12 +396,12 @@ def generate_mongo_specific_records():
             {
                 "id": "plane_type_1",
                 "model": "Airbus A350",
-                "planes": [20001, 20002, 20003, 20004, 20005],
+                "planes": ["20001", "20002", "20003", "20004", "20005"],
             },
             {
                 "id": "plane_type_2",
                 "model": "Boeing 747-8",
-                "planes": [40005, 30006, 40007],
+                "planes": ["40005", "30006", "40007"],
             },
         ],
         "employee": [

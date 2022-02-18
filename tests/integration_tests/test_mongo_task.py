@@ -55,6 +55,7 @@ def test_combined_erasure_task(
     integration_postgres_config,
     mongo_example_db,
 ):
+    """Includes examples of mongo nested and array erasures"""
     policy = erasure_policy("A", "B")
     seed_email = postgres_inserts["customer"][0]["email"]
     privacy_request = PrivacyRequest(
@@ -242,7 +243,8 @@ def test_combined_erasure_task(
 
     # Assert only matched element in array is matched (reference field)
     aircraft = mongo_db.aircraft.find_one({"id": "plane_type_1"})
-    assert aircraft["planes"] == [20001, None, 20003, 20004, 20005]
+    # Integer field was used to locate string in arrays
+    assert aircraft["planes"] == ["20001", None, "20003", "20004", "20005"]
 
     # Assert two rows targeted by array field
     employee_3 = mongo_db.employee.find_one({"id": "3"})

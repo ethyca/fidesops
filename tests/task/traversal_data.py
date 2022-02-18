@@ -98,7 +98,7 @@ def combined_mongo_postgresql_graph(
             ),
             ScalarField(
                 name="planes",
-                data_type_converter=IntTypeConverter(),
+                data_type_converter=StringTypeConverter(),
                 is_array=True,
                 references=[(FieldAddress("mongo_test", "flights", "plane"), "from")],
             ),
