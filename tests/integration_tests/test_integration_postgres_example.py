@@ -29,8 +29,4 @@ def test_postgres_example_data(postgres_integration_db):
         # dynamically generate the FROM clause for each table_name
         count_sql = select(func.count()).select_from(table(table_name))
         actual_count = postgres_integration_db.execute(count_sql).scalar()
-        # if actual_count != expected_count:
-        #     import pdb
-
-        #     pdb.set_trace()
         assert actual_count == expected_count
