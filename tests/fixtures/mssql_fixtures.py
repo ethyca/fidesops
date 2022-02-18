@@ -60,10 +60,8 @@ def connection_config_mssql(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def mssql_integration_session_cls(connection_config_mssql):
-    example_postgres_uri = MicrosoftSQLServerConnector(
-        connection_config_mssql
-    ).build_uri()
-    engine = get_db_engine(database_uri=example_postgres_uri)
+    uri = MicrosoftSQLServerConnector(connection_config_mssql).build_uri()
+    engine = get_db_engine(database_uri=uri)
     SessionLocal = get_db_session(
         engine=engine,
         autocommit=True,
@@ -92,8 +90,10 @@ def truncate_all_tables(mssql_integration_session):
         "dbo.login",
         "dbo.service_request",
         "dbo.report",
+        "dbo.type_link_test",
+        "dbo.composite_pk_test",
     ]
-    [mssql_integration_session.execute(f"TRUNCATE TABLE {table};") for table in tables]
+    [mssql_integration_session.execute(f"DELETE FROM {table};") for table in tables]
 
 
 @pytest.fixture(scope="function")
