@@ -420,7 +420,6 @@ def test_create_and_process_erasure_request_specific_category_mariadb(
     db,
     generate_auth_header,
     erasure_policy,
-    connection_config_mariadb,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
@@ -433,15 +432,11 @@ def test_create_and_process_erasure_request_specific_category_mariadb(
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
     pr.delete(db=db)
 
-    example_mariadb_uri = MariaDBConnector(connection_config_mariadb).build_uri()
-    engine = get_db_engine(database_uri=example_mariadb_uri)
-    SessionLocal = get_db_session(engine=engine)
-    integration_db = SessionLocal()
     stmt = select(
         column("id"),
         column("name"),
     ).select_from(table("customer"))
-    res = integration_db.execute(stmt).all()
+    res = mariadb_integration_db.execute(stmt).all()
 
     customer_found = False
     for row in res:
