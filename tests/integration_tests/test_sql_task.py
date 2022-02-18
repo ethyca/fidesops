@@ -345,7 +345,12 @@ def test_postgres_access_request_task(
 
 @pytest.mark.integration_mssql
 @pytest.mark.integration
-def test_mssql_access_request_task(db, policy, connection_config_mssql) -> None:
+def test_mssql_access_request_task(
+    db,
+    policy,
+    connection_config_mssql,
+    mssql_integration_db,
+) -> None:
 
     privacy_request = PrivacyRequest(
         id=f"test_mssql_access_request_task_{random.randint(0, 1000)}"
