@@ -1182,6 +1182,7 @@ class TestMongoConnectionPutSecretsAPI:
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is True
 
+
 @pytest.mark.saas_connector
 class TestSaaSConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
@@ -1221,7 +1222,6 @@ class TestSaaSConnectionPutSecretsAPI:
             "domain": "can",
             "username": "someone",
             "api_key": "letmein",
-            "url": None,
         }
         assert connection_config_saas.last_test_timestamp is not None
         assert connection_config_saas.last_test_succeeded is False
@@ -1253,44 +1253,50 @@ class TestSaaSConnectionPutSecretsAPI:
         assert body["failure_reason"] is None
 
         db.refresh(connection_config_saas)
-        assert connection_config_saas.secrets == {"url": None, **saas_secrets}
+        assert connection_config_saas.secrets == saas_secrets
         assert connection_config_saas.last_test_timestamp is not None
         assert connection_config_saas.last_test_succeeded is True
 
-    def test_saas_connection_connect_with_url(
+    def test_saas_connection_connect_missing_secrets(
         self,
         url,
         api_client: TestClient,
-        db: Session,
         generate_auth_header,
-        connection_config_saas,
         saas_secrets,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = {
+            "domain": saas_secrets["domain"],
             "username": saas_secrets["username"],
-            "api_key": saas_secrets["api_key"],
-            "url": f'https://{saas_secrets["domain"]}',
         }
         resp = api_client.put(
             url,
             headers=auth_header,
             json=payload,
         )
-        assert resp.status_code == 200
+        assert resp.status_code == 422
 
         body = json.loads(resp.text)
-        assert (
-            body["msg"]
-            == f"Secrets updated for ConnectionConfig with key: {connection_config_saas.key}."
-        )
-        assert body["failure_reason"] is None
-        assert body["test_status"] == "succeeded"
+        assert body["detail"][0]["msg"] == "field required"
 
-        db.refresh(connection_config_saas)
-        assert connection_config_saas.secrets == payload
-        assert connection_config_saas.last_test_timestamp is not None
-        assert connection_config_saas.last_test_succeeded is True
+    def test_saas_connection_connect_with_extra_secrets(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        saas_secrets,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {**saas_secrets, "extra": "junk"}
+        resp = api_client.put(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+
+        body = json.loads(resp.text)
+        assert body["detail"][0]["msg"] == "extra fields not permitted"
 
 
 @pytest.mark.saas_connector

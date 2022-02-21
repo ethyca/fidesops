@@ -6,21 +6,15 @@ saas_config:
 
     connector_params:
     - name: domain
-      from_user: true
-      is_secret: false
     - name: username
-      from_user: true
-      is_secret: false
     - name: api_key
-      from_user: true
-      is_secret: true
 
     client_config:
       protocol: https
       host:
         connector_param: domain
       authentication:
-        strategy_name: basic_authentication
+        strategy: basic_authentication
         configuration:
           username:
             connector_param: username
@@ -39,9 +33,9 @@ saas_config:
             - name: conversation_id
               type: path
               references:
-              - dataset: mailchimp_connector_example
-                field: conversations.id
-                direction: from
+                - dataset: mailchimp_connector_example
+                  field: conversations.id
+                  direction: from
           data_path: conversation_messages
     - name: conversations
       requests:
@@ -57,11 +51,11 @@ saas_config:
             - name: placeholder
               type: query
               references:
-              - dataset: mailchimp_connector_example
-                field: member.unique_email_id
-                direction: from
+                - dataset: mailchimp_connector_example
+                  field: member.unique_email_id
+                  direction: from
           pagination:
-            strategy_name: basic_pagination
+            strategy: basic_pagination
             configuration:
               incremental_param: offset
               increment_by: 1000

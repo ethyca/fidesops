@@ -9,7 +9,7 @@ from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.common_exceptions import ConnectionException
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.saas_config import ClientConfig
+from fidesops.schemas.saas.saas_config import ClientConfig, Strategy
 from fidesops.service.connectors.query_config import SaaSQueryConfig, SaaSRequestParams
 
 logger = logging.getLogger(__name__)
@@ -21,26 +21,26 @@ class AuthenticatedClient:
     authentication and parameter configurations
     """
 
-    def __init__(self, uri: str, secrets: Dict, client_config: ClientConfig):
+    def __init__(self, uri: str, client_config: ClientConfig, secrets: Dict[str, Any]):
         self.session = Session()
         self.uri = uri
-        self.secrets = secrets
         self.client_config = client_config
-        self.authentication_strategy = client_config.authentication.strategy_name
+        self.secrets = secrets
 
     def add_authentication(
-        self, req: PreparedRequest, strategy_name: str
+        self, req: PreparedRequest, authentication: Strategy
     ) -> PreparedRequest:
         """Uses the incoming strategy to add the appropriate authentication method to the base request"""
-        # TODO: keeping this simple for now since we only have two auth methods
-        configuration = self.client_config.authentication.configuration
-        if strategy_name == "basic_authentication":
+        strategy = authentication.strategy
+        configuration = authentication.configuration
+        logger.info(f"Authenticating client using {strategy}")
+        if strategy == "basic_authentication":
             username_key = configuration["username"]["connector_param"]
             password_key = configuration["password"]["connector_param"]
             req.prepare_auth(
                 auth=(self.secrets[username_key], self.secrets[password_key])
             )
-        elif strategy_name == "bearer_authentication":
+        elif strategy == "bearer_authentication":
             token_key = configuration["token"]["connector_param"]
             req.headers["Authorization"] = "Bearer " + self.secrets[token_key]
         return req
@@ -51,9 +51,7 @@ class AuthenticatedClient:
         """Returns an authenticated request based on the client config and incoming path, query, and body params"""
         (path, params, data) = request_params
         req = Request(url=f"{self.uri}{path}", params=params, data=data).prepare()
-        return self.add_authentication(
-            req, self.client_config.authentication.strategy_name
-        )
+        return self.add_authentication(req, self.client_config.authentication)
 
     def get(self, request_params: SaaSRequestParams) -> Response:
         """Builds and executes an authenticated GET request"""
@@ -96,12 +94,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def create_client(self) -> AuthenticatedClient:
         """Creates an authenticated request builder"""
-        url = (
-            self.build_uri()
-            if self.secrets.get("url") is None
-            else self.secrets.get("url")
-        )
-        return AuthenticatedClient(url, self.secrets, self.client_config)
+        uri = self.build_uri()
+        logger.info(f"Creating client to {uri}")
+        return AuthenticatedClient(uri, self.client_config, self.secrets)
 
     @staticmethod
     def get_value_by_path(dictionary: Dict, path: str) -> Dict:

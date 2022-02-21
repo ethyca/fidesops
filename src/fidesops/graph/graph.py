@@ -6,6 +6,7 @@ from typing import Tuple, Set, Dict, Optional, List, Callable
 
 from fidesops.common_exceptions import ValidationError
 from fidesops.graph.config import (
+    EdgeDirection,
     FieldAddress,
     CollectionAddress,
     SeedAddress,
@@ -14,7 +15,7 @@ from fidesops.graph.config import (
     Field,
     FieldPath,
 )
-from fidesops.schemas.shared_schemas import EdgeDirection, FidesOpsKey
+from fidesops.schemas.shared_schemas import FidesOpsKey
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +120,7 @@ class Edge:
         cls,
         addr_1: FieldAddress,
         addr_2: FieldAddress,
-        direction: List[Optional[EdgeDirection]] = None,
+        direction: Optional[EdgeDirection] = None,
     ) -> Edge:
         """Create an edge from addr_1 to addr_2 with the given direction."""
         if direction == "from":

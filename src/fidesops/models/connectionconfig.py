@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from sqlalchemy import (
     Column,
@@ -20,9 +20,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fidesops.graph.config import Dataset
 from fidesops.schemas.saas.saas_config import SaaSConfig
-from fidesops.util.saas_util import merge_datasets
 from fidesops.core.config import config
 from fidesops.db.base_class import (
     Base,
@@ -90,34 +88,14 @@ class ConnectionConfig(Base):
     last_test_timestamp = Column(DateTime(timezone=True))
     last_test_succeeded = Column(Boolean)
 
+    # only applicable to ConnectionConfigs of connection type saas
     saas_config = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
     )
 
-    def get_saas_config(self) -> SaaSConfig:
+    def get_saas_config(self) -> Optional[SaaSConfig]:
         """Returns a SaaSConfig object from a yaml config"""
-        return SaaSConfig(**self.saas_config)
-
-    def get_dataset_graphs(self) -> List[Dataset]:
-        """
-        Returns a list of graphs for all the associated datasets and augments
-        them with a matching (by fides_key) saas config if one is available
-        """
-        graphs = []
-        for dataset in self.datasets:
-            if (
-                self.saas_config is not None
-                and self.get_saas_config().fides_key == dataset.fides_key
-            ):
-                graphs.append(
-                    merge_datasets(
-                        dataset.get_graph(),
-                        self.get_saas_config().get_graph(),
-                    )
-                )
-            else:
-                graphs.append(dataset.get_graph())
-        return graphs
+        return SaaSConfig(**self.saas_config) if self.saas_config else None
 
     def update_test_status(
         self, test_status: ConnectionTestStatus, db: Session

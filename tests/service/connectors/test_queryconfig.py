@@ -11,7 +11,6 @@ from fidesops.graph.config import (
 from fidesops.graph.graph import DatasetGraph, Edge
 from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.models.policy import DataCategory
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 
@@ -27,7 +26,7 @@ from fidesops.service.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
     HASH,
 )
-from fidesops.util.saas_util import merge_datasets
+from fidesops.util.data_category import DataCategory
 
 from ...task.traversal_data import (
     integration_db_graph,
@@ -624,8 +623,8 @@ class TestMongoQueryConfig:
 class TestSaaSQueryConfig:
     @pytest.fixture(scope="function")
     def combined_traversal(self, connection_config_saas, dataset_config_saas):
-        merged_graphs = connection_config_saas.get_dataset_graphs()
-        graph = DatasetGraph(*merged_graphs)
+        merged_graph = dataset_config_saas.get_graph()
+        graph = DatasetGraph(merged_graph)
         return Traversal(graph, {"email": "customer-1@example.com"})
 
     def test_generate_query(self, policy, combined_traversal, connection_config_saas):

@@ -4,6 +4,7 @@ import os
 from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
+from fidesops.util.data_category import DataCategory
 
 import pydash
 import pytest
@@ -22,7 +23,6 @@ from fidesops.models.connectionconfig import (
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import (
     ActionType,
-    DataCategory,
     Policy,
     Rule,
     RuleTarget,

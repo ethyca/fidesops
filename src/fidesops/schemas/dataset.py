@@ -1,17 +1,18 @@
 from typing import List, Optional, Dict, Any
+from pydantic import BaseModel, validator, ConstrainedStr
 
 from fideslang.models import Dataset, DatasetCollection, DatasetField
-from pydantic import BaseModel, validator, ConstrainedStr
+from fidesops.graph.config import EdgeDirection
 
 from fidesops.common_exceptions import (
     InvalidDataLengthValidationError,
 )
 from fidesops.common_exceptions import InvalidDataTypeValidationError
 from fidesops.graph.data_type import parse_data_type_string, is_valid_data_type
-from fidesops.models.policy import _validate_data_category
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
-from fidesops.schemas.shared_schemas import FidesOpsKey, FidesopsDatasetReference
+from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.util.data_category import _validate_data_category
 
 
 def _valid_data_categories(
@@ -70,6 +71,16 @@ class FidesCollectionKey(ConstrainedStr):
         raise ValueError(
             "FidesCollection must be specified in the form 'FidesKey.FidesKey'"
         )
+
+
+# NOTE: this extends pydantic.BaseModel instead of our BaseSchema, for
+# consistency with other fideslang models
+class FidesopsDatasetReference(BaseModel):
+    """Reference to a field from another Collection"""
+
+    dataset: FidesOpsKey
+    field: str
+    direction: Optional[EdgeDirection]
 
 
 class FidesopsDatasetMeta(BaseModel):

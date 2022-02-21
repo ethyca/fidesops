@@ -842,6 +842,6 @@ class TestPutConnectionConfigSecrets:
         )
 
         db.refresh(connection_config_saas)
-        assert connection_config_saas.secrets == {"url": None, **saas_secrets}
+        assert connection_config_saas.secrets == saas_secrets
         assert connection_config_saas.last_test_timestamp is None
         assert connection_config_saas.last_test_succeeded is None
