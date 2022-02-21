@@ -11,6 +11,7 @@ from fidesops.common_exceptions import ConnectionException
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.saas_config import ClientConfig, Strategy
 from fidesops.service.connectors.query_config import SaaSQueryConfig, SaaSRequestParams
+from fidesops.util.saas_util import get_value_by_path
 
 logger = logging.getLogger(__name__)
 
@@ -49,14 +50,15 @@ class AuthenticatedClient:
         self, request_params: SaaSRequestParams
     ) -> PreparedRequest:
         """Returns an authenticated request based on the client config and incoming path, query, and body params"""
-        (path, params, data) = request_params
-        req = Request(url=f"{self.uri}{path}", params=params, data=data).prepare()
-        return self.add_authentication(req, self.client_config.authentication)
+        (method, path, params, data) = request_params
+        req = Request(method=method, url=f"{self.uri}{path}", params=params, data=data).prepare()
+        return self.add_authentication(
+            req, self.client_config.authentication
+        )
 
-    def get(self, request_params: SaaSRequestParams) -> Response:
+    def send(self, request_params: SaaSRequestParams) -> Response:
         """Builds and executes an authenticated GET request"""
         prepared_request = self.get_authenticated_request(request_params)
-        prepared_request.method = "GET"
         return self.session.send(prepared_request)
 
 
@@ -79,7 +81,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         try:
             test_request_path = self.saas_config.test_request.path
             prepared_request: SaaSRequestParams = (test_request_path, {}, {})
-            self.client().get(prepared_request)
+            self.client().send(prepared_request)
         except Exception:
             raise ConnectionException(
                 f"Operational Error connecting to {self.configuration.key}."
@@ -98,14 +100,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         logger.info(f"Creating client to {uri}")
         return AuthenticatedClient(uri, self.client_config, self.secrets)
 
-    @staticmethod
-    def get_value_by_path(dictionary: Dict, path: str) -> Dict:
-        """Helper method to extract an arbitrary data path from a given dictionary"""
-        value = dictionary
-        for key in path.split("/"):
-            value = value[key]
-        return value
-
     def retrieve_data(
         self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
     ) -> List[Row]:
@@ -120,11 +114,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         rows: List[Row] = []
         for prepared_request in prepared_requests:
-            response = self.client().get(prepared_request)
+            response = self.client().send(prepared_request)
 
             # process response
             if read_request.data_path:
-                processed_response = self.get_value_by_path(
+                processed_response = get_value_by_path(
                     response.json(), read_request.data_path
                 )
             else:
@@ -142,6 +136,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         rows: List[Row],
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated"""
+        query_config = self.query_config(node)
+        prepared_requests = [query_config.generate_update_stmt(row, policy, request) for row in rows]
+        rows_updated = 0
+        for prepared_request in prepared_requests:
+            self.client().send(prepared_request)
+            rows_updated += 1
+        return rows_updated
+
+        
 
     def close(self) -> None:
         """Not required for this type"""

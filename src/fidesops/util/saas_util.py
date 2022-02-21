@@ -1,5 +1,6 @@
 from collections import defaultdict
-from typing import Dict, List
+from functools import reduce
+from typing import Any, Dict, List
 from fidesops.graph.config import Collection, Dataset, Field
 
 
@@ -48,3 +49,40 @@ def merge_datasets(dataset: Dataset, config_dataset: Dataset) -> Dataset:
         collections=collections,
         connection_key=dataset.connection_key,
     )
+
+
+def get_value_by_path(dictionary: Dict, path: str) -> Dict:
+    """Helper method to extract an arbitrary data path from a given dictionary"""
+    value = dictionary
+    for key in path.split("."):
+        value = value[key]
+    return value
+
+
+def paths_to_json(value_map: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Converts a dictionary of JSON paths/values into a nested JSON object
+
+    example:
+
+    {"object.first_property": "one", "object.second_property": "two"}
+
+    becomes
+
+    {
+        "object": {
+            "first_property": "one",
+            "second_property" "two"
+        }
+    }
+    """
+    output = {}
+    for path, value in value_map.items():
+        keys = path.split(".")
+        target = reduce(
+            lambda current, key: current.setdefault(key, {}),
+            keys[:-1],
+            output,
+        )
+        target[path[-1]] = value
+    return output

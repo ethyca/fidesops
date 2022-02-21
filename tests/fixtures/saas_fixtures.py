@@ -1,10 +1,15 @@
+from fidesops.util.data_category import DataCategory
 import pytest
 import os
+from fidesops.models.client import ClientDetail
+from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
+from fidesops.models.storage import StorageConfig
 from fidesops.schemas.saas.saas_config import SaaSConfig
 import pydash
 import yaml
 
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import ObjectDeletedError
 from typing import Dict, Generator
 
 
@@ -15,6 +20,7 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.service.masking.strategy.masking_strategy_string_rewrite import STRING_REWRITE
 from tests.fixtures.application_fixtures import load_dataset
 
 
@@ -90,7 +96,7 @@ def connection_config_saas(
             "key": saas_config.fides_key,
             "name": saas_config.fides_key,
             "connection_type": ConnectionType.saas,
-            "access": AccessLevel.read,
+            "access": AccessLevel.write,
             "secrets": saas_secrets_dict["mailchimp"],
             "saas_config": example_saas_configs["mailchimp"],
         },
@@ -98,6 +104,60 @@ def connection_config_saas(
     yield connection_config
     connection_config.delete(db)
 
+@pytest.fixture(scope="function")
+def erasure_policy_string_rewrite(
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config: StorageConfig,
+) -> Generator:
+    erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "SaaS erasure policy",
+            "key": "saas_erasure_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "SaaS Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": STRING_REWRITE,
+                "configuration": {
+                    "rewrite_value": "MASKED"
+                },
+            },
+        },
+    )
+
+    erasure_rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "rule_id": erasure_rule.id,
+        },
+    )
+
+    yield erasure_policy
+    try:
+        erasure_rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+        
 
 @pytest.fixture(scope="function")
 def saas_secrets():

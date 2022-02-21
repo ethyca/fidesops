@@ -1,4 +1,4 @@
-
+from fidesops.service.connectors.saas_connector import SaaSConnector
 import pytest
 import time
 from typing import Any, Dict, List, Set
@@ -22,6 +22,7 @@ from fidesops.models.privacy_request import PrivacyRequestStatus
 from fidesops.schemas.external_https import SecondPartyResponseFormat
 from fidesops.db.session import get_db_session, get_db_engine
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLog
+from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.policy import Rule
 from fidesops.service.connectors import PostgreSQLConnector
@@ -103,10 +104,11 @@ def get_privacy_request_results(
     unique_masking_strategies_by_name: Set[str] = set()
     for rule in erasure_rules:
         strategy_name: str = rule.masking_strategy["strategy"]
+        configuration: MaskingConfiguration = rule.masking_strategy["configuration"]
         if strategy_name in unique_masking_strategies_by_name:
             continue
         unique_masking_strategies_by_name.add(strategy_name)
-        masking_strategy = get_strategy(strategy_name, {})
+        masking_strategy = get_strategy(strategy_name, configuration)
         if masking_strategy.secrets_required():
             masking_secrets: List[
                 MaskingSecretCache
@@ -331,6 +333,36 @@ def test_create_and_process_access_request_saas(
     assert trigger_webhook_mock.call_count == 4
 
     pr.delete(db=db)
+
+
+@pytest.mark.saas_connector
+@mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+def test_create_and_process_erasure_request_saas(
+    trigger_webhook_mock,
+    connection_config_saas,
+    dataset_config_saas,
+    db,
+    cache,
+    erasure_policy_string_rewrite,
+    generate_auth_header,
+    mailchimp_account_email,
+):
+    customer_email = mailchimp_account_email
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy_string_rewrite.key,
+        "identity": {"email": customer_email},
+    }
+
+    pr = get_privacy_request_results(db, erasure_policy_string_rewrite, cache, data)
+    pr.delete(db=db)
+    
+    connector = SaaSConnector(connection_config_saas)
+    request = ("GET", "/3.0/search-members", {"query": mailchimp_account_email}, {})
+    resp = connector.create_client().send(request)
+    body = resp.json()
+    assert body["exact_matches"]["members"][0]["merge_fields"]["FNAME"] == "MASKED"
+    assert body["exact_matches"]["members"][0]["merge_fields"]["LNAME"] == "MASKED"
 
 
 @pytest.mark.integration_erasure

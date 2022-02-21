@@ -1,7 +1,9 @@
+from functools import reduce
 import logging
 import re
+import json
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple
+from typing import Dict, Any, List, Set, Optional, Generic, TypeVar, Tuple, Literal
 
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
@@ -24,6 +26,7 @@ from fidesops.service.masking.strategy.masking_strategy_factory import (
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.util.collection_util import append, filter_nonempty_values
 from fidesops.util.querytoken import QueryToken
+from fidesops.util.saas_util import paths_to_json, get_value_by_path
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -142,7 +145,6 @@ class QueryConfig(Generic[T], ABC):
             strategy: MaskingStrategy = get_strategy(
                 strategy_config["strategy"], strategy_config["configuration"]
             )
-
             for rule_field_path in field_paths:
                 masking_override: MaskingOverride = [
                     MaskingOverride(field.data_type_converter, field.length)
@@ -587,7 +589,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         return None
 
 
-SaaSRequestParams = Tuple[str, Dict[str, Any], Dict[str, Any]]
+SaaSRequestParams = Tuple[Literal["GET","POST"], str, Dict[str, Any], Dict[str, Any]]
 """Custom type to represent a tuple of path, params, and body values for a SaaS request"""
 
 
@@ -616,7 +618,7 @@ class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
             )
 
     @staticmethod
-    def prepare_params(
+    def prepare_query_params(
         request: SaaSRequest, param_values: Dict[str, Any]
     ) -> SaaSRequestParams:
         """
@@ -634,10 +636,8 @@ class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
                     params[param.name] = param_values[param.name]
             elif param.type == "path":
                 path = path.replace(f"<{param.name}>", param_values[param.name])
-            elif param.type == "body":
-                data[param.name] = param_values[param.name]
 
-        return path, params, data
+        return ("GET", path, params, data)
 
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
@@ -656,15 +656,39 @@ class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
         for string_path, reference_values in filtered_data.items():
             for value in reference_values:
                 request_params.append(
-                    self.prepare_params(current_request, {string_path: value})
+                    self.prepare_query_params(current_request, {string_path: value})
                 )
         logger.info(f"Populated request params for {current_request.path}")
         return request_params
 
+    def prepare_update_params(self, request: SaaSRequest, param_values: Dict[str, Any], body: Dict[str, Any]):
+        """
+        Populates the placeholders in the request with the given param values
+        """
+        path = request.path
+        params: Dict[str, Any] = {}
+
+        for param in request.request_params:
+            if param.type == "query":
+                if param.default_value:
+                    params[param.name] = param.default_value
+                elif param.references:
+                    params[param.name] = get_value_by_path(param_values, param.references[0].field)
+                elif param.identity:
+                    params[param.name] = get_value_by_path(param_values, param.identity)
+            elif param.type == "path":
+                path = path.replace(f"<{param.name}>", get_value_by_path(param_values, param.references[0].field))
+
+        return ("PUT", path, params, json.dumps(body))
+
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
-    ) -> Optional[List[SaaSRequestParams]]:
-        return None
+    ) -> Optional[SaaSRequestParams]:
+        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
+        body = paths_to_json(update_value_map)
+        current_request = self.get_request_by_action("update")
+        collection_name = self.node.address.collection
+        return self.prepare_update_params(current_request, {collection_name: row}, body)
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string"""
