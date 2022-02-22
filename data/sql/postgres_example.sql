@@ -1,4 +1,6 @@
 -- Example Postgres schema matching the dataset in public/data/dataset/postgres_example_dataset.yml
+-- Database creation is done separately to loading these statements in to appease Postgres' transactional
+-- requirements in the context of DROP DATABASE statements
 
 CREATE TABLE public.product (
     id INT PRIMARY KEY,
