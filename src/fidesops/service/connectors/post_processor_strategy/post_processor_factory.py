@@ -2,12 +2,12 @@ from enum import Enum
 from typing import List, Dict, Any
 
 from fidesops.common_exceptions import NoSuchStrategyException, ValidationError
-from fidesops.schemas.saas.saas_config import Strategy
 from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
 from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_filter import \
     FilterPostProcessorStrategy
 from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_unwrap import \
     UnwrapPostProcessorStrategy
+from fidesops.service.connectors.post_processor_strategy.post_processory_strategy import PostProcessorStrategy
 
 
 class SupportedPostProcessorStrategies(Enum):
@@ -22,7 +22,7 @@ class SupportedPostProcessorStrategies(Enum):
 def get_strategy(
         strategy_name: str,
         configuration: Dict[str, Any],
-) -> Strategy:
+) -> PostProcessorStrategy:
     """
     Returns the strategy given the name and configuration.
     Raises NoSuchStrategyException if the strategy does not exist
@@ -42,6 +42,6 @@ def get_strategy(
         raise ValidationError(message=str(e))
 
 
-def get_strategies() -> List[Strategy]:
+def get_strategies() -> List[PostProcessorStrategy]:
     """Returns all supported postprocessor strategies"""
     return [e.value for e in SupportedPostProcessorStrategies]

@@ -827,6 +827,7 @@ class TestRetrievingData:
     def test_retrieving_data(
         self,
         mock_incoming_edges: Mock,
+        privacy_request,
         db,
         connector,
         traversal_node,
@@ -839,7 +840,7 @@ class TestRetrievingData:
         }
 
         results = connector.retrieve_data(
-            traversal_node, Policy(), {"email": ["customer-1@example.com"]}
+            traversal_node, Policy(), privacy_request, {"email": ["customer-1@example.com"]}
         )
         assert len(results) is 1
         assert results == [
@@ -856,6 +857,7 @@ class TestRetrievingData:
     def test_retrieving_data_no_input(
         self,
         mock_incoming_edges: Mock,
+        privacy_request,
         db,
         connector,
         traversal_node,
@@ -867,19 +869,19 @@ class TestRetrievingData:
             )
         }
 
-        assert [] == connector.retrieve_data(traversal_node, Policy(), {"email": []})
+        assert [] == connector.retrieve_data(traversal_node, Policy(), privacy_request, {"email": []})
 
-        assert [] == connector.retrieve_data(traversal_node, Policy(), {})
+        assert [] == connector.retrieve_data(traversal_node, Policy(), privacy_request, {})
 
         assert [] == connector.retrieve_data(
-            traversal_node, Policy(), {"bad_key": ["test"]}
+            traversal_node, Policy(), privacy_request, {"bad_key": ["test"]}
         )
 
         assert [] == connector.retrieve_data(
-            traversal_node, Policy(), {"email": [None]}
+            traversal_node, Policy(), privacy_request, {"email": [None]}
         )
 
-        assert [] == connector.retrieve_data(traversal_node, Policy(), {"email": None})
+        assert [] == connector.retrieve_data(traversal_node, Policy(), privacy_request, {"email": None})
 
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
@@ -899,7 +901,7 @@ class TestRetrievingData:
             )
         }
         results = connector.retrieve_data(
-            traversal_node, Policy(), {"email": ["customer_not_in_dataset@example.com"]}
+            traversal_node, Policy(), privacy_request, {"email": ["customer_not_in_dataset@example.com"]}
         )
         assert results == []
 

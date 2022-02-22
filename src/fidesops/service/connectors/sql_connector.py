@@ -103,10 +103,9 @@ class SQLConnector(BaseConnector[Engine]):
         return ConnectionTestStatus.succeeded
 
     def retrieve_data(
-        self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
+        self, node: TraversalNode, policy: Policy, request: PrivacyRequest, input_data: Dict[str, List[Any]]
     ) -> List[Row]:
         """Retrieve sql data"""
-        import pdb; pdb.set_trace()
         query_config = self.query_config(node)
         client = self.client()
         stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
@@ -283,7 +282,7 @@ class RedshiftConnector(SQLConnector):
 
     # Overrides SQLConnector.retrieve_data
     def retrieve_data(
-        self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
+        self, node: TraversalNode, policy: Policy, request: PrivacyRequest, input_data: Dict[str, List[Any]]
     ) -> List[Row]:
         """Retrieve data from Amazon Redshift
 

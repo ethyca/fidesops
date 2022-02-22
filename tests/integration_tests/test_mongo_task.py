@@ -644,6 +644,7 @@ class TestRetrievingDataMongo:
     def test_retrieving_data(
         self,
         mock_incoming_edges: Mock,
+        privacy_request,
         db,
         connector,
         traversal_node,
@@ -656,7 +657,7 @@ class TestRetrievingDataMongo:
         }
 
         results = connector.retrieve_data(
-            traversal_node, Policy(), {"customer_id": [1]}
+            traversal_node, Policy(), privacy_request, {"customer_id": [1]}
         )
 
         assert results[0]["customer_id"] == 1
@@ -665,6 +666,7 @@ class TestRetrievingDataMongo:
     def test_retrieving_data_no_input(
         self,
         mock_incoming_edges: Mock,
+        privacy_request,
         db,
         connector,
         traversal_node,
@@ -675,21 +677,21 @@ class TestRetrievingDataMongo:
                 FieldAddress("mongo_test", "customer_details", "customer_id"),
             )
         }
-        results = connector.retrieve_data(traversal_node, Policy(), {"customer_id": []})
+        results = connector.retrieve_data(traversal_node, Policy(), privacy_request, {"customer_id": []})
         assert results == []
 
-        results = connector.retrieve_data(traversal_node, Policy(), {})
+        results = connector.retrieve_data(traversal_node, Policy(), privacy_request, {})
         assert results == []
 
         results = connector.retrieve_data(
-            traversal_node, Policy(), {"bad_key": ["test"]}
+            traversal_node, Policy(), privacy_request, {"bad_key": ["test"]}
         )
         assert results == []
 
-        results = connector.retrieve_data(traversal_node, Policy(), {"email": [None]})
+        results = connector.retrieve_data(traversal_node, Policy(), privacy_request, {"email": [None]})
         assert results == []
 
-        results = connector.retrieve_data(traversal_node, Policy(), {"email": None})
+        results = connector.retrieve_data(traversal_node, Policy(), privacy_request, {"email": None})
         assert results == []
 
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
@@ -711,7 +713,7 @@ class TestRetrievingDataMongo:
         }
 
         results = connector.retrieve_data(
-            traversal_node, Policy(), {"customer_id": [5]}
+            traversal_node, Policy(), privacy_request, {"customer_id": [5]}
         )
 
         assert results == []

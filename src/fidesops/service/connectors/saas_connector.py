@@ -7,9 +7,11 @@ from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.common_exceptions import ConnectionException
+from fidesops.common_exceptions import ConnectionException, PostProcessingException
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.saas_config import ClientConfig, Strategy
+from fidesops.service.connectors.post_processor_strategy.post_processor_factory import get_strategy
+from fidesops.service.connectors.post_processor_strategy.post_processory_strategy import PostProcessorStrategy
 from fidesops.service.connectors.query_config import SaaSQueryConfig, SaaSRequestParams
 
 logger = logging.getLogger(__name__)
@@ -107,7 +109,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         return value
 
     def retrieve_data(
-        self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
+        self, node: TraversalNode, policy: Policy, request: PrivacyRequest, input_data: Dict[str, List[Any]]
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
 
@@ -124,17 +126,27 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             response = self.client().get(prepared_request)
 
             # mailchimp needs unwrap then filter, in order
-
-            # process response
-            if read_request.data_path:
-                processed_response = self.get_value_by_path(
-                    response.json(), read_request.data_path
+            for post_processor in read_request["postprocessors"]:
+                strategy: PostProcessorStrategy = get_strategy(
+                    post_processor.strategy_name, post_processor.configuration
                 )
-            else:
-                # by default, we expect the collection_name to be one of the root fields in the response
-                processed_response = response.json()[collection_name]
+                logger.info(f"Starting postprocessing with strategy {strategy.get_strategy_name()}")
+                try:
+                    processed_response = strategy.process(response.json(), request.get_cached_identity_data())
+                except Exception as e:
+                    raise PostProcessingException(
+                        f"Could not post-process {node.address} using {strategy.get_strategy_name(): {e}}"
+                    )
+                rows.extend(processed_response)
 
-            rows.extend(processed_response)
+            # if read_request.data_path:
+            #     processed_response = self.get_value_by_path(
+            #         response.json(), read_request.data_path
+            #     )
+            # else:
+            #     # by default, we expect the collection_name to be one of the root fields in the response
+            #     processed_response = response.json()[collection_name]
+
         return rows
 
     def mask_data(

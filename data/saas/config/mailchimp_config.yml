@@ -41,6 +41,10 @@ saas_config:
             - strategy_name: unwrap
               configuration:
                 data_path: exact_matches.members
+            - strategy_name: filter
+              configuration:
+                field: email_address
+                default_value: adaptors.india@ethyca.com
     - name: conversations
       requests:
         read:

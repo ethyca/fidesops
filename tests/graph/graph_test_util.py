@@ -42,7 +42,7 @@ class MockSqlConnector(SQLConnector):
         raise AttributeError("Unsupported")
 
     def retrieve_data(
-        self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
+        self, node: TraversalNode, policy: Policy, request: PrivacyRequest, input_data: Dict[str, List[Any]]
     ) -> List[Row]:
         return [generate_collection(node.node.collection) for _ in range(3)]
 
