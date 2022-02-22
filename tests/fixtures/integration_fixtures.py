@@ -260,13 +260,12 @@ def mongo_inserts(integration_mongodb_connector):
     records = generate_integration_records()
     records.update(generate_mongo_specific_records())
     for table_name, record_list in records.items():
-        mongo_delete(
-            integration_mongodb_connector, "mongo_test", table_name, record_list
-        )
-
-    for table_name, record_list in records.items():
         for record in record_list:
             mongo_insert(
                 integration_mongodb_connector, "mongo_test", table_name, record
             )
     yield records
+    for table_name, record_list in records.items():
+        mongo_delete(
+            integration_mongodb_connector, "mongo_test", table_name, record_list
+        )
