@@ -128,6 +128,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         for prepared_request in prepared_requests:
             response = self.client().get(prepared_request)
 
+            # mailchimp needs unwrap then filter, in order
+
             # process response
             if read_request.data_path:
                 processed_response = self.get_value_by_path(

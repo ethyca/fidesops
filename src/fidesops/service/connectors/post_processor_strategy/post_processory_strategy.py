@@ -6,5 +6,5 @@ class PostProcessorStrategy(ABC):
     """Abstract base class for SaaS post processor strategies"""
 
     @abstractmethod
-    def process(self, data: Any, params: Any) -> Any:
+    def process(self, data: Any) -> Any:
         """Process data from SaaS connector"""
