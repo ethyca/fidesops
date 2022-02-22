@@ -479,7 +479,9 @@ class TestPutDatasets:
         assert mssql_config is not None
         assert mssql_dataset["fides_key"] == "mssql_example_test_dataset"
         assert mssql_dataset["name"] == "Microsoft SQLServer Example Test Dataset"
-        assert "Example of a Microsoft SQLServer dataset" in mssql_dataset["description"]
+        assert (
+            "Example of a Microsoft SQLServer dataset" in mssql_dataset["description"]
+        )
         assert len(mssql_dataset["collections"]) == 11
 
         # check the mysql dataset
@@ -631,6 +633,105 @@ class TestPutDatasets:
         snowflake_config.delete(db)
         mssql_config.delete(db)
         bigquery_config.delete(db)
+
+    @pytest.mark.saas_connector
+    def test_patch_datasets_missing_saas_config(
+        self,
+        connection_config_saas_without_saas_config,
+        example_saas_datasets,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+    ):
+        path = V1_URL_PREFIX + DATASETS
+        path_params = {"connection_key": connection_config_saas_without_saas_config.key}
+        datasets_url = path.format(**path_params)
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url, headers=auth_header, json=[example_saas_datasets["mailchimp"]]
+        )
+        assert response.status_code == 200
+
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 0
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == f"Connection config '{connection_config_saas_without_saas_config.key}' must have a SaaS config before adding a dataset"
+        )
+
+    @pytest.mark.saas_connector
+    def test_patch_datasets_extra_reference(
+        self,
+        connection_config_saas,
+        example_saas_datasets,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+    ):
+        path = V1_URL_PREFIX + DATASETS
+        path_params = {"connection_key": connection_config_saas.key}
+        datasets_url = path.format(**path_params)
+
+        invalid_dataset = example_saas_datasets["mailchimp"]
+        invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
+            "references": [
+                {
+                    "dataset": "postgres_example_test_dataset",
+                    "field": "another.field",
+                    "direction": "from",
+                },
+            ]
+        }
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url, headers=auth_header, json=[invalid_dataset]
+        )
+        assert response.status_code == 200
+
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 0
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == "A dataset for a ConnectionConfig type of saas is not allowed to have "
+            "references or identities. Please add them to the SaaS config."
+        )
+
+    @pytest.mark.saas_connector
+    def test_patch_datasets_extra_identity(
+        self,
+        connection_config_saas,
+        example_saas_datasets,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+    ):
+        path = V1_URL_PREFIX + DATASETS
+        path_params = {"connection_key": connection_config_saas.key}
+        datasets_url = path.format(**path_params)
+
+        invalid_dataset = example_saas_datasets["mailchimp"]
+        invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
+            "identity": "email"
+        }
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url, headers=auth_header, json=[invalid_dataset]
+        )
+        assert response.status_code == 200
+
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 0
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == "A dataset for a ConnectionConfig type of saas is not allowed to have "
+            "references or identities. Please add them to the SaaS config."
+        )
 
     @mock.patch("fidesops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_datasets_failed_response(

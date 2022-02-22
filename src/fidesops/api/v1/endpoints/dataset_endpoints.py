@@ -1,14 +1,15 @@
 import logging
-from typing import List
+from typing import Dict, List
 
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fidesops.graph.config import Dataset
 from pydantic import conlist
 from sqlalchemy.orm import Session
-from fidesops.common_exceptions import ValidationError
+from fidesops.common_exceptions import SaaSConfigNotFoundException, ValidationError
 
 from fidesops.common_exceptions import TraversalError
 from starlette.status import HTTP_404_NOT_FOUND
@@ -26,8 +27,12 @@ from fidesops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.graph.traversal import DatasetGraph, Traversal
-from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
+from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesops.models.datasetconfig import (
+    DatasetConfig,
+    convert_dataset_to_graph,
+    to_graph_field,
+)
 from fidesops.schemas.api import (
     BulkUpdateFailed,
 )
@@ -143,9 +148,22 @@ def patch_datasets(
             "dataset": dataset.dict(),
         }
         try:
+            import pdb
+
+            pdb.set_trace()
+            if connection_config.connection_type == ConnectionType.saas:
+                __validate_saas_dataset(connection_config, dataset)
             # Try to find an existing DatasetConfig matching the given connection & key
             dataset_config = DatasetConfig.create_or_update(db, data=data)
             created_or_updated.append(dataset_config.dataset)
+        except (SaaSConfigNotFoundException, ValidationError) as exception:
+            logger.warning(exception.message)
+            failed.append(
+                BulkUpdateFailed(
+                    message=exception.message,
+                    data=data,
+                )
+            )
         except Exception:
             logger.warning(f"Create/update failed for dataset '{data['fides_key']}'.")
             failed.append(
@@ -159,6 +177,26 @@ def patch_datasets(
         succeeded=created_or_updated,
         failed=failed,
     )
+
+
+def __validate_saas_dataset(
+    connection_config: ConnectionConfig, dataset: FidesopsDataset
+):
+    if connection_config.saas_config is None:
+        raise SaaSConfigNotFoundException(
+            f"Connection config '{connection_config.key}' must have a "
+            "SaaS config before adding a dataset"
+        )
+    else:
+        for collection in dataset.collections:
+            for field in collection.fields:
+                graph_field = to_graph_field(field)
+                if graph_field.references or graph_field.identity:
+                    raise ValidationError(
+                        "A dataset for a ConnectionConfig type of saas is not "
+                        "allowed to have references or identities. Please add "
+                        "them to the SaaS config."
+                    )
 
 
 @router.get(

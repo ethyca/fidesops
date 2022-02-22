@@ -31,6 +31,7 @@ saas_secrets_dict = {
     }
 }
 
+
 def load_config(filename: str) -> Dict:
     yaml_file = load_file(filename)
     with open(yaml_file, "r") as file:
@@ -93,6 +94,24 @@ def connection_config_saas(
             "access": AccessLevel.read,
             "secrets": saas_secrets_dict["mailchimp"],
             "saas_config": example_saas_configs["mailchimp"],
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def connection_config_saas_without_saas_config(
+    db: Session,
+) -> Generator:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": "connection_config_without_saas_config",
+            "name": "connection_config_without_saas_config",
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.read,
+            "secrets": saas_secrets_dict["mailchimp"],
         },
     )
     yield connection_config

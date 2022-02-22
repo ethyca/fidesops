@@ -1,4 +1,6 @@
 from typing import Any, Dict, List, Literal, Optional, Union
+from fidesops.schemas.api import BulkResponse
+from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.dataset import FidesopsDatasetReference
 from pydantic import BaseModel
 from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
@@ -132,3 +134,21 @@ class SaaSConfig(BaseModel):
             collections=collections,
             connection_key=self.fides_key,
         )
+
+
+class SaaSConfigValidationDetails(BaseSchema):
+    """
+    Message with any validation issues with the SaaS config
+    """
+
+    msg: Optional[str]
+
+
+class ValidateSaaSConfigResponse(BaseSchema):
+    """
+    Response model for validating a SaaS config, which includes both the SaaS config
+    itself (if valid) plus a details object describing any validation errors.
+    """
+
+    saas_config: SaaSConfig
+    validation_details: SaaSConfigValidationDetails
