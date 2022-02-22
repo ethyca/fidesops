@@ -1,3 +1,4 @@
+
 import pytest
 import time
 from typing import Any, Dict, List, Set
@@ -20,7 +21,6 @@ from fidesops.models.policy import PolicyPreWebhook, ActionType
 from fidesops.models.privacy_request import PrivacyRequestStatus
 from fidesops.schemas.external_https import SecondPartyResponseFormat
 from fidesops.db.session import get_db_session, get_db_engine
-from fidesops.models.policy import DataCategory
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLog
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.policy import Rule
@@ -35,6 +35,7 @@ from fidesops.service.connectors.sql_connector import (
 from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.util.async_util import wait_for
+from fidesops.util.data_category import DataCategory
 
 
 @mock.patch("fidesops.service.privacy_request.request_runner_service.upload")
@@ -293,6 +294,7 @@ def test_create_and_process_access_request_mariadb(
     assert trigger_webhook_mock.call_count == 4
     pr.delete(db=db)
 
+
 @pytest.mark.saas_connector
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_saas(
@@ -304,7 +306,7 @@ def test_create_and_process_access_request_saas(
     policy,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
-    mailchimp_account_email
+    mailchimp_account_email,
 ):
     customer_email = mailchimp_account_email
     data = {
@@ -329,6 +331,7 @@ def test_create_and_process_access_request_saas(
     assert trigger_webhook_mock.call_count == 4
 
     pr.delete(db=db)
+
 
 @pytest.mark.integration_erasure
 def test_create_and_process_erasure_request_specific_category(

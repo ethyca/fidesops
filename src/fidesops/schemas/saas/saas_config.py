@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Any, Dict, List, Literal, Optional, Union
 from pydantic import BaseModel
 from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
@@ -9,20 +7,16 @@ from fidesops.schemas.shared_schemas import FidesOpsKey, FidesopsDatasetReferenc
 
 class ConnectorParams(BaseModel):
     """
-    Required information for the given SaaS connector, can either be user provided or default to a given value.
-    Secret values should NOT be specified with a default_value
+    Required information for the given SaaS connector.
     """
 
     name: str
-    default_value: str
-    from_user: bool
-    is_secret: bool
 
 
 class RequestParam(BaseModel):
     """
     A request parameter which includes the type (query, path, or body) along with a default value or
-    a reference to an identity value or a value in another dataset
+    a reference to an identity value or a value in another dataset.
     """
 
     name: str
@@ -38,14 +32,14 @@ class RequestParam(BaseModel):
 class Strategy(BaseModel):
     """General shape for swappable strategies (ex: auth, pagination, postprocessing, etc.)"""
 
-    strategy_name: str
+    strategy: str
     configuration: StrategyConfiguration
 
 
-class Request(BaseModel):
+class SaaSRequest(BaseModel):
     """
     A single request with a static or dynamic path, and the request params needed to build the request.
-    Also includes optional strategies for pre/postprocessing and pagination
+    Also includes optional strategies for pre/postprocessing and pagination.
     """
 
     path: str
@@ -60,7 +54,7 @@ class Endpoint(BaseModel):
     """An collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"""
 
     name: str
-    requests: Dict[Literal["read", "update", "delete"], Request]
+    requests: Dict[Literal["read", "update", "delete"], SaaSRequest]
 
 
 class ConnectorParam(BaseModel):
@@ -68,8 +62,6 @@ class ConnectorParam(BaseModel):
 
     name: str
     default_value: Optional[Any]
-    from_user: bool
-    is_secret: bool
 
 
 class ConnectorParamRef(BaseModel):
@@ -106,7 +98,7 @@ class SaaSConfig(BaseModel):
     connector_params: List[ConnectorParam]
     client_config: ClientConfig
     endpoints: List[Endpoint]
-    test_request: Request
+    test_request: SaaSRequest
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:
@@ -118,7 +110,6 @@ class SaaSConfig(BaseModel):
         collections = []
         for endpoint in self.endpoints:
             fields = []
-            # TODO parametrize this method to account for update and delete
             for param in endpoint.requests["read"].request_params or []:
                 if param.references:
                     references = []

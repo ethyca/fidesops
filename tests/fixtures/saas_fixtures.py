@@ -15,6 +15,7 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
+from tests.fixtures.application_fixtures import load_dataset
 
 
 saas_config = load_toml("saas_config.toml")
@@ -29,13 +30,6 @@ saas_secrets_dict = {
         or os.environ.get("MAILCHIMP_API_KEY"),
     }
 }
-
-
-def load_dataset(filename: str) -> Dict:
-    yaml_file = load_file(filename)
-    with open(yaml_file, "r") as file:
-        return yaml.safe_load(file).get("dataset", [])
-
 
 def load_config(filename: str) -> Dict:
     yaml_file = load_file(filename)

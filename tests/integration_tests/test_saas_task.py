@@ -22,8 +22,8 @@ def test_saas_access_request_task(
     )
 
     dataset_name = connection_config_saas.get_saas_config().fides_key
-    merged_graphs = connection_config_saas.get_dataset_graphs()
-    graph = DatasetGraph(*merged_graphs)
+    merged_graph = dataset_config_saas.get_graph()
+    graph = DatasetGraph(merged_graph)
 
     v = graph_task.run_access_request(
         privacy_request,

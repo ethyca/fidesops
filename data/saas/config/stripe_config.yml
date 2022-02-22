@@ -6,19 +6,15 @@ saas_config:
 
     connector_params:
     - name: host
-      from_user: false
-      default_value: "api.stripe.com"
-      is_secret: false
+      default_value: api.stripe.com
     - name: api_key
-      from_user: true
-      is_secret: true
 
     client_config:
       protocol: https
       host:
         connector_param: host
       authentication:
-        strategy_name: bearer_authentication
+        strategy: bearer_authentication
         configuration:
           token:
             connector_param: api_key
