@@ -1,7 +1,7 @@
 import logging
 import re
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Set, Optional, Generic, TypeVar, Tuple
+from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple
 
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
@@ -16,6 +16,7 @@ from fidesops.graph.config import (
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
 from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.schemas.saas.saas_config import Endpoint, SaaSRequest
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     get_strategy,
@@ -79,32 +80,6 @@ class QueryConfig(Generic[T], ABC):
             for field_path, field in self.field_map().items()
             if field.primary_key
         }
-
-    @property
-    def query_field_paths(self) -> Set[FieldPath]:
-        """
-        All of the possible field paths that we can query for possible filter values.
-        These are field paths that are the ends of incoming edges.
-        """
-        return {edge.f2.field_path for edge in self.node.incoming_edges()}
-
-    def typed_filtered_values(self, input_data: Dict[str, List[Any]]) -> Dict[str, Any]:
-        """
-        Return a filtered list of key/value sets of data items that are both in
-        the list of incoming edge fields, and contain data in the input data set.
-
-        The values are cast based on field types, if those types are specified.
-        """
-        out = {}
-        for key, values in input_data.items():
-            path: FieldPath = FieldPath.parse(key)
-            field: Field = self.node.node.collection.field(path)
-            if field and path in self.query_field_paths and isinstance(values, list):
-                cast_values = [field.cast(v) for v in values]
-                filtered = list(filter(lambda x: x is not None, cast_values))
-                if filtered:
-                    out[key] = filtered
-        return out
 
     def query_sources(self) -> Dict[str, List[CollectionAddress]]:
         """Display the input collection(s) for each query key for display purposes.
@@ -179,7 +154,9 @@ class QueryConfig(Generic[T], ABC):
                     masking_override, null_masking, strategy
                 ):
                     logger.warning(
-                        f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type_converter.name}"
+                        f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not "
+                        f"present on the field or not supported for the {strategy_config['strategy']} masking "
+                        f"strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
                     continue
                 val: Any = rule_field_path.retrieve_from(row)
@@ -303,7 +280,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         policy: Optional[Policy] = None,
     ) -> Optional[TextClause]:
         """Generate a retrieval query"""
-        filtered_data: Dict[str, Any] = self.typed_filtered_values(input_data)
+        filtered_data: Dict[str, Any] = self.node.typed_filtered_values(input_data)
 
         if filtered_data:
             clauses = []
@@ -420,7 +397,7 @@ class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
     ) -> Optional[TextClause]:
         """Generate a retrieval query"""
 
-        filtered_data = self.typed_filtered_values(input_data)
+        filtered_data = self.node.typed_filtered_values(input_data)
 
         if filtered_data:
             clauses = []
@@ -612,7 +589,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
             return {"$or": [dict([(k, v)]) for k, v in pairs.items()]}
 
         if input_data:
-            filtered_data: Dict[str, Any] = self.typed_filtered_values(input_data)
+            filtered_data: Dict[str, Any] = self.node.typed_filtered_values(input_data)
             if filtered_data:
                 query_pairs = {}
                 for string_field_path, data in filtered_data.items():
@@ -670,4 +647,92 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         mongo_query = self.generate_query(self.display_query_data(), None)
         if mongo_query is not None:
             return self.query_to_str(mongo_query, data)
+        return None
+
+
+SaaSRequestParams = Tuple[str, Dict[str, Any], Dict[str, Any]]
+"""Custom type to represent a tuple of path, params, and body values for a SaaS request"""
+
+
+class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
+    """Query config that generates populated SaaS requests for a given collection"""
+
+    def __init__(self, node: TraversalNode, endpoints: Dict[str, Endpoint]):
+        super().__init__(node)
+        self.endpoints = endpoints
+
+    def get_request_by_action(self, action: str) -> SaaSRequest:
+        """
+        Returns the appropriate request config based on the
+        current collection and preferred action (read, update, delete)
+        """
+        try:
+            collection_name = self.node.address.collection
+            request = self.endpoints[collection_name].requests[action]
+            logger.info(
+                f"Found matching endpoint to {action} '{collection_name}' collection"
+            )
+            return request
+        except KeyError:
+            raise ValueError(
+                f"The `{action}` action is not defined for the `{collection_name}` endpoint in {self.node.node.dataset.connection_key}"
+            )
+
+    @staticmethod
+    def prepare_params(
+        request: SaaSRequest, param_values: Dict[str, Any]
+    ) -> SaaSRequestParams:
+        """
+        Populates the placeholders in the request with the given param values
+        """
+        path = request.path
+        params: Dict[str, Any] = {}
+        data: Dict[str, Any] = {}
+
+        for param in request.request_params:
+            if param.type == "query":
+                if param.default_value:
+                    params[param.name] = param.default_value
+                elif param.references or param.identity:
+                    params[param.name] = param_values[param.name]
+            elif param.type == "path":
+                path = path.replace(f"<{param.name}>", param_values[param.name])
+            elif param.type == "body":
+                data[param.name] = param_values[param.name]
+
+        return path, params, data
+
+    def generate_query(
+        self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
+    ) -> Optional[List[SaaSRequestParams]]:
+        """
+        This returns the query/path params needed to make an API call.
+        This is the API equivalent of building the components of a database
+        query statement (select statement, where clause, limit, offset, etc.)
+        """
+
+        filtered_data = self.node.typed_filtered_values(input_data)
+        current_request = self.get_request_by_action("read")
+
+        request_params = []
+        # populate the SaaS request with reference values from other datasets provided to this node
+        for string_path, reference_values in filtered_data.items():
+            for value in reference_values:
+                request_params.append(
+                    self.prepare_params(current_request, {string_path: value})
+                )
+        logger.info(f"Populated request params for {current_request.path}")
+        return request_params
+
+    def generate_update_stmt(
+        self, row: Row, policy: Policy, request: PrivacyRequest
+    ) -> Optional[List[SaaSRequestParams]]:
+        return None
+
+    def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
+        """Convert query to string"""
+        return "Not yet supported for SaaSQueryConfig"
+
+    def dry_run_query(self) -> Optional[str]:
+        """dry run query for display"""
         return None

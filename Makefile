@@ -46,17 +46,17 @@ server: compose-build
 server-shell: compose-build
 	@docker-compose run $(IMAGE_NAME) /bin/bash
 
-integration-shell: compose-build
+integration-shell:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --open_shell --datastores $(datastores)
 
-integration-env: compose-build
+integration-env:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --run_application --datastores $(datastores)
 
-quickstart: compose-build
+quickstart:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --datastores mongodb postgres --run_quickstart
@@ -77,7 +77,7 @@ docker-push:
 # CI
 ####################
 
-check-all: black-ci pylint mypy check-migrations pytest pytest-integration-access pytest-integration-erasure
+check-all: black-ci pylint mypy check-migrations pytest pytest-integration
 
 black-ci: compose-build
 	@echo "Running black checks..."
@@ -106,37 +106,26 @@ mypy: compose-build
 pytest: compose-build
 	@echo "Running pytest unit tests..."
 	@docker-compose run $(IMAGE_NAME) \
-		pytest $(pytestpath) -m "not integration and not integration_erasure and not integration_external"
+		pytest $(pytestpath) -m "not integration and not integration_external and not saas_connector"
 
-pytest-integration: compose-build
+pytest-integration:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --run_tests --datastores $(datastores)
 
-
-pytest-integration-erasure: compose-build
-	@echo "Building additional Docker images for integration tests..."
-	@path=""; \
-	for word in $(DOCKERFILE_ENVIRONMENTS); do \
-		path="$$path -f docker-compose.integration-$$word.yml"; \
-	done; \
-	docker-compose -f docker-compose.yml $$path build; \
-	docker-compose -f docker-compose.yml $$path up -d; \
-	sleep 5; \
-	setup_path=""; \
-	for word in $(DOCKERFILE_ENVIRONMENTS); do \
-		setup_path="fidesops python tests/integration_tests/$$word-setup.py"; \
-		docker exec $$setup_path || echo "no custom setup logic found for $$word"; \
-	done; \
-	docker-compose -f docker-compose.yml $$path run $(IMAGE_NAME) pytest $(pytestpath) -m "integration_erasure"; \
-	docker-compose -f docker-compose.yml $$path down --remove-orphans
-
 # These tests connect to external third-party test databases
 pytest-integration-external: compose-build
 	@echo "Running tests that connect to external third party test databases"
-	@docker-compose run -e REDSHIFT_TEST_URI -e SNOWFLAKE_TEST_URI -e REDSHIFT_TEST_DB_SCHEMA \
+	@docker-compose run \
+		-e REDSHIFT_TEST_URI \
+		-e SNOWFLAKE_TEST_URI -e REDSHIFT_TEST_DB_SCHEMA \
 		-e BIGQUERY_KEYFILE_CREDS -e BIGQUERY_DATASET \
 		$(IMAGE_NAME) pytest $(pytestpath) -m "integration_external"
+
+pytest-saas: compose-build
+	@echo "Running unit and integration tests for SaaS connectors"
+	@docker-compose run -e MAILCHIMP_DOMAIN -e MAILCHIMP_USERNAME -e MAILCHIMP_API_KEY -e MAILCHIMP_ACCOUNT_EMAIL $(IMAGE_NAME) \
+		pytest $(pytestpath) -m "saas_connector"
 
 
 ####################
@@ -159,7 +148,7 @@ clean:
 compose-build:
 	@echo "Tearing down the docker compose images, network, etc..."
 	@docker-compose down --remove-orphans
-	@docker-compose build
+	@docker-compose build --build-arg REQUIRE_MSSQL="true"
 
 .PHONY: teardown
 teardown:

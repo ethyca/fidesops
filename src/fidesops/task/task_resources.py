@@ -22,6 +22,7 @@ from fidesops.service.connectors import (
     MicrosoftSQLServerConnector,
     MariaDBConnector,
     BigQueryConnector,
+    SaaSConnector,
 )
 from fidesops.util.cache import get_cache
 
@@ -64,6 +65,8 @@ class Connections:
             return MariaDBConnector(connection_config)
         if connection_config.connection_type == ConnectionType.bigquery:
             return BigQueryConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.saas:
+            return SaaSConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )
@@ -99,11 +102,11 @@ class TaskResources:
         self.connections = Connections()
 
     def __enter__(self) -> "TaskResources":
-        """Support 'with' useage for closing resources"""
+        """Support 'with' usage for closing resources"""
         return self
 
     def __exit__(self, _type: Any, value: Any, traceback: Any) -> None:
-        """Support 'with' useage for closing resources"""
+        """Support 'with' usage for closing resources"""
         self.close()
 
     def cache_object(self, key: str, value: Any) -> None:

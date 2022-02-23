@@ -4,6 +4,7 @@ import os
 from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
+from fidesops.util.data_category import DataCategory
 
 import pydash
 import pytest
@@ -22,7 +23,6 @@ from fidesops.models.connectionconfig import (
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import (
     ActionType,
-    DataCategory,
     Policy,
     Rule,
     RuleTarget,
@@ -36,10 +36,6 @@ from fidesops.models.privacy_request import (
     ExecutionLogStatus,
 )
 from fidesops.models.storage import StorageConfig, ResponseFormat
-from fidesops.schemas.connection_configuration import (
-    SnowflakeSchema,
-    RedshiftSchema,
-)
 from fidesops.schemas.storage.storage import (
     FileNaming,
     StorageDetails,
@@ -57,7 +53,6 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
 integration_config = load_toml("fidesops-integration.toml")
-
 
 # Unified list of connections to integration dbs specified from fidesops-integration.toml
 
@@ -163,170 +158,6 @@ def storage_config_onetrust(db: Session) -> Generator:
     )
     yield storage_config
     storage_config.delete(db)
-
-
-@pytest.fixture(scope="function")
-def connection_config(db: Session) -> Generator:
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "name": str(uuid4()),
-            "key": "my_postgres_db_1",
-            "connection_type": ConnectionType.postgres,
-            "access": AccessLevel.write,
-            "secrets": integration_secrets["postgres_example"],
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
-
-
-@pytest.fixture(scope="function")
-def read_connection_config(db: Session) -> Generator:
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "name": str(uuid4()),
-            "key": "my_postgres_db_1_read_config",
-            "connection_type": ConnectionType.postgres,
-            "access": AccessLevel.read,
-            "secrets": integration_secrets["postgres_example"],
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
-
-
-@pytest.fixture(scope="function")
-def connection_config_mysql(db: Session) -> Generator:
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "name": str(uuid4()),
-            "key": "my_mysql_db_1",
-            "connection_type": ConnectionType.mysql,
-            "access": AccessLevel.write,
-            "secrets": integration_secrets["mysql_example"],
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
-
-
-@pytest.fixture(scope="function")
-def connection_config_mssql(db: Session) -> Generator:
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "name": str(uuid4()),
-            "key": "my_mssql_db_1",
-            "connection_type": ConnectionType.mssql,
-            "access": AccessLevel.write,
-            "secrets": integration_secrets["mssql_example"],
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
-
-
-@pytest.fixture(scope="function")
-def connection_config_dry_run(db: Session) -> Generator:
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "name": str(uuid4()),
-            "key": "postgres",
-            "connection_type": ConnectionType.postgres,
-            "access": AccessLevel.write,
-            "secrets": integration_secrets["postgres_example"],
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
-
-
-@pytest.fixture(scope="function")
-def mongo_connection_config(db: Session) -> Generator:
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "name": str(uuid4()),
-            "key": "my_mongo_db_1",
-            "connection_type": ConnectionType.mongodb,
-            "access": AccessLevel.write,
-            "secrets": integration_secrets["mongo_example"],
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
-
-
-@pytest.fixture(scope="function")
-def redshift_connection_config(db: Session) -> Generator:
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "name": str(uuid4()),
-            "key": "my_redshift_config",
-            "connection_type": ConnectionType.redshift,
-            "access": AccessLevel.write,
-        },
-    )
-    uri = integration_config.get("redshift", {}).get("external_uri") or os.environ.get(
-        "REDSHIFT_TEST_URI"
-    )
-    db_schema = integration_config.get("redshift", {}).get(
-        "db_schema"
-    ) or os.environ.get("REDSHIFT_TEST_DB_SCHEMA")
-    if uri and db_schema:
-        schema = RedshiftSchema(url=uri, db_schema=db_schema)
-        connection_config.secrets = schema.dict()
-        connection_config.save(db=db)
-
-    yield connection_config
-    connection_config.delete(db)
-
-
-@pytest.fixture(scope="function")
-def snowflake_connection_config_without_secrets(
-    db: Session,
-) -> Generator:
-    """
-    Returns a Snowflake ConnectionConfig without secrets
-    attached that is safe to use in any tests.
-    """
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "name": str(uuid4()),
-            "key": "my_snowflake_config",
-            "connection_type": ConnectionType.snowflake,
-            "access": AccessLevel.write,
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
-
-
-@pytest.fixture(scope="function")
-def snowflake_connection_config(
-    db: Session,
-    integration_config: Dict[str, str],
-    snowflake_connection_config_without_secrets: ConnectionConfig,
-) -> Generator:
-    """
-    Returns a Snowflake ConnectionConfig with secrets attached if secrets are present
-    in the configuration.
-    """
-    snowflake_connection_config = snowflake_connection_config_without_secrets
-    uri = integration_config.get("snowflake", {}).get("external_uri") or os.environ.get(
-        "SNOWFLAKE_TEST_URI"
-    )
-    if uri is not None:
-        schema = SnowflakeSchema(url=uri)
-        snowflake_connection_config.secrets = schema.dict()
-        snowflake_connection_config.save(db=db)
-    yield snowflake_connection_config
 
 
 @pytest.fixture(scope="function")
@@ -774,86 +605,10 @@ def failed_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
 
 
 @pytest.fixture(scope="function")
-def postgres_execution_log(
-    db: Session, privacy_request: PrivacyRequest
-) -> ExecutionLog:
-    el = ExecutionLog.create(
-        db=db,
-        data={
-            "dataset_name": "my-postgres-db",
-            "collection_name": "user",
-            "fields_affected": [
-                {
-                    "path": "my-postgres-db:user:email",
-                    "field_name": "email",
-                    "data_categories": ["user.provided.identifiable.contact.email"],
-                }
-            ],
-            "action_type": ActionType.access,
-            "status": ExecutionLogStatus.pending,
-            "privacy_request_id": privacy_request.id,
-        },
-    )
-    yield el
-    el.delete(db)
-
-
-@pytest.fixture(scope="function")
-def second_postgres_execution_log(
-    db: Session, privacy_request: PrivacyRequest
-) -> ExecutionLog:
-    el = ExecutionLog.create(
-        db=db,
-        data={
-            "dataset_name": "my-postgres-db",
-            "collection_name": "address",
-            "fields_affected": [
-                {
-                    "path": "my-postgres-db:address:street",
-                    "field_name": "street",
-                    "data_categories": ["user.provided.identifiable.contact.street"],
-                },
-                {
-                    "path": "my-postgres-db:address:city",
-                    "field_name": "city",
-                    "data_categories": ["user.provided.identifiable.contact.city"],
-                },
-            ],
-            "action_type": ActionType.access,
-            "status": ExecutionLogStatus.error,
-            "privacy_request_id": privacy_request.id,
-            "message": "Database timed out.",
-        },
-    )
-    yield el
-    el.delete(db)
-
-
-@pytest.fixture(scope="function")
-def mongo_execution_log(db: Session, privacy_request: PrivacyRequest) -> ExecutionLog:
-    el = ExecutionLog.create(
-        db=db,
-        data={
-            "dataset_name": "my-mongo-db",
-            "collection_name": "orders",
-            "fields_affected": [
-                {
-                    "path": "my-mongo-db:orders:name",
-                    "field_name": "name",
-                    "data_categories": ["user.provided.identifiable.contact.name"],
-                }
-            ],
-            "action_type": ActionType.access,
-            "status": ExecutionLogStatus.in_processing,
-            "privacy_request_id": privacy_request.id,
-        },
-    )
-    yield el
-    el.delete(db)
-
-
-@pytest.fixture(scope="function")
-def dataset_config(connection_config: ConnectionConfig, db: Session) -> Generator:
+def dataset_config(
+    connection_config: ConnectionConfig,
+    db: Session,
+) -> Generator:
     dataset_config = DatasetConfig.create(
         db=db,
         data={
@@ -893,53 +648,13 @@ def dataset_config(connection_config: ConnectionConfig, db: Session) -> Generato
 
 
 @pytest.fixture(scope="function")
-def dataset_config_mysql(connection_config: ConnectionConfig, db: Session) -> Generator:
-    dataset_config = DatasetConfig.create(
-        db=db,
-        data={
-            "connection_config_id": connection_config.id,
-            "fides_key": "mysql_example_subscriptions_dataset",
-            "dataset": {
-                "fides_key": "mysql_example_subscriptions_dataset",
-                "name": "Mysql Example Subscribers Dataset",
-                "description": "Example Mysql dataset created in test fixtures",
-                "dataset_type": "MySQL",
-                "location": "mysql_example.test",
-                "collections": [
-                    {
-                        "name": "subscriptions",
-                        "fields": [
-                            {
-                                "name": "id",
-                                "data_categories": ["system.operations"],
-                            },
-                            {
-                                "name": "email",
-                                "data_categories": [
-                                    "user.provided.identifiable.contact.email"
-                                ],
-                                "fidesops_meta": {
-                                    "identity": "email",
-                                },
-                            },
-                        ],
-                    },
-                ],
-            },
-        },
-    )
-    yield dataset_config
-    dataset_config.delete(db)
-
-
-@pytest.fixture(scope="function")
 def dataset_config_preview(
-    connection_config_dry_run: ConnectionConfig, db: Session
+    connection_config: ConnectionConfig, db: Session
 ) -> Generator:
     dataset_config = DatasetConfig.create(
         db=db,
         data={
-            "connection_config_id": connection_config_dry_run.id,
+            "connection_config_id": connection_config.id,
             "fides_key": "postgres",
             "dataset": {
                 "fides_key": "postgres",
@@ -1063,9 +778,9 @@ def postgres_example_test_dataset_config(
 
 @pytest.fixture
 def mssql_example_test_dataset_config(
-        connection_config_mssql: ConnectionConfig,
-        db: Session,
-        example_datasets: List[Dict],
+    connection_config_mssql: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
 ) -> Generator:
     mssql_dataset = example_datasets[4]
     fides_key = mssql_dataset["fides_key"]
@@ -1136,3 +851,66 @@ def privacy_request_runner(
         cache=cache,
         privacy_request=privacy_request,
     )
+
+
+@pytest.fixture(scope="function")
+def sample_data():
+    return {
+        "_id": 12345,
+        "thread": [
+            {
+                "comment": "com_0001",
+                "message": "hello, testing in-flight chat feature",
+                "chat_name": "John",
+                "messages": {},
+            },
+            {
+                "comment": "com_0002",
+                "message": "yep, got your message, looks like it works",
+                "chat_name": "Jane",
+            },
+            {"comment": "com_0002", "message": "hello!", "chat_name": "Jeanne"},
+        ],
+        "snacks": ["pizza", "chips"],
+        "seats": {"first_choice": "A2", "second_choice": "B3"},
+        "upgrades": {
+            "magazines": ["Time", "People"],
+            "books": ["Once upon a Time", "SICP"],
+            "earplugs": True,
+        },
+        "other_flights": [
+            {"DFW": ["11 AM", "12 PM"], "CHO": ["12 PM", "1 PM"]},
+            {"DFW": ["2 AM", "12 PM"], "CHO": ["2 PM", "1 PM"]},
+            {"DFW": ["3 AM", "2 AM"], "CHO": ["2 PM", "1:30 PM"]},
+        ],
+        "months": {
+            "july": [
+                {
+                    "activities": ["swimming", "hiking"],
+                    "crops": ["watermelon", "cheese", "grapes"],
+                },
+                {"activities": ["tubing"], "crops": ["corn"]},
+            ],
+            "march": [
+                {
+                    "activities": ["skiing", "bobsledding"],
+                    "crops": ["swiss chard", "swiss chard"],
+                },
+                {"activities": ["hiking"], "crops": ["spinach"]},
+            ],
+        },
+        "hello": [1, 2, 3, 4, 2],
+        "weights": [[1, 2], [3, 4]],
+        "toppings": [[["pepperoni", "salami"], ["pepperoni", "cheese", "cheese"]]],
+        "A": {"C": [{"M": ["p", "n", "n"]}]},
+        "C": [["A", "B", "C", "B"], ["G", "H", "B", "B"]],  # Double lists
+        "D": [
+            [["A", "B", "C", "B"], ["G", "H", "B", "B"]],
+            [["A", "B", "C", "B"], ["G", "H", "B", "B"]],
+        ],  # Triple lists
+        "E": [[["B"], [["A", "B", "C", "B"], ["G", "H", "B", "B"]]]],  # Irregular lists
+        "F": [
+            "a",
+            ["1", "a", [["z", "a", "a"]]],
+        ],  # Lists elems are different types, not officially supported
+    }
