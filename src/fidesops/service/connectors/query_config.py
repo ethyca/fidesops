@@ -376,16 +376,9 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         return None
 
 
-class DistinctKeysQueryStringOverrideQueryConfig(SQLQueryConfig):
+class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
     """
-    Generates SQL valid for connectors that require distinct key/val pairs for IN statements for building the query string.
-
-    The base SQLQueryConfig uses 1 key as a tuple:
-    SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN (:some-params-in-tuple)
-    which for some connectors gets interpreted as data types or other incorrect syntax.
-
-    This override produces distinct keys for the query_str:
-    SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN (:_in_stmt_generated_0, :_in_stmt_generated_1, :_in_stmt_generated_2)
+    Generates SQL valid for connectors that require the query string to be built without tuples.
     """
 
     # Overrides SQLConnector.format_clause_for_query
@@ -409,9 +402,14 @@ class DistinctKeysQueryStringOverrideQueryConfig(SQLQueryConfig):
         policy: Optional[Policy] = None,
     ) -> Optional[TextClause]:
         """
-        Generate a retrieval query.
-        Generates distinct key names for IN statements,
-        contrary to how the base SQLQueryConfig uses a Tuple in one key name.
+        Generate a retrieval query. Generates distinct key/val pairs for building the query string instead of a tuple.
+
+        E.g. The base SQLQueryConfig uses 1 key as a tuple:
+        SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN (:some-params-in-tuple)
+        which for some connectors gets interpreted as data types (mssql) or quotes (bigquery).
+
+        This override produces distinct keys for the query_str:
+        SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN (:_in_stmt_generated_0, :_in_stmt_generated_1, :_in_stmt_generated_2)
         """
 
         filtered_data = self.node.typed_filtered_values(input_data)
@@ -457,7 +455,9 @@ class DistinctKeysQueryStringOverrideQueryConfig(SQLQueryConfig):
         return None
 
 
-class MicrosoftSQLServerQueryConfig(DistinctKeysQueryStringOverrideQueryConfig):
+class MicrosoftWithoutTuplesSQLServerQueryConfig(
+    QueryStringWithoutTuplesOverrideQueryConfig
+):
     """
     Generates SQL valid for SQLServer.
     """
@@ -520,7 +520,7 @@ class RedshiftQueryConfig(SQLQueryConfig):
         return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
 
 
-class BigQueryQueryConfig(DistinctKeysQueryStringOverrideQueryConfig):
+class BigWithoutTuplesQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     """
     Generates SQL valid for BigQuery
     """

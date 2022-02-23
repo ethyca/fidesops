@@ -40,8 +40,8 @@ from fidesops.service.connectors.query_config import (
     SnowflakeQueryConfig,
     SQLQueryConfig,
     RedshiftQueryConfig,
-    MicrosoftSQLServerQueryConfig,
-    BigQueryQueryConfig,
+    MicrosoftWithoutTuplesSQLServerQueryConfig,
+    BigWithoutTuplesQueryQueryConfig,
 )
 
 logger = logging.getLogger(__name__)
@@ -359,9 +359,9 @@ class BigQueryConnector(SQLConnector):
         )
 
     # Overrides SQLConnector.query_config
-    def query_config(self, node: TraversalNode) -> BigQueryQueryConfig:
+    def query_config(self, node: TraversalNode) -> BigWithoutTuplesQueryQueryConfig:
         """Query wrapper corresponding to the input traversal_node."""
-        return BigQueryQueryConfig(node)
+        return BigWithoutTuplesQueryQueryConfig(node)
 
 
 class SnowflakeConnector(SQLConnector):
@@ -446,7 +446,7 @@ class MicrosoftSQLServerConnector(SQLConnector):
 
     def query_config(self, node: TraversalNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input traversal_node."""
-        return MicrosoftSQLServerQueryConfig(node)
+        return MicrosoftWithoutTuplesSQLServerQueryConfig(node)
 
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
