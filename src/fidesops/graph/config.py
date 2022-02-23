@@ -80,8 +80,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, Set, Dict, Literal, Any, Callable
-
+from typing import List, Literal, Optional, Tuple, Set, Dict, Any, Callable
 from pydantic import BaseModel, validator
 
 from fidesops.common_exceptions import FidesopsException

@@ -11,23 +11,22 @@ from fidesops.graph.config import (
 from fidesops.graph.graph import DatasetGraph, Edge
 from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.models.policy import DataCategory
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 
 from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-
 from fidesops.service.connectors.query_config import (
     SQLQueryConfig,
     MongoQueryConfig,
+    SaaSQueryConfig,
 )
 
 from fidesops.service.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
     HASH,
 )
-from fidesops.util.cache import get_cache
+from fidesops.util.data_category import DataCategory
 
 from ...task.traversal_data import (
     integration_db_graph,
@@ -74,29 +73,23 @@ class TestSQLQueryConfig:
         }
 
         # values exist for all query keys
-        assert (
-            found_query_keys(
-                payment_card_node,
-                {
-                    "id": ["A"],
-                    "customer_id": ["V"],
-                    "ignore_me": ["X"],
-                },
-            )
-            == {"id", "customer_id"}
-        )
+        assert found_query_keys(
+            payment_card_node,
+            {
+                "id": ["A"],
+                "customer_id": ["V"],
+                "ignore_me": ["X"],
+            },
+        ) == {"id", "customer_id"}
         # with no values OR an empty set, these are omitted
-        assert (
-            found_query_keys(
-                payment_card_node,
-                {
-                    "id": ["A"],
-                    "customer_id": [],
-                    "ignore_me": ["X"],
-                },
-            )
-            == {"id"}
-        )
+        assert found_query_keys(
+            payment_card_node,
+            {
+                "id": ["A"],
+                "customer_id": [],
+                "ignore_me": ["X"],
+            },
+        ) == {"id"}
         assert found_query_keys(
             payment_card_node, {"id": ["A"], "ignore_me": ["X"]}
         ) == {"id"}
@@ -104,27 +97,21 @@ class TestSQLQueryConfig:
         assert found_query_keys(payment_card_node, {}) == set()
 
     def test_typed_filtered_values(self):
-        assert (
-            payment_card_node.typed_filtered_values(
-                {
-                    "id": ["A"],
-                    "customer_id": ["V"],
-                    "ignore_me": ["X"],
-                }
-            )
-            == {"id": ["A"], "customer_id": ["V"]}
-        )
+        assert payment_card_node.typed_filtered_values(
+            {
+                "id": ["A"],
+                "customer_id": ["V"],
+                "ignore_me": ["X"],
+            }
+        ) == {"id": ["A"], "customer_id": ["V"]}
 
-        assert (
-            payment_card_node.typed_filtered_values(
-                {
-                    "id": ["A"],
-                    "customer_id": [],
-                    "ignore_me": ["X"],
-                }
-            )
-            == {"id": ["A"]}
-        )
+        assert payment_card_node.typed_filtered_values(
+            {
+                "id": ["A"],
+                "customer_id": [],
+                "ignore_me": ["X"],
+            }
+        ) == {"id": ["A"]}
 
         assert payment_card_node.typed_filtered_values(
             {"id": ["A"], "ignore_me": ["X"]}
@@ -186,10 +173,10 @@ class TestSQLQueryConfig:
         )
 
     def test_update_rule_target_fields(
-        self, erasure_policy, example_datasets, integration_postgres_config
+        self, erasure_policy, example_datasets, connection_config
     ):
         dataset = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
 
@@ -220,10 +207,10 @@ class TestSQLQueryConfig:
         }
 
     def test_generate_update_stmt_one_field(
-        self, erasure_policy, example_datasets, integration_postgres_config
+        self, erasure_policy, example_datasets, connection_config
     ):
         dataset = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
 
@@ -247,10 +234,10 @@ class TestSQLQueryConfig:
         self,
         erasure_policy_string_rewrite_long,
         example_datasets,
-        integration_postgres_config,
+        connection_config,
     ):
         dataset = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
 
@@ -278,10 +265,10 @@ class TestSQLQueryConfig:
         )
 
     def test_generate_update_stmt_multiple_fields_same_rule(
-        self, erasure_policy, example_datasets, integration_postgres_config
+        self, erasure_policy, example_datasets, connection_config
     ):
         dataset = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
 
@@ -332,10 +319,10 @@ class TestSQLQueryConfig:
         clear_cache_secrets(privacy_request.id)
 
     def test_generate_update_stmts_from_multiple_rules(
-        self, erasure_policy_two_rules, example_datasets, integration_postgres_config
+        self, erasure_policy_two_rules, example_datasets, connection_config
     ):
         dataset = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
         row = {
@@ -368,11 +355,9 @@ class TestSQLQueryConfig:
 
 class TestMongoQueryConfig:
     @pytest.fixture(scope="function")
-    def combined_traversal(
-        self, integration_postgres_config, integration_mongodb_config
-    ):
+    def combined_traversal(self, connection_config, integration_mongodb_config):
         mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-            integration_postgres_config, integration_mongodb_config
+            connection_config, integration_mongodb_config
         )
         combined_dataset_graph = DatasetGraph(mongo_dataset, postgres_dataset)
         combined_traversal = Traversal(
@@ -433,12 +418,10 @@ class TestMongoQueryConfig:
         policy,
         example_datasets,
         integration_mongodb_config,
-        integration_postgres_config,
+        connection_config,
     ):
         dataset_postgres = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(
-            dataset_postgres, integration_postgres_config.key
-        )
+        graph = convert_dataset_to_graph(dataset_postgres, connection_config.key)
         dataset_mongo = FidesopsDataset(**example_datasets[1])
         mongo_graph = convert_dataset_to_graph(
             dataset_mongo, integration_mongodb_config.key
@@ -497,12 +480,10 @@ class TestMongoQueryConfig:
         erasure_policy,
         example_datasets,
         integration_mongodb_config,
-        integration_postgres_config,
+        connection_config,
     ):
         dataset_postgres = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(
-            dataset_postgres, integration_postgres_config.key
-        )
+        graph = convert_dataset_to_graph(dataset_postgres, connection_config.key)
         dataset_mongo = FidesopsDataset(**example_datasets[1])
         mongo_graph = convert_dataset_to_graph(
             dataset_mongo, integration_mongodb_config.key
@@ -556,12 +537,10 @@ class TestMongoQueryConfig:
         erasure_policy_two_rules,
         example_datasets,
         integration_mongodb_config,
-        integration_postgres_config,
+        connection_config,
     ):
         dataset_postgres = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(
-            dataset_postgres, integration_postgres_config.key
-        )
+        graph = convert_dataset_to_graph(dataset_postgres, connection_config.key)
         dataset_mongo = FidesopsDataset(**example_datasets[1])
         mongo_graph = convert_dataset_to_graph(
             dataset_mongo, integration_mongodb_config.key
@@ -619,3 +598,52 @@ class TestMongoQueryConfig:
         assert mongo_statement[1]["$set"]["birthday"] == HashMaskingStrategy(
             HashMaskingConfiguration(algorithm="SHA-512")
         ).mask("1988-01-10", privacy_request_id=privacy_request.id)
+
+@pytest.mark.saas_connector
+class TestSaaSQueryConfig:
+    @pytest.fixture(scope="function")
+    def combined_traversal(self, connection_config_saas, dataset_config_saas):
+        merged_graph = dataset_config_saas.get_graph()
+        graph = DatasetGraph(merged_graph)
+        return Traversal(graph, {"email": "customer-1@example.com"})
+
+    def test_generate_query(self, policy, combined_traversal, connection_config_saas):
+        saas_config = connection_config_saas.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+
+        member = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "member")
+        ]
+        conversations = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "conversations")
+        ]
+        messages = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "messages")
+        ]
+
+        # static path with single query param
+        config = SaaSQueryConfig(member, endpoints)
+        prepared_requests = config.generate_query({"query": ["customer-1@example.com"]}, policy)
+        assert prepared_requests[0] == (
+            "/3.0/search-members",
+            {"query": "customer-1@example.com"},
+            {}
+        )
+
+        # static path with multiple query params with default values
+        config = SaaSQueryConfig(conversations, endpoints)
+        prepared_requests = config.generate_query({"placeholder": ["customer-1@example.com"]}, policy)
+        assert prepared_requests[0] == (
+            "/3.0/conversations",
+            {"count": 1000, "placeholder": "customer-1@example.com"},
+            {}
+        )
+
+        # dynamic path with no query params
+        config = SaaSQueryConfig(messages, endpoints)
+        prepared_requests = config.generate_query({"conversation_id": ["abc"]}, policy)
+        assert prepared_requests[0] == (
+            "/3.0/conversations/abc/messages",
+            {},
+            {}
+        )
