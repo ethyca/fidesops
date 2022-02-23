@@ -173,6 +173,13 @@ def validate_secrets(
     request_body: connection_secrets_schemas, connection_config: ConnectionConfig
 ) -> ConnectionConfigSecretsSchema:
     """Validate incoming connection configuration secrets."""
+    logger.info(
+        f"Validating secrets on connection config with key '{connection_config.key}'"
+    )
+
+    connection_type = connection_config.connection_type
+    saas_config = connection_config.get_saas_config()
+    schema = get_connection_secrets_validator(connection_type.value, saas_config)
 
     try:
         connection_type = connection_config.connection_type
