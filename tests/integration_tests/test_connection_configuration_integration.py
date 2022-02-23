@@ -78,6 +78,7 @@ class TestPostgresConnectionPutSecretsAPI:
         db: Session,
         generate_auth_header,
         connection_config,
+        postgres_integration_db,
     ) -> None:
         payload = {
             "host": "postgres_example",
@@ -120,6 +121,7 @@ class TestPostgresConnectionPutSecretsAPI:
         db: Session,
         generate_auth_header,
         connection_config,
+        postgres_integration_db,
     ) -> None:
         payload = {
             "url": "postgresql://postgres:postgres@postgres_example/postgres_example"
@@ -233,6 +235,7 @@ class TestPostgresConnectionTestSecretsAPI:
         db: Session,
         generate_auth_header,
         connection_config,
+        postgres_integration_db,
     ) -> None:
         assert connection_config.last_test_timestamp is None
 
@@ -264,6 +267,7 @@ class TestPostgresConnector:
         db: Session,
         generate_auth_header,
         connection_config,
+        postgres_integration_db,
     ) -> None:
         connector = get_connector(connection_config)
         assert connector.__class__ == PostgreSQLConnector
