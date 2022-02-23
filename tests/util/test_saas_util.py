@@ -1,4 +1,3 @@
-from numpy import empty
 import pytest
 
 from fidesops.graph.config import (
@@ -20,7 +19,6 @@ class TestMergeDatasets:
     of available data from the given SaaS connector. Any references to other datasets
     will be provided by the SaaS config.
     """
-
     def test_add_identity(self):
         """Augment a SaaS dataset collection with an identity reference"""
 
@@ -56,7 +54,6 @@ class TestMergeDatasets:
 
         list_id_field = collection.top_level_field_dict[FieldPath("list_id")]
         assert len(list_id_field.references) == 0
-
         query_field = collection.top_level_field_dict[FieldPath("query")]
         assert len(query_field.references) == 0
         assert query_field.identity == "email"
@@ -159,7 +156,6 @@ class TestMergeDatasets:
         quert_field = collection.top_level_field_dict[FieldPath("query")]
         assert len(quert_field.references) == 0
         assert quert_field.identity == "email"
-
         name_field = collection.top_level_field_dict[FieldPath("name")]
         assert isinstance(name_field, ObjectField)
         assert len(name_field.fields) == 2
