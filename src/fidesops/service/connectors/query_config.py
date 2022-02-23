@@ -390,7 +390,7 @@ class DistinctKeysQueryStringOverrideQueryConfig(SQLQueryConfig):
 
     # Overrides SQLConnector.format_clause_for_query
     def format_clause_for_query(
-            self, string_path: str, operator: str, operand: str
+        self, string_path: str, operator: str, operand: str
     ) -> str:
         """
         Returns clauses in a format they can be added into SQL queries.
@@ -404,9 +404,9 @@ class DistinctKeysQueryStringOverrideQueryConfig(SQLQueryConfig):
 
     # Overrides SQLConnector.generate_query
     def generate_query(  # pylint: disable=R0914
-            self,
-            input_data: Dict[str, List[Any]],
-            policy: Optional[Policy] = None,
+        self,
+        input_data: Dict[str, List[Any]],
+        policy: Optional[Policy] = None,
     ) -> Optional[TextClause]:
         """
         Generate a retrieval query.
@@ -437,9 +437,9 @@ class DistinctKeysQueryStringOverrideQueryConfig(SQLQueryConfig):
                     for val in data_vals:
                         # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
                         query_data_name = (
-                                string_path
-                                + "_in_stmt_generated_"
-                                + str(data_vals.index(val))
+                            string_path
+                            + "_in_stmt_generated_"
+                            + str(data_vals.index(val))
                         )
                         query_data[query_data_name] = val
                         query_data_keys.append(":" + query_data_name)
@@ -540,15 +540,15 @@ class BigQueryQueryConfig(DistinctKeysQueryStringOverrideQueryConfig):
     """
 
     def format_clause_for_query(
-            self, string_path: str, operator: str, operand: str
+        self, string_path: str, operator: str, operand: str
     ) -> str:
         """Returns clauses in a format they can be added into SQL queries."""
         return super().format_clause_for_query(string_path, operator, operand)
 
     def generate_query(  # pylint: disable=R0914
-            self,
-            input_data: Dict[str, List[Any]],
-            policy: Optional[Policy] = None,
+        self,
+        input_data: Dict[str, List[Any]],
+        policy: Optional[Policy] = None,
     ) -> Optional[TextClause]:
         """Generate a retrieval query"""
         return super().generate_query(input_data, policy)
