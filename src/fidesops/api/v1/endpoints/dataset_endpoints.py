@@ -178,7 +178,7 @@ def patch_datasets(
 
 def __validate_saas_dataset(
     connection_config: ConnectionConfig, dataset: FidesopsDataset
-):
+) -> None:
     if connection_config.saas_config is None:
         raise SaaSConfigNotFoundException(
             f"Connection config '{connection_config.key}' must have a "
