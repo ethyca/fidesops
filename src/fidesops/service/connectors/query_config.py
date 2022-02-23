@@ -455,7 +455,7 @@ class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
         return None
 
 
-class MicrosoftWithoutTuplesSQLServerQueryConfig(
+class MicrosoftSQLServerQueryConfig(
     QueryStringWithoutTuplesOverrideQueryConfig
 ):
     """
@@ -520,7 +520,7 @@ class RedshiftQueryConfig(SQLQueryConfig):
         return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
 
 
-class BigWithoutTuplesQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
+class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     """
     Generates SQL valid for BigQuery
     """
