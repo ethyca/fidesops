@@ -455,9 +455,7 @@ class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
         return None
 
 
-class MicrosoftSQLServerQueryConfig(
-    QueryStringWithoutTuplesOverrideQueryConfig
-):
+class MicrosoftSQLServerQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     """
     Generates SQL valid for SQLServer.
     """
