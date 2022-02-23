@@ -148,9 +148,6 @@ def patch_datasets(
             "dataset": dataset.dict(),
         }
         try:
-            import pdb
-
-            pdb.set_trace()
             if connection_config.connection_type == ConnectionType.saas:
                 __validate_saas_dataset(connection_config, dataset)
             # Try to find an existing DatasetConfig matching the given connection & key

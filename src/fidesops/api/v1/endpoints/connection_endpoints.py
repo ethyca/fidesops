@@ -11,7 +11,11 @@ from pydantic import ValidationError, conlist
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND
 
-from fidesops.common_exceptions import ConnectionException, KeyOrNameAlreadyExists
+from fidesops.common_exceptions import (
+    ConnectionException,
+    KeyOrNameAlreadyExists,
+    SaaSConfigNotFoundException,
+)
 from fidesops.schemas.connection_configuration import (
     get_connection_secrets_validator,
     connection_secrets_schemas,
@@ -37,10 +41,11 @@ from fidesops.api.v1.scope_registry import (
 from fidesops.util.logger import NotPii
 from fidesops.util.oauth_util import verify_oauth_client
 from fidesops.api import deps
-from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.api.v1.urn_registry import (
     CONNECTION_BY_KEY,
     CONNECTIONS,
+    SAAS_CONFIG,
     V1_URL_PREFIX,
     CONNECTION_SECRETS,
     CONNECTION_TEST,
@@ -168,21 +173,23 @@ def validate_secrets(
     request_body: connection_secrets_schemas, connection_config: ConnectionConfig
 ) -> ConnectionConfigSecretsSchema:
     """Validate incoming connection configuration secrets."""
-    logger.info(
-        f"Validating secrets on connection config with key '{connection_config.key}'"
-    )
-
-    connection_type = connection_config.connection_type
-    saas_config = connection_config.get_saas_config()
-    schema = get_connection_secrets_validator(connection_type.value, saas_config)
 
     try:
+        connection_type = connection_config.connection_type
+        saas_config = connection_config.get_saas_config()
+        if connection_type == ConnectionType.saas and saas_config is None:
+            raise SaaSConfigNotFoundException(
+                f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
+            )
+        schema = get_connection_secrets_validator(connection_type.value, saas_config)
+        logger.info(
+            f"Validating secrets on connection config with key '{connection_config.key}'"
+        )
         connection_secrets = schema.parse_obj(request_body)
     except ValidationError as e:
-        raise HTTPException(
-            status_code=422,
-            detail=e.errors(),
-        )
+        raise HTTPException(status_code=422, detail=e.errors())
+    except SaaSConfigNotFoundException as e:
+        raise HTTPException(status_code=422, detail=e.message)
     return connection_secrets
 
 
