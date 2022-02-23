@@ -414,7 +414,7 @@ class DistinctKeysQueryStringOverrideQueryConfig(SQLQueryConfig):
         contrary to how the base SQLQueryConfig uses a Tuple in one key name.
         """
 
-        filtered_data = self.typed_filtered_values(input_data)
+        filtered_data = self.node.typed_filtered_values(input_data)
 
         if filtered_data:
             clauses = []
@@ -461,20 +461,6 @@ class MicrosoftSQLServerQueryConfig(DistinctKeysQueryStringOverrideQueryConfig):
     """
     Generates SQL valid for SQLServer.
     """
-
-    def format_clause_for_query(
-        self, string_path: str, operator: str, operand: str
-    ) -> str:
-        """Returns clauses in a format they can be added into SQL queries."""
-        return super().format_clause_for_query(string_path, operator, operand)
-
-    def generate_query(  # pylint: disable=R0914
-        self,
-        input_data: Dict[str, List[Any]],
-        policy: Optional[Policy] = None,
-    ) -> Optional[TextClause]:
-        """Generate a retrieval query"""
-        return super().generate_query(input_data, policy)
 
 
 class SnowflakeQueryConfig(SQLQueryConfig):
@@ -538,20 +524,6 @@ class BigQueryQueryConfig(DistinctKeysQueryStringOverrideQueryConfig):
     """
     Generates SQL valid for BigQuery
     """
-
-    def format_clause_for_query(
-        self, string_path: str, operator: str, operand: str
-    ) -> str:
-        """Returns clauses in a format they can be added into SQL queries."""
-        return super().format_clause_for_query(string_path, operator, operand)
-
-    def generate_query(  # pylint: disable=R0914
-        self,
-        input_data: Dict[str, List[Any]],
-        policy: Optional[Policy] = None,
-    ) -> Optional[TextClause]:
-        """Generate a retrieval query"""
-        return super().generate_query(input_data, policy)
 
 
 MongoStatement = Tuple[Dict[str, Any], Dict[str, Any]]
