@@ -17,6 +17,21 @@ from .application_fixtures import integration_config
 logger = logging.getLogger(__name__)
 
 @pytest.fixture(scope="function")
+def bigquery_connection_config_without_secrets(db: Session) -> Generator:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "my_bigquery_config",
+            "connection_type": ConnectionType.bigquery,
+            "access": AccessLevel.write,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
 def bigquery_connection_config(db: Session) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
