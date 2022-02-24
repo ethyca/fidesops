@@ -3,7 +3,7 @@ import re
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple
 
-from sqlalchemy import text, sql, Table, MetaData
+from sqlalchemy import text, Table, MetaData
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import Executable, Update
 from sqlalchemy.sql.elements import TextClause
