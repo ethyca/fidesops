@@ -933,7 +933,6 @@ def test_create_and_process_access_request_bigquery(
     }
     pr = get_privacy_request_results(db, policy, cache, data)
     results = pr.get_results()
-    import pdb; pdb.set_trace()
     customer_table_key = (
         f"EN_{pr.id}__access_request__bigquery_example_test_dataset:customer"
     )
