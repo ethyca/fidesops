@@ -3,8 +3,9 @@ import re
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple
 
-import sqlalchemy
-from sqlalchemy import text
+from sqlalchemy import text, sql, Table, MetaData
+from sqlalchemy.engine import Engine
+from sqlalchemy.sql import Executable, Update
 from sqlalchemy.sql.elements import TextClause
 
 from fidesops.graph.config import (
@@ -238,7 +239,7 @@ class QueryConfig(Generic[T], ABC):
         returns None"""
 
 
-class SQLQueryConfig(QueryConfig[TextClause]):
+class SQLQueryConfig(QueryConfig[Executable]):
     """Query config that translates parameters into SQL statements."""
 
     def format_fields_for_query(
@@ -523,87 +524,36 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     """
     Generates SQL valid for BigQuery
     """
-    # overrides QueryConfig.update_value_map
-    def update_value_map(
-            self, row: Row, policy: Policy, request: PrivacyRequest
-    ) -> Dict[str, Any]:
-        """Map the relevant fields (as strings) to be updated on the row with their masked values from Policy Rules
 
-        Overrides base class such that we can call the appropriate _generate_masked_value method, local to this class
-
+    def generate_update(
+        self, row: Row, policy: Policy, request: PrivacyRequest, client: Engine
+    ) -> Optional[Update]:
         """
-        rule_to_collection_field_paths: Dict[
-            Rule, List[FieldPath]
-        ] = self.build_rule_target_field_paths(policy)
-
-        value_map: Dict[str, Any] = {}
-        for rule, field_paths in rule_to_collection_field_paths.items():
-            strategy_config = rule.masking_strategy
-            if not strategy_config:
-                continue
-            strategy: MaskingStrategy = get_strategy(
-                strategy_config["strategy"], strategy_config["configuration"]
-            )
-
-            for rule_field_path in field_paths:
-                masking_override: MaskingOverride = [
-                    MaskingOverride(field.data_type_converter, field.length)
-                    for field_path, field in self.field_map().items()
-                    if field_path == rule_field_path
-                ][0]
-                null_masking: bool = strategy_config.get("strategy") == NULL_REWRITE
-                if not self._supported_data_type(
-                        masking_override, null_masking, strategy
-                ):
-                    logger.warning(
-                        f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not "
-                        f"present on the field or not supported for the {strategy_config['strategy']} masking "
-                        f"strategy. Received data type: {masking_override.data_type_converter.name}"
-                    )
-                    continue
-                val: Any = rule_field_path.retrieve_from(row)
-                masked_val = BigQueryQueryConfig._generate_masked_value(
-                    request.id,
-                    strategy,
-                    val,
-                    masking_override,
-                    null_masking,
-                    rule_field_path,
-                )
-                value_map[rule_field_path.string_path] = masked_val
-        return value_map
-
-    # overrides QueryConfig._generate_masked_value
-    @staticmethod
-    def _generate_masked_value(  # pylint: disable=R0913
-            request_id: str,
-            strategy: MaskingStrategy,
-            val: Any,
-            masking_override: MaskingOverride,
-            null_masking: bool,
-            field_path: FieldPath,
-    ) -> T:
+        Using TextClause to insert 'None' values into BigQuery throws an exception, so we use update clause instead
         """
-        Overrides base class so that for null masking strategy, we overwrite masked value (None) with null.
-        Without this override, BigQuery interprets None as literal, resulting in the following exception:
-        "Encountered parameter name with  value None of unexpected type."
-        """
-        masked_val = strategy.mask(val, request_id)
-        logger.debug(
-            f"Generated the following masked val for field {field_path.string_path}: {masked_val}"
+        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
+        non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
+            {
+                fpath.string_path: fld.cast(row[fpath.string_path])
+                for fpath, fld in self.primary_key_field_paths.items()
+                if fpath.string_path in row
+            }
         )
-        if null_masking:
-            return sqlalchemy.null()
-        if masking_override.length:
+
+        valid = len(non_empty_primary_keys) > 0
+        if not valid:
             logger.warning(
-                f"Because a length has been specified for field {field_path.string_path}, we will truncate length "
-                f"of masked value to match, regardless of masking strategy"
+                f"There is not enough data to generate a valid update statement for {self.node.address}"
             )
-            #  for strategies other than null masking we assume that masked data type is the same as specified data type
-            masked_val = masking_override.data_type_converter.truncate(
-                masking_override.length, masked_val
-            )
-        return masked_val
+            return None
+
+        table = Table(
+            self.node.address.collection, MetaData(bind=client), autoload=True
+        )
+        pk_clauses = [
+            getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
+        ]
+        return table.update().where(*pk_clauses).values(**update_value_map)
 
 
 MongoStatement = Tuple[Dict[str, Any], Dict[str, Any]]

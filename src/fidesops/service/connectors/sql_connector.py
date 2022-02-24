@@ -12,6 +12,7 @@ from sqlalchemy.engine import (
     Connection,
 )
 from sqlalchemy.exc import OperationalError, InternalError
+from sqlalchemy.sql import Executable
 from sqlalchemy.sql.elements import TextClause
 from snowflake.sqlalchemy import URL as Snowflake_URL
 
@@ -362,6 +363,27 @@ class BigQueryConnector(SQLConnector):
     def query_config(self, node: TraversalNode) -> BigQueryQueryConfig:
         """Query wrapper corresponding to the input traversal_node."""
         return BigQueryQueryConfig(node)
+
+    def mask_data(
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        request: PrivacyRequest,
+        rows: List[Row],
+    ) -> int:
+        """Execute a masking request. Returns the number of records masked"""
+        query_config = self.query_config(node)
+        update_ct = 0
+        client = self.client()
+        for row in rows:
+            update_stmt: Optional[Executable] = query_config.generate_update(
+                row, policy, request, client
+            )
+            if update_stmt is not None:
+                with client.connect() as connection:
+                    results: LegacyCursorResult = connection.execute(update_stmt)
+                    update_ct = update_ct + results.rowcount
+        return update_ct
 
 
 class SnowflakeConnector(SQLConnector):
