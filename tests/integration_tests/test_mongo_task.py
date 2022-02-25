@@ -642,6 +642,7 @@ def test_return_all_elements_config_access_request(
     policy,
     integration_mongodb_config,
     integration_postgres_config,
+    integration_mongodb_connector
 ):
     """Annotating array entrypoint field with return_all_elements=true means both the entire array is returned from the
     queried data and used to locate data in other collections
@@ -690,7 +691,7 @@ def test_return_all_elements_config_erasure(
     postgres_inserts,
     integration_mongodb_config,
     integration_postgres_config,
-    mongo_example_db,
+    integration_mongodb_connector,
 ):
     """Includes examples of mongo nested and array erasures"""
     policy = erasure_policy("A", "B")
@@ -738,7 +739,7 @@ def test_return_all_elements_config_erasure(
     assert x["mongo_test:internal_customer_profile"] == 1
     assert x["mongo_test:rewards"] == 2
 
-    mongo_db = mongo_example_db["mongo_test"]
+    mongo_db = integration_mongodb_connector["mongo_test"]
 
     reward_one = mongo_db.rewards.find_one({"id": "rew_1"})
     # All phone numbers masked because return_all_elements is True
