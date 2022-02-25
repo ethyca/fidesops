@@ -5,9 +5,9 @@ import pytest
 
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
-def test_mongo_example_data(mongo_example_db):
+def test_mongo_example_data(integration_mongodb_connector):
     """Confirm that the example database is populated with simulated data"""
-    db = mongo_example_db["mongo_test"]
+    db = integration_mongodb_connector["mongo_test"]
     collection_names = set(db.collection_names())
     assert {
         "payment_card",

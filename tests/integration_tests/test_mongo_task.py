@@ -43,7 +43,7 @@ from ..task.traversal_data import (
 )
 
 dask.config.set(scheduler="processes")
-policy = Policy()
+empty_policy = Policy()
 
 
 @pytest.mark.integration
@@ -53,7 +53,7 @@ def test_combined_erasure_task(
     postgres_inserts,
     integration_mongodb_config,
     integration_postgres_config,
-    mongo_example_db,
+    integration_mongodb_connector,
 ):
     """Includes examples of mongo nested and array erasures"""
     policy = erasure_policy("A", "B")
@@ -191,7 +191,7 @@ def test_combined_erasure_task(
     ] == {"internal_id": "cust_014"}
 
     # Only the chat name in the matched array elements are masked (reference field)
-    mongo_db = mongo_example_db["mongo_test"]
+    mongo_db = integration_mongodb_connector["mongo_test"]
     thread_one = mongo_db.conversations.find_one({"id": "thread_1"})
     thread_two = mongo_db.conversations.find_one({"id": "thread_2"})
     assert thread_one["thread"] == [
@@ -301,7 +301,7 @@ def test_dask_mongo_task(integration_mongodb_config: ConnectionConfig) -> None:
 
     v = graph_task.run_access_request(
         privacy_request,
-        policy,
+        empty_policy,
         integration_db_graph("mongo_test", integration_mongodb_config.key),
         [integration_mongodb_config],
         {"email": "customer-1@example.com"},
@@ -593,7 +593,7 @@ def test_object_querying_mongo(
 
 @pytest.mark.integration
 def test_get_cached_data_for_erasures(
-    integration_postgres_config, integration_mongodb_config
+    integration_postgres_config, integration_mongodb_config, policy
 ) -> None:
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
 

@@ -918,16 +918,3 @@ def sample_data():
             ["1", "a", [["z", "a", "a"]]],
         ],  # Lists elems are different types, not officially supported
     }
-
-
-@pytest.fixture(scope="session")
-def mongo_example_db() -> Generator:
-    """Return a connection to the MongoDB example DB"""
-    uri = "mongodb://mongo_user:mongo_pass@mongodb_example/mongo_test"
-
-    client = MongoClient(uri, serverSelectionTimeoutMS=5000)
-    logger.debug(f"Connecting to MongoDB example database at: {uri}")
-    # Setup above...
-    yield client
-    # Teardown below...
-    client.close()
