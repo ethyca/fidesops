@@ -95,10 +95,13 @@ def refine_target_path(
     try:
         current_level = target_path[0]
         current_elem = row[current_level]
-    except (IndexError, TypeError, KeyError):
-        # KeyError - FieldPath not found, expected when data doesn't exist in collection
-        # IndexError - No FieldPath
-        # TypeError - Bad FieldPath, expected when we're trying to select a path we've already eliminated
+    except KeyError:  # FieldPath not found in record, this is expected to happen when data doesn't exist in collection
+        return []
+    except (
+        IndexError,
+        TypeError,
+    ):  # No/invalid field path. Expected when the path has been eliminated.
+        logger.warning(f"Could not locate target path {target_path} on row")
         return []
 
     if isinstance(current_elem, dict):
