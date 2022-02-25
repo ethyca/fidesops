@@ -9,7 +9,7 @@ from typing import (
     List,
 )
 
-DOCKER_WAIT = 15
+DOCKER_WAIT = 5
 DOCKERFILE_DATASTORES = [
     "mssql",
     "postgres",
@@ -64,7 +64,8 @@ def run_infrastructure(
     _run_cmd_or_err(f"docker-compose {path} up -d")
     _run_cmd_or_err(f'echo "sleeping for: {DOCKER_WAIT} while infrastructure loads"')
 
-    _run_cmd_or_err(f"sleep {DOCKER_WAIT}")
+    wait = min(DOCKER_WAIT * len(datastores), 15)
+    _run_cmd_or_err(f"sleep {wait}")
 
     seed_initial_data(
         datastores,

@@ -6,7 +6,7 @@ from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple
 from sqlalchemy import text, Table, MetaData
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import Executable, Update
-from sqlalchemy.sql.elements import TextClause
+from sqlalchemy.sql.elements import TextClause, ColumnElement
 
 from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -529,7 +529,8 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         self, row: Row, policy: Policy, request: PrivacyRequest, client: Engine
     ) -> Optional[Update]:
         """
-        Using TextClause to insert 'None' values into BigQuery throws an exception, so we use update clause instead
+        Using TextClause to insert 'None' values into BigQuery throws an exception, so we use update clause instead.
+        Returns a SQLAlchemy Update object. Does not actually execute the update object.
         """
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
         non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
@@ -550,7 +551,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         table = Table(
             self.node.address.collection, MetaData(bind=client), autoload=True
         )
-        pk_clauses = [
+        pk_clauses: List[ColumnElement] = [
             getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
         ]
         return table.update().where(*pk_clauses).values(**update_value_map)
