@@ -106,13 +106,13 @@ def _remove_paths_from_row(
                 f"_remove_paths_from_row call: Path {path} in row {row} not found."
             )
             continue
-        # Loop through array in reverse to delete indices
-        for i, _ in reversed(list(enumerate(matched_array))):
-            if i not in preserve_index_list:
-                if delete_elements:  # We delete the element (for access requests)
-                    matched_array.pop(i)
-                else:  # We replace the element (for erasures)
-                    matched_array[i] = FIDESOPS_DO_NOT_MASK_INDEX
+        # Loop through array in *reverse* to delete/replace indices
+        for index, _ in reversed(list(enumerate(matched_array))):
+            if index not in preserve_index_list:  # List of indices that we want to keep
+                if delete_elements:  # We delete the element at the given index
+                    matched_array.pop(index)
+                else:  # We replace the element at the given index
+                    matched_array[index] = FIDESOPS_DO_NOT_MASK_INDEX
 
     return row
 
