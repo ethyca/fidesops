@@ -1,12 +1,13 @@
+import logging
 from typing import Any, Optional, Dict
 
-from fidesops.common_exceptions import PostProcessingException
 from fidesops.schemas.saas.strategy_configuration import FilterPostProcessorConfiguration, StrategyConfiguration, \
     IdentityParamRef
-from fidesops.service.connectors.post_processor_strategy.post_processory_strategy import PostProcessorStrategy
+from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import PostProcessorStrategy
 
 STRATEGY_NAME = "filter"
 
+logger = logging.getLogger(__name__)
 
 class FilterPostProcessorStrategy(PostProcessorStrategy):
     """
@@ -45,9 +46,19 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         """
         :param data: A list or an object. Preserves format of data.
         :param identity_data: Dict of cached identity data
-        :return:
+        :return: filtered list/object or None
         """
-        filter_value = identity_data[self.value.identity] if isinstance(self.value, IdentityParamRef) else self.value
+        if not data:
+            return None
+        filter_value = self.value
+        if isinstance(self.value, IdentityParamRef):
+            if identity_data is None or identity_data.get(self.value.identity, None) is None:
+                logger.warning(
+                    f"Could not retrieve identity reference {self.value.identity} due to missing identity data for the following post processing strategy: {self.get_strategy_name()}"
+                )
+                return None
+            filter_value = identity_data.get(self.value.identity)
+
         if isinstance(data, list):
             return [item for item in data if item[self.field] == filter_value]
         return data if data[self.field] == filter_value else None

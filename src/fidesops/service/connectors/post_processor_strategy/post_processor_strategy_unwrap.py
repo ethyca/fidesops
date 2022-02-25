@@ -1,16 +1,18 @@
+import logging
 from typing import Any, Optional, Dict
 
-from fidesops.common_exceptions import FidesopsException
 from fidesops.schemas.saas.strategy_configuration import UnwrapPostProcessorConfiguration, StrategyConfiguration
-from fidesops.service.connectors.post_processor_strategy.post_processory_strategy import PostProcessorStrategy
+from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import PostProcessorStrategy
 
 
 STRATEGY_NAME = "unwrap"
 
+logger = logging.getLogger(__name__)
+
 
 class UnwrapPostProcessorStrategy(PostProcessorStrategy):
     """
-    Given a path to an object/list, returns the object/list
+    Given a path to a dict/list, returns the dict/list
     E.g.
     data = {
         exact_matches: {
@@ -35,19 +37,24 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
 
     def process(self, data: Any, identity_data: Dict[str, Any] = None) -> Optional[Any]:
         """
-        :param data: A list or an object. Preserves format of data.
+        :param data: A list or a dict
         :param identity_data: Dict of cached identity data
-        :return:
+        :return: unwrapped list or dict
         """
+        if not isinstance(data, dict) and not isinstance(data, list):
+            logger.warning(
+                f"Data is either None or not in expected format. Skipping processing for the following post processing strategy: {self.get_strategy_name()}."
+            )
+            return data
         path_items = self.data_path.split(".")
         unwrapped = data
         for item in path_items:
-            try:
-                unwrapped = unwrapped[item]
-            except Exception:
-                raise FidesopsException(
-                    f"'{item}' could not be found on {unwrapped}"
+            unwrapped = unwrapped.get(item, None)
+            if unwrapped is None:
+                logger.warning(
+                    f"{item} could not be found on {unwrapped} for the following post processing strategy: {self.get_strategy_name()}"
                 )
+                return None
         return unwrapped
 
     @staticmethod

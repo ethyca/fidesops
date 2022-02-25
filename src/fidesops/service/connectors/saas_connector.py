@@ -10,8 +10,8 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.common_exceptions import ConnectionException, PostProcessingException
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.saas_config import ClientConfig, Strategy
-from fidesops.service.connectors.post_processor_strategy.post_processor_factory import get_strategy
-from fidesops.service.connectors.post_processor_strategy.post_processory_strategy import PostProcessorStrategy
+from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_factory import get_strategy
+from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import PostProcessorStrategy
 from fidesops.service.connectors.query_config import SaaSQueryConfig, SaaSRequestParams
 
 logger = logging.getLogger(__name__)
@@ -126,6 +126,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             response = self.client().get(prepared_request)
 
             # mailchimp needs unwrap then filter, in order
+            if read_request["postprocessors"] is None:
+                rows.extend(response.json())
             for post_processor in read_request["postprocessors"]:
                 strategy: PostProcessorStrategy = get_strategy(
                     post_processor.strategy_name, post_processor.configuration

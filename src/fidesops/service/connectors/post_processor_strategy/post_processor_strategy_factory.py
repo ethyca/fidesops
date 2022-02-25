@@ -7,7 +7,7 @@ from fidesops.service.connectors.post_processor_strategy.post_processor_strategy
     FilterPostProcessorStrategy
 from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_unwrap import \
     UnwrapPostProcessorStrategy
-from fidesops.service.connectors.post_processor_strategy.post_processory_strategy import PostProcessorStrategy
+from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import PostProcessorStrategy
 
 
 class SupportedPostProcessorStrategies(Enum):
