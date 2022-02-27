@@ -60,9 +60,9 @@ class TestValidateSaaSConfig:
         generate_auth_header,
     ) -> None:
         auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
-        invalid_dataset = _reject_key(example_saas_configs["mailchimp"], "fides_key")
+        invalid_config = _reject_key(example_saas_configs["mailchimp"], "fides_key")
         response = api_client.put(
-            validate_saas_config_url, headers=auth_header, json=invalid_dataset
+            validate_saas_config_url, headers=auth_header, json=invalid_config
         )
         assert response.status_code == 422
 
@@ -77,14 +77,41 @@ class TestValidateSaaSConfig:
         generate_auth_header,
     ) -> None:
         auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
-        invalid_dataset = _reject_key(example_saas_configs["mailchimp"], "endpoints")
+        invalid_config = _reject_key(example_saas_configs["mailchimp"], "endpoints")
         response = api_client.put(
-            validate_saas_config_url, headers=auth_header, json=invalid_dataset
+            validate_saas_config_url, headers=auth_header, json=invalid_config
         )
         assert response.status_code == 422
 
         details = json.loads(response.text)["detail"]
         assert ["body", "endpoints"] in [e["loc"] for e in details]
+
+    def test_put_validate_saas_config_reference_and_identity(
+        self,
+        example_saas_configs,
+        validate_saas_config_url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
+        saas_config = example_saas_configs["mailchimp"]
+        request_params = saas_config["endpoints"][0]["requests"]["read"][
+            "request_params"
+        ][0]
+        request_params["identity"] = "email"
+        request_params["references"] = [
+            {
+                "dataset": "postgres_example_test_dataset",
+                "field": "another.field",
+                "direction": "from",
+            }
+        ]
+        response = api_client.put(
+            validate_saas_config_url, headers=auth_header, json=saas_config
+        )
+        assert response.status_code == 422
+        details = json.loads(response.text)["detail"]
+        assert details[0]["msg"] == "Can only have one of 'reference' or 'identity' per request_param, not both"
 
 
 @pytest.mark.saas_connector

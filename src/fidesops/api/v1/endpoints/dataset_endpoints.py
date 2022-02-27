@@ -1,18 +1,18 @@
 import logging
-from typing import Dict, List
+from typing import List
 
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fidesops.graph.config import Dataset
 from pydantic import conlist
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_404_NOT_FOUND
+from fidesops.util.saas_util import merge_datasets
 from fidesops.common_exceptions import SaaSConfigNotFoundException, ValidationError
 
 from fidesops.common_exceptions import TraversalError
-from starlette.status import HTTP_404_NOT_FOUND
 
 from fidesops.api import deps
 from fidesops.api.v1.scope_registry import (
@@ -92,9 +92,19 @@ def validate_dataset(
     try:
         # Attempt to generate a traversal for this dataset by providing an empty
         # dictionary of all unique identity keys
-        graph = DatasetGraph(convert_dataset_to_graph(dataset, connection_config.key))
-        unique_identities = set(graph.identity_keys.values())
-        Traversal(graph, {k: None for k in unique_identities})
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
+
+        # Datasets for SaaS connections need to be merged with a SaaS config to
+        # be able to generate a valid traversal
+        if connection_config.connection_type == ConnectionType.saas:
+            __validate_saas_dataset(connection_config, dataset)
+            graph = merge_datasets(
+                graph,
+                connection_config.get_saas_config().get_graph(),
+            )
+        complete_graph = DatasetGraph(graph)
+        unique_identities = set(complete_graph.identity_keys.values())
+        Traversal(complete_graph, {k: None for k in unique_identities})
     except (TraversalError, ValidationError) as err:
         logger.warning(
             f"Traversal validation failed for dataset '{dataset.fides_key}': {err}"
@@ -141,6 +151,13 @@ def patch_datasets(
     created_or_updated: List[FidesopsDataset] = []
     failed: List[BulkUpdateFailed] = []
     logger.info(f"Starting bulk upsert for {len(datasets)} datasets")
+
+    # warn if there are duplicate fides_keys within the datasets
+    # valid datasets with the same fides_key will override each other
+    key_list = [dataset.fides_key for dataset in datasets]
+    if len(key_list) != len(set(key_list)):
+        logger.warning("Datasets with duplicate fides_keys detected, may result in unintented behavior.")
+
     for dataset in datasets:
         data = {
             "connection_config_id": connection_config.id,
@@ -165,7 +182,7 @@ def patch_datasets(
             logger.warning(f"Create/update failed for dataset '{data['fides_key']}'.")
             failed.append(
                 BulkUpdateFailed(
-                    message=f"Dataset create/update failed.",
+                    message="Dataset create/update failed.",
                     data=data,
                 )
             )
@@ -182,18 +199,25 @@ def __validate_saas_dataset(
     if connection_config.saas_config is None:
         raise SaaSConfigNotFoundException(
             f"Connection config '{connection_config.key}' must have a "
-            "SaaS config before adding a dataset"
+            "SaaS config before validating or adding a dataset"
         )
-    else:
-        for collection in dataset.collections:
-            for field in collection.fields:
-                graph_field = to_graph_field(field)
-                if graph_field.references or graph_field.identity:
-                    raise ValidationError(
-                        "A dataset for a ConnectionConfig type of saas is not "
-                        "allowed to have references or identities. Please add "
-                        "them to the SaaS config."
-                    )
+
+    fides_key = connection_config.saas_config["fides_key"]
+    if fides_key != dataset.fides_key:
+        raise ValidationError(
+            f"The fides_key '{dataset.fides_key}' of the dataset "
+            f"does not match the fides_key '{fides_key}' "
+            "of the connection config"
+        )
+    for collection in dataset.collections:
+        for field in collection.fields:
+            graph_field = to_graph_field(field)
+            if graph_field.references or graph_field.identity:
+                raise ValidationError(
+                    "A dataset for a ConnectionConfig type of 'saas' is not "
+                    "allowed to have references or identities. Please add "
+                    "them to the SaaS config."
+                )
 
 
 @router.get(

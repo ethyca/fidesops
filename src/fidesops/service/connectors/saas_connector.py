@@ -4,11 +4,10 @@ from requests import Session, Request, PreparedRequest, Response
 
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.graph.traversal import Row, TraversalNode
-from fidesops.models.connectionconfig import ConnectionTestStatus
+from fidesops.models.connectionconfig import ConnectionTestStatus, ConnectionConfig
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.common_exceptions import ConnectionException
-from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.common_exceptions import ClientUnsuccessfulException, ConnectionException
 from fidesops.schemas.saas.saas_config import ClientConfig, Strategy
 from fidesops.service.connectors.query_config import SaaSQueryConfig, SaaSRequestParams
 
@@ -33,7 +32,6 @@ class AuthenticatedClient:
         """Uses the incoming strategy to add the appropriate authentication method to the base request"""
         strategy = authentication.strategy
         configuration = authentication.configuration
-        logger.info(f"Authenticating client using {strategy}")
         if strategy == "basic_authentication":
             username_key = configuration["username"]["connector_param"]
             password_key = configuration["password"]["connector_param"]
@@ -76,14 +74,19 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
+
+        test_request_path = self.saas_config.test_request.path
+        prepared_request: SaaSRequestParams = (test_request_path, {}, {})
+
         try:
-            test_request_path = self.saas_config.test_request.path
-            prepared_request: SaaSRequestParams = (test_request_path, {}, {})
-            self.client().get(prepared_request)
+            response = self.client().get(prepared_request)
         except Exception:
             raise ConnectionException(
-                f"Operational Error connecting to {self.configuration.key}."
+                f"Operational Error connecting to '{self.configuration.key}'."
             )
+
+        if not response.ok:
+            raise ClientUnsuccessfulException(status_code=response.status_code)
 
         return ConnectionTestStatus.succeeded
 

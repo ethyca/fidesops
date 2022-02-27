@@ -6,15 +6,15 @@ from fastapi.params import Security
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
-from fidesops.schemas.shared_schemas import FidesOpsKey
 from pydantic import ValidationError, conlist
-from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND
+from sqlalchemy.orm import Session
+from fidesops.schemas.shared_schemas import FidesOpsKey
 
 from fidesops.common_exceptions import (
+    ClientUnsuccessfulException,
     ConnectionException,
     KeyOrNameAlreadyExists,
-    SaaSConfigNotFoundException,
 )
 from fidesops.schemas.connection_configuration import (
     get_connection_secrets_validator,
@@ -144,7 +144,7 @@ def patch_connections(
             )
             failed.append(
                 BulkUpdateFailed(
-                    message=f"This connection configuration could not be added.",
+                    message="This connection configuration could not be added.",
                     data=orig_data,
                 )
             )
@@ -173,21 +173,17 @@ def validate_secrets(
     request_body: connection_secrets_schemas, connection_config: ConnectionConfig
 ) -> ConnectionConfigSecretsSchema:
     """Validate incoming connection configuration secrets."""
-    logger.info(
-        f"Validating secrets on connection config with key '{connection_config.key}'"
-    )
 
     connection_type = connection_config.connection_type
     saas_config = connection_config.get_saas_config()
-    schema = get_connection_secrets_validator(connection_type.value, saas_config)
+    if connection_type == ConnectionType.saas and saas_config is None:
+        raise HTTPException(
+            status_code=422,
+            detail="A SaaS config to validate the secrets is unavailable for this "
+            f"connection config, please add one via {SAAS_CONFIG}",
+        )
 
     try:
-        connection_type = connection_config.connection_type
-        saas_config = connection_config.get_saas_config()
-        if connection_type == ConnectionType.saas and saas_config is None:
-            raise SaaSConfigNotFoundException(
-                f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
-            )
         schema = get_connection_secrets_validator(connection_type.value, saas_config)
         logger.info(
             f"Validating secrets on connection config with key '{connection_config.key}'"
@@ -195,20 +191,19 @@ def validate_secrets(
         connection_secrets = schema.parse_obj(request_body)
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=e.errors())
-    except SaaSConfigNotFoundException as e:
-        raise HTTPException(status_code=422, detail=e.message)
+
     return connection_secrets
 
 
 def connection_status(
     connection_config: ConnectionConfig, msg: str, db: Session = Depends(deps.get_db)
 ) -> TestStatusMessage:
-    """Connect, verify with a trivial query, and report the status."""
+    """Connect, verify with a trivial query or API request, and report the status."""
 
     connector = get_connector(connection_config)
     try:
         status: ConnectionTestStatus = connector.test_connection()
-    except ConnectionException as exc:
+    except (ConnectionException, ClientUnsuccessfulException) as exc:
         logger.warning(
             "Connection test failed on %s: %s",
             NotPii(connection_config.key),

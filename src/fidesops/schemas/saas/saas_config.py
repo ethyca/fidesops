@@ -1,8 +1,7 @@
 from typing import Any, Dict, List, Literal, Optional, Union
-from fidesops.schemas.api import BulkResponse
+from pydantic import BaseModel, validator
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.dataset import FidesopsDatasetReference
-from pydantic import BaseModel
 from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
@@ -29,6 +28,19 @@ class RequestParam(BaseModel):
     identity: Optional[str]
     data_type: Optional[str]
     references: Optional[List[FidesopsDatasetReference]]
+
+    @validator("references")
+    def check_references_or_identity(
+        cls,
+        references: Optional[List[FidesopsDatasetReference]],
+        values: Dict[str, str],
+    ) -> Optional[List[FidesopsDatasetReference]]:
+        """Validates that each request_param only has an identity or references, not both"""
+        if values["identity"] is not None and references is not None:
+            raise ValueError(
+                "Can only have one of 'reference' or 'identity' per request_param, not both"
+            )
+        return references
 
 
 class Strategy(BaseModel):
