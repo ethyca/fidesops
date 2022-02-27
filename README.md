@@ -164,7 +164,7 @@ For more information on getting started with Fidesops, how to configure and set 
 
 Join the conversation on:
 
-- [Slack](https://join.slack.com/t/fidescommunity/shared_invite/zt-vlgpv1r9-gcYrLpQyNoRf9dJu~kqE8w)
+- [Slack](https://fid.es/join-slack)
 - [Twitter](https://twitter.com/ethyca)
 - [Discussions](https://github.com/ethyca/fidesops/discussions)
 
