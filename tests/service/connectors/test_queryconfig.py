@@ -632,7 +632,7 @@ class TestSaaSQueryConfig:
             "GET",
             "/3.0/search-members",
             {"query": "customer-1@example.com"},
-            {},
+            None,
         )
 
         # static path with multiple query params with default values
@@ -644,7 +644,7 @@ class TestSaaSQueryConfig:
             "GET",
             "/3.0/conversations",
             {"count": 1000, "placeholder": "customer-1@example.com"},
-            {},
+            None,
         )
 
         # dynamic path with no query params
@@ -654,7 +654,7 @@ class TestSaaSQueryConfig:
             "GET",
             "/3.0/conversations/abc/messages",
             {},
-            {},
+            None,
         )
 
     def test_generate_update_stmt(
