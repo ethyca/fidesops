@@ -525,6 +525,15 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     Generates SQL valid for BigQuery
     """
 
+    def get_formatted_query_string(
+            self,
+            field_list: str,
+            clauses: List[str],
+    ) -> str:
+        """Returns a query string with backtick formatting for tables that have the same names as
+        BigQuery reserved words."""
+        return f'SELECT {field_list} FROM `{self.node.node.collection.name}` WHERE {" OR ".join(clauses)}'
+
     def generate_update(
         self, row: Row, policy: Policy, request: PrivacyRequest, client: Engine
     ) -> Optional[Update]:
