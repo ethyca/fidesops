@@ -451,7 +451,7 @@ def build_affected_field_logs(
     node: Node, policy: Policy, action_type: ActionType
 ) -> List[Dict[str, Any]]:
     """For a given node (collection), policy, and action_type (access or erasure) format all of the fields that
-    were potentially affected to be stored in the ExecutionLogs.
+    were potentially touched to be stored in the ExecutionLogs for troubleshooting.
 
     :Example:
     [{

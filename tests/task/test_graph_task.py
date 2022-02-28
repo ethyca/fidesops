@@ -9,7 +9,7 @@ from fidesops.graph.config import (
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.models.policy import Policy, ActionType
+from fidesops.models.policy import Policy, ActionType, RuleTarget, Rule
 from fidesops.task.graph_task import (
     collect_queries,
     TaskResources,
@@ -378,5 +378,40 @@ class TestBuildAffectedFieldLogs:
             policy,
             action_type=ActionType.access,
         )
-        # No matching data categories specified on policy, so no fields affected
+        # We only have data categories specified on an erasure policy, and we're looking for access action type
         assert formatted_for_logs == []
+
+    def test_multiple_rules_targeting_same_field(self, node_fixture):
+        policy = erasure_policy("A")
+
+        policy.rules = [
+            Rule(
+                action_type=ActionType.erasure,
+                targets=[RuleTarget(data_category="A")],
+                masking_strategy={
+                    "strategy": "null_rewrite",
+                    "configuration": {},
+                },
+            ),
+            Rule(
+                action_type=ActionType.erasure,
+                targets=[RuleTarget(data_category="A")],
+                masking_strategy={
+                    "strategy": "null_rewrite",
+                    "configuration": {},
+                },
+            ),
+        ]
+
+        formatted_for_logs = build_affected_field_logs(
+            node_fixture.node, policy, action_type=ActionType.erasure
+        )
+
+        # No duplication of the matching customer_id field, even though multiple rules targeted data category A
+        assert formatted_for_logs == [
+            {
+                "path": "postgres:Order:customer_id",
+                "field_name": "customer_id",
+                "data_categories": ["A"],
+            }
+        ]
