@@ -8,7 +8,7 @@ from fidesops.graph.config import (
     ObjectField,
     ScalarField,
 )
-from fidesops.util.saas_util import paths_to_json, merge_datasets
+from fidesops.util.saas_util import paths_to_dict, merge_datasets
 
 
 class TestMergeDatasets:
@@ -19,6 +19,7 @@ class TestMergeDatasets:
     of available data from the given SaaS connector. Any references to other datasets
     will be provided by the SaaS config.
     """
+
     def test_add_identity(self):
         """Augment a SaaS dataset collection with an identity reference"""
 
@@ -247,8 +248,30 @@ class TestMergeDatasets:
         assert name_field.identity == "email"
 
 
-class TestJsonUtils:
-    def test_dot_to_json(self):
-        dot_map = {"object.first": "one", "object.second": "two"}
-        result = paths_to_json(dot_map)
-        assert result == {"object": {"first": "one", "second": "two"}}
+class TestDictUtils:
+    def test_paths_to_dict_noop(self):
+        dot_map = {"name": "first"}
+        result = paths_to_dict(dot_map)
+        assert result == dot_map
+
+    def test_paths_to_dict_same_level(self):
+        dot_map = {"merge_fields.FNAME": "MASKED", "merge_fields.LNAME": "MASKED"}
+        result = paths_to_dict(dot_map)
+        assert result == {"merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"}}
+
+    def test_paths_to_dict_mixed_levels(self):
+        dot_map = {
+            "list_id": "123",
+            "merge_fields.FNAME": "MASKED",
+            "merge_fields.LNAME": "MASKED",
+        }
+        result = paths_to_dict(dot_map)
+        assert result == {
+            "list_id": "123",
+            "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
+        }
+
+    def test_paths_to_dict_long_path(self):
+        dot_map = {"a.b.c.d.e.f.g": "tada"}
+        result = paths_to_dict(dot_map)
+        assert result == {"a": {"b": {"c": {"d": {"e": {"f": {"g": "tada"}}}}}}}

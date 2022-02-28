@@ -1,6 +1,8 @@
 import logging
 from typing import Any, Dict, List, Optional
+import pydash
 from requests import Session, Request, PreparedRequest, Response
+
 
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.graph.traversal import Row, TraversalNode
@@ -11,7 +13,6 @@ from fidesops.common_exceptions import ConnectionException
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.saas_config import ClientConfig, Strategy
 from fidesops.service.connectors.query_config import SaaSQueryConfig, SaaSRequestParams
-from fidesops.util.saas_util import get_value_by_path
 
 logger = logging.getLogger(__name__)
 
@@ -51,10 +52,10 @@ class AuthenticatedClient:
     ) -> PreparedRequest:
         """Returns an authenticated request based on the client config and incoming path, query, and body params"""
         (method, path, params, data) = request_params
-        req = Request(method=method, url=f"{self.uri}{path}", params=params, data=data).prepare()
-        return self.add_authentication(
-            req, self.client_config.authentication
-        )
+        req = Request(
+            method=method, url=f"{self.uri}{path}", params=params, data=data
+        ).prepare()
+        return self.add_authentication(req, self.client_config.authentication)
 
     def send(self, request_params: SaaSRequestParams) -> Response:
         """Builds and executes an authenticated GET request"""
@@ -80,7 +81,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """Generates and executes a test connection based on the SaaS config"""
         try:
             test_request_path = self.saas_config.test_request.path
-            prepared_request: SaaSRequestParams = (test_request_path, {}, {})
+            prepared_request: SaaSRequestParams = ("GET", test_request_path, {}, {})
             self.client().send(prepared_request)
         except Exception:
             raise ConnectionException(
@@ -118,9 +119,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
             # process response
             if read_request.data_path:
-                processed_response = get_value_by_path(
-                    response.json(), read_request.data_path
-                )
+                processed_response = pydash.get(response.json(), read_request.data_path)
             else:
                 # by default, we expect the collection_name to be one of the root fields in the response
                 processed_response = response.json()[collection_name]
@@ -137,14 +136,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated"""
         query_config = self.query_config(node)
-        prepared_requests = [query_config.generate_update_stmt(row, policy, request) for row in rows]
+        prepared_requests = [
+            query_config.generate_update_stmt(row, policy, request) for row in rows
+        ]
         rows_updated = 0
         for prepared_request in prepared_requests:
             self.client().send(prepared_request)
             rows_updated += 1
         return rows_updated
-
-        
 
     def close(self) -> None:
         """Not required for this type"""

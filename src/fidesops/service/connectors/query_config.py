@@ -1,9 +1,8 @@
-from functools import reduce
 import logging
 import re
 import json
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Set, Optional, Generic, TypeVar, Tuple, Literal
+from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple, Literal, Union
 
 import pydash
 from sqlalchemy import text
@@ -31,7 +30,7 @@ from fidesops.task.refine_target_path import (
 )
 from fidesops.util.collection_util import append, filter_nonempty_values
 from fidesops.util.querytoken import QueryToken
-from fidesops.util.saas_util import paths_to_json, get_value_by_path
+from fidesops.util.saas_util import paths_to_dict
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -599,11 +598,11 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         return None
 
 
-SaaSRequestParams = Tuple[Literal["GET","POST"], str, Dict[str, Any], Dict[str, Any]]
+SaaSRequestParams = Tuple[Literal["GET", "PUT"], str, Dict[str, Any], Optional[str]]
 """Custom type to represent a tuple of path, params, and body values for a SaaS request"""
 
 
-class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
+class SaaSQueryConfig(QueryConfig[Union[List[SaaSRequestParams], SaaSRequestParams]]):
     """Query config that generates populated SaaS requests for a given collection"""
 
     def __init__(self, node: TraversalNode, endpoints: Dict[str, Endpoint]):
@@ -634,9 +633,8 @@ class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
         """
         Populates the placeholders in the request with the given param values
         """
-        path = request.path
+        path: str = request.path
         params: Dict[str, Any] = {}
-        data: Dict[str, Any] = {}
 
         for param in request.request_params:
             if param.type == "query":
@@ -647,7 +645,7 @@ class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
             elif param.type == "path":
                 path = path.replace(f"<{param.name}>", param_values[param.name])
 
-        return ("GET", path, params, data)
+        return ("GET", path, params, None)
 
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
@@ -671,11 +669,13 @@ class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
         logger.info(f"Populated request params for {current_request.path}")
         return request_params
 
-    def prepare_update_params(self, request: SaaSRequest, param_values: Dict[str, Any], body: Dict[str, Any]):
+    def prepare_update_params(
+        self, request: SaaSRequest, param_values: Dict[str, Any], body: Dict[str, Any]
+    ) -> SaaSRequestParams:
         """
         Populates the placeholders in the request with the given param values
         """
-        path = request.path
+        path: str = request.path
         params: Dict[str, Any] = {}
 
         for param in request.request_params:
@@ -683,19 +683,24 @@ class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
                 if param.default_value:
                     params[param.name] = param.default_value
                 elif param.references:
-                    params[param.name] = get_value_by_path(param_values, param.references[0].field)
+                    params[param.name] = pydash.get(
+                        param_values, param.references[0].field
+                    )
                 elif param.identity:
-                    params[param.name] = get_value_by_path(param_values, param.identity)
+                    params[param.name] = pydash.get(param_values, param.identity)
             elif param.type == "path":
-                path = path.replace(f"<{param.name}>", get_value_by_path(param_values, param.references[0].field))
+                path = path.replace(
+                    f"<{param.name}>",
+                    pydash.get(param_values, param.references[0].field),
+                )
 
         return ("PUT", path, params, json.dumps(body))
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
-    ) -> Optional[SaaSRequestParams]:
+    ) -> SaaSRequestParams:
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
-        body = paths_to_json(update_value_map)
+        body = paths_to_dict(update_value_map)
         current_request = self.get_request_by_action("update")
         collection_name = self.node.address.collection
         return self.prepare_update_params(current_request, {collection_name: row}, body)

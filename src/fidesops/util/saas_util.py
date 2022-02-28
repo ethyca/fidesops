@@ -51,17 +51,9 @@ def merge_datasets(dataset: Dataset, config_dataset: Dataset) -> Dataset:
     )
 
 
-def get_value_by_path(dictionary: Dict, path: str) -> Dict:
-    """Helper method to extract an arbitrary data path from a given dictionary"""
-    value = dictionary
-    for key in path.split("."):
-        value = value[key]
-    return value
-
-
-def paths_to_json(value_map: Dict[str, Any]) -> Dict[str, Any]:
+def paths_to_dict(value_map: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Converts a dictionary of JSON paths/values into a nested JSON object
+    Converts a dictionary of paths/values into a nested dictionary
 
     example:
 
@@ -76,7 +68,7 @@ def paths_to_json(value_map: Dict[str, Any]) -> Dict[str, Any]:
         }
     }
     """
-    output = {}
+    output: Dict[Any, Any] = {}
     for path, value in value_map.items():
         keys = path.split(".")
         target = reduce(
@@ -84,5 +76,5 @@ def paths_to_json(value_map: Dict[str, Any]) -> Dict[str, Any]:
             keys[:-1],
             output,
         )
-        target[path[-1]] = value
+        target[keys[-1]] = value
     return output
