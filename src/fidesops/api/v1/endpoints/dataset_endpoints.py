@@ -156,7 +156,9 @@ def patch_datasets(
     # valid datasets with the same fides_key will override each other
     key_list = [dataset.fides_key for dataset in datasets]
     if len(key_list) != len(set(key_list)):
-        logger.warning("Datasets with duplicate fides_keys detected, may result in unintented behavior.")
+        logger.warning(
+            "Datasets with duplicate fides_keys detected, may result in unintented behavior."
+        )
 
     for dataset in datasets:
         data = {
