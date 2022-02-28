@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict
-from datetime import date
+from datetime import date, datetime
 from typing import List, Optional, Union, DefaultDict, Dict, Set
 
 from fastapi import APIRouter, Body, Depends, Security, HTTPException
@@ -147,8 +147,12 @@ def create_privacy_request(
             failed.append(failure)
             continue
 
+        requested_at = privacy_request_data.requested_at
+        if requested_at is None:
+            requested_at = datetime.utcnow()
+
         kwargs = {
-            "requested_at": privacy_request_data.requested_at,
+            "requested_at": requested_at,
             "policy_id": policy.id,
             "status": "pending",
             # "client_id": client.id,
