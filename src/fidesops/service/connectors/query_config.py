@@ -536,9 +536,9 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     """
 
     def get_formatted_query_string(
-            self,
-            field_list: str,
-            clauses: List[str],
+        self,
+        field_list: str,
+        clauses: List[str],
     ) -> str:
         """Returns a query string with backtick formatting for tables that have the same names as
         BigQuery reserved words."""
