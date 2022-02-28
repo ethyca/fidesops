@@ -98,9 +98,9 @@ def create_privacy_request(
     *,
     cache: FidesopsRedis = Depends(deps.get_cache),
     db: Session = Depends(deps.get_db),
-    client: ClientDetail = Security(
-        verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_CREATE]
-    ),
+    # client: Optional[ClientDetail] = Security(
+    #     verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_CREATE]
+    # ),
     data: conlist(PrivacyRequestCreate, max_items=50) = Body(...),  # type: ignore
 ) -> BulkPostPrivacyRequests:
     """
@@ -151,7 +151,7 @@ def create_privacy_request(
             "requested_at": privacy_request_data.requested_at,
             "policy_id": policy.id,
             "status": "pending",
-            "client_id": client.id,
+            # "client_id": client.id,
         }
         for field in optional_fields:
             attr = getattr(privacy_request_data, field)
