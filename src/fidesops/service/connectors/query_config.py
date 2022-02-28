@@ -669,8 +669,9 @@ class SaaSQueryConfig(QueryConfig[Union[List[SaaSRequestParams], SaaSRequestPara
         logger.info(f"Populated request params for {current_request.path}")
         return request_params
 
+    @staticmethod
     def prepare_update_params(
-        self, request: SaaSRequest, param_values: Dict[str, Any], body: Dict[str, Any]
+        request: SaaSRequest, param_values: Dict[str, Any], body: Dict[str, Any]
     ) -> SaaSRequestParams:
         """
         Populates the placeholders in the request with the given param values
