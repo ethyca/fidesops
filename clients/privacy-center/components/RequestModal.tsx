@@ -60,15 +60,17 @@ const useRequestForm = ({
         process.env.NODE_ENV === 'development'
           ? config.fidesops_host_development
           : config.fidesops_host_production;
-      const body = {
-        identity: {
-          email: values.email,
-          phone_number: values.phone,
-          name: values.name,
+      const body = [
+        {
+          identity: {
+            email: values.email,
+            phone_number: values.phone,
+            // enable this when name field is supported on the server
+            // name: values.name
+          },
+          policy_key: action.policy_key,
         },
-        policy_key: action.policy_key,
-      };
-      console.log(body);
+      ];
       const response = await fetch(`${host}/privacy-request`, {
         method: 'POST',
         headers: {
@@ -77,8 +79,8 @@ const useRequestForm = ({
         },
         body: JSON.stringify(body),
       });
-      console.log(response);
-      setIsLoading(false);
+      const data = await response.json();
+      console.log(data);
       onClose();
     },
     validate: (values) => {
@@ -125,7 +127,7 @@ export const RequestModal: React.FC<{
     isValid,
     dirty,
   } = useRequestForm({ onClose, action });
-  if (!openAction) return null;
+  if (!action) return null;
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
