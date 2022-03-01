@@ -1,8 +1,7 @@
 from typing import Any, Dict, List, Literal, Optional, Union
+from fidesops.schemas.dataset import FidesopsDatasetReference
 from pydantic import BaseModel
 from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
-from fidesops.schemas.dataset import FidesopsDatasetReference
-from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 

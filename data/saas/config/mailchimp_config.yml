@@ -36,15 +36,7 @@ saas_config:
                 - dataset: mailchimp_connector_example
                   field: conversations.id
                   direction: from
-          postprocessors:
-            - strategy: unwrap
-              configuration:
-                data_path: conversation_messages
-            - strategy: filter
-              configuration:
-                field: from_email
-                  value:
-                    identity: email
+          data_path: conversation_messages
     - name: conversations
       requests:
         read:
@@ -68,10 +60,6 @@ saas_config:
               incremental_param: offset
               increment_by: 1000
               initial_value: 0
-          postprocessors:
-            - strategy: unwrap
-              configuration:
-                data_path: conversations
     - name: member
       requests:
         read:
@@ -81,10 +69,7 @@ saas_config:
               type: query
               identity: email
               data_type: string
-          postprocessors:
-            - strategy: unwrap
-              configuration:
-                data_path: exact_matches.members
+          data_path: exact_matches/members
         delete:
           path: /3.0/lists/<list_id>/members/<subscriber_hash>/actions/delete-permanent
           request_params:

@@ -94,6 +94,12 @@ dataset:
                 fidesops_meta:
                   data_type: string[]
                   identity: email
+              - name: derived_phone
+                data_categories: [ user.derived ]
+                fidesops_meta:
+                  data_type: string[]
+                  return_all_elements: true
+                  identity: phone_number
           - name: derived_interests
             data_categories: [ user.derived ]
             fidesops_meta:
@@ -162,10 +168,15 @@ dataset:
             fidesops_meta:
               data_type: integer
       - name: conversations
-        fidesops_meta:
-          data_type: object[]
         fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
           - name: thread
+            fidesops_meta:
+              data_type: object[]
             fields:
               - name: comment
                 fidesops_meta:
@@ -177,8 +188,17 @@ dataset:
                 data_categories: [ user.provided.identifiable.name ]
                 fidesops_meta:
                   data_type: string
+              - name: ccn
+                data_categories: [ user.provided.identifiable.financial.account_number ]
+                fidesops_meta:
+                  data_type: string
       - name: employee
         fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
           - name: email
             data_categories: [ user.provided.identifiable.contact.email ]
             fidesops_meta:
@@ -217,6 +237,11 @@ dataset:
               data_type: string
       - name: payment_card
         fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
           - name: billing_address_id
             data_categories: [ system.operations ]
           - name: ccn
@@ -238,3 +263,27 @@ dataset:
             data_categories: [ user.provided.identifiable.financial ]
           - name: preferred
             data_categories: [ user.provided.nonidentifiable ]
+      - name: rewards
+        fields:
+          - name: _id
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
+          - name: owner
+            fidesops_meta:
+              data_type: object[]
+              return_all_elements: true
+            fields:
+              - name: phone
+                data_categories: [ user.provided.identifiable.contact.phone_number ]
+                fidesops_meta:
+                  data_type: string
+                  references:
+                    - dataset: mongo_test
+                      field: internal_customer_profile.customer_identifiers.derived_phone
+                      direction: from
+              - name: shopper_name
+          - name: points
+            fidesops_meta:
+              data_type: integer
+          - name: expiration_date
