@@ -139,7 +139,9 @@ class FidesopsDatasetField(DatasetField):
         if not meta_values:
             return meta_values
 
-        is_array: bool = bool(meta_values.data_type and "[]" in meta_values.data_type)
+        is_array: bool = bool(
+            meta_values.data_type and meta_values.data_type.endswith("[]")
+        )
         if not is_array and meta_values.return_all_elements is not None:
             raise ValueError(
                 "The 'return_all_elements' attribute can only be specified on array fields."
