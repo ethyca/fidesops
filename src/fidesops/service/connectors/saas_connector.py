@@ -9,7 +9,7 @@ from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.common_exceptions import ConnectionException, PostProcessingException
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.saas_config import ClientConfig, Strategy
+from fidesops.schemas.saas.saas_config import ClientConfig, Strategy, SaaSRequest
 from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_factory import get_strategy
 from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import PostProcessorStrategy
 from fidesops.service.connectors.query_config import SaaSQueryConfig, SaaSRequestParams
@@ -100,13 +100,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         logger.info(f"Creating client to {uri}")
         return AuthenticatedClient(uri, self.client_config, self.secrets)
 
-    @staticmethod
-    def get_value_by_path(dictionary: Dict, path: str) -> Dict:
-        """Helper method to extract an arbitrary data path from a given dictionary"""
-        value = dictionary
-        for key in path.split("/"):
-            value = value[key]
-        return value
 
     def retrieve_data(
         self, node: TraversalNode, policy: Policy, request: PrivacyRequest, input_data: Dict[str, List[Any]]
@@ -115,8 +108,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         # get the corresponding read request for the given collection
         collection_name = node.address.collection
-        read_request = self.endpoints[collection_name].requests["read"]
-
+        read_request: SaaSRequest = self.endpoints[collection_name].requests["read"]
 
         query_config = self.query_config(node)
         prepared_requests = query_config.generate_query(input_data, policy)
@@ -125,30 +117,29 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         for prepared_request in prepared_requests:
             response = self.client().get(prepared_request)
 
-            # mailchimp needs unwrap then filter, in order
-            if read_request["postprocessors"] is None:
-                rows.extend(response.json())
-            for post_processor in read_request["postprocessors"]:
+            if read_request.postprocessors is None:
+                # by default, we expect the collection_name to be one of the root fields in the response
+                rows.extend(response.json()[collection_name])
+                continue
+            data_to_be_processed = response.json()
+            length_postprocessors = len(read_request.postprocessors)
+            for post_processor in read_request.postprocessors:
                 strategy: PostProcessorStrategy = get_strategy(
-                    post_processor.strategy_name, post_processor.configuration
+                    post_processor.strategy, post_processor.configuration
                 )
                 logger.info(f"Starting postprocessing with strategy {strategy.get_strategy_name()}")
                 try:
-                    processed_response = strategy.process(response.json(), request.get_cached_identity_data())
+                    processed_response = strategy.process(data_to_be_processed, request.get_cached_identity_data())
+                    if processed_response:
+                        # if last postprocessor
+                        if read_request.postprocessors.index(post_processor) + 1 == length_postprocessors:
+                            rows.extend(processed_response)
+                        else:
+                            data_to_be_processed = processed_response
                 except Exception as e:
                     raise PostProcessingException(
                         f"Could not post-process {node.address} using {strategy.get_strategy_name(): {e}}"
                     )
-                rows.extend(processed_response)
-
-            # if read_request.data_path:
-            #     processed_response = self.get_value_by_path(
-            #         response.json(), read_request.data_path
-            #     )
-            # else:
-            #     # by default, we expect the collection_name to be one of the root fields in the response
-            #     processed_response = response.json()[collection_name]
-
         return rows
 
     def mask_data(

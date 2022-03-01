@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 from typing import List, Dict, Any
 
@@ -8,6 +9,9 @@ from fidesops.service.connectors.post_processor_strategy.post_processor_strategy
 from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_unwrap import \
     UnwrapPostProcessorStrategy
 from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import PostProcessorStrategy
+
+
+logger = logging.getLogger(__name__)
 
 
 class SupportedPostProcessorStrategies(Enum):

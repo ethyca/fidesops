@@ -9,9 +9,10 @@ STRATEGY_NAME = "filter"
 
 logger = logging.getLogger(__name__)
 
+
 class FilterPostProcessorStrategy(PostProcessorStrategy):
     """
-    Filters object or array given field name and value.
+    Filters object or array given field name and value
     Value can be reference a dynamic identity passed in through the request OR hard-coded value.
     E.g.
     data = [
@@ -28,11 +29,11 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
     ]
     field: email_contact
     value: {identity: email}, where email == somebody@email.com
-    result = [{
+    result = {
         id: 1397429347
         email_contact: somebody@email.com
         name: Somebody Awesome
-    }]
+    }
     """
 
     def __init__(self, configuration: FilterPostProcessorConfiguration):
@@ -44,9 +45,9 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
 
     def process(self, data: Any, identity_data: Dict[str, Any] = None) -> Optional[Any]:
         """
-        :param data: A list or an object. Preserves format of data.
+        :param data: A list or an object
         :param identity_data: Dict of cached identity data
-        :return: filtered list/object or None
+        :return: filtered object or None
         """
         if not data:
             return None
@@ -60,7 +61,8 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
             filter_value = identity_data.get(self.value.identity)
 
         if isinstance(data, list):
-            return [item for item in data if item[self.field] == filter_value]
+            filtered = [item for item in data if item[self.field] == filter_value]
+            return filtered if filtered else None
         return data if data[self.field] == filter_value else None
 
     @staticmethod
