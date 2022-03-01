@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class UnwrapPostProcessorStrategy(PostProcessorStrategy):
     """
-    Given a path to a dict/list, returns the dict/list
+    Given a path to a dict, returns the dict/list
     E.g.
     data = {
         exact_matches: {
@@ -40,13 +40,15 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
     def get_strategy_name(self) -> str:
         return STRATEGY_NAME
 
-    def process(self, data: Any, identity_data: Dict[str, Any] = None) -> Optional[Any]:
+    def process(
+        self, data: Dict[str, Any], identity_data: Dict[str, Any] = None
+    ) -> Optional[Any]:
         """
-        :param data: A list or a dict
+        :param data: A dict
         :param identity_data: Dict of cached identity data
         :return: unwrapped list or dict
         """
-        if not isinstance(data, dict) and not isinstance(data, list):
+        if not isinstance(data, dict):
             logger.warning(
                 f"Data is either None or not in expected format. Skipping processing for the following post processing strategy: {self.get_strategy_name()}."
             )

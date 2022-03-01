@@ -52,7 +52,7 @@ def test_filter_array_by_identity_reference_no_results():
     ]
     processor = FilterPostProcessorStrategy(configuration=config)
     result = processor.process(data, identity_data)
-    assert result == []
+    assert result == None
 
 
 def test_filter_array_with_static_val():
