@@ -4,11 +4,15 @@ from typing import List, Dict, Any
 
 from fidesops.common_exceptions import NoSuchStrategyException, ValidationError
 from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_filter import \
-    FilterPostProcessorStrategy
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_unwrap import \
-    UnwrapPostProcessorStrategy
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import PostProcessorStrategy
+from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_filter import (
+    FilterPostProcessorStrategy,
+)
+from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_unwrap import (
+    UnwrapPostProcessorStrategy,
+)
+from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import (
+    PostProcessorStrategy,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -24,8 +28,8 @@ class SupportedPostProcessorStrategies(Enum):
 
 
 def get_strategy(
-        strategy_name: str,
-        configuration: Dict[str, Any],
+    strategy_name: str,
+    configuration: Dict[str, Any],
 ) -> PostProcessorStrategy:
     """
     Returns the strategy given the name and configuration.

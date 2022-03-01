@@ -62,7 +62,11 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
 
     @abstractmethod
     def retrieve_data(
-        self, node: TraversalNode, policy: Policy, request: PrivacyRequest, input_data: Dict[str, List[Any]]
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        request: PrivacyRequest,
+        input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data in a connector dependent way based on input data.
 

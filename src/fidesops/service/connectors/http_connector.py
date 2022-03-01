@@ -69,7 +69,11 @@ class HTTPSConnector(BaseConnector[None]):
         """Return the query config that corresponds to this connector type"""
 
     def retrieve_data(
-        self, node: TraversalNode, policy: Policy, request: PrivacyRequest, input_data: Dict[str, List[Any]]
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        request: PrivacyRequest,
+        input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data in a connector dependent way based on input data.
 

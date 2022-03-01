@@ -10,8 +10,12 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.common_exceptions import ConnectionException, PostProcessingException
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.saas_config import ClientConfig, Strategy, SaaSRequest
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_factory import get_strategy
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import PostProcessorStrategy
+from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_factory import (
+    get_strategy,
+)
+from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import (
+    PostProcessorStrategy,
+)
 from fidesops.service.connectors.query_config import SaaSQueryConfig, SaaSRequestParams
 
 logger = logging.getLogger(__name__)
@@ -100,17 +104,20 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         logger.info(f"Creating client to {uri}")
         return AuthenticatedClient(uri, self.client_config, self.secrets)
 
-
-    def retrieve_data(
-        self, node: TraversalNode, policy: Policy, request: PrivacyRequest, input_data: Dict[str, List[Any]]
+    def retrieve_data(  # pylint: disable=R0914
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        request: PrivacyRequest,
+        input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
 
         # get the corresponding read request for the given collection
-        collection_name = node.address.collection
+        collection_name: str = node.address.collection
         read_request: SaaSRequest = self.endpoints[collection_name].requests["read"]
 
-        query_config = self.query_config(node)
+        query_config: SaaSQueryConfig = self.query_config(node)
         prepared_requests = query_config.generate_query(input_data, policy)
 
         rows: List[Row] = []
@@ -118,8 +125,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             response = self.client().get(prepared_request)
 
             if read_request.postprocessors is None:
-                # by default, we expect the collection_name to be one of the root fields in the response
-                rows.extend(response.json()[collection_name])
+                rows.extend(response.json())
                 continue
             data_to_be_processed = response.json()
             length_postprocessors = len(read_request.postprocessors)
@@ -127,12 +133,19 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 strategy: PostProcessorStrategy = get_strategy(
                     post_processor.strategy, post_processor.configuration
                 )
-                logger.info(f"Starting postprocessing with strategy {strategy.get_strategy_name()}")
+                logger.info(
+                    f"Starting postprocessing with strategy {strategy.get_strategy_name()}"
+                )
                 try:
-                    processed_response = strategy.process(data_to_be_processed, request.get_cached_identity_data())
+                    processed_response = strategy.process(
+                        data_to_be_processed, request.get_cached_identity_data()
+                    )
                     if processed_response:
                         # if last postprocessor
-                        if read_request.postprocessors.index(post_processor) + 1 == length_postprocessors:
+                        if (
+                            read_request.postprocessors.index(post_processor) + 1
+                            == length_postprocessors
+                        ):
                             rows.extend(processed_response)
                         else:
                             data_to_be_processed = processed_response

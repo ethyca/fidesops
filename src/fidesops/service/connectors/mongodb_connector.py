@@ -83,7 +83,11 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         return ConnectionTestStatus.succeeded
 
     def retrieve_data(
-        self, node: TraversalNode, policy: Policy, request: PrivacyRequest, input_data: Dict[str, List[Any]]
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        request: PrivacyRequest,
+        input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve mongo data"""
         # pylint: disable = too-many-locals

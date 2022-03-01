@@ -235,7 +235,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """Run access request"""
         formatted_input_data = self.to_dask_input_data(*inputs)
         output = self.connector.retrieve_data(
-            self.traversal_node, self.resources.policy, self.resources.request, formatted_input_data
+            self.traversal_node,
+            self.resources.policy,
+            self.resources.request,
+            formatted_input_data,
         )
 
         coerced_input_data = self.traversal_node.typed_filtered_values(

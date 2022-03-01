@@ -1,8 +1,13 @@
 import logging
 from typing import Any, Optional, Dict
 
-from fidesops.schemas.saas.strategy_configuration import UnwrapPostProcessorConfiguration, StrategyConfiguration
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import PostProcessorStrategy
+from fidesops.schemas.saas.strategy_configuration import (
+    UnwrapPostProcessorConfiguration,
+    StrategyConfiguration,
+)
+from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import (
+    PostProcessorStrategy,
+)
 
 
 STRATEGY_NAME = "unwrap"
@@ -52,7 +57,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
             unwrapped = unwrapped.get(item, None)
             if unwrapped is None:
                 logger.warning(
-                    f"{item} could not be found on {unwrapped} for the following post processing strategy: {self.get_strategy_name()}"
+                    f"{item} could not be found for the following post processing strategy: {self.get_strategy_name()}"
                 )
                 return None
         return unwrapped

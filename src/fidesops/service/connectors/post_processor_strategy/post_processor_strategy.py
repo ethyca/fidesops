@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 class PostProcessorStrategy(ABC):
     """Abstract base class for SaaS post processor strategies"""
+
     @abstractmethod
     def get_strategy_name(self) -> str:
         """Returns strategy name"""
