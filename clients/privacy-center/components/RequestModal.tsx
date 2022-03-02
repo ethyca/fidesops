@@ -17,7 +17,7 @@ import {
 
 import { useFormik } from 'formik';
 
-import type { AlertState } from '../lib/types/AlertState';
+import type { AlertState } from '../types/AlertState';
 
 import config from '../config/config.json';
 

@@ -26,7 +26,7 @@ import { useRequestModal, RequestModal } from '../components/RequestModal';
 
 import config from '../config/config.json';
 
-import type { AlertState } from '../lib/types/AlertState';
+import type { AlertState } from '../types/AlertState';
 
 export const alertContext = createContext<{
   alert: AlertState | null;
