@@ -1,6 +1,8 @@
 import logging
 from typing import Any, Optional, Dict
 
+import pydash as pydash
+
 from fidesops.schemas.saas.strategy_configuration import (
     UnwrapPostProcessorConfiguration,
     StrategyConfiguration,
@@ -53,15 +55,11 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
                 f"Data is either None or not in expected format. Skipping processing for the following post processing strategy: {self.get_strategy_name()}."
             )
             return data
-        path_items = self.data_path.split(".")
-        unwrapped = data
-        for item in path_items:
-            unwrapped = unwrapped.get(item, None)
-            if unwrapped is None:
-                logger.warning(
-                    f"{item} could not be found for the following post processing strategy: {self.get_strategy_name()}"
-                )
-                return None
+        unwrapped = pydash.objects.get(data, self.data_path, None)
+        if unwrapped is None:
+            logger.warning(
+                f"{self.data_path} could not be found for the following post processing strategy: {self.get_strategy_name()}"
+            )
         return unwrapped
 
     @staticmethod

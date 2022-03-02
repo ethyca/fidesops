@@ -6,8 +6,6 @@ from pydantic import BaseModel
 class StrategyConfiguration(BaseModel):
     """Base class for strategy configuration"""
 
-    pass
-
 
 class UnwrapPostProcessorConfiguration(StrategyConfiguration):
     """Dynamic JSON path access"""

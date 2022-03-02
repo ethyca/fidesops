@@ -66,7 +66,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         self,
         node: TraversalNode,
         policy: Policy,
-        request: PrivacyRequest,
+        privacy_request: PrivacyRequest,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data in a connector dependent way based on input data.
@@ -79,7 +79,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         self,
         node: TraversalNode,
         policy: Policy,
-        request: PrivacyRequest,
+        privacy_request: PrivacyRequest,
         rows: List[Row],
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated"""

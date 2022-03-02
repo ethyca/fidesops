@@ -1,8 +1,6 @@
 import pytest
 
-from fidesops.common_exceptions import NoSuchStrategyException
-from fidesops.schemas.saas.strategy_configuration import UnwrapPostProcessorConfiguration, \
-    FilterPostProcessorConfiguration
+from fidesops.common_exceptions import NoSuchStrategyException, ValidationError
 from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_factory import get_strategy
 from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_filter import \
     FilterPostProcessorStrategy
@@ -27,6 +25,11 @@ def test_get_strategy_unwrap():
     assert isinstance(strategy, UnwrapPostProcessorStrategy)
 
 
-def test_get_strategy_invalid():
+def test_get_strategy_invalid_config():
+    with pytest.raises(ValidationError):
+        get_strategy(strategy_name="unwrap", configuration={"invalid": "thing"})
+
+
+def test_get_strategy_invalid_strategy():
     with pytest.raises(NoSuchStrategyException):
         get_strategy("invalid", {})

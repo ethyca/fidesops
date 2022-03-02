@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Literal, Optional, Union
 from fidesops.schemas.dataset import FidesopsDatasetReference
 from pydantic import BaseModel
 from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
+from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
@@ -36,11 +37,11 @@ class Strategy(BaseModel):
     configuration: Dict[str, Any]
 
 
-class PostProcessorStrategy(BaseModel):
+class PostProcessorStrategyData(BaseModel):
     """Data class for postprocessor strategy"""
 
     strategy: str
-    configuration: Dict[str, Any]
+    configuration: StrategyConfiguration
 
 
 class SaaSRequest(BaseModel):
@@ -52,8 +53,8 @@ class SaaSRequest(BaseModel):
     path: str
     request_params: Optional[List[RequestParam]]
     data_path: Optional[str]  # defaults to collection name if not specified
-    preprocessors: Optional[Strategy]
-    postprocessors: Optional[List[PostProcessorStrategy]]
+    preprocessors: Optional[List[Strategy]]
+    postprocessors: Optional[List[PostProcessorStrategyData]]
     pagination: Optional[Strategy]
 
 
