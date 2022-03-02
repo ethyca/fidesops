@@ -83,9 +83,9 @@ with individual statuses. Individual collection statuses include `in_processing`
 You may see multiple logs for each collection as they reach different steps in the lifecycle.  
 
 `verbose` will embed a “results” key in the response, with execution logs grouped by dataset name.  In the example below,
-we have two datasets: `my-mongo-db` and `my-postgres-db`. There are two execution logs for my-mongo-db (when the `flights` 
+we have two datasets: `my-mongo-db` and `my-postgres-db`. There are two execution logs for `my-mongo-db` (when the `flights` 
 collection is starting execution and when the `flights` collection has finished) and two execution
-logs for my-postgres-db (when the `order` collection is starting and finishing execution).  `fields_affected` are the fields
+logs for `my-postgres-db` (when the `order` collection is starting and finishing execution).  `fields_affected` are the fields
 that were potentially returned or masked based on the Rules you've specified on the Policy. The embedded execution logs 
 are automatically truncated at 50 logs, so to view the entire list of logs, visit the execution logs endpoint separately.
 
