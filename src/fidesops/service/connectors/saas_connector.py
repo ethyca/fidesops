@@ -6,12 +6,12 @@ from requests import Session, Request, PreparedRequest, Response
 from fidesops.graph.config import CollectionAddress
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.graph.traversal import Row, TraversalNode
-from fidesops.models.connectionconfig import ConnectionTestStatus, ConnectionConfig
+from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.common_exceptions import ConnectionException, ClientUnsuccessfulException, PostProcessingException
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.saas_config import ClientConfig, Strategy, SaaSRequest, PostProcessorStrategyData
+from fidesops.schemas.saas.saas_config import Strategy, SaaSRequest, PostProcessorStrategyData
 from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_factory import (
     get_strategy,
 )
