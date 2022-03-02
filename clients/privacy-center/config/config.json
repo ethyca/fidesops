@@ -22,8 +22,8 @@
       "title": "Delete your data",
       "description": "We will delete all of your account data. This action cannot be undone.",
       "identity_inputs": {
-        "email": "required",
-        "phone": "optional",
+        "email": "optional",
+        "phone": "required",
         "name": "optional"
       }
     },

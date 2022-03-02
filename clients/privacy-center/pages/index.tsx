@@ -38,10 +38,7 @@ export const alertContext = createContext<{
 
 const Home: NextPage<{ session: Session }> = () => {
   const { onClose, onOpen, isOpen, openAction } = useRequestModal();
-  const [alert, setAlert] = useState<AlertState | null>({
-    status: 'success',
-    description: "You're awesome",
-  });
+  const [alert, setAlert] = useState<AlertState | null>(null);
   const alertContextValue = useMemo(() => ({ alert, setAlert }), [alert]);
   return (
     <div>

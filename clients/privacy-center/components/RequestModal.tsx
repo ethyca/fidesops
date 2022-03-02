@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -26,12 +26,13 @@ export const useRequestModal = () => {
   const [openAction, setOpenAction] = useState<string | null>(null);
 
   const onOpen = (action: string) => {
-    setIsOpen(true);
     setOpenAction(action);
+    setIsOpen(true);
   };
 
   const onClose = () => {
     setIsOpen(false);
+    setOpenAction(null);
   };
 
   return { isOpen, onClose, onOpen, openAction };
@@ -99,22 +100,28 @@ const useRequestForm = ({
       onClose();
     },
     validate: (values) => {
+      if (!action) return {};
       const errors: {
         name?: string;
         email?: string;
         phone?: string;
       } = {};
 
-      if (!values.email) {
+      if (!values.email && action.identity_inputs.email === 'required') {
         errors.email = 'Required';
       } else if (
+        values.email &&
         !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)
       ) {
         errors.email = 'Invalid email address';
       }
 
-      if (!values.name) {
+      if (!values.name && action.identity_inputs.name === 'required') {
         errors.name = 'Required';
+      }
+
+      if (!values.phone && action.identity_inputs.phone === 'required') {
+        errors.phone = 'Required';
       }
 
       return errors;
@@ -133,6 +140,7 @@ export const RequestModal: React.FC<{
   const action = openAction
     ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
     : null;
+
   const {
     errors,
     handleBlur,
@@ -142,8 +150,13 @@ export const RequestModal: React.FC<{
     values,
     isValid,
     dirty,
+    resetForm,
   } = useRequestForm({ onClose, action, setAlert });
+
+  useEffect(() => resetForm(), [isOpen, resetForm]);
+
   if (!action) return null;
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -166,7 +179,12 @@ export const RequestModal: React.FC<{
                     id="name"
                     name="name"
                     focusBorderColor="primary.500"
-                    placeholder="Name*"
+                    placeholder={
+                      action.identity_inputs.name === 'required'
+                        ? 'Name*'
+                        : 'Name'
+                    }
+                    isRequired={action.identity_inputs.name === 'required'}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     value={values.name}
@@ -185,7 +203,12 @@ export const RequestModal: React.FC<{
                     name="email"
                     type="email"
                     focusBorderColor="primary.500"
-                    placeholder="Email*"
+                    placeholder={
+                      action.identity_inputs.email === 'required'
+                        ? 'Email*'
+                        : 'Email'
+                    }
+                    isRequired={action.identity_inputs.email === 'required'}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     value={values.email}
@@ -204,7 +227,12 @@ export const RequestModal: React.FC<{
                     name="phone"
                     type="phone"
                     focusBorderColor="primary.500"
-                    placeholder="Phone"
+                    placeholder={
+                      action.identity_inputs.phone === 'required'
+                        ? 'Phone*'
+                        : 'Phone'
+                    }
+                    isRequired={action.identity_inputs.phone === 'required'}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     value={values.phone}
