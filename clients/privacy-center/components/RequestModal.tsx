@@ -17,6 +17,8 @@ import {
 
 import { useFormik } from 'formik';
 
+import type { AlertState } from '../lib/types/AlertState';
+
 import config from '../config/config.json';
 
 export const useRequestModal = () => {
@@ -38,9 +40,11 @@ export const useRequestModal = () => {
 const useRequestForm = ({
   onClose,
   action,
+  setAlert,
 }: {
   onClose: () => void;
   action: typeof config.actions[0] | null;
+  setAlert: (state: AlertState) => void;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const formik = useFormik({
@@ -80,7 +84,18 @@ const useRequestForm = ({
         body: JSON.stringify(body),
       });
       const data = await response.json();
-      console.log(data);
+      if (data.succeeded.length) {
+        setAlert({
+          status: 'success',
+          description:
+            'You request was successful, please await further instructions.',
+        });
+      } else {
+        setAlert({
+          status: 'error',
+          description: 'Your request has failed. Please try again.',
+        });
+      }
       onClose();
     },
     validate: (values) => {
@@ -113,7 +128,8 @@ export const RequestModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   openAction: string | null;
-}> = ({ isOpen, onClose, openAction }) => {
+  setAlert: (state: AlertState) => void;
+}> = ({ isOpen, onClose, openAction, setAlert }) => {
   const action = openAction
     ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
     : null;
@@ -126,7 +142,7 @@ export const RequestModal: React.FC<{
     values,
     isValid,
     dirty,
-  } = useRequestForm({ onClose, action });
+  } = useRequestForm({ onClose, action, setAlert });
   if (!action) return null;
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -194,7 +210,7 @@ export const RequestModal: React.FC<{
                     value={values.phone}
                     isInvalid={touched.phone && Boolean(errors.phone)}
                   />
-                  {/* <FormErrorMessage>{errors.phone}</FormErrorMessage> */}
+                  <FormErrorMessage>{errors.phone}</FormErrorMessage>
                 </FormControl>
               ) : null}
             </Stack>
