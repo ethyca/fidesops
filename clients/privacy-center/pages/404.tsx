@@ -6,7 +6,7 @@ import { Stack, Heading, Box, Text, Button } from '@fidesui/react';
 const Custom404 = () => (
   <div>
     <Head>
-      <title>FidesUI App</title>
+      <title>Privacy Center</title>
       <meta name="description" content="Generated from FidesUI template" />
       <link rel="icon" href="/favicon.ico" />
     </Head>

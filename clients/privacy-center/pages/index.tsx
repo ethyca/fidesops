@@ -8,7 +8,6 @@ import {
   Text,
   Stack,
   Box,
-  Grid,
   Alert,
   AlertIcon,
   AlertDescription,
@@ -17,19 +16,18 @@ import {
 import Image from 'next/image';
 
 import { useRequestModal, RequestModal } from '../components/RequestModal';
+import type { AlertState } from '../types/AlertState';
 
 import config from '../config/config.json';
 
-import type { AlertState } from '../types/AlertState';
-
 const Home: NextPage<{ session: Session }> = () => {
-  const { onClose, onOpen, isOpen, openAction } = useRequestModal();
   const [alert, setAlert] = useState<AlertState | null>(null);
+  const { isOpen, onClose, onOpen, openAction } = useRequestModal();
   return (
     <div>
       <Head>
-        <title>FidesUI App</title>
-        <meta name="description" content="Generated from FidesUI template" />
+        <title>Privacy Center</title>
+        <meta name="description" content="Privacy Center" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -37,8 +35,7 @@ const Home: NextPage<{ session: Session }> = () => {
         <Flex
           bg="gray.100"
           minHeight={14}
-          px={1}
-          py={1}
+          p={1}
           width="100%"
           justifyContent="center"
           alignItems="center"
@@ -49,6 +46,7 @@ const Home: NextPage<{ session: Session }> = () => {
               minHeight={14}
               maxWidth="5xl"
               zIndex={1}
+              position="absolute"
             >
               <AlertIcon />
               <AlertDescription>{alert.description}</AlertDescription>
@@ -58,11 +56,11 @@ const Home: NextPage<{ session: Session }> = () => {
                 onClick={() => setAlert(null)}
               />
             </Alert>
-          ) : (
-            <Image src="/logo.svg" height="56px" width="304px" alt="Logo" />
-          )}
+          ) : null}
+          <Image src="/logo.svg" height="56px" width="304px" alt="Logo" />
         </Flex>
       </header>
+
       <main>
         <Stack align="center" py={['6', '16']} px={5} spacing={8}>
           <Stack align="center" spacing={3}>
@@ -109,14 +107,12 @@ const Home: NextPage<{ session: Session }> = () => {
                 onClick={() => onOpen(action.policy_key)}
               >
                 <Stack spacing={7}>
-                  <Flex width="100%" justifyContent="center">
-                    <Image
-                      src={action.icon_path}
-                      alt={action.description}
-                      width={54}
-                      height={54}
-                    />
-                  </Flex>
+                  <Image
+                    src={action.icon_path}
+                    alt={action.description}
+                    width={54}
+                    height={54}
+                  />
                   <Stack spacing={1} textAlign="center">
                     <Heading
                       fontSize="large"
