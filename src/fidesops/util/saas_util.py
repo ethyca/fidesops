@@ -52,7 +52,7 @@ def merge_datasets(dataset: Dataset, config_dataset: Dataset) -> Dataset:
     )
 
 
-def unflatten_dict(input: Dict[str, Any], separator: str = ".") -> Dict[str, Any]:
+def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str, Any]:
     """
     Converts a dictionary of paths/values into a nested dictionary
 
@@ -70,7 +70,7 @@ def unflatten_dict(input: Dict[str, Any], separator: str = ".") -> Dict[str, Any
     }
     """
     output: Dict[Any, Any] = {}
-    for path, value in input.items():
+    for path, value in flat_dict.items():
         if isinstance(value, dict):
             raise FidesopsException(
                 "'unflatten_dict' expects a flattened dictionary as input."

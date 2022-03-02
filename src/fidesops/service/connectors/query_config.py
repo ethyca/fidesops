@@ -2,7 +2,7 @@ import logging
 import re
 import json
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple, Literal, Union
+from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple, Literal
 
 import pydash
 from sqlalchemy import text, Table, MetaData
@@ -701,7 +701,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         """Takes the input_data and uses it to generate a list of SaaS request params"""
 
         filtered_data = self.node.typed_filtered_values(input_data)
-        
+
         # populate the SaaS request with reference values from other datasets provided to this node
         request_params = []
         for string_path, reference_values in filtered_data.items():
@@ -741,14 +741,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> SaaSRequestParams:
         """
-        Takes a row and masks the fields based on the policy. This masked row is then added as the
-        body to a dynamically generated SaaS request.
+        Prepares the update request by masking the fields in the row data based on the policy.
+        This masked row is then added as the body to a dynamically generated SaaS request.
         """
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
         body: Row = unflatten_dict(update_value_map)
         current_request: SaaSRequest = self.get_request_by_action("update")
         collection_name: str = self.node.address.collection
-        param_values: Dict[str, Row] = {collection_name: body}
+        param_values: Dict[str, Row] = {collection_name: row}
 
         path: str = current_request.path
         params: Dict[str, Any] = {}
