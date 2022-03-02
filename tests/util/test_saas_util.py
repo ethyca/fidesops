@@ -1,3 +1,4 @@
+from fidesops.common_exceptions import FidesopsException
 import pytest
 
 from fidesops.graph.config import (
@@ -8,7 +9,7 @@ from fidesops.graph.config import (
     ObjectField,
     ScalarField,
 )
-from fidesops.util.saas_util import paths_to_dict, merge_datasets
+from fidesops.util.saas_util import unflatten_dict, merge_datasets
 
 
 class TestMergeDatasets:
@@ -154,9 +155,9 @@ class TestMergeDatasets:
         collection = merged_dataset.collections[0]
         assert len(collection.fields) == 2
 
-        quert_field = collection.top_level_field_dict[FieldPath("query")]
-        assert len(quert_field.references) == 0
-        assert quert_field.identity == "email"
+        query_field = collection.top_level_field_dict[FieldPath("query")]
+        assert len(query_field.references) == 0
+        assert query_field.identity == "email"
         name_field = collection.top_level_field_dict[FieldPath("name")]
         assert isinstance(name_field, ObjectField)
         assert len(name_field.fields) == 2
@@ -248,30 +249,38 @@ class TestMergeDatasets:
         assert name_field.identity == "email"
 
 
-class TestDictUtils:
-    def test_paths_to_dict_noop(self):
-        dot_map = {"name": "first"}
-        result = paths_to_dict(dot_map)
-        assert result == dot_map
+def test_unflatten_dict():
+    # empty dictionary
+    assert unflatten_dict({}) == {}
 
-    def test_paths_to_dict_same_level(self):
-        dot_map = {"merge_fields.FNAME": "MASKED", "merge_fields.LNAME": "MASKED"}
-        result = paths_to_dict(dot_map)
-        assert result == {"merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"}}
+    # unflattened dictionary
+    assert unflatten_dict({"A": "1"}) == {"A": "1"}
 
-    def test_paths_to_dict_mixed_levels(self):
-        dot_map = {
-            "list_id": "123",
-            "merge_fields.FNAME": "MASKED",
-            "merge_fields.LNAME": "MASKED",
-        }
-        result = paths_to_dict(dot_map)
-        assert result == {
-            "list_id": "123",
-            "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-        }
+    # same level
+    assert unflatten_dict({"A.B": "1", "A.C": "2"}) == {"A": {"B": "1", "C": "2"}}
 
-    def test_paths_to_dict_long_path(self):
-        dot_map = {"a.b.c.d.e.f.g": "tada"}
-        result = paths_to_dict(dot_map)
-        assert result == {"a": {"b": {"c": {"d": {"e": {"f": {"g": "tada"}}}}}}}
+    # mixed levels
+    assert unflatten_dict({"A": "1", "B.C": "2", "B.D": "3",}) == {
+        "A": "1",
+        "B": {"C": "2", "D": "3"},
+    }
+
+    # long path
+    assert unflatten_dict({"A.B.C.D.E.F.G": "1"}) == {
+        "A": {"B": {"C": {"D": {"E": {"F": {"G": "1"}}}}}}
+    }
+
+    # incoming values should overwrite existing values
+    assert unflatten_dict({"A.B": 1, "A.B": 2}) == {"A": {"B": 2}}
+
+    # conflicting types
+    with pytest.raises(FidesopsException):
+        unflatten_dict({"A.B": 1, "A": 2, "A.C": 3})
+
+    # data passed in is not completely flattened
+    with pytest.raises(FidesopsException):
+        unflatten_dict({'A.B.C': 1, 'A': {'B.D': 2}})
+
+    # unflatten_dict shouldn't be called with a None separator
+    with pytest.raises(IndexError):
+        unflatten_dict({"": "1"}, separator=None)

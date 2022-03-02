@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Literal, Optional, Union
 from fidesops.schemas.dataset import FidesopsDatasetReference
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
@@ -15,18 +15,33 @@ class ConnectorParams(BaseModel):
 
 class RequestParam(BaseModel):
     """
-    A request parameter which includes the type (query, path, or body) along with a default value or
+    A request parameter which includes the type (query or path) along with a default value or
     a reference to an identity value or a value in another dataset.
     """
 
     name: str
     type: Literal[
-        "query", "path", "body"
+        "query", "path"
     ]  # used to determine location in the generated request
     default_value: Optional[Any]
     identity: Optional[str]
     data_type: Optional[str]
     references: Optional[List[FidesopsDatasetReference]]
+
+    @validator("references")
+    def check_reference_direction(
+        cls,
+        references: Optional[List[FidesopsDatasetReference]],
+        values: Dict[str, str],
+    ) -> Optional[List[FidesopsDatasetReference]]:
+        """Validates the request_param only contains inbound references"""
+        for reference in references:
+            if reference.direction == "to":
+                raise ValueError(
+                    "References can only have a direction of 'from', found 'to'"
+                )
+        
+        return references
 
 
 class Strategy(BaseModel):

@@ -121,7 +121,7 @@ def test_saas_erasure_request_task(
     connection_config_saas,
     dataset_config_saas,
     mailchimp_account_email,
-    reset_saas_data,
+    reset_mailchimp_data,
 ) -> None:
     """Full erasure request based on the Mailchimp SaaS config"""
 

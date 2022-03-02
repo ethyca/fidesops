@@ -58,7 +58,10 @@ class AuthenticatedClient:
         return self.add_authentication(req, self.client_config.authentication)
 
     def send(self, request_params: SaaSRequestParams) -> Response:
-        """Builds and executes an authenticated GET request"""
+        """
+        Builds and executes an authenticated request.
+        The HTTP method is determined by the request_params.
+        """
         prepared_request = self.get_authenticated_request(request_params)
         return self.session.send(prepared_request)
 

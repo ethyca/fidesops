@@ -1,6 +1,7 @@
 from collections import defaultdict
 from functools import reduce
 from typing import Any, Dict, List
+from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.config import Collection, Dataset, Field
 
 
@@ -51,30 +52,39 @@ def merge_datasets(dataset: Dataset, config_dataset: Dataset) -> Dataset:
     )
 
 
-def paths_to_dict(value_map: Dict[str, Any]) -> Dict[str, Any]:
+def unflatten_dict(input: Dict[str, Any], separator: str = ".") -> Dict[str, Any]:
     """
     Converts a dictionary of paths/values into a nested dictionary
 
     example:
 
-    {"object.first_property": "one", "object.second_property": "two"}
+    {"A.B": "1", "A.C": "2"}
 
     becomes
 
     {
-        "object": {
-            "first_property": "one",
-            "second_property" "two"
+        "A": {
+            "B": "1",
+            "C": "2"
         }
     }
     """
     output: Dict[Any, Any] = {}
-    for path, value in value_map.items():
-        keys = path.split(".")
+    for path, value in input.items():
+        if isinstance(value, dict):
+            raise FidesopsException(
+                "'unflatten_dict' expects a flattened dictionary as input."
+            )
+        keys = path.split(separator)
         target = reduce(
             lambda current, key: current.setdefault(key, {}),
             keys[:-1],
             output,
         )
-        target[keys[-1]] = value
+        try:
+            target[keys[-1]] = value
+        except TypeError as exc:
+            raise FidesopsException(
+                f"Error unflattening dictionary, conflicting levels detected: {exc}"
+            )
     return output

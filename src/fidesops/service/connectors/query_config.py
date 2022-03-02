@@ -30,7 +30,7 @@ from fidesops.task.refine_target_path import (
 )
 from fidesops.util.collection_util import append, filter_nonempty_values
 from fidesops.util.querytoken import QueryToken
-from fidesops.util.saas_util import paths_to_dict
+from fidesops.util.saas_util import unflatten_dict
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -599,7 +599,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
 
 
 SaaSRequestParams = Tuple[Literal["GET", "PUT"], str, Dict[str, Any], Optional[str]]
-"""Custom type to represent a tuple of path, params, and body values for a SaaS request"""
+"""Custom type to represent a tuple of HTTP method, path, params, and body values for a SaaS request"""
 
 
 class SaaSQueryConfig(QueryConfig[Union[List[SaaSRequestParams], SaaSRequestParams]]):
@@ -645,7 +645,7 @@ class SaaSQueryConfig(QueryConfig[Union[List[SaaSRequestParams], SaaSRequestPara
             elif param.type == "path":
                 path = path.replace(f"<{param.name}>", param_values[param.name])
 
-        return ("GET", path, params, None)
+        return "GET", path, params, None
 
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
@@ -674,7 +674,9 @@ class SaaSQueryConfig(QueryConfig[Union[List[SaaSRequestParams], SaaSRequestPara
         request: SaaSRequest, param_values: Dict[str, Any], body: Dict[str, Any]
     ) -> SaaSRequestParams:
         """
-        Populates the placeholders in the request with the given param values
+        Populates the placeholders in the request with the given
+        param values and converts the body dict into a JSON string
+        to include in the body of the request.
         """
         path: str = request.path
         params: Dict[str, Any] = {}
@@ -695,15 +697,15 @@ class SaaSQueryConfig(QueryConfig[Union[List[SaaSRequestParams], SaaSRequestPara
                     pydash.get(param_values, param.references[0].field),
                 )
 
-        return ("PUT", path, params, json.dumps(body))
+        return "PUT", path, params, json.dumps(body)
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> SaaSRequestParams:
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
-        body = paths_to_dict(update_value_map)
-        current_request = self.get_request_by_action("update")
-        collection_name = self.node.address.collection
+        body: Dict[str, Any] = unflatten_dict(update_value_map)
+        current_request: SaaSRequest = self.get_request_by_action("update")
+        collection_name: str = self.node.address.collection
         return self.prepare_update_params(current_request, {collection_name: row}, body)
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:

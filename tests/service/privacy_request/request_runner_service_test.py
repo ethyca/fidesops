@@ -352,7 +352,7 @@ def test_create_and_process_erasure_request_saas(
     erasure_policy_hmac,
     generate_auth_header,
     mailchimp_account_email,
-    reset_saas_data
+    reset_mailchimp_data
 ):
     customer_email = mailchimp_account_email
     data = {
@@ -373,10 +373,10 @@ def test_create_and_process_erasure_request_saas(
     masking_strategy = HmacMaskingStrategy(masking_configuration)
 
     assert merge_fields["FNAME"] == masking_strategy.mask(
-        reset_saas_data["merge_fields"]["FNAME"], pr.id
+        reset_mailchimp_data["merge_fields"]["FNAME"], pr.id
     )
     assert merge_fields["LNAME"] == masking_strategy.mask(
-        reset_saas_data["merge_fields"]["LNAME"], pr.id
+        reset_mailchimp_data["merge_fields"]["LNAME"], pr.id
     )
 
     pr.delete(db=db)

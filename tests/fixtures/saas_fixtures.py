@@ -1,20 +1,11 @@
 import json
-from fidesops.service.connectors.saas_connector import SaaSConnector
-from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
-from fidesops.util.data_category import DataCategory
 import pytest
 import os
-from fidesops.models.client import ClientDetail
-from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fidesops.models.storage import StorageConfig
-from fidesops.schemas.saas.saas_config import SaaSConfig
 import pydash
 import yaml
 
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.exc import ObjectDeletedError
 from typing import Dict, Generator
-
 
 from fidesops.core.config import load_file, load_toml
 from fidesops.models.connectionconfig import (
@@ -23,9 +14,9 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
-    STRING_REWRITE,
-)
+from fidesops.schemas.saas.saas_config import SaaSConfig
+from fidesops.service.connectors.saas_connector import SaaSConnector
+from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
 from tests.fixtures.application_fixtures import load_dataset
 
 
@@ -112,112 +103,6 @@ def connection_config_saas(
 
 
 @pytest.fixture(scope="function")
-def erasure_policy_string_rewrite(
-    db: Session,
-    oauth_client: ClientDetail,
-    storage_config: StorageConfig,
-) -> Generator:
-    erasure_policy = Policy.create(
-        db=db,
-        data={
-            "name": "SaaS string rewrite policy",
-            "key": "saas_string_rewrite_policy",
-            "client_id": oauth_client.id,
-        },
-    )
-
-    erasure_rule = Rule.create(
-        db=db,
-        data={
-            "action_type": ActionType.erasure.value,
-            "client_id": oauth_client.id,
-            "name": "SaaS Erasure Rule",
-            "policy_id": erasure_policy.id,
-            "masking_strategy": {
-                "strategy": STRING_REWRITE,
-                "configuration": {"rewrite_value": "MASKED"},
-            },
-        },
-    )
-
-    erasure_rule_target = RuleTarget.create(
-        db=db,
-        data={
-            "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
-            "rule_id": erasure_rule.id,
-        },
-    )
-
-    yield erasure_policy
-    try:
-        erasure_rule_target.delete(db)
-    except ObjectDeletedError:
-        pass
-    try:
-        erasure_rule.delete(db)
-    except ObjectDeletedError:
-        pass
-    try:
-        erasure_policy.delete(db)
-    except ObjectDeletedError:
-        pass
-
-
-@pytest.fixture(scope="function")
-def erasure_policy_hmac(
-    db: Session,
-    oauth_client: ClientDetail,
-    storage_config: StorageConfig,
-) -> Generator:
-    erasure_policy = Policy.create(
-        db=db,
-        data={
-            "name": "SaaS hmac policy",
-            "key": "saas_hmac_policy",
-            "client_id": oauth_client.id,
-        },
-    )
-
-    erasure_rule = Rule.create(
-        db=db,
-        data={
-            "action_type": ActionType.erasure.value,
-            "client_id": oauth_client.id,
-            "name": "SaaS Erasure Rule",
-            "policy_id": erasure_policy.id,
-            "masking_strategy": {
-                "strategy": HMAC,
-                "configuration": {},
-            },
-        },
-    )
-
-    erasure_rule_target = RuleTarget.create(
-        db=db,
-        data={
-            "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
-            "rule_id": erasure_rule.id,
-        },
-    )
-
-    yield erasure_policy
-    try:
-        erasure_rule_target.delete(db)
-    except ObjectDeletedError:
-        pass
-    try:
-        erasure_rule.delete(db)
-    except ObjectDeletedError:
-        pass
-    try:
-        erasure_policy.delete(db)
-    except ObjectDeletedError:
-        pass
-
-
-@pytest.fixture(scope="function")
 def saas_secrets():
     return saas_secrets_dict["mailchimp"]
 
@@ -230,7 +115,7 @@ def mailchimp_account_email():
 
 
 @pytest.fixture(scope="function")
-def reset_saas_data(connection_config_saas, mailchimp_account_email) -> Generator:
+def reset_mailchimp_data(connection_config_saas, mailchimp_account_email) -> Generator:
     """
     Gets the current value of the resource and restores it after the test is complete.
     Used for erasure tests.

@@ -14,7 +14,7 @@ dataset:
           - name: from_email
             data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
-                data_type: string
+              data_type: string
           - name: subject
             data_categories: [system.operations]
           - name: message
@@ -36,7 +36,7 @@ dataset:
         - name: id
           data_categories: [user.derived.identifiable.unique_id]
           fidesops_meta:
-              primary_key: True
+            primary_key: True
         - name: list_id
           data_categories: [system.operations]
         - name: email_address
