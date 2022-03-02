@@ -113,6 +113,31 @@ class TestValidateSaaSConfig:
         details = json.loads(response.text)["detail"]
         assert details[0]["msg"] == "Can only have one of 'reference' or 'identity' per request_param, not both"
 
+    def test_put_validate_saas_config_wrong_reference_direction(
+        self,
+        example_saas_configs,
+        validate_saas_config_url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
+        saas_config = example_saas_configs["mailchimp"]
+        request_params = saas_config["endpoints"][0]["requests"]["read"][
+            "request_params"
+        ][0]
+        request_params["references"] = [
+            {
+                "dataset": "postgres_example_test_dataset",
+                "field": "another.field",
+                "direction": "to",
+            }
+        ]
+        response = api_client.put(
+            validate_saas_config_url, headers=auth_header, json=saas_config
+        )
+        assert response.status_code == 422
+        details = json.loads(response.text)["detail"]
+        assert details[0]["msg"] == "References can only have a direction of 'from', found 'to'"
 
 @pytest.mark.saas_connector
 class TestPutSaaSConfig:

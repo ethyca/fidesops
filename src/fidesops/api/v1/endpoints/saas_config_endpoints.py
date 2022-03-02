@@ -139,7 +139,7 @@ def delete_saas_config(
             detail=f"No SaaS config found for connection '{connection_config.key}'",
         )
 
-    fides_key = saas_config["fides_key"]
+    fides_key = saas_config.get("fides_key")
     dataset = DatasetConfig.filter(
         db=db,
         conditions=(
@@ -149,6 +149,10 @@ def delete_saas_config(
     ).first()
 
     warnings = []
+
+    if not fides_key:
+        warnings.append("A fides_key was not found for this SaaS config.")
+
     if dataset:
         warnings.append(
             f"Must delete the dataset with fides_key '{fides_key}' before deleting this SaaS config."

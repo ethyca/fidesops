@@ -97,7 +97,7 @@ def validate_dataset(
         # Datasets for SaaS connections need to be merged with a SaaS config to
         # be able to generate a valid traversal
         if connection_config.connection_type == ConnectionType.saas:
-            __validate_saas_dataset(connection_config, dataset)
+            _validate_saas_dataset(connection_config, dataset)
             graph = merge_datasets(
                 graph,
                 connection_config.get_saas_config().get_graph(),
@@ -157,7 +157,7 @@ def patch_datasets(
     key_list = [dataset.fides_key for dataset in datasets]
     if len(key_list) != len(set(key_list)):
         logger.warning(
-            "Datasets with duplicate fides_keys detected, may result in unintented behavior."
+            "Datasets with duplicate fides_keys detected, may result in unintended behavior."
         )
 
     for dataset in datasets:
@@ -168,7 +168,7 @@ def patch_datasets(
         }
         try:
             if connection_config.connection_type == ConnectionType.saas:
-                __validate_saas_dataset(connection_config, dataset)
+                _validate_saas_dataset(connection_config, dataset)
             # Try to find an existing DatasetConfig matching the given connection & key
             dataset_config = DatasetConfig.create_or_update(db, data=data)
             created_or_updated.append(dataset_config.dataset)
@@ -195,7 +195,7 @@ def patch_datasets(
     )
 
 
-def __validate_saas_dataset(
+def _validate_saas_dataset(
     connection_config: ConnectionConfig, dataset: FidesopsDataset
 ) -> None:
     if connection_config.saas_config is None:

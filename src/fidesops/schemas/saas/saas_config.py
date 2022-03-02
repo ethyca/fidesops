@@ -42,6 +42,19 @@ class RequestParam(BaseModel):
             )
         return references
 
+    @validator("references")
+    def check_reference_direction(
+        cls, references: Optional[List[FidesopsDatasetReference]]
+    ) -> Optional[List[FidesopsDatasetReference]]:
+        """Validates the request_param only contains inbound references"""
+        for reference in references or {}:
+            if reference.direction == "to":
+                raise ValueError(
+                    "References can only have a direction of 'from', found 'to'"
+                )
+
+        return references
+
 
 class Strategy(BaseModel):
     """General shape for swappable strategies (ex: auth, pagination, postprocessing, etc.)"""
