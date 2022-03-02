@@ -76,27 +76,45 @@ const useRequestForm = ({
           policy_key: action.policy_key,
         },
       ];
-      const response = await fetch(`${host}/privacy-request`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-      const data = await response.json();
-      if (data.succeeded.length) {
-        setAlert({
-          status: 'success',
-          description:
-            'You request was successful, please await further instructions.',
-        });
-      } else {
+
+      const handleError = () => {
         setAlert({
           status: 'error',
           description: 'Your request has failed. Please try again.',
         });
+        onClose();
+      };
+
+      try {
+        const response = await fetch(`${host}/privacy-request`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+          handleError();
+          return;
+        }
+
+        const data = await response.json();
+        if (data.succeeded.length) {
+          setAlert({
+            status: 'success',
+            description:
+              'You request was successful, please await further instructions.',
+          });
+        } else {
+          handleError();
+        }
+      } catch (error) {
+        handleError();
+        return;
       }
+
       onClose();
     },
     validate: (values) => {
@@ -245,14 +263,24 @@ export const RequestModal: React.FC<{
           </ModalBody>
 
           <ModalFooter pb={6}>
-            <Button variant="outline" flex="1" mr={3} onClick={onClose}>
+            <Button
+              variant="outline"
+              flex="1"
+              mr={3}
+              size="sm"
+              onClick={onClose}
+            >
               Cancel
             </Button>
             <Button
               type="submit"
               flex="1"
+              bg="primary.800"
+              _hover={{ bg: 'primary.400' }}
+              _active={{ bg: 'primary.500' }}
               colorScheme="primary"
               disabled={!(isValid && dirty)}
+              size="sm"
             >
               Continue
             </Button>

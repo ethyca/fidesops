@@ -11,7 +11,7 @@
       "title": "Download your data",
       "description": "We will email you a report of the data related to your account.",
       "identity_inputs": {
-        "name": "optional",
+        "name": "required",
         "email": "required",
         "phone": "optional"
       }
@@ -22,7 +22,7 @@
       "title": "Delete your data",
       "description": "We will delete all of your account data. This action cannot be undone.",
       "identity_inputs": {
-        "name": "optional",
+        "name": "required",
         "email": "required",
         "phone": "optional"
       }
@@ -33,7 +33,7 @@
       "title": "Edit your data",
       "description": "Manage how we use your data, including Do Not Sell My Personal Information.",
       "identity_inputs": {
-        "name": "optional",
+        "name": "required",
         "email": "required",
         "phone": "optional"
       }
