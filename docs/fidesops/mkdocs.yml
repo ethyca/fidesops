@@ -23,6 +23,7 @@ nav:
       - Configure Data Masking Strategies: guides/masking_strategies.md  
       - Configure Storage Destinations: guides/storage.md
       - Configure Policy Webhooks: guides/policy_webhooks.md
+      - Connect to SaaS Applications: guides/saas_connectors.md
       - Execute Privacy Requests: guides/privacy_requests.md
       - Report on Privacy Requests: guides/reporting.md
       - Configure OneTrust Integration: guides/onetrust.md  
