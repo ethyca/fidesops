@@ -113,7 +113,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         read_request = self.endpoints[collection_name].requests["read"]
 
         query_config = self.query_config(node)
-        prepared_requests = query_config.generate_query(input_data, policy)
+        prepared_requests = query_config.generate_requests(input_data, policy)
 
         rows: List[Row] = []
         for prepared_request in prepared_requests:

@@ -625,7 +625,7 @@ class TestSaaSQueryConfig:
 
         # static path with single query param
         config = SaaSQueryConfig(member, endpoints)
-        prepared_requests = config.generate_query(
+        prepared_requests = config.generate_requests(
             {"query": ["customer-1@example.com"]}, policy
         )
         assert prepared_requests[0] == (
@@ -637,7 +637,7 @@ class TestSaaSQueryConfig:
 
         # static path with multiple query params with default values
         config = SaaSQueryConfig(conversations, endpoints)
-        prepared_requests = config.generate_query(
+        prepared_requests = config.generate_requests(
             {"placeholder": ["customer-1@example.com"]}, policy
         )
         assert prepared_requests[0] == (
@@ -649,7 +649,7 @@ class TestSaaSQueryConfig:
 
         # dynamic path with no query params
         config = SaaSQueryConfig(messages, endpoints)
-        prepared_requests = config.generate_query({"conversation_id": ["abc"]}, policy)
+        prepared_requests = config.generate_requests({"conversation_id": ["abc"]}, policy)
         assert prepared_requests[0] == (
             "GET",
             "/3.0/conversations/abc/messages",

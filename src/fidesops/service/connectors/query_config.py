@@ -671,7 +671,7 @@ SaaSRequestParams = Tuple[Literal["GET", "PUT"], str, Dict[str, Any], Optional[s
 """Custom type to represent a tuple of HTTP method, path, params, and body values for a SaaS request"""
 
 
-class SaaSQueryConfig(QueryConfig[Union[List[SaaSRequestParams], SaaSRequestParams]]):
+class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
     """Query config that generates populated SaaS requests for a given collection"""
 
     def __init__(self, node: TraversalNode, endpoints: Dict[str, Endpoint]):
@@ -695,62 +695,66 @@ class SaaSQueryConfig(QueryConfig[Union[List[SaaSRequestParams], SaaSRequestPara
                 f"The `{action}` action is not defined for the `{collection_name}` endpoint in {self.node.node.dataset.connection_key}"
             )
 
-    @staticmethod
-    def prepare_query_params(
-        request: SaaSRequest, param_values: Dict[str, Any]
-    ) -> SaaSRequestParams:
-        """
-        Populates the placeholders in the request with the given param values
-        """
-        path: str = request.path
-        params: Dict[str, Any] = {}
+    def generate_requests(
+        self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
+    ) -> Optional[List[SaaSRequestParams]]:
+        """Takes the input_data and uses it to generate a list of SaaS request params"""
 
-        for param in request.request_params:
-            if param.type == "query":
-                if param.default_value:
-                    params[param.name] = param.default_value
-                elif param.references or param.identity:
-                    params[param.name] = param_values[param.name]
-            elif param.type == "path":
-                path = path.replace(f"<{param.name}>", param_values[param.name])
-
-        return "GET", path, params, None
+        filtered_data = self.node.typed_filtered_values(input_data)
+        
+        # populate the SaaS request with reference values from other datasets provided to this node
+        request_params = []
+        for string_path, reference_values in filtered_data.items():
+            for value in reference_values:
+                request_params.append(
+                    self.generate_query({string_path: [value]}, policy)
+                )
+        return request_params
 
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
-    ) -> Optional[List[SaaSRequestParams]]:
+    ) -> SaaSRequestParams:
         """
         This returns the query/path params needed to make an API call.
         This is the API equivalent of building the components of a database
         query statement (select statement, where clause, limit, offset, etc.)
         """
-
-        filtered_data = self.node.typed_filtered_values(input_data)
         current_request = self.get_request_by_action("read")
 
-        request_params = []
-        # populate the SaaS request with reference values from other datasets provided to this node
-        for string_path, reference_values in filtered_data.items():
-            for value in reference_values:
-                request_params.append(
-                    self.prepare_query_params(current_request, {string_path: value})
-                )
-        logger.info(f"Populated request params for {current_request.path}")
-        return request_params
-
-    @staticmethod
-    def prepare_update_params(
-        request: SaaSRequest, param_values: Dict[str, Any], body: Dict[str, Any]
-    ) -> SaaSRequestParams:
-        """
-        Populates the placeholders in the request with the given
-        param values and converts the body dict into a JSON string
-        to include in the body of the request.
-        """
-        path: str = request.path
+        path: str = current_request.path
         params: Dict[str, Any] = {}
 
-        for param in request.request_params:
+        # uses the param names to read from the input data
+        for param in current_request.request_params:
+            if param.type == "query":
+                if param.default_value:
+                    params[param.name] = param.default_value
+                elif param.references or param.identity:
+                    params[param.name] = input_data[param.name][0]
+            elif param.type == "path":
+                path = path.replace(f"<{param.name}>", input_data[param.name][0])
+
+        logger.info(f"Populated request params for {current_request.path}")
+        return "GET", path, params, None
+
+    def generate_update_stmt(
+        self, row: Row, policy: Policy, request: PrivacyRequest
+    ) -> SaaSRequestParams:
+        """
+        Takes a row and masks the fields based on the policy. This masked row is then added as the
+        body to a dynamically generated SaaS request.
+        """
+        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
+        body: Row = unflatten_dict(update_value_map)
+        current_request: SaaSRequest = self.get_request_by_action("update")
+        collection_name: str = self.node.address.collection
+        param_values: Dict[str, Row] = {collection_name: body}
+
+        path: str = current_request.path
+        params: Dict[str, Any] = {}
+
+        # uses the reference fields to read from the param_values
+        for param in current_request.request_params:
             if param.type == "query":
                 if param.default_value:
                     params[param.name] = param.default_value
@@ -766,16 +770,8 @@ class SaaSQueryConfig(QueryConfig[Union[List[SaaSRequestParams], SaaSRequestPara
                     pydash.get(param_values, param.references[0].field),
                 )
 
+        logger.info(f"Populated request params for {current_request.path}")
         return "PUT", path, params, json.dumps(body)
-
-    def generate_update_stmt(
-        self, row: Row, policy: Policy, request: PrivacyRequest
-    ) -> SaaSRequestParams:
-        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
-        body: Dict[str, Any] = unflatten_dict(update_value_map)
-        current_request: SaaSRequest = self.get_request_by_action("update")
-        collection_name: str = self.node.address.collection
-        return self.prepare_update_params(current_request, {collection_name: row}, body)
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string"""
