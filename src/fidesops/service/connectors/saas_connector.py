@@ -9,9 +9,17 @@ from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.common_exceptions import ConnectionException, ClientUnsuccessfulException, PostProcessingException
+from fidesops.common_exceptions import (
+    ConnectionException,
+    ClientUnsuccessfulException,
+    PostProcessingException,
+)
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.saas_config import Strategy, SaaSRequest, PostProcessorStrategyData
+from fidesops.schemas.saas.saas_config import (
+    Strategy,
+    SaaSRequest,
+    PostProcessorStrategyData,
+)
 from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_factory import (
     get_strategy,
 )
@@ -135,7 +143,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 node.address,
                 privacy_request.get_cached_identity_data(),
                 read_request.postprocessors,
-                response
+                response,
             )
             rows.extend(data_to_be_processed)
         return rows
