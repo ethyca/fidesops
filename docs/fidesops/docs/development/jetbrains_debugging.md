@@ -50,7 +50,7 @@ Go to: **Run/Debug Configurations** -> **+** -> **Python**
 - Make sure to select **Use specified interpreter** set the Remote Python Docker Compose *(created in the previous section)*
 - Add `FIDESOPS_CONFIG_PATH=/fidesops` to **Environment variables**
 
-See screenshot bellow:
+See screenshot below:
 
 ![Screenshot of Run/Debug Configuration for main.py](../img/ide/debug_config.png)
 
