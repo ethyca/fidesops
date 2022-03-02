@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Literal, Optional, Union
-from fidesops.schemas.dataset import FidesopsDatasetReference
 from pydantic import BaseModel, validator
+from fidesops.schemas.base_class import BaseSchema
+from fidesops.schemas.dataset import FidesopsDatasetReference
 from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
@@ -29,18 +30,28 @@ class RequestParam(BaseModel):
     references: Optional[List[FidesopsDatasetReference]]
 
     @validator("references")
-    def check_reference_direction(
+    def check_references_or_identity(
         cls,
         references: Optional[List[FidesopsDatasetReference]],
         values: Dict[str, str],
     ) -> Optional[List[FidesopsDatasetReference]]:
+        """Validates that each request_param only has an identity or references, not both"""
+        if values["identity"] is not None and references is not None:
+            raise ValueError(
+                "Can only have one of 'reference' or 'identity' per request_param, not both"
+            )
+        return references
+
+    @validator("references")
+    def check_reference_direction(
+        cls, references: Optional[List[FidesopsDatasetReference]]
+    ) -> Optional[List[FidesopsDatasetReference]]:
         """Validates the request_param only contains inbound references"""
-        for reference in references:
+        for reference in references or {}:
             if reference.direction == "to":
                 raise ValueError(
                     "References can only have a direction of 'from', found 'to'"
                 )
-        
         return references
 
 
@@ -147,3 +158,21 @@ class SaaSConfig(BaseModel):
             collections=collections,
             connection_key=self.fides_key,
         )
+
+
+class SaaSConfigValidationDetails(BaseSchema):
+    """
+    Message with any validation issues with the SaaS config
+    """
+
+    msg: Optional[str]
+
+
+class ValidateSaaSConfigResponse(BaseSchema):
+    """
+    Response model for validating a SaaS config, which includes both the SaaS config
+    itself (if valid) plus a details object describing any validation errors.
+    """
+
+    saas_config: SaaSConfig
+    validation_details: SaaSConfigValidationDetails
