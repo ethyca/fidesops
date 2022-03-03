@@ -136,6 +136,11 @@ def test_saas_erasure_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_saas_erasure_request_task_{random.randint(0, 1000)}"
     )
+    identity_attribute = "email"
+    identity_value = mailchimp_account_email
+    identity_kwargs = {identity_attribute: identity_value}
+    identity = PrivacyRequestIdentity(**identity_kwargs)
+    privacy_request.cache_identity(identity)
 
     dataset_name = connection_config_saas.get_saas_config().fides_key
     merged_graph = dataset_config_saas.get_graph()

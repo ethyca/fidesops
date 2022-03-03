@@ -63,7 +63,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                 or identity_data.get(self.value.identity, None) is None
             ):
                 logger.warning(
-                    f"Could not retrieve identity reference {self.value.identity} due to missing identity data for the following post processing strategy: {self.get_strategy_name()}"
+                    f"Could not retrieve identity reference '{self.value.identity}' due to missing identity data for the following post processing strategy: {self.get_strategy_name()}"
                 )
                 return None
             filter_value = identity_data.get(self.value.identity)
