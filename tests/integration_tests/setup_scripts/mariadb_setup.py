@@ -53,11 +53,9 @@ def setup():
         lines = query_file.read().splitlines()
         filtered = [line for line in lines if not line.startswith("--")]
         queries = " ".join(filtered).split(";")
-        [
-            session.execute(f"{sqlalchemy.text(query.strip())};")
-            for query in queries
-            if query
-        ]
+        for query in queries:
+            if query:
+                session.execute(f"{sqlalchemy.text(query.strip())};")
 
 
 if __name__ == "__main__":
