@@ -4,12 +4,14 @@ import os
 from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
+from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
 from fidesops.util.data_category import DataCategory
 
 import pydash
 import pytest
 import yaml
 from faker import Faker
+from pymongo import MongoClient
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
@@ -53,6 +55,9 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
 integration_config = load_toml("fidesops-integration.toml")
+
+logger = logging.getLogger(__name__)
+
 
 # Unified list of connections to integration dbs specified from fidesops-integration.toml
 
@@ -506,6 +511,110 @@ def policy(
     except ObjectDeletedError:
         pass
 
+@pytest.fixture(scope="function")
+def erasure_policy_string_rewrite(
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config: StorageConfig,
+) -> Generator:
+    erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "string rewrite policy",
+            "key": "string_rewrite_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "string rewrite erasure rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": STRING_REWRITE,
+                "configuration": {"rewrite_value": "MASKED"},
+            },
+        },
+    )
+
+    erasure_rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "rule_id": erasure_rule.id,
+        },
+    )
+
+    yield erasure_policy
+    try:
+        erasure_rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def erasure_policy_hmac(
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config: StorageConfig,
+) -> Generator:
+    erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "hmac policy",
+            "key": "hmac_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "hmac erasure rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": HMAC,
+                "configuration": {},
+            },
+        },
+    )
+
+    erasure_rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "rule_id": erasure_rule.id,
+        },
+    )
+
+    yield erasure_policy
+    try:
+        erasure_rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
 
 @pytest.fixture(scope="function")
 def privacy_requests(db: Session, policy: Policy) -> Generator:
@@ -711,135 +820,6 @@ def example_datasets() -> List[Dict]:
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
     return example_datasets
-
-
-@pytest.fixture
-def snowflake_example_test_dataset_config(
-    snowflake_connection_config: ConnectionConfig,
-    db: Session,
-    example_datasets: List[Dict],
-) -> Generator:
-    dataset = example_datasets[2]
-    fides_key = dataset["fides_key"]
-    dataset_config = DatasetConfig.create(
-        db=db,
-        data={
-            "connection_config_id": snowflake_connection_config.id,
-            "fides_key": fides_key,
-            "dataset": dataset,
-        },
-    )
-    yield dataset_config
-    dataset_config.delete(db=db)
-
-
-@pytest.fixture
-def redshift_example_test_dataset_config(
-    redshift_connection_config: ConnectionConfig,
-    db: Session,
-    example_datasets: List[Dict],
-) -> Generator:
-    dataset = example_datasets[3]
-    fides_key = dataset["fides_key"]
-    dataset_config = DatasetConfig.create(
-        db=db,
-        data={
-            "connection_config_id": redshift_connection_config.id,
-            "fides_key": fides_key,
-            "dataset": dataset,
-        },
-    )
-    yield dataset_config
-    dataset_config.delete(db=db)
-
-
-@pytest.fixture
-def postgres_example_test_dataset_config(
-    connection_config: ConnectionConfig,
-    db: Session,
-    example_datasets: List[Dict],
-) -> Generator:
-    postgres_dataset = example_datasets[0]
-    fides_key = postgres_dataset["fides_key"]
-    connection_config.name = fides_key
-    connection_config.key = fides_key
-    connection_config.save(db=db)
-    dataset = DatasetConfig.create(
-        db=db,
-        data={
-            "connection_config_id": connection_config.id,
-            "fides_key": fides_key,
-            "dataset": postgres_dataset,
-        },
-    )
-    yield dataset
-    dataset.delete(db=db)
-
-
-@pytest.fixture
-def mssql_example_test_dataset_config(
-    connection_config_mssql: ConnectionConfig,
-    db: Session,
-    example_datasets: List[Dict],
-) -> Generator:
-    mssql_dataset = example_datasets[4]
-    fides_key = mssql_dataset["fides_key"]
-    connection_config_mssql.name = fides_key
-    connection_config_mssql.key = fides_key
-    connection_config_mssql.save(db=db)
-    dataset = DatasetConfig.create(
-        db=db,
-        data={
-            "connection_config_id": connection_config_mssql.id,
-            "fides_key": fides_key,
-            "dataset": mssql_dataset,
-        },
-    )
-    yield dataset
-    dataset.delete(db=db)
-
-
-@pytest.fixture
-def postgres_example_test_dataset_config_read_access(
-    read_connection_config: ConnectionConfig,
-    db: Session,
-    example_datasets: List[Dict],
-) -> Generator:
-    postgres_dataset = example_datasets[0]
-    fides_key = postgres_dataset["fides_key"]
-    dataset = DatasetConfig.create(
-        db=db,
-        data={
-            "connection_config_id": read_connection_config.id,
-            "fides_key": fides_key,
-            "dataset": postgres_dataset,
-        },
-    )
-    yield dataset
-    dataset.delete(db=db)
-
-
-@pytest.fixture
-def mysql_example_test_dataset_config(
-    connection_config_mysql: ConnectionConfig,
-    db: Session,
-    example_datasets: List[Dict],
-) -> Generator:
-    mysql_dataset = example_datasets[5]
-    fides_key = mysql_dataset["fides_key"]
-    connection_config_mysql.name = fides_key
-    connection_config_mysql.key = fides_key
-    connection_config_mysql.save(db=db)
-    dataset = DatasetConfig.create(
-        db=db,
-        data={
-            "connection_config_id": connection_config_mysql.id,
-            "fides_key": fides_key,
-            "dataset": mysql_dataset,
-        },
-    )
-    yield dataset
-    dataset.delete(db=db)
 
 
 @pytest.fixture

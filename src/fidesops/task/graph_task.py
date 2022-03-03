@@ -1,12 +1,12 @@
-import itertools
+import copy
+
 import logging
 import traceback
 from abc import ABC
-from collections import defaultdict
 from functools import wraps
 
 from time import sleep
-from typing import List, Dict, Any, Tuple, Callable, Optional, Set
+from typing import List, Dict, Any, Tuple, Callable, Optional
 
 import dask
 from dask.threaded import get
@@ -17,19 +17,21 @@ from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     FieldPath,
+    Field,
+    FieldAddress,
 )
-from fidesops.graph.graph import Edge, DatasetGraph
-from fidesops.graph.traversal import TraversalNode, Row, Traversal
+from fidesops.graph.graph import Edge, DatasetGraph, Node
+from fidesops.graph.traversal import TraversalNode, Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, AccessLevel
 from fidesops.models.policy import ActionType, Policy
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLogStatus
-from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.connectors import BaseConnector
 from fidesops.task.consolidate_query_matches import consolidate_query_matches
 from fidesops.task.filter_element_match import filter_element_match
-from fidesops.task.filter_results import select_and_save_field, remove_empty_containers
+from fidesops.task.refine_target_path import FieldPathNodeInput
 from fidesops.task.task_resources import TaskResources
-from fidesops.util.collection_util import partition, append
+from fidesops.util.cache import get_cache
+from fidesops.util.collection_util import partition, append, NodeInput, Row
 from fidesops.util.logger import NotPii
 
 logger = logging.getLogger(__name__)
@@ -129,7 +131,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         connection_config: ConnectionConfig = self.connector.configuration
         return connection_config.access == AccessLevel.write
 
-    def to_dask_input_data(self, *data: List[Row]) -> Dict[str, List[Any]]:
+    def pre_process_input_data(self, *data: List[Row]) -> NodeInput:
         """
         Consolidates the outputs of queries from potentially multiple collections whose
         data is needed as input into the current collection.
@@ -218,44 +220,102 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             logger.info(f"Ending {self.resources.request.id}, {self.key}")
             self.update_status(
                 "success",
-                [
-                    {
-                        "field_name": field.name,
-                        "path": f"{self.traversal_node.node.address}:{field.name}",
-                        "data_categories": field.data_categories,
-                    }
-                    for field in self.traversal_node.node.collection.field_dict.values()
-                ],
+                build_affected_field_logs(
+                    self.traversal_node.node, self.resources.policy, action_type
+                ),
                 action_type,
                 ExecutionLogStatus.complete,
             )
 
-    @retry(action_type=ActionType.access, default_return=[])
-    def access_request(self, *inputs: List[Row]) -> List[Row]:
-        """Run access request"""
-        formatted_input_data = self.to_dask_input_data(*inputs)
-        output = self.connector.retrieve_data(
-            self.traversal_node, self.resources.policy, formatted_input_data
+    def post_process_input_data(
+        self, pre_processed_inputs: NodeInput
+    ) -> FieldPathNodeInput:
+        """
+        For each entrypoint field, specify if we should return all data, or just data that matches the coerced
+        input values. Used for post-processing access request results for a given collection.
+
+        :param pre_processed_inputs: string paths mapped to values that were used to query the current collection
+        :return: FieldPaths mapped to type-coerced values that we need to match in
+        access request results, or FieldPaths mapped to None if we want to return everything.
+
+        :Example:
+        owner.phone field will not be filtered but we will process the owner.identifier results to return
+        values that match one of [1234, 5678, 9102]
+
+        {FieldPath("owner", "phone"): None, FieldPath("owner", "identifier"): [1234, 5678, 9102]}
+        """
+        out: FieldPathNodeInput = {}
+        for key, values in pre_processed_inputs.items():
+            path: FieldPath = FieldPath.parse(key)
+            field: Field = self.traversal_node.node.collection.field(path)
+            if (
+                field
+                and path in self.traversal_node.query_field_paths
+                and isinstance(values, list)
+            ):
+                if field.return_all_elements:
+                    # All data will be returned
+                    out[path] = None
+                else:
+                    # Default behavior - we will filter values to match those in filtered
+                    cast_values = [
+                        field.cast(v) for v in values
+                    ]  # Cast values to expected type where possible
+                    filtered = list(filter(lambda x: x is not None, cast_values))
+                    if filtered:
+                        out[path] = filtered
+        return out
+
+    def access_results_post_processing(
+        self, formatted_input_data: NodeInput, output: List[Row]
+    ) -> List[Row]:
+        """
+        Completes post-processing filtering of access request results.
+
+        By default, if an array field was an entry point into the node, return only array elements that *match* the
+        condition.  Specifying return_all_elements = true on the field's config will instead return *all* array elements.
+
+        Caches the data in TWO separate formats: 1) erasure format, *replaces* unmatched array elements with placeholder
+        text, and 2) access request format, which *removes* unmatched array elements altogether.  If no data was filtered
+        out, both cached versions will be the same.
+        """
+        post_processed_node_input_data: FieldPathNodeInput = (
+            self.post_process_input_data(formatted_input_data)
         )
 
-        coerced_input_data = self.traversal_node.typed_filtered_values(
-            formatted_input_data  # Cast incoming values to correct type
+        # For erasures: cache results with non-matching array elements *replaced* with placeholder text
+        placeholder_output: List[Row] = copy.deepcopy(output)
+        for row in placeholder_output:
+            filter_element_match(
+                row, query_paths=post_processed_node_input_data, delete_elements=False
+            )
+        self.resources.cache_results_with_placeholders(
+            f"access_request__{self.key}", placeholder_output
         )
+
+        # For access request results, cache results with non-matching array elements *removed*
         for row in output:
-            # In code, filter out non-matching sub-documents and array elements
             logger.info(
                 f"Filtering row in {self.traversal_node.node.address} for matching array elements."
             )
-            filter_element_match(
-                row,
-                {
-                    FieldPath.parse(field): inputs
-                    for field, inputs in coerced_input_data.items()
-                },
-            )
+            filter_element_match(row, post_processed_node_input_data)
         self.resources.cache_object(f"access_request__{self.key}", output)
-        self.log_end(ActionType.access)
+
+        # Return filtered rows with non-matched array data removed.
         return output
+
+    @retry(action_type=ActionType.access, default_return=[])
+    def access_request(self, *inputs: List[Row]) -> List[Row]:
+        """Run an access request on a single node."""
+        formatted_input_data: NodeInput = self.pre_process_input_data(*inputs)
+        output: List[Row] = self.connector.retrieve_data(
+            self.traversal_node, self.resources.policy, formatted_input_data
+        )
+        filtered_output: List[Row] = self.access_results_post_processing(
+            formatted_input_data, output
+        )
+        self.log_end(ActionType.access)
+        return filtered_output
 
     @retry(action_type=ActionType.erasure, default_return=0)
     def erasure_request(self, retrieved_data: List[Row]) -> int:
@@ -263,6 +323,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # if there is no primary key specified in the graph node configuration
         # note this in the execution log and perform no erasures on this node
         if not self.traversal_node.node.contains_field(lambda f: f.primary_key):
+            logger.warning(
+                f"No erasures on {self.traversal_node.node.address} as there is no primary_key defined."
+            )
             self.update_status(
                 "No values were erased since no primary key was defined for this collection",
                 None,
@@ -272,6 +335,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             return 0
 
         if not self.can_write_data():
+            logger.warning(
+                f"No erasures on {self.traversal_node.node.address} as its ConnectionConfig does not have write access."
+            )
             self.update_status(
                 f"No values were erased since this connection {self.connector.configuration.key} has not been "
                 f"given write access",
@@ -356,6 +422,21 @@ def run_access_request(
         return v.compute()
 
 
+def get_cached_data_for_erasures(
+    privacy_request_id: str,
+) -> Dict[str, Any]:
+    """
+    Fetches processed access request results to be used for erasures.
+
+    Processing may have have added indicators to not mask certain elements in array data.
+    """
+    cache = get_cache()
+    value_dict = cache.get_encoded_objects_by_prefix(
+        f"PLACEHOLDER_RESULTS__{privacy_request_id}"
+    )
+    return {k.split("__")[-1]: v for k, v in value_dict.items()}
+
+
 def run_erasure(  # pylint: disable = too-many-arguments
     privacy_request: PrivacyRequest,
     policy: Policy,
@@ -404,55 +485,50 @@ def run_erasure(  # pylint: disable = too-many-arguments
         return erasure_update_map
 
 
-def filter_data_categories(
-    access_request_results: Dict[str, List[Dict[str, Optional[Any]]]],
-    target_categories: Set[str],
-    data_category_fields: Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]],
-) -> Dict[str, List[Dict[str, Optional[Any]]]]:
-    """Filter access request results to only return fields associated with the target data categories
-    and subcategories.
+def build_affected_field_logs(
+    node: Node, policy: Policy, action_type: ActionType
+) -> List[Dict[str, Any]]:
+    """For a given node (collection), policy, and action_type (access or erasure) format all of the fields that
+    were potentially touched to be stored in the ExecutionLogs for troubleshooting.
 
-    Regarding subcategories,if data category "user.provided.identifiable.contact" is specified on one of the rule
-    targets, for example, all fields on subcategories also apply, so ["user.provided.identifiable.contact.city",
-    "user.provided.identifiable.contact.street", ...], etc.
-
-    :param access_request_results: Dictionary of access request results for each of your collections
-    :param target_categories: A set of data categories that we'd like to extract from access_request_results
-    :param data_category_fields: Data categories mapped to applicable fields for each collection
-
-    :return: Filtered access request results that only contain fields matching the desired data categories.
-    TODO move to fidesops.task.filter_results.py, leaving for now to make the diff more clear
+    :Example:
+    [{
+        "path": "dataset_name:collection_name:field_name",
+        "field_name": "field_name",
+        "data_categories": ["data_category_1", "data_category_2"]
+    }]
     """
-    logger.info(
-        "Filtering Access Request results to return fields associated with data categories"
-    )
-    filtered_access_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    for node_address, results in access_request_results.items():
-        if not results:
+
+    targeted_field_paths: Dict[FieldAddress, str] = {}
+
+    for rule in policy.rules:
+        if rule.action_type != action_type:
+            continue
+        rule_categories: List[str] = rule.get_target_data_categories()
+        if not rule_categories:
             continue
 
-        # Gets all FieldPaths on this traversal_node associated with the requested data
-        # categories and sub data categories
-        target_field_paths: Set[FieldPath] = set(
-            itertools.chain(
-                *[
-                    field_paths
-                    for cat, field_paths in data_category_fields[
-                        CollectionAddress.from_string(node_address)
-                    ].items()
-                    if any([cat.startswith(tar) for tar in target_categories])
-                ]
-            )
+        collection_categories: Dict[
+            str, List[FieldPath]
+        ] = node.collection.field_paths_by_category
+        for rule_cat in rule_categories:
+            for collection_cat, field_paths in collection_categories.items():
+                if collection_cat.startswith(rule_cat):
+                    targeted_field_paths.update(
+                        {
+                            node.address.field_address(field_path): collection_cat
+                            for field_path in field_paths
+                        }
+                    )
+
+    ret: List[Dict[str, Any]] = []
+    for field_address, data_categories in targeted_field_paths.items():
+        ret.append(
+            {
+                "path": field_address.value,
+                "field_name": field_address.field_path.string_path,
+                "data_categories": [data_categories],
+            }
         )
 
-        if not target_field_paths:
-            continue
-
-        for row in results:
-            filtered_results: Dict[str, Any] = {}
-            for field_path in target_field_paths:
-                select_and_save_field(filtered_results, row, field_path)
-            remove_empty_containers(filtered_results)
-            filtered_access_results[node_address].append(filtered_results)
-
-    return filtered_access_results
+    return ret

@@ -5,20 +5,24 @@ from bson import ObjectId
 
 from fidesops.graph.config import (
     CollectionAddress,
+    FieldPath,
 )
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.models.policy import Policy
+from fidesops.models.policy import Policy, ActionType, RuleTarget, Rule
 from fidesops.task.graph_task import (
     collect_queries,
     TaskResources,
     EMPTY_REQUEST,
+    build_affected_field_logs,
 )
 from .traversal_data import sample_traversal, combined_mongo_postgresql_graph
 from ..graph.graph_test_util import (
     MockSqlTask,
     MockMongoTask,
+    field,
+    erasure_policy,
 )
 
 dask.config.set(scheduler="processes")
@@ -30,43 +34,36 @@ connection_configs = [
 ]
 
 
-class TestToDaskInput:
-    @pytest.fixture(scope="function")
-    def combined_traversal_node_dict(
-        self,
-        integration_mongodb_config,
-        connection_config,
-    ):
-        mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-            connection_config, integration_mongodb_config
+@pytest.fixture(scope="function")
+def combined_traversal_node_dict(
+    integration_mongodb_config, connection_config
+):
+    mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
+        connection_config, integration_mongodb_config
+    )
+    graph = DatasetGraph(mongo_dataset, postgres_dataset)
+    identity = {"email": "customer-1@example.com", "phone_number": "111-111-1111"}
+    combined_traversal = Traversal(graph, identity)
+    return combined_traversal.traversal_node_dict
+
+
+@pytest.fixture(scope="function")
+def make_graph_task(integration_mongodb_config, connection_config):
+    def task(node):
+        return MockMongoTask(
+            node,
+            TaskResources(
+                EMPTY_REQUEST,
+                Policy(),
+                [connection_config, integration_mongodb_config],
+            ),
         )
-        graph = DatasetGraph(mongo_dataset, postgres_dataset)
-        identity = {"email": "customer-1@example.com"}
-        combined_traversal = Traversal(graph, identity)
-        return combined_traversal.traversal_node_dict
 
-    @pytest.fixture(scope="function")
-    def make_graph_task(
-        self,
-        integration_mongodb_config,
-        connection_config,
-    ):
-        def task(node):
-            return MockMongoTask(
-                node,
-                TaskResources(
-                    EMPTY_REQUEST,
-                    Policy(),
-                    [
-                        connection_config,
-                        integration_mongodb_config,
-                    ],
-                ),
-            )
+    return task
 
-        return task
 
-    def test_to_dask_input_data_scalar(self) -> None:
+class TestPreProcessInputData:
+    def test_pre_process_input_data_scalar(self) -> None:
         t = sample_traversal()
         n = t.traversal_node_dict[CollectionAddress("mysql", "Address")]
 
@@ -81,10 +78,10 @@ class TestToDaskInput:
             {"billing_address_id": 1, "shipping_address_id": 2},
             {"billing_address_id": 11, "shipping_address_id": 22},
         ]
-        v = task.to_dask_input_data(customers_data, orders_data)
+        v = task.pre_process_input_data(customers_data, orders_data)
         assert set(v["id"]) == {31, 32, 1, 2, 11, 22}
 
-    def test_to_dask_input_nested_identity(
+    def test_pre_process_input_nested_identity(
         self, combined_traversal_node_dict, make_graph_task
     ):
         """
@@ -97,11 +94,11 @@ class TestToDaskInput:
             CollectionAddress("mongo_test", "customer_feedback")
         ]
         root_email_input = [{"email": "customer-1@example.com"}]
-        assert make_graph_task(node).to_dask_input_data(root_email_input) == {
+        assert make_graph_task(node).pre_process_input_data(root_email_input) == {
             "customer_information.email": ["customer-1@example.com"],
         }
 
-    def test_to_dask_input_customer_feedback_collection(
+    def test_pre_process_input_customer_feedback_collection(
         self, combined_traversal_node_dict, make_graph_task
     ):
         """
@@ -127,14 +124,14 @@ class TestToDaskInput:
             }
         ]
 
-        assert internal_customer_profile_task.to_dask_input_data(
+        assert internal_customer_profile_task.pre_process_input_data(
             root_email_input, customer_feedback_input
         ) == {
             "customer_identifiers.derived_emails": ["customer-1@example.com"],
             "customer_identifiers.internal_id": ["cust_001"],
         }
 
-    def test_to_dask_input_flights_collection(
+    def test_pre_process_input_flights_collection(
         self, make_graph_task, combined_traversal_node_dict
     ):
         """
@@ -155,7 +152,7 @@ class TestToDaskInput:
                 "travel_identifiers": ["C111-11111"],
             },
         ]
-        assert task.to_dask_input_data(truncated_customer_details_output) == {
+        assert task.pre_process_input_data(truncated_customer_details_output) == {
             "passenger_information.passenger_ids": [
                 "A111-11111",
                 "B111-11111",
@@ -163,7 +160,7 @@ class TestToDaskInput:
             ],
         }
 
-    def test_to_dask_input_aircraft_collection(
+    def test_pre_process_input_aircraft_collection(
         self, make_graph_task, combined_traversal_node_dict
     ):
         """
@@ -178,11 +175,11 @@ class TestToDaskInput:
             {"pilots": ["1", "2"], "plane": 10002.0},
             {"pilots": ["3", "4"], "plane": 101010},
         ]
-        assert task.to_dask_input_data(truncated_flights_output) == {
+        assert task.pre_process_input_data(truncated_flights_output) == {
             "planes": [10002, 101010],
         }
 
-    def test_to_dask_input_employee_collection(
+    def test_pre_process_input_employee_collection(
         self, make_graph_task, combined_traversal_node_dict
     ):
         """
@@ -199,12 +196,14 @@ class TestToDaskInput:
             {"pilots": ["1", "2"], "plane": 10002.0},
             {"pilots": ["3", "4"], "plane": 101010},
         ]
-        assert task.to_dask_input_data(root_email_input, truncated_flights_output) == {
+        assert task.pre_process_input_data(
+            root_email_input, truncated_flights_output
+        ) == {
             "id": ["1", "2", "3", "4"],
             "email": ["customer-1@example.com"],
         }
 
-    def test_to_dask_input_conversation_collection(
+    def test_pre_process_input_conversation_collection(
         self, make_graph_task, combined_traversal_node_dict
     ):
         """
@@ -228,8 +227,80 @@ class TestToDaskInput:
             {"comments": [{"comment_id": "com_0007"}]},
         ]
 
-        assert task.to_dask_input_data(truncated_customer_details_output) == {
+        assert task.pre_process_input_data(truncated_customer_details_output) == {
             "thread.comment": ["com_0001", "com_0003", "com_0005", "com_0007"],
+        }
+
+
+class TestPostProcessInputData:
+    def test_post_process_input_data_filter_match(
+        self, combined_traversal_node_dict, make_graph_task
+    ):
+        node = combined_traversal_node_dict[CollectionAddress("mongo_test", "flights")]
+        task = make_graph_task(node)
+
+        node_inputs = {
+            "passenger_information.passenger_ids": [
+                "A111-11111",
+                "B111-11111",
+                "C111-11111",
+            ]
+        }
+
+        assert task.post_process_input_data(node_inputs) == {
+            FieldPath("passenger_information", "passenger_ids"): [
+                "A111-11111",
+                "B111-11111",
+                "C111-11111",
+            ]
+        }
+
+    def test_post_process_input_data_return_all(
+        self, combined_traversal_node_dict, make_graph_task
+    ):
+        node = combined_traversal_node_dict[
+            CollectionAddress("mongo_test", "internal_customer_profile")
+        ]
+        task = make_graph_task(node)
+
+        node_inputs = {
+            "customer_identifiers.derived_phone": ["403-204-2933", "403-204-2934"],
+            "customer_identifiers.internal_id": ["123456", "483822"],
+        }
+
+        # Derived phone field should have no filtering, but internal_id should have filtering
+        assert task.post_process_input_data(node_inputs) == {
+            FieldPath("customer_identifiers", "derived_phone"): None,
+            FieldPath("customer_identifiers", "internal_id"): ["123456", "483822"],
+        }
+
+    def test_post_process_input_data_return_all_array_of_objects(
+        self, combined_traversal_node_dict, make_graph_task
+    ):
+        node = combined_traversal_node_dict[CollectionAddress("mongo_test", "rewards")]
+        task = make_graph_task(node)
+
+        node_inputs = {
+            "owner.phone": ["403-204-2933", "403-204-2934"],
+            "not_an_input_field_on_this_node": ["123456", "483822"],
+        }
+
+        # Owner.phone id values should have no filtering
+        assert task.post_process_input_data(node_inputs) == {
+            FieldPath("owner", "phone"): None
+        }
+
+    def test_post_process_type_coercion(
+        self, combined_traversal_node_dict, make_graph_task
+    ):
+        node = combined_traversal_node_dict[CollectionAddress("mongo_test", "aircraft")]
+        task = make_graph_task(node)
+
+        node_inputs = {"planes": [123, 124]}
+
+        # Planes type is string, so incoming data is coerced into a string where possible
+        assert task.post_process_input_data(node_inputs) == {
+            FieldPath("planes"): ["123", "124"]
         }
 
 
@@ -298,3 +369,117 @@ def test_mongo_dry_run_queries() -> None:
         env[CollectionAddress("postgres", "address")]
         == "db.postgres.address.find({'id': {'$in': [?, ?]}}, {'id': 1, 'street': 1, 'city': 1, 'state': 1, 'zip': 1})"
     )
+
+
+class TestBuildAffectedFieldLogs:
+    @pytest.fixture(scope="function")
+    def node_fixture(self):
+        t = sample_traversal()
+
+        postgres_order_node = t.traversal_node_dict[
+            CollectionAddress("postgres", "Order")
+        ]
+        dataset = postgres_order_node.node.dataset
+
+        field([dataset], "postgres", "Order", "customer_id").data_categories = ["A"]
+        field([dataset], "postgres", "Order", "shipping_address_id").data_categories = [
+            "B"
+        ]
+        field([dataset], "postgres", "Order", "order_id").data_categories = ["B"]
+        field([dataset], "postgres", "Order", "billing_address_id").data_categories = [
+            "C"
+        ]
+        return postgres_order_node
+
+    def test_build_affected_field_logs(self, node_fixture):
+        policy = erasure_policy("A", "B")
+
+        formatted_for_logs = build_affected_field_logs(
+            node_fixture.node, policy, action_type=ActionType.erasure
+        )
+
+        # Only fields for data categories A and B which were specified on the Policy, made it to the logs for this node
+        assert formatted_for_logs == [
+            {
+                "path": "postgres:Order:customer_id",
+                "field_name": "customer_id",
+                "data_categories": ["A"],
+            },
+            {
+                "path": "postgres:Order:order_id",
+                "field_name": "order_id",
+                "data_categories": ["B"],
+            },
+            {
+                "path": "postgres:Order:shipping_address_id",
+                "field_name": "shipping_address_id",
+                "data_categories": ["B"],
+            },
+        ]
+
+    def test_build_affected_field_logs_no_data_categories_on_policy(self, node_fixture):
+        no_categories_policy = erasure_policy()
+        formatted_for_logs = build_affected_field_logs(
+            node_fixture.node,
+            no_categories_policy,
+            action_type=ActionType.erasure,
+        )
+        # No data categories specified on policy, so no fields affected
+        assert formatted_for_logs == []
+
+    def test_build_affected_field_logs_no_matching_data_categories(self, node_fixture):
+        d_categories_policy = erasure_policy("D")
+        formatted_for_logs = build_affected_field_logs(
+            node_fixture.node,
+            d_categories_policy,
+            action_type=ActionType.erasure,
+        )
+        # No matching data categories specified on policy, so no fields affected
+        assert formatted_for_logs == []
+
+    def test_build_affected_field_logs_no_data_categories_for_action_type(
+        self, node_fixture
+    ):
+        policy = erasure_policy("A", "B")
+        formatted_for_logs = build_affected_field_logs(
+            node_fixture.node,
+            policy,
+            action_type=ActionType.access,
+        )
+        # We only have data categories specified on an erasure policy, and we're looking for access action type
+        assert formatted_for_logs == []
+
+    def test_multiple_rules_targeting_same_field(self, node_fixture):
+        policy = erasure_policy("A")
+
+        policy.rules = [
+            Rule(
+                action_type=ActionType.erasure,
+                targets=[RuleTarget(data_category="A")],
+                masking_strategy={
+                    "strategy": "null_rewrite",
+                    "configuration": {},
+                },
+            ),
+            Rule(
+                action_type=ActionType.erasure,
+                targets=[RuleTarget(data_category="A")],
+                masking_strategy={
+                    "strategy": "null_rewrite",
+                    "configuration": {},
+                },
+            ),
+        ]
+
+        formatted_for_logs = build_affected_field_logs(
+            node_fixture.node, policy, action_type=ActionType.erasure
+        )
+
+        # No duplication of the matching customer_id field, even though multiple rules targeted data category A
+        assert formatted_for_logs == [
+            {
+                "path": "postgres:Order:customer_id",
+                "field_name": "customer_id",
+                "data_categories": ["A"],
+            }
+        ]

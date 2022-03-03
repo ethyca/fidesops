@@ -1,10 +1,14 @@
 import logging
 import re
+import json
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple
+from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple, Literal
 
-from sqlalchemy import text
-from sqlalchemy.sql.elements import TextClause
+import pydash
+from sqlalchemy import text, Table, MetaData
+from sqlalchemy.engine import Engine
+from sqlalchemy.sql import Executable, Update
+from sqlalchemy.sql.elements import TextClause, ColumnElement
 
 from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -22,8 +26,13 @@ from fidesops.service.masking.strategy.masking_strategy_factory import (
     get_strategy,
 )
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
+from fidesops.task.refine_target_path import (
+    build_refined_target_paths,
+    join_detailed_path,
+)
 from fidesops.util.collection_util import append, filter_nonempty_values
 from fidesops.util.querytoken import QueryToken
+from fidesops.util.saas_util import unflatten_dict
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -120,14 +129,13 @@ class QueryConfig(Generic[T], ABC):
     def update_value_map(
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> Dict[str, Any]:
-        """Map the relevant fields (as strings) to be updated on the row with their masked values from Policy Rules
+        """Map the relevant field (as strings) to be updated on the row with their masked values from Policy Rules
 
-        Example return:  {'name': None, 'ccn': None, 'code': None, 'workplace_info.employer': None}
+        Example return:  {'name': None, 'ccn': None, 'code': None, 'workplace_info.employer': None, 'children.0': None}
 
-        In this example, a Null Masking Strategy was used to determine that the name/ccn/code fields and nested
-        workplace_info.employer fields for a given customer_id will be replaced with null values.
-
-        FieldPaths are mapped to their dotted string path representation.
+        In this example, a Null Masking Strategy was used to determine that the name/ccn/code fields, nested
+        workplace_info.employer field, and the first element in 'children' for a given customer_id will be replaced
+        with null values.
 
         """
         rule_to_collection_field_paths: Dict[
@@ -142,7 +150,6 @@ class QueryConfig(Generic[T], ABC):
             strategy: MaskingStrategy = get_strategy(
                 strategy_config["strategy"], strategy_config["configuration"]
             )
-
             for rule_field_path in field_paths:
                 masking_override: MaskingOverride = [
                     MaskingOverride(field.data_type_converter, field.length)
@@ -159,16 +166,22 @@ class QueryConfig(Generic[T], ABC):
                         f"strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
                     continue
-                val: Any = rule_field_path.retrieve_from(row)
-                masked_val = self._generate_masked_value(
-                    request.id,
-                    strategy,
-                    val,
-                    masking_override,
-                    null_masking,
-                    rule_field_path,
-                )
-                value_map[rule_field_path.string_path] = masked_val
+
+                paths_to_mask: List[str] = [
+                    join_detailed_path(path)
+                    for path in build_refined_target_paths(
+                        row, query_paths={rule_field_path: None}
+                    )
+                ]
+                for detailed_path in paths_to_mask:
+                    value_map[detailed_path] = self._generate_masked_value(
+                        request_id=request.id,
+                        strategy=strategy,
+                        val=pydash.objects.get(row, detailed_path),
+                        masking_override=masking_override,
+                        null_masking=null_masking,
+                        str_field_path=detailed_path,
+                    )
         return value_map
 
     @staticmethod
@@ -193,17 +206,17 @@ class QueryConfig(Generic[T], ABC):
         val: Any,
         masking_override: MaskingOverride,
         null_masking: bool,
-        field_path: FieldPath,
+        str_field_path: str,
     ) -> T:
         masked_val = strategy.mask(val, request_id)
         logger.debug(
-            f"Generated the following masked val for field {field_path.string_path}: {masked_val}"
+            f"Generated the following masked val for field {str_field_path}: {masked_val}"
         )
         if null_masking:
             return masked_val
         if masking_override.length:
             logger.warning(
-                f"Because a length has been specified for field {field_path.string_path}, we will truncate length "
+                f"Because a length has been specified for field {str_field_path}, we will truncate length "
                 f"of masked value to match, regardless of masking strategy"
             )
             #  for strategies other than null masking we assume that masked data type is the same as specified data type
@@ -237,7 +250,7 @@ class QueryConfig(Generic[T], ABC):
         returns None"""
 
 
-class SQLQueryConfig(QueryConfig[TextClause]):
+class SQLQueryConfig(QueryConfig[Executable]):
     """Query config that translates parameters into SQL statements."""
 
     def format_fields_for_query(
@@ -376,26 +389,41 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         return None
 
 
-class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
+class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
     """
-    Generates SQL valid for SQLServer. This way of building queries should also work for every other connector,
-    but SQLServer is separated due to increased code complexity for building queries
+    Generates SQL valid for connectors that require the query string to be built without tuples.
     """
 
+    # Overrides SQLConnector.format_clause_for_query
     def format_clause_for_query(
         self, string_path: str, operator: str, operand: str
     ) -> str:
-        """Returns clauses in a format they can be added into SQL queries."""
+        """
+        Returns clauses in a format they can be added into SQL queries.
+        Expects the operand of IN statements to be formatted in the following manner so that
+        these distinct keys can be appended to the clause:
+        ":_in_stmt_generated_0, :_in_stmt_generated_1, :_in_stmt_generated_2"
+        """
         if operator == "IN":
             return f"{string_path} IN ({operand})"
         return super().format_clause_for_query(string_path, operator, operand)
 
+    # Overrides SQLConnector.generate_query
     def generate_query(  # pylint: disable=R0914
         self,
         input_data: Dict[str, List[Any]],
         policy: Optional[Policy] = None,
     ) -> Optional[TextClause]:
-        """Generate a retrieval query"""
+        """
+        Generate a retrieval query. Generates distinct key/val pairs for building the query string instead of a tuple.
+
+        E.g. The base SQLQueryConfig uses 1 key as a tuple:
+        SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN (:some-params-in-tuple)
+        which for some connectors gets interpreted as data types (mssql) or quotes (bigquery).
+
+        This override produces distinct keys for the query_str:
+        SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN (:_in_stmt_generated_0, :_in_stmt_generated_1, :_in_stmt_generated_2)
+        """
 
         filtered_data = self.node.typed_filtered_values(input_data)
 
@@ -438,6 +466,12 @@ class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
             f"There is not enough data to generate a valid query for {self.node.address}"
         )
         return None
+
+
+class MicrosoftSQLServerQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
+    """
+    Generates SQL valid for SQLServer.
+    """
 
 
 class SnowflakeQueryConfig(SQLQueryConfig):
@@ -495,6 +529,52 @@ class RedshiftQueryConfig(SQLQueryConfig):
         """Returns a query string with double quotation mark formatting for tables that have the same names as
         Redshift reserved words."""
         return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
+
+
+class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
+    """
+    Generates SQL valid for BigQuery
+    """
+
+    def get_formatted_query_string(
+        self,
+        field_list: str,
+        clauses: List[str],
+    ) -> str:
+        """Returns a query string with backtick formatting for tables that have the same names as
+        BigQuery reserved words."""
+        return f'SELECT {field_list} FROM `{self.node.node.collection.name}` WHERE {" OR ".join(clauses)}'
+
+    def generate_update(
+        self, row: Row, policy: Policy, request: PrivacyRequest, client: Engine
+    ) -> Optional[Update]:
+        """
+        Using TextClause to insert 'None' values into BigQuery throws an exception, so we use update clause instead.
+        Returns a SQLAlchemy Update object. Does not actually execute the update object.
+        """
+        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
+        non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
+            {
+                fpath.string_path: fld.cast(row[fpath.string_path])
+                for fpath, fld in self.primary_key_field_paths.items()
+                if fpath.string_path in row
+            }
+        )
+
+        valid = len(non_empty_primary_keys) > 0
+        if not valid:
+            logger.warning(
+                f"There is not enough data to generate a valid update statement for {self.node.address}"
+            )
+            return None
+
+        table = Table(
+            self.node.address.collection, MetaData(bind=client), autoload=True
+        )
+        pk_clauses: List[ColumnElement] = [
+            getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
+        ]
+        return table.update().where(*pk_clauses).values(**update_value_map)
 
 
 MongoStatement = Tuple[Dict[str, Any], Dict[str, Any]]
@@ -587,11 +667,11 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         return None
 
 
-SaaSRequestParams = Tuple[str, Dict[str, Any], Dict[str, Any]]
-"""Custom type to represent a tuple of path, params, and body values for a SaaS request"""
+SaaSRequestParams = Tuple[Literal["GET", "PUT"], str, Dict[str, Any], Optional[str]]
+"""Custom type to represent a tuple of HTTP method, path, params, and body values for a SaaS request"""
 
 
-class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
+class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
     """Query config that generates populated SaaS requests for a given collection"""
 
     def __init__(self, node: TraversalNode, endpoints: Dict[str, Endpoint]):
@@ -615,56 +695,85 @@ class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
                 f"The `{action}` action is not defined for the `{collection_name}` endpoint in {self.node.node.dataset.connection_key}"
             )
 
-    @staticmethod
-    def prepare_params(
-        request: SaaSRequest, param_values: Dict[str, Any]
-    ) -> SaaSRequestParams:
-        """
-        Populates the placeholders in the request with the given param values
-        """
-        path = request.path
-        params: Dict[str, Any] = {}
-        data: Dict[str, Any] = {}
+    def generate_requests(
+        self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
+    ) -> Optional[List[SaaSRequestParams]]:
+        """Takes the input_data and uses it to generate a list of SaaS request params"""
 
-        for param in request.request_params:
-            if param.type == "query":
-                if param.default_value:
-                    params[param.name] = param.default_value
-                elif param.references or param.identity:
-                    params[param.name] = param_values[param.name]
-            elif param.type == "path":
-                path = path.replace(f"<{param.name}>", param_values[param.name])
-            elif param.type == "body":
-                data[param.name] = param_values[param.name]
+        filtered_data = self.node.typed_filtered_values(input_data)
 
-        return path, params, data
+        # populate the SaaS request with reference values from other datasets provided to this node
+        request_params = []
+        for string_path, reference_values in filtered_data.items():
+            for value in reference_values:
+                request_params.append(
+                    self.generate_query({string_path: [value]}, policy)
+                )
+        return request_params
 
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
-    ) -> Optional[List[SaaSRequestParams]]:
+    ) -> SaaSRequestParams:
         """
         This returns the query/path params needed to make an API call.
         This is the API equivalent of building the components of a database
         query statement (select statement, where clause, limit, offset, etc.)
         """
-
-        filtered_data = self.node.typed_filtered_values(input_data)
         current_request = self.get_request_by_action("read")
 
-        request_params = []
-        # populate the SaaS request with reference values from other datasets provided to this node
-        for string_path, reference_values in filtered_data.items():
-            for value in reference_values:
-                request_params.append(
-                    self.prepare_params(current_request, {string_path: value})
-                )
+        path: str = current_request.path
+        params: Dict[str, Any] = {}
+
+        # uses the param names to read from the input data
+        for param in current_request.request_params:
+            if param.type == "query":
+                if param.default_value:
+                    params[param.name] = param.default_value
+                elif param.references or param.identity:
+                    params[param.name] = input_data[param.name][0]
+            elif param.type == "path":
+                path = path.replace(f"<{param.name}>", input_data[param.name][0])
+
         logger.info(f"Populated request params for {current_request.path}")
-        return request_params
+        return "GET", path, params, None
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
-    ) -> Optional[List[SaaSRequestParams]]:
-        return None
+    ) -> SaaSRequestParams:
+        """
+        Prepares the update request by masking the fields in the row data based on the policy.
+        This masked row is then added as the body to a dynamically generated SaaS request.
+        """
+
+        current_request: SaaSRequest = self.get_request_by_action("update")
+        collection_name: str = self.node.address.collection
+        param_values: Dict[str, Row] = {collection_name: row}
+
+        path: str = current_request.path
+        params: Dict[str, Any] = {}
+
+        # uses the reference fields to read from the param_values
+        for param in current_request.request_params:
+            if param.type == "query":
+                if param.default_value:
+                    params[param.name] = param.default_value
+                elif param.references:
+                    params[param.name] = pydash.get(
+                        param_values, param.references[0].field
+                    )
+                elif param.identity:
+                    params[param.name] = pydash.get(param_values, param.identity)
+            elif param.type == "path":
+                path = path.replace(
+                    f"<{param.name}>",
+                    pydash.get(param_values, param.references[0].field),
+                )
+
+        logger.info(f"Populated request params for {current_request.path}")
+
+        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
+        body: Dict[str, Any] = unflatten_dict(update_value_map)
+        return "PUT", path, params, json.dumps(body)
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string"""

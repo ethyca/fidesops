@@ -285,7 +285,7 @@ def test_dataset_graph_connected_by_nested_fields():
     assert [
         field_path.string_path
         for field_path in dataset_graph.data_category_field_mapping[
-           CollectionAddress("mongo_nested_test", "photos")
+            CollectionAddress("mongo_nested_test", "photos")
         ]["system.operations"]
     ] == ["_id", "thumbnail.camera_used"]
 
@@ -312,4 +312,31 @@ example_object_with_data_categories_nested_yaml = """dataset:
 def test_object_data_category_validation():
     """Test trying to validate object with data category specified"""
     with pytest.raises(ValidationError):
-        FidesopsDataset.parse_obj(__to_dataset__(example_object_with_data_categories_nested_yaml))
+        FidesopsDataset.parse_obj(
+            __to_dataset__(example_object_with_data_categories_nested_yaml)
+        )
+
+
+non_array_field_with_invalid_flag = """dataset:
+  - fides_key: mongo_return_all_elements_test
+    name: Mongo Return All Elements Test Dataset
+    description: Example of a Mongo dataset that incorrectly has return_all_elements specified on a non array field.
+    collections:
+      - name: photos
+        fields:
+          - name: thumbnail
+            fidesops_meta:
+                return_all_elements: true
+                data_type: object
+            fields:
+              - name: photo_id
+                data_type: integer
+              - name: name
+                data_categories: [user.provided.identifiable]    
+"""
+
+
+def test_return_all_elements_specified_on_non_array_field():
+    """Test return_all_elements can only be specified on array fields"""
+    with pytest.raises(ValidationError):
+        FidesopsDataset.parse_obj(__to_dataset__(non_array_field_with_invalid_flag))

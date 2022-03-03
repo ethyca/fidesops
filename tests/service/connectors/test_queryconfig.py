@@ -1,3 +1,4 @@
+import json
 from typing import Dict, Any, Set
 import pytest
 
@@ -491,11 +492,9 @@ class TestMongoQueryConfig:
         dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
-
         customer_details = traversal.traversal_node_dict[
             CollectionAddress("mongo_test", "customer_details")
         ]
-
         config = MongoQueryConfig(customer_details)
         row = {
             "birthday": "1988-01-10",
@@ -519,16 +518,18 @@ class TestMongoQueryConfig:
             row, erasure_policy, privacy_request
         )
         assert mongo_statement[0] == {"_id": 1}
-        # TODO lots of this update statmement is wrong
+
         assert mongo_statement[1] == {
             "$set": {
                 "birthday": None,
-                "emergency_contacts.name": None,
-                "workplace_info.direct_reports": None,
-                "emergency_contacts.phone": None,
+                "children.0": None,
+                "children.1": None,
+                "emergency_contacts.0.name": None,
+                "workplace_info.direct_reports.0": None,  # Both direct reports are masked.
+                "workplace_info.direct_reports.1": None,
+                "emergency_contacts.0.phone": None,
                 "gender": None,
                 "workplace_info.position": None,
-                "children": None,
             }
         }
 
@@ -599,6 +600,7 @@ class TestMongoQueryConfig:
             HashMaskingConfiguration(algorithm="SHA-512")
         ).mask("1988-01-10", privacy_request_id=privacy_request.id)
 
+
 @pytest.mark.saas_connector
 class TestSaaSQueryConfig:
     @pytest.fixture(scope="function")
@@ -623,27 +625,67 @@ class TestSaaSQueryConfig:
 
         # static path with single query param
         config = SaaSQueryConfig(member, endpoints)
-        prepared_requests = config.generate_query({"query": ["customer-1@example.com"]}, policy)
-        assert prepared_requests[0] == (
+        prepared_request = config.generate_query(
+            {"query": ["customer-1@example.com"]}, policy
+        )
+        assert prepared_request == (
+            "GET",
             "/3.0/search-members",
             {"query": "customer-1@example.com"},
-            {}
+            None,
         )
 
         # static path with multiple query params with default values
         config = SaaSQueryConfig(conversations, endpoints)
-        prepared_requests = config.generate_query({"placeholder": ["customer-1@example.com"]}, policy)
-        assert prepared_requests[0] == (
+        prepared_request = config.generate_query(
+            {"placeholder": ["customer-1@example.com"]}, policy
+        )
+        assert prepared_request == (
+            "GET",
             "/3.0/conversations",
             {"count": 1000, "placeholder": "customer-1@example.com"},
-            {}
+            None,
         )
 
         # dynamic path with no query params
         config = SaaSQueryConfig(messages, endpoints)
-        prepared_requests = config.generate_query({"conversation_id": ["abc"]}, policy)
-        assert prepared_requests[0] == (
+        prepared_request = config.generate_query({"conversation_id": ["abc"]}, policy)
+        assert prepared_request == (
+            "GET",
             "/3.0/conversations/abc/messages",
             {},
-            {}
+            None,
+        )
+
+    def test_generate_update_stmt(
+        self, erasure_policy_string_rewrite, combined_traversal, connection_config_saas
+    ):
+        saas_config = connection_config_saas.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+
+        member = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "member")
+        ]
+
+        config = SaaSQueryConfig(member, endpoints)
+        row = {
+            "id": "123",
+            "merge_fields": {"FNAME": "First", "LNAME": "Last"},
+            "list_id": "abc",
+        }
+
+        # build request by taking a row, masking it, and adding it to
+        # the body of a PUT request
+        prepared_request = config.generate_update_stmt(
+            row, erasure_policy_string_rewrite, privacy_request
+        )
+        assert prepared_request == (
+            "PUT",
+            "/3.0/lists/abc/members/123",
+            {},
+            json.dumps(
+                {
+                    "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
+                }
+            ),
         )
