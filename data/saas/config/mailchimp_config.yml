@@ -1,30 +1,30 @@
 saas_config:
-  - fides_key: mailchimp_connector_example
-    name: Mailchimp SaaS Config
-    description: A sample schema representing the Mailchimp connector for Fidesops
-    version: 1.0
+  fides_key: mailchimp_connector_example
+  name: Mailchimp SaaS Config
+  description: A sample schema representing the Mailchimp connector for Fidesops
+  version: 0.0.1
 
-    connector_params:
+  connector_params:
     - name: domain
     - name: username
     - name: api_key
 
-    client_config:
-      protocol: https
-      host:
-        connector_param: domain
-      authentication:
-        strategy: basic_authentication
-        configuration:
-          username:
-            connector_param: username
-          password:
-            connector_param: api_key
-    
-    test_request:
-      path: /3.0/lists
+  client_config:
+    protocol: https
+    host:
+      connector_param: domain
+    authentication:
+      strategy: basic_authentication
+      configuration:
+        username:
+          connector_param: username
+        password:
+          connector_param: api_key
 
-    endpoints:
+  test_request:
+    path: /3.0/lists
+    
+  endpoints:
     - name: messages
       requests:
         read:
@@ -50,16 +50,7 @@ saas_config:
               default_value: 0
             - name: placeholder
               type: query
-              references:
-                - dataset: mailchimp_connector_example
-                  field: member.unique_email_id
-                  direction: from
-          pagination:
-            strategy: basic_pagination
-            configuration:
-              incremental_param: offset
-              increment_by: 1000
-              initial_value: 0
+              identity: email
     - name: member
       requests:
         read:
@@ -68,10 +59,9 @@ saas_config:
             - name: query
               type: query
               identity: email
-              data_type: string
-          data_path: exact_matches/members
-        delete:
-          path: /3.0/lists/<list_id>/members/<subscriber_hash>/actions/delete-permanent
+          data_path: exact_matches.members
+        update:
+          path: /3.0/lists/<list_id>/members/<subscriber_hash>
           request_params:
             - name: list_id
               type: path

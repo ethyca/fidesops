@@ -146,6 +146,7 @@ def test_combined_erasure_task(
         "mongo_test:flights": 1,
         "mongo_test:conversations": 2,
         "mongo_test:aircraft": 1,
+        "mongo_test:rewards": 0,
     }
 
     rerun_access = graph_task.run_access_request(
@@ -634,6 +635,132 @@ def test_get_cached_data_for_erasures(
 
 
 @pytest.mark.integration
+def test_return_all_elements_config_access_request(
+    db,
+    privacy_request,
+    example_datasets,
+    policy,
+    integration_mongodb_config,
+    integration_postgres_config,
+    integration_mongodb_connector
+):
+    """Annotating array entrypoint field with return_all_elements=true means both the entire array is returned from the
+    queried data and used to locate data in other collections
+
+    mongo_test:internal_customer_profile.customer_identifiers.derived_phone field and mongo_test:rewards.owner field
+    have return_all_elements set to True
+    """
+    postgres_config = copy.copy(integration_postgres_config)
+
+    dataset_postgres = FidesopsDataset(**example_datasets[0])
+    graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
+    dataset_mongo = FidesopsDataset(**example_datasets[1])
+    mongo_graph = convert_dataset_to_graph(
+        dataset_mongo, integration_mongodb_config.key
+    )
+    dataset_graph = DatasetGraph(*[graph, mongo_graph])
+
+    access_request_results = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        dataset_graph,
+        [postgres_config, integration_mongodb_config],
+        {"phone_number": "254-344-9868", "email": "jane@gmail.com"},
+    )
+
+    # Both indices in mongo_test:internal_customer_profile.customer_identifiers.derived_phone are returned from the node
+    assert access_request_results["mongo_test:internal_customer_profile"][0][
+        "customer_identifiers"
+    ]["derived_phone"] == ["530-486-6983", "254-344-9868"]
+
+    # Assert both phone numbers are then used to locate records in rewards collection.
+    # All nested documents are returned because return_all_elements=true also specified
+    assert len(access_request_results["mongo_test:rewards"]) == 2
+    assert access_request_results["mongo_test:rewards"][0]["owner"] == [
+        {"phone": "530-486-6983", "shopper_name": "janec"},
+        {"phone": "818-695-1881", "shopper_name": "janec"},
+    ]
+    assert access_request_results["mongo_test:rewards"][1]["owner"] == [
+        {"phone": "254-344-9868", "shopper_name": "janec"}
+    ]
+
+
+@pytest.mark.integration
+def test_return_all_elements_config_erasure(
+    mongo_inserts,
+    postgres_inserts,
+    integration_mongodb_config,
+    integration_postgres_config,
+    integration_mongodb_connector,
+):
+    """Includes examples of mongo nested and array erasures"""
+    policy = erasure_policy("A", "B")
+
+    privacy_request = PrivacyRequest(
+        id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
+    )
+    mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
+        integration_postgres_config, integration_mongodb_config
+    )
+
+    field(
+        [mongo_dataset], "mongo_test", "rewards", "owner", "phone"
+    ).data_categories = ["A"]
+    field(
+        [mongo_dataset],
+        "mongo_test",
+        "internal_customer_profile",
+        "customer_identifiers",
+        "derived_phone",
+    ).data_categories = ["B"]
+
+    graph = DatasetGraph(mongo_dataset, postgres_dataset)
+
+    seed_email = postgres_inserts["customer"][0]["email"]
+    seed_phone = mongo_inserts["rewards"][0]["owner"][0]["phone"]
+
+    graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [integration_mongodb_config, integration_postgres_config],
+        {"email": seed_email, "phone_number": seed_phone},
+    )
+
+    x = graph_task.run_erasure(
+        privacy_request,
+        policy,
+        graph,
+        [integration_mongodb_config, integration_postgres_config],
+        {"email": seed_email},
+        get_cached_data_for_erasures(privacy_request.id),
+    )
+
+    assert x["mongo_test:internal_customer_profile"] == 1
+    assert x["mongo_test:rewards"] == 2
+
+    mongo_db = integration_mongodb_connector["mongo_test"]
+
+    reward_one = mongo_db.rewards.find_one({"id": "rew_1"})
+    # All phone numbers masked because return_all_elements is True
+    assert reward_one["owner"][0]["phone"] is None
+    assert reward_one["owner"][1]["phone"] is None
+
+    reward_two = mongo_db.rewards.find_one({"id": "rew_2"})
+    # Masked because targeted by another element in original array
+    assert reward_two["owner"][0]["phone"] is None
+
+    reward_three = mongo_db.rewards.find_one({"id": "rew_3"})
+    # Not masked because not targeted by query
+    assert reward_three["owner"][0]["phone"] is not None
+
+    # Both elements in array entrypoint masked by return_all_elements is True
+    assert mongo_db.internal_customer_profile.find_one({"id": "prof_3"})[
+        "customer_identifiers"
+    ]["derived_phone"] == [None, None]
+
+
+@pytest.mark.integration
 def test_array_querying_mongo(
     db,
     privacy_request,
@@ -660,6 +787,7 @@ def test_array_querying_mongo(
         {"email": "jane@example.com"},
     )
 
+    # This is a different category than was specified on the policy, this is just for testing.
     target_categories = {"user.derived"}
     filtered_results = filter_data_categories(
         access_request_results,
@@ -677,6 +805,7 @@ def test_array_querying_mongo(
         "derived_interests"
     ] == ["interior design", "travel", "photography"]
 
+    # This matches the category on the policy
     filtered_identifiable = filter_data_categories(
         access_request_results,
         {"user.provided.identifiable"},
@@ -691,6 +820,48 @@ def test_array_querying_mongo(
             "children": ["Erica Example"],
         }
     ]
+    customer_detail_logs = privacy_request.execution_logs.filter_by(
+        dataset_name="mongo_test", collection_name="customer_details", status="complete"
+    )
+    # Returns fields_affected for all possible targeted fields, even though this identity only had some
+    # of them actually populated
+    assert customer_detail_logs[0].fields_affected == [
+        {
+            "path": "mongo_test:customer_details:birthday",
+            "field_name": "birthday",
+            "data_categories": ["user.provided.identifiable.date_of_birth"],
+        },
+        {
+            "path": "mongo_test:customer_details:children",
+            "field_name": "children",
+            "data_categories": ["user.provided.identifiable.childrens"],
+        },
+        {
+            "path": "mongo_test:customer_details:emergency_contacts.name",
+            "field_name": "emergency_contacts.name",
+            "data_categories": ["user.provided.identifiable.name"],
+        },
+        {
+            "path": "mongo_test:customer_details:workplace_info.direct_reports",
+            "field_name": "workplace_info.direct_reports",
+            "data_categories": ["user.provided.identifiable.name"],
+        },
+        {
+            "path": "mongo_test:customer_details:emergency_contacts.phone",
+            "field_name": "emergency_contacts.phone",
+            "data_categories": ["user.provided.identifiable.contact.phone_number"],
+        },
+        {
+            "path": "mongo_test:customer_details:gender",
+            "field_name": "gender",
+            "data_categories": ["user.provided.identifiable.gender"],
+        },
+        {
+            "path": "mongo_test:customer_details:workplace_info.position",
+            "field_name": "workplace_info.position",
+            "data_categories": ["user.provided.identifiable.job_title"],
+        },
+    ]
 
     # items in array mongo_test:customer_details.travel_identifiers used to lookup matching array elements
     # in mongo_test:flights:passenger_information.passenger_ids.  passenger_information.full_name has relevant
@@ -699,6 +870,17 @@ def test_array_querying_mongo(
     assert filtered_identifiable["mongo_test:flights"][0] == {
         "passenger_information": {"full_name": "Jane Customer"}
     }
+    completed_flight_logs = privacy_request.execution_logs.filter_by(
+        dataset_name="mongo_test", collection_name="flights", status="complete"
+    )
+    assert completed_flight_logs.count() == 1
+    assert completed_flight_logs[0].fields_affected == [
+        {
+            "path": "mongo_test:flights:passenger_information.full_name",
+            "field_name": "passenger_information.full_name",
+            "data_categories": ["user.provided.identifiable.name"],
+        }
+    ]
 
     # Nested customer_details:comments.comment_id field used to find embedded objects conversations.thread.comment
     # fields. Only matching embedded documents queried for relevant data categories
@@ -711,23 +893,95 @@ def test_array_querying_mongo(
             ]
         },
     ]
+    conversation_logs = privacy_request.execution_logs.filter_by(
+        dataset_name="mongo_test", collection_name="conversations", status="complete"
+    )
+    assert conversation_logs.count() == 1
+    assert conversation_logs[0].fields_affected == [
+        {
+            "path": "mongo_test:conversations:thread.chat_name",
+            "field_name": "thread.chat_name",
+            "data_categories": ["user.provided.identifiable.name"],
+        },
+        {
+            "path": "mongo_test:conversations:thread.ccn",
+            "field_name": "thread.ccn",
+            "data_categories": ["user.provided.identifiable.financial.account_number"],
+        },
+    ]
 
     # Integer field mongo_test:flights.plane used to locate only matching elem in mongo_test:aircraft:planes array field
-    assert access_request_results["mongo_test:aircraft"][0]["planes"] == ['30005']
+    assert access_request_results["mongo_test:aircraft"][0]["planes"] == ["30005"]
     # Filtered out, however, because there's no relevant matched data category
     assert filtered_identifiable["mongo_test:aircraft"] == []
+    aircraft_logs = privacy_request.execution_logs.filter_by(
+        dataset_name="mongo_test", collection_name="aircraft", status="complete"
+    )
+    assert aircraft_logs.count() == 1
+    assert aircraft_logs[0].fields_affected == []
 
     # Values in mongo_test:flights:pilots array field used to locate scalar field in mongo_test:employee.id
     assert filtered_identifiable["mongo_test:employee"] == [
         {"email": "employee-2@example.com", "name": "Jane Employee"}
     ]
+    employee_logs = privacy_request.execution_logs.filter_by(
+        dataset_name="mongo_test", collection_name="employee", status="complete"
+    )
+    assert employee_logs.count() == 1
+    assert employee_logs[0].fields_affected == [
+        {
+            "path": "mongo_test:employee:email",
+            "field_name": "email",
+            "data_categories": ["user.provided.identifiable.contact.email"],
+        },
+        {
+            "path": "mongo_test:employee:name",
+            "field_name": "name",
+            "data_categories": ["user.provided.identifiable.name"],
+        },
+    ]
 
     # No data for identity in this collection
     assert access_request_results["mongo_test:customer_feedback"] == []
+    customer_feedback_logs = privacy_request.execution_logs.filter_by(
+        dataset_name="mongo_test",
+        collection_name="customer_feedback",
+        status="complete",
+    )
+    assert customer_feedback_logs.count() == 1
+    # Returns all possible fields affected, even though there is no associated data for this collection
+    assert customer_feedback_logs[0].fields_affected == [
+        {
+            "path": "mongo_test:customer_feedback:customer_information.phone",
+            "field_name": "customer_information.phone",
+            "data_categories": ["user.provided.identifiable.contact.phone_number"],
+        }
+    ]
 
     # Only matched embedded document in mongo_test:conversations.thread.ccn used to locate mongo_test:payment_card
     assert filtered_identifiable["mongo_test:payment_card"] == [
         {"code": "123", "name": "Example Card 2", "ccn": "987654321"}
+    ]
+    payment_logs = privacy_request.execution_logs.filter_by(
+        dataset_name="mongo_test", collection_name="payment_card", status="complete"
+    )
+    assert payment_logs.count() == 1
+    assert payment_logs[0].fields_affected == [
+        {
+            "path": "mongo_test:payment_card:ccn",
+            "field_name": "ccn",
+            "data_categories": ["user.provided.identifiable.financial.account_number"],
+        },
+        {
+            "path": "mongo_test:payment_card:code",
+            "field_name": "code",
+            "data_categories": ["user.provided.identifiable.financial"],
+        },
+        {
+            "path": "mongo_test:payment_card:name",
+            "field_name": "name",
+            "data_categories": ["user.provided.identifiable.financial"],
+        },
     ]
 
     # Run again with different email
