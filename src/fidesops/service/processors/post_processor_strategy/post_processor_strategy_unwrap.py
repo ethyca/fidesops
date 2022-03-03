@@ -7,7 +7,7 @@ from fidesops.schemas.saas.strategy_configuration import (
     UnwrapPostProcessorConfiguration,
     StrategyConfiguration,
 )
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import (
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
 

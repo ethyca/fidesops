@@ -1,5 +1,5 @@
 from fidesops.schemas.saas.strategy_configuration import UnwrapPostProcessorConfiguration
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_unwrap import \
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy_unwrap import \
     UnwrapPostProcessorStrategy
 
 

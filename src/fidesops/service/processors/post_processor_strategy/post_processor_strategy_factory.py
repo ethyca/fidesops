@@ -2,15 +2,20 @@ import logging
 from enum import Enum
 from typing import List, Dict, Any
 
-from fidesops.common_exceptions import NoSuchStrategyException, ValidationError
+from pydantic import ValidationError
+
+from fidesops.common_exceptions import (
+    NoSuchStrategyException,
+    ValidationError as FidesopsValidationError,
+)
 from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_filter import (
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy_filter import (
     FilterPostProcessorStrategy,
 )
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_unwrap import (
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy_unwrap import (
     UnwrapPostProcessorStrategy,
 )
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import (
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
 
@@ -47,7 +52,7 @@ def get_strategy(
         )
         return strategy(configuration=strategy_config)
     except ValidationError as e:
-        raise ValidationError(message=str(e))
+        raise FidesopsValidationError(message=str(e))
 
 
 def get_strategies() -> List[PostProcessorStrategy]:

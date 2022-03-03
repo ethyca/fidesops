@@ -20,10 +20,10 @@ from fidesops.schemas.saas.saas_config import (
     SaaSRequest,
     PostProcessorStrategyData,
 )
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_factory import (
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
     get_strategy,
 )
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import (
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
 from fidesops.service.connectors.query_config import SaaSQueryConfig, SaaSRequestParams
@@ -116,7 +116,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         logger.info(f"Creating client to {uri}")
         return AuthenticatedClient(uri, self.configuration)
 
-    def retrieve_data(  # pylint: disable=R0914
+    def retrieve_data(
         self,
         node: TraversalNode,
         policy: Policy,
@@ -155,6 +155,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         postprocessors: List[PostProcessorStrategyData],
         response: Response,
     ) -> Any:
+        """Post process response"""
         data_to_be_processed = response.json()
         for post_processor in postprocessors:
             strategy: PostProcessorStrategy = get_strategy(

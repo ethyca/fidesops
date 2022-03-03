@@ -1,10 +1,10 @@
 import pytest
 
 from fidesops.common_exceptions import NoSuchStrategyException, ValidationError
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_factory import get_strategy
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_filter import \
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import get_strategy
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy_filter import \
     FilterPostProcessorStrategy
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_unwrap import \
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy_unwrap import \
     UnwrapPostProcessorStrategy
 
 

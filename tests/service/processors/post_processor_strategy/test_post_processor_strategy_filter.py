@@ -1,7 +1,9 @@
 from typing import Dict, Any
 
+import pytest as pytest
+
 from fidesops.schemas.saas.strategy_configuration import FilterPostProcessorConfiguration
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy_filter import \
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy_filter import \
     FilterPostProcessorStrategy
 
 
@@ -52,7 +54,7 @@ def test_filter_array_by_identity_reference_no_results():
     ]
     processor = FilterPostProcessorStrategy(configuration=config)
     result = processor.process(data, identity_data)
-    assert result == None
+    assert result is None
 
 
 def test_filter_array_with_static_val():
@@ -108,6 +110,21 @@ def test_filter_object_no_results():
     data = {
         "id": 238475234,
         "email_contact": "somebody-else@email.com",
+        "name": "Somebody Cool"
+    }
+    processor = FilterPostProcessorStrategy(configuration=config)
+    result = processor.process(data)
+    assert result is None
+
+
+def test_filter_nonexistent_field():
+    config = FilterPostProcessorConfiguration(
+        field="nonexistent_field",
+        value="somebody@email.com"
+    )
+    data = {
+        "id": 238475234,
+        "email_contact": "somebody@email.com",
         "name": "Somebody Cool"
     }
     processor = FilterPostProcessorStrategy(configuration=config)

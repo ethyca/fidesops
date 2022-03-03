@@ -6,7 +6,7 @@ from fidesops.schemas.saas.strategy_configuration import (
     StrategyConfiguration,
     IdentityParamRef,
 )
-from fidesops.service.connectors.post_processor_strategy.post_processor_strategy import (
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
 
@@ -68,10 +68,16 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                 return None
             filter_value = identity_data.get(self.value.identity)
 
-        if isinstance(data, list):
-            filtered = [item for item in data if item[self.field] == filter_value]
-            return filtered if filtered else None
-        return data if data[self.field] == filter_value else None
+        try:
+            if isinstance(data, list):
+                filtered = [item for item in data if item[self.field] == filter_value]
+                return filtered if filtered else None
+            return data if data[self.field] == filter_value else None
+        except KeyError:
+            logger.warning(
+                f"{self.field} could not be found on data for the following post processing strategy: {self.get_strategy_name()}"
+            )
+            return None
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
