@@ -2,12 +2,12 @@ saas_config:
   fides_key: mailchimp_connector_example
   name: Mailchimp SaaS Config
   description: A sample schema representing the Mailchimp connector for Fidesops
-  version: 1.0
+  version: 0.0.1
 
   connector_params:
-  - name: domain
-  - name: username
-  - name: api_key
+    - name: domain
+    - name: username
+    - name: api_key
 
   client_config:
     protocol: https
@@ -20,7 +20,7 @@ saas_config:
           connector_param: username
         password:
           connector_param: api_key
-  
+
   test_request:
     path: /3.0/lists
 
@@ -58,20 +58,7 @@ saas_config:
             default_value: 0
           - name: placeholder
             type: query
-            references:
-              - dataset: mailchimp_connector_example
-                field: member.unique_email_id
-                direction: from
-        postprocessors:
-          - strategy: unwrap
-            configuration:
-              data_path: conversations
-        pagination:
-          strategy: basic_pagination
-          configuration:
-            incremental_param: offset
-            increment_by: 1000
-            initial_value: 0
+            identity: email
   - name: member
     requests:
       read:
@@ -85,8 +72,8 @@ saas_config:
           - strategy: unwrap
             configuration:
               data_path: exact_matches.members
-      delete:
-        path: /3.0/lists/<list_id>/members/<subscriber_hash>/actions/delete-permanent
+      update:
+        path: /3.0/lists/<list_id>/members/<subscriber_hash>
         request_params:
           - name: list_id
             type: path

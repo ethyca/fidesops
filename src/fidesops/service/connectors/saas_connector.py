@@ -61,15 +61,19 @@ class AuthenticatedClient:
         self, request_params: SaaSRequestParams
     ) -> PreparedRequest:
         """Returns an authenticated request based on the client config and incoming path, query, and body params"""
-        path, params, data = request_params
-        req = Request(url=f"{self.uri}{path}", params=params, data=data).prepare()
+        method, path, params, data = request_params
+        req = Request(
+            method=method, url=f"{self.uri}{path}", params=params, data=data
+        ).prepare()
         return self.add_authentication(req, self.client_config.authentication)
 
-    def get(self, request_params: SaaSRequestParams) -> Response:
-        """Builds and executes an authenticated GET request"""
+    def send(self, request_params: SaaSRequestParams) -> Response:
+        """
+        Builds and executes an authenticated request.
+        The HTTP method is determined by the request_params.
+        """
         try:
             prepared_request = self.get_authenticated_request(request_params)
-            prepared_request.method = "GET"
             response = self.session.send(prepared_request)
         except Exception:
             raise ConnectionException(f"Operational Error connecting to '{self.key}'.")
@@ -97,8 +101,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
         test_request_path = self.saas_config.test_request.path
-        prepared_request: SaaSRequestParams = test_request_path, {}, {}
-        self.client().get(prepared_request)
+        prepared_request: SaaSRequestParams = "GET", test_request_path, {}, {}
+        self.client().send(prepared_request)
         return ConnectionTestStatus.succeeded
 
     def build_uri(self) -> str:
@@ -195,6 +199,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         rows: List[Row],
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated"""
+        query_config = self.query_config(node)
+        prepared_requests = [
+            query_config.generate_update_stmt(row, policy, request) for row in rows
+        ]
+        rows_updated = 0
+        for prepared_request in prepared_requests:
+            self.client().send(prepared_request)
+            rows_updated += 1
+        return rows_updated
 
     def close(self) -> None:
         """Not required for this type"""
