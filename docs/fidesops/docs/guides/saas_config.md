@@ -2,7 +2,7 @@
 
 A SaaS connector is defined in two parts, the [Dataset](dataset.md) and the SaaS config. The Dataset describes the data that is available from the connector and the SaaS config describes how to connect and retrieve/update the data in the connector. If you contrast this to a [database connector](database_connectors.md), the ways to retrieve/update data conform to a specification (such as SQL) and are consistent. When accessing data from APIs, each application or even different endpoints within the same application can follow different patterns. It was necessary to have a flexible configuration to be able to define the different access/update patterns.
 
-In short, you can think of the Dataset as the "what" (what data is available from this API) and the SaaS config as the "how" (how to access and erase the data).
+In short, you can think of the Dataset as the "what" (what data is available from this API) and the SaaS config as the "how" (how to access and update the data).
 
 #### An example SaaS config
 
@@ -142,17 +142,17 @@ client_config:
 The authentication strategies are swappable. In this example we used the `basic_authentication` strategy which uses a `username` and `password` in the configuration. An alternative to this is to use `bearer_authentication` which looks like this:
 ```yaml
 authentication:
-strategy: bearer_authentication
-configuration:
-  token:
-    connector_param: api_key
+  strategy: bearer_authentication
+  configuration:
+    token:
+      connector_param: api_key
 ```
 
 #### Test request
 Once the base client is defined we can use a `test_request` to verify our hostname and credentials. This is in the form of an idempotent request (usually a read). The testing approach is the same for any [ConnectionConfig test](database_connectors.md#testing-your-connection).
 ```yaml
 test_request:
-  path: /status
+  path: /3.0/lists
 ```
 #### Endpoints
 This is where we define how we are going to access and update each collection in the corresponding Dataset. The endpoint section contains the following members:
