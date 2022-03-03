@@ -58,17 +58,10 @@ class RequestParam(BaseModel):
 
 
 class Strategy(BaseModel):
-    """General shape for swappable strategies (ex: auth, pagination, etc.)"""
+    """General shape for swappable strategies (ex: auth, processors, pagination, etc.)"""
 
     strategy: str
     configuration: Dict[str, Any]
-
-
-class PostProcessorStrategyData(BaseModel):
-    """Data class for postprocessor strategy"""
-
-    strategy: str
-    configuration: StrategyConfiguration
 
 
 class SaaSRequest(BaseModel):
@@ -81,7 +74,7 @@ class SaaSRequest(BaseModel):
     request_params: Optional[List[RequestParam]]
     data_path: Optional[str]  # defaults to collection name if not specified
     preprocessors: Optional[List[Strategy]]
-    postprocessors: Optional[List[PostProcessorStrategyData]]
+    postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
 
 

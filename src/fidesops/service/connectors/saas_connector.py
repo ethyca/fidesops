@@ -17,8 +17,7 @@ from fidesops.common_exceptions import (
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.saas_config import (
     Strategy,
-    SaaSRequest,
-    PostProcessorStrategyData,
+    SaaSRequest
 )
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
     get_strategy,
@@ -145,14 +144,22 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 read_request.postprocessors,
                 response,
             )
-            rows.extend(data_to_be_processed)
+            if isinstance(data_to_be_processed, list):
+                filter_only_dict = [item for item in data_to_be_processed if isinstance(item, dict)]
+                if len(filter_only_dict) < len(data_to_be_processed):
+                    logger.warning(f"Some data could not be added due to unexpected format")
+                rows.extend(data_to_be_processed)
+            elif isinstance(data_to_be_processed, dict):
+                rows.append(data_to_be_processed)
+            else:
+                logger.warning(f"Some data could not be added due to unexpected format")
         return rows
 
     @staticmethod
     def post_process(
         node_address: CollectionAddress,
         cached_identity: Dict[str, Any],
-        postprocessors: List[PostProcessorStrategyData],
+        postprocessors: List[Strategy],
         response: Response,
     ) -> Any:
         """Post process response"""

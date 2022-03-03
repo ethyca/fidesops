@@ -738,6 +738,7 @@ class SaaSQueryConfig(QueryConfig[List[SaaSRequestParams]]):
                     self.prepare_params(current_request, {string_path: value})
                 )
         logger.info(f"Populated request params for {current_request.path}")
+        logger.info(f"request params: {request_params}")
         return request_params
 
     def generate_update_stmt(
