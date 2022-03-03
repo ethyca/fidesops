@@ -147,13 +147,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 ]
                 if len(filter_only_dict) < len(data_to_be_processed):
                     logger.warning(
-                        f"Some data could not be added due to unexpected format"
+                        "Some data could not be added due to unexpected format"
                     )
                 rows.extend(data_to_be_processed)
             elif isinstance(data_to_be_processed, dict):
                 rows.append(data_to_be_processed)
             else:
-                logger.warning(f"Some data could not be added due to unexpected format")
+                logger.warning("Some data could not be added due to unexpected format")
         return rows
 
     @staticmethod
