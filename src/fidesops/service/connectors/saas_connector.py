@@ -150,6 +150,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                     raise PostProcessingException(
                         "Some data could not be added due to unexpected format"
                     )
+                rows.extend(data_to_be_processed)
             elif isinstance(data_to_be_processed, dict):
                 rows.append(data_to_be_processed)
             else:
