@@ -770,7 +770,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 )
 
         logger.info(f"Populated request params for {current_request.path}")
-        
+
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
         body: Dict[str, Any] = unflatten_dict(update_value_map)
         return "PUT", path, params, json.dumps(body)
