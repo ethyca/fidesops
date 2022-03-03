@@ -44,6 +44,7 @@ def test_create_privacy_request_sets_requested_at(
         },
     )
     assert pr.requested_at is not None
+    pr.delete(db)
 
     pr = PrivacyRequest.create(
         db=db,
@@ -53,6 +54,7 @@ def test_create_privacy_request_sets_requested_at(
         },
     )
     assert pr.requested_at is not None
+    pr.delete(db)
 
     requested_at = datetime.now(timezone.utc)
     pr = PrivacyRequest.create(
@@ -64,6 +66,7 @@ def test_create_privacy_request_sets_requested_at(
         },
     )
     assert pr.requested_at == requested_at
+    pr.delete(db)
 
 
 def test_update_privacy_requests(db: Session, privacy_requests: PrivacyRequest) -> None:
