@@ -1,3 +1,4 @@
+from os import truncate
 from uuid import uuid4
 
 import pydash
@@ -13,6 +14,23 @@ from fidesops.models.connectionconfig import (
 from fidesops.service.connectors.sql_connector import MariaDBConnector
 
 integration_config = load_toml("fidesops-integration.toml")
+
+
+def truncate_tables(db_session):
+    tables = [
+        "report",
+        "service_request",
+        "login",
+        "visit",
+        "order_item",
+        "orders",
+        "payment_card",
+        "employee",
+        "customer",
+        "address",
+        "product",
+    ]
+    [db_session.execute(f"TRUNCATE TABLE {table};") for table in tables]
 
 
 def setup():
@@ -48,6 +66,8 @@ def setup():
         autoflush=True,
     )
     session = SessionLocal()
+
+    truncate_tables(session)
 
     with open("./data/sql/mariadb_example_data.sql", "r") as query_file:
         lines = query_file.read().splitlines()
