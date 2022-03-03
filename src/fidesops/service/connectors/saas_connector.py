@@ -130,11 +130,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         read_request: SaaSRequest = self.endpoints[collection_name].requests["read"]
 
         query_config: SaaSQueryConfig = self.query_config(node)
-        prepared_requests = query_config.generate_query(input_data, policy)
+        prepared_requests = query_config.generate_requests(input_data, policy)
 
         rows: List[Row] = []
         for prepared_request in prepared_requests:
-            response: Response = self.client().get(prepared_request)
+            response: Response = self.client().send(prepared_request)
 
             if read_request.postprocessors is None:
                 rows.extend(response.json())
@@ -146,18 +146,16 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 response,
             )
             if isinstance(data_to_be_processed, list):
-                filter_only_dict = [
-                    item for item in data_to_be_processed if isinstance(item, dict)
-                ]
-                if len(filter_only_dict) < len(data_to_be_processed):
-                    logger.warning(
+                if not all([isinstance(item, dict) for item in data_to_be_processed]):
+                    raise PostProcessingException(
                         "Some data could not be added due to unexpected format"
                     )
-                rows.extend(data_to_be_processed)
             elif isinstance(data_to_be_processed, dict):
                 rows.append(data_to_be_processed)
             else:
-                logger.warning("Some data could not be added due to unexpected format")
+                raise PostProcessingException(
+                    "Some data could not be added due to unexpected format"
+                )
         return rows
 
     @staticmethod
@@ -201,7 +199,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """Execute a masking request. Return the number of rows that have been updated"""
         query_config = self.query_config(node)
         prepared_requests = [
-            query_config.generate_update_stmt(row, policy, request) for row in rows
+            query_config.generate_update_stmt(row, policy, privacy_request)
+            for row in rows
         ]
         rows_updated = 0
         for prepared_request in prepared_requests:

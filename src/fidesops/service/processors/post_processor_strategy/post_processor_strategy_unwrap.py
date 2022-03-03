@@ -22,17 +22,17 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
     Given a path to a dict, returns the dict/list
     E.g.
     data = {
-        exact_matches: {
-            members: [
-                howdy: 123,
-                meow: 841
+        "exact_matches": {
+            "members": [
+                {"howdy": 123},
+                {"meow": 841}
             ]
         }
     }
     data_path = exact_matches.members
     result = [
-                howdy: 123,
-                meow: 841
+                {"howdy": 123},
+                {"meow": 841}
             ]
     """
 

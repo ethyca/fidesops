@@ -22,18 +22,18 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
     E.g.
     data = [
         {
-            id: 1397429347
-            email_contact: somebody@email.com
-            name: Somebody Awesome
+            "id": 1397429347
+            "email_contact": somebody@email.com
+            "name": Somebody Awesome
         },
         {
-            id: 238475234
-            email_contact: somebody-else@email.com
-            name: Somebody Cool
+            "id": 238475234
+            "email_contact": somebody-else@email.com
+            "name": Somebody Cool
         }
     ]
     field: email_contact
-    value: {identity: email}, where email == somebody@email.com
+    value: {"identity": email}, where email == somebody@email.com
     result = {
         id: 1397429347
         email_contact: somebody@email.com
