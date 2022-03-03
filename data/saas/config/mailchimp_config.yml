@@ -59,7 +59,6 @@ saas_config:
             - name: query
               type: query
               identity: email
-              data_type: string
           data_path: exact_matches.members
         update:
           path: /3.0/lists/<list_id>/members/<subscriber_hash>

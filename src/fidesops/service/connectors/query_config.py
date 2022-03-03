@@ -744,8 +744,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         Prepares the update request by masking the fields in the row data based on the policy.
         This masked row is then added as the body to a dynamically generated SaaS request.
         """
-        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
-        body: Row = unflatten_dict(update_value_map)
+
         current_request: SaaSRequest = self.get_request_by_action("update")
         collection_name: str = self.node.address.collection
         param_values: Dict[str, Row] = {collection_name: row}
@@ -771,6 +770,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 )
 
         logger.info(f"Populated request params for {current_request.path}")
+        
+        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
+        body: Dict[str, Any] = unflatten_dict(update_value_map)
         return "PUT", path, params, json.dumps(body)
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
