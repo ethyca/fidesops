@@ -15,10 +15,7 @@ from fidesops.common_exceptions import (
     PostProcessingException,
 )
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.saas_config import (
-    Strategy,
-    SaaSRequest
-)
+from fidesops.schemas.saas.saas_config import Strategy, SaaSRequest
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
     get_strategy,
 )
@@ -145,9 +142,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 response,
             )
             if isinstance(data_to_be_processed, list):
-                filter_only_dict = [item for item in data_to_be_processed if isinstance(item, dict)]
+                filter_only_dict = [
+                    item for item in data_to_be_processed if isinstance(item, dict)
+                ]
                 if len(filter_only_dict) < len(data_to_be_processed):
-                    logger.warning(f"Some data could not be added due to unexpected format")
+                    logger.warning(
+                        f"Some data could not be added due to unexpected format"
+                    )
                 rows.extend(data_to_be_processed)
             elif isinstance(data_to_be_processed, dict):
                 rows.append(data_to_be_processed)
