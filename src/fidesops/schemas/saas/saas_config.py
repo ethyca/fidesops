@@ -3,6 +3,7 @@ from pydantic import BaseModel, validator
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.dataset import FidesopsDatasetReference
 from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
+from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
@@ -16,13 +17,13 @@ class ConnectorParams(BaseModel):
 
 class RequestParam(BaseModel):
     """
-    A request parameter which includes the type (query, path, or body) along with a default value or
+    A request parameter which includes the type (query or path) along with a default value or
     a reference to an identity value or a value in another dataset.
     """
 
     name: str
     type: Literal[
-        "query", "path", "body"
+        "query", "path"
     ]  # used to determine location in the generated request
     default_value: Optional[Any]
     identity: Optional[str]
@@ -52,12 +53,11 @@ class RequestParam(BaseModel):
                 raise ValueError(
                     "References can only have a direction of 'from', found 'to'"
                 )
-
         return references
 
 
 class Strategy(BaseModel):
-    """General shape for swappable strategies (ex: auth, pagination, postprocessing, etc.)"""
+    """General shape for swappable strategies (ex: auth, processors, pagination, etc.)"""
 
     strategy: str
     configuration: Dict[str, Any]
@@ -72,8 +72,8 @@ class SaaSRequest(BaseModel):
     path: str
     request_params: Optional[List[RequestParam]]
     data_path: Optional[str]  # defaults to collection name if not specified
-    preprocessor: Optional[Strategy]
-    postprocessor: Optional[List[Strategy]]
+    preprocessors: Optional[List[Strategy]]
+    postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
 
 

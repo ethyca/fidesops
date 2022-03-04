@@ -1,10 +1,10 @@
-# Postprocessors
+# SaaS Post-Processors
 
-Postprocessors are, in essence, data transformers. Given data from an endpoint or database, we can add specific processors to transform the data into a format we need for subject requests.
+Post-processors are, in essence, data transformers. Given data from an endpoint, we can add specific processors to transform the data into a format we need for subject requests.
 
 ## Configuration
 
-Postprocessors are configured within the `endpoints` section of a `saas_config`
+Post-processors are configured within the `endpoints` section of a `saas_config`
 
 
 ```yaml
@@ -29,59 +29,59 @@ endpoints:
 Note: Order matters as its defined in the config. In the above example, unwrap will be run first, then the output of unwrap will be used in the filter strategy.
 
 
-## Supported Strategies:
-- `unwrap`- gets object at given data path.
-- `filter`- removes data that does not match a given field and value.
+## Supported Strategies
+- `unwrap`: Gets object at given data path.
+- `filter`: Removes data that does not match a given field and value.
 
 
 ### Filter
 
-Filters object or array given field name and value. Value can be reference a dynamic identity passed in through the request OR hard-coded value.
+Filters object or array given field name and value. Value can reference a dynamic identity passed in through the request OR be a hard-coded value.
 
 #### Configuration Details
 
-`strategy`: `filter`
+`strategy`: filter
 
 `configuration`:
 
-- `field`: `str` that corresponds to the field on which to filter. For example, we wish to filter where `email_contact == "bob@mail.com"`, then `field` will be `email_contact`. Note that filtering an array by a field that's deeply nested is not yet supported.
-- `value`: `str` to search for when filtering (e.g. hard-coded `bob@mail.com`) OR Dict` of identity path:
-    - `identity`: `str` of identity object from subject request (e.g. `email` or `phone number`)
+- `field` (_str_): Corresponds to the field on which to filter. For example, we wish to filter where `email_contact == "bob@mail.com"`, then `field` will be `email_contact`. Note that filtering an array by a field that's deeply nested is not yet supported.
+- `value` (_str_): Value to search for when filtering (e.g. hard-coded `bob@mail.com`) or Dict of identity path:
+    - `identity` (_str_): Identity object from subject request (e.g. `email` or `phone_number`)
 
 
 #### Example
 
-Postprocessor Config:
+Post-Processor Config:
 ```yaml
 - strategy: filter
-    configuration:
-      field: email_contact
-      value:
-        identity: email
+  configuration:
+    field: email_contact
+    value:
+      identity: email
 ```
 
 Identity data passed in through request:
 
 ```
 {
-    "email": "somebody@email.com"
+  "email": "somebody@email.com"
 }
 ```
 
 Data to be processed:
 ```
 data = [
-        {
-            "id": 1397429347
-            "email_contact": "somebody@email.com"
-            "name": "Somebody Awesome"
-        },
-        {
-            "id": 238475234
-            "email_contact": "somebody-else@email.com"
-            "name": "Somebody Cool"
-        }
-    ]
+    {
+        "id": 1397429347
+        "email_contact": "somebody@email.com"
+        "name": "Somebody Awesome"
+    },
+    {
+        "id": 238475234
+        "email_contact": "somebody-else@email.com"
+        "name": "Somebody Cool"
+    }
+]
 ```
 
 Result:
@@ -104,42 +104,42 @@ Given a path to a dict/list, returns the dict/list at that location.
 
 #### Configuration Details
 
-`strategy`: `unwrap`
+`strategy`: unwrap
 
 `configuration`:
 
-- `data_path`: `str` that gives the path to desired object. E.g. `exact_matches.members` will attempt to get the `members` object on the `exact_matches` object.
+- `data_path` (_str_): Gives the path to desired object. E.g. `exact_matches.members` will attempt to get the `members` object on the `exact_matches` object.
 
 
 #### Example
 
-Postprocessor Config:
+Post-Processor Config:
 ```yaml
-    - strategy: unwrap
-        configuration:
-          data_path: exact_matches.members
+- strategy: unwrap
+  configuration:
+    data_path: exact_matches.members
 ```
 
 Data to be processed:
 ```
-    data = {
-        "exact_matches": {
-            "members": [
-                {"howdy": 123},
-                {"meow": 841}
-            ]
-        }
-    }
-    data_path = exact_matches.members
+data = {
+  "exact_matches": {
+    "members": [
+      { "howdy": 123 },
+      { "meow": 841 }
+    ]
+  }
+}
+
+data_path = exact_matches.members
     
 ```
 Result:
-
 ```
-    result = [
-                {"howdy": 123},
-                {"meow": 841}
-            ]
+result = [
+  { "howdy": 123 },
+  { "meow": 841 }
+]
 ```
 
 

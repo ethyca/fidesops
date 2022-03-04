@@ -71,8 +71,9 @@ PUT api/v1/connection/{saas_key}/dataset
     ...
 ```
 
-## Additional constraints
+## Additional considerations
 These are constraints enforced by the API validation but it is important to keep these in mind.
 
 1. A SaaS connector dataset cannot have any `identities` or `references` in the `fidesops_meta`. These relationships must be defined in the SaaS config.
 2. SaaS config references can only have a direction of `from`.
+3. The `fides_key` between the SaaS config and the Dataset must match. This is how we associate the two pieces together.
