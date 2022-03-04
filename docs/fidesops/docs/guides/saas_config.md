@@ -14,6 +14,8 @@ For this guide, we will use the SaaS config to connect to Mailchimp, this config
     - `GET` for the [conversations](https://mailchimp.com/developer/marketing/api/conversations/) resource
     - `GET` for the [messages](https://mailchimp.com/developer/marketing/api/conversation-messages/) resource
 
+
+The following is an example SaaS config for Mailchimp:
 ```yaml
 saas_config:
   fides_key: mailchimp_connector_example
