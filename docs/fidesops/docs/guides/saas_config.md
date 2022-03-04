@@ -177,9 +177,9 @@ This is where we define how we are going to access and update each collection in
     - `request_params`
         - `name` Used as the key for query param values, or to map this param to a value placeholder in the path.
         - `type` Either "query" or "path".
-        - `references` This is the same as reference in the Dataset schema. It is used to define the source of the value for the given request_param.
+        - `references` These are the same as `references` in the Dataset schema. It is used to define the source of the value for the given request_param.
         - `identity` This denotes the identity value that this request_param should take.
-        - `default_value` Hard-coded default value for a request_param. This is most often used for query params since a static path param can just be included in the `path`.
+          - `default_value` Hard-coded default value for a `request_param`. This is most often used for query params since a static path param can just be included in the `path`.
     - `postprocessors` An optional list of response post-processing strategies. We will ignore this for the example scenarios below but an in depth-explanation can be found under [SaaS Post-Processors](saas_postprocessors.md)
 
 ## Example scenarios
@@ -269,7 +269,7 @@ PUT /3.0/lists/123/members/456
     }
 }
 ```
-and the contents of the body would be masked according the configured [policy](policies.md).
+and the contents of the body would be masked according to the configured [policy](policies.md).
 
 ## How does this relate to graph traversal?
 
