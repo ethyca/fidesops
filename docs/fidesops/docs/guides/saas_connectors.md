@@ -31,7 +31,7 @@ PATCH api/v1/connection
 [
   {
     "name": "SaaS Application",
-    "key": {{saas_key}},
+    "key": {saas_key},
     "connection_type": "saas",
     "access": "read"
   }
@@ -39,7 +39,7 @@ PATCH api/v1/connection
 ```
 2. Add a SaaS Config (in JSON format)
 ```
-PATCH api/v1/connection/{{saas_key}}/saas_config
+PATCH api/v1/connection/{saas_key}/saas_config
 
 {
     "fides_key": "mailchimp_connector_example",
@@ -49,17 +49,17 @@ PATCH api/v1/connection/{{saas_key}}/saas_config
 ```
 3. Configure the secrets. The SaaS config must already defined to provide validation for the secrets.
 ```
-PUT api/v1/connection/{{saas_key}}/secret?verify=true
+PUT api/v1/connection/{saas_key}/secret?verify=true
 
 {
-  "domain": "{{mailchimp_domain}}",
-  "username": "{{mailchimp_username}}",
-  "api_key": "{{mailchimp_api_key}}"
+  "domain": "{mailchimp_domain}",
+  "username": "{mailchimp_username}",
+  "api_key": "{mailchimp_api_key}"
 }
 ```
 4. Add a Dataset (in JSON format)
 ```
-PUT api/v1/connection/{{saas_key}}/dataset
+PUT api/v1/connection/{saas_key}/dataset
 [
   {
     "fides_key":"mailchimp_connector_example",

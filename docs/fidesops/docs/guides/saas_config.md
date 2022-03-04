@@ -203,7 +203,7 @@ endpoints:
             type: query
             identity: email
 ```
-In this example, the `email` identity value is used as a query param named "query" and would look like this:
+In this example, the `email` identity value is used as a param named "query" and would look like this:
 ```
 GET /3.0/search-members?query=name@email.com
 ```
@@ -253,4 +253,4 @@ PUT /3.0/lists/123/members/456
     }
 }
 ```
-and the contents of the body would be masked according the the configured [policy](policies.md).
+and the contents of the body would be masked according the configured [policy](policies.md).

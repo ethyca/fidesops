@@ -31,7 +31,7 @@ Note: Order matters as its defined in the config. In the above example, unwrap w
 
 ## Supported Strategies:
 - `unwrap`- gets object at given data path.
-- `filter`- filters data based on given field value.
+- `filter`- removes data that does not match a given field and value.
 
 
 ### Filter
@@ -82,6 +82,17 @@ data = [
             "name": "Somebody Cool"
         }
     ]
+```
+
+Result:
+```
+result = [
+          {
+              "id": 1397429347
+              "email_contact": "somebody@email.com"
+              "name": "Somebody Awesome"
+          }
+        ]
 ```
 
 Note: Type casting is not supported at this time. We currently only support filtering by string values. e.g. `bob@mail.com` and not `12344245`.
