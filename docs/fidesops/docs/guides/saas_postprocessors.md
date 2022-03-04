@@ -4,8 +4,7 @@ Post-processors are, in essence, data transformers. Given data from an endpoint,
 
 ## Configuration
 
-Post-processors are configured within the `endpoints` section of a `saas_config`
-
+Post-processors are configured within the `endpoints` section of a `saas_config`:
 
 ```yaml
 endpoints:
@@ -26,7 +25,7 @@ endpoints:
                 identity: email
 ```
 
-Note: Order matters as its defined in the config. In the above example, unwrap will be run first, then the output of unwrap will be used in the filter strategy.
+Note: Order matters as it's defined in the config. In the above example, unwrap will be run first, then the output of unwrap will be used in the filter strategy.
 
 
 ## Supported Strategies
