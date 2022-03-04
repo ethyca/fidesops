@@ -430,7 +430,6 @@ def create_privacy_request(user_email: str, policy_key: str):
     ]
     response = requests.post(
         f"{FIDESOPS_URL}/api/v1/privacy-request",
-        headers=oauth_header,
         json=privacy_request_data,
     )
 
