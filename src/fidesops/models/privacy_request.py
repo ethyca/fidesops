@@ -121,7 +121,10 @@ class PrivacyRequest(Base):
 
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
-        """Validate this object's data before deferring to the superclass on update"""
+        """
+        Check whether this object has been passed a `requested_at` value. Default to
+        the current datetime if not.
+        """
         if data.get("requested_at", None) is None:
             data["requested_at"] = datetime.utcnow()
         return super().create(db=db, data=data)
