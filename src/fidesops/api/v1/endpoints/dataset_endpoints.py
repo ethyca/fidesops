@@ -1,7 +1,8 @@
 import logging
+import yaml
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -138,6 +139,38 @@ def patch_datasets(
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
+    return create_update_datasets(connection_config, datasets, db)
+
+
+@router.patch(
+    DATASETS + '/yaml',
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_CREATE_OR_UPDATE])],
+    status_code=200,
+    response_model=BulkPutDataset,
+    )
+async def patch_yaml_datasets(
+        request: Request,
+        db: Session = Depends(deps.get_db),
+        connection_config: ConnectionConfig = Depends(_get_connection_config),
+) -> BulkPutDataset:
+    yaml_request_body: dict = yaml.safe_load(await request.body())
+    created_or_updated: List[FidesopsDataset] = []
+    failed: List[BulkUpdateFailed] = []
+    data: dict = {
+        "connection_config_id": connection_config.id,
+        "fides_key": yaml_request_body.get("dataset")[0]['fides_key'],
+        "dataset": yaml_request_body.get("dataset")[0],
+    }
+    create_or_update_data(connection_config, created_or_updated, data, yaml_request_body, db, failed)
+    return BulkPutDataset(
+        succeeded=created_or_updated,
+        failed=failed,
+    )
+
+
+def create_update_datasets(connection_config: ConnectionConfig,
+                           datasets: conlist(FidesopsDataset, max_items=50),
+                           db: Session):
     """
     Given a list of dataset elements, create or update corresponding Dataset objects
     or report failure
@@ -147,11 +180,9 @@ def patch_datasets(
     If the fides_key for a given dataset exists, it will be treated as an update.
     Otherwise, a new dataset will be created.
     """
-
     created_or_updated: List[FidesopsDataset] = []
     failed: List[BulkUpdateFailed] = []
     logger.info(f"Starting bulk upsert for {len(datasets)} datasets")
-
     # warn if there are duplicate fides_keys within the datasets
     # valid datasets with the same fides_key will override each other
     key_list = [dataset.fides_key for dataset in datasets]
@@ -159,40 +190,47 @@ def patch_datasets(
         logger.warning(
             "Datasets with duplicate fides_keys detected, may result in unintended behavior."
         )
-
     for dataset in datasets:
-        data = {
+        data: dict = {
             "connection_config_id": connection_config.id,
             "fides_key": dataset.fides_key,
             "dataset": dataset.dict(),
         }
-        try:
-            if connection_config.connection_type == ConnectionType.saas:
-                _validate_saas_dataset(connection_config, dataset)
-            # Try to find an existing DatasetConfig matching the given connection & key
-            dataset_config = DatasetConfig.create_or_update(db, data=data)
-            created_or_updated.append(dataset_config.dataset)
-        except (SaaSConfigNotFoundException, ValidationError) as exception:
-            logger.warning(exception.message)
-            failed.append(
-                BulkUpdateFailed(
-                    message=exception.message,
-                    data=data,
-                )
-            )
-        except Exception:
-            logger.warning(f"Create/update failed for dataset '{data['fides_key']}'.")
-            failed.append(
-                BulkUpdateFailed(
-                    message="Dataset create/update failed.",
-                    data=data,
-                )
-            )
-
+        create_or_update_data(connection_config, created_or_updated, data, dataset, db, failed)
     return BulkPutDataset(
         succeeded=created_or_updated,
         failed=failed,
     )
+
+
+def create_or_update_data(connection_config: ConnectionConfig,
+                          created_or_updated: List[FidesopsDataset],
+                          data: dict,
+                          dataset: FidesopsDataset,
+                          db: Session,
+                          failed: List[BulkUpdateFailed]):
+    try:
+        if connection_config.connection_type == ConnectionType.saas:
+            _validate_saas_dataset(connection_config, dataset)
+        # Try to find an existing DatasetConfig matching the given connection & key
+        dataset_config = DatasetConfig.create_or_update(db, data=data)
+        created_or_updated.append(dataset_config.dataset)
+    except (SaaSConfigNotFoundException, ValidationError) as exception:
+        logger.warning(exception.message)
+        failed.append(
+            BulkUpdateFailed(
+                message=exception.message,
+                data=data,
+            )
+        )
+    except Exception:
+        logger.warning(f"Create/update failed for dataset '{data['fides_key']}'.")
+        failed.append(
+            BulkUpdateFailed(
+                message="Dataset create/update failed.",
+                data=data,
+            )
+        )
 
 
 def _validate_saas_dataset(
