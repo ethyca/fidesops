@@ -18,7 +18,6 @@ from fidesops.api.v1.urn_registry import (
     DATASETS,
 )
 from fidesops.api.v1.scope_registry import (
-    PRIVACY_REQUEST_CREATE,
     STORAGE_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_CALLBACK_RESUME,

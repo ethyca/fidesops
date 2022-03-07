@@ -13,7 +13,6 @@ CONNECTION_CREATE_OR_UPDATE = "connection:create_or_update"
 CONNECTION_READ = "connection:read"
 CONNECTION_DELETE = "connection:delete"
 
-PRIVACY_REQUEST_CREATE = "privacy-request:create"
 PRIVACY_REQUEST_READ = "privacy-request:read"
 PRIVACY_REQUEST_DELETE = "privacy-request:delete"
 PRIVACY_REQUEST_CALLBACK_RESUME = (
@@ -40,6 +39,10 @@ DATASET_CREATE_OR_UPDATE = "dataset:create_or_update"
 DATASET_READ = "dataset:read"
 DATASET_DELETE = "dataset:delete"
 
+SAAS_CONFIG_CREATE_OR_UPDATE = "saas_config:create_or_update"
+SAAS_CONFIG_READ = "saas_config:read"
+SAAS_CONFIG_DELETE = "saas_config:delete"
+
 SCOPE_REGISTRY = [
     CLIENT_CREATE,
     CLIENT_UPDATE,
@@ -56,7 +59,6 @@ SCOPE_REGISTRY = [
     POLICY_CREATE_OR_UPDATE,
     POLICY_READ,
     POLICY_DELETE,
-    PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -70,4 +72,7 @@ SCOPE_REGISTRY = [
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_READ,
     WEBHOOK_DELETE,
+    SAAS_CONFIG_CREATE_OR_UPDATE,
+    SAAS_CONFIG_READ,
+    SAAS_CONFIG_DELETE,
 ]
