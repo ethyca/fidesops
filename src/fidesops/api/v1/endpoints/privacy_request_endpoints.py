@@ -144,12 +144,8 @@ def create_privacy_request(
             failed.append(failure)
             continue
 
-        requested_at = privacy_request_data.requested_at
-        if requested_at is None:
-            requested_at = datetime.utcnow()
-
         kwargs = {
-            "requested_at": requested_at,
+            "requested_at": privacy_request_data.requested_at,
             "policy_id": policy.id,
             "status": "pending",
         }
