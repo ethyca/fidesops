@@ -48,6 +48,6 @@ npm run test
 ## Deployment
 
 To deploy this site, fork this repository. Then, configure a smart hosting
-service such as Vercel or Netlify to deploy, specifying the root directory for
-the client application as the `clients/privacy-center` directory (relative to
-the root of the repository).
+service such as Vercel or Netlify to deploy it, specifying the root directory
+for the client application as the `clients/privacy-center` directory (relative
+to the root of the repository).
