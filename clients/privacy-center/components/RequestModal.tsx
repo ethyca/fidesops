@@ -101,11 +101,12 @@ const useRequestForm = ({
         }
 
         const data = await response.json();
+
         if (data.succeeded.length) {
           setAlert({
             status: 'success',
             description:
-              'You request was successful, please await further instructions.',
+              'Your request was successful, please await further instructions.',
           });
         } else {
           handleError();

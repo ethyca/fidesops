@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { Session } from 'next-auth';
 import {
   Flex,
   Heading,
@@ -20,7 +19,7 @@ import type { AlertState } from '../types/AlertState';
 
 import config from '../config/config.json';
 
-const Home: NextPage<{ session: Session }> = () => {
+const Home: NextPage = () => {
   const [alert, setAlert] = useState<AlertState | null>(null);
   const { isOpen, onClose, onOpen, openAction } = useRequestModal();
   return (
