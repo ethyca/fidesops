@@ -14,6 +14,8 @@ class UserCreate(BaseSchema):
     @validator("username")
     def validate_username(cls, username: str) -> str:
         """Ensure password does not have spaces"""
+        if not username:
+            raise ValueError("Must enter username.")
         if " " in username:
             raise ValueError("Usernames cannot have spaces.")
         return username

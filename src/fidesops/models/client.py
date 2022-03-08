@@ -33,12 +33,16 @@ class ClientDetail(Base):
     hashed_secret = Column(String, nullable=False)
     salt = Column(String, nullable=False)
     scopes = Column(ARRAY(String), nullable=False, default="{}")
+    fides_key = Column(String, index=True, unique=True, nullable=True)
+    username = Column(String, unique=True, index=True, nullable=True)
 
     @classmethod
     def create_client_and_secret(
         cls,
         db: Session,
         scopes: List[str] = DEFAULT_SCOPES,
+        fides_key: str = None,
+        username: str = None,
     ) -> Tuple["ClientDetail", str]:
         """Creates a ClientDetail and returns that along with the unhashed secret so it can
         be returned to the user on create"""
@@ -66,6 +70,8 @@ class ClientDetail(Base):
                 "salt": salt,
                 "hashed_secret": hashed_secret,
                 "scopes": scopes,
+                "fides_key": fides_key,
+                "username": username,
             },
         )
 
