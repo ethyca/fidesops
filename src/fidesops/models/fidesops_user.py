@@ -1,7 +1,7 @@
 from typing import Dict, Any
 
 from sqlalchemy import Column, String
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, relationship
 
 from fidesops.core.config import config
 from fidesops.db.base_class import Base
@@ -14,6 +14,10 @@ class FidesopsUser(Base):
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String, nullable=False)
     salt = Column(String, nullable=False)
+
+    client = relationship(
+        "ClientDetail", backref="user", cascade="all, delete", uselist=False
+    )
 
     @classmethod
     def create(cls, db: Session, data: Dict[str, Any]) -> "FidesopsUser":

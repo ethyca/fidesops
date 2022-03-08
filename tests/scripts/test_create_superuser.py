@@ -58,7 +58,9 @@ class TestCreateSuperuserScript:
         assert superuser.credentials_valid("TESTP@ssword9")
         assert superuser.hashed_password != "TESTP@ssword9"
 
-        client_detail = db.query(ClientDetail).filter_by(username="test_user").first()
+        client_detail = db.query(ClientDetail).filter_by(user_id=superuser.id).first()
+        assert client_detail.user == superuser
+        assert superuser.client == client_detail
         assert client_detail.fides_key == ADMIN_UI_ROOT
         assert CLIENT_CREATE not in client_detail.scopes
 

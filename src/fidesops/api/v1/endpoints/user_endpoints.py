@@ -66,16 +66,11 @@ def delete_user(
             status_code=HTTP_404_NOT_FOUND, detail=f"No user found with id {user_id}."
         )
 
-    if not (client.fides_key == ADMIN_UI_ROOT or client.username == user.username):
+    if not (client.fides_key == ADMIN_UI_ROOT or client.user_id == user.id):
         raise HTTPException(
             status_code=HTTP_403_FORBIDDEN,
             detail=f"Users can only remove themselves, or be the Admin UI Root User.",
         )
-
-    user_client = ClientDetail.get_by(db, field="username", value=user.username)
-    if user_client:
-        logger.info(f"Deleting client for user '{user_id}'")
-        user_client.delete(db)
 
     logger.info(f"Deleting user: '{user_id}'.")
     user.delete(db)

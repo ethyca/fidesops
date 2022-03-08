@@ -157,10 +157,12 @@ class TestDeleteUser:
                 "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
             },
         )
-        saved_username = user.username
+        saved_user_id = user.id
         client, _ = ClientDetail.create_client_and_secret(
-            db, [USER_DELETE], username=user.username
+            db, [USER_DELETE], user_id=user.id
         )
+        assert client.user == user
+        saved_client_id = client.id
 
         payload = {
             JWE_PAYLOAD_SCOPES: [USER_DELETE],
@@ -175,14 +177,16 @@ class TestDeleteUser:
         )
         assert 204 == response.status_code
 
-        user_search = FidesopsUser.get_by(db, field="username", value=saved_username)
+        db.expunge_all()
+
+        user_search = FidesopsUser.get_by(db, field="id", value=saved_user_id)
         assert user_search is None
 
-        client_search = ClientDetail.get_by(db, field="username", value=saved_username)
+        client_search = ClientDetail.get_by(db, field="id", value=saved_client_id)
         assert client_search is None
 
-    def test_delete_user_as_root(self, api_client, db, generate_auth_header):
-        user = FidesopsUser.create(
+    def test_delete_user_as_root(self, api_client, db, generate_auth_header, user):
+        other_user = FidesopsUser.create(
             db=db,
             data={
                 "username": "test_delete_user",
@@ -190,13 +194,16 @@ class TestDeleteUser:
             },
         )
         user_client, _ = ClientDetail.create_client_and_secret(
-            db, [USER_DELETE], username="test_delete_user"
+            db, [USER_DELETE], user_id=other_user.id
         )
-        saved_username = user.username
+        client_id = user_client.id
+        saved_user_id = other_user.id
+        admin_user_id = user.id
 
         admin_client, _ = ClientDetail.create_client_and_secret(
-            db, [USER_DELETE], fides_key=ADMIN_UI_ROOT, username="root_user"
+            db, [USER_DELETE], fides_key=ADMIN_UI_ROOT, user_id=user.id
         )
+        admin_client_id = admin_client.id
         payload = {
             JWE_PAYLOAD_SCOPES: [USER_DELETE],
             JWE_PAYLOAD_CLIENT_ID: admin_client.id,
@@ -206,20 +213,22 @@ class TestDeleteUser:
         auth_header = {"Authorization": "Bearer " + jwe}
 
         response = api_client.delete(
-            f"{V1_URL_PREFIX}{USERS}/{user.id}", headers=auth_header
+            f"{V1_URL_PREFIX}{USERS}/{other_user.id}", headers=auth_header
         )
         assert 204 == response.status_code
 
-        user_search = FidesopsUser.get_by(db, field="username", value=saved_username)
+        db.expunge_all()
+
+        user_search = FidesopsUser.get_by(db, field="id", value=saved_user_id)
         assert user_search is None
 
-        # Deleted user's client deleted
-        client_search = ClientDetail.get_by(db, field="username", value=saved_username)
+        # Deleted user's client is also deleted
+        client_search = ClientDetail.get_by(db, field="id", value=client_id)
         assert client_search is None
 
         # Admin client who made the request is not deleted
         admin_client_search = ClientDetail.get_by(
-            db, field="username", value="root_user"
+            db, field="id", value=admin_client_id
         )
         assert admin_client_search is not None
         admin_client_search.delete(db)

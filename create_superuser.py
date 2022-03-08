@@ -59,7 +59,7 @@ def create_user_and_client(db: Session) -> FidesopsUser:
     scopes.remove(CLIENT_CREATE)
 
     ClientDetail.create_client_and_secret(
-        db, scopes, fides_key=ADMIN_UI_ROOT, username=user_data.username
+        db, scopes, fides_key=ADMIN_UI_ROOT, user_id=superuser.id
     )
     print(f"Superuser '{user_data.username}' created successfully!")
     return superuser
