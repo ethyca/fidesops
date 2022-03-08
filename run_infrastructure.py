@@ -34,7 +34,7 @@ def run_infrastructure(
     run_application: bool = False,  # Should we run the Fidesops webserver?
     run_quickstart: bool = False,  # Should we run the quickstart command?
     run_tests: bool = False,  # Should we run the tests after creating the infra?
-    run_create_superuser: bool = False,  # Should we run the createsuperuser command?
+    run_create_superuser: bool = False,  # Should we run the create_superuser command?
 ) -> None:
     """
     - Create a Docker Compose file path for all datastores specified in `datastores`.
@@ -163,7 +163,7 @@ def _run_create_superuser(
     """
     _run_cmd_or_err(f'echo "Running create superuser..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f"docker exec -it {image_name} python createsuperuser.py")
+    _run_cmd_or_err(f"docker exec -it {image_name} python create_superuser.py")
 
 
 def _open_shell(

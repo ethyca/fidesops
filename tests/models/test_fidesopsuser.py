@@ -10,6 +10,9 @@ class TestFidesopsUser:
         )
 
         assert user.username == "user_1"
-        assert user.password == "test_password"
         assert user.created_at is not None
         assert user.updated_at is not None
+        assert user.hashed_password != "test_password"
+
+        assert not user.credentials_valid("bad_password")
+        assert user.credentials_valid("test_password")
