@@ -4,7 +4,7 @@ from unittest import mock
 from create_superuser import (
     collect_username_and_password,
     create_user_and_client,
-    ADMIN_UI,
+    ADMIN_UI_ROOT,
 )
 from fidesops.common_exceptions import KeyOrNameAlreadyExists
 from fidesops.models.client import ClientDetail
@@ -60,7 +60,7 @@ class TestCreateSuperuserScript:
         assert superuser.hashed_password != "TESTP@ssword9"
 
         client_detail = db.query(ClientDetail).filter_by(username="test_user").first()
-        assert client_detail.fides_key == ADMIN_UI
+        assert client_detail.fides_key == ADMIN_UI_ROOT
         assert CLIENT_CREATE not in client_detail.scopes
 
         with pytest.raises(KeyOrNameAlreadyExists):

@@ -1,3 +1,5 @@
+import pytest
+
 from sqlalchemy.orm import Session
 from fidesops.models.fidesops_user import FidesopsUser
 
@@ -16,3 +18,12 @@ class TestFidesopsUser:
 
         assert not user.credentials_valid("bad_password")
         assert user.credentials_valid("test_password")
+
+        user.delete(db)
+
+    def test_create_user_bad_payload(self, db: Session) -> None:
+        with pytest.raises(KeyError):
+            FidesopsUser.create(
+                db=db,
+                data={},
+            )

@@ -12,7 +12,7 @@ from fidesops.models.client import ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.schemas.user import UserCreate
 
-ADMIN_UI = "admin_ui"
+ADMIN_UI_ROOT = "admin_ui_root"
 
 
 def get_username(prompt: str) -> str:
@@ -45,9 +45,9 @@ def collect_username_and_password(db: Session) -> UserCreate:
     return user_data
 
 
-def create_user_and_client(db: Session):
+def create_user_and_client(db: Session) -> FidesopsUser:
     """One-time script to create the first user"""
-    if db.query(ClientDetail).filter_by(fides_key=ADMIN_UI).first():
+    if db.query(ClientDetail).filter_by(fides_key=ADMIN_UI_ROOT).first():
         raise KeyOrNameAlreadyExists("Admin UI Client already created.")
 
     user_data: UserCreate = collect_username_and_password(db)
@@ -58,7 +58,7 @@ def create_user_and_client(db: Session):
     scopes.remove(CLIENT_CREATE)
 
     ClientDetail.create_client_and_secret(
-        db, scopes, fides_key=ADMIN_UI, username=user_data.username
+        db, scopes, fides_key=ADMIN_UI_ROOT, username=user_data.username
     )
     print(f"Superuser '{user_data.username}' created successfully!")
     return superuser

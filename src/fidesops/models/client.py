@@ -74,7 +74,6 @@ class ClientDetail(Base):
                 "username": username,
             },
         )
-
         return client, secret
 
     @classmethod

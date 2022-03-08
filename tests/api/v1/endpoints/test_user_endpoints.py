@@ -1,11 +1,20 @@
+from datetime import datetime
+
 import json
 
 import pytest
 
+from create_superuser import ADMIN_UI_ROOT
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX, USERS
 from fidesops.models.client import ClientDetail
 from fidesops.api.v1.scope_registry import STORAGE_READ, USER_CREATE, USER_DELETE
 from fidesops.models.fidesops_user import FidesopsUser
+from fidesops.util.oauth_util import generate_jwe
+from fidesops.schemas.jwt import (
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+    JWE_ISSUED_AT,
+)
 
 
 class TestCreateUser:
@@ -128,16 +137,90 @@ class TestDeleteUser:
         response = api_client.delete(url, headers=auth_header)
         assert 403 == response.status_code
 
+    def test_delete_user_not_admin_root_or_self(
+        self, url, api_client, db, generate_auth_header, user
+    ):
+        auth_header = generate_auth_header([USER_DELETE])
+        response = api_client.delete(url, headers=auth_header)
+        assert 403 == response.status_code
+
     def test_delete_nonexistent_user(self, api_client, db, generate_auth_header, user):
         auth_header = generate_auth_header([USER_DELETE])
         url = f"{V1_URL_PREFIX}{USERS}/nonexistent_user"
         response = api_client.delete(url, headers=auth_header)
         assert 404 == response.status_code
 
-    def test_delete_user(self, url, api_client, db, generate_auth_header, user):
-        auth_header = generate_auth_header([USER_DELETE])
-        response = api_client.delete(url, headers=auth_header)
+    def test_delete_self(self, api_client, db, generate_auth_header):
+        user = FidesopsUser.create(
+            db=db,
+            data={
+                "username": "test_delete_user",
+                "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            },
+        )
+        saved_username = user.username
+        client, _ = ClientDetail.create_client_and_secret(
+            db, [USER_DELETE], username=user.username
+        )
+
+        payload = {
+            JWE_PAYLOAD_SCOPES: [USER_DELETE],
+            JWE_PAYLOAD_CLIENT_ID: client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        jwe = generate_jwe(json.dumps(payload))
+        auth_header = {"Authorization": "Bearer " + jwe}
+
+        response = api_client.delete(
+            f"{V1_URL_PREFIX}{USERS}/{user.id}", headers=auth_header
+        )
         assert 204 == response.status_code
 
-        user_search = FidesopsUser.get_by(db, field="username", value=user.username)
+        user_search = FidesopsUser.get_by(db, field="username", value=saved_username)
         assert user_search is None
+
+        client_search = ClientDetail.get_by(db, field="username", value=saved_username)
+        assert client_search is None
+
+    def test_delete_user_as_root(self, api_client, db, generate_auth_header):
+        user = FidesopsUser.create(
+            db=db,
+            data={
+                "username": "test_delete_user",
+                "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            },
+        )
+        user_client, _ = ClientDetail.create_client_and_secret(
+            db, [USER_DELETE], username="test_delete_user"
+        )
+        saved_username = user.username
+
+        admin_client, _ = ClientDetail.create_client_and_secret(
+            db, [USER_DELETE], fides_key=ADMIN_UI_ROOT, username="root_user"
+        )
+        payload = {
+            JWE_PAYLOAD_SCOPES: [USER_DELETE],
+            JWE_PAYLOAD_CLIENT_ID: admin_client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        jwe = generate_jwe(json.dumps(payload))
+        auth_header = {"Authorization": "Bearer " + jwe}
+
+        response = api_client.delete(
+            f"{V1_URL_PREFIX}{USERS}/{user.id}", headers=auth_header
+        )
+        assert 204 == response.status_code
+
+        user_search = FidesopsUser.get_by(db, field="username", value=saved_username)
+        assert user_search is None
+
+        # Deleted user's client deleted
+        client_search = ClientDetail.get_by(db, field="username", value=saved_username)
+        assert client_search is None
+
+        # Admin client who made the request is not deleted
+        admin_client_search = ClientDetail.get_by(
+            db, field="username", value="root_user"
+        )
+        assert admin_client_search is not None
+        admin_client_search.delete(db)

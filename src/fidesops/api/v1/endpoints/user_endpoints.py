@@ -1,10 +1,16 @@
 import logging
 from fastapi import Security, Depends, APIRouter, HTTPException
-from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from starlette.status import (
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+    HTTP_403_FORBIDDEN,
+)
 
+from create_superuser import ADMIN_UI_ROOT
 from fidesops.api import deps
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
+from fidesops.models.client import ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.schemas.user import UserCreate, UserCreateResponse
 
@@ -42,12 +48,18 @@ def create_user(
 
 @router.delete(
     urls.USER_DETAIL,
-    dependencies=[Security(verify_oauth_client, scopes=[USER_DELETE])],
     status_code=204,
 )
-def delete_user(*, db: Session = Depends(deps.get_db), user_id: str) -> None:
-    """Deletes the user with the given id"""
-
+def delete_user(
+    *,
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[USER_DELETE],
+    ),
+    db: Session = Depends(deps.get_db),
+    user_id: str,
+) -> None:
+    """Deletes the User and associated ClientDetail if applicable"""
     user = FidesopsUser.get_by(db, field="id", value=user_id)
 
     if not user:
@@ -55,6 +67,16 @@ def delete_user(*, db: Session = Depends(deps.get_db), user_id: str) -> None:
             status_code=HTTP_404_NOT_FOUND, detail=f"No user found with id {user_id}."
         )
 
-    logger.info(f"Deleting user: {user_id}.")
+    if not (client.fides_key == ADMIN_UI_ROOT or client.username == user.username):
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail=f"Users can only remove themselves, or be the Admin UI Root User.",
+        )
 
+    user_client = ClientDetail.get_by(db, field="username", value=user.username)
+    if user_client:
+        logger.info(f"Deleting client for user '{user_id}'")
+        user_client.delete(db)
+
+    logger.info(f"Deleting user: '{user_id}'.")
     user.delete(db)
