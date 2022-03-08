@@ -43,6 +43,7 @@ from fidesops.schemas.dataset import DryRunDatasetResponse, CollectionAddressRes
 from fidesops.schemas.external_https import (
     PrivacyRequestResumeFormat,
 )
+from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.policy import Rule
 from fidesops.schemas.privacy_request import (

@@ -174,4 +174,4 @@ docs-serve: docs-build
 user:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python run_infrastructure.py --datastores --run_create_superuser
+		python run_infrastructure.py --datastores postgres --run_create_superuser

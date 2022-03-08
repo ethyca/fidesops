@@ -4,9 +4,8 @@ import json
 
 import pytest
 
-from create_superuser import ADMIN_UI_ROOT
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX, USERS
-from fidesops.models.client import ClientDetail
+from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
 from fidesops.api.v1.scope_registry import STORAGE_READ, USER_CREATE, USER_DELETE
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.util.oauth_util import generate_jwe

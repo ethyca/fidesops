@@ -21,6 +21,7 @@ from fidesops.util.cryptographic_util import (
 )
 
 DEFAULT_SCOPES: List[str] = []
+ADMIN_UI_ROOT = "admin_ui_root"
 
 
 class ClientDetail(Base):

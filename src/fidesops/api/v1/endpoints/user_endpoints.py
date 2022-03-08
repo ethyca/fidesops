@@ -6,11 +6,10 @@ from starlette.status import (
     HTTP_403_FORBIDDEN,
 )
 
-from create_superuser import ADMIN_UI_ROOT
 from fidesops.api import deps
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesops.models.client import ClientDetail
+from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.schemas.user import UserCreate, UserCreateResponse
 

@@ -8,11 +8,12 @@ from fidesops.common_exceptions import KeyOrNameAlreadyExists
 from fidesops.core.config import config
 from fidesops.db.database import init_db
 from fidesops.db.session import get_db_session
-from fidesops.models.client import ClientDetail
+from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.schemas.user import UserCreate
 
-ADMIN_UI_ROOT = "admin_ui_root"
+
+"""One-time script to create the root user for the Admin UI"""
 
 
 def get_username(prompt: str) -> str:
@@ -46,7 +47,7 @@ def collect_username_and_password(db: Session) -> UserCreate:
 
 
 def create_user_and_client(db: Session) -> FidesopsUser:
-    """One-time script to create the first user"""
+    """One-time script to create the first user for the Admin UI"""
     if db.query(ClientDetail).filter_by(fides_key=ADMIN_UI_ROOT).first():
         raise KeyOrNameAlreadyExists("Admin UI Client already created.")
 
@@ -67,4 +68,5 @@ def create_user_and_client(db: Session) -> FidesopsUser:
 if __name__ == "__main__":
     init_db(config.database.SQLALCHEMY_DATABASE_URI)
     session_local = get_db_session()
-    create_user_and_client(session_local())
+    with session_local() as session:
+        create_user_and_client(session)
