@@ -21,8 +21,12 @@ module.exports = {
     '^@/components/(.*)$': '<rootDir>/components/$1',
   },
   // Add more setup options before each test is run
-  // setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/'],
+  setupFilesAfterEnv: ['<rootDir>/__tests__/jest.setup.ts'],
+  testPathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    '<rootDir>/.next/',
+    'jest.setup.ts',
+  ],
   testEnvironment: 'jsdom',
   transform: {
     // Use babel-jest to transpile tests with the next/babel preset
@@ -33,5 +37,4 @@ module.exports = {
     '/node_modules/',
     '^.+\\.module\\.(css|sass|scss)$',
   ],
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
 };
