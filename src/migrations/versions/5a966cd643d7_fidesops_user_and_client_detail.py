@@ -44,13 +44,13 @@ def upgrade():
     op.add_column("client", sa.Column("fides_key", sa.String(), nullable=True))
     op.add_column("client", sa.Column("user_id", sa.String(), nullable=True))
     op.create_index(op.f("ix_client_fides_key"), "client", ["fides_key"], unique=True)
-    op.create_unique_constraint(None, "client", ["user_id"])
-    op.create_foreign_key(None, "client", "fidesopsuser", ["user_id"], ["id"])
+    op.create_unique_constraint("client_user_id_key", "client", ["user_id"])
+    op.create_foreign_key("client_user_id_fkey", "client", "fidesopsuser", ["user_id"], ["id"])
 
 
 def downgrade():
-    op.drop_constraint(None, "client", type_="foreignkey")
-    op.drop_constraint(None, "client", type_="unique")
+    op.drop_constraint("client_user_id_fkey", "client", type_="foreignkey")
+    op.drop_constraint("client_user_id_key", "client", type_="unique")
     op.drop_index(op.f("ix_client_fides_key"), table_name="client")
     op.drop_column("client", "user_id")
     op.drop_column("client", "fides_key")
