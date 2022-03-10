@@ -82,6 +82,7 @@ class PrivacyRequestResponse(BaseSchema):
     finished_processing_at: Optional[datetime]
     status: PrivacyRequestStatus
     external_id: Optional[str]
+    identity: Optional[Dict[str, str]]
 
     class Config:
         """Set orm_mode and use_enum_values"""
