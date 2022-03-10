@@ -379,6 +379,7 @@ class TestGetPrivacyRequests:
                     "finished_processing_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
+                    "identity": None,
                 }
             ],
             "total": 1,
@@ -601,6 +602,7 @@ class TestGetPrivacyRequests:
                     "finished_processing_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
+                    "identity": None,
                     "results": {
                         "my-mongo-db": [
                             {
@@ -1058,4 +1060,5 @@ class TestResumePrivacyRequest:
             "finished_processing_at": None,
             "status": "in_processing",
             "external_id": privacy_request.external_id,
+            "identity": None,
         }
