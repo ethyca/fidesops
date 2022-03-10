@@ -198,15 +198,15 @@ class TestDeleteUser:
         )
         client_id = user_client.id
         saved_user_id = other_user.id
-        admin_user_id = user.id
 
-        admin_client, _ = ClientDetail.create_client_and_secret(
-            db, [USER_DELETE], fides_key=ADMIN_UI_ROOT, user_id=user.id
-        )
-        admin_client_id = admin_client.id
+        # Temporarily set the user's client to be the Admin UI Root client
+        client = user.client
+        client.fides_key = ADMIN_UI_ROOT
+        client.save(db)
+
         payload = {
             JWE_PAYLOAD_SCOPES: [USER_DELETE],
-            JWE_PAYLOAD_CLIENT_ID: admin_client.id,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
         jwe = generate_jwe(json.dumps(payload))
@@ -227,8 +227,6 @@ class TestDeleteUser:
         assert client_search is None
 
         # Admin client who made the request is not deleted
-        admin_client_search = ClientDetail.get_by(
-            db, field="id", value=admin_client_id
-        )
+        admin_client_search = ClientDetail.get_by(db, field="id", value=user.client.id)
         assert admin_client_search is not None
         admin_client_search.delete(db)

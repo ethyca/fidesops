@@ -37,6 +37,7 @@ from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
+from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import Policy, ActionType, PolicyPreWebhook
@@ -512,23 +513,25 @@ def administrate_privacy_requests(
     PRIVACY_REQUEST_APPROVE,
     status_code=200,
     response_model=BulkAdministrateResponse,
-    dependencies=[
-        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
-    ],
 )
 def approve_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
     cache: FidesopsRedis = Depends(deps.get_cache),
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY],
+    ),
     request_ids: conlist(str, max_items=50) = Body(...),  # type: ignore
 ) -> BulkAdministrateResponse:
     """Approve and dispatch a list of privacy requests and/or report failure"""
+    user_id = client.user_id
 
     def _process_request(privacy_request: PrivacyRequest, cache: FidesopsRedis) -> None:
         """Method for how to process requests - approved"""
         privacy_request.status = PrivacyRequestStatus.approved
         privacy_request.approved_at = datetime.utcnow()
-        # TODO set approved_by from client.user
+        privacy_request.approved_by = user_id
         privacy_request.save(db=db)
 
         PrivacyRequestRunner(

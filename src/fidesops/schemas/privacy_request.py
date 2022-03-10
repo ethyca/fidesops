@@ -80,6 +80,7 @@ class PrivacyRequestResponse(BaseSchema):
     created_at: Optional[datetime]
     started_processing_at: Optional[datetime]
     approved_at: Optional[datetime]
+    approved_by: Optional[str]
     finished_processing_at: Optional[datetime]
     status: PrivacyRequestStatus
     external_id: Optional[str]

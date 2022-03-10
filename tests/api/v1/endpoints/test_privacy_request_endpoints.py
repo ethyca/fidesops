@@ -36,6 +36,11 @@ from fidesops.models.privacy_request import (
 )
 from fidesops.models.policy import ActionType
 from fidesops.schemas.dataset import DryRunDatasetResponse
+from fidesops.schemas.jwt import (
+    JWE_PAYLOAD_SCOPES,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_ISSUED_AT,
+)
 from fidesops.schemas.masking.masking_secrets import SecretType
 from fidesops.util.cache import (
     get_identity_cache_key,
@@ -86,12 +91,12 @@ class TestCreatePrivacyRequest:
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_create_privacy_request_require_manual_approval(
-            self,
-            run_access_request_mock,
-            url,
-            db,
-            api_client: TestClient,
-            policy,
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
     ):
         config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL = True
 
@@ -414,6 +419,8 @@ class TestGetPrivacyRequests:
                     "finished_processing_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
+                    "approved_at": None,
+                    "approved_by": None,
                 }
             ],
             "total": 1,
@@ -598,6 +605,8 @@ class TestGetPrivacyRequests:
                     "finished_processing_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
+                    "approved_at": None,
+                    "approved_by": None,
                     "results": {
                         "my-mongo-db": [
                             {
@@ -985,8 +994,15 @@ class TestApprovePrivacyRequest:
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
-    def test_approve_privacy_request(
-        self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
+    def test_approve_privacy_request_no_user_on_client(
+            self,
+            submit_mock,
+            db,
+            url,
+            api_client,
+            generate_auth_header,
+            privacy_request,
+            user,
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db=db)
@@ -1002,6 +1018,44 @@ class TestApprovePrivacyRequest:
         assert response_body["succeeded"][0]["status"] == "approved"
         assert response_body["succeeded"][0]["id"] == privacy_request.id
         assert response_body["succeeded"][0]["approved_at"] is not None
+        assert response_body["succeeded"][0]["approved_by"] is None  # No user on client
+
+        assert submit_mock.called
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
+    def test_approve_privacy_request(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        privacy_request,
+        user,
+    ):
+        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.save(db=db)
+
+        payload = {
+            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+
+        body = [privacy_request.id]
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+        assert response_body["succeeded"][0]["status"] == "approved"
+        assert response_body["succeeded"][0]["id"] == privacy_request.id
+        assert response_body["succeeded"][0]["approved_at"] is not None
+        assert response_body["succeeded"][0]["approved_by"] == user.id
 
         assert submit_mock.called
 
@@ -1219,4 +1273,6 @@ class TestResumePrivacyRequest:
             "finished_processing_at": None,
             "status": "in_processing",
             "external_id": privacy_request.external_id,
+            "approved_at": None,
+            "approved_by": None,
         }
