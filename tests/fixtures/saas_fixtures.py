@@ -206,13 +206,13 @@ def mailchimp_identity_email():
 
 @pytest.fixture(scope="function")
 def reset_mailchimp_data(
-    connection_config_saas_example, mailchimp_identity_email
+    connection_config_mailchimp, mailchimp_identity_email
 ) -> Generator:
     """
     Gets the current value of the resource and restores it after the test is complete.
     Used for erasure tests.
     """
-    connector = SaaSConnector(connection_config_saas_example)
+    connector = SaaSConnector(connection_config_mailchimp)
     request = (
         "GET",
         "/3.0/search-members",
