@@ -46,17 +46,17 @@ server: compose-build
 server-shell: compose-build
 	@docker-compose run $(IMAGE_NAME) /bin/bash
 
-integration-shell:
+integration-shell: configure-python
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --open_shell --datastores $(datastores)
 
-integration-env:
+integration-env: configure-python
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --run_application --datastores $(datastores)
 
-quickstart:
+quickstart: configure-python
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --datastores mongodb postgres --run_quickstart
@@ -108,7 +108,7 @@ pytest: compose-build
 	@docker-compose run $(IMAGE_NAME) \
 		pytest $(pytestpath) -m "not integration and not integration_external and not saas_connector"
 
-pytest-integration:
+pytest-integration: configure-python
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --run_tests --datastores $(datastores)
@@ -165,3 +165,8 @@ docs-build: compose-build
 docs-serve: docs-build
 	@docker-compose build docs
 	@docker-compose up docs
+
+.PHONY: configure-python
+configure-python:
+	@python3 -m ensurepip
+	@pip install virtualenv --user
