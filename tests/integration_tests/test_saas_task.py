@@ -10,7 +10,7 @@ from fidesops.task.graph_task import get_cached_data_for_erasures
 from tests.graph.graph_test_util import assert_rows_match, records_matching_fields
 
 
-@pytest.mark.integration
+@pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
 def test_saas_access_request_task(
     db,
@@ -123,7 +123,7 @@ def test_saas_access_request_task(
     )
 
 
-@pytest.mark.integration
+@pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
 def test_saas_erasure_request_task(
     db,

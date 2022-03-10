@@ -302,7 +302,7 @@ def test_create_and_process_access_request_mariadb(
     pr.delete(db=db)
 
 
-@pytest.mark.integration
+@pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_saas(
@@ -341,7 +341,7 @@ def test_create_and_process_access_request_saas(
     pr.delete(db=db)
 
 
-@pytest.mark.integration
+@pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_erasure_request_saas(

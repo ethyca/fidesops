@@ -1187,16 +1187,14 @@ class TestMongoConnectionPutSecretsAPI:
         assert mongo_connection_config.last_test_succeeded is True
 
 
-@pytest.mark.integration
+@pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
 class TestSaaSConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
     def url(
         self, oauth_client: ClientDetail, policy, connection_config_mailchimp
     ) -> str:
-        return (
-            f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mailchimp.key}/secret"
-        )
+        return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mailchimp.key}/secret"
 
     def test_saas_connection_incorrect_secrets(
         self,
@@ -1307,7 +1305,8 @@ class TestSaaSConnectionPutSecretsAPI:
         body = json.loads(resp.text)
         assert body["detail"][0]["msg"] == "extra fields not permitted"
 
-@pytest.mark.integration
+
+@pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
 class TestSaaSConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
@@ -1422,7 +1421,7 @@ class TestSaaSConnectionTestSecretsAPI:
         assert connection_config_mailchimp.last_test_succeeded is True
 
 
-@pytest.mark.integration
+@pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
 class TestSaasConnector:
     def test_saas_connector(
