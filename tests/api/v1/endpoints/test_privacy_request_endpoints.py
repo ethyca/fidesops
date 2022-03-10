@@ -389,6 +389,27 @@ class TestGetPrivacyRequests:
         resp = response.json()
         assert resp == expected_resp
 
+    def test_get_privacy_requests_with_identity(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_request,
+        succeeded_privacy_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            url + f"?status=complete&include_identities=true", headers=auth_header
+        )
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == succeeded_privacy_request.id
+        assert (
+            resp["items"][0]["identity"]
+            == succeeded_privacy_request.get_cached_identity_data()
+        )
+
     def test_filter_privacy_requests_by_status(
         self,
         api_client: TestClient,
