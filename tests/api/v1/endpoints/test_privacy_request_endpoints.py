@@ -410,6 +410,23 @@ class TestGetPrivacyRequests:
             == succeeded_privacy_request.get_cached_identity_data()
         )
 
+        # Now test the identities are omitted if not explicitly requested
+        response = api_client.get(url + f"?status=complete", headers=auth_header)
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == succeeded_privacy_request.id
+        assert resp["items"][0].get("identity") is None
+
+        response = api_client.get(
+            url + f"?status=complete&include_identities=false", headers=auth_header
+        )
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == succeeded_privacy_request.id
+        assert resp["items"][0].get("identity") is None
+
     def test_filter_privacy_requests_by_status(
         self,
         api_client: TestClient,
