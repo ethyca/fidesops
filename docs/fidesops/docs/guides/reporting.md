@@ -76,6 +76,11 @@ Embedded logs in the previous endpoints are truncated at 50 logs.
 
 Check out the [API docs here](/fidesops/api#operations-Privacy_Requests-get_request_status_logs_api_v1_privacy_request__privacy_request_id__log_get).
 
+
+## View A Privacy Request's Identity Data
+
+Use the `include_identities` query param to optionally include all identity data that was submitted for the Privacy Request. Due to the nature of how Fidesops stores identity data, this data will expire automatically according to the `FIDESOPS__REDIS__DEFAULT_TTL_SECONDS` variable. If the `include_identities` query param is used to fetch identity data for Privacy Requests who's identity data has since expired, an empty JSON dictionary will be returned.
+
 ## View Individual Privacy Request Log Details
 
 Use the `verbose` query param to see more details about individual collections visited as part of the Privacy Request along
