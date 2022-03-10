@@ -104,7 +104,7 @@ class RedisSettings(FidesSettings):
     PASSWORD: str
     CHARSET: str = "utf8"
     DECODE_RESPONSES: bool = True
-    DEFAULT_TTL_SECONDS: int = 3600
+    DEFAULT_TTL_SECONDS: int = 604800
     DB_INDEX: int
 
     class Config:
