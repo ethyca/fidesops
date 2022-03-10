@@ -56,8 +56,10 @@ logger = logging.getLogger(__name__)
 class PrivacyRequestStatus(EnumType):
     """Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"""
 
-    in_processing = "in_processing"
     pending = "pending"
+    approved = "approved"
+    denied = "denied"
+    in_processing = "in_processing"
     complete = "complete"
     paused = "paused"
     error = "error"
@@ -91,6 +93,10 @@ class PrivacyRequest(Base):
         index=True,
         nullable=False,
     )
+    # When the request was approved
+    approved_at = Column(DateTime(timezone=True), nullable=True)
+    # Who approved the request
+    approved_by = Column(String, nullable=True)
     client_id = Column(
         String,
         ForeignKey(ClientDetail.id_field_path),

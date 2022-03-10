@@ -79,6 +79,7 @@ class PrivacyRequestResponse(BaseSchema):
     id: str
     created_at: Optional[datetime]
     started_processing_at: Optional[datetime]
+    approved_at: Optional[datetime]
     finished_processing_at: Optional[datetime]
     status: PrivacyRequestStatus
     external_id: Optional[str]
@@ -108,3 +109,7 @@ class BulkPostPrivacyRequests(BulkResponse):
 
     succeeded: List[PrivacyRequestResponse]
     failed: List[BulkUpdateFailed]
+
+
+class BulkAdministrateResponse(BulkPostPrivacyRequests):
+    """Schema with mixed success/failure responses for Bulk Approve/Deny of PrivacyRequest responses."""

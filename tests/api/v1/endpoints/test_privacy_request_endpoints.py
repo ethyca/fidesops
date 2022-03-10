@@ -16,13 +16,17 @@ from fidesops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
     PRIVACY_REQUEST_RESUME,
     DATASETS,
+    PRIVACY_REQUEST_APPROVE,
+    PRIVACY_REQUEST_DENY,
 )
 from fidesops.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_CALLBACK_RESUME,
     DATASET_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_APPROVE_OR_DENY,
 )
+from fidesops.core.config import config
 from fidesops.models.client import ClientDetail
 from fidesops.models.privacy_request import (
     PrivacyRequest,
@@ -77,6 +81,37 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
         assert run_access_request_mock.called
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
+    def test_create_privacy_request_require_manual_approval(
+            self,
+            run_access_request_mock,
+            url,
+            db,
+            api_client: TestClient,
+            policy,
+    ):
+        config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL = True
+
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": "test@example.com"},
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        assert response_data[0]["status"] == "pending"
+        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr.delete(db=db)
+        assert not run_access_request_mock.called
+
+        config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL = False
 
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
@@ -887,6 +922,170 @@ class TestRequestPreview:
             )
             == "SELECT email,id FROM subscriptions WHERE email = ?"
         )
+
+
+class TestApprovePrivacyRequest:
+    @pytest.fixture(scope="function")
+    def url(self, db, privacy_request):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_APPROVE
+
+    def test_approve_privacy_request_not_authenticated(self, url, api_client):
+        response = api_client.patch(url)
+        assert response.status_code == 401
+
+    def test_approve_privacy_request_bad_scopes(
+        self, url, api_client, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.patch(url, headers=auth_header)
+        assert response.status_code == 403
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
+    def test_approve_privacy_request_does_not_exist(
+        self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
+
+        body = ["does_not_exist"]
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert response_body["succeeded"] == []
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == "No privacy request found with id 'does_not_exist"
+        )
+        assert not submit_mock.called
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
+    def test_approve_completed_privacy_request(
+        self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
+    ):
+        privacy_request.status = PrivacyRequestStatus.complete
+        privacy_request.save(db=db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
+
+        body = [privacy_request.id]
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert response_body["succeeded"] == []
+        assert len(response_body["failed"]) == 1
+        assert response_body["failed"][0]["message"] == "Cannot transition status"
+        assert response_body["failed"][0]["data"]["status"] == "complete"
+        assert not submit_mock.called
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
+    def test_approve_privacy_request(
+        self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
+    ):
+        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.save(db=db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
+
+        body = [privacy_request.id]
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+        assert response_body["succeeded"][0]["status"] == "approved"
+        assert response_body["succeeded"][0]["id"] == privacy_request.id
+        assert response_body["succeeded"][0]["approved_at"] is not None
+
+        assert submit_mock.called
+
+
+class TestDenyPrivacyRequest:
+    @pytest.fixture(scope="function")
+    def url(self, db, privacy_request):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_DENY
+
+    def test_deny_privacy_request_not_authenticated(self, url, api_client):
+        response = api_client.patch(url)
+        assert response.status_code == 401
+
+    def test_deny_privacy_request_bad_scopes(
+        self, url, api_client, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.patch(url, headers=auth_header)
+        assert response.status_code == 403
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
+    def test_deny_privacy_request_does_not_exist(
+        self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
+
+        body = ["does_not_exist"]
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert response_body["succeeded"] == []
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == "No privacy request found with id 'does_not_exist"
+        )
+        assert not submit_mock.called
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
+    def test_deny_completed_privacy_request(
+        self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
+    ):
+        privacy_request.status = PrivacyRequestStatus.complete
+        privacy_request.save(db=db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
+
+        body = [privacy_request.id]
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert response_body["succeeded"] == []
+        assert len(response_body["failed"]) == 1
+        assert response_body["failed"][0]["message"] == "Cannot transition status"
+        assert response_body["failed"][0]["data"]["status"] == "complete"
+        assert not submit_mock.called
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
+    def test_deny_privacy_request(
+        self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
+    ):
+        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.save(db=db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
+
+        body = [privacy_request.id]
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+        assert response_body["succeeded"][0]["status"] == "denied"
+        assert response_body["succeeded"][0]["id"] == privacy_request.id
+        assert response_body["succeeded"][0]["approved_at"] is None
+
+        assert not submit_mock.called  # Shouldn't run! Privacy request was denied
 
 
 class TestResumePrivacyRequest:

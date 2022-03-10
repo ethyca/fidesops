@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from datetime import date, datetime
-from typing import List, Optional, Union, DefaultDict, Dict, Set
+from typing import List, Optional, Union, DefaultDict, Dict, Set, Callable, Any
 
 from fastapi import APIRouter, Body, Depends, Security, HTTPException
 from fastapi_pagination import Page, Params
@@ -21,16 +21,22 @@ from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_APPROVE_OR_DENY,
 )
-from fidesops.api.v1.urn_registry import REQUEST_PREVIEW, PRIVACY_REQUEST_RESUME
+from fidesops.api.v1.urn_registry import (
+    REQUEST_PREVIEW,
+    PRIVACY_REQUEST_RESUME,
+    PRIVACY_REQUEST_APPROVE,
+    PRIVACY_REQUEST_DENY,
+)
 from fidesops.common_exceptions import (
     TraversalError,
     ValidationError,
 )
+from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
-from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import Policy, ActionType, PolicyPreWebhook
@@ -52,6 +58,7 @@ from fidesops.schemas.privacy_request import (
     PrivacyRequestVerboseResponse,
     ExecutionLogDetailResponse,
     BulkPostPrivacyRequests,
+    BulkAdministrateResponse,
 )
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     get_strategy,
@@ -64,7 +71,6 @@ from fidesops.util.oauth_util import verify_oauth_client, verify_callback_oauth
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Privacy Requests"], prefix=urls.V1_URL_PREFIX)
-
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
 
@@ -182,10 +188,11 @@ def create_privacy_request(
                     for masking_secret in masking_secrets:
                         privacy_request.cache_masking_secret(masking_secret)
 
-            PrivacyRequestRunner(
-                cache=cache,
-                privacy_request=privacy_request,
-            ).submit()
+            if not config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL:
+                PrivacyRequestRunner(
+                    cache=cache,
+                    privacy_request=privacy_request,
+                ).submit()
 
         except common_exceptions.RedisConnectionError as exc:
             logger.error("RedisConnectionError: %s", exc)
@@ -455,3 +462,102 @@ def resume_privacy_request(
     ).submit(from_webhook=webhook)
 
     return privacy_request
+
+
+def administrate_privacy_requests(
+    db: Session, cache: FidesopsRedis, request_ids: List[str], process_request: Callable
+) -> BulkAdministrateResponse:
+    """Helper method shared between the approve and deny privacy request endpoints"""
+    succeeded: List[PrivacyRequest] = []
+    failed: [Dict[str, Any]] = []
+
+    for request_id in request_ids:
+        privacy_request = PrivacyRequest.get(db, id=request_id)
+        if not privacy_request:
+            failed.append(
+                {
+                    "message": f"No privacy request found with id '{request_id}",
+                    "data": {"privacy_request_id": request_id},
+                }
+            )
+            continue
+
+        if privacy_request.status != PrivacyRequestStatus.pending:
+            failed.append(
+                {
+                    "message": f"Cannot transition status",
+                    "data": PrivacyRequestResponse(**privacy_request.__dict__),
+                }
+            )
+            continue
+
+        try:
+            process_request(privacy_request, cache)
+        except Exception:
+            failure = {
+                "message": "Privacy request could not be updated",
+                "data": PrivacyRequestResponse(**privacy_request.__dict__),
+            }
+            failed.append(failure)
+        else:
+            succeeded.append(privacy_request)
+
+    return BulkAdministrateResponse(
+        succeeded=succeeded,
+        failed=failed,
+    )
+
+
+@router.patch(
+    PRIVACY_REQUEST_APPROVE,
+    status_code=200,
+    response_model=BulkAdministrateResponse,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
+    ],
+)
+def approve_privacy_request(
+    *,
+    db: Session = Depends(deps.get_db),
+    cache: FidesopsRedis = Depends(deps.get_cache),
+    request_ids: conlist(str, max_items=50) = Body(...),  # type: ignore
+) -> BulkAdministrateResponse:
+    """Approve and dispatch a list of privacy requests and/or report failure"""
+
+    def _process_request(privacy_request: PrivacyRequest, cache: FidesopsRedis) -> None:
+        """Method for how to process requests - approved"""
+        privacy_request.status = PrivacyRequestStatus.approved
+        privacy_request.approved_at = datetime.utcnow()
+        # TODO set approved_by from client.user
+        privacy_request.save(db=db)
+
+        PrivacyRequestRunner(
+            cache=cache,
+            privacy_request=privacy_request,
+        ).submit()
+
+    return administrate_privacy_requests(db, cache, request_ids, _process_request)
+
+
+@router.patch(
+    PRIVACY_REQUEST_DENY,
+    status_code=200,
+    response_model=BulkAdministrateResponse,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
+    ],
+)
+def deny_privacy_request(
+    *,
+    db: Session = Depends(deps.get_db),
+    cache: FidesopsRedis = Depends(deps.get_cache),
+    request_ids: conlist(str, max_items=50) = Body(...),  # type: ignore
+) -> BulkAdministrateResponse:
+    """Deny a list of privacy requests and/or report failure"""
+
+    def _process_request(privacy_request: PrivacyRequest, _: FidesopsRedis) -> None:
+        """Method for how to process requests - denied"""
+        privacy_request.status = PrivacyRequestStatus.denied
+        privacy_request.save(db=db)
+
+    return administrate_privacy_requests(db, cache, request_ids, _process_request)
