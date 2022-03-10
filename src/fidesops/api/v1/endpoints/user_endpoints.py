@@ -39,9 +39,8 @@ def create_user(
             status_code=HTTP_400_BAD_REQUEST, detail="Username already exists."
         )
 
-    logger.info(f"Creating user: {user_data.username}.")
-
     user = FidesopsUser.create(db=db, data=user_data.dict())
+    logger.info(f"Created user with id: '{user.id}'.")
     return user
 
 
@@ -72,5 +71,6 @@ def delete_user(
             detail=f"Users can only remove themselves, or be the Admin UI Root User.",
         )
 
-    logger.info(f"Deleting user: '{user_id}'.")
+    logger.info(f"Deleting user with id: '{user_id}'.")
+
     user.delete(db)
