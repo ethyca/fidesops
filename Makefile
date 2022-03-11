@@ -108,7 +108,7 @@ pytest: compose-build
 	@docker-compose run $(IMAGE_NAME) \
 		pytest $(pytestpath) -m "not integration and not integration_external and not saas_connector"
 
-pytest-integration: configure-python
+pytest-integration:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --run_tests --datastores $(datastores)
