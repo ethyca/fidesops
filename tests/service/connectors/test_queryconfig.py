@@ -1,5 +1,6 @@
 import json
 from typing import Dict, Any, Set
+
 import pytest
 
 from fidesops.graph.config import (
@@ -14,13 +15,12 @@ from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
-
 from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
+from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
 from fidesops.service.connectors.query_config import (
     SQLQueryConfig,
-    MongoQueryConfig,
-    SaaSQueryConfig,
+    MongoQueryConfig
 )
 
 from fidesops.service.masking.strategy.masking_strategy_hash import (

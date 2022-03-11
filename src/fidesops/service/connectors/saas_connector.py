@@ -1,8 +1,9 @@
 import logging
-from typing import Any, Dict, List, Optional
 import pydash
 from requests import Session, Request, PreparedRequest, Response
-
+from typing import Any, Dict, List, Optional
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
+from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
 from fidesops.graph.config import CollectionAddress
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.graph.traversal import Row, TraversalNode
@@ -22,7 +23,6 @@ from fidesops.service.processors.post_processor_strategy.post_processor_strategy
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
-from fidesops.service.connectors.query_config import SaaSQueryConfig, SaaSRequestParams
 
 logger = logging.getLogger(__name__)
 

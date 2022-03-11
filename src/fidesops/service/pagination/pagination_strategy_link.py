@@ -1,0 +1,64 @@
+import enum
+import logging
+from fidesops.util.collection_util import Row
+
+import pydash
+from typing import Any, Dict, Optional
+from urllib import parse
+from urllib.parse import urlsplit
+from requests import Response
+from fidesops.schemas.saas.strategy_configuration import (
+    LinkPaginationConfiguration,
+    LinkSource,
+    StrategyConfiguration,
+)
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
+from fidesops.service.pagination.pagination_strategy import PaginationStrategy
+
+STRATEGY_NAME = "link"
+
+logger = logging.getLogger(__name__)
+
+
+class LinkPaginationStrategy(PaginationStrategy):
+    def __init__(self, configuration: LinkPaginationConfiguration):
+        self.source = configuration.source
+        self.rel = configuration.rel
+        self.path = configuration.path
+
+    def get_strategy_name(self) -> str:
+        return STRATEGY_NAME
+
+    def get_next_request(
+        self,
+        request_params: SaaSRequestParams,
+        connector_params: Dict[str, Any],
+        response: Response,
+        row: Optional[Row],
+    ) -> Optional[SaaSRequestParams]:
+        """Build request for next page of data"""
+
+        # read the next_link from the correct location based on the source value
+        next_link = None
+        if self.source == LinkSource.headers:
+            next_link = response.links.get(self.rel, {}).get("url")
+        elif self.source == LinkSource.body:
+            next_link = pydash.get(response.json(), self.path)
+
+        if next_link is None:
+            logger.debug("The link to the next page was not found.")
+            return None
+
+        # deconstruct request_params and replace existing path and params
+        # with updated path and query params
+        method, path, params, body = request_params
+        updated_path = urlsplit(next_link).path
+        updated_params = dict(parse.parse_qsl(urlsplit(next_link).query))
+        logger.debug(
+            f"Replacing path with {updated_path} and params with {updated_params}"
+        )
+        return method, updated_path, updated_params, body
+
+    @staticmethod
+    def get_configuration_model() -> StrategyConfiguration:
+        return LinkPaginationConfiguration
