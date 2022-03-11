@@ -168,7 +168,9 @@ def patch_datasets(
             "fides_key": dataset.fides_key,
             "dataset": dataset.dict(),
         }
-        create_or_update_dataset(connection_config, created_or_updated, data, dataset, db, failed)
+        create_or_update_dataset(
+            connection_config, created_or_updated, data, dataset, db, failed
+        )
     return BulkPutDataset(
         succeeded=created_or_updated,
         failed=failed,
@@ -183,11 +185,11 @@ def patch_datasets(
     include_in_schema=False  # Not including this path in the schema.
     # Since this yaml function needs to access the request, the open api spec will not be generated correctly.
     # To include this path, extend open api: https://fastapi.tiangolo.com/advanced/extending-openapi/
-    )
+)
 async def patch_yaml_datasets(
-        request: Request,
-        db: Session = Depends(deps.get_db),
-        connection_config: ConnectionConfig = Depends(_get_connection_config),
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
     yaml_request_body: dict = yaml.safe_load(await request.body())
     created_or_updated: List[FidesopsDataset] = []
@@ -195,22 +197,26 @@ async def patch_yaml_datasets(
     for dataset in yaml_request_body.get("dataset"):
         data: dict = {
             "connection_config_id": connection_config.id,
-            "fides_key": dataset['fides_key'],
+            "fides_key": dataset["fides_key"],
             "dataset": dataset,
         }
-        create_or_update_dataset(connection_config, created_or_updated, data, yaml_request_body, db, failed)
+        create_or_update_dataset(
+            connection_config, created_or_updated, data, yaml_request_body, db, failed
+        )
     return BulkPutDataset(
         succeeded=created_or_updated,
         failed=failed,
     )
 
 
-def create_or_update_dataset(connection_config: ConnectionConfig,
-                             created_or_updated: List[FidesopsDataset],
-                             data: dict,
-                             dataset,
-                             db: Session,
-                             failed: List[BulkUpdateFailed]):
+def create_or_update_dataset(
+    connection_config: ConnectionConfig,
+    created_or_updated: List[FidesopsDataset],
+    data: dict,
+    dataset,
+    db: Session,
+    failed: List[BulkUpdateFailed],
+):
     try:
         if connection_config.connection_type == ConnectionType.saas:
             _validate_saas_dataset(connection_config, dataset)
