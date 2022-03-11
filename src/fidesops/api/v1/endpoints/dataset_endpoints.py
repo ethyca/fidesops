@@ -21,6 +21,7 @@ from fidesops.api.v1.urn_registry import (
     DATASET_BY_KEY,
     DATASET_VALIDATE,
     DATASETS,
+    YAML_DATASETS,
     V1_URL_PREFIX,
 )
 from fidesops.common_exceptions import (
@@ -139,11 +140,43 @@ def patch_datasets(
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
-    return create_update_datasets(connection_config, datasets, db)
+    """
+    Given a list of dataset elements, create or update corresponding Dataset objects
+    or report failure
+
+    Use for bulk creating and/or updating datasets.
+
+    If the fides_key for a given dataset exists, it will be treated as an update.
+    Otherwise, a new dataset will be created.
+    """
+
+    created_or_updated: List[FidesopsDataset] = []
+    failed: List[BulkUpdateFailed] = []
+    logger.info(f"Starting bulk upsert for {len(datasets)} datasets")
+
+    # warn if there are duplicate fides_keys within the datasets
+    # valid datasets with the same fides_key will override each other
+    key_list = [dataset.fides_key for dataset in datasets]
+    if len(key_list) != len(set(key_list)):
+        logger.warning(
+            "Datasets with duplicate fides_keys detected, may result in unintended behavior."
+        )
+
+    for dataset in datasets:
+        data = {
+            "connection_config_id": connection_config.id,
+            "fides_key": dataset.fides_key,
+            "dataset": dataset.dict(),
+        }
+        create_or_update_dataset(connection_config, created_or_updated, data, dataset, db, failed)
+    return BulkPutDataset(
+        succeeded=created_or_updated,
+        failed=failed,
+    )
 
 
 @router.patch(
-    DATASETS + '/yaml',
+    YAML_DATASETS,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_CREATE_OR_UPDATE])],
     status_code=200,
     response_model=BulkPutDataset,
@@ -156,59 +189,25 @@ async def patch_yaml_datasets(
     yaml_request_body: dict = yaml.safe_load(await request.body())
     created_or_updated: List[FidesopsDataset] = []
     failed: List[BulkUpdateFailed] = []
-    data: dict = {
-        "connection_config_id": connection_config.id,
-        "fides_key": yaml_request_body.get("dataset")[0]['fides_key'],
-        "dataset": yaml_request_body.get("dataset")[0],
-    }
-    create_or_update_data(connection_config, created_or_updated, data, yaml_request_body, db, failed)
-    return BulkPutDataset(
-        succeeded=created_or_updated,
-        failed=failed,
-    )
-
-
-def create_update_datasets(connection_config: ConnectionConfig,
-                           datasets: conlist(FidesopsDataset, max_items=50),
-                           db: Session):
-    """
-    Given a list of dataset elements, create or update corresponding Dataset objects
-    or report failure
-
-    Use for bulk creating and/or updating datasets.
-
-    If the fides_key for a given dataset exists, it will be treated as an update.
-    Otherwise, a new dataset will be created.
-    """
-    created_or_updated: List[FidesopsDataset] = []
-    failed: List[BulkUpdateFailed] = []
-    logger.info(f"Starting bulk upsert for {len(datasets)} datasets")
-    # warn if there are duplicate fides_keys within the datasets
-    # valid datasets with the same fides_key will override each other
-    key_list = [dataset.fides_key for dataset in datasets]
-    if len(key_list) != len(set(key_list)):
-        logger.warning(
-            "Datasets with duplicate fides_keys detected, may result in unintended behavior."
-        )
-    for dataset in datasets:
+    for dataset in yaml_request_body.get("dataset"):
         data: dict = {
             "connection_config_id": connection_config.id,
-            "fides_key": dataset.fides_key,
-            "dataset": dataset.dict(),
+            "fides_key": dataset['fides_key'],
+            "dataset": dataset,
         }
-        create_or_update_data(connection_config, created_or_updated, data, dataset, db, failed)
+        create_or_update_dataset(connection_config, created_or_updated, data, yaml_request_body, db, failed)
     return BulkPutDataset(
         succeeded=created_or_updated,
         failed=failed,
     )
 
 
-def create_or_update_data(connection_config: ConnectionConfig,
-                          created_or_updated: List[FidesopsDataset],
-                          data: dict,
-                          dataset: FidesopsDataset,
-                          db: Session,
-                          failed: List[BulkUpdateFailed]):
+def create_or_update_dataset(connection_config: ConnectionConfig,
+                             created_or_updated: List[FidesopsDataset],
+                             data: dict,
+                             dataset,
+                             db: Session,
+                             failed: List[BulkUpdateFailed]):
     try:
         if connection_config.connection_type == ConnectionType.saas:
             _validate_saas_dataset(connection_config, dataset)
