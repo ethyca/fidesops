@@ -17,7 +17,7 @@ from sqlalchemy import (
 )
 
 from sqlalchemy.ext.mutable import MutableList
-from sqlalchemy.orm import relationship, Session
+from sqlalchemy.orm import relationship, Session, backref
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.common_exceptions import PrivacyRequestPaused
@@ -26,6 +26,7 @@ from fidesops.db.base_class import (
     FidesopsBase,
 )
 from fidesops.models.client import ClientDetail
+from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.policy import (
     Policy,
     ActionType,
@@ -93,10 +94,14 @@ class PrivacyRequest(Base):
         index=True,
         nullable=False,
     )
-    # When the request was approved
-    approved_at = Column(DateTime(timezone=True), nullable=True)
-    # Who approved the request
-    approved_by = Column(String, nullable=True)
+    # When the request was approved/denied
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    # Who approved/denied the request
+    reviewed_by = Column(
+        String,
+        ForeignKey(FidesopsUser.id_field_path, ondelete="SET NULL"),
+        nullable=True,
+    )
     client_id = Column(
         String,
         ForeignKey(ClientDetail.id_field_path),
@@ -123,6 +128,10 @@ class PrivacyRequest(Base):
         lazy="dynamic",
         passive_deletes="all",
         primaryjoin="foreign(ExecutionLog.privacy_request_id)==PrivacyRequest.id",
+    )
+
+    reviewer = relationship(
+        "FidesopsUser", backref=backref("privacy_request", passive_deletes=True)
     )
 
     @classmethod

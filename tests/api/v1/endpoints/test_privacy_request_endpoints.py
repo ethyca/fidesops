@@ -24,7 +24,7 @@ from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_CALLBACK_RESUME,
     DATASET_CREATE_OR_UPDATE,
-    PRIVACY_REQUEST_APPROVE_OR_DENY,
+    PRIVACY_REQUEST_REVIEW,
 )
 from fidesops.core.config import config
 from fidesops.models.client import ClientDetail
@@ -419,8 +419,8 @@ class TestGetPrivacyRequests:
                     "finished_processing_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
-                    "approved_at": None,
-                    "approved_by": None,
+                    "reviewed_at": None,
+                    "reviewed_by": None,
                 }
             ],
             "total": 1,
@@ -605,8 +605,8 @@ class TestGetPrivacyRequests:
                     "finished_processing_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
-                    "approved_at": None,
-                    "approved_by": None,
+                    "reviewed_at": None,
+                    "reviewed_by": None,
                     "results": {
                         "my-mongo-db": [
                             {
@@ -955,9 +955,9 @@ class TestApprovePrivacyRequest:
     def test_approve_privacy_request_does_not_exist(
         self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
     ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
 
-        body = ["does_not_exist"]
+        body = {"request_ids": ["does_not_exist"]}
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200
 
@@ -978,9 +978,9 @@ class TestApprovePrivacyRequest:
     ):
         privacy_request.status = PrivacyRequestStatus.complete
         privacy_request.save(db=db)
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
 
-        body = [privacy_request.id]
+        body = {"request_ids": [privacy_request.id]}
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200
 
@@ -1006,9 +1006,9 @@ class TestApprovePrivacyRequest:
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db=db)
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
 
-        body = [privacy_request.id]
+        body = {"request_ids": [privacy_request.id]}
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200
 
@@ -1017,8 +1017,8 @@ class TestApprovePrivacyRequest:
         assert len(response_body["failed"]) == 0
         assert response_body["succeeded"][0]["status"] == "approved"
         assert response_body["succeeded"][0]["id"] == privacy_request.id
-        assert response_body["succeeded"][0]["approved_at"] is not None
-        assert response_body["succeeded"][0]["approved_by"] is None  # No user on client
+        assert response_body["succeeded"][0]["reviewed_at"] is not None
+        assert response_body["succeeded"][0]["reviewed_by"] is None  # No user on client
 
         assert submit_mock.called
 
@@ -1032,8 +1032,8 @@ class TestApprovePrivacyRequest:
         url,
         api_client,
         generate_auth_header,
-        privacy_request,
         user,
+        privacy_request
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db=db)
@@ -1045,7 +1045,7 @@ class TestApprovePrivacyRequest:
         }
         auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
 
-        body = [privacy_request.id]
+        body = {"request_ids": [privacy_request.id]}
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200
 
@@ -1054,8 +1054,8 @@ class TestApprovePrivacyRequest:
         assert len(response_body["failed"]) == 0
         assert response_body["succeeded"][0]["status"] == "approved"
         assert response_body["succeeded"][0]["id"] == privacy_request.id
-        assert response_body["succeeded"][0]["approved_at"] is not None
-        assert response_body["succeeded"][0]["approved_by"] == user.id
+        assert response_body["succeeded"][0]["reviewed_at"] is not None
+        assert response_body["succeeded"][0]["reviewed_by"] == user.id
 
         assert submit_mock.called
 
@@ -1082,9 +1082,9 @@ class TestDenyPrivacyRequest:
     def test_deny_privacy_request_does_not_exist(
         self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
     ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
 
-        body = ["does_not_exist"]
+        body = {"request_ids": ["does_not_exist"]}
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200
 
@@ -1105,9 +1105,9 @@ class TestDenyPrivacyRequest:
     ):
         privacy_request.status = PrivacyRequestStatus.complete
         privacy_request.save(db=db)
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
 
-        body = [privacy_request.id]
+        body = {"request_ids": [privacy_request.id]}
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200
 
@@ -1122,13 +1122,19 @@ class TestDenyPrivacyRequest:
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_deny_privacy_request(
-        self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
+        self, submit_mock, db, url, api_client, generate_auth_header, user, privacy_request
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db=db)
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
 
-        body = [privacy_request.id]
+        payload = {
+            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+
+        body = {"request_ids": [privacy_request.id]}
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200
 
@@ -1137,7 +1143,8 @@ class TestDenyPrivacyRequest:
         assert len(response_body["failed"]) == 0
         assert response_body["succeeded"][0]["status"] == "denied"
         assert response_body["succeeded"][0]["id"] == privacy_request.id
-        assert response_body["succeeded"][0]["approved_at"] is None
+        assert response_body["succeeded"][0]["reviewed_at"] is not None
+        assert response_body["succeeded"][0]["reviewed_by"] == user.id
 
         assert not submit_mock.called  # Shouldn't run! Privacy request was denied
 
@@ -1273,6 +1280,6 @@ class TestResumePrivacyRequest:
             "finished_processing_at": None,
             "status": "in_processing",
             "external_id": privacy_request.external_id,
-            "approved_at": None,
-            "approved_by": None,
+            "reviewed_at": None,
+            "reviewed_by": None,
         }

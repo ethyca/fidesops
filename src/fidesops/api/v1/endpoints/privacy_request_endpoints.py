@@ -21,7 +21,7 @@ from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_APPROVE_OR_DENY,
+    PRIVACY_REQUEST_REVIEW,
 )
 from fidesops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
@@ -59,7 +59,8 @@ from fidesops.schemas.privacy_request import (
     PrivacyRequestVerboseResponse,
     ExecutionLogDetailResponse,
     BulkPostPrivacyRequests,
-    BulkAdministrateResponse,
+    BulkReviewResponse,
+    ReviewPrivacyRequestIds,
 )
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     get_strategy,
@@ -465,9 +466,9 @@ def resume_privacy_request(
     return privacy_request
 
 
-def administrate_privacy_requests(
+def review_privacy_request(
     db: Session, cache: FidesopsRedis, request_ids: List[str], process_request: Callable
-) -> BulkAdministrateResponse:
+) -> BulkReviewResponse:
     """Helper method shared between the approve and deny privacy request endpoints"""
     succeeded: List[PrivacyRequest] = []
     failed: [Dict[str, Any]] = []
@@ -503,7 +504,7 @@ def administrate_privacy_requests(
         else:
             succeeded.append(privacy_request)
 
-    return BulkAdministrateResponse(
+    return BulkReviewResponse(
         succeeded=succeeded,
         failed=failed,
     )
@@ -512,7 +513,7 @@ def administrate_privacy_requests(
 @router.patch(
     PRIVACY_REQUEST_APPROVE,
     status_code=200,
-    response_model=BulkAdministrateResponse,
+    response_model=BulkReviewResponse,
 )
 def approve_privacy_request(
     *,
@@ -520,18 +521,18 @@ def approve_privacy_request(
     cache: FidesopsRedis = Depends(deps.get_cache),
     client: ClientDetail = Security(
         verify_oauth_client,
-        scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY],
+        scopes=[PRIVACY_REQUEST_REVIEW],
     ),
-    request_ids: conlist(str, max_items=50) = Body(...),  # type: ignore
-) -> BulkAdministrateResponse:
+    privacy_requests: ReviewPrivacyRequestIds,
+) -> BulkReviewResponse:
     """Approve and dispatch a list of privacy requests and/or report failure"""
     user_id = client.user_id
 
     def _process_request(privacy_request: PrivacyRequest, cache: FidesopsRedis) -> None:
         """Method for how to process requests - approved"""
         privacy_request.status = PrivacyRequestStatus.approved
-        privacy_request.approved_at = datetime.utcnow()
-        privacy_request.approved_by = user_id
+        privacy_request.reviewed_at = datetime.utcnow()
+        privacy_request.reviewed_by = user_id
         privacy_request.save(db=db)
 
         PrivacyRequestRunner(
@@ -539,28 +540,36 @@ def approve_privacy_request(
             privacy_request=privacy_request,
         ).submit()
 
-    return administrate_privacy_requests(db, cache, request_ids, _process_request)
+    return review_privacy_request(
+        db, cache, privacy_requests.request_ids, _process_request
+    )
 
 
 @router.patch(
     PRIVACY_REQUEST_DENY,
     status_code=200,
-    response_model=BulkAdministrateResponse,
-    dependencies=[
-        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_APPROVE_OR_DENY])
-    ],
+    response_model=BulkReviewResponse,
 )
 def deny_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
     cache: FidesopsRedis = Depends(deps.get_cache),
-    request_ids: conlist(str, max_items=50) = Body(...),  # type: ignore
-) -> BulkAdministrateResponse:
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[PRIVACY_REQUEST_REVIEW],
+    ),
+    privacy_requests: ReviewPrivacyRequestIds,
+) -> BulkReviewResponse:
     """Deny a list of privacy requests and/or report failure"""
+    user_id = client.user_id
 
     def _process_request(privacy_request: PrivacyRequest, _: FidesopsRedis) -> None:
         """Method for how to process requests - denied"""
         privacy_request.status = PrivacyRequestStatus.denied
+        privacy_request.reviewed_at = datetime.utcnow()
+        privacy_request.reviewed_by = user_id
         privacy_request.save(db=db)
 
-    return administrate_privacy_requests(db, cache, request_ids, _process_request)
+    return review_privacy_request(
+        db, cache, privacy_requests.request_ids, _process_request
+    )
