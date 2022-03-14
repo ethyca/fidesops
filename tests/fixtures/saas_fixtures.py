@@ -120,6 +120,27 @@ def connection_config_saas_without_saas_config(
 
 
 @pytest.fixture(scope="function")
+def connection_config_saas_with_custom_http_method(
+        db: Session,
+) -> Generator:
+    saas_config = example_saas_configs["mailchimp"].copy()
+    saas_config["endpoints"][0]["requests"]["read"]["method"] = "POST"
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": "connection_config_without_saas_config",
+            "name": "connection_config_without_saas_config",
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.read,
+            "secrets": saas_secrets_dict["mailchimp"],
+            "saas_config": saas_config,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
 def connection_config_saas_with_invalid_saas_config(
     db: Session, example_saas_configs: Dict[str, Dict]
 ) -> Generator:

@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Union
 from pydantic import BaseModel, validator
 from fidesops.schemas.base_class import BaseSchema
@@ -63,6 +64,16 @@ class Strategy(BaseModel):
     configuration: Dict[str, Any]
 
 
+class HTTPMethod(Enum):
+    """Enum to represent HTTP Methods"""
+
+    GET = "GET"
+    POST = "POST"
+    PATCH = "PATCH"
+    PUT = "PUT"
+    DELETE = "DELETE"
+
+
 class SaaSRequest(BaseModel):
     """
     A single request with a static or dynamic path, and the request params needed to build the request.
@@ -70,6 +81,7 @@ class SaaSRequest(BaseModel):
     """
 
     path: str
+    method: HTTPMethod.value
     request_params: Optional[List[RequestParam]]
     data_path: Optional[str]  # defaults to collection name if not specified
     preprocessors: Optional[List[Strategy]]

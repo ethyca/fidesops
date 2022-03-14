@@ -689,3 +689,36 @@ class TestSaaSQueryConfig:
                 }
             ),
         )
+
+    def test_generate_update_stmt_custom_http_method(
+            self, erasure_policy_string_rewrite, combined_traversal, connection_config_saas_with_custom_http_method
+    ):
+        saas_config = connection_config_saas_with_custom_http_method.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+
+        member = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "member")
+        ]
+
+        config = SaaSQueryConfig(member, endpoints)
+        row = {
+            "id": "123",
+            "merge_fields": {"FNAME": "First", "LNAME": "Last"},
+            "list_id": "abc",
+        }
+
+        # build request by taking a row, masking it, and adding it to
+        # the body of a POST request
+        prepared_request = config.generate_update_stmt(
+            row, erasure_policy_string_rewrite, privacy_request
+        )
+        assert prepared_request == (
+            "POST",
+            "/3.0/lists/abc/members/123",
+            {},
+            json.dumps(
+                {
+                    "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
+                }
+            ),
+        )

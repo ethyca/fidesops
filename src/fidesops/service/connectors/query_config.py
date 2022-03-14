@@ -2,7 +2,7 @@ import logging
 import re
 import json
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple, Literal
+from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple
 
 import pydash
 from sqlalchemy import text, Table, MetaData
@@ -20,7 +20,7 @@ from fidesops.graph.config import (
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
 from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.schemas.saas.saas_config import Endpoint, SaaSRequest
+from fidesops.schemas.saas.saas_config import Endpoint, SaaSRequest, HTTPMethod
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     get_strategy,
@@ -667,7 +667,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         return None
 
 
-SaaSRequestParams = Tuple[Literal["GET", "PUT"], str, Dict[str, Any], Optional[str]]
+SaaSRequestParams = Tuple[HTTPMethod.value, str, Dict[str, Any], Optional[str]]
 """Custom type to represent a tuple of HTTP method, path, params, and body values for a SaaS request"""
 
 
@@ -735,7 +735,12 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 path = path.replace(f"<{param.name}>", input_data[param.name][0])
 
         logger.info(f"Populated request params for {current_request.path}")
-        return "GET", path, params, None
+        method: HTTPMethod.value = (
+            current_request.method.value
+            if current_request.method
+            else HTTPMethod.GET.value
+        )
+        return method, path, params, None
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
@@ -773,7 +778,12 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
         body: Dict[str, Any] = unflatten_dict(update_value_map)
-        return "PUT", path, params, json.dumps(body)
+        method: HTTPMethod.value = (
+            current_request.method.value
+            if current_request.method
+            else HTTPMethod.PUT.value
+        )
+        return method, path, params, json.dumps(body)
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string"""
