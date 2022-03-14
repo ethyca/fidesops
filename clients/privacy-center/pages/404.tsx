@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Image from 'next/image';
 import NextLink from 'next/link';
-import { Stack, Heading, Box, Text, Button } from '@fidesui/react';
+import { Stack, Heading, Box, Text, Button, Link } from '@fidesui/react';
 
 const Custom404 = () => (
   <div>
@@ -63,12 +63,17 @@ const Custom404 = () => (
           </Stack>
         </Box>
         <Box display={['none', 'none', 'inherit']}>
-          <Image
-            src="/logo.svg"
-            alt="FidesUI logo"
-            width="124px"
-            height="38px"
-          />
+          <NextLink href="/" passHref>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+            <Link>
+              <Image
+                src="/logo.svg"
+                alt="FidesUI logo"
+                width="124px"
+                height="38px"
+              />
+            </Link>
+          </NextLink>
         </Box>
       </Stack>
     </main>

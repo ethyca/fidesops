@@ -21,7 +21,13 @@ customize the entire application by modifying the TypeScript source code in
 
 ## Development
 
-To serve this application locally, run:
+To serve this application locally, first install your local depencies by running
+
+```bash
+npm install
+```
+
+Then, run:
 
 ```bash
 npm run dev

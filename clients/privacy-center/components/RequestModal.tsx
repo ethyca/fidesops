@@ -128,11 +128,6 @@ const useRequestForm = ({
 
       if (!values.email && action.identity_inputs.email === 'required') {
         errors.email = 'Required';
-      } else if (
-        values.email &&
-        !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)
-      ) {
-        errors.email = 'Invalid email address';
       }
 
       if (!values.name && action.identity_inputs.name === 'required') {
