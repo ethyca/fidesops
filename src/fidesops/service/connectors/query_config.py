@@ -667,7 +667,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         return None
 
 
-SaaSRequestParams = Tuple[HTTPMethod.value, str, Dict[str, Any], Optional[str]]
+SaaSRequestParams = Tuple[HTTPMethod, str, Dict[str, Any], Optional[str]]
 """Custom type to represent a tuple of HTTP method, path, params, and body values for a SaaS request"""
 
 
@@ -735,7 +735,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 path = path.replace(f"<{param.name}>", input_data[param.name][0])
 
         logger.info(f"Populated request params for {current_request.path}")
-        method: HTTPMethod.value = (
+        method: HTTPMethod = (
             current_request.method.value
             if current_request.method
             else HTTPMethod.GET.value
@@ -778,7 +778,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
         body: Dict[str, Any] = unflatten_dict(update_value_map)
-        method: HTTPMethod.value = (
+        method: HTTPMethod = (
             current_request.method.value
             if current_request.method
             else HTTPMethod.PUT.value
