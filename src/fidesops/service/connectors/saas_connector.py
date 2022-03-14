@@ -101,6 +101,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.saas_config = configuration.get_saas_config()
         self.client_config = self.saas_config.client_config
         self.endpoints = self.saas_config.top_level_endpoint_dict
+        self.collection_name = None
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
         """Returns the query config for a SaaS connector"""
@@ -134,7 +135,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """Retrieve data from SaaS APIs"""
 
         # get the corresponding read request for the given collection
-        self.collection_name: str = node.address.collection
+        self.collection_name = node.address.collection
         read_request: SaaSRequest = self.endpoints[self.collection_name].requests[
             "read"
         ]
