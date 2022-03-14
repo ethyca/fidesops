@@ -72,11 +72,6 @@ class HTTPMethod(Enum):
     PUT = "PUT"
     DELETE = "DELETE"
 
-    class Config:
-        """Use enum vals to support mapping to HTTPMethod"""
-
-        use_enum_values = True
-
 
 class SaaSRequest(BaseModel):
     """
@@ -91,6 +86,12 @@ class SaaSRequest(BaseModel):
     preprocessors: Optional[List[Strategy]]
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
+
+    class Config:
+        """Populate models with the raw value of enum fields, rather than the enum itself"""
+
+        orm_mode = True
+        use_enum_values = True
 
 
 class Endpoint(BaseModel):
