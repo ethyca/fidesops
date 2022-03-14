@@ -1,6 +1,11 @@
+import csv
+import io
+
 import json
 from datetime import datetime
-from typing import List, Dict
+from dateutil.tz import tzlocal
+from dateutil.parser import parse
+from typing import List
 from unittest import mock
 
 from fastapi_pagination import Params
@@ -715,6 +720,41 @@ class TestGetPrivacyRequests:
             ExecutionLog.privacy_request_id == privacy_request.id
         ).delete()
 
+    def test_get_privacy_requests_csv_format(
+        self, db, generate_auth_header, api_client, url, privacy_request, user
+    ):
+        reviewed_at = datetime.now()
+        created_at = datetime.now()
+
+        privacy_request.created_at = created_at
+        privacy_request.status = PrivacyRequestStatus.approved
+        privacy_request.reviewed_by = user.id
+        privacy_request.reviewed_at = reviewed_at
+        privacy_request.cache_identity({"email": "email@example.com"})
+        privacy_request.save(db)
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url + f"?download_csv=True", headers=auth_header)
+        assert 200 == response.status_code
+
+        assert response.headers["content-type"] == "text/csv; charset=utf-8"
+        assert (
+            response.headers["content-disposition"]
+            == f"attachment; filename=privacy_requests_download_{datetime.today().strftime('%Y-%m-%d')}.csv"
+        )
+
+        content = response.content.decode()
+        file = io.StringIO(content)
+        csv_file = csv.DictReader(file, delimiter=",")
+
+        first_row = next(csv_file)
+        assert parse(first_row["Time received"], ignoretz=True) == created_at
+        assert first_row["Subject identity"] == "{'email': 'email@example.com'}"
+        assert first_row["Policy key"] == "example_access_request_policy"
+        assert first_row["Request status"] == "approved"
+        assert first_row["Reviewer"] == user.id
+        assert parse(first_row["Time approved/denied"], ignoretz=True) == reviewed_at
+
 
 class TestGetExecutionLogs:
     @pytest.fixture(scope="function")
@@ -995,14 +1035,14 @@ class TestApprovePrivacyRequest:
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_approve_privacy_request_no_user_on_client(
-            self,
-            submit_mock,
-            db,
-            url,
-            api_client,
-            generate_auth_header,
-            privacy_request,
-            user,
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        privacy_request,
+        user,
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db=db)
@@ -1033,7 +1073,7 @@ class TestApprovePrivacyRequest:
         api_client,
         generate_auth_header,
         user,
-        privacy_request
+        privacy_request,
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db=db)
@@ -1122,7 +1162,14 @@ class TestDenyPrivacyRequest:
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_deny_privacy_request(
-        self, submit_mock, db, url, api_client, generate_auth_header, user, privacy_request
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request,
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db=db)
