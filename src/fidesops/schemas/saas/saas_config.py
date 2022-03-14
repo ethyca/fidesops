@@ -4,7 +4,6 @@ from pydantic import BaseModel, validator
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.dataset import FidesopsDatasetReference
 from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
-from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
@@ -73,6 +72,11 @@ class HTTPMethod(Enum):
     PUT = "PUT"
     DELETE = "DELETE"
 
+    class Config:
+        """Use enum vals to support mapping to HTTPMethod"""
+
+        use_enum_values = True
+
 
 class SaaSRequest(BaseModel):
     """
@@ -81,7 +85,7 @@ class SaaSRequest(BaseModel):
     """
 
     path: str
-    method: HTTPMethod.value
+    method: HTTPMethod
     request_params: Optional[List[RequestParam]]
     data_path: Optional[str]  # defaults to collection name if not specified
     preprocessors: Optional[List[Strategy]]
