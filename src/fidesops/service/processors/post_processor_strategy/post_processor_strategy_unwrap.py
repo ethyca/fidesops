@@ -55,7 +55,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
                 f"Data is either None or not in expected format. Skipping processing for the following post processing strategy: {self.get_strategy_name()}."
             )
             return data
-        unwrapped = pydash.objects.get(data, self.data_path, None)
+        unwrapped = pydash.get(data, self.data_path)
         if unwrapped is None:
             logger.warning(
                 f"{self.data_path} could not be found for the following post processing strategy: {self.get_strategy_name()}"

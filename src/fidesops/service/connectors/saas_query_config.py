@@ -72,7 +72,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         # uses the param names to read from the input data
         for param in current_request.request_params:
             if param.type == "query":
-                if param.default_value:
+                if param.default_value is not None:
                     params[param.name] = param.default_value
                 elif param.references or param.identity:
                     params[param.name] = input_data[param.name][0]
@@ -100,7 +100,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         # uses the reference fields to read from the param_values
         for param in current_request.request_params:
             if param.type == "query":
-                if param.default_value:
+                if param.default_value is not None:
                     params[param.name] = param.default_value
                 elif param.references:
                     params[param.name] = pydash.get(

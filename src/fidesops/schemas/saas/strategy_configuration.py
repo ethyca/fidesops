@@ -1,5 +1,5 @@
-import enum
-from typing import Any, Dict, Literal, Optional, Union
+from enum import Enum
+from typing import Any, Dict, Optional, Union
 from pydantic import BaseModel, validator, root_validator
 
 
@@ -34,13 +34,13 @@ class FilterPostProcessorConfiguration(StrategyConfiguration):
 
 class OffsetPaginationConfiguration(StrategyConfiguration):
     """
-    Increases the value of the query param `incremental_param` by the `increment_by` until the `page_limit` is hit
+    Increases the value of the query param `incremental_param` by the `increment_by` until the `limit` is hit
     or there is no more data available.
     """
 
     incremental_param: str
     increment_by: int
-    page_limit: Union[int, ConnectorParamRef]
+    limit: Union[int, ConnectorParamRef]
 
     @validator("increment_by")
     def check_increment_by(cls, increment_by: int) -> int:
@@ -51,7 +51,7 @@ class OffsetPaginationConfiguration(StrategyConfiguration):
         return increment_by
 
 
-class LinkSource(enum.Enum):
+class LinkSource(Enum):
     """Locations where the link to the next page may be found."""
 
     headers = "headers"
@@ -68,11 +68,11 @@ class LinkPaginationConfiguration(StrategyConfiguration):
     @root_validator
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         source = values.get("source")
-        if source == LinkSource.headers and values.get("rel") is None:
+        if source == LinkSource.headers.value and values.get("rel") is None:
             raise ValueError(
                 "The 'rel' value must be specified when accessing the link from the headers"
             )
-        if source == LinkSource.body and values.get("path") is None:
+        if source == LinkSource.body.value and values.get("path") is None:
             raise ValueError(
                 "The 'path' value must be specified when accessing the link from the body"
             )
@@ -86,9 +86,8 @@ class LinkPaginationConfiguration(StrategyConfiguration):
 
 class CursorPaginationConfiguration(StrategyConfiguration):
     """
-    Extracts the cursor from the 'value_field' of the row
-    and maps it to the provided cursor param.
+    Extracts the cursor value from the 'field' of the last object in the array specified by 'data_path'
     """
 
     cursor_param: str
-    value_field: str
+    field: str

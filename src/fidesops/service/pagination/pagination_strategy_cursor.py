@@ -1,4 +1,3 @@
-from fidesops.util.collection_util import Row
 import pydash
 from typing import Any, Dict, Optional
 from requests import Response
@@ -15,7 +14,7 @@ STRATEGY_NAME = "cursor"
 class CursorPaginationStrategy(PaginationStrategy):
     def __init__(self, configuration: CursorPaginationConfiguration):
         self.cursor_param = configuration.cursor_param
-        self.value_field = configuration.value_field
+        self.field = configuration.field
 
     def get_strategy_name(self) -> str:
         return STRATEGY_NAME
@@ -25,12 +24,16 @@ class CursorPaginationStrategy(PaginationStrategy):
         request_params: SaaSRequestParams,
         connector_params: Dict[str, Any],
         response: Response,
-        row: Optional[Row],
+        data_path: str,
     ) -> Optional[SaaSRequestParams]:
         """Build request for next page of data"""
 
-        # read the new cursor value from row (post-processed response)
-        cursor = pydash.get(row, self.value_field)
+        # get the last object in the array specified by data_path
+        # and read the cursor value
+        cursor = None
+        object_list = pydash.get(response.json(), data_path)
+        if object_list:
+            cursor = pydash.get(object_list.pop(), self.field)
 
         # return None if the cursor value isn't found to stop further pagination
         if cursor is None:

@@ -13,20 +13,20 @@ def test_get_strategy_offset():
     config = {
         "incremental_param": "page",
         "increment_by": 1,
-        "page_limit": 100,
+        "limit": 100,
     }
     strategy = get_strategy(strategy_name="offset", configuration=config)
     assert isinstance(strategy, OffsetPaginationStrategy)
 
 
 def test_get_strategy_link():
-    config = {"source": "response", "path": "body.next_link"}
+    config = {"source": "body", "path": "body.next_link"}
     strategy = get_strategy(strategy_name="link", configuration=config)
     assert isinstance(strategy, LinkPaginationStrategy)
 
 
 def test_get_strategy_cursor():
-    config = {"cursor_param": "after", "value_field": "id"}
+    config = {"cursor_param": "after", "field": "id"}
     strategy = get_strategy(strategy_name="cursor", configuration=config)
     assert isinstance(strategy, CursorPaginationStrategy)
 

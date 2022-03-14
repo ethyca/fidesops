@@ -48,7 +48,9 @@ class RequestParam(BaseModel):
         value_fields = [
             bool(values.get("identity")),
             bool(values.get("references")),
-            bool(values.get("default_value") is not None), # to prevent a value of 0 from returning False
+            bool(
+                values.get("default_value") is not None
+            ),  # to prevent a value of 0 from returning False
         ]
         if sum(value_fields) != 1:
             raise ValueError(
@@ -72,6 +74,7 @@ class SaaSRequest(BaseModel):
 
     path: str
     request_params: Optional[List[RequestParam]]
+    data_path: Optional[str]
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
 

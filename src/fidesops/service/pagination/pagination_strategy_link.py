@@ -1,6 +1,4 @@
-import enum
 import logging
-from fidesops.util.collection_util import Row
 
 import pydash
 from typing import Any, Dict, Optional
@@ -34,15 +32,19 @@ class LinkPaginationStrategy(PaginationStrategy):
         request_params: SaaSRequestParams,
         connector_params: Dict[str, Any],
         response: Response,
-        row: Optional[Row],
+        data_path: str,
     ) -> Optional[SaaSRequestParams]:
         """Build request for next page of data"""
 
+        # stop paginating if response did not contain any data
+        if not pydash.get(response.json(), data_path):
+            return None
+
         # read the next_link from the correct location based on the source value
         next_link = None
-        if self.source == LinkSource.headers:
+        if self.source == LinkSource.headers.value:
             next_link = response.links.get(self.rel, {}).get("url")
-        elif self.source == LinkSource.body:
+        elif self.source == LinkSource.body.value:
             next_link = pydash.get(response.json(), self.path)
 
         if next_link is None:

@@ -10,14 +10,23 @@ from fidesops.service.pagination.pagination_strategy_link import LinkPaginationS
 def response_with_header_link():
     response = Response()
     response.headers = {"link": "<https://domain.com/customers?page=def>; rel=next"}
+    response._content = bytes(
+        json.dumps({"customers": [{"id": 1}, {"id": 2}, {"id": 3}]}), "utf-8"
+    )
     return response
 
 
 @pytest.fixture(scope="function")
-def response_with_body():
+def response_with_body_link():
     response = Response()
     response._content = bytes(
-        json.dumps({"links": {"next": "https://domain.com/customers?page=def"}}), "utf-8"
+        json.dumps(
+            {
+                "customers": [{"id": 1}, {"id": 2}, {"id": 3}],
+                "links": {"next": "https://domain.com/customers?page=def"},
+            }
+        ),
+        "utf-8",
     )
     return response
 
@@ -28,40 +37,40 @@ def test_link_in_headers(response_with_header_link):
 
     paginator = LinkPaginationStrategy(config)
     next_request: SaaSRequestParams = paginator.get_next_request(
-        request_params, {}, response_with_header_link
+        request_params, {}, response_with_header_link, "customers"
     )
     assert next_request == ("GET", "/customers", {"page": "def"}, None)
 
 
-def test_link_in_headers_missing():
+def test_link_in_headers_missing(response_with_body_link):
     config = LinkPaginationConfiguration(source="headers", rel="next")
     request_params: SaaSRequestParams = "GET", "/customers", {"page": "abc"}, None
 
     paginator = LinkPaginationStrategy(config)
     next_request: SaaSRequestParams = paginator.get_next_request(
-        request_params, {}, Response()
+        request_params, {}, response_with_body_link, "customers"
     )
     assert next_request == None
 
 
-def test_link_in_response(response_with_body):
+def test_link_in_body(response_with_body_link):
     config = LinkPaginationConfiguration(source="body", path="links.next")
     request_params: SaaSRequestParams = "GET", "/customers", {"page": "abc"}, None
 
     paginator = LinkPaginationStrategy(config)
     next_request: SaaSRequestParams = paginator.get_next_request(
-        request_params, {}, response_with_body
+        request_params, {}, response_with_body_link, "customers"
     )
     assert next_request == ("GET", "/customers", {"page": "def"}, None)
 
 
-def test_link_in_response_missing():
+def test_link_in_body_missing(response_with_header_link):
     config = LinkPaginationConfiguration(source="body", path="links.next")
     request_params: SaaSRequestParams = "GET", "/customers", {"page": "abc"}, None
 
     paginator = LinkPaginationStrategy(config)
     next_request: SaaSRequestParams = paginator.get_next_request(
-        request_params, {}, Response()
+        request_params, {}, response_with_header_link, "customers"
     )
     assert next_request == None
 
@@ -69,7 +78,7 @@ def test_link_in_response_missing():
 def test_wrong_source():
     with pytest.raises(ValueError) as exc:
         LinkPaginationConfiguration(source="somewhere", path="links.next")
-    assert "unexpected value" in str(exc.value)
+    assert "value is not a valid enumeration member" in str(exc.value)
 
 
 def test_config_mismatch():
