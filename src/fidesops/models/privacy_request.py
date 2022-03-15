@@ -105,6 +105,7 @@ class PrivacyRequest(Base):
     client_id = Column(
         String,
         ForeignKey(ClientDetail.id_field_path),
+        nullable=True,
     )
     client = relationship(
         ClientDetail,

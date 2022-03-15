@@ -76,3 +76,7 @@ SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
 # User URLs
 USERS = "/user"
 USER_DETAIL = "/user/{user_id}"
+
+# Login URLs
+LOGIN = "/login"
+LOGOUT = "/logout"
