@@ -471,7 +471,7 @@ def review_privacy_request(
 ) -> BulkReviewResponse:
     """Helper method shared between the approve and deny privacy request endpoints"""
     succeeded: List[PrivacyRequest] = []
-    failed: [Dict[str, Any]] = []
+    failed: List[Dict[str, Any]] = []
 
     for request_id in request_ids:
         privacy_request = PrivacyRequest.get(db, id=request_id)

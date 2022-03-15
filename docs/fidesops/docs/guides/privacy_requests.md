@@ -62,18 +62,28 @@ A full list of attributes available to set on the Privacy Request can be found i
 ## How can I approve or deny a Privacy Request?
 
 If `REQUEST_MANUAL_REQUEST_APPROVAL` is set to True (the default is False), Privacy Requests will require approval before executing.  To approve
-or deny Privacy Requests, send a list of Privacy Request ids to one of the following endpoints to approve/deny in bulk.
+or deny Privacy Requests, send a list of Privacy Request ids to one of the following endpoints to approve or pytestdeny in bulk.
 
 `PATCH api/v1/privacy-request/administrate/approve`
 
 ```json
-  {"request_ids": ["pri_2d181f15-486d-4bcf-a871-f50ed9f95673", "pri_2d181f15-486d-4bcf-a871-f50ed9f95673"]}
+{
+  "request_ids":[
+    "pri_2d181f15-486d-4bcf-a871-f50ed9f95673",
+    "pri_2d181f15-486d-4bcf-a871-f50ed9f95673"
+  ]
+}
 ```
 
 `PATCH api/v1/privacy-request/administrate/deny`
 
 ```json
-  {"request_ids": ["pri_2d181f15-486d-4bcf-a871-f50ed9f95673", "pri_2d181f15-486d-4bcf-a871-f50ed9f95673"]}
+{
+  "request_ids":[
+    "pri_2d181f15-486d-4bcf-a871-f50ed9f95673",
+    "pri_2d181f15-486d-4bcf-a871-f50ed9f95673"
+  ]
+}
 ```
 
 ## How do I monitor Privacy Requests as they execute?
