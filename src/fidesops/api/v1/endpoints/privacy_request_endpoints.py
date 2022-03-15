@@ -478,7 +478,7 @@ def review_privacy_request(
         if not privacy_request:
             failed.append(
                 {
-                    "message": f"No privacy request found with id '{request_id}",
+                    "message": f"No privacy request found with id '{request_id}'",
                     "data": {"privacy_request_id": request_id},
                 }
             )
