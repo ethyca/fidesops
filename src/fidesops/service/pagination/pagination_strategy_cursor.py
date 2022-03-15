@@ -28,11 +28,12 @@ class CursorPaginationStrategy(PaginationStrategy):
     ) -> Optional[SaaSRequestParams]:
         """Build request for next page of data"""
 
-        # get the last object in the array specified by data_path
-        # and read the cursor value
+        # get the last object in the array and read the cursor value
         cursor = None
-        object_list = pydash.get(response.json(), data_path)
-        if object_list:
+        object_list = (
+            pydash.get(response.json(), data_path) if data_path else response.json()
+        )
+        if object_list and isinstance(object_list, list):
             cursor = pydash.get(object_list.pop(), self.field)
 
         # return None if the cursor value isn't found to stop further pagination

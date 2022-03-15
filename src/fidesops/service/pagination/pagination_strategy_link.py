@@ -37,7 +37,10 @@ class LinkPaginationStrategy(PaginationStrategy):
         """Build request for next page of data"""
 
         # stop paginating if response did not contain any data
-        if not pydash.get(response.json(), data_path):
+        response_data = (
+            pydash.get(response.json(), data_path) if data_path else response.json()
+        )
+        if not response_data:
             return None
 
         # read the next_link from the correct location based on the source value

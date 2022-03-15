@@ -1,6 +1,6 @@
 from json import JSONDecodeError
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 import pydash
 from requests import Session, Request, PreparedRequest, Response
 from fidesops.common_exceptions import FidesopsException
@@ -173,7 +173,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         # unwrap response using data_path
         try:
-            response_data = pydash.get(response.json(), saas_request.data_path)
+            response_data = (
+                pydash.get(response.json(), saas_request.data_path)
+                if saas_request.data_path
+                else response.json()
+            )
         except JSONDecodeError:
             raise FidesopsException(
                 f"Unable to parse JSON response from {saas_request.path}"
@@ -211,7 +215,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def process_response_data(
         self,
-        response_data: List[Dict[str, Any]],
+        response_data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Dict[str, Any],
         postprocessors: Optional[List[PostProcessorStrategy]],
     ) -> List[Row]:

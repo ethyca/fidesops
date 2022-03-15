@@ -18,10 +18,7 @@ from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
-from fidesops.service.connectors.query_config import (
-    SQLQueryConfig,
-    MongoQueryConfig
-)
+from fidesops.service.connectors.query_config import SQLQueryConfig, MongoQueryConfig
 
 from fidesops.service.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
@@ -643,7 +640,7 @@ class TestSaaSQueryConfig:
         assert prepared_request == (
             "GET",
             "/3.0/conversations",
-            {"count": 1000, "placeholder": "customer-1@example.com"},
+            {"count": 1000, "offset": 0, "placeholder": "customer-1@example.com"},
             None,
         )
 

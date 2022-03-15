@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional, Dict
+from typing import Any, List, Optional, Dict, Union
 
 from fidesops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
@@ -48,7 +48,11 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
     def get_strategy_name(self) -> str:
         return STRATEGY_NAME
 
-    def process(self, data: Any, identity_data: Dict[str, Any] = None) -> Optional[Any]:
+    def process(
+        self,
+        data: Union[List[Dict[str, Any]], Dict[str, Any]],
+        identity_data: Dict[str, Any] = None,
+    ) -> Optional[Any]:
         """
         :param data: A list or an object
         :param identity_data: Dict of cached identity data
