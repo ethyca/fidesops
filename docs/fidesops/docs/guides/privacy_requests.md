@@ -25,7 +25,7 @@ For more information on Policies, see [How-To: Configure Policies](policies.md#r
 
 You submit a Privacy Request by calling the  **Submit a Privacy Request** operation. Here, 
 we submit  a request to apply the `a-demo-policy` Policy to all target data in the [Identity Graph](../glossary.md) that can be generated from the email address `identity@example.com` and the phone number `+1 (123) 456 7891`.
-The Privacy Request will be executed immediately if `REQUEST_MANUAL_REQUEST_APPROVAL` is False (this is the default behavior).
+Privacy Requests are executed immediately by default. This setting may be changed in the fidesops.toml configuration file.
 
 `POST /api/v1/privacy-request`
 
@@ -61,8 +61,9 @@ A full list of attributes available to set on the Privacy Request can be found i
 
 ## How can I approve or deny a Privacy Request?
 
-If `REQUEST_MANUAL_REQUEST_APPROVAL` is set to True (the default is False), Privacy Requests will require approval before executing.  To approve
-or deny Privacy Requests, send a list of Privacy Request ids to one of the following endpoints to approve or pytestdeny in bulk.
+Privacy Requests are executed immediately by default. By setting the REQUIRE_MANUAL_REQUEST_APPROVAL variable in your fidesops.toml to TRUE, 
+Privacy Requests will require approval before executing. To approve or deny Privacy Requests, send a list of Privacy 
+Request ids to one of the following endpoints to approve or deny in bulk.
 
 `PATCH api/v1/privacy-request/administrate/approve`
 
