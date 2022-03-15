@@ -79,7 +79,9 @@ Check out the [API docs here](/fidesops/api#operations-Privacy_Requests-get_requ
 
 ## View A Privacy Request's Identity Data
 
-Use the `include_identities` query param to optionally include all identity data that was submitted for the Privacy Request. Due to the nature of how Fidesops stores identity data, this data will expire automatically according to the `FIDESOPS__REDIS__DEFAULT_TTL_SECONDS` variable. If the `include_identities` query param is used to fetch identity data for Privacy Requests whose identity data has since expired, an empty JSON dictionary will be returned.
+Use the optional `include_identities` query param to include all identity data that was submitted for the Privacy Request. Due to the nature of how Fidesops stores identity data, this data will expire automatically according to the `FIDESOPS__REDIS__DEFAULT_TTL_SECONDS` variable.
+
+If the identity data fetched by `include_identities` has expired, an empty JSON dictionary will be returned.
 
 ## View Individual Privacy Request Log Details
 
