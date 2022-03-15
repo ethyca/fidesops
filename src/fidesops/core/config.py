@@ -88,6 +88,7 @@ class DatabaseSettings(FidesSettings):
 class ExecutionSettings(FidesSettings):
     """Configuration settings for execution."""
 
+    PRIVACY_REQUEST_DELAY_TIMEOUT: int = 3600
     TASK_RETRY_COUNT: int
     TASK_RETRY_DELAY: int  # In seconds
     TASK_RETRY_BACKOFF: int
