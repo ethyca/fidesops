@@ -58,7 +58,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
         if isinstance(data, dict):
             unwrapped = pydash.get(data, self.data_path)
 
-        if isinstance(data, list):
+        elif isinstance(data, list):
             unwrapped = []
             for item in data:
                 unwrapped.append(pydash.get(item, self.data_path))

@@ -88,3 +88,15 @@ def test_two_step_unwrap():
         {"email": "who@email.com", "preferences": {}},
         {"email": "other@email.com", "preferences": {}},
     ]
+
+
+def test_unwrap_to_nested_lists():
+    config = UnwrapPostProcessorConfiguration(data_path="emails")
+    data = [
+        {"emails": [{"personal": "me@email.com"}, {"personal": "someone@email.com"}]}
+    ]
+    processor = UnwrapPostProcessorStrategy(configuration=config)
+    assert processor.process(data) == [
+        {"personal": "me@email.com"},
+        {"personal": "someone@email.com"},
+    ]
