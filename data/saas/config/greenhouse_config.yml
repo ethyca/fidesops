@@ -41,8 +41,9 @@ saas_config:
             default_value: 1
       update:
         path: /v1/candidates/<candidate_id>
-        # Has to set the method as PATCH
+        # TODO - Please to refer to the original YAML spec as this originally had a UPDATE poeration
         # Has to send a customer header "On-Behalf-Of" with value of user_id connector_param
+        # TODO - Custom headers wasn't sup[ported at the time it was written
         request_params:
           - name: candidate_id
             type: path
@@ -52,8 +53,9 @@ saas_config:
                 direction: from
       delete:
         path: /v1/candidates/<candidate_id>
-        # Has to set the method as DELETE if not default
+        # TODO - Please to refer to the original YAML spec as this originally had a DELETE poeration
         # Has to send a customer header "On-Behalf-Of" with value of user_id connector_param
+        # TODO - Custom headers wasn't sup[ported at the time it was written
         request_params:
           - name: candidate_id
             type: path
