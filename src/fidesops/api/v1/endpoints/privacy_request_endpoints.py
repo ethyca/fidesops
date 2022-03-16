@@ -261,7 +261,12 @@ def privacy_request_csv_download(privacy_request_query: Query) -> StreamingRespo
 @router.get(
     urls.PRIVACY_REQUESTS,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
-    response_model=Page[Union[PrivacyRequestVerboseResponse, PrivacyRequestResponse]],
+    response_model=Page[
+        Union[
+            PrivacyRequestVerboseResponse,
+            PrivacyRequestResponse,
+        ]
+    ],
 )
 def get_request_status(
     *,
@@ -279,6 +284,7 @@ def get_request_status(
     errored_gt: Optional[date] = None,
     external_id: Optional[str] = None,
     verbose: Optional[bool] = False,
+    include_identities: Optional[bool] = False,
     download_csv: Optional[bool] = False,
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
     """Returns PrivacyRequest information. Supports a variety of optional query params.
@@ -345,8 +351,15 @@ def get_request_status(
     else:
         PrivacyRequest.execution_logs_by_dataset = property(lambda self: None)
 
+    paginated = paginate(query, params)
+    if include_identities:
+        # Conditionally include the cached identity data in the response if
+        # it is explicitly requested
+        for item in paginated.items:
+            item.identity = item.get_cached_identity_data()
+
     logger.info(f"Finding all request statuses with pagination params {params}")
-    return paginate(query, params)
+    return paginated
 
 
 def execution_logs_by_dataset_name(
