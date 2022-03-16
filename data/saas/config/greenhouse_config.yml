@@ -1,0 +1,63 @@
+saas_config:
+  fides_key: greenhouse_connector_example
+  name: Greenhouse SaaS Config
+  description: A sample schema representing the Greenhouse connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: user_id
+    - name: username
+    - name: email
+
+  client_config:
+    protocol: https
+    host:
+      connector_param: domain
+    authentication:
+      strategy: basic_authentication
+      configuration:
+        username:
+          connector_param: username
+
+  test_request:
+    path: /v1/users
+    
+  endpoints:
+  - name: candidate
+    requests:
+      read:
+        path: /v1/candidates
+        request_params:
+          - name: email
+            type: query
+            identity: email
+            data_type: string
+          - name: per_page
+            type: query
+            default_value: 50
+          # below page value has to be done through pagination
+          - name: page
+            type: query
+            default_value: 1
+      update:
+        path: /v1/candidates/<candidate_id>
+        # Has to set the method as PATCH
+        # Has to send a customer header "On-Behalf-Of" with value of user_id connector_param
+        request_params:
+          - name: candidate_id
+            type: path
+            references:
+              - dataset: greenhouse_connector_example
+                field: candidate.id
+                direction: from
+      delete:
+        path: /v1/candidates/<candidate_id>
+        # Has to set the method as DELETE if not default
+        # Has to send a customer header "On-Behalf-Of" with value of user_id connector_param
+        request_params:
+          - name: candidate_id
+            type: path
+            references:
+              - dataset: greenhouse_connector_example
+                field: candidate.id
+                direction: from

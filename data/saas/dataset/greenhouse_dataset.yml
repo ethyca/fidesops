@@ -1,0 +1,71 @@
+dataset:
+  - fides_key: greenhouse_connector_example
+    name: Greenhouse Dataset
+    description: A sample dataset representing the Greenhouse connector for Fidesops
+    collections:
+      - name: candidate
+        fields:
+          - name: website_addresses
+            fields:
+              - name: value
+                data_categories: [system.operations]
+              - name: type
+                data_categories: [system.operations]
+          - name: social_media_addresses
+            fields:
+              - name: value
+                data_categories: [system.operations]
+              - name: type
+                data_categories: [system.operations]
+          - name: phone_numbers
+            fields:
+              - name: value
+                data_categories: [user.provided.identifiable.contact.phone_number]
+                fidesops_meta:
+                  data_type: string
+              - name: type
+                data_categories: [system.operations]
+          - name: last_name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+              # Has to change the datatype to DOUBLE, currently only string is supporting
+              data_type: string
+          - name: first_name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: email_addresses
+            fields:
+              - name: value
+                data_categories: [user.provided.identifiable.contact.email]
+                fidesops_meta:
+                  data_type: string
+              - name: type
+                data_categories: [system.operations]
+          - name: educations
+            fields:
+              - name: school_name
+                data_categories: [system.operations]
+              - name: id
+                data_categories: [user.derived.identifiable.unique_id]
+              - name: discipline
+                data_categories: [system.operations]
+              - name: degree
+                data_categories: [system.operations]
+          - name: company
+            data_categories: [user.derived.identifiable.organization]
+            fidesops_meta:
+              data_type: string
+          - name: application_ids
+            data_categories: [system.operations]
+          - name: addresses
+            fields:
+              - name: value
+                data_categories: [system.operations]
+              - name: type
+                data_categories: [system.operations]
