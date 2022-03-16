@@ -167,11 +167,9 @@ are automatically truncated at 50 logs, so to view the entire list of logs, visi
 ## Downloading all privacy requests as a CSV 
 
 
-To get all privacy requests in CSV format, us the `download_csv` query param:
+To get all privacy requests in CSV format, use the `download_csv` query param:
 
-```
-GET api/v1/privacy-request/?download_csv=True
-```
+`GET api/v1/privacy-request/?download_csv=True`
 
 ```csv
 Time received,Subject identity,Policy key,Request status,Reviewer,Time approved/denied

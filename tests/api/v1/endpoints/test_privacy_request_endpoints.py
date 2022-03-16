@@ -1,9 +1,10 @@
+import ast
+
 import csv
 import io
 
 import json
 from datetime import datetime
-from dateutil.tz import tzlocal
 from dateutil.parser import parse
 from typing import List
 from unittest import mock
@@ -730,7 +731,9 @@ class TestGetPrivacyRequests:
         privacy_request.status = PrivacyRequestStatus.approved
         privacy_request.reviewed_by = user.id
         privacy_request.reviewed_at = reviewed_at
-        privacy_request.cache_identity({"email": "email@example.com"})
+        privacy_request.cache_identity(
+            {"email": "email@example.com", "phone_number": "111-111-1111"}
+        )
         privacy_request.save(db)
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
@@ -749,7 +752,10 @@ class TestGetPrivacyRequests:
 
         first_row = next(csv_file)
         assert parse(first_row["Time received"], ignoretz=True) == created_at
-        assert first_row["Subject identity"] == "{'email': 'email@example.com'}"
+        assert ast.literal_eval(first_row["Subject identity"]) == {
+            "email": "email@example.com",
+            "phone_number": "111-111-1111",
+        }
         assert first_row["Policy key"] == "example_access_request_policy"
         assert first_row["Request status"] == "approved"
         assert first_row["Reviewer"] == user.id

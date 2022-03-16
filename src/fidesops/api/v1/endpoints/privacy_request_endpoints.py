@@ -266,7 +266,6 @@ def privacy_request_csv_download(privacy_request_query: Query) -> StreamingRespo
 def get_request_status(
     *,
     db: Session = Depends(deps.get_db),
-    cache: FidesopsRedis = Depends(deps.get_cache),
     params: Params = Depends(),
     id: Optional[str] = None,
     status: Optional[PrivacyRequestStatus] = None,
@@ -334,7 +333,7 @@ def get_request_status(
 
     if download_csv:
         # Returning here if download_csv param was specified
-        logger.info(f"Downloading privacy requests as csv")
+        logger.info("Downloading privacy requests as csv")
         return privacy_request_csv_download(query)
 
     # Conditionally embed execution log details in the response.
