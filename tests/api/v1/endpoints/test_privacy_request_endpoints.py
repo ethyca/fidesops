@@ -966,7 +966,7 @@ class TestApprovePrivacyRequest:
         assert len(response_body["failed"]) == 1
         assert (
             response_body["failed"][0]["message"]
-            == "No privacy request found with id 'does_not_exist"
+            == "No privacy request found with id 'does_not_exist'"
         )
         assert not submit_mock.called
 
@@ -1093,7 +1093,7 @@ class TestDenyPrivacyRequest:
         assert len(response_body["failed"]) == 1
         assert (
             response_body["failed"][0]["message"]
-            == "No privacy request found with id 'does_not_exist"
+            == "No privacy request found with id 'does_not_exist'"
         )
         assert not submit_mock.called
 
