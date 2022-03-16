@@ -32,6 +32,8 @@ POLICY_DETAIL = "/policy/{policy_key}"
 
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
+PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
+PRIVACY_REQUEST_DENY = "/privacy-request/administrate/deny"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
 REQUEST_PREVIEW = "/privacy-request/preview"
@@ -69,3 +71,12 @@ DATASET_BY_KEY = CONNECTION_BY_KEY + "/dataset/{fides_key}"
 # SaaS Config URLs
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
+
+
+# User URLs
+USERS = "/user"
+USER_DETAIL = "/user/{user_id}"
+
+# Login URLs
+LOGIN = "/login"
+LOGOUT = "/logout"
