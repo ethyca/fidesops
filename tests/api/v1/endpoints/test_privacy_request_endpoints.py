@@ -1012,7 +1012,7 @@ class TestApprovePrivacyRequest:
         assert len(response_body["failed"]) == 1
         assert (
             response_body["failed"][0]["message"]
-            == "No privacy request found with id 'does_not_exist"
+            == "No privacy request found with id 'does_not_exist'"
         )
         assert not submit_mock.called
 
@@ -1041,14 +1041,14 @@ class TestApprovePrivacyRequest:
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_approve_privacy_request_no_user_on_client(
-        self,
-        submit_mock,
-        db,
-        url,
-        api_client,
-        generate_auth_header,
-        privacy_request,
-        user,
+            self,
+            submit_mock,
+            db,
+            url,
+            api_client,
+            generate_auth_header,
+            privacy_request,
+            user,
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db=db)
@@ -1079,7 +1079,7 @@ class TestApprovePrivacyRequest:
         api_client,
         generate_auth_header,
         user,
-        privacy_request,
+        privacy_request
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db=db)
@@ -1139,7 +1139,7 @@ class TestDenyPrivacyRequest:
         assert len(response_body["failed"]) == 1
         assert (
             response_body["failed"][0]["message"]
-            == "No privacy request found with id 'does_not_exist"
+            == "No privacy request found with id 'does_not_exist'"
         )
         assert not submit_mock.called
 
@@ -1168,14 +1168,7 @@ class TestDenyPrivacyRequest:
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_deny_privacy_request(
-        self,
-        submit_mock,
-        db,
-        url,
-        api_client,
-        generate_auth_header,
-        user,
-        privacy_request,
+        self, submit_mock, db, url, api_client, generate_auth_header, user, privacy_request
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db=db)

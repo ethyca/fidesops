@@ -82,7 +82,7 @@ OAUTH_ROOT_CLIENT_SECRET="fidesopsadminsecret"
 TASK_RETRY_COUNT=3
 TASK_RETRY_DELAY=20
 TASK_RETRY_BACKOFF=2
-REQUEST_MANUAL_REQUEST_APPROVAL=True
+REQUIRE_MANUAL_REQUEST_APPROVAL=True
 ```
 
 Please note: The configuration is case-sensitive, so the variables must be specified in UPPERCASE.
