@@ -19,6 +19,43 @@ Additionally, if you're handy with React and are feeling a little brave you can
 customize the entire application by modifying the TypeScript source code in
 `pages/index.tsx` and `components/RequestModal.tsx`.
 
+### Configuring CSS
+
+In order to modify the way your application appears visually, you can add custom
+css to the `config/config.css` file. For example, to change the application's
+font to Courier:
+
+```css
+* {
+  font-family: Courier !important;
+}
+```
+
+Additionally, because this application uses CSS variables, you can modify those
+CSS variables directly, rather than adding custom CSS.
+
+The only caveat to this is that we need to do so in a way that overrides the CSS
+variables' original values so that we can avoid the complexity of modifying the
+JavaScript file that holds the base values.
+
+Our recommendation is that you do so by using selector specificity, as in the
+following example:
+
+```css
+:root:root {
+  /* Changes the text color to red */
+  --chakra-colors-gray-600: #f00;
+
+  /* Changes the background color to blue */
+  --chakra-colors-gray-50: #00f;
+}
+```
+
+Not exactly the most appealing color scheme – but note that wherever those
+variables are used, they have been replaced. This allows you to modify the theme
+of the application consistently and with a single source of truth, adhering to
+modern CSS best practices.
+
 ## Development
 
 To serve this application locally, first install your local depencies by running
