@@ -3,7 +3,6 @@ from pydantic import BaseModel, validator
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.dataset import FidesopsDatasetReference
 from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
-from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
@@ -17,13 +16,13 @@ class ConnectorParams(BaseModel):
 
 class RequestParam(BaseModel):
     """
-    A request parameter which includes the type (query or path) along with a default value or
+    A request parameter which includes the type (query, path, or body) along with a default value or
     a reference to an identity value or a value in another dataset.
     """
 
     name: str
     type: Literal[
-        "query", "path"
+        "query", "path", "body"
     ]  # used to determine location in the generated request
     default_value: Optional[Any]
     identity: Optional[str]
@@ -70,6 +69,7 @@ class SaaSRequest(BaseModel):
     """
 
     path: str
+    body: Optional[str]
     request_params: Optional[List[RequestParam]]
     data_path: Optional[str]  # defaults to collection name if not specified
     preprocessors: Optional[List[Strategy]]

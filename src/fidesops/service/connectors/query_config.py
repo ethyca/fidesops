@@ -722,20 +722,28 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         current_request = self.get_request_by_action("read")
 
         path: str = current_request.path
-        params: Dict[str, Any] = {}
+        query_params: Dict[str, Any] = {}
+        body: str = current_request.body or None
 
         # uses the param names to read from the input data
         for param in current_request.request_params:
             if param.type == "query":
                 if param.default_value:
-                    params[param.name] = param.default_value
+                    query_params[param.name] = param.default_value
                 elif param.references or param.identity:
-                    params[param.name] = input_data[param.name][0]
+                    query_params[param.name] = input_data[param.name][0]
             elif param.type == "path":
                 path = path.replace(f"<{param.name}>", input_data[param.name][0])
+            elif param.type == "body":
+                if param.default_value:
+                    body.replace(f"<{param.name}>", param.default_value)
+                elif param.references or param.identity:
+                    body.replace(f"<{param.name}>", input_data[param.name][0])
+                else:
+                    logger.info(f"Missing body param value(s) for {path}")
 
         logger.info(f"Populated request params for {current_request.path}")
-        return "GET", path, params, None
+        return "GET", path, query_params, json.loads(body) if body else None
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
@@ -751,6 +759,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         path: str = current_request.path
         params: Dict[str, Any] = {}
+        custom_body: str = current_request.body or None
 
         # uses the reference fields to read from the param_values
         for param in current_request.request_params:
@@ -768,12 +777,33 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                     f"<{param.name}>",
                     pydash.get(param_values, param.references[0].field),
                 )
+            elif param.type == "body":
+                if param.default_value:
+                    custom_body.replace(f"<{param.name}>", param.default_value)
+                elif param.references:
+                    custom_body.replace(
+                        f"<{param.name}>",
+                        pydash.get(param_values, param.references[0].field),
+                    )
+                elif param.identity:
+                    custom_body.replace(
+                        f"<{param.name}>", pydash.get(param_values, param.identity)
+                    )
+                else:
+                    logger.info(f"Missing body param value(s) for {path}")
 
         logger.info(f"Populated request params for {current_request.path}")
 
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
         body: Dict[str, Any] = unflatten_dict(update_value_map)
-        return "PUT", path, params, json.dumps(body)
+        if custom_body:
+            custom_body.replace("<masked_object_fields>", f"{body}")
+        return (
+            "PUT",
+            path,
+            params,
+            json.dumps(json.loads(custom_body) if custom_body else body),
+        )
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string"""
