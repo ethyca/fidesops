@@ -97,7 +97,7 @@ class SaaSRequest(BaseModel):
 
     @root_validator
     def validate_grouped_inputs(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """Validate grouped_input_fields must reference fields from the same collection"""
+        """Validate that grouped_inputs must reference fields from the same collection"""
         grouped_inputs = values.get("grouped_inputs")
 
         if grouped_inputs:
@@ -106,7 +106,7 @@ class SaaSRequest(BaseModel):
 
             if not all(field in names for field in grouped_inputs):
                 raise ValueError(
-                    "Grouped_input fields must be declared as request_params."
+                    "Grouped_input fields must also be declared as request_params."
                 )
 
             referenced_collections: List[str] = []

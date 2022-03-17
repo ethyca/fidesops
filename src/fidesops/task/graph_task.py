@@ -226,7 +226,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                         append(output, local_field_path.string_path, new_values)
 
                 # Separately group together dependent inputs if applicable
-                if group_dependent_fields:
+                if dependent_field_mappings[collection_address]:
                     grouped_data: Dict[str, Any] = {}
                     for (
                         foreign_field_path,
