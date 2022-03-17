@@ -1,3 +1,4 @@
+import pydash
 from typing import Any, Dict, List, Literal, Optional, Union
 from fidesops.service.pagination.pagination_strategy_factory import get_strategy
 from pydantic import BaseModel, validator, root_validator
@@ -92,6 +93,36 @@ class SaaSRequest(BaseModel):
                 pagination.get("strategy"), pagination.get("configuration")
             )
             pagination_strategy.validate_request(values)
+        return values
+
+    @root_validator
+    def validate_grouped_inputs(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate grouped_input_fields must reference fields from the same collection"""
+        grouped_inputs = values.get("grouped_inputs")
+
+        if grouped_inputs:
+            request_params = values.get("request_params", [])
+            names = [param.name for param in request_params]
+
+            if not all(field in names for field in grouped_inputs):
+                raise ValueError(
+                    "Grouped_input fields must be declared as request_params."
+                )
+
+            referenced_collections: List[str] = []
+            for param in request_params:
+                if param.name in grouped_inputs:
+                    if not param.references:
+                        raise ValueError(
+                            "Grouped input fields must be on incoming references."
+                        )
+                    collect = param.references[0].field.split(".")[0]
+                    referenced_collections.append(collect)
+            if not all(x == referenced_collections[0] for x in referenced_collections):
+                raise ValueError(
+                    "Grouped input fields must all reference the same collection."
+                )
+
         return values
 
 
