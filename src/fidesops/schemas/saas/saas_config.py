@@ -29,6 +29,7 @@ class RequestParam(BaseModel):
     identity: Optional[str]
     data_type: Optional[str]
     references: Optional[List[FidesopsDatasetReference]]
+    connector_param: Optional[str]
 
     @validator("references")
     def check_references_or_identity(
