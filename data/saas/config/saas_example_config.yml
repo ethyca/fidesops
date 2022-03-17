@@ -1,7 +1,7 @@
 saas_config:
-  fides_key: mailchimp_connector_example
-  name: Mailchimp SaaS Config
-  description: A sample schema representing the Mailchimp connector for Fidesops
+  fides_key: saas_connector_example
+  name: SaaS Example Config
+  description: A sample schema representing a SaaS connector for Fidesops
   version: 0.0.1
 
   connector_params:
@@ -33,11 +33,13 @@ saas_config:
           - name: conversation_id
             type: path
             references:
-              - dataset: mailchimp_connector_example
+              - dataset: saas_connector_example
                 field: conversations.id
                 direction: from
-        data_path: conversation_messages
         postprocessors:
+          - strategy: unwrap
+            configuration:
+              data_path: conversation_messages
           - strategy: filter
             configuration:
               field: from_email
@@ -57,13 +59,10 @@ saas_config:
           - name: placeholder
             type: query
             identity: email
-        data_path: conversations
-        pagination:
-          strategy: offset
-          configuration:
-            incremental_param: offset
-            increment_by: 1000
-            limit: 10000
+        postprocessors:
+          - strategy: unwrap
+            configuration:
+              data_path: conversations
   - name: member
     requests:
       read:
@@ -72,19 +71,23 @@ saas_config:
           - name: query
             type: query
             identity: email
-        data_path: exact_matches.members
+            data_type: string
+        postprocessors:
+          - strategy: unwrap
+            configuration:
+              data_path: exact_matches.members
       update:
         path: /3.0/lists/<list_id>/members/<subscriber_hash>
         request_params:
           - name: list_id
             type: path
             references:
-              - dataset: mailchimp_connector_example
+              - dataset: saas_connector_example
                 field: member.list_id
                 direction: from
           - name: subscriber_hash
             type: path
             references:
-              - dataset: mailchimp_connector_example
+              - dataset: saas_connector_example
                 field: member.id
                 direction: from

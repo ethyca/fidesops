@@ -5,6 +5,7 @@ from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
 
+from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
 from fidesops.util.data_category import DataCategory
@@ -18,7 +19,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fidesops.core.config import load_file, load_toml
-from fidesops.models.client import ClientDetail
+from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
 from fidesops.models.connectionconfig import (
     ConnectionConfig,
     AccessLevel,
@@ -513,6 +514,7 @@ def policy(
     except ObjectDeletedError:
         pass
 
+
 @pytest.fixture(scope="function")
 def erasure_policy_string_rewrite(
     db: Session,
@@ -618,6 +620,7 @@ def erasure_policy_hmac(
     except ObjectDeletedError:
         pass
 
+
 @pytest.fixture(scope="function")
 def privacy_requests(db: Session, policy: Policy) -> Generator:
     privacy_requests = []
@@ -678,7 +681,7 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
 
 
 @pytest.fixture(scope="function")
-def succeeded_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
+def succeeded_privacy_request(cache, db: Session, policy: Policy) -> PrivacyRequest:
     pr = PrivacyRequest.create(
         db=db,
         data={
@@ -692,6 +695,7 @@ def succeeded_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
             "client_id": policy.client_id,
         },
     )
+    pr.cache_identity({"email": "email@example.com"})
     yield pr
     pr.delete(db)
 
@@ -705,7 +709,17 @@ def user(db: Session):
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"
         }
     )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=SCOPE_REGISTRY,
+        user_id=user.id,
+    )
+    db.add(client)
+    db.commit()
+    db.refresh(client)
     yield user
+    client.delete(db)
     user.delete(db)
 
 
