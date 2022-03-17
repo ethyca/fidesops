@@ -17,7 +17,11 @@ from fidesops.task.graph_task import (
     EMPTY_REQUEST,
     build_affected_field_logs,
 )
-from .traversal_data import sample_traversal, combined_mongo_postgresql_graph
+from .traversal_data import (
+    sample_traversal,
+    combined_mongo_postgresql_graph,
+    traversal_paired_dependency,
+)
 from ..graph.graph_test_util import (
     MockSqlTask,
     MockMongoTask,
@@ -35,9 +39,7 @@ connection_configs = [
 
 
 @pytest.fixture(scope="function")
-def combined_traversal_node_dict(
-    integration_mongodb_config, connection_config
-):
+def combined_traversal_node_dict(integration_mongodb_config, connection_config):
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
         connection_config, integration_mongodb_config
     )
@@ -229,6 +231,53 @@ class TestPreProcessInputData:
 
         assert task.pre_process_input_data(truncated_customer_details_output) == {
             "thread.comment": ["com_0001", "com_0003", "com_0005", "com_0007"],
+        }
+
+    def test_pre_process_input_data_group_dependent_fields(self):
+        """Test processing inputs where fields have been marked as dependent"""
+        traversal_with_grouped_inputs = traversal_paired_dependency()
+        n = traversal_with_grouped_inputs.traversal_node_dict[
+            CollectionAddress("mysql", "User")
+        ]
+
+        task = MockSqlTask(
+            n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs)
+        )
+
+        project_output = [
+            {
+                "organization_id": "12345",
+                "project_id": "abcde",
+                "project_name": "Sample project",
+            },
+            {
+                "organization_id": "54321",
+                "project_id": "fghij",
+                "project_name": "Meteor project",
+            },
+            {
+                "organization_id": "54321",
+                "project_id": "klmno",
+                "project_name": "Saturn project",
+            },
+        ]
+
+        # Typical output - project ids and organization ids would be completely independent from each other
+        assert task.pre_process_input_data(project_output) == {
+            "organization": ["12345", "54321", "54321"],
+            "project": ["abcde", "fghij", "klmno"],
+        }
+
+        # With group_dependent_fields = True.  Fields are grouped together under a key that shouldn't overlap
+        # with actual table keys "fidesops_grouped_inputs"
+        assert task.pre_process_input_data(
+            project_output, group_dependent_fields=True
+        ) == {
+            "fidesops_grouped_inputs": [
+                {"organization": ["12345"], "project": ["abcde"]},
+                {"organization": ["54321"], "project": ["fghij"]},
+                {"organization": ["54321"], "project": ["klmno"]},
+            ]
         }
 
 

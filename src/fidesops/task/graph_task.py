@@ -226,14 +226,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                         append(output, local_field_path.string_path, new_values)
 
                 # Separately group together dependent inputs if applicable
-                grouped_data: Dict[str, Any] = {}
-                for foreign_field_path, local_field_path in dependent_field_mappings[
-                    collection_address
-                ]:
-                    dependent_values: List = consolidate_query_matches(
-                        row=row, target_path=foreign_field_path
-                    )
-                    grouped_data[local_field_path.string_path] = dependent_values
+                if group_dependent_fields:
+                    grouped_data: Dict[str, Any] = {}
+                    for (
+                        foreign_field_path,
+                        local_field_path,
+                    ) in dependent_field_mappings[collection_address]:
+                        dependent_values: List = consolidate_query_matches(
+                            row=row, target_path=foreign_field_path
+                        )
+                        grouped_data[local_field_path.string_path] = dependent_values
                     output[FIDESOPS_GROUPED_INPUTS].append(grouped_data)
         return output
 
