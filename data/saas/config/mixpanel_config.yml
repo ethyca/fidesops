@@ -1,0 +1,99 @@
+saas_config:
+  fides_key: mixpanel_connector_example
+  name: Mixpanel SaaS Config
+  description: A sample schema representing the Mixpanel connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: api_secret
+    - name: token
+    - name: gdpr_oauth_token
+    # TODO - OPTION wasn’t supported at the time it was written.
+    - name: domain
+    - name: email
+
+  client_config:
+    protocol: https
+    host:
+      # TODO - we will have the user set the EU vs US domain at the time of configuration 
+      connector_param: domain
+    authentication:
+      strategy: basic_authentication
+      configuration:
+        username:
+          connector_param: api_secret
+
+  test_request:
+    path: /api/2.0/annotations
+    
+  endpoints:
+  - name: user
+    requests:
+      read:
+        path: /api/2.0/engage/
+        request_params:
+          - name: where
+            type: query
+            identity: email
+            data_type: string
+            default_value: properties["$email"]=="<>"
+          - name: page_size
+            type: query
+            default_value: 1000
+          # TODO - pagination wasn’t supported at the time it was written.
+          # below page value has to come from pagination section
+          - name: page
+            type: query
+            default_value: 1
+          # TODO - pagination wasn’t supported at the time it was written.
+          # below session_id value has to come from pagination section         
+          - name: session_id
+            type: query
+            default_value: session_id
+        postprocessors:
+          - strategy: unwrap
+            configuration:
+              data_path: results            
+      update:
+        path: /engage#profile-set
+        # TODO - Custom mimeType wasn't supported at the time it was written
+        # Please to refer to the original YAML spec as this originally had a mimeType
+
+        # TODO - Custom method wasn't supported at the time it was written
+        # Please to refer to the original YAML spec as this originally had a method
+
+        # TODO - body payload wasn't supported at the time it was written
+        # Please to refer to the original YAML spec as this originally had a body
+
+      delete:
+        path: /api/app/data-deletions/v3.0/
+        # TODO - Custom method wasn't supported at the time it was written
+        # Please to refer to the original YAML spec as this originally had a method
+
+        # TODO - Different authorization wasn't supported at the time it was written
+        # Please to refer to the original YAML spec as this originally had a authorization        
+        request_params:
+          - name: token
+            type: query
+            # TODO - connector_param wasn't supported for request_params at the time it was written
+            # Please to refer to the original YAML spec as this originally had a DATA_STORE  
+            default_value: ""
+
+        # TODO - body payload wasn't supported at the time it was written
+        # Please to refer to the original YAML spec as this originally had a body                
+  - name: events
+    requests:
+      read:
+        path: /api/2.0/stream/query
+        request_params:
+          - name: distinct_ids
+            type: query
+            default_value: '["<>"]'
+            references:
+              - dataset: mixpanel_connector_example
+                field: user.$distinct_id
+                direction: from
+        postprocessors:
+          - strategy: unwrap
+            configuration:
+              data_path: results.events                

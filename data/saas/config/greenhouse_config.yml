@@ -35,15 +35,16 @@ saas_config:
           - name: per_page
             type: query
             default_value: 50
-          # below page value has to be done through pagination
+          # TODO - pagination wasn’t supported at the time it was written.
+          # below page value has to come from pagination section
           - name: page
             type: query
             default_value: 1
       update:
         path: /v1/candidates/<candidate_id>
-        # TODO - Please to refer to the original YAML spec as this originally had a UPDATE poeration
+        # TODO - Please to refer to the original YAML spec as this originally had a UPDATE operation
         # Has to send a customer header "On-Behalf-Of" with value of user_id connector_param
-        # TODO - Custom headers wasn't sup[ported at the time it was written
+        # TODO - Custom headers wasn't supported at the time it was written
         request_params:
           - name: candidate_id
             type: path
@@ -53,9 +54,9 @@ saas_config:
                 direction: from
       delete:
         path: /v1/candidates/<candidate_id>
-        # TODO - Please to refer to the original YAML spec as this originally had a DELETE poeration
+        # TODO - Please to refer to the original YAML spec as this originally had a DELETE operation
         # Has to send a customer header "On-Behalf-Of" with value of user_id connector_param
-        # TODO - Custom headers wasn't sup[ported at the time it was written
+        # TODO - Custom headers wasn't supported at the time it was written
         request_params:
           - name: candidate_id
             type: path

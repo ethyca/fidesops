@@ -1,0 +1,140 @@
+dataset:
+  - fides_key: mixpanel_connector_example
+    name: Mixpanel Dataset
+    description: A sample dataset representing the Mixpanel connector for Fidesops
+    collections:
+      - name: user
+        fields:
+          - name: $distinct_id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+              # TODO - Custom data_type wasn't supported at the time it was written
+              # TODO - Has to change the datatype to DATE
+              data_type: string
+          - name: $properties
+            fields:
+              - name: $last_login
+                default_value: ethyca
+                data_categories: [system.operations]
+              - name: $city
+                default_value: ethyca
+                data_categories: [user.provided.identifiable.contact.city]
+                fidesops_meta:
+                  data_type: string
+              - name: $country_code
+                default_value: ethyca
+                data_categories: [user.provided.identifiable.contact.country]
+                fidesops_meta:
+                  data_type: string
+              - name: $region
+                default_value: ethyca
+                data_categories: [system.operations]
+              - name: $initial_referring_domain
+                default_value: ethyca
+                data_categories: [system.operations]
+              - name: $email
+                default_value: ethyca*@ethyca.com
+                data_categories: [user.provided.identifiable.contact.email]
+                fidesops_meta:
+                  data_type: string
+              - name: $initial_referrer
+                default_value: ethyca
+                data_categories: [system.operations]
+              - name: $last_name
+                default_value: ethyca
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: $os
+                default_value: ethyca
+                data_categories: [system.operations]
+              - name: credits
+                default_value: ethyca
+                data_categories: [system.operations]
+              - name: $created
+                default_value: ethyca
+                data_categories: [system.operations]
+              - name: $browser_version
+                default_value: ethyca
+                data_categories: [system.operations]
+              - name: gender
+                default_value: ethyca
+                data_categories: [user.derived.identifiable.gender]
+                fidesops_meta:
+                  data_type: string
+              - name: $last_seen
+                data_categories: [system.operations]
+              - name: $browser
+                default_value: ethyca
+                data_categories: [system.operations]
+              - name: $timezone
+                default_value: ethyca
+                data_categories: [system.operations]
+              - name: $first_name
+                default_value: ethyca
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: $transactions
+                fields:
+                  - name: $time
+                    data_categories: [system.operations]
+                  - name: $amount
+                    data_categories: [system.operations]
+      - name: events
+        fields:
+          - name: event
+            data_categories: [system.operations]
+          - name: properties
+            fields:
+              - name: $user_id
+                data_categories: [user.derived.identifiable.unique_id]
+                fidesops_meta:
+                  data_type: string
+              - name: $current_url
+                data_categories: [system.operations]
+              - name: $region
+                data_categories: [system.operations]
+              - name: $initial_referring_domain
+                data_categories: [system.operations]
+              - name: $browser_version
+                data_categories: [system.operations]
+              - name: $initial_referrer
+                data_categories: [system.operations]
+              - name: $lib_version
+                data_categories: [system.operations]
+              - name: mp_lib
+                data_categories: [system.operations]
+              - name: $os
+                data_categories: [system.operations]
+              - name: distinct_id
+                data_categories: [user.derived.identifiable.unique_id]
+                fidesops_meta:
+                  data_type: string
+              - name: $city
+                data_categories: [user.provided.identifiable.contact.city]
+                fidesops_meta:
+                  data_type: string
+              - name: mp_processing_time_ms
+                data_categories: [system.operations]
+              - name: time
+                data_categories: [system.operations]
+              - name: $device_id
+                data_categories: [user.derived.identifiable.device.device_id]
+                fidesops_meta:
+                  data_type: string
+              - name: $browser
+                data_categories: [system.operations]
+              - name: mp_country_code
+                data_categories: [user.provided.identifiable.contact.country]
+                fidesops_meta:
+                  data_type: string
+              - name: $screen_height
+                data_categories: [system.operations]
+              - name: $screen_width
+                data_categories: [system.operations]
+              - name: $insert_id
+                data_categories: [user.derived.identifiable.unique_id]
+                fidesops_meta:
+                  data_type: string              
