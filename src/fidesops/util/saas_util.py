@@ -5,6 +5,9 @@ from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.config import Collection, Dataset, Field
 
 
+FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
+
+
 def merge_fields(target: Field, source: Field) -> Field:
     """Replaces source references and identities if they are available from the target"""
     if source.references is not None:
@@ -28,6 +31,11 @@ def extract_fields(aggregate: Dict, collections: List[Collection]) -> None:
                 field_dict[field.name] = field
 
 
+def get_collection(collections: List[Collection], name: str) -> Collection:
+    """Find the Collection with the matching name"""
+    return next(collect for collect in collections if collect.name == name)
+
+
 def merge_datasets(dataset: Dataset, config_dataset: Dataset) -> Dataset:
     """
     Merges all Collections and Fields from the config_dataset into the dataset.
@@ -42,7 +50,13 @@ def merge_datasets(dataset: Dataset, config_dataset: Dataset) -> Dataset:
     collections = []
     for collection_name, field_dict in field_aggregate.items():
         collections.append(
-            Collection(name=collection_name, fields=list(field_dict.values()))
+            Collection(
+                name=collection_name,
+                fields=list(field_dict.values()),
+                grouped_inputs=get_collection(
+                    config_dataset.collections, collection_name
+                ).grouped_inputs,
+            )
         )
 
     return Dataset(

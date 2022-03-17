@@ -9,7 +9,7 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.saas.saas_config import Endpoint, SaaSRequest
 from fidesops.service.connectors.query_config import QueryConfig
 from fidesops.util.collection_util import Row
-from fidesops.util.saas_util import unflatten_dict
+from fidesops.util.saas_util import unflatten_dict, FIDESOPS_GROUPED_INPUTS
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +54,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 request_params.append(
                     self.generate_query({string_path: [value]}, policy)
                 )
+
+        # Build SaaS requests for fields that are dependent on each other
+        grouped_inputs: List[Dict[str, Any]] = (
+            input_data.get(FIDESOPS_GROUPED_INPUTS) or []
+        )
+        for dependent_data in grouped_inputs:
+            request_params.append(self.generate_query(dependent_data, policy))
+
         return request_params
 
     def generate_query(

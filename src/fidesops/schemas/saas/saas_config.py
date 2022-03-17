@@ -77,6 +77,7 @@ class SaaSRequest(BaseModel):
     data_path: Optional[str]
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
+    grouped_inputs: Optional[List[str]] = []
 
     @root_validator(pre=True)
     def validate_request_for_pagination(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -163,7 +164,13 @@ class SaaSConfig(BaseModel):
                 if param.identity:
                     fields.append(ScalarField(name=param.name, identity=param.identity))
             if fields:
-                collections.append(Collection(name=endpoint.name, fields=fields))
+                collections.append(
+                    Collection(
+                        name=endpoint.name,
+                        fields=fields,
+                        grouped_inputs=endpoint.requests["read"].grouped_inputs,
+                    )
+                )
 
         return Dataset(
             name=self.name,
