@@ -30,21 +30,6 @@ class RequestParam(BaseModel):
     identity: Optional[str]
     references: Optional[List[FidesopsDatasetReference]]
     connector_param: Optional[str]
-    data_type: Optional[str]
-
-    @validator("references")
-    def check_references_or_identity(
-        cls,
-        references: Optional[List[FidesopsDatasetReference]],
-        values: Dict[str, str],
-    ) -> Optional[List[FidesopsDatasetReference]]:
-        """Validates that each request_param only has an identity or references, not both"""
-        if values["identity"] is not None and references is not None:
-            raise ValueError(
-                "Can only have one of 'reference' or 'identity' per request_param, not both"
-            )
-        return references
-
 
     @validator("references")
     def check_reference_direction(
@@ -66,10 +51,11 @@ class RequestParam(BaseModel):
             bool(
                 values.get("default_value") is not None
             ),  # to prevent a value of 0 from returning False
+            bool(values.get("connector_param")),
         ]
         if sum(value_fields) != 1:
             raise ValueError(
-                "Must have exactly one of 'identity', 'references', or 'default_value'"
+                "Must have exactly one of 'identity', 'references', 'default_value', or 'connector_param'"
             )
         return values
 

@@ -623,8 +623,7 @@ class TestSaaSQueryConfig:
         messages = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "messages")
         ]
-
-        payment_methods: Traversal = combined_traversal.traversal_node_dict[
+        payment_methods = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "payment_methods")
         ]
 
@@ -662,9 +661,9 @@ class TestSaaSQueryConfig:
             None,
         )
 
-        # query and path params with a connector param reference
+        # query and path params with connector param references
         config = SaaSQueryConfig(
-            payment_methods, endpoints, {"api_version": "2.0", "page_limit": 10}, {}
+            payment_methods, endpoints, {"api_version": "2.0", "page_limit": 10}
         )
         prepared_request = config.generate_query(
             {"query": ["customer-1@example.com"]}, policy
@@ -688,6 +687,9 @@ class TestSaaSQueryConfig:
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
         ]
+        payment_methods = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "payment_methods")
+        ]
 
         config = SaaSQueryConfig(member, endpoints, {})
         row = {
@@ -710,4 +712,17 @@ class TestSaaSQueryConfig:
                     "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
                 }
             ),
+        )
+
+        # update with connector_param reference
+        config = SaaSQueryConfig(payment_methods, endpoints, {"api_version": "2.0"})
+        row = {"type": "card", "customer_name": "First Last"}
+        prepared_request = config.generate_update_stmt(
+            row, erasure_policy_string_rewrite, privacy_request
+        )
+        assert prepared_request == (
+            "PUT",
+            "/2.0/payment_methods",
+            {},
+            json.dumps({"customer_name": "MASKED"}),
         )

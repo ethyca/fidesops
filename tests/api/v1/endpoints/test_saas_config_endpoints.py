@@ -111,7 +111,7 @@ class TestValidateSaaSConfig:
         )
         assert response.status_code == 422
         details = json.loads(response.text)["detail"]
-        assert details[0]["msg"] == "Must have exactly one of 'identity', 'references', or 'default_value'"
+        assert details[0]["msg"] == "Must have exactly one of 'identity', 'references', 'default_value', or 'connector_param'"
 
     def test_put_validate_saas_config_wrong_reference_direction(
         self,

@@ -662,4 +662,3 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         if mongo_query is not None:
             return self.query_to_str(mongo_query, data)
         return None
-

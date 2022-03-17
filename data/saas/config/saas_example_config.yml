@@ -107,4 +107,9 @@ saas_config:
           - name: query
             type: query
             identity: email
-
+      update:
+        path: /<version>/payment_methods
+        request_params:
+          - name: version
+            type: path
+            connector_param: api_version
