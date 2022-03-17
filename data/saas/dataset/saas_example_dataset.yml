@@ -147,13 +147,13 @@ dataset:
         fields:
           - name: id
             data_categories: [ system.operations ]
+          - name: slug
+            data_categories: [ system.operations ]
+          - name: organization
+            fields:
               - name: slug
-                data_categories: [ system.operations ]
-              - name: organization
-                fields:
-                  - name: slug
-                    fidesops_meta:
-                      data_type: string
+                fidesops_meta:
+                  data_type: string
       - name: user_feedback
         fields:
           - name: id
