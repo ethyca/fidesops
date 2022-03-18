@@ -41,13 +41,13 @@ class CursorPaginationStrategy(PaginationStrategy):
             return None
 
         # add or replace cursor_param with new cursor value
-        request_params.param[self.cursor_param] = cursor
+        request_params.params[self.cursor_param] = cursor
 
         return SaaSRequestParams(
             method=request_params.method,
             path=request_params.path,
-            param=request_params.param,
-            body_values=request_params.body_values,
+            params=request_params.params,
+            body=request_params.body,
         )
 
     @staticmethod

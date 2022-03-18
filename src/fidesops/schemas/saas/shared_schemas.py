@@ -20,8 +20,8 @@ class SaaSRequestParams(BaseModel):
 
     method: HTTPMethod
     path: str
-    param: Dict[str, Any]
-    body_values: Optional[str]
+    params: Dict[str, Any]
+    body: Optional[str]
 
     class Config:
         """Using enum values"""

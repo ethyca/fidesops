@@ -63,8 +63,8 @@ class LinkPaginationStrategy(PaginationStrategy):
         return SaaSRequestParams(
             method=request_params.method,
             path=updated_path,
-            param=updated_params,
-            body_values=request_params.body_values,
+            params=updated_params,
+            body=request_params.body,
         )
 
     @staticmethod

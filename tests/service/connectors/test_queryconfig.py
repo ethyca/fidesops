@@ -629,8 +629,8 @@ class TestSaaSQueryConfig:
         )
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/search-members"
-        assert prepared_request.param == {"query": "customer-1@example.com"}
-        assert prepared_request.body_values is None
+        assert prepared_request.params == {"query": "customer-1@example.com"}
+        assert prepared_request.body is None
 
         # static path with multiple query params with default values
         config = SaaSQueryConfig(conversations, endpoints)
@@ -639,16 +639,16 @@ class TestSaaSQueryConfig:
         )
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations"
-        assert prepared_request.param == {"count": 1000, "offset": 0, "placeholder": "customer-1@example.com"}
-        assert prepared_request.body_values is None
+        assert prepared_request.params == {"count": 1000, "offset": 0, "placeholder": "customer-1@example.com"}
+        assert prepared_request.body is None
 
         # dynamic path with no query params
         config = SaaSQueryConfig(messages, endpoints)
         prepared_request = config.generate_query({"conversation_id": ["abc"]}, policy)
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations/abc/messages"
-        assert prepared_request.param == {}
-        assert prepared_request.body_values is None
+        assert prepared_request.params == {}
+        assert prepared_request.body is None
 
     def test_generate_update_stmt(
         self, erasure_policy_string_rewrite, combined_traversal, connection_config_saas_example
@@ -674,8 +674,8 @@ class TestSaaSQueryConfig:
         )
         assert prepared_request.method == HTTPMethod.PUT.value
         assert prepared_request.path == "/3.0/lists/abc/members/123"
-        assert prepared_request.param == {}
-        assert prepared_request.body_values == json.dumps(
+        assert prepared_request.params == {}
+        assert prepared_request.body == json.dumps(
             {
                 "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
             }
@@ -706,8 +706,8 @@ class TestSaaSQueryConfig:
         )
         assert prepared_request.method == HTTPMethod.POST.value
         assert prepared_request.path == "/3.0/lists/abc/members/123"
-        assert prepared_request.param == {}
-        assert prepared_request.body_values == json.dumps(
+        assert prepared_request.params == {}
+        assert prepared_request.body == json.dumps(
             {
                 "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
             }

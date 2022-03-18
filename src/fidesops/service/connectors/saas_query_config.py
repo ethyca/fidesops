@@ -85,7 +85,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             current_request.method if current_request.method else HTTPMethod.GET
         )
         return SaaSRequestParams(
-            method=method, path=path, param=params, body_values=body
+            method=method, path=path, params=params, body=body
         )
 
     def generate_update_stmt(
@@ -128,7 +128,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             current_request.method if current_request.method else HTTPMethod.PUT
         )
         return SaaSRequestParams(
-            method=method, path=path, param=params, body_values=json.dumps(body)
+            method=method, path=path, params=params, body=json.dumps(body)
         )
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
