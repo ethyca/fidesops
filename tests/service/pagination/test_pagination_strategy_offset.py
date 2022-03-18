@@ -26,7 +26,7 @@ def test_offset(response_with_body):
     config = OffsetPaginationConfiguration(
         incremental_param="page", increment_by=1, limit=10
     )
-    request_params: SaaSRequestParams = "GET", "/conversations", {"page": 1}, None
+    request_params: SaaSRequestParams = SaaSRequestParams("GET", "/conversations", {"page": 1}, None)
 
     paginator = OffsetPaginationStrategy(config)
     next_request: SaaSRequestParams = paginator.get_next_request(
@@ -42,7 +42,7 @@ def test_offset_with_connector_param_reference(response_with_body):
         limit={"connector_param": "limit"},
     )
     connector_params = {"limit": 10}
-    request_params: SaaSRequestParams = "GET", "/conversations", {"page": 1}, None
+    request_params: SaaSRequestParams = SaaSRequestParams("GET", "/conversations", {"page": 1}, None)
 
     paginator = OffsetPaginationStrategy(config)
     next_request: SaaSRequestParams = paginator.get_next_request(
@@ -57,7 +57,7 @@ def test_offset_with_connector_param_reference_not_found(response_with_body):
         increment_by=1,
         limit={"connector_param": "limit"},
     )
-    request_params: SaaSRequestParams = "GET", "/conversations", {"page": 1}, None
+    request_params: SaaSRequestParams = SaaSRequestParams("GET", "/conversations", {"page": 1}, None)
 
     paginator = OffsetPaginationStrategy(config)
     with pytest.raises(FidesopsException) as exc:
@@ -72,7 +72,7 @@ def test_offset_limit(response_with_body):
     config = OffsetPaginationConfiguration(
         incremental_param="page", increment_by=1, limit=10
     )
-    request_params: SaaSRequestParams = "GET", "/conversations", {"page": 10}, None
+    request_params: SaaSRequestParams = SaaSRequestParams("GET", "/conversations", {"page": 10}, None)
 
     paginator = OffsetPaginationStrategy(config)
     next_request: SaaSRequestParams = paginator.get_next_request(
@@ -101,7 +101,7 @@ def test_offset_missing_start_value(response_with_body):
     config = OffsetPaginationConfiguration(
         incremental_param="page", increment_by=1, limit=10
     )
-    request_params: SaaSRequestParams = "GET", "/conversations", {"row": 1}, None
+    request_params: SaaSRequestParams = SaaSRequestParams("GET", "/conversations", {"row": 1}, None)
 
     paginator = OffsetPaginationStrategy(config)
     with pytest.raises(FidesopsException) as exc:

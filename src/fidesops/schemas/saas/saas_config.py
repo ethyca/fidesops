@@ -1,5 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Union
+
+from fidesops.schemas.saas.shared_schemas import HTTPMethod
 from fidesops.service.pagination.pagination_strategy_factory import get_strategy
 from pydantic import BaseModel, validator, root_validator
 from fidesops.schemas.base_class import BaseSchema
@@ -67,18 +69,6 @@ class Strategy(BaseModel):
     configuration: Dict[str, Any]
 
 
-class HTTPMethod(Enum):
-    """Enum to represent HTTP Methods"""
-
-    GET = "GET"
-    POST = "POST"
-    PATCH = "PATCH"
-    PUT = "PUT"
-    DELETE = "DELETE"
-    OPTIONS = "OPTIONS"
-    HEAD = "HEAD"
-
-
 class SaaSRequest(BaseModel):
     """
     A single request with a static or dynamic path, and the request params needed to build the request.
@@ -112,14 +102,6 @@ class SaaSRequest(BaseModel):
             )
             pagination_strategy.validate_request(values)
         return values
-
-
-class SaaSRequestParams(BaseModel):
-    """Custom type to represent a SaaS request param"""
-    method: HTTPMethod
-    path: str
-    param: Dict[str, Any]
-    body_values: Optional[str]
 
 
 class Endpoint(BaseModel):

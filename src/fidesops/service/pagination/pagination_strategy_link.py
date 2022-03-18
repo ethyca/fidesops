@@ -62,7 +62,7 @@ class LinkPaginationStrategy(PaginationStrategy):
         logger.debug(
             f"Replacing path with {updated_path} and params with {updated_params}"
         )
-        return method, updated_path, updated_params, body
+        return SaaSRequestParams(method, updated_path, updated_params, body)
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:

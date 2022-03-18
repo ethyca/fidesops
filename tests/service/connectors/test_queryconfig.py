@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Any, Set
+from typing import Dict, Any, Set, Optional
 
 import pytest
 
@@ -17,6 +17,7 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
+from fidesops.schemas.saas.saas_config import SaaSConfig
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
 from fidesops.service.connectors.query_config import SQLQueryConfig, MongoQueryConfig
 
@@ -688,9 +689,10 @@ class TestSaaSQueryConfig:
         )
 
     def test_generate_update_stmt_custom_http_method(
-            self, erasure_policy_string_rewrite, combined_traversal, connection_config_saas_with_custom_http_method
+            self, erasure_policy_string_rewrite, combined_traversal, connection_config_saas_example
     ):
-        saas_config = connection_config_saas_with_custom_http_method.get_saas_config()
+        saas_config: Optional[SaaSConfig] = connection_config_saas_example.get_saas_config()
+        saas_config.endpoints[2].requests.get("update").method = "POST"
         endpoints = saas_config.top_level_endpoint_dict
 
         member = combined_traversal.traversal_node_dict[

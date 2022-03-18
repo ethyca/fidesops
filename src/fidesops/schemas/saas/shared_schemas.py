@@ -1,5 +1,24 @@
-from typing import Any, Dict, Literal, Optional, Tuple
+from enum import Enum
+from typing import Any, Dict, Optional
+from pydantic import BaseModel
 
 
-SaaSRequestParams = Tuple[Literal["GET", "PUT"], str, Dict[str, Any], Optional[str]]
-"""Custom type to represent a tuple of HTTP method, path, params, and body values for a SaaS request"""
+class HTTPMethod(Enum):
+    """Enum to represent HTTP Methods"""
+
+    GET = "GET"
+    POST = "POST"
+    PATCH = "PATCH"
+    PUT = "PUT"
+    DELETE = "DELETE"
+    OPTIONS = "OPTIONS"
+    HEAD = "HEAD"
+
+
+class SaaSRequestParams(BaseModel):
+    """Custom type to represent a SaaS request param"""
+
+    method: HTTPMethod
+    path: str
+    param: Dict[str, Any]
+    body_values: Optional[str]
