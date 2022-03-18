@@ -1,0 +1,75 @@
+saas_config:
+  fides_key: domo_connector_example
+  name: Domo SaaS Config
+  description: A sample schema representing the Domo connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: client_id
+    - name: client_secret
+    - name: email
+
+  client_config:
+    protocol: https
+    host:
+      connector_param: domain
+    authentication:
+      strategy: bearer_authentication
+      configuration:
+        token:
+          connector_param: access_token
+          # TODO - metaEndpoints wasn't supported at the time it was written
+          # Please to refer to the original YAML spec as this originally had a metaEndpoints      
+
+  test_request:
+    path: /oauth/token
+    # TODO - Custom method wasn't supported at the time it was written
+    # Please to refer to the original YAML spec as this originally had a method
+
+    # TODO - Custom mimeType wasn't supported at the time it was written
+    # Please to refer to the original YAML spec as this originally had a mimeType    
+    
+    # TODO - Different authorization wasn't supported at the time it was written
+    # Please to refer to the original YAML spec as this originally had a authorization
+
+    # TODO - body payload wasn't supported at the time it was written
+    # Please to refer to the original YAML spec as this originally had a body    
+
+  endpoints:
+  - name: users
+    requests:
+      read:
+        path: /v1/users
+        request_params:
+          - name: limit
+            type: query
+            default_value: 500
+          - name: offset
+            type: query
+            default_value: 0
+          # TODO - pagination wasn’t supported at the time it was written.
+          # below page value has to come from pagination section
+
+          # TODO - Different authorization wasn't supported at the time it was written
+          # Please to refer to the original YAML spec as this originally had a authorization           
+        postprocessors:
+          - strategy: filter
+            configuration:
+              field: email
+              value:
+                identity: email
+      update:
+        path: /v1/users/<id>
+        # TODO - Custom method PUT wasn't supported at the time it was written
+        # Please to refer to the original YAML spec as this originally had a method        
+        request_params:    
+          - name: id
+            type: path
+            references:
+              - dataset: domo_connector_example
+                field: users.id
+                direction: from
+
+        # TODO - page structure wasn't supported at the time it was written
+        # Please to refer to the original YAML spec as this originally had a method                   
