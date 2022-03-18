@@ -195,6 +195,7 @@ class SaaSConfig(BaseModel):
                 if param.identity:
                     fields.append(ScalarField(name=param.name, identity=param.identity))
             if fields:
+                grouped_inputs: Optional[List[str]] = []
                 if endpoint.requests.get("read"):
                     grouped_inputs = endpoint.requests["read"].grouped_inputs
                 collections.append(
