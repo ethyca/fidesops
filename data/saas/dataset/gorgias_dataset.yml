@@ -1,0 +1,48 @@
+dataset:
+  - fides_key: gorgias_connector_example
+    name: Gorgias Dataset
+    description: A sample dataset representing the Gorgias connector for Fidesops
+    collections:
+      - name: customer
+        fields:
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: firstname
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: lastname
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+      - name: tickets
+        fields:
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+            # TODO - Custom data_type wasn't supported at the time it was written
+            # TODO - Has to change the datatype to BIGINT
+          - name: subject
+            data_categories: [system.operations]
+      - name: ticket_messages
+        fields:
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+            # TODO - Custom data_type wasn't supported at the time it was written
+            # TODO - Has to change the datatype to BIGINT
+          - name: body_text
+            data_categories: [system.operations]          
+              
