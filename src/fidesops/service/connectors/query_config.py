@@ -20,7 +20,7 @@ from fidesops.graph.config import (
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
 from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.schemas.saas.saas_config import Endpoint, SaaSRequest, HTTPMethod
+from fidesops.schemas.saas.saas_config import Endpoint, SaaSRequest, HTTPMethod, SaaSRequestParams
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     get_strategy,
@@ -667,10 +667,6 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         return None
 
 
-SaaSRequestParams = Tuple[HTTPMethod, str, Dict[str, Any], Optional[str]]
-"""Custom type to represent a tuple of HTTP method, path, params, and body values for a SaaS request"""
-
-
 class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
     """Query config that generates populated SaaS requests for a given collection"""
 
@@ -723,6 +719,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         path: str = current_request.path
         params: Dict[str, Any] = {}
+        body: Optional[str] = None
 
         # uses the param names to read from the input data
         for param in current_request.request_params:
@@ -740,7 +737,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             if current_request.method
             else HTTPMethod.GET.value
         )
-        return method, path, params, None
+        return SaaSRequestParams(method, path, params, body)
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest

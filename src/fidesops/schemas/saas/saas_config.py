@@ -71,6 +71,8 @@ class HTTPMethod(Enum):
     PATCH = "PATCH"
     PUT = "PUT"
     DELETE = "DELETE"
+    OPTIONS = "OPTIONS"
+    HEAD = "HEAD"
 
 
 class SaaSRequest(BaseModel):
@@ -80,7 +82,7 @@ class SaaSRequest(BaseModel):
     """
 
     path: str
-    method: HTTPMethod
+    method: Optional[HTTPMethod]
     request_params: Optional[List[RequestParam]]
     data_path: Optional[str]  # defaults to collection name if not specified
     preprocessors: Optional[List[Strategy]]
@@ -92,6 +94,14 @@ class SaaSRequest(BaseModel):
 
         orm_mode = True
         use_enum_values = True
+
+
+class SaaSRequestParams(BaseModel):
+    """Custom type to represent a SaaS request param"""
+    method: HTTPMethod
+    path: str
+    param: Dict[str, Any]
+    body_values: Optional[str]
 
 
 class Endpoint(BaseModel):
