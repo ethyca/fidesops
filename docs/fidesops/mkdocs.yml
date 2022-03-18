@@ -20,6 +20,7 @@ nav:
       - Connect to SaaS Applications: guides/saas_connectors.md
       - SaaS Configuration: guides/saas_config.md
       - SaaS Post-Processors: guides/saas_postprocessors.md
+      - SaaS Pagination: guides/saas_pagination.md
       - Annotate Complex Fields: guides/complex_fields.md
       - Preview Query Execution: guides/query_execution.md  
       - Create Request Policies: guides/policies.md  
@@ -30,6 +31,7 @@ nav:
       - Report on Privacy Requests: guides/reporting.md
       - Configure OneTrust Integration: guides/onetrust.md  
       - Configuration Reference: guides/configuration_reference.md
+      - Admin UI: guides/users.md
   - Deployment Guide: deployment.md
   - Glossary: glossary.md
   - API: api/index.md
