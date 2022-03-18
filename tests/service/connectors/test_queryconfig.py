@@ -1,5 +1,6 @@
 import json
 from typing import Dict, Any, Set
+
 import pytest
 
 from fidesops.graph.config import (
@@ -14,14 +15,10 @@ from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
-
 from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fidesops.service.connectors.query_config import (
-    SQLQueryConfig,
-    MongoQueryConfig,
-    SaaSQueryConfig,
-)
+from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
+from fidesops.service.connectors.query_config import SQLQueryConfig, MongoQueryConfig
 
 from fidesops.service.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
@@ -601,16 +598,16 @@ class TestMongoQueryConfig:
         ).mask("1988-01-10", privacy_request_id=privacy_request.id)
 
 
-@pytest.mark.saas_connector
+@pytest.mark.unit_saas
 class TestSaaSQueryConfig:
     @pytest.fixture(scope="function")
-    def combined_traversal(self, connection_config_saas, dataset_config_saas):
-        merged_graph = dataset_config_saas.get_graph()
+    def combined_traversal(self, connection_config_saas_example, dataset_config_saas_example):
+        merged_graph = dataset_config_saas_example.get_graph()
         graph = DatasetGraph(merged_graph)
         return Traversal(graph, {"email": "customer-1@example.com"})
 
-    def test_generate_query(self, policy, combined_traversal, connection_config_saas):
-        saas_config = connection_config_saas.get_saas_config()
+    def test_generate_query(self, policy, combined_traversal, connection_config_saas_example):
+        saas_config = connection_config_saas_example.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
 
         member = combined_traversal.traversal_node_dict[
@@ -643,7 +640,7 @@ class TestSaaSQueryConfig:
         assert prepared_request == (
             "GET",
             "/3.0/conversations",
-            {"count": 1000, "placeholder": "customer-1@example.com"},
+            {"count": 1000, "offset": 0, "placeholder": "customer-1@example.com"},
             None,
         )
 
@@ -658,9 +655,9 @@ class TestSaaSQueryConfig:
         )
 
     def test_generate_update_stmt(
-        self, erasure_policy_string_rewrite, combined_traversal, connection_config_saas
+        self, erasure_policy_string_rewrite, combined_traversal, connection_config_saas_example
     ):
-        saas_config = connection_config_saas.get_saas_config()
+        saas_config = connection_config_saas_example.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
 
         member = combined_traversal.traversal_node_dict[
