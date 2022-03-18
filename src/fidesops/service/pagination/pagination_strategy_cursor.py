@@ -40,12 +40,15 @@ class CursorPaginationStrategy(PaginationStrategy):
         if cursor is None:
             return None
 
-        # deconstruct request_params and add or replace cursor_param
-        # with new cursor value
-        method, path, params, body = request_params
-        params[self.cursor_param] = cursor
+        # add or replace cursor_param with new cursor value
+        request_params.param[self.cursor_param] = cursor
 
-        return method, path, params, body
+        return SaaSRequestParams(
+            method=request_params.method,
+            path=request_params.path,
+            param=request_params.param,
+            body_values=request_params.body_values,
+        )
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:

@@ -54,15 +54,18 @@ class LinkPaginationStrategy(PaginationStrategy):
             logger.debug("The link to the next page was not found.")
             return None
 
-        # deconstruct request_params and replace existing path and params
-        # with updated path and query params
-        method, path, params, body = request_params
+        # replace existing path and params with updated path and query params
         updated_path = urlsplit(next_link).path
         updated_params = dict(parse.parse_qsl(urlsplit(next_link).query))
         logger.debug(
             f"Replacing path with {updated_path} and params with {updated_params}"
         )
-        return SaaSRequestParams(method, updated_path, updated_params, body)
+        return SaaSRequestParams(
+            method=request_params.method,
+            path=updated_path,
+            param=updated_params,
+            body_values=request_params.body_values,
+        )
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:

@@ -82,11 +82,13 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         logger.info(f"Populated request params for {current_request.path}")
         method: HTTPMethod = (
-            current_request.method.value
+            current_request.method
             if current_request.method
-            else HTTPMethod.GET.value
+            else HTTPMethod.GET
         )
-        return SaaSRequestParams(method, path, params, body)
+        return SaaSRequestParams(
+            method=method, path=path, param=params, body_values=body
+        )
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
@@ -125,11 +127,13 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
         body: Dict[str, Any] = unflatten_dict(update_value_map)
         method: HTTPMethod = (
-            current_request.method.value
+            current_request.method
             if current_request.method
-            else HTTPMethod.PUT.value
+            else HTTPMethod.PUT
         )
-        return SaaSRequestParams(method, path, params, json.dumps(body))
+        return SaaSRequestParams(
+            method=method, path=path, param=params, body_values=json.dumps(body)
+        )
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string"""
