@@ -32,7 +32,12 @@ def test_cursor(response_with_body):
     config = CursorPaginationConfiguration(
         cursor_param="after", field="id"
     )
-    request_params: SaaSRequestParams = SaaSRequestParams("GET", "/conversations", {}, None)
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method="GET",
+        path="/conversations",
+        param={},
+        body_values=None
+    )
 
     paginator = CursorPaginationStrategy(config)
     next_request: SaaSRequestParams = paginator.get_next_request(
@@ -45,7 +50,12 @@ def test_missing_cursor_value(response_with_body):
     config = CursorPaginationConfiguration(
         cursor_param="after", field="hash"
     )
-    request_params: SaaSRequestParams = SaaSRequestParams("GET", "/conversations", {}, None)
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method="GET",
+        path="/conversations",
+        param={},
+        body_values=None
+    )
 
     paginator = CursorPaginationStrategy(config)
     next_request: SaaSRequestParams = paginator.get_next_request(
@@ -58,7 +68,12 @@ def test_cursor_with_empty_list(response_with_empty_list):
     config = CursorPaginationConfiguration(
         cursor_param="after", field="id"
     )
-    request_params: SaaSRequestParams = SaaSRequestParams("GET", "/conversations", {}, None)
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method="GET",
+        path="/conversations",
+        param={},
+        body_values=None
+    )
 
     paginator = CursorPaginationStrategy(config)
     next_request: SaaSRequestParams = paginator.get_next_request(

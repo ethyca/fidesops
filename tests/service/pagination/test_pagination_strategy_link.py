@@ -33,7 +33,12 @@ def response_with_body_link():
 
 def test_link_in_headers(response_with_header_link):
     config = LinkPaginationConfiguration(source="headers", rel="next")
-    request_params: SaaSRequestParams = SaaSRequestParams("GET", "/customers", {"page": "abc"}, None)
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method="GET",
+        path="/customers",
+        param={"page": "abc"},
+        body_values=None
+    )
 
     paginator = LinkPaginationStrategy(config)
     next_request: SaaSRequestParams = paginator.get_next_request(
@@ -44,7 +49,12 @@ def test_link_in_headers(response_with_header_link):
 
 def test_link_in_headers_missing(response_with_body_link):
     config = LinkPaginationConfiguration(source="headers", rel="next")
-    request_params: SaaSRequestParams = SaaSRequestParams("GET", "/customers", {"page": "abc"}, None)
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method="GET",
+        path="/customers",
+        param={"page": "abc"},
+        body_values=None
+    )
 
     paginator = LinkPaginationStrategy(config)
     next_request: SaaSRequestParams = paginator.get_next_request(
@@ -55,7 +65,12 @@ def test_link_in_headers_missing(response_with_body_link):
 
 def test_link_in_body(response_with_body_link):
     config = LinkPaginationConfiguration(source="body", path="links.next")
-    request_params: SaaSRequestParams = SaaSRequestParams("GET", "/customers", {"page": "abc"}, None)
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method="GET",
+        path="/customers",
+        param={"page": "abc"},
+        body_values=None
+    )
 
     paginator = LinkPaginationStrategy(config)
     next_request: SaaSRequestParams = paginator.get_next_request(
@@ -66,7 +81,12 @@ def test_link_in_body(response_with_body_link):
 
 def test_link_in_body_missing(response_with_header_link):
     config = LinkPaginationConfiguration(source="body", path="links.next")
-    request_params: SaaSRequestParams = SaaSRequestParams("GET", "/customers", {"page": "abc"}, None)
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method="GET",
+        path="/customers",
+        param={"page": "abc"},
+        body_values=None
+    )
 
     paginator = LinkPaginationStrategy(config)
     next_request: SaaSRequestParams = paginator.get_next_request(
