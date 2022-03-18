@@ -133,6 +133,15 @@ class TestPreProcessInputData:
             "customer_identifiers.internal_id": ["cust_001"],
         }
 
+        # group_dependent_fields=True just results in an empty list because no grouped input fields are specified.
+        assert internal_customer_profile_task.pre_process_input_data(
+            root_email_input, customer_feedback_input, group_dependent_fields=True
+        ) == {
+            "customer_identifiers.derived_emails": ["customer-1@example.com"],
+            "customer_identifiers.internal_id": ["cust_001"],
+            "fidesops_grouped_inputs": [],
+        }
+
     def test_pre_process_input_flights_collection(
         self, make_graph_task, combined_traversal_node_dict
     ):
