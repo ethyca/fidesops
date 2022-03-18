@@ -25,4 +25,5 @@ class SaaSRequestParams(BaseModel):
 
     class Config:
         """Using enum values"""
+
         use_enum_values = True
