@@ -84,9 +84,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         method: HTTPMethod = (
             current_request.method if current_request.method else HTTPMethod.GET
         )
-        return SaaSRequestParams(
-            method=method, path=path, params=params, body=body
-        )
+        return SaaSRequestParams(method=method, path=path, params=params, body=body)
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
