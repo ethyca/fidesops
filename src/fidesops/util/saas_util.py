@@ -1,6 +1,6 @@
 from collections import defaultdict
 from functools import reduce
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.config import Collection, Dataset, Field
 
@@ -31,9 +31,16 @@ def extract_fields(aggregate: Dict, collections: List[Collection]) -> None:
                 field_dict[field.name] = field
 
 
-def get_collection(collections: List[Collection], name: str) -> Collection:
-    """Find the Collection with the matching name"""
-    return next(collect for collect in collections if collect.name == name)
+def get_collection_grouped_inputs(
+    collections: List[Collection], name: str
+) -> Optional[List[str]]:
+    """Get collection grouped inputs"""
+    collection: Collection = next(
+        (collect for collect in collections if collect.name == name), {}
+    )
+    if not collection:
+        return []
+    return collection.grouped_inputs
 
 
 def merge_datasets(dataset: Dataset, config_dataset: Dataset) -> Dataset:
@@ -53,9 +60,9 @@ def merge_datasets(dataset: Dataset, config_dataset: Dataset) -> Dataset:
             Collection(
                 name=collection_name,
                 fields=list(field_dict.values()),
-                grouped_inputs=get_collection(
+                grouped_inputs=get_collection_grouped_inputs(
                     config_dataset.collections, collection_name
-                ).grouped_inputs,
+                ),
             )
         )
 
