@@ -112,12 +112,13 @@ class SaaSRequest(BaseModel):
             referenced_collections: List[str] = []
             for param in request_params:
                 if param.name in grouped_inputs:
-                    if not param.references:
+                    if not param.references and not param.identity:
                         raise ValueError(
-                            "Grouped input fields must be on incoming references."
+                            "Grouped input fields must be on incoming references or identity fields."
                         )
-                    collect = param.references[0].field.split(".")[0]
-                    referenced_collections.append(collect)
+                    if param.references:
+                        collect = param.references[0].field.split(".")[0]
+                        referenced_collections.append(collect)
             if not all(x == referenced_collections[0] for x in referenced_collections):
                 raise ValueError(
                     "Grouped input fields must all reference the same collection."
