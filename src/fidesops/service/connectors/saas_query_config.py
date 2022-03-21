@@ -23,6 +23,36 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         super().__init__(node)
         self.endpoints = endpoints
 
+    @staticmethod
+    def _build_request_body(  # pylint: disable=R0913
+        custom_body: Optional[str],
+        path: str,
+        param_name: str,
+        default_value: str = None,
+        field_reference: str = None,
+        identity: str = None,
+    ) -> Optional[str]:
+        """Method to build request body based on config vals. Common to both read and update requests."""
+        if not custom_body:
+            logger.info(f"Missing custom body {path}")
+            return None
+        if default_value:
+            custom_body = custom_body.replace(f"<{param_name}>", f'"{default_value}"')
+        elif field_reference:
+            custom_body = custom_body.replace(
+                f"<{param_name}>",
+                f'"{field_reference}"',
+            )
+        elif identity:
+            custom_body = custom_body.replace(
+                f"<{param_name}>",
+                f'"{identity}"',
+            )
+        else:
+            logger.info(f"Missing body param value(s) for {path}")
+            return None
+        return custom_body
+
     def get_request_by_action(self, action: str) -> SaaSRequest:
         """
         Returns the appropriate request config based on the
@@ -92,7 +122,12 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         method: HTTPMethod = (
             current_request.method if current_request.method else HTTPMethod.GET
         )
-        return SaaSRequestParams(method=method, path=path, params=query_params, body=json.loads(body) if body else None)
+        return SaaSRequestParams(
+            method=method,
+            path=path,
+            params=query_params,
+            body=json.loads(body) if body else None,
+        )
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
@@ -108,7 +143,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         path: str = current_request.path
         params: Dict[str, Any] = {}
-        custom_body: Optional[str] = current_request.body or None
+        body: Optional[str] = current_request.body or None
 
         # uses the reference fields to read from the param_values
         for param in current_request.request_params:
@@ -127,8 +162,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                     pydash.get(param_values, param.references[0].field),
                 )
             elif param.type == "body":
-                custom_body = SaaSQueryConfig._build_request_body(
-                    custom_body,
+                body = SaaSQueryConfig._build_request_body(
+                    body,
                     path,
                     param.name,
                     param.default_value,
@@ -143,17 +178,20 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         logger.info(f"Populated request params for {current_request.path}")
 
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
-        body: Dict[str, Any] = unflatten_dict(update_value_map)
+        update_values: Dict[str, Any] = unflatten_dict(update_value_map)
         method: HTTPMethod = (
             current_request.method if current_request.method else HTTPMethod.PUT
         )
-        if custom_body:
+        if body:
             # removes outer {} wrapper from body for greater flexibility in custom body config
-            custom_body = custom_body.replace(
-                "<masked_object_fields>", json.dumps(body)[1:-1]
+            body = body.replace(
+                "<masked_object_fields>", json.dumps(update_values)[1:-1]
             )
         return SaaSRequestParams(
-            method=method, path=path, params=params, body=json.dumps(json.loads(custom_body) if custom_body else body)
+            method=method,
+            path=path,
+            params=params,
+            body=json.dumps(json.loads(body) if body else update_values),
         )
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
