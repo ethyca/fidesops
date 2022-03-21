@@ -1,45 +1,18 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '../../app/store';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-export type SubjectRequestStatus =
-  | 'error'
-  | 'denied'
-  | 'in-progress'
-  | 'new'
-  | 'completed';
+import { SubjectRequest } from './types';
 
-interface SubjectRequest {
-  status: SubjectRequestStatus;
-  identity: {
-    email?: string;
-    phone?: string;
-  };
-  created_at: string;
-  reviewed_by: string;
-  id: string;
-}
-
-interface SubjectRequestsState {
-  requests: SubjectRequest[];
-}
-
-const initialState: SubjectRequestsState = {
-  requests: [],
-};
-
-export const subjectRequestsSlice = createSlice({
-  name: 'subjectRequests',
-  initialState,
-  reducers: {
-    loadRequests: (state, action: PayloadAction<SubjectRequest[]>) => {
-      Object.assign(state, { requests: action.payload });
-    },
-  },
+// Define a service using a base URL and expected endpoints
+export const subjectRequestApi = createApi({
+  reducerPath: 'subjectRequestApi',
+  baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost/api/v1' }),
+  endpoints: (build) => ({
+    getAllSubjectRequests: build.query<SubjectRequest, null>({
+      query: () => `subject-requests/preview`,
+    }),
+  }),
 });
 
-export const { loadRequests } = subjectRequestsSlice.actions;
-
-export const subjectRequests = (state: RootState) =>
-  state.subjectRequests.requests;
-
-export default subjectRequestsSlice.reducer;
+// Export hooks for usage in functional components, which are
+// auto-generated based on the defined endpoints
+export const { useGetAllSubjectRequestsQuery } = subjectRequestApi;

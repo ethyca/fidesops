@@ -15,12 +15,11 @@ import {
 
 import RequestTable from '../features/subject-requests/RequestTable';
 
-import { useAppSelector } from '../app/hooks';
-import { subjectRequests } from '../features/subject-requests/subject-requests.slice';
+import { useGetAllSubjectRequestsQuery } from '../features/subject-requests/subject-requests.slice';
 
 const Home: NextPage<{ session: Session | null }> = ({ session }) => {
   const { status } = useSession();
-  const requests = useAppSelector(subjectRequests);
+  const { data: requests } = useGetAllSubjectRequestsQuery(null);
   return (
     <div>
       <Head>

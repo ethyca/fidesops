@@ -3,11 +3,10 @@ import { Table, Thead, Tbody, Tr, Th, Td, Button } from '@fidesui/react';
 import { MoreIcon } from '../common/Icon';
 import RequestBadge from './RequestBadge';
 
-import { useAppSelector } from '../../app/hooks';
-import { subjectRequests } from './subject-requests.slice';
+import { useGetAllSubjectRequestsQuery } from './subject-requests.slice';
 
 const RequestTable = () => {
-  const requests = useAppSelector(subjectRequests);
+  const { data: requests } = useGetAllSubjectRequestsQuery(null);
   return (
     <Table size="sm">
       <Thead>
