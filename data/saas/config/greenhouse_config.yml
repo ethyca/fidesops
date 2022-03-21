@@ -7,7 +7,6 @@ saas_config:
   connector_params:
     - name: user_id
     - name: username
-    - name: email
 
   client_config:
     protocol: https

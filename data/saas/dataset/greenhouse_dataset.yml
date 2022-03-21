@@ -33,8 +33,7 @@ dataset:
             data_categories: [user.derived.identifiable.unique_id]
             fidesops_meta:
               primary_key: True
-              # Has to change the datatype to DOUBLE, currently only string is supporting
-              data_type: string
+              data_type: integer
           - name: first_name
             data_categories: [user.provided.identifiable.name]
             fidesops_meta:
