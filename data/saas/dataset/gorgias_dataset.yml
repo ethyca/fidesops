@@ -29,6 +29,7 @@ dataset:
         fields:
           - name: id
             data_categories: [user.derived.identifiable.unique_id]
+            data_type: integer
             fidesops_meta:
               primary_key: True
             # TODO - Custom data_type wasn't supported at the time it was written

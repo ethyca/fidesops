@@ -9,7 +9,6 @@ saas_config:
     - name: api_email
     - name: api_key
     - name: per_page
-    - name: email
 
   client_config:
     protocol: https
