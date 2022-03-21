@@ -1,6 +1,10 @@
+import { ComponentProps } from 'react';
 import { Badge } from '@fidesui/react';
+import { SubjectRequestStatus } from './subject-requests.slice';
 
-const statusPropMap = {
+const statusPropMap: {
+  [key in SubjectRequestStatus]: ComponentProps<typeof Badge>;
+} = {
   error: {
     bg: 'red.800',
     color: 'white',
@@ -10,6 +14,21 @@ const statusPropMap = {
     bg: 'red.500',
     color: 'white',
     children: 'Denied',
+  },
+  'in-progress': {
+    bg: 'orange.500',
+    color: 'white',
+    children: 'In Progress',
+  },
+  new: {
+    bg: 'blue.400',
+    color: 'white',
+    children: 'New',
+  },
+  completed: {
+    bg: 'green.500',
+    color: 'white',
+    children: 'Completed',
   },
 };
 

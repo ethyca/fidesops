@@ -1,32 +1,26 @@
 import React from 'react';
 import type { GetServerSideProps, NextPage } from 'next';
-import NextLink from 'next/link';
 import Head from 'next/head';
-import { getSession, signOut, useSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 import { Session } from 'next-auth';
-import {
-  Flex,
-  Heading,
-  Text,
-  Stack,
-  Link,
-  Button,
-  HStack,
-  Select,
-  Box,
-} from '@fidesui/react';
+import { Flex, Heading, Text, Button, Select, Box } from '@fidesui/react';
 
-import Header from '../components/Header';
+import Header from '../features/common/Header';
+
 import {
   ArrowDownLineIcon,
   DownloadSolidIcon,
   CloseSolidIcon,
-} from '../components/Icon';
+} from '../features/common/Icon';
 
-import RequestTable from '../components/RequestTable';
+import RequestTable from '../features/subject-requests/RequestTable';
+
+import { useAppSelector } from '../app/hooks';
+import { subjectRequests } from '../features/subject-requests/subject-requests.slice';
 
 const Home: NextPage<{ session: Session | null }> = ({ session }) => {
   const { status } = useSession();
+  const requests = useAppSelector(subjectRequests);
   return (
     <div>
       <Head>
@@ -79,7 +73,7 @@ const Home: NextPage<{ session: Session | null }> = ({ session }) => {
           <RequestTable />
           <Flex justifyContent="space-between" mt={6}>
             <Text fontSize="xs" color="gray.600">
-              2 results
+              {requests.length} results
             </Text>
             <div>
               <Button disabled mr={2}>
