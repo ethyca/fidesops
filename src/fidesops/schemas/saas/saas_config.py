@@ -72,11 +72,14 @@ class SaaSRequest(BaseModel):
     Also includes optional strategies for postprocessing and pagination.
     """
 
-    path: str
+    custom_function: Optional[str]
+    path: Optional[str]
     request_params: Optional[List[RequestParam]]
     data_path: Optional[str]
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
+
+    # TODO: make path required if custom_function is not present
 
     @root_validator(pre=True)
     def validate_request_for_pagination(cls, values: Dict[str, Any]) -> Dict[str, Any]:

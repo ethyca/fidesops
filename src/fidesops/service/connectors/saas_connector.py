@@ -1,6 +1,7 @@
+import importlib
 from json import JSONDecodeError
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import pydash
 from requests import Session, Request, PreparedRequest, Response
 from fidesops.common_exceptions import FidesopsException
@@ -140,6 +141,19 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             "read"
         ]
 
+        # call the custom function if one is available to perform the equivalent
+        # of the config-derived retrieve_data
+        if read_request.custom_function:
+            custom_function = self.get_custom_function(read_request.custom_function)
+            return custom_function(
+                node,
+                policy,
+                privacy_request,
+                input_data,
+                privacy_request.get_cached_identity_data(),
+                self.secrets,
+            )
+
         # generate initial set of requests
         query_config: SaaSQueryConfig = self.query_config(node)
         prepared_requests = query_config.generate_requests(input_data, policy)
@@ -277,6 +291,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             self.client().send(prepared_request)
             rows_updated += 1
         return rows_updated
+
+    @staticmethod
+    def get_custom_function(function_location: str) -> Callable:
+        module, function_name = function_location.split(".")
+        module = importlib.import_module(
+            f"fidesops.service.saas_custom_functions.{module}"
+        )
+        return getattr(module, function_name)
 
     def close(self) -> None:
         """Not required for this type"""

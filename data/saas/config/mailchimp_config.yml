@@ -28,7 +28,7 @@ saas_config:
   - name: messages
     requests:
       read:
-        path: /3.0/conversations/<conversation_id>/messages
+        custom_function: mailchimp.read_messages
         request_params:
           - name: conversation_id
             type: path
@@ -36,13 +36,6 @@ saas_config:
               - dataset: mailchimp_connector_example
                 field: conversations.id
                 direction: from
-        data_path: conversation_messages
-        postprocessors:
-          - strategy: filter
-            configuration:
-              field: from_email
-              value:
-                identity: email
   - name: conversations
     requests:
       read:
