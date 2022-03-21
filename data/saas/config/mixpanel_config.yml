@@ -10,7 +10,6 @@ saas_config:
     - name: gdpr_oauth_token
     # TODO - OPTION wasn’t supported at the time it was written.
     - name: domain
-    - name: email
 
   client_config:
     protocol: https

@@ -9,70 +9,52 @@ dataset:
             data_categories: [user.derived.identifiable.unique_id]
             fidesops_meta:
               primary_key: True
-              # TODO - Custom data_type wasn't supported at the time it was written
-              # TODO - Has to change the datatype to DATE
               data_type: string
           - name: $properties
             fields:
               - name: $last_login
-                default_value: ethyca
                 data_categories: [system.operations]
               - name: $city
-                default_value: ethyca
                 data_categories: [user.provided.identifiable.contact.city]
                 fidesops_meta:
                   data_type: string
               - name: $country_code
-                default_value: ethyca
                 data_categories: [user.provided.identifiable.contact.country]
                 fidesops_meta:
                   data_type: string
               - name: $region
-                default_value: ethyca
                 data_categories: [system.operations]
               - name: $initial_referring_domain
-                default_value: ethyca
                 data_categories: [system.operations]
               - name: $email
-                default_value: ethyca*@ethyca.com
                 data_categories: [user.provided.identifiable.contact.email]
                 fidesops_meta:
                   data_type: string
               - name: $initial_referrer
-                default_value: ethyca
                 data_categories: [system.operations]
               - name: $last_name
-                default_value: ethyca
                 data_categories: [user.provided.identifiable.name]
                 fidesops_meta:
                   data_type: string
               - name: $os
-                default_value: ethyca
                 data_categories: [system.operations]
               - name: credits
-                default_value: ethyca
                 data_categories: [system.operations]
               - name: $created
-                default_value: ethyca
                 data_categories: [system.operations]
               - name: $browser_version
-                default_value: ethyca
                 data_categories: [system.operations]
               - name: gender
-                default_value: ethyca
                 data_categories: [user.derived.identifiable.gender]
                 fidesops_meta:
                   data_type: string
               - name: $last_seen
                 data_categories: [system.operations]
               - name: $browser
-                default_value: ethyca
                 data_categories: [system.operations]
               - name: $timezone
-                default_value: ethyca
                 data_categories: [system.operations]
               - name: $first_name
-                default_value: ethyca
                 data_categories: [user.provided.identifiable.name]
                 fidesops_meta:
                   data_type: string
