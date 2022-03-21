@@ -1,23 +1,13 @@
-import {
-  Table,
-  Thead,
-  Tbody,
-  Tfoot,
-  Tr,
-  Th,
-  Td,
-  TableCaption,
-  Badge,
-  Button,
-} from '@fidesui/react';
+import { Table, Thead, Tbody, Tr, Th, Td, Button } from '@fidesui/react';
 
-import { More } from '../Icon';
+import { MoreIcon } from '../Icon';
+import RequestBadge from './RequestBadge';
 
 const RequestTable = () => (
   <Table size="sm">
     <Thead>
       <Tr>
-        <Th>Status</Th>
+        <Th pl={0}>Status</Th>
         <Th>Subject Identity</Th>
         <Th>Time Received</Th>
         <Th>Reviewer</Th>
@@ -26,32 +16,28 @@ const RequestTable = () => (
     </Thead>
     <Tbody>
       <Tr>
-        <Td>
-          <Badge bg="red.800" color="white" width={107} textAlign="center">
-            Error
-          </Badge>
+        <Td pl={0} py={0.5}>
+          <RequestBadge status="error" />
         </Td>
-        <Td>james.braithwaite@email.com</Td>
-        <Td>August 4, 2021, 09:35:46 PST</Td>
-        <Td>Sammie_Shanahan@gmail.com</Td>
-        <Td>
-          <Button variant="ghost">
-            <More color="gray.700" />
+        <Td py={0.5}>james.braithwaite@email.com</Td>
+        <Td py={0.5}>August 4, 2021, 09:35:46 PST</Td>
+        <Td py={0.5}>Sammie_Shanahan@gmail.com</Td>
+        <Td pr={0} py={0.5} textAlign="end">
+          <Button variant="ghost" size="sm">
+            <MoreIcon color="gray.700" w={18} h={18} />
           </Button>
         </Td>
       </Tr>
       <Tr>
-        <Td>
-          <Badge bg="red.500" color="white" width={107} textAlign="center">
-            Denied
-          </Badge>
+        <Td pl={0} py={0.5}>
+          <RequestBadge status="denied" />
         </Td>
-        <Td>555-325-685-126</Td>
-        <Td>August 4, 2021, 09:35:46 PST</Td>
-        <Td>Richmond33@yahoo.com</Td>
-        <Td>
-          <Button variant="ghost">
-            <More color="gray.700" />
+        <Td py={0.5}>555-325-685-126</Td>
+        <Td py={0.5}>August 4, 2021, 09:35:46 PST</Td>
+        <Td py={0.5}>Richmond33@yahoo.com</Td>
+        <Td pr={0} py={0.5} textAlign="end">
+          <Button variant="ghost" size="sm">
+            <MoreIcon color="gray.700" w={18} h={18} />
           </Button>
         </Td>
       </Tr>

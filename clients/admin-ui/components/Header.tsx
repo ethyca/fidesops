@@ -3,7 +3,7 @@ import { Flex, Link } from '@fidesui/react';
 import NextLink from 'next/link';
 import Image from 'next/image';
 
-import { User, Gear } from './Icon';
+import { UserIcon, GearIcon } from './Icon';
 
 const Header = () => (
   <header>
@@ -22,8 +22,8 @@ const Header = () => (
         </Link>
       </NextLink>
       <Flex alignItems="center">
-        <Gear color="gray.700" mr={5} />
-        <User color="gray.700" />
+        <GearIcon color="gray.700" mr={5} />
+        <UserIcon color="gray.700" />
       </Flex>
     </Flex>
   </header>

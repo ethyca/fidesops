@@ -17,7 +17,11 @@ import {
 } from '@fidesui/react';
 
 import Header from '../components/Header';
-import { ArrowDownLine, DownloadSolid, CloseSolid } from '../components/Icon';
+import {
+  ArrowDownLineIcon,
+  DownloadSolidIcon,
+  CloseSolidIcon,
+} from '../components/Icon';
 
 import RequestTable from '../components/RequestTable';
 
@@ -50,7 +54,7 @@ const Home: NextPage<{ session: Session | null }> = ({ session }) => {
           <Button variant="ghost" mr={4}>
             User Management
           </Button>
-          <Button variant="ghost" rightIcon={<ArrowDownLine />}>
+          <Button variant="ghost" rightIcon={<ArrowDownLineIcon />}>
             More
           </Button>
         </Flex>
@@ -64,11 +68,11 @@ const Home: NextPage<{ session: Session | null }> = ({ session }) => {
               <Select placeholder="Reviewer" width={404} />
             </Flex>
             <Flex>
-              <Button variant="ghost" rightIcon={<CloseSolid />}>
-                Clear all filters
-              </Button>
-              <Button variant="ghost" rightIcon={<DownloadSolid />}>
+              <Button variant="ghost" rightIcon={<DownloadSolidIcon />}>
                 Download
+              </Button>
+              <Button variant="ghost" rightIcon={<CloseSolidIcon />}>
+                Clear all filters
               </Button>
             </Flex>
           </Flex>

@@ -1,6 +1,6 @@
-export { default as ArrowDownLine } from './ArrowDownLine';
-export { default as CloseSolid } from './CloseSolid';
-export { default as DownloadSolid } from './DownloadSolid';
-export { default as Gear } from './Gear';
-export { default as User } from './User';
-export { default as More } from './More';
+export { default as ArrowDownLineIcon } from './ArrowDownLine';
+export { default as CloseSolidIcon } from './CloseSolid';
+export { default as DownloadSolidIcon } from './DownloadSolid';
+export { default as GearIcon } from './Gear';
+export { default as UserIcon } from './User';
+export { default as MoreIcon } from './More';
