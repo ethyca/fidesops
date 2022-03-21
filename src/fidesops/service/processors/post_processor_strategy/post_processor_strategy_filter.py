@@ -1,5 +1,6 @@
 import logging
 from typing import Any, List, Optional, Dict, Union
+from fidesops.common_exceptions import FidesopsException
 
 from fidesops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
@@ -52,21 +53,26 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         self,
         data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Dict[str, Any] = None,
-    ) -> Optional[Any]:
+    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
-        :param data: A list or an object
-        :param identity_data: Dict of cached identity data
-        :return: filtered object or None
+        :param data: A list or a dict
+        :param identity_data: dict of cached identity data
+        :return: filtered dict, list of dicts, or empty list
         """
+
         if not data:
-            return None
+            return []
+
+        # find value to filter by
         filter_value = self.value
         if isinstance(self.value, IdentityParamRef):
             if identity_data is None or identity_data.get(self.value.identity) is None:
                 logger.warning(
-                    f"Could not retrieve identity reference '{self.value.identity}' due to missing identity data for the following post processing strategy: {self.get_strategy_name()}"
+                    f"Could not retrieve identity reference '{self.value.identity}' "
+                    "due to missing identity data for the following post processing "
+                    f"strategy: {self.get_strategy_name()}"
                 )
-                return None
+                return []
             filter_value = identity_data.get(self.value.identity)
 
         try:
@@ -78,7 +84,8 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
             logger.warning(
                 f"{self.field} could not be found on data for the following post processing strategy: {self.get_strategy_name()}"
             )
-            return None
+            return []
+
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
