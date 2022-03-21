@@ -25,14 +25,17 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
     @staticmethod
     def _build_request_body(  # pylint: disable=R0913
-        custom_body: Optional[str],
         path: str,
         param_name: str,
+        custom_body: Optional[str] = None,
         default_value: Optional[str] = None,
         field_reference: Optional[str] = None,
         identity: Optional[str] = None,
     ) -> Optional[str]:
-        """Method to build request body based on config vals. Common to both read and update requests."""
+        """
+        Method to build request body based on config vals. Common to both read and update requests.
+        Attempts to
+        """
         if not custom_body:
             logger.info(f"Missing custom body {path}")
             return None
@@ -111,9 +114,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 path = path.replace(f"<{param.name}>", input_data[param.name][0])
             elif param.type == "body":
                 body = SaaSQueryConfig._build_request_body(
-                    body,
                     path,
                     param.name,
+                    body,
                     param.default_value,
                     input_data[param.name][0] if param.references else None,
                     input_data[param.name][0] if param.identity else None,
@@ -163,9 +166,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 )
             elif param.type == "body":
                 body = SaaSQueryConfig._build_request_body(
-                    body,
                     path,
                     param.name,
+                    body,
                     param.default_value,
                     pydash.get(param_values, param.references[0].field)
                     if param.references
