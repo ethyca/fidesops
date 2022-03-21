@@ -77,9 +77,8 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
 
         try:
             if isinstance(data, list):
-                filtered = [item for item in data if item[self.field] == filter_value]
-                return filtered if filtered else None
-            return data if data[self.field] == filter_value else None
+                return [item for item in data if item[self.field] == filter_value]
+            return data if data[self.field] == filter_value else []
         except KeyError:
             logger.warning(
                 f"{self.field} could not be found on data for the following post processing strategy: {self.get_strategy_name()}"
