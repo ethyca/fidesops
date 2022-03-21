@@ -10,6 +10,11 @@ import '@fontsource/inter/700.css';
 import '@fontsource/inter/500.css';
 import '@fontsource/inter/400.css';
 
+if (process.env.NEXT_PUBLIC_MOCK_API) {
+  // eslint-disable-next-line global-require
+  require('../mocks');
+}
+
 const MyApp = ({ Component, pageProps }: AppProps) => (
   <ReduxProvider store={store}>
     <SessionProvider>

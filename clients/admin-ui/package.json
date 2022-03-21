@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:mock": "echo '🚨 Running with mock API'; NEXT_PUBLIC_MOCK_API=true next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -21,6 +22,7 @@
     "@reduxjs/toolkit": "^1.8.0",
     "formik": "^2.2.9",
     "framer-motion": "^5",
+    "msw": "^0.29.0",
     "next": "12.0.8",
     "next-auth": "^4.2.1",
     "react": "^17.0.2",
@@ -50,5 +52,8 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^27.5.1",
     "typescript": "4.5.5"
+  },
+  "msw": {
+    "workerDirectory": "public"
   }
 }
