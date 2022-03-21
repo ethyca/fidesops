@@ -59,16 +59,20 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
         if isinstance(data, dict):
             unwrapped = pydash.get(data, self.data_path)
             if unwrapped is None:
-                logger.warning(f"{self.data_path} could not be found for the following "
-                    f"post processing strategy: {self.get_strategy_name()}")
+                logger.warning(
+                    f"{self.data_path} could not be found for the following "
+                    f"post processing strategy: {self.get_strategy_name()}"
+                )
             else:
                 result = unwrapped
         elif isinstance(data, list):
             for item in data:
                 unwrapped = pydash.get(item, self.data_path)
                 if unwrapped is None:
-                    logger.warning(f"{self.data_path} could not be found for the following "
-                    f"post processing strategy: {self.get_strategy_name()}")
+                    logger.warning(
+                        f"{self.data_path} could not be found for the following "
+                        f"post processing strategy: {self.get_strategy_name()}"
+                    )
                 else:
                     result.append(unwrapped)
             # flatten the list to account for the event where the output of unwrapped

@@ -85,7 +85,6 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
             )
             return []
 
-
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
         return FilterPostProcessorConfiguration
