@@ -739,9 +739,9 @@ class TestSaaSQueryConfig:
         prepared_request = config.generate_update_stmt(
             row, erasure_policy_string_rewrite, privacy_request
         )
-        assert prepared_request == (
-            "PUT",
-            "/3.0/lists/abc/members/123",
-            {},
-            json.dumps({'properties': {"merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"}, 'list_id': 'abc'}})
+        assert prepared_request == SaaSRequestParams(
+            method=HTTPMethod.PUT,
+            path="/3.0/lists/abc/members/123",
+            params={},
+            body=json.dumps({'properties': {"merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"}, 'list_id': 'abc'}}),
         )
