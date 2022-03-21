@@ -164,9 +164,10 @@ test_request:
 This is where we define how we are going to access and update each collection in the corresponding Dataset. The endpoint section contains the following members:
 
 - `name` This name corresponds to a Collection in the corresponding Dataset.
-- `requests` A map of read and update requests for this collection. Each collection can define a way to read and a way to update the data. Each request is made up of:
+- `requests` A map of `read` and `update` requests for this collection. Each collection can define a way to read and a way to update the data. Each request is made up of:
     - `path` A static or dynamic resource path. The dynamic portions of the path are enclosed within angle brackets `<dynamic_value>` and are replaced with values from `request_params`.
-    - `body` An optional static or dynamic request body, with dynamic portions enclosed in brackets, just like `path`. These dynamic values will be replaced with values from `request_params`. For update requests, you'll need to additionally annotated `<masked_object_fields>` as a placeholder for the fidesops generated update values.
+    - `method` (optional) HTTP method. Defaults to `GET` for read requests, `PUT` for update requests. Other options are `POST`, `PATCH`, or `DELETE`.
+    - `body` (optional) static or dynamic request body, with dynamic portions enclosed in brackets, just like `path`. These dynamic values will be replaced with values from `request_params`. For update requests, you'll need to additionally annotated `<masked_object_fields>` as a placeholder for the fidesops generated update values.
     - `request_params`
         - `name` Used as the key for query param values, or to map this param to a value placeholder in the path.
         - `type` Can be "query", "path", or "body".

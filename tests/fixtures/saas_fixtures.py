@@ -14,7 +14,8 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.schemas.saas.saas_config import SaaSConfig, RequestParam
+from fidesops.schemas.saas.saas_config import SaaSConfig
+from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors.saas_connector import SaaSConnector
 from tests.fixtures.application_fixtures import load_dataset
 
@@ -171,34 +172,6 @@ def connection_config_saas_example_without_saas_config(
     connection_config.delete(db)
 
 
-# @pytest.fixture(scope="function")
-# def connection_config_saas_example_with_request_body(
-#         db: Session,
-#         saas_configs: Dict[str, Dict]
-# ) -> Generator:
-#     saas_config = SaaSConfig(**saas_configs["saas_example"])
-#     saas_config.endpoints[0].requests.get("read").body = "{'properties': {<masked_object_fields>, 'list_id': <list_id>}}"
-#     body_request_params = RequestParam(
-#         name="list_id",
-#         type="body",
-#         references=[{"dataset": "saas_connector_example", "field": "member.list_id", "direction": "from"}]
-#     )
-#     saas_config.endpoints[0].requests.get("read").request_params.append(body_request_params)
-#     connection_config = ConnectionConfig.create(
-#         db=db,
-#         data={
-#             "key": saas_config.fides_key,
-#             "name": saas_config.fides_key,
-#             "connection_type": ConnectionType.saas,
-#             "access": AccessLevel.read,
-#             "secrets": saas_secrets_dict["saas_example"],
-#             "saas_config": saas_config.dict(),
-#         },
-#     )
-#     yield connection_config
-#     connection_config.delete(db)
-
-
 @pytest.fixture(scope="function")
 def connection_config_saas_example_with_invalid_saas_config(
     db: Session, saas_configs: Dict[str, Dict]
@@ -241,20 +214,17 @@ def reset_mailchimp_data(
     Used for erasure tests.
     """
     connector = SaaSConnector(connection_config_mailchimp)
-    request = (
-        "GET",
-        "/3.0/search-members",
-        {"query": mailchimp_identity_email},
-        {},
+    request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET, path="/3.0/search-members", params={"query": mailchimp_identity_email}, body=None
     )
     response = connector.create_client().send(request)
     body = response.json()
     member = body["exact_matches"]["members"][0]
     yield member
-    request = (
-        "PUT",
-        f'/3.0/lists/{member["list_id"]}/members/{member["id"]}',
-        {},
-        json.dumps(member),
+    request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.PUT,
+        path=f'/3.0/lists/{member["list_id"]}/members/{member["id"]}',
+        params={},
+        body=json.dumps(member)
     )
     connector.create_client().send(request)
