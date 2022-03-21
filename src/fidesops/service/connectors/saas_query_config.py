@@ -28,9 +28,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         custom_body: Optional[str],
         path: str,
         param_name: str,
-        default_value: str = None,
-        field_reference: str = None,
-        identity: str = None,
+        default_value: Optional[str] = None,
+        field_reference: Optional[str] = None,
+        identity: Optional[str] = None,
     ) -> Optional[str]:
         """Method to build request body based on config vals. Common to both read and update requests."""
         if not custom_body:
