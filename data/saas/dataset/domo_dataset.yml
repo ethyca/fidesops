@@ -10,32 +10,26 @@ dataset:
             fidesops_meta:
               primary_key: True
           - name: alternateEmail
-            default_value: "maskedAlt*@company.com"
             data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
               data_type: string
           - name: email
-            default_value: "masked*@company.com"
             data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
               data_type: string
           - name: location
-            default_value: "Masked Location"
             data_categories: [user.derived.identifiable.location]
             fidesops_meta:
               data_type: string
           - name: name
-            default_value: "Masked Name"
             data_categories: [user.provided.identifiable.name]
             fidesops_meta:
               data_type: string
           - name: phone
-            default_value: "00000000"
             data_categories: [user.provided.identifiable.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: title
-            default_value: "Masked Title"
             data_categories: [user.provided.identifiable.job_title]
             fidesops_meta:
               data_type: string

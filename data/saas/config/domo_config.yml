@@ -8,7 +8,6 @@ saas_config:
     - name: domain
     - name: client_id
     - name: client_secret
-    - name: email
 
   client_config:
     protocol: https
