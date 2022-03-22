@@ -8,3 +8,8 @@ domain = ""
 username = ""
 api_key = ""
 identity_email = ""
+
+[hubspot]
+domain = ""
+api_key = ""
+account_email = ""
