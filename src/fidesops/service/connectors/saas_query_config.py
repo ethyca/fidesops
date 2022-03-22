@@ -23,11 +23,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self,
         node: TraversalNode,
         endpoints: Dict[str, Endpoint],
-        connector_params: Dict[str, Any],
+        secrets: Dict[str, Any],
     ):
         super().__init__(node)
         self.endpoints = endpoints
-        self.connector_params = connector_params
+        self.secrets = secrets
 
     def get_request_by_action(self, action: str) -> SaaSRequest:
         """
@@ -83,16 +83,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 elif param.references or param.identity:
                     params[param.name] = input_data[param.name][0]
                 elif param.connector_param:
-                    params[param.name] = pydash.get(
-                        self.connector_params, param.connector_param
-                    )
+                    params[param.name] = pydash.get(self.secrets, param.connector_param)
             elif param.type == "path":
                 if param.references or param.identity:
                     path = path.replace(f"<{param.name}>", input_data[param.name][0])
                 elif param.connector_param:
                     path = path.replace(
                         f"<{param.name}>",
-                        pydash.get(self.connector_params, param.connector_param),
+                        pydash.get(self.secrets, param.connector_param),
                     )
 
         logger.info(f"Populated request params for {current_request.path}")
@@ -126,9 +124,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 elif param.identity:
                     params[param.name] = pydash.get(param_values, param.identity)
                 elif param.connector_param:
-                    params[param.name] = pydash.get(
-                        self.connector_params, param.connector_param
-                    )
+                    params[param.name] = pydash.get(self.secrets, param.connector_param)
             elif param.type == "path":
                 if param.references:
                     path = path.replace(
@@ -143,7 +139,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 elif param.connector_param:
                     path = path.replace(
                         f"<{param.name}>",
-                        pydash.get(self.connector_params, param.connector_param),
+                        pydash.get(self.secrets, param.connector_param),
                     )
         logger.info(f"Populated request params for {current_request.path}")
 
