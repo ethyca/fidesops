@@ -1,5 +1,6 @@
-import pydash
 from typing import Any, Dict, List, Literal, Optional, Union
+
+from fidesops.schemas.saas.shared_schemas import HTTPMethod
 from fidesops.service.pagination.pagination_strategy_factory import get_strategy
 from pydantic import BaseModel, validator, root_validator
 from fidesops.schemas.base_class import BaseSchema
@@ -19,13 +20,13 @@ class ConnectorParams(BaseModel):
 
 class RequestParam(BaseModel):
     """
-    A request parameter which includes the type (query or path) along with a default value or
+    A request parameter which includes the type (query, path, or body) along with a default value or
     a reference to an identity value or a value in another dataset.
     """
 
     name: str
     type: Literal[
-        "query", "path"
+        "query", "path", "body"
     ]  # used to determine location in the generated request
     identity: Optional[str]
     references: Optional[List[FidesopsDatasetReference]]
@@ -74,11 +75,19 @@ class SaaSRequest(BaseModel):
     """
 
     path: str
+    method: Optional[HTTPMethod]
+    body: Optional[str]
     request_params: Optional[List[RequestParam]]
     data_path: Optional[str]
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
     grouped_inputs: Optional[List[str]] = []
+
+    class Config:
+        """Populate models with the raw value of enum fields, rather than the enum itself"""
+
+        orm_mode = True
+        use_enum_values = True
 
     @root_validator(pre=True)
     def validate_request_for_pagination(cls, values: Dict[str, Any]) -> Dict[str, Any]:
