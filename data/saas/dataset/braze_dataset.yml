@@ -1,0 +1,189 @@
+dataset:
+  - fides_key: braze_connector_example
+    name: Braze Dataset
+    description: A sample dataset representing the Braze connector for Fidesops
+    collections:
+      - name: user
+        fields:
+          - name: external_id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+          - name: user_aliases
+            data_categories: [system.operations]
+          - name: appboy_id
+            data_categories: [system.operations]
+          - name: braze_id
+            data_categories: [system.operations]
+          - name: first_name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: last_name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string                           
+          - name: dob
+            data_categories: [user.provided.identifiable.date_of_birth]
+            fidesops_meta:
+              data_type: string 
+          - name: country
+            data_categories: [user.provided.identifiable.contact.country]
+            fidesops_meta:
+              data_type: string
+          - name: home_city
+            data_categories: [user.provided.identifiable.contact.city]
+            fidesops_meta:
+              data_type: string
+          - name: language
+            data_categories: [system.operations]
+          - name: gender
+            data_categories: [user.provided.identifiable.gender]
+            fidesops_meta:
+              data_type: string
+          - name: phone
+            data_categories: [user.provided.identifiable.contact.phone_number]
+            fidesops_meta:
+              data_type: string
+          - name: custom_attributes
+            fields:
+              - name: string_attribute
+                data_categories: [system.operations]
+                # TODO - Has to confirm if there is a datatype of type boolean
+                # fidesops_meta:
+                #   data_type: boolean
+              - name: boolean_attribute_1
+                data_categories: [system.operations]
+              - name: integer_attribute
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer                
+              - name: array_attribute
+                data_categories: [system.operations]
+          - name: apps
+            fields:
+              - name: name
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: platform
+                data_categories: [system.operations]
+              - name: version
+                data_categories: [system.operations]
+              - name: sessions
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+          - name: campaigns_received
+            fields:
+              - name: name
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: api_campaign_id
+                data_categories: [system.operations]
+              - name: variation_name
+                data_categories: [user.provided.identifiable.name]
+                # TODO - Has to confirm if there is a datatype of type DATE
+                # fidesops_meta:
+                #   data_type: date
+              - name: variation_api_id
+                data_categories: [system.operations]
+          - name: canvases_received
+            fields:
+              - name: name
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: api_canvas_id
+                data_categories: [system.operations]
+              - name: last_entered
+                data_categories: [system.operations]
+                # TODO - Has to confirm if there is a datatype of type DATE
+                # fidesops_meta:
+                #   data_type: date                
+              - name: variation_name
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string                                  
+      - name: canvas_data
+        fields:
+          - name: name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: schedule_type
+            data_categories: [system.operations]
+          - name: channels
+            data_categories: [system.operations]
+          - name: tags
+            data_categories: [system.operations]
+          - name: steps
+            fields:
+              - name: name
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: id
+                data_categories: [system.operations]
+              - name: channels
+                data_categories: [system.operations]
+          - name: message
+            data_categories: [system.operations]
+      - name: subscription_groups
+        fields:
+          - name: users
+            fields:
+              - name: email
+                data_categories: [user.provided.identifiable.contact.email]
+                fidesops_meta:
+                  data_type: string
+              - name: phone
+                data_categories: [user.provided.identifiable.contact.phone_number]
+                fidesops_meta:
+                  data_type: string
+              - name: external_id
+                data_categories: [system.operations]
+              - name: subscription_groups
+                fields:
+                  - name: id
+                    data_categories: [user.derived.identifiable.unique_id]
+                    fidesops_meta:
+                      primary_key: True 
+                  - name: name
+                    data_categories: [user.provided.identifiable.name]
+                    fidesops_meta:
+                      data_type: string
+                  - name: channel
+                    data_categories: [system.operations]
+                  - name: status
+                    data_categories: [system.operations]
+              - name: message
+                data_categories: [system.operations]
+      - name: campaign_data
+        fields:
+          - name: name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: schedule_type
+            data_categories: [system.operations]
+          - name: channels
+            data_categories: [system.operations]
+          - name : tags
+            data_categories: [system.operations]
+          - name: conversion_behaviors
+            fields:
+              - name: window
+                fidesops_meta:
+                  data_type: integer
+              - name: type
+                data_categories: [system.operations]
+              - name: app_ids
+                data_categories: [system.operations]
+          - name: message
+            data_categories: [system.operations]

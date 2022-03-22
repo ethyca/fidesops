@@ -1,0 +1,92 @@
+saas_config:
+  fides_key: braze_connector_example
+  name: Braze SaaS Config
+  description: A sample schema representing the Braze connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: api_key
+
+  client_config:
+    protocol: https
+    host:
+      connector_param: domain
+    authentication:
+      strategy: bearer_authentication
+      configuration:
+        token:
+          connector_param: api_key
+
+  test_request:
+    path: /events/list
+    
+  endpoints:
+  - name: user
+    requests:
+      read:
+        path: /users/export/ids
+        # TODO - Custom method wasn't supported at the time it was written
+        # Please to refer to the original YAML spec as this originally had a method
+
+        # TODO - body payload wasn't supported at the time it was written
+        # Please to refer to the original YAML spec as this originally had a body
+        postprocessors:
+          - strategy: unwrap
+            configuration:
+              data_path: users
+      update:
+        path: /users/track
+        # TODO - Custom method wasn't supported at the time it was written
+        # Please to refer to the original YAML spec as this originally had a method
+
+        # TODO - body payload wasn't supported at the time it was written
+        # Please to refer to the original YAML spec as this originally had a body
+      delete:
+        path: /users/delete
+        # TODO - Custom method wasn't supported at the time it was written
+        # Please to refer to the original YAML spec as this originally had a method
+
+        # TODO - body payload wasn't supported at the time it was written
+        # Please to refer to the original YAML spec as this originally had a body
+  - name: canvas_data
+    requests:
+      read:
+        path: /canvas/details
+        request_params:
+          - name: canvas_id  
+            type: query
+            references:
+              - dataset: braze_connector_example
+                field: user.users.canvases_received.api_canvas_id
+                direction: from
+        # TODO - sourceValueChecker wasn't supported at the time it was written     
+        # Please to refer to the original YAML spec as this originally had a method    
+  - name: subscription_groups
+    requests:
+      read:
+        path: /subscription/user/status    
+        request_params:
+          - name: email
+            type: query
+            identity: email
+            data_type: string
+          - name: external_id
+            type: query
+            references:
+              - dataset: braze_connector_example
+                field: user.users.external_id
+                direction: from
+  - name: campaign_data
+    requests:
+      read:
+        path: /campaigns/details
+        request_params:
+          - name: campaign_id
+            type: query
+            references:
+              - dataset: braze_connector_example
+                field: user.users.campaigns_received.api_campaign_id
+                direction: from
+        # TODO - sourceValueChecker wasn't supported at the time it was written     
+        # Please to refer to the original YAML spec as this originally had a method                   
