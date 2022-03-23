@@ -129,7 +129,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return self.traversal_node.node.collection.grouped_inputs or set()
 
     @property
-    def grouped_identity(self) -> bool:
+    def dependent_identity_fields(self) -> bool:
         """If the current collection needs inputs from other collections, in addition to its seed data."""
         collection = self.traversal_node.node.collection
         grouped_fields = [
@@ -179,17 +179,23 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def _combine_seed_data(
         self,
+        *data: List[Row],
         grouped_data: Dict[str, Any],
         dependent_field_mappings: COLLECTION_FIELD_PATH_MAP,
     ) -> Dict[str, Any]:
-        """Combine the seed data with the other dependent inputs.  This is used when seed data into a collection requires
+        """Combine the seed data with the other dependent inputs. This is used when seed data into a collection requires
         inputs from another collection to generate subsequent queries."""
-        seed_data = self.resources.request.get_cached_identity_data()
-        for (ffp, lfp) in dependent_field_mappings[ROOT_COLLECTION_ADDRESS]:
+        # Get the identity values from the seeds that were passed into this collection.
+        seed_index = self.input_keys.index(ROOT_COLLECTION_ADDRESS)
+        seed_data = data[seed_index]
+
+        for (foreign_field_path, local_field_path) in dependent_field_mappings[
+            ROOT_COLLECTION_ADDRESS
+        ]:
             dependent_values: List = consolidate_query_matches(
-                row=seed_data, target_path=ffp
+                row=seed_data, target_path=foreign_field_path
             )
-            grouped_data[lfp.string_path] = [f"email:{dependent_values[0]}"]
+            grouped_data[local_field_path.string_path] = dependent_values
         return grouped_data
 
     def pre_process_input_data(
@@ -235,7 +241,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
             if (
                 group_dependent_fields
-                and self.grouped_identity
+                and self.dependent_identity_fields
                 and collection_address == ROOT_COLLECTION_ADDRESS
             ):
                 # Skip building data for the root collection if the seed data needs to be combined with other inputs
@@ -267,9 +273,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                         )
                         grouped_data[local_field_path.string_path] = dependent_values
 
-                    if self.grouped_identity:
+                    if self.dependent_identity_fields:
                         grouped_data = self._combine_seed_data(
-                            grouped_data, dependent_field_mappings
+                            *data,
+                            grouped_data=grouped_data,
+                            dependent_field_mappings=dependent_field_mappings,
                         )
 
                     output[FIDESOPS_GROUPED_INPUTS].append(grouped_data)

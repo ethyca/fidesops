@@ -1,7 +1,7 @@
 from typing import Dict
 import pytest
 
-from fidesops.graph.config import FieldAddress
+from fidesops.graph.config import FieldAddress, CollectionAddress
 from fidesops.schemas.saas.saas_config import SaaSConfig
 
 
@@ -34,19 +34,23 @@ def test_saas_config_to_dataset(saas_configs: Dict[str, Dict]):
     assert query_field.name == "query"
     assert query_field.identity == "email"
 
-    user_feedback_collection = saas_dataset.collections[5]
-    assert user_feedback_collection.grouped_inputs == {
+    user_collection = saas_dataset.collections[5]
+    assert user_collection.after == {
+        CollectionAddress("saas_connector_example", "projects")
+    }
+    assert user_collection.grouped_inputs == {
         "organization_slug",
         "project_slug",
+        "query"
     }
 
-    org_slug_reference, direction = user_feedback_collection.fields[0].references[0]
+    org_slug_reference, direction = user_collection.fields[0].references[0]
     assert org_slug_reference == FieldAddress(
         saas_config.fides_key, "projects", "organization", "slug"
     )
     assert direction == "from"
 
-    project_slug_reference, direction = user_feedback_collection.fields[1].references[0]
+    project_slug_reference, direction = user_collection.fields[1].references[0]
     assert project_slug_reference == FieldAddress(
         saas_config.fides_key, "projects", "slug"
     )

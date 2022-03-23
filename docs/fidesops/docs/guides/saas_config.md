@@ -164,6 +164,7 @@ test_request:
 This is where we define how we are going to access and update each collection in the corresponding Dataset. The endpoint section contains the following members:
 
 - `name` This name corresponds to a Collection in the corresponding Dataset.
+- `after` To configure if this endpoint should run after other endpoints or collections. This should be a list of collection addresses, for example: `after: [ mailchimp_connector_example.member ]` would cause the current endpoint to run after the member endpoint.
 - `requests` A map of `read` and `update` requests for this collection. Each collection can define a way to read and a way to update the data. Each request is made up of:
     - `path` A static or dynamic resource path. The dynamic portions of the path are enclosed within angle brackets `<dynamic_value>` and are replaced with values from `request_params`.
     - `method` (optional) HTTP method. Defaults to `GET` for read requests, `PUT` for update requests. Other options are `POST`, `PATCH`, or `DELETE`.

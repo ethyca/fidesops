@@ -121,11 +121,12 @@ saas_config:
           - name: placeholder
             type: query
             identity: email
-  - name: user_feedback
+  - name: users
+    after: [ saas_connector_example.projects ]
     requests:
       read:
-        path: /api/0/projects/<organization_slug>/<project_slug>/user-feedback/
-        grouped_inputs: [ organization_slug, project_slug ]
+        path: /api/0/projects/<organization_slug>/<project_slug>/users/
+        grouped_inputs: [ organization_slug, project_slug, query ]
         request_params:
           - name: organization_slug
             type: path
@@ -139,3 +140,6 @@ saas_config:
               - dataset: saas_connector_example
                 field: projects.slug
                 direction: from
+          - name: query
+            type: query
+            identity: email
