@@ -3,143 +3,561 @@ dataset:
     name: Hubspot Dataset
     description: A sample dataset representing the Hubspot connector for Fidesops
     collections:
-      - name: messages
-        fields:
-          - name: id
-            data_categories: [system.operations]
-          - name: conversation_id
-            data_categories: [system.operations]
-          - name: from_label
-            data_categories: [system.operations]
-          - name: from_email
-            data_categories: [user.provided.identifiable.contact.email]
-            fidesops_meta:
-              data_type: string
-          - name: subject
-            data_categories: [system.operations]
-          - name: message
-            data_categories: [user.provided.nonidentifiable]
-          - name: read
-            data_categories: [system.operations]
-          - name: timestamp
-            data_categories: [system.operations]
-      - name: conversations
-        fields:
-          - name: id
-            data_categories: [system.operations]
-          - name: campaign_id
-            data_categories: [system.operations]
-          - name: list_id
-            data_categories: [system.operations]
-          - name: from_email
-            data_categories: [user.provided.identifiable.contact.email]
-          - name: from_label
-            data_categories: [user.provided.identifiable.contact.email]
-          - name: subject
-            data_categories: [user.provided.nonidentifiable]
-      - name: member
+      - name: contacts
         fields:
           - name: id
             data_categories: [user.derived.identifiable.unique_id]
             fidesops_meta:
               primary_key: True
-          - name: list_id
-            data_categories: [system.operations]
-          - name: email_address
-            data_categories: [user.provided.identifiable.contact.email]
-            fidesops_meta:
               data_type: string
-          - name: unique_email_id
-            data_categories: [user.derived.identifiable.unique_id]
+          - name: properties
             fidesops_meta:
-              data_type: string
-          - name: web_id
-            data_categories: [user.derived.identifiable.unique_id]
-            fidesops_meta:
-              data_type: string
-          - name: email_type
-            data_categories: [system.operations]
-          - name: status
-            data_categories: [system.operations]
-          - name: merge_fields
+              data_type: object
             fields:
-              - name: FNAME
+              - name: company
+                data_categories: [user.provided.nonidentifiable]
+                fidesops_meta:
+                  data_type: string
+              - name: createdate
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: email
+                data_categories: [user.provided.identifiable.contact.email]
+                fidesops_meta:
+                  data_type: string
+              - name: firstname
                 data_categories: [user.provided.identifiable.name]
                 fidesops_meta:
                   data_type: string
-              - name: LNAME
+              - name: lastmodifieddate
+                data_categories: [user.derived.nonidentifiable.sensor]
+                fidesops_meta:
+                  data_type: string
+              - name: lastname
                 data_categories: [user.provided.identifiable.name]
                 fidesops_meta:
                   data_type: string
-              - name: ADDRESS
-                fields:
-                  - name: addr1
-                    data_categories: [user.provided.identifiable.contact.street]
-                    fidesops_meta:
-                      data_type: string
-                  - name: addr2
-                    data_categories: [user.provided.identifiable.contact.street]
-                    fidesops_meta:
-                      data_type: string
-                  - name: city
-                    data_categories: [user.provided.identifiable.contact.city]
-                    fidesops_meta:
-                      data_type: string
-                  - name: state
-                    data_categories: [user.provided.identifiable.contact.state]
-                    fidesops_meta:
-                      data_type: string
-                  - name: zip
-                    data_categories: [user.provided.identifiable.contact.postal_code]
-                    fidesops_meta:
-                      data_type: string
-                  - name: country
-                    data_categories: [user.provided.identifiable.contact.country]
-                    fidesops_meta:
-                      data_type: string
-              - name: PHONE
+              - name: phone
                 data_categories: [user.provided.identifiable.contact.phone_number]
                 fidesops_meta:
                   data_type: string
-              - name: BIRTHDAY
-                data_categories: [user.provided.identifiable.date_of_birth]
+              - name: website
+                data_categories: [user.provided.nonidentifiable]
                 fidesops_meta:
                   data_type: string
-          - name: ip_signup
-            data_categories: [user.derived.identifiable.device.ip_address]
+          - name: createdAt
+            data_categories: [user.derived.nonidentifiable.sensor]
             fidesops_meta:
               data_type: string
-          - name: timestamp_signup
+          - name: updatedAt
+            data_categories: [user.derived.nonidentifiable.sensor]
+            fidesops_meta:
+              data_type: string
+          - name: archived
             data_categories: [system.operations]
-          - name: ip_opt
+            fidesops_meta:
+              data_type: boolean
+      - name: owners
+        fields:
+          - name: firstName
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: lastName
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: createdAt
             data_categories: [system.operations]
-          - name: timestamp_opt
+            fidesops_meta:
+              data_type: string
+          - name: archived
             data_categories: [system.operations]
-          - name: language
-            data_categories: [system.operations]
-          - name: email_client
-            data_categories: [system.operations]
-          - name: location
-            fields:
-              - name: latitude
-                data_categories: [system.operations]
-              - name: longitude
-                data_categories: [system.operations]
-              - name: gmtoff
-                data_categories: [system.operations]
-              - name: dstoff
-                data_categories: [system.operations]
-              - name: country_code
-                data_categories: [user.provided.identifiable.contact.country]
-                fidesops_meta:
-                  data_type: string
-              - name: timezone
-                data_categories: [system.operations]
-          - name: source
-            data_categories: [system.operations]
-          - name: tags
+            fidesops_meta:
+              data_type: boolean
+          - name: teams
+            fidesops_meta:
+              data_type: object[]
             fields:
               - name: id
                 data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
               - name: name
-                data_categories: [system.operations]
+                data_categories: [user.provided.nonidentifiable]
+                fidesops_meta:
+                  data_type: string
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+              data_type: string
+          - name: userId
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              data_type: integer
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: updatedAt
+            data_categories: [user.derived.nonidentifiable.sensor]
+            fidesops_meta:
+              data_type: string
+      - name: marketing_emails
+        fields:
+          - name: ab
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: abHoursToWait
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: abSampleSizeDefault
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: abSamplingDefault
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: abSuccessMetric
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: abTestPercentage
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: abVariation
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: absoluteUrl
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: allEmailCampaignIds
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer[]
+          - name: analyticsPageId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: analyticsPageType
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: archived
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: author
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: authorAt
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: authorEmail
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: authorName
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: authorUserId
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              data_type: integer
+          - name: blogRssSettings
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: object # how to denote object of any?
+          - name: campaign
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: campaignName
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: campaignUtm
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: canSpamSettingsId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: categoryId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: contentTypeCategory
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: createPage
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: created
+            data_categories: [user.derived.nonidentifiable.sensor]
+            fidesops_meta:
+              data_type: integer
+          - name: createdById
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: currentState
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: currentlyPublished
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: domain
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: emailBody
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: emailNote
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: emailTemplateMode
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: emailType
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: emailbodyPlaintext
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: feedbackEmailCategory
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: feedbackSurveyId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: flexAreas
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: object # any
+          - name: freezeDate
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: fromName
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: htmlTitle
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+              primary_key: True
+          - name: isGraymailSuppressionEnabled
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: isLocalTimezoneSend
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: isPublished
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: isRecipientFatigueSuppressionEnabled
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: lastEditSessionId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: lastEditUpdateId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: layoutSections
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: object # object of any type
+          - name: leadFlowId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: liveDomain
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: mailingListsExcluded,
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer[]
+          - name: mailingListsIncluded
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer[]
+          - name: maxRssEntries
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: metaDescription
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: pageExpiryEnabled
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: pageRedirected
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: portalId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: previewKey
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: processingStatus
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: publishDate
+            data_categories: [user.derived.nonidentifiable.sensor]
+            fidesops_meta:
+              data_type: integer
+          - name: publishImmediately
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: publishedUrl
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: replyTo
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: resolvedDomain
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: rssEmailByText
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: rssEmailClickThroughText
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: rssEmailCommentText
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: rssEmailEntryTemplateEnabled
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: rssEmailImageMaxWidth
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: rssEmailUrl
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: scrubsSubscriptionLinks
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: slug
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: smartEmailFields
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: state
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: styleSettings
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: subcategory
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: subject
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: subscription
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: subscriptionName
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: teamPerms
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string[]
+          - name: templatePath
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: transactional
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: unpublishedAt
+            data_categories: [user.derived.nonidentifiable.sensor]
+            fidesops_meta:
+              data_type: integer
+          - name: updated
+            data_categories: [user.derived.nonidentifiable.sensor]
+            fidesops_meta:
+              data_type: integer
+          - name: updatedById
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: url
+            data_categories: [user.provided.nonidentifiable]
+            fidesops_meta:
+              data_type: string
+          - name: useRssHeadlineAsSubject
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: userPerms
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string[]
+          - name: vidsExcluded
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer[]
+          - name: vidsIncluded
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer[]
+          - name: widgets
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: object # any type
+      - name: subscription_preferences
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
+              data_type: string
+          - name: name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: description
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: status
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: sourceOfStatus
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: preferenceGroupName
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: legalBasis
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: legalBasisExplanation
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+      - name: users
+        fields:
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+              data_type: string
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: roleId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: primaryTeamId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: secondaryTeamIds
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string[]
+      - name: user_provisioning
+        fields:
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+              data_type: string
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: roleId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: primaryTeamId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: secondaryTeamIds
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string[]

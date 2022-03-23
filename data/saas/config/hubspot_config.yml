@@ -40,7 +40,18 @@ saas_config:
           request_params:
             - name: email
               identity: email
-          data_path: results
+            - name: limit
+              type: query
+              default_value: 100
+          postprocessors:
+            - strategy: unwrap
+              configuration:
+                data_path: results
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: paging.next.link
         update:
           path: /crm/v3/objects/contacts/<contactId>
           method: PATCH
@@ -66,8 +77,16 @@ saas_config:
               identity: email
             - name: limit
               type: query
-              default_value: 1000
-          data_path: results
+              default_value: 100
+          postprocessors:
+            - strategy: unwrap
+              configuration:
+                data_path: results
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: paging.next.link
     - name: marketing_emails
       requests:
         read:
@@ -76,7 +95,7 @@ saas_config:
           request_params:
             - name: limit
               type: query
-              default_value: 300
+              default_value: 100
           data_path: objects
           postprocessors:
             - strategy: filter
@@ -84,6 +103,12 @@ saas_config:
                 field: authorEmail  # or email?
                 value:
                   identity: email
+          pagination:
+            strategy: offset
+            configuration:
+              incremental_param: offset
+              increment_by: 100
+              limit: 10000
         update:
           path: marketing-emails/v1/emails/<emailId>
           method: PUT
@@ -128,8 +153,19 @@ saas_config:
         read:
           path: /settings/v3/users/
           method: GET
-          data_path: results
+          request_params:
+            - name: limit
+              type: query
+              default_value: 100
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: paging.next.link
           postprocessors:
+            - strategy: unwrap
+              configuration:
+                data_path: results
             - strategy: filter
               configuration:
                 field: email
