@@ -681,7 +681,7 @@ class TestSaaSQueryConfig:
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
         ]
-        
+
         config = SaaSQueryConfig(member, endpoints, {})
         row = {
             "id": "123",
@@ -714,7 +714,7 @@ class TestSaaSQueryConfig:
             CollectionAddress(saas_config.fides_key, "member")
         ]
 
-        config = SaaSQueryConfig(member, endpoints)
+        config = SaaSQueryConfig(member, endpoints, {})
         row = {
             "id": "123",
             "merge_fields": {"FNAME": "First", "LNAME": "Last"},
@@ -753,7 +753,7 @@ class TestSaaSQueryConfig:
         payment_methods = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "payment_methods")
         ]
-        config = SaaSQueryConfig(member, endpoints)
+        config = SaaSQueryConfig(member, endpoints, {})
         row = {
             "id": "123",
             "merge_fields": {"FNAME": "First", "LNAME": "Last"},
