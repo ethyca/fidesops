@@ -2,7 +2,7 @@ import logging
 import json
 from typing import Any, Dict, List, Optional, TypeVar
 import pydash
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
 from fidesops.graph.traversal import TraversalNode
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
@@ -29,6 +29,39 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self.endpoints = endpoints
         self.secrets = secrets
 
+    @staticmethod
+    def _build_request_body(  # pylint: disable=R0913
+        path: str,
+        param_name: str,
+        custom_body: Optional[str] = None,
+        default_value: Optional[str] = None,
+        field_reference: Optional[str] = None,
+        identity: Optional[str] = None,
+    ) -> Optional[str]:
+        """
+        Method to build request body based on config vals. Common to both read and update requests.
+        Attempts to
+        """
+        if not custom_body:
+            logger.info(f"Missing custom body {path}")
+            return None
+        if default_value:
+            custom_body = custom_body.replace(f"<{param_name}>", f'"{default_value}"')
+        elif field_reference:
+            custom_body = custom_body.replace(
+                f"<{param_name}>",
+                f'"{field_reference}"',
+            )
+        elif identity:
+            custom_body = custom_body.replace(
+                f"<{param_name}>",
+                f'"{identity}"',
+            )
+        else:
+            logger.info(f"Missing body param value(s) for {path}")
+            return None
+        return custom_body
+
     def get_request_by_action(self, action: str) -> SaaSRequest:
         """
         Returns the appropriate request config based on the
@@ -48,7 +81,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
     def generate_requests(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
-    ) -> Optional[List[SaaSRequestParams]]:
+    ) -> List[SaaSRequestParams]:
         """Takes the input_data and uses it to generate a list of SaaS request params"""
 
         filtered_data = self.node.typed_filtered_values(input_data)
@@ -73,17 +106,20 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         current_request = self.get_request_by_action("read")
 
         path: str = current_request.path
-        params: Dict[str, Any] = {}
+        query_params: Dict[str, Any] = {}
+        body: Optional[str] = current_request.body
 
         # uses the param names to read from the input data
         for param in current_request.request_params:
             if param.type == "query":
                 if param.default_value is not None:
-                    params[param.name] = param.default_value
+                    query_params[param.name] = param.default_value
                 elif param.references or param.identity:
-                    params[param.name] = input_data[param.name][0]
+                    query_params[param.name] = input_data[param.name][0]
                 elif param.connector_param:
-                    params[param.name] = pydash.get(self.secrets, param.connector_param)
+                    query_params[param.name] = pydash.get(
+                        self.secrets, param.connector_param
+                    )
             elif param.type == "path":
                 if param.references or param.identity:
                     path = path.replace(f"<{param.name}>", input_data[param.name][0])
@@ -92,9 +128,25 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                         f"<{param.name}>",
                         pydash.get(self.secrets, param.connector_param),
                     )
-
+            elif param.type == "body":
+                body = SaaSQueryConfig._build_request_body(
+                    path,
+                    param.name,
+                    body,
+                    param.default_value,
+                    input_data[param.name][0] if param.references else None,
+                    input_data[param.name][0] if param.identity else None,
+                )
         logger.info(f"Populated request params for {current_request.path}")
-        return "GET", path, params, None
+        method: HTTPMethod = (
+            current_request.method if current_request.method else HTTPMethod.GET
+        )
+        return SaaSRequestParams(
+            method=method,
+            path=path,
+            params=query_params,
+            body=json.loads(body) if body else None,
+        )
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
@@ -111,6 +163,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         path: str = current_request.path
         params: Dict[str, Any] = {}
+        body: Optional[str] = current_request.body or None
 
         # uses the reference fields to read from the param_values
         for param in current_request.request_params:
@@ -141,11 +194,37 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                         f"<{param.name}>",
                         pydash.get(self.secrets, param.connector_param),
                     )
+            elif param.type == "body":
+                body = SaaSQueryConfig._build_request_body(
+                    path,
+                    param.name,
+                    body,
+                    param.default_value,
+                    pydash.get(param_values, param.references[0].field)
+                    if param.references
+                    else None,
+                    pydash.get(param_values, param.identity)
+                    if param.identity
+                    else None,
+                )
         logger.info(f"Populated request params for {current_request.path}")
 
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
-        body: Dict[str, Any] = unflatten_dict(update_value_map)
-        return "PUT", path, params, json.dumps(body)
+        update_values: Dict[str, Any] = unflatten_dict(update_value_map)
+        method: HTTPMethod = (
+            current_request.method if current_request.method else HTTPMethod.PUT
+        )
+        if body:
+            # removes outer {} wrapper from body for greater flexibility in custom body config
+            body = body.replace(
+                "<masked_object_fields>", json.dumps(update_values)[1:-1]
+            )
+        return SaaSRequestParams(
+            method=method,
+            path=path,
+            params=params,
+            body=json.dumps(json.loads(body) if body else update_values),
+        )
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string"""
