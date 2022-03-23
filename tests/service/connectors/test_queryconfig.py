@@ -664,12 +664,10 @@ class TestSaaSQueryConfig:
         prepared_request = config.generate_query(
             {"query": ["customer-1@example.com"]}, policy
         )
-        assert prepared_request == (
-            "GET",
-            "/2.0/payment_methods",
-            {"limit": 10, "query": "customer-1@example.com"},
-            None,
-        )
+        assert prepared_request.method == HTTPMethod.GET.value
+        assert prepared_request.path == "/2.0/payment_methods"
+        assert prepared_request.params == {"limit": 10, "query": "customer-1@example.com"}
+        assert prepared_request.body is None
 
     def test_generate_update_stmt(
         self,
@@ -683,10 +681,7 @@ class TestSaaSQueryConfig:
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
         ]
-        payment_methods = combined_traversal.traversal_node_dict[
-            CollectionAddress(saas_config.fides_key, "payment_methods")
-        ]
-
+        
         config = SaaSQueryConfig(member, endpoints, {})
         row = {
             "id": "123",
@@ -755,6 +750,9 @@ class TestSaaSQueryConfig:
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
         ]
+        payment_methods = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "payment_methods")
+        ]
         config = SaaSQueryConfig(member, endpoints)
         row = {
             "id": "123",
@@ -779,9 +777,7 @@ class TestSaaSQueryConfig:
         prepared_request = config.generate_update_stmt(
             row, erasure_policy_string_rewrite, privacy_request
         )
-        assert prepared_request == (
-            "PUT",
-            "/2.0/payment_methods",
-            {},
-            json.dumps({"customer_name": "MASKED"}),
-        )
+        assert prepared_request.method == HTTPMethod.PUT.value
+        assert prepared_request.path == "/2.0/payment_methods"
+        assert prepared_request.params == {}
+        assert prepared_request.body == json.dumps({"customer_name": "MASKED"})
