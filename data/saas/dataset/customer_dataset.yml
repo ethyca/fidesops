@@ -1,0 +1,145 @@
+dataset:
+  - fides_key: customer_connector_example
+    name: Customer Dataset
+    description: A sample dataset representing the Customer connector for Fidesops
+    collections:
+      - name: customer_search
+        fields:
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+      - name: customers
+        fields:
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+          - name: attributes
+            fields:
+              - name: email
+                data_categories: [user.provided.identifiable.contact.email]
+                fidesops_meta:
+                  data_type: string
+              - name: first_name
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: last_name
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: id
+                data_categories: [user.derived.identifiable.device.ip_address]
+                fidesops_meta:
+                  data_type: string                
+          - name: timestamps
+            fields:
+              - name: created_at
+                data_categories: [user.derived.identifiable.location]
+                fidesops_meta:
+                  data_type: integer
+              - name: email
+                data_categories: [user.provided.identifiable.contact.email]
+                fidesops_meta:
+                  data_type: string
+              - name: first_name
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: id
+                data_categories: [user.derived.identifiable.device.ip_address]
+                fidesops_meta:
+                  data_type: string    
+              - name: plan
+                data_categories: [system.operations]
+          - name: unsubscribed
+            data_categories: [system.operations]
+          - name: devices
+            fields:
+              - name: id
+                data_categories: [user.derived.identifiable.device.device_id]
+                fidesops_meta:
+                  data_type: string
+              - name: last_status
+                data_categories: [system.operations]
+              - name: last_used
+                data_categories: [system.operations]
+              - name: platform
+                data_categories: [system.operations]
+      - name: segments
+        fields:
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+          - name: name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: description
+            data_categories: [system.operations]
+      - name: activities
+        fields:
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+          - name: customer_id
+            data_categories: [system.operations]
+          - name: type
+            data_categories: [system.operations]
+          - name: data
+            fields:
+              - name: price
+                data_categories: [system.operations]
+              - name: product
+                data_categories: [system.operations]
+          - name: name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+      - name: messages
+        fields:
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+          - name: deduplicate_id
+            data_categories: [system.operations]
+          - name: msg_template_id
+            data_categories: [system.operations]
+          - name: customer_id
+            data_categories: [system.operations]
+          - name: campaign_id
+            data_categories: [system.operations]
+          - name: action_id
+            data_categories: [system.operations]
+          - name: recipient
+            data_categories: [system.operations]
+          - name: subject
+            data_categories: [system.operations]
+          - name: metrics
+            fields:
+              - name: delivered
+                data_categories: [system.operations]
+              - name: sent
+                data_categories: [system.operations]
+          - name: created
+            data_categories: [system.operations]
+          - name: failure_message
+            data_categories: [system.operations]
+          - name: newsletter_id
+            data_categories: [system.operations]
+          - name: content_id
+            data_categories: [system.operations]
+          - name: broadcast_id
+            data_categories: [system.operations]
+          - name: type
+            data_categories: [system.operations]
+          - name: forgotten
+            data_categories: [system.operations]

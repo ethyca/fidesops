@@ -1,0 +1,104 @@
+saas_config:
+  fides_key: customer_connector_example
+  name: Customer SaaS Config
+  description: A sample schema representing the Customer connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: app_api_key
+    - name: tracking_site_id
+    - name: tracking_api_key
+
+  client_config:
+    protocol: https
+    host:
+      connector_param: domain
+    authentication:
+      strategy: bearer_authentication
+      configuration:
+        token:
+          connector_param: app_api_key
+
+  test_request:
+    path: /v1/api/segments
+
+  endpoints:
+  - name: customer_search
+    requests:
+      read:
+        path: /v1/api/customers
+        request_params:
+          - name: email
+            type: query
+            identity: email
+            data_type: string
+        data_path: results
+  - name: customers
+    requests:
+      read:
+        path: /v1/api/customers/<customer_id>/attributes
+        request_params:
+          - name: customer_id
+            type: path
+            references:
+              - dataset: customer_connector_example
+                field: customer_search.results.id
+                direction: from
+        data_path: customer
+      delete:
+        # TODO - Has to figure out a way to send different host values
+        path: /api/v1/customers/<customer_id>
+        request_params:
+          - name: customer_id
+            type: path
+            references:
+              - dataset: customer_connector_example
+                field: customers.customer.id
+                direction: from
+  - name: segments
+    requests:
+      read:
+        path: /v1/api/customers/<customer_id>/segments
+        request_params:
+          - name: customer_id
+            type: path
+            references:
+              - dataset: customer_connector_example
+                field: customer_search.results.id
+                direction: from
+        data_path: segments
+      delete:
+        path: /api/v1/segments/<segment_id>/remove_customers
+        # TODO - custom authorization hasn't implemented at the time writing this
+        # TODO - Custom HTTP method and body for POST hasn't implemented at the time writing this
+        request_params:
+          - name: segment_id
+            type: path
+            references:
+              - dataset: customer_connector_example
+                field: segments.segments.id
+                direction: from
+  - name: activities
+    requests:
+      read:
+        path: /v1/api/customers/<customer_id>/activities
+        request_params:
+          - name: customer_id
+            type: path
+            references:
+              - dataset: customer_connector_example
+                field: customer_search.results.id
+                direction: from
+        data_path: activities
+  - name: messages
+    requests:
+      read:
+        path: /v1/api/customers/<customer_id>/messages
+        request_params:
+          - name: customer_id
+            type: path
+            references:
+              - dataset: customer_connector_example
+                field: customer_search.results.id
+                direction: from
+        data_path: messages                
