@@ -130,6 +130,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             path=path,
             params=query_params,
             body=json.loads(body) if body else None,
+            ignore_errors=current_request.ignore_errors,
         )
 
     def generate_update_stmt(
@@ -195,6 +196,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             path=path,
             params=params,
             body=json.dumps(json.loads(body) if body else update_values),
+            ignore_errors=current_request.ignore_errors,
         )
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:

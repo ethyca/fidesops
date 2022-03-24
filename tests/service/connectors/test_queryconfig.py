@@ -631,6 +631,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.path == "/3.0/search-members"
         assert prepared_request.params == {"query": "customer-1@example.com"}
         assert prepared_request.body is None
+        assert not prepared_request.ignore_errors
 
         # static path with multiple query params with default values
         config = SaaSQueryConfig(conversations, endpoints)
@@ -641,6 +642,8 @@ class TestSaaSQueryConfig:
         assert prepared_request.path == "/3.0/conversations"
         assert prepared_request.params == {"count": 1000, "offset": 0, "placeholder": "customer-1@example.com"}
         assert prepared_request.body is None
+        # Example conversations endpoint has ignore_errors set to True
+        assert prepared_request.ignore_errors
 
         # dynamic path with no query params
         config = SaaSQueryConfig(messages, endpoints)
@@ -649,6 +652,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.path == "/3.0/conversations/abc/messages"
         assert prepared_request.params == {}
         assert prepared_request.body is None
+        assert not prepared_request.ignore_errors
 
     def test_generate_update_stmt(
         self, erasure_policy_string_rewrite, combined_traversal, connection_config_saas_example

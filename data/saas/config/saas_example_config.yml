@@ -48,6 +48,7 @@ saas_config:
   - name: conversations
     requests:
       read:
+        ignore_errors: true
         path: /3.0/conversations
         request_params:
           - name: count

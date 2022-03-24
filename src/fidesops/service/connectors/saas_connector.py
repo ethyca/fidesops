@@ -89,6 +89,14 @@ class AuthenticatedClient:
             raise ConnectionException(f"Operational Error connecting to '{self.key}'.")
 
         if not response.ok:
+            if request_params.ignore_errors:
+                logger.info(
+                    f"Ignoring response with status code {response.status_code}."
+                )
+                response = Response()
+                response._content = b"{}"  # pylint: disable=W0212
+                return response
+
             raise ClientUnsuccessfulException(status_code=response.status_code)
 
         return response

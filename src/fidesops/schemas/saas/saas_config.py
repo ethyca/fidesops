@@ -82,6 +82,7 @@ class SaaSRequest(BaseModel):
     data_path: Optional[str]
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
+    ignore_errors: Optional[bool] = False
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""

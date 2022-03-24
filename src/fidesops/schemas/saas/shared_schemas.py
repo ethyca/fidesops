@@ -22,6 +22,7 @@ class SaaSRequestParams(BaseModel):
     path: str
     params: Dict[str, Any]
     body: Optional[str]
+    ignore_errors: Optional[bool] = False
 
     class Config:
         """Using enum values"""

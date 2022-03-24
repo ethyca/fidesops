@@ -72,6 +72,34 @@ def test_offset_with_connector_param_reference(response_with_body):
     )
 
 
+def test_offset_with_connector_param_reference_ignore_errors(response_with_body):
+    config = OffsetPaginationConfiguration(
+        incremental_param="page",
+        increment_by=1,
+        limit={"connector_param": "limit"},
+    )
+    connector_params = {"limit": 10}
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/conversations",
+        params={"page": 1},
+        body=None,
+        ignore_errors=True
+    )
+
+    paginator = OffsetPaginationStrategy(config)
+    next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
+        request_params, connector_params, response_with_body, "conversations"
+    )
+    assert next_request == SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/conversations",
+        params={"page": 2},
+        body=None,
+        ignore_errors=True
+    )
+
+
 def test_offset_with_connector_param_reference_not_found(response_with_body):
     config = OffsetPaginationConfiguration(
         incremental_param="page",

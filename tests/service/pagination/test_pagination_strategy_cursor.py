@@ -38,9 +38,8 @@ def test_cursor(response_with_body):
         method=HTTPMethod.GET,
         path="/conversations",
         params={},
-        body=None
+        body=None,
     )
-
     paginator = CursorPaginationStrategy(config)
     next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
         request_params, {}, response_with_body, "conversations"
@@ -51,6 +50,7 @@ def test_cursor(response_with_body):
         params={"after": 3},
         body=None
     )
+    assert not next_request.ignore_errors
 
 
 def test_missing_cursor_value(response_with_body):
@@ -87,3 +87,28 @@ def test_cursor_with_empty_list(response_with_empty_list):
         request_params, {}, response_with_empty_list, "conversations"
     )
     assert next_request is None
+
+
+def test_cursor_ignore_errors(response_with_body):
+    config = CursorPaginationConfiguration(
+        cursor_param="after", field="id"
+    )
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/conversations",
+        params={},
+        body=None,
+        ignore_errors=True
+    )
+    paginator = CursorPaginationStrategy(config)
+    next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
+        request_params, {}, response_with_body, "conversations"
+    )
+    assert next_request == SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/conversations",
+        params={"after": 3},
+        body=None,
+        ignore_errors=True
+    )
+    assert next_request.ignore_errors
