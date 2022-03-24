@@ -67,12 +67,13 @@ class AuthenticatedClient:
     ) -> PreparedRequest:
         """
         Returns an authenticated request based on the client config and
-        incoming path, query, and body params.
+        incoming path, headers, query, and body params.
         """
         req = Request(
             method=request_params.method,
             url=f"{self.uri}{request_params.path}",
-            params=request_params.params,
+            headers=request_params.headers,
+            params=request_params.query_params,
             data=request_params.body,
         ).prepare()
         return self.add_authentication(req, self.client_config.authentication)

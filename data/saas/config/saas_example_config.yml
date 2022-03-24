@@ -30,10 +30,10 @@ saas_config:
   - name: messages
     requests:
       read:
+        method: GET
         path: /3.0/conversations/<conversation_id>/messages
         request_params:
           - name: conversation_id
-            type: path
             references:
               - dataset: saas_connector_example
                 field: conversations.id
@@ -50,16 +50,15 @@ saas_config:
   - name: conversations
     requests:
       read:
+        method: GET
         path: /3.0/conversations
-        request_params:
+        query_params:
           - name: count
-            type: query
-            default_value: 1000
+            value: 1000
           - name: offset
-            type: query
-            default_value: 0
+            value: 0
+        request_params:
           - name: placeholder
-            type: query
             identity: email
         postprocessors:
           - strategy: unwrap
@@ -68,27 +67,28 @@ saas_config:
   - name: member
     requests:
       read:
+        method: GET
         path: /3.0/search-members
-        request_params:
+        query_params:
           - name: query
-            type: query
+            value: <email>
+        request_params:
+          - name: email
             identity: email
-            data_type: string
         postprocessors:
           - strategy: unwrap
             configuration:
               data_path: exact_matches.members
       update:
+        method: PUT
         path: /3.0/lists/<list_id>/members/<subscriber_hash>
         request_params:
           - name: list_id
-            type: path
             references:
               - dataset: saas_connector_example
                 field: member.list_id
                 direction: from
           - name: subscriber_hash
-            type: path
             references:
               - dataset: saas_connector_example
                 field: member.id
@@ -96,20 +96,32 @@ saas_config:
   - name: payment_methods
     requests:
       read:
+        method: GET
         path: /<version>/payment_methods
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: On-Behalf-Of
+            value: <email>
+          - name: Token
+            value: Custom <api_key> 
+        query_params:
+          - name: limit
+            value: <limit>
+          - name: query
+            value: <email>
         request_params:
           - name: limit
-            type: query
             connector_param: page_limit
           - name: version
-            type: path
             connector_param: api_version
-          - name: query
-            type: query
+          - name: email
             identity: email
+          - name: api_key
+            connector_param: api_key
       update:
+        method: PUT
         path: /<version>/payment_methods
         request_params:
           - name: version
-            type: path
             connector_param: api_version

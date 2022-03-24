@@ -30,5 +30,5 @@ def test_saas_config_to_dataset(saas_configs: Dict[str, Dict]):
     assert field_address == FieldAddress(saas_config.fides_key, "conversations", "id")
     assert direction == "from"
 
-    assert query_field.name == "query"
+    assert query_field.name == "email"
     assert query_field.identity == "email"

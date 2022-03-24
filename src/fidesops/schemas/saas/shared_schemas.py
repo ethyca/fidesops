@@ -20,7 +20,8 @@ class SaaSRequestParams(BaseModel):
 
     method: HTTPMethod
     path: str
-    params: Dict[str, Any]
+    headers: Optional[Dict[str, Any]]
+    query_params: Optional[Dict[str, Any]]
     body: Optional[str]
 
     class Config:

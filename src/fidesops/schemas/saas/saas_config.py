@@ -26,9 +26,6 @@ class RequestParam(BaseModel):
     """
 
     name: str
-    type: Literal[
-        "query", "path", "body"
-    ]  # used to determine location in the generated request
     default_value: Optional[Any]
     identity: Optional[str]
     references: Optional[List[FidesopsDatasetReference]]
@@ -70,6 +67,16 @@ class Strategy(BaseModel):
     configuration: Dict[str, Any]
 
 
+class Header(BaseModel):
+    name: str
+    value: str
+
+
+class QueryParam(BaseModel):
+    name: str
+    value: str
+
+
 class SaaSRequest(BaseModel):
     """
     A single request with a static or dynamic path, and the request params needed to build the request.
@@ -78,6 +85,8 @@ class SaaSRequest(BaseModel):
 
     path: str
     method: Optional[HTTPMethod]
+    headers: Optional[List[Header]]
+    query_params: Optional[List[QueryParam]]
     body: Optional[str]
     request_params: Optional[List[RequestParam]]
     data_path: Optional[str]

@@ -73,12 +73,11 @@ class OffsetPaginationStrategy(PaginationStrategy):
 
     def validate_request(self, request: Dict[str, Any]) -> None:
         """Ensures that the query param specified by 'incremental_param' exists in the request"""
-        request_params = (
-            request_param
-            for request_param in request.get("request_params", [])
-            if request_param.get("name") == self.incremental_param
-            and request_param.get("type") == "query"
+        query_params = (
+            query_params
+            for query_params in request.get("query_params", [])
+            if query_params.get("name") == self.incremental_param
         )
-        request_param = next(request_params, None)
-        if request_param is None:
+        query_param = next(query_params, None)
+        if query_param is None:
             raise ValueError(f"Query param '{self.incremental_param}' not found.")
