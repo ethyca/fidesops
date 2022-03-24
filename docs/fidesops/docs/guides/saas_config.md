@@ -188,6 +188,40 @@ This is where we define how we are going to access and update each collection in
     - `postprocessors` An optional list of response post-processing strategies. We will ignore this for the example scenarios below but an in depth-explanation can be found under [SaaS Post-Processors](saas_postprocessors.md)
     - `pagination` An optional strategy used to get the next set of results from APIs with resources spanning multiple pages. Details can be found under [SaaS Pagination](saas_pagination.md).
 
+## Request params in more detail
+The `request_params` list is what provides the values to our various placeholders in the path, headers, query params and body. Values can be `identities` such as email or phone number, `references` to fields in other collections, or `connector_params` which are defined as part of configuring a SaaS connector. Whenever a placeholder is encountered, the placeholder name is looked up in the list of `request_params` and corresponding value is used instead. Here is an example of placeholders being used in various locations:
+
+```yaml
+messages:
+  requests:
+    read:
+      method: GET
+      path: /<version>/messages
+      headers:
+        - name: Content-Type
+          value: application/json
+        - name: On-Behalf-Of
+          value: <email>
+        - name: Token
+          value: Custom <api_key>
+      query_params:
+        - name: count
+          value: 100
+        - name: organization:
+          value: <org_id>
+        - name: where:
+          value: properties["$email"]=="<email>"
+      request_params:
+        - name: email
+          identity: email
+        - name: api_key
+          connector_param: api_key
+        - name: org_id
+          connector_param: org_id
+        - name: version
+          connector_param: version
+```
+
 ## Example scenarios
 #### Dynamic path with dataset references
 ```yaml

@@ -49,7 +49,7 @@ pagination:
 ```
 
 We can also access links returned in the body. If we receive this value in the body:
-```
+```json
 {
   ...
   "next_page": {
