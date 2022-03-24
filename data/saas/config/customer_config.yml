@@ -42,7 +42,7 @@ saas_config:
             type: path
             references:
               - dataset: customer_connector_example
-                field: customer_search.results.id
+                field: customer_search.results.id # TODO - Can we confirm the results data_path is appropriate
                 direction: from
         data_path: customer
       delete:
