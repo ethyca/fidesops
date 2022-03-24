@@ -41,16 +41,17 @@ saas_config:
           connector_param: api_key
 
   test_request:
+    method: GET
     path: /3.0/lists
-
+    
   endpoints:
   - name: messages
     requests:
       read:
+        method: GET
         path: /3.0/conversations/<conversation_id>/messages
         request_params:
           - name: conversation_id
-            type: path
             references:
               - dataset: mailchimp_connector_example
                 field: conversations.id
@@ -65,39 +66,45 @@ saas_config:
   - name: conversations
     requests:
       read:
+        method: GET
         path: /3.0/conversations
-        request_params:
+        query_params:
           - name: count
-            type: query
-            default_value: 1000
+            value: 1000
           - name: offset
-            type: query
-            default_value: 0
+            value: 0
+        request_params:
           - name: placeholder
-            type: query
             identity: email
         data_path: conversations
+        pagination:
+          strategy: offset
+          configuration:
+            incremental_param: offset
+            increment_by: 1000
+            limit: 10000
   - name: member
     requests:
       read:
+        method: GET
         path: /3.0/search-members
-        request_params:
+        query_params:
           - name: query
-            type: query
+            value: <email>
+        request_params:
+          - name: email
             identity: email
-            data_type: string
         data_path: exact_matches.members
       update:
+        method: PUT
         path: /3.0/lists/<list_id>/members/<subscriber_hash>
         request_params:
           - name: list_id
-            type: path
             references:
               - dataset: mailchimp_connector_example
                 field: member.list_id
                 direction: from
           - name: subscriber_hash
-            type: path
             references:
               - dataset: mailchimp_connector_example
                 field: member.id
@@ -158,26 +165,28 @@ authentication:
 Once the base client is defined we can use a `test_request` to verify our hostname and credentials. This is in the form of an idempotent request (usually a read). The testing approach is the same for any [ConnectionConfig test](database_connectors.md#testing-your-connection).
 ```yaml
 test_request:
+  method: GET
   path: /3.0/lists
 ```
 #### Endpoints
 This is where we define how we are going to access and update each collection in the corresponding Dataset. The endpoint section contains the following members:
 
 - `name` This name corresponds to a Collection in the corresponding Dataset.
-- `requests` A map of `read` and `update` requests for this collection. Each collection can define a way to read and a way to update the data. Each request is made up of:
+- `requests` A map of `read`, `update`, and `delete` requests for this collection. Each collection can define a way to read and a way to update the data. Each request is made up of:
+    - `method` The HTTP method used for the endpoint.
     - `path` A static or dynamic resource path. The dynamic portions of the path are enclosed within angle brackets `<dynamic_value>` and are replaced with values from `request_params`.
-    - `method` (optional) HTTP method. Defaults to `GET` for read requests, `PUT` for update requests. Other options are `POST`, `PATCH`, or `DELETE`.
-    - `body` (optional) static or dynamic request body, with dynamic portions enclosed in brackets, just like `path`. These dynamic values will be replaced with values from `request_params`. For update requests, you'll need to additionally annotated `<masked_object_fields>` as a placeholder for the fidesops generated update values.
+    - `headers` and `query_params` The HTTP headers and query parameters to include in the request.
+        - `name` the value to use for the header or query param name.
+        - `value` can be a static value or use a `<dynamic_value>` which will be replaced with the value sourced from the `request_param` with a matching name.
+    - `body` (optional) static or dynamic request body, with dynamic portions enclosed in brackets, just like `path`. These dynamic values will be replaced with values from `request_params`. For update requests, you'll need to additionally annotated `<masked_object_fields>` as a placeholder for the Fidesops generated update values.
     - `request_params`
-        - `name` Used as the key for query param values, or to map this param to a value placeholder in the path.
-        - `type` Can be "query", "path", or "body".
+        - `name` Used as the key to reference this value from dynamic values in the path, headers, query, or body params.
         - `references` These are the same as `references` in the Dataset schema. It is used to define the source of the value for the given request_param.
         - `identity` Used to access the identity values passed into the privacy request such as email or phone number.
-        - `default_value` Hard-coded default value for a `request_param`. This is most often used for query params since a static path param can just be included in the `path`.
         - `connector_param` Used to access the user-configured secrets for the connection.
     - `data_path`: The expression used to access the collection information from the raw JSON response.
     - `postprocessors` An optional list of response post-processing strategies. We will ignore this for the example scenarios below but an in depth-explanation can be found under [SaaS Post-Processors](saas_postprocessors.md)
-    - `pagination` An optional strategy used to get the next set of results from APIs with resources spanning multiple pages. Details can be found under [SaaS Pagination](saas_pagination.md)
+    - `pagination` An optional strategy used to get the next set of results from APIs with resources spanning multiple pages. Details can be found under [SaaS Pagination](saas_pagination.md).
 
 ## Example scenarios
 #### Dynamic path with dataset references
@@ -186,10 +195,10 @@ endpoints:
   - name: messages
     requests:
       read:
+        method: GET
         path: /3.0/conversations/<conversation_id>/messages
         request_params:
           - name: conversation_id
-            type: path
             references:
               - dataset: mailchimp_connector_example
                 field: conversations.id
@@ -210,13 +219,16 @@ endpoints:
   - name: member
     requests:
       read:
+        method: GET
         path: /3.0/search-members
-        request_params:
+        query_params:
           - name: query
-            type: query
+            value: <email>
+        request_params:
+          - name: email
             identity: email
 ```
-In this example, the `email` identity value is used as a param named "query" and would look like this:
+In this example, the placeholder in the `query` query param would be replaced with the value of the `request_param` with a name of `email`, which is the `email` identity. The result would look like this:
 ```
 GET /3.0/search-members?query=name@email.com
 ```
@@ -227,16 +239,15 @@ endpoints:
   - name: member
     requests:
       update:
+        method: PUT
         path: /3.0/lists/<list_id>/members/<subscriber_hash>
         request_params:
           - name: list_id
-            type: path
             references:
               - dataset: mailchimp_connector_example
                 field: member.list_id
                 direction: from
           - name: subscriber_hash
-            type: path
             references:
               - dataset: mailchimp_connector_example
                 field: member.id
@@ -272,8 +283,9 @@ and the contents of the body would be masked according to the configured [policy
 #### Data update with a dynamic HTTP body
 
 Sometimes, the update request needs a different body structure than what we obtain from the read request. In this example, we use a custom HTTP body that contains our masked object fields.
-```yml
+```yaml
 update:
+  method: PUT
   path: /crm/v3/objects/contacts
   body: {
     "properties": {
@@ -283,7 +295,6 @@ update:
   }
   request_params:
     - name: user_ref_id
-      type: body
       references:
         - dataset: dataset_test
           field: contacts.user_ref_id
@@ -295,6 +306,7 @@ Fidesops will replace the `<masked_object_fields>` placeholder with the result o
 This results in the following update request:
 ```yaml
 PUT /crm/v3/objects/contacts
+
 {
   "properties": {
       "company": "None",
@@ -336,10 +348,10 @@ endpoints:
   - name: messages
     requests:
       read:
+        method: GET
         path: /3.0/conversations/<conversation_id>/messages
         request_params:
           - name: conversation_id
-            type: path
             references:
               - dataset: mailchimp_connector_example
                 field: conversations.id
@@ -385,22 +397,21 @@ collections:
 Notice how the `conversation_id` field is updated with a reference from `mailchimp_connector_example.conversations.id`. This means that the `conversations` collection must be retrieved first to forward the conversation IDs to the messages collection for further processing.
 
 ## What if a collection has no dependencies?
-In the Mailchimp example, you might have noticed the `placeholder` query param.
+In the Mailchimp example, you might have noticed the `placeholder` request param.
 ```yaml
 endpoints:
   - name: conversations
     requests:
       read:
+        method: GET
         path: /3.0/conversations
-        request_params:
+        query_params:
           - name: count
-            type: query
-            default_value: 1000
+            value: 1000
           - name: offset
-            type: query
-            default_value: 0
+            value: 0
+        request_params:
           - name: placeholder
-            type: query
             identity: email
 ```
-Some endpoints might not have any external dependencies on `identity` or Dataset `reference` values. The way the Fidesops [graph traversal](query_execution.md) interprets this is as an unreachable collection. At this time, the way to mark this as reachable is to include `request_param` with a "synthetic link" (an unused query param) to an identity or a reference. In the future we plan on having collections like these still be considered reachable even without this synthetic placeholder (the request_param name is not relevant, we just chose placeholder for this example).
+Some endpoints might not have any external dependencies on `identity` or Dataset `reference` values. The way the Fidesops [graph traversal](query_execution.md) interprets this is as an unreachable collection. At this time, the way to mark this as reachable is to include a `request_param` with an identity or a reference. In the future we plan on having collections like these still be considered reachable even without this placeholder (the request_param name is not relevant, we just chose placeholder for this example).

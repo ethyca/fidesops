@@ -26,7 +26,6 @@ class RequestParam(BaseModel):
     """
 
     name: str
-    default_value: Optional[Any]
     identity: Optional[str]
     references: Optional[List[FidesopsDatasetReference]]
     connector_param: Optional[str]
@@ -48,14 +47,11 @@ class RequestParam(BaseModel):
         value_fields = [
             bool(values.get("identity")),
             bool(values.get("references")),
-            bool(
-                values.get("default_value") is not None
-            ),  # to prevent a value of 0 from returning False
             bool(values.get("connector_param")),
         ]
         if sum(value_fields) != 1:
             raise ValueError(
-                "Must have exactly one of 'identity', 'references', 'default_value', or 'connector_param'"
+                "Must have exactly one of 'identity', 'references', or 'connector_param'"
             )
         return values
 
