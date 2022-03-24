@@ -47,9 +47,6 @@ saas_config:
           - name: offset
             type: query
             default_value: 0
-          # TODO - pagination wasn’t supported at the time it was written.
-          # below page value has to come from pagination section
-
           # TODO - Different authorization wasn't supported at the time it was written
           # Please to refer to the original YAML spec as this originally had a authorization           
         postprocessors:
@@ -58,6 +55,12 @@ saas_config:
               field: email
               value:
                 identity: email
+        pagination:
+          strategy: offset
+          configuration:
+            incremental_param: offset
+            increment_by: 500
+            limit: 10000
       update:
         path: /v1/users/<id>
         # TODO - Custom method PUT wasn't supported at the time it was written
