@@ -76,7 +76,7 @@ This strategy is used when a specific value from a response object is used as a 
 
 #### Examples
 If an API request returns the following:
-```
+```json
 {
   "messages": [
       {"id": 1, msg: "this is"},
