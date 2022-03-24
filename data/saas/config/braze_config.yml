@@ -31,10 +31,7 @@ saas_config:
 
         # TODO - body payload wasn't supported at the time it was written
         # Please to refer to the original YAML spec as this originally had a body
-        postprocessors:
-          - strategy: unwrap
-            configuration:
-              data_path: users
+        data_path: users
       update:
         path: /users/track
         # TODO - Custom method wasn't supported at the time it was written
