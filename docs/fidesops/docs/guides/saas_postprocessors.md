@@ -70,7 +70,7 @@ Identity data passed in through request:
 
 Data to be processed:
 ```json
-data = [
+"data" = [
     {
         "id": 1397429347
         "email_contact": "somebody@email.com"
@@ -86,7 +86,7 @@ data = [
 
 Result:
 ```json
-result = [
+"result" = [
     {
         "id": 1397429347
         "email_contact": "somebody@email.com"
@@ -122,7 +122,7 @@ Post-Processor Config:
 
 Data to be processed:
 ```json
-data = {
+"data" = {
   "exact_matches": {
     "members": [
       { "howdy": 123 },
@@ -133,7 +133,7 @@ data = {
 ```
 Result:
 ```json
-result = [
+"result" = [
   { "howdy": 123 },
   { "meow": 841 }
 ]

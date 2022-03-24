@@ -79,9 +79,9 @@ If an API request returns the following:
 ```json
 {
   "messages": [
-      {"id": 1, msg: "this is"},
-      {"id": 2, msg: "a"}
-      {"id": 3, msg: "test"}
+      {"id": 1, "msg": "this is"},
+      {"id": 2, "msg": "a"}
+      {"id": 3, "msg": "test"}
   ]
 }
 ```
