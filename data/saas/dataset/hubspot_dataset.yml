@@ -177,8 +177,6 @@ dataset:
               data_type: integer
           - name: blogRssSettings
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: object # how to denote object of any?
           - name: campaign
             data_categories: [system.operations]
             fidesops_meta:
@@ -257,8 +255,6 @@ dataset:
               data_type: integer
           - name: flexAreas
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: object # any
           - name: freezeDate
             data_categories: [system.operations]
             fidesops_meta:
@@ -302,8 +298,6 @@ dataset:
               data_type: integer
           - name: layoutSections
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: object # object of any type
           - name: leadFlowId
             data_categories: [system.operations]
             fidesops_meta:
@@ -406,8 +400,6 @@ dataset:
               data_type: string
           - name: smartEmailFields
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: state
             data_categories: [system.operations]
             fidesops_meta:
@@ -434,8 +426,6 @@ dataset:
               data_type: string
           - name: teamPerms
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string[]
           - name: templatePath
             data_categories: [system.operations]
             fidesops_meta:
@@ -466,20 +456,12 @@ dataset:
               data_type: boolean
           - name: userPerms
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string[]
           - name: vidsExcluded
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: integer[]
           - name: vidsIncluded
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: integer[]
           - name: widgets
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: object # any type
       - name: subscription_preferences
         fields:
           - name: id

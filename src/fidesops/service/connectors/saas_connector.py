@@ -28,6 +28,7 @@ from fidesops.service.pagination.pagination_strategy_factory import (
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
+from fidesops.util.url_util import set_query_parameter
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +61,9 @@ class AuthenticatedClient:
         elif strategy == "bearer_authentication":
             token_key = pydash.get(configuration, "token.connector_param")
             req.headers["Authorization"] = "Bearer " + self.secrets[token_key]
+        elif strategy == "query_param":
+            token_key = pydash.get(configuration, "token.connector_param")
+            req.url = set_query_parameter(req.url, token_key, self.secrets[token_key])
         return req
 
     def get_authenticated_request(

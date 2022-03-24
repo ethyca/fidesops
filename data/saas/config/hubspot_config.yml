@@ -6,17 +6,17 @@ saas_config:
 
   connector_params:
     - name: domain
-    - name: api_key
+    - name: hapikey
 
   client_config:
     protocol: https
     host:
       connector_param: domain
     authentication:
-      strategy: bearer_authentication
+      strategy: query_param
       configuration:
         token:
-          connector_param: api_key
+          connector_param: hapikey
 
   test_request:
     path: /companies/v2/companies/paged
@@ -27,18 +27,18 @@ saas_config:
         read:
           path: /crm/v3/objects/contacts/search
           method: POST
-          body: {
-            "filter_groups": [{
-              "filters": [{
-                "value": <email>
-                  "propertyName": "email"
-                  "operator": "EQ"
-              }
-              ]
+          body: '{
+            filter_groups: [{
+              filters: [{
+                value: <email>,
+                propertyName: email,
+                operator: EQ
+              }]
             }]
-          }
+          }'
           request_params:
             - name: email
+              type: body
               identity: email
             - name: limit
               type: query
@@ -55,11 +55,11 @@ saas_config:
         update:
           path: /crm/v3/objects/contacts/<contactId>
           method: PATCH
-          body: {
-            "properties": {
+          body: '{
+            properties: {
                 <masked_object_fields>
             }
-          }
+          }'
           request_params:
             - name: contactId
               type: path
@@ -96,6 +96,9 @@ saas_config:
             - name: limit
               type: query
               default_value: 100
+            - name: offset
+              type: query
+              default_value: 0
           data_path: objects
           postprocessors:
             - strategy: filter
@@ -132,12 +135,12 @@ saas_config:
         update:
           path: /communication-preferences/v3/unsubscribe
           method: POST
-          body: {
-            "emailAddress": <email>,
-            "subscriptionId": <subscriptionId>,
-            "legalBasis": "LEGITIMATE_INTEREST_CLIENT",
-            "legalBasisExplanation": "At users request, we opted them out"
-          }
+          body: '{
+            emailAddress: <email>,
+            subscriptionId: <subscriptionId>,
+            legalBasis: LEGITIMATE_INTEREST_CLIENT,
+            legalBasisExplanation: At users request, we opted them out
+          }'
           request_params:
             - name: email
               type: body
