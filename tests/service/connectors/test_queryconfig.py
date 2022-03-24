@@ -666,7 +666,6 @@ class TestSaaSQueryConfig:
         prepared_request = config.generate_query(
             {"email": ["customer-1@example.com"]}, policy
         )
-        import pdb; pdb.set_trace()
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/2.0/payment_methods"
         assert prepared_request.headers == {

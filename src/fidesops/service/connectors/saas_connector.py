@@ -114,7 +114,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """Generates and executes a test connection based on the SaaS config"""
         test_request_path = self.saas_config.test_request.path
         prepared_request: SaaSRequestParams = SaaSRequestParams(
-            method=HTTPMethod.GET, path=test_request_path, params={}, body=None
+            method=HTTPMethod.GET, path=test_request_path
         )
         self.client().send(prepared_request)
         return ConnectionTestStatus.succeeded
