@@ -39,20 +39,18 @@ saas_config:
           - name: page_size
             type: query
             default_value: 1000
-          # TODO - pagination wasn’t supported at the time it was written.
-          # below page value has to come from pagination section
           - name: page
             type: query
-            default_value: 1
-          # TODO - pagination wasn’t supported at the time it was written.
-          # below session_id value has to come from pagination section         
+            default_value: 1      
           - name: session_id
             type: query
             default_value: session_id
-        postprocessors:
-          - strategy: unwrap
-            configuration:
-              data_path: results            
+        data_path: results
+        pagination:
+          strategy: link
+          configuration:
+            source: body
+            path: session_id       
       update:
         path: /engage#profile-set
         # TODO - Custom mimeType wasn't supported at the time it was written
@@ -92,7 +90,4 @@ saas_config:
               - dataset: mixpanel_connector_example
                 field: user.$distinct_id
                 direction: from
-        postprocessors:
-          - strategy: unwrap
-            configuration:
-              data_path: results.events                
+        data_path: results.events             
