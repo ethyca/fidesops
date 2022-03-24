@@ -42,15 +42,13 @@ saas_config:
               data_type: string
             - name: per_page
               type: query
-              default_value: 2
+              default_value: 30
             - name: page
               type: query
               default_value: 1
-              # TODO - pagination wasn’t supported at the time it was written.
-              # below page value has to come from pagination section 
           data_path: data
           pagination:
-            strategy: page
+            strategy: offset
             configuration:
               incremental_param: page
               increment_by: 1                        
