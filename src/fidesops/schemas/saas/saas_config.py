@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union, Set
 
 from fidesops.schemas.saas.shared_schemas import HTTPMethod
 from fidesops.service.pagination.pagination_strategy_factory import get_strategy
@@ -107,15 +107,15 @@ class SaaSRequest(BaseModel):
     @root_validator
     def validate_grouped_inputs(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Validate that grouped_inputs must reference fields from the same collection"""
-        grouped_inputs = values.get("grouped_inputs")
+        grouped_inputs = set(values.get("grouped_inputs", []))
 
         if grouped_inputs:
             request_params = values.get("request_params", [])
-            names = [param.name for param in request_params]
+            names = {param.name for param in request_params}
 
-            if not all(field in names for field in grouped_inputs):
+            if not names.issubset(grouped_inputs):
                 raise ValueError(
-                    "Grouped_input fields must also be declared as request_params."
+                    "Grouped input fields must also be declared as request_params."
                 )
 
             referenced_collections: List[str] = []
@@ -128,7 +128,8 @@ class SaaSRequest(BaseModel):
                     if param.references:
                         collect = param.references[0].field.split(".")[0]
                         referenced_collections.append(collect)
-            if not all(x == referenced_collections[0] for x in referenced_collections):
+
+            if not len(set(referenced_collections)) == 1:
                 raise ValueError(
                     "Grouped input fields must all reference the same collection."
                 )
@@ -205,9 +206,9 @@ class SaaSConfig(BaseModel):
                 if param.identity:
                     fields.append(ScalarField(name=param.name, identity=param.identity))
             if fields:
-                grouped_inputs: Optional[List[str]] = []
+                grouped_inputs: Optional[Set[str]] = set()
                 if endpoint.requests.get("read"):
-                    grouped_inputs = endpoint.requests["read"].grouped_inputs
+                    grouped_inputs = set(endpoint.requests["read"].grouped_inputs or [])
                 collections.append(
                     Collection(
                         name=endpoint.name,

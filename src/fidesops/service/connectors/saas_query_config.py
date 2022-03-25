@@ -89,10 +89,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 )
 
         # Build SaaS requests for fields that are dependent on each other
-        grouped_inputs: List[Dict[str, Any]] = (
-            input_data.get(FIDESOPS_GROUPED_INPUTS) or []
+        grouped_input_data: List[Dict[str, Any]] = input_data.get(
+            FIDESOPS_GROUPED_INPUTS, []
         )
-        for dependent_data in grouped_inputs:
+        for dependent_data in grouped_input_data:
             request_params.append(self.generate_query(dependent_data, policy))
 
         return request_params

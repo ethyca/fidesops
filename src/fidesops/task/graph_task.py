@@ -6,7 +6,7 @@ from abc import ABC
 from functools import wraps
 
 from time import sleep
-from typing import List, Dict, Any, Tuple, Callable, Optional
+from typing import List, Dict, Any, Tuple, Callable, Optional, Set
 
 import dask
 from dask.threaded import get
@@ -122,11 +122,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return f"{type(self)}:{self.key}"
 
     @property
-    def grouped_fields(self) -> List[Optional[str]]:
-        """Convenience property - returns a list of fields that have been specified on the collection as dependent
+    def grouped_fields(self) -> Set[Optional[str]]:
+        """Convenience property - returns a set of fields that have been specified on the collection as dependent
         upon one another
         """
-        return self.traversal_node.node.collection.grouped_inputs or []
+        return self.traversal_node.node.collection.grouped_inputs or set()
 
     def build_incoming_field_path_maps(
         self, group_dependent_fields: bool = False
@@ -208,6 +208,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         if group_dependent_fields:
             output[FIDESOPS_GROUPED_INPUTS] = []
+
         for i, rowset in enumerate(data):
             collection_address = self.input_keys[i]
 

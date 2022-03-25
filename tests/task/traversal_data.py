@@ -624,7 +624,7 @@ def traversal_paired_dependency() -> Traversal:
             ScalarField(name="position"),
 
         ],
-        grouped_inputs=["project", "organization"]
+        grouped_inputs= {"project", "organization"}
     )
 
     mysql = Dataset(
