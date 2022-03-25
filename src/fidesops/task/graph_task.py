@@ -199,15 +199,12 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 NotPii(len(data)),
             )
 
-        output: Dict[str, List[Any]] = {}
+        output: Dict[str, List[Any]] = {FIDESOPS_GROUPED_INPUTS: []}
 
         (
             independent_field_mappings,
             dependent_field_mappings,
         ) = self.build_incoming_field_path_maps(group_dependent_fields)
-
-        if group_dependent_fields:
-            output[FIDESOPS_GROUPED_INPUTS] = []
 
         for i, rowset in enumerate(data):
             collection_address = self.input_keys[i]
