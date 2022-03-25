@@ -34,7 +34,7 @@ def test_saas_config_to_dataset(saas_configs: Dict[str, Dict]):
     assert query_field.name == "query"
     assert query_field.identity == "email"
 
-    user_feedback_collection = saas_dataset.collections[4]
+    user_feedback_collection = saas_dataset.collections[5]
     assert user_feedback_collection.grouped_inputs == {
         "organization_slug",
         "project_slug",
