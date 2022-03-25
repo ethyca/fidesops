@@ -1,6 +1,6 @@
 from collections import defaultdict
 from functools import reduce
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.config import Collection, Dataset, Field
 
@@ -33,13 +33,13 @@ def extract_fields(aggregate: Dict, collections: List[Collection]) -> None:
 
 def get_collection_grouped_inputs(
     collections: List[Collection], name: str
-) -> Optional[List[str]]:
+) -> Optional[Set[str]]:
     """Get collection grouped inputs"""
     collection: Collection = next(
         (collect for collect in collections if collect.name == name), {}
     )
     if not collection:
-        return []
+        return set()
     return collection.grouped_inputs
 
 
