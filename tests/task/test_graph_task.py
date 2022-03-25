@@ -285,8 +285,8 @@ class TestPreProcessInputData:
             "fidesops_grouped_inputs": [],
         }
 
-        # # With group_dependent_fields = True.  Fields are grouped together under a key that shouldn't overlap
-        # # with actual table keys "fidesops_grouped_inputs"
+        # With group_dependent_fields = True.  Fields are grouped together under a key that shouldn't overlap
+        # with actual table keys "fidesops_grouped_inputs"
         assert task.pre_process_input_data(
             identity_output, project_output, group_dependent_fields=True
         ) == {
