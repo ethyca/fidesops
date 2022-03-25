@@ -125,3 +125,28 @@ saas_config:
         request_params:
           - name: version
             connector_param: api_version
+  - name: projects
+    requests:
+      read:
+        method: GET
+        path: /api/0/projects/
+        request_params:
+          - name: placeholder
+            identity: email
+  - name: user_feedback
+    requests:
+      read:
+        method: GET
+        path: /api/0/projects/<organization_slug>/<project_slug>/user-feedback/
+        grouped_inputs: [ organization_slug, project_slug ]
+        request_params:
+          - name: organization_slug
+            references:
+              - dataset: saas_connector_example
+                field: projects.organization.slug
+                direction: from
+          - name: project_slug
+            references:
+              - dataset: saas_connector_example
+                field: projects.slug
+                direction: from

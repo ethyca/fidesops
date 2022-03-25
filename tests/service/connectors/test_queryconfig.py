@@ -679,6 +679,18 @@ class TestSaaSQueryConfig:
         }
         assert prepared_request.body is None
 
+        # query and path params with connector param references
+        config = SaaSQueryConfig(
+            payment_methods, endpoints, {"api_version": "2.0", "page_limit": 10}
+        )
+        prepared_request = config.generate_query(
+            {"query": ["customer-1@example.com"]}, policy
+        )
+        assert prepared_request.method == HTTPMethod.GET.value
+        assert prepared_request.path == "/2.0/payment_methods"
+        assert prepared_request.params == {"limit": 10, "query": "customer-1@example.com"}
+        assert prepared_request.body is None
+
     def test_generate_update_stmt(
         self,
         erasure_policy_string_rewrite,
