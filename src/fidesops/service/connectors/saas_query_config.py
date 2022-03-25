@@ -43,7 +43,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         Attempts to
         """
         if not custom_body:
-            logger.info(f"Missing custom body {path}")
             return None
         if default_value:
             custom_body = custom_body.replace(f"<{param_name}>", f'"{default_value}"')
@@ -58,7 +57,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 f'"{identity}"',
             )
         else:
-            logger.info(f"Missing body param value(s) for {path}")
             return None
         return custom_body
 
