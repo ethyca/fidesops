@@ -98,6 +98,7 @@ class TestPreProcessInputData:
         root_email_input = [{"email": "customer-1@example.com"}]
         assert make_graph_task(node).pre_process_input_data(root_email_input) == {
             "customer_information.email": ["customer-1@example.com"],
+            "fidesops_grouped_inputs": [],
         }
 
     def test_pre_process_input_customer_feedback_collection(
@@ -131,6 +132,7 @@ class TestPreProcessInputData:
         ) == {
             "customer_identifiers.derived_emails": ["customer-1@example.com"],
             "customer_identifiers.internal_id": ["cust_001"],
+            "fidesops_grouped_inputs": [],
         }
 
         # group_dependent_fields=True just results in an empty list because no grouped input fields are specified.
@@ -169,6 +171,7 @@ class TestPreProcessInputData:
                 "B111-11111",
                 "C111-11111",
             ],
+            "fidesops_grouped_inputs": [],
         }
 
     def test_pre_process_input_aircraft_collection(
@@ -188,6 +191,7 @@ class TestPreProcessInputData:
         ]
         assert task.pre_process_input_data(truncated_flights_output) == {
             "planes": [10002, 101010],
+            "fidesops_grouped_inputs": [],
         }
 
     def test_pre_process_input_employee_collection(
@@ -212,6 +216,7 @@ class TestPreProcessInputData:
         ) == {
             "id": ["1", "2", "3", "4"],
             "email": ["customer-1@example.com"],
+            "fidesops_grouped_inputs": [],
         }
 
     def test_pre_process_input_conversation_collection(
@@ -240,6 +245,7 @@ class TestPreProcessInputData:
 
         assert task.pre_process_input_data(truncated_customer_details_output) == {
             "thread.comment": ["com_0001", "com_0003", "com_0005", "com_0007"],
+            "fidesops_grouped_inputs": [],
         }
 
     def test_pre_process_input_data_group_dependent_fields(self):
@@ -275,6 +281,7 @@ class TestPreProcessInputData:
         assert task.pre_process_input_data(project_output) == {
             "organization": ["12345", "54321", "54321"],
             "project": ["abcde", "fghij", "klmno"],
+            "fidesops_grouped_inputs": [],
         }
 
         # With group_dependent_fields = True.  Fields are grouped together under a key that shouldn't overlap

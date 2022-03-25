@@ -113,7 +113,7 @@ class SaaSRequest(BaseModel):
             request_params = values.get("request_params", [])
             names = {param.name for param in request_params}
 
-            if not names.issubset(grouped_inputs):
+            if not grouped_inputs.issubset(names):
                 raise ValueError(
                     "Grouped input fields must also be declared as request_params."
                 )
@@ -123,7 +123,7 @@ class SaaSRequest(BaseModel):
                 if param.name in grouped_inputs:
                     if not param.references and not param.identity:
                         raise ValueError(
-                            "Grouped input fields must be on incoming references or identity fields."
+                            "Grouped input fields must either be reference fields or identity fields."
                         )
                     if param.references:
                         collect = param.references[0].field.split(".")[0]
