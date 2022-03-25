@@ -1,0 +1,130 @@
+dataset:
+  - fides_key: iterable_connector_example
+    name: Iterable Dataset
+    description: A sample dataset representing the Iterable connector for Fidesops
+    collections:
+      - name: events
+        fields:
+          - name: eventType
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string            
+          - name: unsubSource
+            data_categories: [system.operations]
+          - name: emailListIds
+            data_categories: [system.operations]
+          - name: messageTypeIds
+            data_categories: [system.operations]
+          - name: channelIds
+            data_categories: [system.operations]
+          - name: profileUpdatedAt
+            data_categories: [system.operations]
+          - name: createdAt
+            data_categories: [system.operations]
+          - name: itblInternal
+            fields:
+              - name: documentCreatedAt
+                data_categories: [system.operations]
+              - name: documentUpdatedAt
+                data_categories: [system.operations]
+          - name: signupSource
+            data_categories: [system.operations]
+          - name: inboxSessionId
+            data_categories: [system.operations]
+          - name: messageContext
+            fields:
+              - name: saveToInbox
+                data_categories: [system.operations]
+              - name: silentInbox
+                data_categories: [system.operations]
+              - name: location
+                data_categories: [system.operations]
+          - name: campaignId
+            data_categories: [system.operations]
+          - name: messageId
+            data_categories: [system.operations]
+          - name: templateId
+            data_categories: [system.operations]
+          - name: expiresAt
+            data_categories: [system.operations]
+          - name: deviceInfo
+            fields:
+              - name: deviceId
+                data_categories: [system.operations]
+              - name: platform
+                data_categories: [system.operations]
+              - name: appPackageName
+                data_categories: [system.operations]
+          - name: clickedUrl
+            data_categories: [system.operations]
+          - name: productRecommendationCount
+            data_categories: [system.operations]
+          - name: contentId
+            data_categories: [system.operations]
+          - name: messageTypeId
+            data_categories: [system.operations]
+          - name: ip
+            data_categories: [user.derived.identifiable.device.ip_address]
+            fidesops_meta:
+              data_type: string
+          - name: userAgentDevice
+            data_categories: [system.operations]
+      - name: user
+        fields:
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              primary_key: True
+              data_type: string
+          - name: dataFields
+            fields:
+              - name: lastName
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: fname
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: phoneNumberDetails
+                fields:
+                  - name: phoneNumber
+                    data_categories: [user.provided.identifiable.contact.phone_number]
+                    fidesops_meta:
+                      data_type: string
+                  - name: countryCodeISO
+                    data_categories: [system.operations]
+              - name: FirstName
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: last_name
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: firstName
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: lname
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: LastName
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: first_name
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: email
+                data_categories: [user.provided.identifiable.contact.email]
+                fidesops_meta:
+                  data_type: string
+              - name: userId
+                data_categories: [system.operations]
+          - name: userId
+            data_categories: [system.operations]               

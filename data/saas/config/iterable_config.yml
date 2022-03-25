@@ -1,0 +1,58 @@
+saas_config:
+  fides_key: iterable_connector_example
+  name: Iterable SaaS Config
+  description: A sample schema representing the Iterable connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: apiKey
+
+  client_config:
+    protocol: https
+    host:
+      connector_param: domain
+    authentication:
+      # TODO - ApiKeyAuthorization hasn't written yet
+      # TODO - Please 
+      # strategy: basic_authentication
+      # configuration:
+      #   username:
+      #     connector_param: username
+      #   password:
+      #     connector_param: api_key
+
+  test_request:
+    path: /api/users/docs@iterable.com
+    
+  endpoints:
+  - name: events
+    requests:
+      read:
+        path: /api/export/userEvents
+        # TODO - parsers hasn't implemented while writing this
+        # TODO - Please refer the original YAML for the details
+        request_params:
+          - name: email
+            type: query
+            identity: email
+          - name: includeCustomEvents
+            default_value: true
+  - name: user
+    requests:
+      read:
+        path: /api/users/<email>
+        request_params:
+          - name: email
+            type: query
+            identity: email
+        data_path: user
+      # TODO - responseValidator hasn't implemented while writing this
+      # TODO - Please refer to the original YAML for the details        
+      delete:
+        path: /api/users/forget
+      # TODO - custom HTTP methods hasn't implemented while writing this
+      # TODO - Please refer to the original YAML for the details           
+
+      # TODO - custom HTTP body hasn't implemented while writing this
+      # TODO - Please refer to the original YAML for the details   
