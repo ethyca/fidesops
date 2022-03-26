@@ -13,6 +13,13 @@ IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
 DOCKERFILE_ENVIRONMENTS := postgres mysql mongodb mssql
 
+# Disable TTY to perserve output within Github Actions logs
+# CI env variable is always set to true in Github Actions
+ifeq "$(CI)" "true"
+    CI_ARGS:=--no-TTY
+endif
+
+# Simplify running docker compose commands
 RUN = docker compose run --rm $(IMAGE_NAME)
 RUN_NO_DEPS = docker compose run --no-deps --rm $(IMAGE_NAME)
 
