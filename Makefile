@@ -20,8 +20,8 @@ ifeq "$(CI)" "true"
 endif
 
 # Simplify running docker compose commands
-RUN = docker compose run --rm $(IMAGE_NAME)
-RUN_NO_DEPS = docker compose run --no-deps --rm $(IMAGE_NAME)
+RUN = docker compose run --rm $(CI_ARGS) $(IMAGE_NAME)
+RUN_NO_DEPS = docker compose run --no-deps --rm $(CI_ARGS) $(IMAGE_NAME)
 
 ####################
 # Defaults
