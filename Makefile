@@ -90,10 +90,10 @@ black-ci: compose-build
 check-migrations: compose-build
 	@echo "Check if there are unrun migrations..."
 	@$(RUN) \
-		python -c "\
-		from fidesops.db.database import check_missing_migrations; \
-		from fidesops.core.config import config; \
-		check_missing_migrations(config.database.SQLALCHEMY_DATABASE_URI);"
+	python -c "\
+	from fidesops.db.database import check_missing_migrations; \
+	from fidesops.core.config import config; \
+	check_missing_migrations(config.database.SQLALCHEMY_DATABASE_URI);"
 
 pylint: compose-build
 	@echo "Running pylint checks..."

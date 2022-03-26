@@ -30,17 +30,16 @@ RUN if [ "$MSSQL_REQUIRED" = "true" ] ; then apt-get -y install \
     mssql-tools ; fi
 
 # Update pip and install requirements
-COPY requirements.txt dev-requirements.txt mssql-requirements.txt ./
+COPY requirements.txt dev-requirements.txt ./
 RUN pip install -U pip  \
     && pip install 'cryptography~=3.4.8' \
     && pip install snowflake-connector-python --no-use-pep517  \
     && pip install -r requirements.txt -r dev-requirements.txt
 
-RUN if [ "$MSSQL_REQUIRED" = "true" ] ; then pip install -U pip -r mssql-requirements.txt ; fi
 
 # Copy in the application files and install it locally
 COPY . /fidesops
 WORKDIR /fidesops
-RUN pip install -e .
+RUN if [ "$MSSQL_REQUIRED" = "true" ] ; then pip install -e ".[mssql]" ; else pip install -e "." ; fi
 
 CMD [ "fidesops", "webserver" ]

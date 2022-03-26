@@ -61,9 +61,9 @@ def run_infrastructure(
     _run_cmd_or_err(f'echo "infrastructure path: {path}"')
     if "mssql" in datastores:
         _run_cmd_or_err(
-            f'docker-compose {path} build --build-arg MSSQL_REQUIRED="true"'
+            f'docker compose {path} build --build-arg MSSQL_REQUIRED="true"'
         )
-    _run_cmd_or_err(f"docker-compose {path} up -d")
+    _run_cmd_or_err(f"docker compose {path} up -d")
     _run_cmd_or_err(f'echo "sleeping for: {DOCKER_WAIT} while infrastructure loads"')
 
     wait = min(DOCKER_WAIT * len(datastores), 15)
@@ -107,7 +107,7 @@ def seed_initial_data(
     _run_cmd_or_err('echo "Seeding initial data for all datastores..."')
     for datastore in datastores:
         if datastore in DOCKERFILE_DATASTORES:
-            setup_path = f"tests/integration_tests/setup_scripts/{datastore}_setup.py"
+            setup_path = f"../tests/integration_tests/setup_scripts/{datastore}_setup.py"
             _run_cmd_or_err(
                 f'echo "Attempting to create schema and seed initial data for {datastore} from {setup_path}..."'
             )
@@ -125,7 +125,7 @@ def get_path_for_datastores(datastores: List[str]) -> str:
         _run_cmd_or_err(f'echo "configuring infrastructure for {datastore}"')
         if datastore in DOCKERFILE_DATASTORES:
             # We only need to locate the docker-compose file if the datastore runs in Docker
-            path += f" -f docker-compose.integration-{datastore}.yml"
+            path += f" -f docker/docker-compose.integration-{datastore}.yml"
         elif datastore not in EXTERNAL_DATASTORES:
             # If the specified datastore is not known to us
             _run_cmd_or_err(f'echo "Datastore {datastore} is currently not supported"')
@@ -150,7 +150,7 @@ def _run_quickstart(
     Invokes the Fidesops command line quickstart
     """
     _run_cmd_or_err(f'echo "Running the quickstart..."')
-    _run_cmd_or_err(f"docker-compose {path} up -d")
+    _run_cmd_or_err(f"docker compose {path} up -d")
     _run_cmd_or_err(f"docker exec -it {image_name} python quickstart.py")
 
 
@@ -162,7 +162,7 @@ def _run_create_superuser(
     Invokes the Fidesops create_user_and_client command
     """
     _run_cmd_or_err(f'echo "Running create superuser..."')
-    _run_cmd_or_err(f"docker-compose {path} up -d")
+    _run_cmd_or_err(f"docker compose {path} up -d")
     _run_cmd_or_err(f"docker exec -it {image_name} python create_superuser.py")
 
 
@@ -174,7 +174,7 @@ def _open_shell(
     Opens a bash shell on the container at `image_name`
     """
     _run_cmd_or_err(f'echo "Opening bash shell on {image_name}"')
-    _run_cmd_or_err(f"docker-compose {path} run {image_name} /bin/bash")
+    _run_cmd_or_err(f"docker compose {path} run {image_name} /bin/bash")
 
 
 def _run_application(docker_compose_path: str) -> None:
@@ -182,7 +182,7 @@ def _run_application(docker_compose_path: str) -> None:
     Runs the application at `docker_compose_path` without detaching it from the shell
     """
     _run_cmd_or_err(f'echo "Running application"')
-    _run_cmd_or_err(f"docker-compose {docker_compose_path} up")
+    _run_cmd_or_err(f"docker compose {docker_compose_path} up")
 
 
 def _run_tests(
@@ -227,7 +227,7 @@ def _run_tests(
     )
 
     # Now tear down the infrastructure
-    _run_cmd_or_err(f"docker-compose {docker_compose_path} down --remove-orphans")
+    _run_cmd_or_err(f"docker compose {docker_compose_path} down --remove-orphans")
     _run_cmd_or_err(f'echo "fin."')
 
 

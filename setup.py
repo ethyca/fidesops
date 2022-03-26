@@ -8,6 +8,15 @@ long_description = open("README.md").read()
 install_requires = open("requirements.txt").read().strip().split("\n")
 dev_requires = open("dev-requirements.txt").read().strip().split("\n")
 
+
+# Human-Readable/Reusable Extras
+mssql_connector = "pyodbc==4.0.32"
+
+extras = {
+    "mssql": [mssql_connector],
+}
+extras["all"] = sum([value for key, value in extras.items()], [])
+
 setup(
     name="fidesops",
     description="Automation engine for privacy requests",
