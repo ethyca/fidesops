@@ -107,7 +107,9 @@ def seed_initial_data(
     _run_cmd_or_err('echo "Seeding initial data for all datastores..."')
     for datastore in datastores:
         if datastore in DOCKERFILE_DATASTORES:
-            setup_path = f"../tests/integration_tests/setup_scripts/{datastore}_setup.py"
+            setup_path = (
+                f"../tests/integration_tests/setup_scripts/{datastore}_setup.py"
+            )
             _run_cmd_or_err(
                 f'echo "Attempting to create schema and seed initial data for {datastore} from {setup_path}..."'
             )
@@ -223,7 +225,7 @@ def _run_tests(
         f'echo "running pytest for conditions: {pytest_path} with environment variables: {environment_variables}"'
     )
     _run_cmd_or_err(
-        f"docker-compose {docker_compose_path} run {environment_variables} {IMAGE_NAME} pytest {pytest_path}"
+        f"docker compose {docker_compose_path} run {environment_variables} --no-TTY {IMAGE_NAME} pytest {pytest_path}"
     )
 
     # Now tear down the infrastructure
@@ -283,5 +285,5 @@ if __name__ == "__main__":
         run_application=config_args.run_application,
         run_quickstart=config_args.run_quickstart,
         run_tests=config_args.run_tests,
-        run_create_superuser=config_args.run_create_superuser
+        run_create_superuser=config_args.run_create_superuser,
     )
