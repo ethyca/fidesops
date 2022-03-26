@@ -5,7 +5,7 @@ import pydash
 from requests import Session, Request, PreparedRequest, Response
 from fidesops.common_exceptions import FidesopsException
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.graph.traversal import Row, TraversalNode
