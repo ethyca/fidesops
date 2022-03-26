@@ -646,7 +646,7 @@ class TestSaaSQueryConfig:
         )
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations"
-        assert prepared_request.query_params == {"count": "1000", "offset": "0"}
+        assert prepared_request.query_params == {"count": 1000, "offset": 0}
         assert prepared_request.body is None
 
         # dynamic path with no query params
@@ -661,7 +661,7 @@ class TestSaaSQueryConfig:
         config = SaaSQueryConfig(
             payment_methods,
             endpoints,
-            {"api_version": "2.0", "page_limit": "10", "api_key": "letmein"},
+            {"api_version": "2.0", "page_limit": 10, "api_key": "letmein"},
         )
         prepared_request = config.generate_query(
             {"email": ["customer-1@example.com"]}, policy
@@ -688,7 +688,10 @@ class TestSaaSQueryConfig:
         )
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/2.0/payment_methods"
-        assert prepared_request.params == {"limit": 10, "query": "customer-1@example.com"}
+        assert prepared_request.query_params == {
+            "limit": "10",
+            "query": "customer-1@example.com",
+        }
         assert prepared_request.body is None
 
     def test_generate_update_stmt(

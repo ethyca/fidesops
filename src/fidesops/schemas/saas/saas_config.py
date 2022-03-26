@@ -61,7 +61,7 @@ class Header(BaseModel):
 
 class QueryParam(BaseModel):
     name: str
-    value: str
+    value: Union[int, str]
 
 
 class SaaSRequest(BaseModel):

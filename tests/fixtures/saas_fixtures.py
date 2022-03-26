@@ -179,7 +179,7 @@ def connection_config_saas_example_with_invalid_saas_config(
     db: Session, saas_configs: Dict[str, Dict]
 ) -> Generator:
     invalid_saas_config = saas_configs["saas_example"].copy()
-    invalid_saas_config["endpoints"][0]["requests"]["read"]["request_params"].pop()
+    invalid_saas_config["endpoints"][0]["requests"]["read"]["param_values"].pop()
     connection_config = ConnectionConfig.create(
         db=db,
         data={
