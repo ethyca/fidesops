@@ -177,8 +177,8 @@ This is where we define how we are going to access and update each collection in
     - `path` A static or dynamic resource path. The dynamic portions of the path are enclosed within angle brackets `<dynamic_value>` and are replaced with values from `request_params`.
     - `headers` and `query_params` The HTTP headers and query parameters to include in the request.
         - `name` the value to use for the header or query param name.
-        - `value` can be a static value or use a `<dynamic_value>` which will be replaced with the value sourced from the `request_param` with a matching name.
-    - `body` (optional) static or dynamic request body, with dynamic portions enclosed in brackets, just like `path`. These dynamic values will be replaced with values from `request_params`. For update requests, you'll need to additionally annotated `<masked_object_fields>` as a placeholder for the Fidesops generated update values.
+        - `value` can be a static value, one or more of `<dynamic_value>`, or a mix of static and dynamic values (prefix `<value>`) which will be replaced with the value sourced from the `request_param` with a matching name.
+    - `body` (optional) static or dynamic request body, with dynamic portions enclosed in brackets, just like `path`. These dynamic values will be replaced with values from `request_params`. For update requests, you'll need to additionally annotate `<masked_object_fields>` as a placeholder for the Fidesops generated update values.
     - `request_params`
         - `name` Used as the key to reference this value from dynamic values in the path, headers, query, or body params.
         - `references` These are the same as `references` in the Dataset schema. It is used to define the source of the value for the given request_param.

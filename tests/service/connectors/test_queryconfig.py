@@ -684,7 +684,7 @@ class TestSaaSQueryConfig:
             payment_methods, endpoints, {"api_version": "2.0", "page_limit": 10}
         )
         prepared_request = config.generate_query(
-            {"query": ["customer-1@example.com"]}, policy
+            {"email": ["customer-1@example.com"]}, policy
         )
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/2.0/payment_methods"

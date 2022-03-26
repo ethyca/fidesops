@@ -2,20 +2,12 @@ from typing import Any, Dict, List, Literal, Optional, Union, Set
 
 from fidesops.schemas.saas.shared_schemas import HTTPMethod
 from fidesops.service.pagination.pagination_strategy_factory import get_strategy
-from pydantic import BaseModel, validator, root_validator
+from pydantic import BaseModel, validator, root_validator, Extra
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.dataset import FidesopsDatasetReference
 from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
 from fidesops.schemas.saas.strategy_configuration import ConnectorParamRef
 from fidesops.schemas.shared_schemas import FidesOpsKey
-
-
-class ConnectorParams(BaseModel):
-    """
-    Required information for the given SaaS connector.
-    """
-
-    name: str
 
 
 class RequestParam(BaseModel):
@@ -79,7 +71,7 @@ class SaaSRequest(BaseModel):
     """
 
     path: str
-    method: Optional[HTTPMethod]
+    method: HTTPMethod
     headers: Optional[List[Header]]
     query_params: Optional[List[QueryParam]]
     body: Optional[str]
@@ -94,6 +86,7 @@ class SaaSRequest(BaseModel):
 
         orm_mode = True
         use_enum_values = True
+        extra = Extra.forbid
 
     @root_validator(pre=True)
     def validate_request_for_pagination(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -154,7 +147,6 @@ class ConnectorParam(BaseModel):
     """Used to define the required parameters for the connector (user-provided and constants)"""
 
     name: str
-    default_value: Optional[Any]
 
 
 class ClientConfig(BaseModel):

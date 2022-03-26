@@ -86,11 +86,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         return value
 
     def map_param_values(
-        self, current_request: SaaSRequest, param_values: Dict[str, Any]
+        self, current_request: SaaSRequest, param_values: Dict[str, Any], update_values: Optional[Dict[str, Any]]
     ) -> SaaSRequestParams:
         """
-        Visits path, headers, and query_params in the current request and replaces
-        the placeholders with the request param values
+        Visits path, headers, query, and body params in the current request and replaces
+        the placeholders with the request param values.
+
+        The update_values are added to the body, if available, and the current_request
+        does not specify a body.
         """
 
         path: str = self.assign_placeholders(current_request.path, param_values)
@@ -105,11 +108,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 query_param.value, param_values
             )
 
+        body = self.assign_placeholders(current_request.body, param_values)
+
         return SaaSRequestParams(
             method=current_request.method,
             path=path,
             headers=headers,
             query_params=query_params,
+            body=json.loads(body) if body else update_values
         )
 
     def generate_query(
@@ -136,12 +142,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = self.map_param_values(
-            current_request, param_values
+            current_request, param_values, None
         )
 
-        # map body
-        body = self.assign_placeholders(current_request.body, param_values)
-        saas_request_params.body = json.loads(body) if body else None
         logger.info(f"Populated request params for {current_request.path}")
 
         return saas_request_params
@@ -185,14 +188,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = self.map_param_values(
-            current_request, param_values
+            current_request, param_values, update_values
         )
 
-        # map body
-        body = self.assign_placeholders(current_request.body, param_values)
-        saas_request_params.body = json.dumps(
-            json.loads(body) if body else update_values
-        )
         logger.info(f"Populated request params for {current_request.path}")
 
         return saas_request_params
