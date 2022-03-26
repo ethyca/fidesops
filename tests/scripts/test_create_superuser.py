@@ -1,7 +1,7 @@
 import pytest
 from unittest import mock
 
-from create_superuser import (
+from docker.scripts.create_superuser import (
     collect_username_and_password,
     create_user_and_client,
 )
