@@ -15,7 +15,7 @@ mssql_connector = "pyodbc==4.0.32"
 extras = {
     "mssql": [mssql_connector],
 }
-extras["all"] = sum([value for key, value in extras.items()], [])
+extras["all"] = sum([value for _, value in extras.items()], [])
 
 setup(
     name="fidesops",
