@@ -50,7 +50,7 @@ saas_config:
       read:
         method: GET
         path: /3.0/conversations/<conversation_id>/messages
-        request_params:
+        param_values:
           - name: conversation_id
             references:
               - dataset: mailchimp_connector_example
@@ -73,7 +73,7 @@ saas_config:
             value: 1000
           - name: offset
             value: 0
-        request_params:
+        param_values:
           - name: placeholder
             identity: email
         data_path: conversations
@@ -91,14 +91,14 @@ saas_config:
         query_params:
           - name: query
             value: <email>
-        request_params:
+        param_values:
           - name: email
             identity: email
         data_path: exact_matches.members
       update:
         method: PUT
         path: /3.0/lists/<list_id>/members/<subscriber_hash>
-        request_params:
+        param_values:
           - name: list_id
             references:
               - dataset: mailchimp_connector_example
@@ -174,12 +174,12 @@ This is where we define how we are going to access and update each collection in
 - `name` This name corresponds to a Collection in the corresponding Dataset.
 - `requests` A map of `read`, `update`, and `delete` requests for this collection. Each collection can define a way to read and a way to update the data. Each request is made up of:
     - `method` The HTTP method used for the endpoint.
-    - `path` A static or dynamic resource path. The dynamic portions of the path are enclosed within angle brackets `<dynamic_value>` and are replaced with values from `request_params`.
+    - `path` A static or dynamic resource path. The dynamic portions of the path are enclosed within angle brackets `<dynamic_value>` and are replaced with values from `param_values`.
     - `headers` and `query_params` The HTTP headers and query parameters to include in the request.
         - `name` the value to use for the header or query param name.
         - `value` can be a static value, one or more of `<dynamic_value>`, or a mix of static and dynamic values (prefix `<value>`) which will be replaced with the value sourced from the `request_param` with a matching name.
-    - `body` (optional) static or dynamic request body, with dynamic portions enclosed in brackets, just like `path`. These dynamic values will be replaced with values from `request_params`. For update requests, you'll need to additionally annotate `<masked_object_fields>` as a placeholder for the Fidesops generated update values.
-    - `request_params`
+    - `body` (optional) static or dynamic request body, with dynamic portions enclosed in brackets, just like `path`. These dynamic values will be replaced with values from `param_values`. For update requests, you'll need to additionally annotate `<masked_object_fields>` as a placeholder for the Fidesops generated update values.
+    - `param_values`
         - `name` Used as the key to reference this value from dynamic values in the path, headers, query, or body params.
         - `references` These are the same as `references` in the Dataset schema. It is used to define the source of the value for the given request_param.
         - `identity` Used to access the identity values passed into the privacy request such as email or phone number.
@@ -190,7 +190,7 @@ This is where we define how we are going to access and update each collection in
     - `grouped_inputs` An optional list of reference fields whose inputs are dependent upon one another.  For example, an endpoint may need both an `organization_id` and a `project_id` from another endpoint.  These aren't independent values, as a `project_id` belongs to an `organization_id`.  You would specify this as ["organization_id", "project_id"].
 
 ## Request params in more detail
-The `request_params` list is what provides the values to our various placeholders in the path, headers, query params and body. Values can be `identities` such as email or phone number, `references` to fields in other collections, or `connector_params` which are defined as part of configuring a SaaS connector. Whenever a placeholder is encountered, the placeholder name is looked up in the list of `request_params` and corresponding value is used instead. Here is an example of placeholders being used in various locations:
+The `param_values` list is what provides the values to our various placeholders in the path, headers, query params and body. Values can be `identities` such as email or phone number, `references` to fields in other collections, or `connector_params` which are defined as part of configuring a SaaS connector. Whenever a placeholder is encountered, the placeholder name is looked up in the list of `param_values` and corresponding value is used instead. Here is an example of placeholders being used in various locations:
 
 ```yaml
 messages:
@@ -212,7 +212,7 @@ messages:
           value: <org_id>
         - name: where:
           value: properties["$email"]=="<email>"
-      request_params:
+      param_values:
         - name: email
           identity: email
         - name: api_key
@@ -232,7 +232,7 @@ endpoints:
       read:
         method: GET
         path: /3.0/conversations/<conversation_id>/messages
-        request_params:
+        param_values:
           - name: conversation_id
             references:
               - dataset: mailchimp_connector_example
@@ -259,7 +259,7 @@ endpoints:
         query_params:
           - name: query
             value: <email>
-        request_params:
+        param_values:
           - name: email
             identity: email
 ```
@@ -276,7 +276,7 @@ endpoints:
       update:
         method: PUT
         path: /3.0/lists/<list_id>/members/<subscriber_hash>
-        request_params:
+        param_values:
           - name: list_id
             references:
               - dataset: mailchimp_connector_example
@@ -328,7 +328,7 @@ update:
       "user_ref_id": <user_ref_id>            
     }
   }
-  request_params:
+  param_values:
     - name: user_ref_id
       references:
         - dataset: dataset_test
@@ -354,7 +354,7 @@ PUT /crm/v3/objects/contacts
 
 ## How does this relate to graph traversal?
 
-Fidesops uses the available Datasets to [generate a graph](query_execution.md) of all reachable data and the dependencies between Datasets. For SaaS connectors, all the references and identities are stored in the `request_params`, therefore we must merge both the SaaS config and Dataset to provide a complete picture for the graph traversal. Using Mailchimp as an example the Dataset collection and SaaS config endpoints for `messages` looks like this:
+Fidesops uses the available Datasets to [generate a graph](query_execution.md) of all reachable data and the dependencies between Datasets. For SaaS connectors, all the references and identities are stored in the `param_values`, therefore we must merge both the SaaS config and Dataset to provide a complete picture for the graph traversal. Using Mailchimp as an example the Dataset collection and SaaS config endpoints for `messages` looks like this:
 
 ```yaml
 collections:
@@ -385,7 +385,7 @@ endpoints:
       read:
         method: GET
         path: /3.0/conversations/<conversation_id>/messages
-        request_params:
+        param_values:
           - name: conversation_id
             references:
               - dataset: mailchimp_connector_example
@@ -445,7 +445,7 @@ endpoints:
             value: 1000
           - name: offset
             value: 0
-        request_params:
+        param_values:
           - name: placeholder
             identity: email
 ```

@@ -17,7 +17,7 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fidesops.schemas.saas.saas_config import SaaSConfig, RequestParam
+from fidesops.schemas.saas.saas_config import SaaSConfig, ParamValue
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
 from fidesops.service.connectors.query_config import SQLQueryConfig, MongoQueryConfig
@@ -774,7 +774,7 @@ class TestSaaSQueryConfig:
         saas_config.endpoints[2].requests.get(
             "update"
         ).body = '{"properties": {<masked_object_fields>, "list_id": "<list_id>"}}'
-        body_request_params = RequestParam(
+        body_param_value = ParamValue(
             name="list_id",
             type="body",
             references=[
@@ -785,8 +785,8 @@ class TestSaaSQueryConfig:
                 }
             ],
         )
-        saas_config.endpoints[2].requests.get("update").request_params.append(
-            body_request_params
+        saas_config.endpoints[2].requests.get("update").param_values.append(
+            body_param_value
         )
         endpoints = saas_config.top_level_endpoint_dict
         member = combined_traversal.traversal_node_dict[

@@ -86,7 +86,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         return value
 
     def map_param_values(
-        self, current_request: SaaSRequest, param_values: Dict[str, Any], update_values: Optional[Dict[str, Any]]
+        self,
+        current_request: SaaSRequest,
+        param_values: Dict[str, Any],
+        update_values: Optional[Dict[str, Any]],
     ) -> SaaSRequestParams:
         """
         Visits path, headers, query, and body params in the current request and replaces
@@ -115,7 +118,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             path=path,
             headers=headers,
             query_params=query_params,
-            body=json.loads(body) if body else update_values
+            body=json.loads(body) if body else update_values,
         )
 
     def generate_query(
@@ -132,12 +135,12 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
         param_values: Dict[str, Any] = {}
-        for request_param in current_request.request_params:
-            if request_param.references or request_param.identity:
-                param_values[request_param.name] = input_data[request_param.name][0]
-            elif request_param.connector_param:
-                param_values[request_param.name] = pydash.get(
-                    self.secrets, request_param.connector_param
+        for param_value in current_request.param_values:
+            if param_value.references or param_value.identity:
+                param_values[param_value.name] = input_data[param_value.name][0]
+            elif param_value.connector_param:
+                param_values[param_value.name] = pydash.get(
+                    self.secrets, param_value.connector_param
                 )
 
         # map param values to placeholders in path, headers, and query params
@@ -165,18 +168,18 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
         param_values: Dict[str, Any] = {}
-        for request_param in current_request.request_params:
-            if request_param.references:
-                param_values[request_param.name] = pydash.get(
-                    collection_values, request_param.references[0].field
+        for param_value in current_request.param_values:
+            if param_value.references:
+                param_values[param_value.name] = pydash.get(
+                    collection_values, param_value.references[0].field
                 )
-            elif request_param.identity:
-                param_values[request_param.name] = pydash.get(
-                    identity_data, request_param.identity
+            elif param_value.identity:
+                param_values[param_value.name] = pydash.get(
+                    identity_data, param_value.identity
                 )
-            elif request_param.connector_param:
-                param_values[request_param.name] = pydash.get(
-                    self.secrets, request_param.connector_param
+            elif param_value.connector_param:
+                param_values[param_value.name] = pydash.get(
+                    self.secrets, param_value.connector_param
                 )
 
         # mask row values

@@ -32,7 +32,7 @@ saas_config:
       read:
         method: GET
         path: /3.0/conversations/<conversation_id>/messages
-        request_params:
+        param_values:
           - name: conversation_id
             references:
               - dataset: saas_connector_example
@@ -57,7 +57,7 @@ saas_config:
             value: 1000
           - name: offset
             value: 0
-        request_params:
+        param_values:
           - name: placeholder
             identity: email
         postprocessors:
@@ -72,7 +72,7 @@ saas_config:
         query_params:
           - name: query
             value: <email>
-        request_params:
+        param_values:
           - name: email
             identity: email
         postprocessors:
@@ -82,7 +82,7 @@ saas_config:
       update:
         method: PUT
         path: /3.0/lists/<list_id>/members/<subscriber_hash>
-        request_params:
+        param_values:
           - name: list_id
             references:
               - dataset: saas_connector_example
@@ -110,7 +110,7 @@ saas_config:
             value: <limit>
           - name: query
             value: <email>
-        request_params:
+        param_values:
           - name: limit
             connector_param: page_limit
           - name: version
@@ -122,7 +122,7 @@ saas_config:
       update:
         method: PUT
         path: /<version>/payment_methods
-        request_params:
+        param_values:
           - name: version
             connector_param: api_version
   - name: projects
@@ -130,7 +130,7 @@ saas_config:
       read:
         method: GET
         path: /api/0/projects/
-        request_params:
+        param_values:
           - name: placeholder
             identity: email
   - name: user_feedback
@@ -139,7 +139,7 @@ saas_config:
         method: GET
         path: /api/0/projects/<organization_slug>/<project_slug>/user-feedback/
         grouped_inputs: [ organization_slug, project_slug ]
-        request_params:
+        param_values:
           - name: organization_slug
             references:
               - dataset: saas_connector_example

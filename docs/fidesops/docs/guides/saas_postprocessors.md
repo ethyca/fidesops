@@ -13,7 +13,7 @@ endpoints:
       read:
         method: GET
         path: /conversations/<id>/messages
-        request_params:
+        param_values:
           ...
         postprocessors:
           - strategy: unwrap

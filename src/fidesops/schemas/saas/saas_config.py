@@ -10,10 +10,10 @@ from fidesops.schemas.saas.strategy_configuration import ConnectorParamRef
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
-class RequestParam(BaseModel):
+class ParamValue(BaseModel):
     """
-    A request parameter which includes the type (query, path, or body) along with a default value or
-    a reference to an identity value or a value in another dataset.
+    A named variable which can be sourced from identities, dataset references, or connector params. These values
+    are used to replace the placeholders in the path, header, query, and body param values.
     """
 
     name: str
@@ -66,8 +66,10 @@ class QueryParam(BaseModel):
 
 class SaaSRequest(BaseModel):
     """
-    A single request with a static or dynamic path, and the request params needed to build the request.
-    Also includes optional strategies for postprocessing and pagination.
+    A single request with static or dynamic path, headers, query, and body params.
+    Also specifies the names and sources for the param values needed to build the request.
+
+    Includes optional strategies for postprocessing and pagination.
     """
 
     path: str
@@ -75,7 +77,7 @@ class SaaSRequest(BaseModel):
     headers: Optional[List[Header]]
     query_params: Optional[List[QueryParam]]
     body: Optional[str]
-    request_params: Optional[List[RequestParam]]
+    param_values: Optional[List[ParamValue]]
     data_path: Optional[str]
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
@@ -109,16 +111,16 @@ class SaaSRequest(BaseModel):
         grouped_inputs = set(values.get("grouped_inputs", []))
 
         if grouped_inputs:
-            request_params = values.get("request_params", [])
-            names = {param.name for param in request_params}
+            param_values = values.get("param_values", [])
+            names = {param.name for param in param_values}
 
             if not grouped_inputs.issubset(names):
                 raise ValueError(
-                    "Grouped input fields must also be declared as request_params."
+                    "Grouped input fields must also be declared as param_values."
                 )
 
             referenced_collections: List[str] = []
-            for param in request_params:
+            for param in param_values:
                 if param.name in grouped_inputs:
                     if not param.references and not param.identity:
                         raise ValueError(
@@ -167,7 +169,7 @@ class SaaSConfig(BaseModel):
 
     The required fields for the config are converted into a Dataset which is
     merged with the standard Fidesops Dataset to provide a complete set of dependencies
-    for the graph traversal
+    for the graph traversal.
     """
 
     fides_key: FidesOpsKey
@@ -189,7 +191,7 @@ class SaaSConfig(BaseModel):
         collections = []
         for endpoint in self.endpoints:
             fields = []
-            for param in endpoint.requests["read"].request_params or []:
+            for param in endpoint.requests["read"].param_values or []:
                 if param.references:
                     references = []
                     for reference in param.references:

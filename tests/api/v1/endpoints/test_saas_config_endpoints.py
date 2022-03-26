@@ -95,11 +95,11 @@ class TestValidateSaaSConfig:
     ) -> None:
         auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
         saas_config = saas_configs["saas_example"]
-        request_params = saas_config["endpoints"][0]["requests"]["read"][
-            "request_params"
+        param_values = saas_config["endpoints"][0]["requests"]["read"][
+            "param_values"
         ][0]
-        request_params["identity"] = "email"
-        request_params["references"] = [
+        param_values["identity"] = "email"
+        param_values["references"] = [
             {
                 "dataset": "postgres_example_test_dataset",
                 "field": "another.field",
@@ -122,10 +122,10 @@ class TestValidateSaaSConfig:
     ) -> None:
         auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
         saas_config = saas_configs["saas_example"]
-        request_params = saas_config["endpoints"][0]["requests"]["read"][
-            "request_params"
+        param_values = saas_config["endpoints"][0]["requests"]["read"][
+            "param_values"
         ][0]
-        request_params["references"] = [
+        param_values["references"] = [
             {
                 "dataset": "postgres_example_test_dataset",
                 "field": "another.field",
