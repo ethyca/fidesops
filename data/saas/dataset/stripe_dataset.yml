@@ -1,0 +1,149 @@
+dataset:
+  - fides_key: stripe_connector_example
+    name: Stripe Dataset
+    description: A sample dataset representing the Stripe connector for Fidesops
+    collections:
+      - name: customer
+        fields:
+          - name: id
+            data_categories: [system.operations]
+          - name: object
+            data_categories: [system.operations]
+          - name: address
+            fields:
+              - name: city
+                data_categories: [system.operations]
+              - name: country
+                data_categories: [system.operations]
+              - name: line1
+                data_categories: [system.operations]
+              - name: line2
+                data_categories: [system.operations]
+              - name: postal_code
+                data_categories: [system.operations]
+              - name: state
+                data_categories: [system.operations]
+          - name: currency
+            data_categories: [system.operations]
+          - name: default_source
+            data_categories: [system.operations]
+          - name: description
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [system.operations]
+          - name: invoice_settings
+            fields:
+              - name: custom_fields
+                data_categories: [system.operations]
+              - name: default_payment_method
+                data_categories: [system.operations]
+          - name: livemode
+            data_categories: [system.operations]
+          - name: name
+            data_categories: [system.operations]
+          - name: phone
+            data_categories: [system.operations]      
+          - name: preferred_locales
+            data_categories: [system.operations]      
+          - name: shipping
+            fields:
+              - name: address
+                fields:
+                  - name: city
+                    data_categories: [system.operations]
+                  - name: country
+                    data_categories: [system.operations]
+                  - name: line1
+                    data_categories: [system.operations]
+                  - name: line2
+                    data_categories: [system.operations]
+                  - name: postal_code
+                    data_categories: [system.operations]
+                  - name: state
+                    data_categories: [system.operations]
+          - name: sources
+            fields:
+              - name: object
+                data_categories: [system.operations]
+              - name: data
+                fields:
+                  - name: id
+                    data_categories: [system.operations]
+                  - name: object
+                    data_categories: [system.operations]
+                  - name: address_city
+                    data_categories: [system.operations]
+                  - name: address_country
+                    data_categories: [system.operations]
+                  - name: address_line1
+                    data_categories: [system.operations]
+                  - name: address_line1_check
+                    data_categories: [system.operations]
+                  - name: address_line2
+                    data_categories: [system.operations]
+                  - name: address_state
+                    data_categories: [system.operations]
+                  - name: address_zip
+                    data_categories: [system.operations]
+                  - name: address_zip_check
+                    data_categories: [system.operations]
+                  - name: brand
+                    data_categories: [system.operations]
+                  - name: country
+                    data_categories: [system.operations]
+                  - name: customer
+                    data_categories: [system.operations]
+                  - name: cvc_check
+                    data_categories: [system.operations]
+                  - name: dynamic_last4
+                    data_categories: [system.operations]
+                  - name: exp_month
+                    data_categories: [system.operations]
+                  - name: exp_year
+                    data_categories: [system.operations]
+                  - name: fingerprint
+                    data_categories: [system.operations]
+                  - name: funding
+                    data_categories: [system.operations]
+                  - name: last4
+                    data_categories: [system.operations]
+                  - name: name
+                    data_categories: [system.operations]
+                  - name: tokenization_method
+                    data_categories: [system.operations]
+              - name: url
+                data_categories: [system.operations]
+          - name: subscriptions
+            fields:
+              - name: object
+                data_categories: [system.operations]
+              - name: data
+                fields:
+                  - name: id
+                    data_categories: [system.operations]
+                  - name: object
+                    data_categories: [system.operations]
+                  - name: application_fee_percent
+                    data_categories: [system.operations]
+                  - name: customer
+                    data_categories: [system.operations]
+                  - name: default_payment_method
+                    data_categories: [system.operations]
+                  - name: default_source
+                    data_categories: [system.operations]
+                  - name: default_tax_rates
+                    data_categories: [system.operations]
+                  - name: latest_invoice
+                    data_categories: [system.operations]
+                  - name: livemode
+                    data_categories: [system.operations]
+              - name: url
+                data_categories: [system.operations]
+          - name: tax_exempt
+            data_categories: [system.operations]
+          - name: tax_ids
+            fields:
+              - name: object
+                data_categories: [system.operations]
+              - name: data
+                data_categories: [system.operations]

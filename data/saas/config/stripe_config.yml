@@ -1,0 +1,100 @@
+saas_config:
+  fides_key: stripe_connector_example
+  name: Stripe SaaS Config
+  description: A sample schema representing the Stripe connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: host
+    - name: api_key
+    - name: payment_types
+    - name: page_limit
+
+  client_config:
+    protocol: https
+    host:
+      connector_param: host
+    authentication:
+      strategy: bearer_authentication
+      configuration:
+        token:
+          connector_param: api_key
+
+  test_request:
+    method: GET
+    path: /v1/customers
+    
+  endpoints:
+  - name: customer
+    requests:
+      read:
+        method: GET
+        path: /v1/customers
+        query_params:
+          - name: email
+            value: <email>
+        param_values:
+          - name: email
+            identity: email
+        data_path: data
+      update:
+        method: PUT
+        path: /v1/customers/<id>
+        param_values:
+          - name: id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+  - name: payment_methods
+    requests:
+      read:
+        method: GET
+        path: /v1/payment_methods
+        query_params:
+          - name: customer
+            value: <customer_id>
+          - name: type
+            value: <type>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: type
+            connector_param: payment_types
+          - name: limit
+            connector_param: page_limit
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: bank_accounts
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/<customer_id>/sources
+        query_params:
+          - name: object
+            value: bank_account
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: page_limit
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
