@@ -2,11 +2,19 @@ FROM --platform=linux/amd64 python:3.9.6-slim-buster
 
 ARG MSSQL_REQUIRED
 
-# Install auxiliary software
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    python3-dev
+
 RUN apt-get update && \
     apt-get install -y \
     git \
     make \
+    unixodbc-dev \
     ipython \
     vim \
     curl \
@@ -40,6 +48,6 @@ RUN pip install -U pip  \
 # Copy in the application files and install it locally
 COPY . /fidesops
 WORKDIR /fidesops
-RUN if [ "$MSSQL_REQUIRED" = "true" ] ; then pip install -e ".[mssql]" ; else pip install -e "." ; fi
+RUN if [ "$MSSQL_REQUIRED" = "true" ] ; then pip install -e ".[mssql]" ; else pip install -e . ; fi
 
 CMD [ "fidesops", "webserver" ]
