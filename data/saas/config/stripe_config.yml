@@ -1,0 +1,99 @@
+saas_config:
+  fides_key: stripe_connector_example
+  name: Stripe SaaS Config
+  description: A sample schema representing the Stripe connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: host
+    - name: api_key
+    - name: payment_types
+    - name: page_limit
+
+  client_config:
+    protocol: https
+    host:
+      connector_param: host
+    authentication:
+      strategy: bearer_authentication
+      configuration:
+        token:
+          connector_param: api_key
+
+  test_request:
+    path: /v1/customers
+    
+  endpoints:
+  - name: customer
+    requests:
+      read:
+        path: /v1/customers
+        request_params:
+          - name: email
+            type: query
+            identity: email
+        postprocessors:
+          - strategy: unwrap
+            configuration:
+              data_path: data
+      update:
+        path: /v1/customers/<id>
+        request_params:
+          - name: id
+            type: path
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+  - name: payment_methods
+    requests:
+      read:
+        path: /v1/payment_methods
+        request_params:
+          - name: customer
+            type: query
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: type
+            type: query
+            connector_param: payment_types
+          - name: limit
+            type: query
+            connector_param: page_limit
+        postprocessors:
+          - strategy: unwrap
+            configuration:
+              data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: bank_accounts
+    requests:
+      read:
+        path: /v1/customers/<customer_id>/sources
+        request_params:
+          - name: customer_id
+            type: path
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: object
+            type: query
+            default_value: bank_account
+          - name: limit
+            type: query
+            connector_param: page_limit
+        postprocessors:
+          - strategy: unwrap
+            configuration:
+              data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
