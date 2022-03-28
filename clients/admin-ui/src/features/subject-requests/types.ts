@@ -15,3 +15,7 @@ export interface SubjectRequest {
   reviewed_by: string;
   id: string;
 }
+
+export interface SubjectRequestResponse {
+  items: SubjectRequest[];
+}

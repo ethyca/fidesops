@@ -1,17 +1,29 @@
 import { configureStore } from '@reduxjs/toolkit';
+import { createWrapper } from 'next-redux-wrapper';
 
 import { setupListeners } from '@reduxjs/toolkit/query/react';
-import { subjectRequestApi } from '../features/subject-requests/subject-requests.slice';
+import subjectRequestsReducer, {
+  subjectRequestApi,
+} from '../features/subject-requests/subject-requests.slice';
+import userReducer from '../features/user/user.slice';
 
-export const store = configureStore({
-  reducer: {
-    [subjectRequestApi.reducerPath]: subjectRequestApi.reducer,
-  },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(subjectRequestApi.middleware),
-});
+const makeStore = () => {
+  const store = configureStore({
+    reducer: {
+      [subjectRequestApi.reducerPath]: subjectRequestApi.reducer,
+      subjectRequests: subjectRequestsReducer,
+      user: userReducer,
+    },
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(subjectRequestApi.middleware),
+    devTools: true,
+  });
+  console.log(store);
+  setupListeners(store.dispatch);
+  return store;
+};
 
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+export type AppStore = ReturnType<typeof makeStore>;
+export type AppState = ReturnType<AppStore['getState']>;
 
-setupListeners(store.dispatch);
+export const wrapper = createWrapper<AppStore>(makeStore);

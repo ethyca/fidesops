@@ -1,9 +1,22 @@
 import React from 'react';
-import type { GetServerSideProps, NextPage } from 'next';
+import type { NextPage } from 'next';
 import Head from 'next/head';
-import { getSession, useSession } from 'next-auth/react';
-import { Session } from 'next-auth';
-import { Flex, Heading, Text, Button, Select, Box } from '@fidesui/react';
+import { getSession } from 'next-auth/react';
+import {
+  Flex,
+  Heading,
+  Text,
+  Button,
+  Select,
+  Box,
+  Input,
+  InputGroup,
+  InputLeftElement,
+  InputLeftAddon,
+  Switch,
+  Stack,
+} from '@fidesui/react';
+import { wrapper } from '../app/store';
 
 import Header from '../features/common/Header';
 
@@ -11,15 +24,17 @@ import {
   ArrowDownLineIcon,
   DownloadSolidIcon,
   CloseSolidIcon,
+  SearchLineIcon,
 } from '../features/common/Icon';
 
 import RequestTable from '../features/subject-requests/RequestTable';
+import PIIToggle from '../features/subject-requests/PIIToggle';
 
 import { useGetAllSubjectRequestsQuery } from '../features/subject-requests/subject-requests.slice';
+import { assignToken } from '../features/user/user.slice';
 
-const Home: NextPage<{ session: Session | null }> = ({ session }) => {
-  const { status } = useSession();
-  const { data: requests } = useGetAllSubjectRequestsQuery(null);
+const Home: NextPage = () => {
+  const { data } = useGetAllSubjectRequestsQuery(null);
   return (
     <div>
       <Head>
@@ -55,30 +70,68 @@ const Home: NextPage<{ session: Session | null }> = ({ session }) => {
           <Heading mb={8} fontSize="2xl" fontWeight="semibold">
             Subject Requests
           </Heading>
-          <Flex mb={6} justifyContent="space-between">
-            <Flex>
-              <Select placeholder="Status" width={229} mr={4} />
-              <Select placeholder="Reviewer" width={404} />
+          <Stack direction="row" spacing={4} mb={6}>
+            <Select placeholder="Status" size="sm" minWidth="144px">
+              <option>Error</option>
+              <option>Denied</option>
+              <option>In Progress</option>
+              <option>New</option>
+              <option>Completed</option>
+            </Select>
+            <InputGroup size="sm">
+              <InputLeftElement pointerEvents="none">
+                <SearchLineIcon color="gray.300" />
+              </InputLeftElement>
+              <Input
+                type="text"
+                minWidth={200}
+                placeholder="Search"
+                size="sm"
+              />
+            </InputGroup>
+            <InputGroup size="sm">
+              <InputLeftAddon>From</InputLeftAddon>
+              <Input type="date" />
+            </InputGroup>
+            <InputGroup size="sm">
+              <InputLeftAddon>To</InputLeftAddon>
+              <Input type="date" />
+            </InputGroup>
+            <Flex flexShrink={0} alignItems="center">
+              <Text fontSize="xs" mr={2} size="sm">
+                Reveal PII
+              </Text>
+              <PIIToggle />
             </Flex>
-            <Flex>
-              <Button variant="ghost" rightIcon={<DownloadSolidIcon />}>
-                Download
-              </Button>
-              <Button variant="ghost" rightIcon={<CloseSolidIcon />}>
-                Clear all filters
-              </Button>
-            </Flex>
-          </Flex>
-          <RequestTable />
+            <Button
+              variant="ghost"
+              flexShrink={0}
+              rightIcon={<DownloadSolidIcon />}
+              size="sm"
+            >
+              Download
+            </Button>
+            <Button
+              variant="ghost"
+              flexShrink={0}
+              rightIcon={<CloseSolidIcon />}
+              size="sm"
+            >
+              Clear all filters
+            </Button>
+          </Stack>
+          <RequestTable requests={data && data.items} />
           <Flex justifyContent="space-between" mt={6}>
             <Text fontSize="xs" color="gray.600">
-              {requests.length} results
+              {data ? data.items.length : 0} results
             </Text>
             <div>
-              <Button disabled mr={2}>
+              <Button disabled mr={2} size="sm">
                 Previous
               </Button>
-              <Button disabled>Next</Button>
+              <Button disabled size="sm">
+                Next
+              </Button>
             </div>
           </Flex>
         </Box>
@@ -87,13 +140,15 @@ const Home: NextPage<{ session: Session | null }> = ({ session }) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession(context);
-  return {
-    props: {
-      session,
-    },
-  };
-};
+export const getServerSideProps = wrapper.getServerSideProps(
+  (store) => async (context) => {
+    const session = await getSession(context);
+    if (session && typeof session.accessToken !== 'undefined') {
+      await store.dispatch(assignToken(session.accessToken));
+      console.log('Dispatched token assignment', session.accessToken);
+    }
+    return { props: {} };
+  }
+);
 
 export default Home;

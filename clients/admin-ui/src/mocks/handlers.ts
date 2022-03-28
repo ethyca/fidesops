@@ -56,15 +56,15 @@ const mockSubjectRequestPreviewResponse = {
 
 // eslint-disable-next-line import/prefer-default-export
 export const handlers = [
-  rest.post<SubjectRequestBody>(
-    '/api/v1/privacy-request/preview',
+  rest.get<SubjectRequestBody>(
+    'http://localhost:8080/api/v1/subject-requests/preview',
     async (req, res, ctx) => {
       // mock loading response
       await new Promise((resolve) => {
         setTimeout(() => resolve(null), 1000);
       });
 
-      res(ctx.json(mockSubjectRequestPreviewResponse));
+      return res(ctx.json(mockSubjectRequestPreviewResponse));
     }
   ),
 ];

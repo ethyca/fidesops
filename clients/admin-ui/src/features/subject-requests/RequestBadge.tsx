@@ -30,6 +30,11 @@ const statusPropMap: {
     color: 'white',
     children: 'Completed',
   },
+  pending: {
+    bg: 'gray.500',
+    color: 'white',
+    children: 'Pending',
+  },
 };
 
 interface RequestBadgeProps {

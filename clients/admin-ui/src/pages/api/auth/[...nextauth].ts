@@ -1,6 +1,8 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
+import { assignToken } from '../../../features/user/user.slice';
+
 export default NextAuth({
   providers: [
     CredentialsProvider({
@@ -15,14 +17,15 @@ export default NextAuth({
       },
       async authorize(credentials) {
         // map email and password fields to client-level credentials temporarily
-        const data = new URLSearchParams();
-        data.append('client_id', credentials!.email);
-        data.append('client_secret', credentials!.password);
-        const res = await fetch(process.env.NEXT_PUBLIC_AUTH_ENDPOINT!, {
+        const res = await fetch(process.env.NEXT_PUBLIC_LOGIN_ENDPOINT!, {
           method: 'POST',
-          body: data,
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: JSON.stringify({
+            username: credentials!.email,
+            password: credentials!.password,
+          }),
+          headers: { 'Content-Type': 'application/json' },
         });
+
         const user = await res.json();
 
         // If no error and we have user data, return it
@@ -35,4 +38,17 @@ export default NextAuth({
       },
     }),
   ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user?.access_token) {
+        Object.assign(token, { token: user.access_token });
+      }
+
+      return token;
+    },
+    async session({ session, token }) {
+      Object.assign(session, { accessToken: token.token });
+      return session;
+    },
+  },
 });

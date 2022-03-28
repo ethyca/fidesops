@@ -4,3 +4,4 @@ export { default as DownloadSolidIcon } from './DownloadSolid';
 export { default as GearIcon } from './Gear';
 export { default as UserIcon } from './User';
 export { default as MoreIcon } from './More';
+export { default as SearchLineIcon } from './SearchLine';
