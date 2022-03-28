@@ -192,17 +192,24 @@ async def patch_yaml_datasets(
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
     yaml_request_body: dict = yaml.safe_load(await request.body())
+    datasets = yaml_request_body.get("dataset")
     created_or_updated: List[FidesopsDataset] = []
     failed: List[BulkUpdateFailed] = []
-    for dataset in yaml_request_body.get("dataset"):
-        data: dict = {
-            "connection_config_id": connection_config.id,
-            "fides_key": dataset["fides_key"],
-            "dataset": dataset,
-        }
-        create_or_update_dataset(
-            connection_config, created_or_updated, data, yaml_request_body, db, failed
-        )
+    if type(datasets) == list:
+        for dataset in datasets:  # type: ignore
+            data: dict = {
+                "connection_config_id": connection_config.id,
+                "fides_key": dataset["fides_key"],
+                "dataset": dataset,
+            }
+            create_or_update_dataset(
+                connection_config,
+                created_or_updated,
+                data,
+                yaml_request_body,
+                db,
+                failed,
+            )
     return BulkPutDataset(
         succeeded=created_or_updated,
         failed=failed,
@@ -213,10 +220,10 @@ def create_or_update_dataset(
     connection_config: ConnectionConfig,
     created_or_updated: List[FidesopsDataset],
     data: dict,
-    dataset,
+    dataset: dict,
     db: Session,
     failed: List[BulkUpdateFailed],
-):
+) -> None:
     try:
         if connection_config.connection_type == ConnectionType.saas:
             _validate_saas_dataset(connection_config, dataset)
