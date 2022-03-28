@@ -121,26 +121,3 @@ def test_config_mismatch():
         "The 'path' value must be specified when accessing the link from the body"
         in str(exc.value)
     )
-
-
-def test_link_in_headers_ignore_errors(response_with_header_link):
-    config = LinkPaginationConfiguration(source="headers", rel="next")
-    request_params: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.GET,
-        path="/customers",
-        params={"page": "abc"},
-        body=None,
-        ignore_errors=True
-    )
-
-    paginator = LinkPaginationStrategy(config)
-    next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
-        request_params, {}, response_with_header_link, "customers"
-    )
-    assert next_request == SaaSRequestParams(
-        method=HTTPMethod.GET,
-        path="/customers",
-        params={"page": "def"},
-        body=None,
-        ignore_errors=True
-    )

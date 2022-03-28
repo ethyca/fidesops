@@ -65,7 +65,6 @@ class LinkPaginationStrategy(PaginationStrategy):
             path=updated_path,
             query_params=updated_query_params,
             body=request_params.body,
-            ignore_errors=request_params.ignore_errors,
         )
 
     @staticmethod

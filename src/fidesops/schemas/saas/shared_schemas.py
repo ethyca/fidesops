@@ -25,7 +25,6 @@ class SaaSRequestParams(BaseModel):
     headers: Dict[str, Any] = {}
     query_params: Dict[str, Any] = {}
     body: Optional[str]
-    ignore_errors: Optional[bool] = False
 
     class Config:
         """Using enum values"""

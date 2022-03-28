@@ -119,7 +119,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             headers=headers,
             query_params=query_params,
             body=body if body else update_values,
-            ignore_errors=current_request.ignore_errors
         )
 
     def generate_query(
