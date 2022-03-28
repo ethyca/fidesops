@@ -2,7 +2,7 @@ from typing import Dict
 import pytest
 from pydantic import ValidationError
 
-from fidesops.graph.config import CollectionAddress
+from fidesops.graph.config import CollectionAddress, FieldAddress
 from fidesops.schemas.saas.saas_config import SaaSConfig, SaaSRequest
 
 
