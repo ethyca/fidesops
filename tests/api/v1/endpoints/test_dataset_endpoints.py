@@ -887,6 +887,37 @@ class TestPutYamlDatasets:
             assert "Dataset create/update failed" in failed_response["message"]
             assert set(failed_response.keys()) == {"message", "data"}
 
+    def test_patch_datasets_create(
+            self,
+            example_yaml_dataset: List,
+            dataset_url,
+            api_client: TestClient,
+            db: Session,
+            generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            dataset_url, headers=auth_header, data=example_yaml_dataset
+        )
+
+        assert response.status_code == 200
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+
+        # Confirm that postgres dataset matches the values we provided
+        postgres_dataset = response_body["succeeded"][0]
+        postgres_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="postgres_example_test_dataset"
+        )
+        assert postgres_config is not None
+        assert postgres_dataset["fides_key"] == "postgres_example_test_dataset"
+        assert postgres_dataset["name"] == "Postgres Example Test Dataset"
+        assert "Example of a Postgres dataset" in postgres_dataset["description"]
+        assert len(postgres_dataset["collections"]) == 11
+
+        postgres_config.delete(db)
+
 
 class TestGetDatasets:
     @pytest.fixture
