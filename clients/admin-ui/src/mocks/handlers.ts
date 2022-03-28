@@ -25,7 +25,7 @@ const mockSubjectRequestPreviewResponse = {
       id: '456',
     },
     {
-      status: 'in-progress',
+      status: 'pending',
       identity: {
         email: 'mary.jane.@email.com',
       },
@@ -57,7 +57,7 @@ const mockSubjectRequestPreviewResponse = {
 // eslint-disable-next-line import/prefer-default-export
 export const handlers = [
   rest.get<SubjectRequestBody>(
-    'http://localhost:8080/api/v1/subject-requests/preview',
+    'http://localhost:8080/api/v1/privacy-request',
     async (req, res, ctx) => {
       // mock loading response
       await new Promise((resolve) => {

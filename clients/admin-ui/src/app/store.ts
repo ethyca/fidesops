@@ -2,23 +2,22 @@ import { configureStore } from '@reduxjs/toolkit';
 import { createWrapper } from 'next-redux-wrapper';
 
 import { setupListeners } from '@reduxjs/toolkit/query/react';
-import subjectRequestsReducer, {
-  subjectRequestApi,
-} from '../features/subject-requests/subject-requests.slice';
+import privacyRequestsReducer, {
+  privacyRequestApi,
+} from '../features/privacy-requests/privacy-requests.slice';
 import userReducer from '../features/user/user.slice';
 
 const makeStore = () => {
   const store = configureStore({
     reducer: {
-      [subjectRequestApi.reducerPath]: subjectRequestApi.reducer,
-      subjectRequests: subjectRequestsReducer,
+      [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
+      subjectRequests: privacyRequestsReducer,
       user: userReducer,
     },
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware().concat(subjectRequestApi.middleware),
+      getDefaultMiddleware().concat(privacyRequestApi.middleware),
     devTools: true,
   });
-  console.log(store);
   setupListeners(store.dispatch);
   return store;
 };

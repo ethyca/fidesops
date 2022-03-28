@@ -3,11 +3,19 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { HYDRATE } from 'next-redux-wrapper';
 import { AppState } from '../../app/store';
 
-import { SubjectRequestResponse } from './types';
+import {
+  PrivacyRequest,
+  PrivacyRequestResponse,
+  PrivacyRequestStatus,
+} from './types';
+
+interface PrivacyRequestParams {
+  status?: PrivacyRequestStatus;
+}
 
 // Subject requests API
-export const subjectRequestApi = createApi({
-  reducerPath: 'subjectRequestApi',
+export const privacyRequestApi = createApi({
+  reducerPath: 'privacyRequestApi',
   baseQuery: fetchBaseQuery({
     baseUrl: 'http://0.0.0.0:8080/api/v1',
     prepareHeaders: (headers, { getState }) => {
@@ -20,22 +28,26 @@ export const subjectRequestApi = createApi({
     },
   }),
   endpoints: (build) => ({
-    getAllSubjectRequests: build.query<SubjectRequestResponse, null>({
-      query: () => ({
+    getAllPrivacyRequests: build.query<PrivacyRequest[], PrivacyRequestParams>({
+      query: ({ status }) => ({
         url: `privacy-request`,
         params: {
           include_identities: true,
+          status,
         },
       }),
+      transformResponse: (response: PrivacyRequestResponse) => response.items,
     }),
   }),
 });
 
-export const { useGetAllSubjectRequestsQuery } = subjectRequestApi;
+export const { useGetAllPrivacyRequestsQuery } = privacyRequestApi;
 
 // Subject requests state (filters, etc.)
 interface SubjectRequestsState {
   revealPII: boolean;
+  status?: PrivacyRequestStatus;
+  id?: string;
 }
 
 const initialState: SubjectRequestsState = {
@@ -50,6 +62,18 @@ export const subjectRequestsSlice = createSlice({
       ...state,
       revealPII: action.payload,
     }),
+    setRequestStatus: (state, action: PayloadAction<PrivacyRequestStatus>) => ({
+      ...state,
+      status: action.payload,
+    }),
+    setRequestId: (state, action: PayloadAction<string>) => ({
+      ...state,
+      id: action.payload,
+    }),
+    clearAllFilters: ({ revealPII }) => ({
+      ...initialState,
+      revealPII,
+    }),
   },
   extraReducers: {
     [HYDRATE]: (state, action) => ({
@@ -59,9 +83,18 @@ export const subjectRequestsSlice = createSlice({
   },
 });
 
-export const { setRevealPII } = subjectRequestsSlice.actions;
+export const { setRevealPII, setRequestId, setRequestStatus, clearAllFilters } =
+  subjectRequestsSlice.actions;
 
 export const selectRevealPII = (state: AppState) =>
   state.subjectRequests.revealPII;
+export const selectRequestStatus = (state: AppState) =>
+  state.subjectRequests.status;
+
+export const selectPrivacyRequestFilters = (
+  state: AppState
+): PrivacyRequestParams => ({
+  status: state.subjectRequests.status,
+});
 
 export default subjectRequestsSlice.reducer;

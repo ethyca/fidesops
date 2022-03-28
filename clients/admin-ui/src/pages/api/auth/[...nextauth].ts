@@ -1,8 +1,6 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
-import { assignToken } from '../../../features/user/user.slice';
-
 export default NextAuth({
   providers: [
     CredentialsProvider({
