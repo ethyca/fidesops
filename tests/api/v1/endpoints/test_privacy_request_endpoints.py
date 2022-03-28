@@ -428,6 +428,10 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "policy": {
+                        "name": privacy_request.policy.name,
+                        "key": privacy_request.policy.key,
+                    },
                 }
             ],
             "total": 1,
@@ -656,6 +660,10 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "policy": {
+                        "name": privacy_request.policy.name,
+                        "key": privacy_request.policy.key,
+                    },
                     "results": {
                         "my-mongo-db": [
                             {
@@ -1379,4 +1387,8 @@ class TestResumePrivacyRequest:
             "identity": None,
             "reviewed_at": None,
             "reviewed_by": None,
+            "policy": {
+                "key": privacy_request.policy.key,
+                "name": privacy_request.policy.name,
+            },
         }
