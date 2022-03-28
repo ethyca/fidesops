@@ -38,19 +38,80 @@ saas_config:
             identity: email
         data_path: data
       update:
-        method: PUT
-        path: /v1/customers/<id>
+        method: POST
+        path: /v1/customers/<customer_id>
         param_values:
-          - name: id
+          - name: customer_id
             references:
               - dataset: stripe_connector_example
                 field: customer.id
                 direction: from
-  - name: payment_methods
+        data_path: data
+  - name: charge
+    requests:
+      read: 
+        method: GET
+        path: /v1/charges
+        query_params:
+          - name: customer
+            value: <customer_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+        data_path: data
+  - name: dispute
     requests:
       read:
         method: GET
-        path: /v1/payment_methods
+        path: /v1/disputes
+        query_params:
+          - name: charge
+            value: <charge_id>
+        param_values:
+          - name: charge_id
+            references:
+              - dataset: stripe_connector_example
+                field: charge.id
+                direction: from
+        data_path: data
+  - name: payment_intent
+    requests:
+      read:
+        method: GET
+        path: /v1/payment_intents
+        query_params:
+          - name: customer
+            value: <customer_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+        data_path: data
+  - name: setup_intent
+    requests:
+      read:
+        method: GET
+        path: /v1/setup_intents
+        query_params:
+          - name: customer
+            value: <customer_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+        data_path: data
+  - name: payment_method
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/<customer_id>/payment_methods
         query_params:
           - name: customer
             value: <customer_id>
@@ -74,7 +135,7 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
-  - name: bank_accounts
+  - name: bank_account
     requests:
       read:
         method: GET
@@ -98,3 +159,144 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
+  - name: card
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/<customer_id>/sources
+        query_params:
+          - name: object
+            value: cards
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+        data_path: data
+  - name: credit_note
+    requests:
+      read:
+        method: GET
+        path: /v1/credit_notes
+        query_params:
+          - name: customer
+            value: <customer_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+        data_path: data
+  - name: customer_balance_transaction
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/<customer_id>/balance_transactions
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+        data_path: data
+  - name: tax_id
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/<customer_id>/tax_ids
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+        data_path: data
+  - name: invoice
+    requests:
+      read:
+        method: GET
+        path: /v1/invoices
+        query_params:
+          - name: customer
+            value: <customer_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+        data_path: data
+  - name: invoice_item
+    requests:
+      read:
+        method: GET
+        path: /v1/invoice_items
+        query_params:
+          - name: customer
+            value: <customer_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+        data_path: data
+  - name: subscription
+    requests:
+      read:
+        method: GET
+        path: /v1/subscriptions
+        query_params:
+          - name: customer
+            value: <customer_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+        data_path: data
+  - name: issuing_cardholder
+    requests:
+      read:
+        method: GET
+        path: /v1/issuing/cardholders
+        query_params:
+          - name: email
+            value: <email>
+        param_values:
+          - name: email
+            identity: email
+        data_path: data
+  - name: issuing_cards
+    requests:
+      read:
+        method: GET
+        path: /v1/issuing/cards
+        query_params:
+          - name: cardholder
+            value: <cardholder_id>
+        param_values:
+          - name: cardholder_id
+            references:
+              - dataset: stripe_connector_example
+                field: issuing_cardholder.id
+                direction: from
+        data_path: data
+  - name: issuing_authorization
+    requests:
+      read:
+        method: GET
+        path: /v1/issuing/authorizations
+        query_params:
+          - name: cardholder
+            value: <cardholder_id>
+        param_values:
+          - name: cardholder_id
+            references:
+              - dataset: stripe_connector_example
+                field: issuing_cardholder.id
+                direction: from
+        data_path: data
