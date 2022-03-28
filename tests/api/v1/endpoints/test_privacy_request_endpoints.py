@@ -459,6 +459,9 @@ class TestGetPrivacyRequests:
             == succeeded_privacy_request.get_cached_identity_data()
         )
 
+        assert resp["items"][0]["policy"]["key"] == privacy_request.policy.key
+        assert resp["items"][0]["policy"]["name"] == privacy_request.policy.name
+
         # Now test the identities are omitted if not explicitly requested
         response = api_client.get(url + f"?status=complete", headers=auth_header)
         assert 200 == response.status_code
