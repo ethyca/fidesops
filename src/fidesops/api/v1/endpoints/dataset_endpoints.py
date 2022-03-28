@@ -9,7 +9,12 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import conlist
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
+    HTTP_404_NOT_FOUND,
+    HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+)
 
 from fidesops.api import deps
 from fidesops.api.v1.scope_registry import (
@@ -191,6 +196,10 @@ async def patch_yaml_datasets(
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
+    if request.headers.get("content-type") != "application/x-yaml":
+        raise HTTPException(
+            status_code=HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+        )
     yaml_request_body: dict = yaml.safe_load(await request.body())
     datasets = yaml_request_body.get("dataset")
     created_or_updated: List[FidesopsDataset] = []
