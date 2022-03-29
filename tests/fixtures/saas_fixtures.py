@@ -27,6 +27,8 @@ saas_secrets_dict = {
         "domain": pydash.get(saas_config, "saas_example.domain"),
         "username": pydash.get(saas_config, "saas_example.username"),
         "api_key": pydash.get(saas_config, "saas_example.api_key"),
+        "api_version": pydash.get(saas_config, "saas_example.api_version"),
+        "page_limit": pydash.get(saas_config, "saas_example.page_limit")
     },
     "mailchimp": {
         "domain": pydash.get(saas_config, "mailchimp.domain")
@@ -177,7 +179,7 @@ def connection_config_saas_example_with_invalid_saas_config(
     db: Session, saas_configs: Dict[str, Dict]
 ) -> Generator:
     invalid_saas_config = saas_configs["saas_example"].copy()
-    invalid_saas_config["endpoints"][0]["requests"]["read"]["request_params"].pop()
+    invalid_saas_config["endpoints"][0]["requests"]["read"]["param_values"].pop()
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -215,7 +217,7 @@ def reset_mailchimp_data(
     """
     connector = SaaSConnector(connection_config_mailchimp)
     request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.GET, path="/3.0/search-members", params={"query": mailchimp_identity_email}, json=None
+        method=HTTPMethod.GET, path="/3.0/search-members", query_params={"query": mailchimp_identity_email}, json=None
     )
     response = connector.create_client().send(request)
     body = response.json()
@@ -224,7 +226,7 @@ def reset_mailchimp_data(
     request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.PUT,
         path=f'/3.0/lists/{member["list_id"]}/members/{member["id"]}',
-        params={},
+        query_params={},
         json=member
     )
     connector.create_client().send(request)

@@ -128,18 +128,7 @@ class PrivacyRequestRunner:
                 session.close()
                 return
 
-            try:
-                datasets = DatasetConfig.all(db=session)
-                logging.info(f"Getting dataset graph for privacy request {privacy_request.id}")
-                dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
-                logging.info(f"Constructing dataset graph for privacy request {privacy_request.id}")
-                dataset_graph = DatasetGraph(*dataset_graphs)
-                logging.info(f"Getting cache identity data for privacy request {privacy_request.id}")
-                identity_data = privacy_request.get_cached_identity_data()
-                connection_configs = ConnectionConfig.all(db=session)
-                policy = privacy_request.policy
-            except Exception as exc:
-                logger.error("Exception: %s", exc)
+            policy = privacy_request.policy
             try:
                 policy.rules[0]
             except IndexError:
@@ -148,7 +137,14 @@ class PrivacyRequestRunner:
                 )
 
             try:
-                logging.info(f"Running privacy request {privacy_request.id}")
+                datasets = DatasetConfig.all(db=session)
+                dataset_graphs = [
+                    dataset_config.get_graph() for dataset_config in datasets
+                ]
+                dataset_graph = DatasetGraph(*dataset_graphs)
+                identity_data = privacy_request.get_cached_identity_data()
+                connection_configs = ConnectionConfig.all(db=session)
+
                 access_result = run_access_request(
                     privacy_request=privacy_request,
                     policy=policy,

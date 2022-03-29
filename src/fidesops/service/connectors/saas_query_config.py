@@ -1,15 +1,16 @@
 import logging
 import json
+import re
 from typing import Any, Dict, List, Optional, TypeVar
 import pydash
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.graph.traversal import TraversalNode
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.saas.saas_config import Endpoint, SaaSRequest
 from fidesops.service.connectors.query_config import QueryConfig
 from fidesops.util.collection_util import Row
-from fidesops.util.saas_util import unflatten_dict
+from fidesops.util.saas_util import unflatten_dict, FIDESOPS_GROUPED_INPUTS
 
 logger = logging.getLogger(__name__)
 
@@ -19,42 +20,15 @@ T = TypeVar("T")
 class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
     """Query config that generates populated SaaS requests for a given collection"""
 
-    def __init__(self, node: TraversalNode, endpoints: Dict[str, Endpoint]):
+    def __init__(
+        self,
+        node: TraversalNode,
+        endpoints: Dict[str, Endpoint],
+        secrets: Dict[str, Any],
+    ):
         super().__init__(node)
         self.endpoints = endpoints
-
-    @staticmethod
-    def _build_request_body(  # pylint: disable=R0913
-        path: str,
-        param_name: str,
-        custom_body: Optional[str] = None,
-        default_value: Optional[str] = None,
-        field_reference: Optional[str] = None,
-        identity: Optional[str] = None,
-    ) -> Optional[str]:
-        """
-        Method to build request body based on config vals. Common to both read and update requests.
-        Attempts to
-        """
-        if not custom_body:
-            logger.info(f"Missing custom body {path}")
-            return None
-        if default_value:
-            custom_body = custom_body.replace(f"<{param_name}>", f'"{default_value}"')
-        elif field_reference:
-            custom_body = custom_body.replace(
-                f"<{param_name}>",
-                f'"{field_reference}"',
-            )
-        elif identity:
-            custom_body = custom_body.replace(
-                f"<{param_name}>",
-                f'"{identity}"',
-            )
-        else:
-            logger.info(f"Missing body param value(s) for {path}")
-            return None
-        return custom_body
+        self.secrets = secrets
 
     def get_request_by_action(self, action: str) -> SaaSRequest:
         """
@@ -87,50 +61,96 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 request_params.append(
                     self.generate_query({string_path: [value]}, policy)
                 )
+
+        # Build SaaS requests for fields that are dependent on each other
+        grouped_input_data: List[Dict[str, Any]] = input_data.get(
+            FIDESOPS_GROUPED_INPUTS, []
+        )
+        for dependent_data in grouped_input_data:
+            request_params.append(self.generate_query(dependent_data, policy))
+
         return request_params
+
+    @staticmethod
+    def assign_placeholders(value: str, param_values: Dict[str, Any]) -> str:
+        """
+        Finds all the placeholders (indicated by <>) in the passed in value
+        and replaces them with the actual param values
+        """
+        if value and isinstance(value, str):
+            placeholders = re.findall("<(.+?)>", value)
+            for placeholder in placeholders:
+                value = value.replace(
+                    f"<{placeholder}>", str(param_values[placeholder])
+                )
+        return value
+
+    def map_param_values(
+        self,
+        current_request: SaaSRequest,
+        param_values: Dict[str, Any],
+        update_values: Optional[Dict[str, Any]],
+    ) -> SaaSRequestParams:
+        """
+        Visits path, headers, query, and body params in the current request and replaces
+        the placeholders with the request param values.
+
+        The update_values are added to the body, if available, and the current_request
+        does not specify a body.
+        """
+
+        path: str = self.assign_placeholders(current_request.path, param_values)
+
+        headers: Dict[str, Any] = {}
+        for header in current_request.headers or []:
+            headers[header.name] = self.assign_placeholders(header.value, param_values)
+
+        query_params: Dict[str, Any] = {}
+        for query_param in current_request.query_params or []:
+            query_params[query_param.name] = self.assign_placeholders(
+                query_param.value, param_values
+            )
+
+        body = self.assign_placeholders(current_request.body, param_values)
+
+        return SaaSRequestParams(
+            method=current_request.method,
+            path=path,
+            headers=headers,
+            query_params=query_params,
+            json=json.loads(body) if body else update_values,
+        )
 
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
     ) -> SaaSRequestParams:
         """
-        This returns the query/path params needed to make an API call.
+        This returns the header, query, and path params needed to make an API call.
         This is the API equivalent of building the components of a database
         query statement (select statement, where clause, limit, offset, etc.)
         """
-        current_request = self.get_request_by_action("read")
 
-        path: str = current_request.path
-        query_params: Dict[str, Any] = {}
-        body: Optional[str] = current_request.body
+        current_request: SaaSRequest = self.get_request_by_action("read")
 
-        # uses the param names to read from the input data
-        for param in current_request.request_params:
-            if param.type == "query":
-                if param.default_value is not None:
-                    query_params[param.name] = param.default_value
-                elif param.references or param.identity:
-                    query_params[param.name] = input_data[param.name][0]
-            elif param.type == "path":
-                path = path.replace(f"<{param.name}>", input_data[param.name][0])
-            elif param.type == "body":
-                body = SaaSQueryConfig._build_request_body(
-                    path,
-                    param.name,
-                    body,
-                    param.default_value,
-                    input_data[param.name][0] if param.references else None,
-                    input_data[param.name][0] if param.identity else None,
+        # create the source of param values to populate the various placeholders
+        # in the path, headers, query_params, and body
+        param_values: Dict[str, Any] = {}
+        for param_value in current_request.param_values:
+            if param_value.references or param_value.identity:
+                param_values[param_value.name] = input_data[param_value.name][0]
+            elif param_value.connector_param:
+                param_values[param_value.name] = pydash.get(
+                    self.secrets, param_value.connector_param
                 )
+
+        # map param values to placeholders in path, headers, and query params
+        saas_request_params: SaaSRequestParams = self.map_param_values(
+            current_request, param_values, None
+        )
+
         logger.info(f"Populated request params for {current_request.path}")
-        method: HTTPMethod = (
-            current_request.method if current_request.method else HTTPMethod.GET
-        )
-        return SaaSRequestParams(
-            method=method,
-            path=path,
-            params=query_params,
-            json=json.loads(body) if body else None,
-        )
+
+        return saas_request_params
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
@@ -142,60 +162,41 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         current_request: SaaSRequest = self.get_request_by_action("update")
         collection_name: str = self.node.address.collection
-        param_values: Dict[str, Row] = {collection_name: row}
+        collection_values: Dict[str, Row] = {collection_name: row}
+        identity_data: Dict[str, Any] = request.get_cached_identity_data()
 
-        path: str = current_request.path
-        params: Dict[str, Any] = {}
-        body: Optional[str] = current_request.body or None
+        # create the source of param values to populate the various placeholders
+        # in the path, headers, query_params, and body
+        param_values: Dict[str, Any] = {}
+        for param_value in current_request.param_values:
+            if param_value.references:
+                param_values[param_value.name] = pydash.get(
+                    collection_values, param_value.references[0].field
+                )
+            elif param_value.identity:
+                param_values[param_value.name] = pydash.get(
+                    identity_data, param_value.identity
+                )
+            elif param_value.connector_param:
+                param_values[param_value.name] = pydash.get(
+                    self.secrets, param_value.connector_param
+                )
 
-        # uses the reference fields to read from the param_values
-        for param in current_request.request_params:
-            if param.type == "query":
-                if param.default_value is not None:
-                    params[param.name] = param.default_value
-                elif param.references:
-                    params[param.name] = pydash.get(
-                        param_values, param.references[0].field
-                    )
-                elif param.identity:
-                    params[param.name] = pydash.get(param_values, param.identity)
-            elif param.type == "path":
-                path = path.replace(
-                    f"<{param.name}>",
-                    pydash.get(param_values, param.references[0].field),
-                )
-            elif param.type == "body":
-                body = SaaSQueryConfig._build_request_body(
-                    path,
-                    param.name,
-                    body,
-                    param.default_value,
-                    pydash.get(param_values, param.references[0].field)
-                    if param.references
-                    else None,
-                    pydash.get(param_values, param.identity)
-                    if param.identity
-                    else None,
-                )
+        # mask row values
+        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
+        update_values: Dict[str, Any] = unflatten_dict(update_value_map)
+
+        # removes outer {} wrapper from body for greater flexibility in custom body config
+        param_values["masked_object_fields"] = update_values[1:-1]
+
+        # map param values to placeholders in path, headers, and query params
+        saas_request_params: SaaSRequestParams = self.map_param_values(
+            current_request, param_values, update_values
+        )
 
         logger.info(f"Populated request params for {current_request.path}")
 
-        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
-        update_values: Dict[str, Any] = unflatten_dict(update_value_map)
-        method: HTTPMethod = (
-            current_request.method if current_request.method else HTTPMethod.PUT
-        )
-        if body:
-            # removes outer {} wrapper from body for greater flexibility in custom body config
-            body = body.replace(
-                "<masked_object_fields>", json.dumps(update_values)[1:-1]
-            )
-        return SaaSRequestParams(
-            method=method,
-            path=path,
-            params=params,
-            json=json.loads(body) if body else None,
-        )
+        return saas_request_params
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string"""

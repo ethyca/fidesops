@@ -5,7 +5,7 @@ import pydash
 from requests import Session, Request, PreparedRequest, Response
 from fidesops.common_exceptions import FidesopsException
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.graph.traversal import Row, TraversalNode
@@ -71,18 +71,20 @@ class AuthenticatedClient:
     ) -> PreparedRequest:
         """
         Returns an authenticated request based on the client config and
-        incoming path, query, and body params.
+        incoming path, headers, query, and body params.
         """
-        req: Request = Request(
+        req: PreparedRequest = Request(
             method=request_params.method,
             url=f"{self.uri}{request_params.path}",
-            params=request_params.params,
+            headers=request_params.headers,
+            params=request_params.query_params,
             json=request_params.json,
-        )
-        prepared: PreparedRequest = req.prepare()
-        return self.add_authentication(prepared, self.client_config.authentication)
+        ).prepare()
+        return self.add_authentication(req, self.client_config.authentication)
 
-    def send(self, request_params: SaaSRequestParams) -> Response:
+    def send(
+        self, request_params: SaaSRequestParams, ignore_errors: Optional[bool] = False
+    ) -> Response:
         """
         Builds and executes an authenticated request.
         The HTTP method is determined by the request_params.
@@ -93,6 +95,14 @@ class AuthenticatedClient:
         except Exception:
             raise ConnectionException(f"Operational Error connecting to '{self.key}'.")
         if not response.ok:
+            if ignore_errors:
+                logger.info(
+                    f"Ignoring response with status code {response.status_code}."
+                )
+                response = Response()
+                response._content = b"{}"  # pylint: disable=W0212
+                return response
+
             raise ClientUnsuccessfulException(status_code=response.status_code)
 
         return response
@@ -111,13 +121,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
         """Returns the query config for a SaaS connector"""
-        return SaaSQueryConfig(node, self.endpoints)
+        return SaaSQueryConfig(node, self.endpoints, self.secrets)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
-        test_request_path = self.saas_config.test_request.path
+        test_request = self.saas_config.test_request
         prepared_request: SaaSRequestParams = SaaSRequestParams(
-            method=HTTPMethod.GET, path=test_request_path, params={}, json=None
+            method=test_request.method, path=test_request.path
         )
         self.client().send(prepared_request)
         return ConnectionTestStatus.succeeded
@@ -179,7 +189,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Returns processed data and request_params for next page of data if available.
         """
 
-        response: Response = self.client().send(prepared_request)
+        response: Response = self.client().send(
+            prepared_request, saas_request.ignore_errors
+        )
 
         # unwrap response using data_path
         try:
@@ -282,9 +294,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             query_config.generate_update_stmt(row, policy, privacy_request)
             for row in rows
         ]
+        self.collection_name = node.address.collection
+        update_request: SaaSRequest = self.endpoints[self.collection_name].requests[
+            "update"
+        ]
         rows_updated = 0
         for prepared_request in prepared_requests:
-            self.client().send(prepared_request)
+            self.client().send(prepared_request, update_request.ignore_errors)
             rows_updated += 1
         return rows_updated
 
