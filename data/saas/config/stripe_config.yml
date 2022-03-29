@@ -8,7 +8,7 @@ saas_config:
     - name: host
     - name: api_key
     - name: payment_types
-    - name: page_limit
+    - name: items_per_page
 
   client_config:
     protocol: https
@@ -46,7 +46,15 @@ saas_config:
               - dataset: stripe_connector_example
                 field: customer.id
                 direction: from
-        data_path: data
+      delete:
+        method: DELETE
+        path: /v1/customers/<customer_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
   - name: charge
     requests:
       read: 
@@ -55,13 +63,21 @@ saas_config:
         query_params:
           - name: customer
             value: <customer_id>
+          - name: limit
+            value: <limit>
         param_values:
           - name: customer_id
             references:
               - dataset: stripe_connector_example
                 field: customer.id
                 direction: from
-        data_path: data
+          - name: limit
+            connector_param: items_per_page
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
   - name: dispute
     requests:
       read:
@@ -70,13 +86,31 @@ saas_config:
         query_params:
           - name: charge
             value: <charge_id>
+          - name: limit
+            value: <limit>
         param_values:
           - name: charge_id
             references:
               - dataset: stripe_connector_example
                 field: charge.id
                 direction: from
+          - name: limit
+            connector_param: items_per_page
         data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+      update:
+        method: POST
+        path: /v1/dispute/<dispute_id>
+        param_values:
+          - name: dispute_id
+            references:
+              - dataset: stripe_connector_example
+                field: dispute.id
+                direction: from
   - name: payment_intent
     requests:
       read:
@@ -85,13 +119,22 @@ saas_config:
         query_params:
           - name: customer
             value: <customer_id>
+          - name: limit
+            value: <limit>
         param_values:
           - name: customer_id
             references:
               - dataset: stripe_connector_example
                 field: customer.id
                 direction: from
+          - name: limit
+            connector_param: items_per_page
         data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
   - name: setup_intent
     requests:
       read:
@@ -100,13 +143,22 @@ saas_config:
         query_params:
           - name: customer
             value: <customer_id>
+          - name: limit
+            value: <limit>
         param_values:
           - name: customer_id
             references:
               - dataset: stripe_connector_example
                 field: customer.id
                 direction: from
+          - name: limit
+            connector_param: items_per_page
         data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
   - name: payment_method
     requests:
       read:
@@ -128,13 +180,22 @@ saas_config:
           - name: type
             connector_param: payment_types
           - name: limit
-            connector_param: page_limit
+            connector_param: items_per_page
         data_path: data
         pagination:
           strategy: cursor
           configuration:
             cursor_param: starting_after
             field: id
+      update:
+        method: POST
+        path: /v1/payment_methods/<payment_method_id>
+        param_values:
+          - name: payment_method_id
+            references:
+              - dataset: stripe_connector_example
+                field: payment_method.id
+                direction: from
   - name: bank_account
     requests:
       read:
@@ -152,13 +213,41 @@ saas_config:
                 field: customer.id
                 direction: from
           - name: limit
-            connector_param: page_limit
+            connector_param: items_per_page
         data_path: data
         pagination:
           strategy: cursor
           configuration:
             cursor_param: starting_after
             field: id
+      update:
+        method: POST
+        path: /v1/customers/<customer_id>/sources/<bank_account_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: bank_account_id
+            references:
+              - dataset: stripe_connector_example
+                field: bank_account.id
+                direction: from
+      delete:
+        method: DELETE
+        path: /v1/customers/<customer_id>/sources/<bank_account_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: bank_account_id
+            references:
+              - dataset: stripe_connector_example
+                field: bank_account.id
+                direction: from
   - name: card
     requests:
       read:
@@ -166,14 +255,51 @@ saas_config:
         path: /v1/customers/<customer_id>/sources
         query_params:
           - name: object
-            value: cards
+            value: card
+          - name: limit
+            value: <limit>
         param_values:
           - name: customer_id
             references:
               - dataset: stripe_connector_example
                 field: customer.id
                 direction: from
+          - name: limit
+            connector_param: items_per_page
         data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+      update:
+        method: POST
+        path: /v1/customers/<customer_id>/sources/<card_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: card_id
+            references:
+              - dataset: stripe_connector_example
+                field: card.id
+                direction: from
+      delete:
+        method: DELETE
+        path: /v1/customers/<customer_id>/sources/<card_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: card_id
+            references:
+              - dataset: stripe_connector_example
+                field: card.id
+                direction: from
   - name: credit_note
     requests:
       read:
@@ -182,37 +308,80 @@ saas_config:
         query_params:
           - name: customer
             value: <customer_id>
+          - name: limit
+            value: <limit>
         param_values:
           - name: customer_id
             references:
               - dataset: stripe_connector_example
                 field: customer.id
                 direction: from
+          - name: limit
+            connector_param: items_per_page
         data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
   - name: customer_balance_transaction
     requests:
       read:
         method: GET
         path: /v1/customers/<customer_id>/balance_transactions
+        query_params:
+          - name: limit
+            value: <limit>
         param_values:
           - name: customer_id
             references:
               - dataset: stripe_connector_example
                 field: customer.id
                 direction: from
+          - name: limit
+            connector_param: items_per_page
         data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
   - name: tax_id
     requests:
       read:
         method: GET
         path: /v1/customers/<customer_id>/tax_ids
+        query_params:
+          - name: limit
+            value: <limit>
         param_values:
           - name: customer_id
             references:
               - dataset: stripe_connector_example
                 field: customer.id
                 direction: from
+          - name: limit
+            connector_param: <items_per_page>
         data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+      delete:
+        method: DELETE
+        path: /v1/customers/<customer_id>/tax_ids/<tax_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: tax_id
+            references:
+              - dataset: stripe_connector_example
+                field: tax_id.id
+                direction: from
   - name: invoice
     requests:
       read:
@@ -221,13 +390,31 @@ saas_config:
         query_params:
           - name: customer
             value: <customer_id>
+          - name: limit
+            value: limit
         param_values:
           - name: customer_id
             references:
               - dataset: stripe_connector_example
                 field: customer.id
                 direction: from
+          - name: limit
+            connector_param: items_per_page
         data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+      delete:
+        method: DELETE
+        path: /v1/invoices/<invoice_id>
+        param_values:
+          - name: invoice_id
+            references:
+              - dataset: stripe_connector_example
+                field: invoice.id
+                direction: from
   - name: invoice_item
     requests:
       read:
@@ -236,13 +423,31 @@ saas_config:
         query_params:
           - name: customer
             value: <customer_id>
+          - name: limit
+            value: <limit>
         param_values:
           - name: customer_id
             references:
               - dataset: stripe_connector_example
                 field: customer.id
                 direction: from
+          - name: limit
+            connector_param: items_per_page
         data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+      delete:
+        method: DELETE
+        path: /v1/invoiceitems/<invoice_item_id>
+        param_values:
+         - name: invoice_item_id
+           references:
+              - dataset: stripe_connector_example
+                field: invoice_item.id
+                direction: from
   - name: subscription
     requests:
       read:
@@ -251,13 +456,31 @@ saas_config:
         query_params:
           - name: customer
             value: <customer_id>
+          - name: limit
+            value: <limit>
         param_values:
           - name: customer_id
             references:
               - dataset: stripe_connector_example
                 field: customer.id
                 direction: from
+          - name: limit
+            connector_param: items_per_page
         data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+      delete:
+        method: DELETE
+        path: /v1/subscriptions/<subscription_id>
+        param_values:
+          - name: subscription_id
+            references:
+              - dataset: stripe_connector_example
+                field: subscription.id
+                direction: from
   - name: issuing_cardholder
     requests:
       read:
@@ -266,10 +489,28 @@ saas_config:
         query_params:
           - name: email
             value: <email>
+          - name: limit
+            value: <limit>
         param_values:
           - name: email
             identity: email
+          - name: limit
+            connector_param: items_per_page
         data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+      update:
+        method: POST
+        path: /v1/issuing/cardholders/<issuing_cardholder_id>
+        param_values:
+          - name: issuing_cardholder_id
+            references:
+              - dataset: stripe_connector_example
+                field: issuing_cardholder.id
+                direction: from
   - name: issuing_cards
     requests:
       read:
@@ -278,13 +519,22 @@ saas_config:
         query_params:
           - name: cardholder
             value: <cardholder_id>
+          - name: limit
+            value: <limit>
         param_values:
           - name: cardholder_id
             references:
               - dataset: stripe_connector_example
                 field: issuing_cardholder.id
                 direction: from
+          - name: limit
+            connector_param: items_per_page
         data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
   - name: issuing_authorization
     requests:
       read:
@@ -293,10 +543,19 @@ saas_config:
         query_params:
           - name: cardholder
             value: <cardholder_id>
+          - name: limit
+            value: <limit>
         param_values:
           - name: cardholder_id
             references:
               - dataset: stripe_connector_example
                 field: issuing_cardholder.id
                 direction: from
+          - name: limit
+            connector_param: items_per_page
         data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
