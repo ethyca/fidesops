@@ -39,7 +39,7 @@ def test_link_in_headers(response_with_header_link):
         method=HTTPMethod.GET,
         path="/customers",
         params={"page": "abc"},
-        body=None
+        json=None
     )
 
     paginator = LinkPaginationStrategy(config)
@@ -50,7 +50,7 @@ def test_link_in_headers(response_with_header_link):
         method=HTTPMethod.GET,
         path="/customers",
         params={"page": "def"},
-        body=None
+        json=None
     )
 
 
@@ -60,7 +60,7 @@ def test_link_in_headers_missing(response_with_body_link):
         method=HTTPMethod.GET,
         path="/customers",
         params={"page": "abc"},
-        body=None
+        json=None
     )
 
     paginator = LinkPaginationStrategy(config)
@@ -76,7 +76,7 @@ def test_link_in_body(response_with_body_link):
         method=HTTPMethod.GET,
         path="/customers",
         params={"page": "abc"},
-        body=None
+        json=None
     )
 
     paginator = LinkPaginationStrategy(config)
@@ -87,7 +87,7 @@ def test_link_in_body(response_with_body_link):
         method=HTTPMethod.GET,
         path="/customers",
         params={"page": "def"},
-        body=None
+        json=None
     )
 
 
@@ -97,7 +97,7 @@ def test_link_in_body_missing(response_with_header_link):
         method=HTTPMethod.GET,
         path="/customers",
         params={"page": "abc"},
-        body=None
+        json=None
     )
 
     paginator = LinkPaginationStrategy(config)

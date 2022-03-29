@@ -21,7 +21,7 @@ class SaaSRequestParams(BaseModel):
     method: HTTPMethod
     path: str
     params: Dict[str, Any]
-    body: Optional[str]
+    json: Optional[Dict[str, Any]]
 
     class Config:
         """Using enum values"""

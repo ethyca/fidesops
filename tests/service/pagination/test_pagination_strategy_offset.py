@@ -32,7 +32,7 @@ def test_offset(response_with_body):
         method=HTTPMethod.GET,
         path="/conversations",
         params={"page": 1},
-        body=None
+        json=None
     )
     paginator = OffsetPaginationStrategy(config)
     next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
@@ -42,7 +42,7 @@ def test_offset(response_with_body):
         method=HTTPMethod.GET,
         path="/conversations",
         params={"page": 2},
-        body=None
+        json=None
     )
 
 
@@ -57,7 +57,7 @@ def test_offset_with_connector_param_reference(response_with_body):
         method=HTTPMethod.GET,
         path="/conversations",
         params={"page": 1},
-        body=None
+        json=None
     )
 
     paginator = OffsetPaginationStrategy(config)
@@ -68,7 +68,7 @@ def test_offset_with_connector_param_reference(response_with_body):
         method=HTTPMethod.GET,
         path="/conversations",
         params={"page": 2},
-        body=None
+        json=None
     )
 
 
@@ -82,7 +82,7 @@ def test_offset_with_connector_param_reference_not_found(response_with_body):
         method=HTTPMethod.GET,
         path="/conversations",
         params={"page": 1},
-        body=None
+        json=None
     )
 
     paginator = OffsetPaginationStrategy(config)
@@ -102,7 +102,7 @@ def test_offset_limit(response_with_body):
         method=HTTPMethod.GET,
         path="/conversations",
         params={"page": 10},
-        body=None
+        json=None
     )
 
     paginator = OffsetPaginationStrategy(config)
@@ -136,7 +136,7 @@ def test_offset_missing_start_value(response_with_body):
         method=HTTPMethod.GET,
         path="/conversations",
         params={"row": 1},
-        body=None
+        json=None
     )
 
     paginator = OffsetPaginationStrategy(config)

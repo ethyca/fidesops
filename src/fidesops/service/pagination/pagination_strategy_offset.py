@@ -64,7 +64,7 @@ class OffsetPaginationStrategy(PaginationStrategy):
             method=request_params.method,
             path=request_params.path,
             params=request_params.params,
-            body=request_params.body,
+            json=request_params.json,
         )
 
     @staticmethod

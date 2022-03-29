@@ -28,11 +28,11 @@ saas_config:
           path: /crm/v3/objects/contacts/search
           method: POST
           body: '{
-            filter_groups: [{
-              filters: [{
-                value: <email>,
-                propertyName: email,
-                operator: EQ
+            "filterGroups": [{
+              "filters": [{
+                "value": <email>,
+                "propertyName": "email",
+                "operator": "EQ"
               }]
             }]
           }'
@@ -56,7 +56,7 @@ saas_config:
           path: /crm/v3/objects/contacts/<contactId>
           method: PATCH
           body: '{
-            properties: {
+            "properties": {
                 <masked_object_fields>
             }
           }'
@@ -87,41 +87,44 @@ saas_config:
             configuration:
               source: body
               path: paging.next.link
-    - name: marketing_emails
-      requests:
-        read:
-          path: /marketing-emails/v1/emails
-          method: GET
-          request_params:
-            - name: limit
-              type: query
-              default_value: 100
-            - name: offset
-              type: query
-              default_value: 0
-          data_path: objects
-          postprocessors:
-            - strategy: filter
-              configuration:
-                field: authorEmail  # or email?
-                value:
-                  identity: email
-          pagination:
-            strategy: offset
-            configuration:
-              incremental_param: offset
-              increment_by: 100
-              limit: 10000
-        update:
-          path: marketing-emails/v1/emails/<emailId>
-          method: PUT
-          request_params:
-            - name: emailId
-              type: path
-              references:
-                - dataset: hubspot_connector_example
-                  field: marketing_emails.id
-                  direction: from
+#    - name: marketing_emails
+#      requests:
+#        read:
+#          path: /marketing-emails/v1/emails
+#          method: GET
+#          request_params:
+#            - name: limit
+#              type: query
+#              default_value: 100
+#            - name: offset
+#              type: query
+#              default_value: 0
+#            - name: email
+#              type: path # will be removed
+#              identity: email
+#          data_path: objects
+#          postprocessors:
+#            - strategy: filter
+#              configuration:
+#                field: authorEmail  # or email?
+#                value:
+#                  identity: email
+#          pagination:
+#            strategy: offset
+#            configuration:
+#              incremental_param: offset
+#              increment_by: 100
+#              limit: 10000
+#        update:
+#          path: marketing-emails/v1/emails/<emailId>
+#          method: PUT
+#          request_params:
+#            - name: emailId
+#              type: path
+#              references:
+#                - dataset: hubspot_connector_example
+#                  field: marketing_emails.id
+#                  direction: from
     - name: subscription_preferences
       requests:
         read:
@@ -136,10 +139,10 @@ saas_config:
           path: /communication-preferences/v3/unsubscribe
           method: POST
           body: '{
-            emailAddress: <email>,
-            subscriptionId: <subscriptionId>,
-            legalBasis: LEGITIMATE_INTEREST_CLIENT,
-            legalBasisExplanation: At users request, we opted them out
+            "emailAddress": <email>,
+            "subscriptionId": <subscriptionId>,
+            "legalBasis": "LEGITIMATE_INTEREST_CLIENT",
+            "legalBasisExplanation": "At users request, we opted them out"
           }'
           request_params:
             - name: email
@@ -151,39 +154,46 @@ saas_config:
                 - dataset: hubspot_connector_example
                   field: subscription.id
                   direction: from
-    - name: users
-      requests:
-        read:
-          path: /settings/v3/users/
-          method: GET
-          request_params:
-            - name: limit
-              type: query
-              default_value: 100
-          pagination:
-            strategy: link
-            configuration:
-              source: body
-              path: paging.next.link
-          postprocessors:
-            - strategy: unwrap
-              configuration:
-                data_path: results
-            - strategy: filter
-              configuration:
-                field: email
-                value:
-                  identity: email
-    - name: user_provisioning
-      requests:
-        read:
-          path: /settings/v3/users/<userId>
-          method: GET
-          request_params:
-            - name: userId
-              type: path
-              references:
-                - dataset: hubspot_connector_example
-                  field: users.id
-                  direction: from
+#    - name: users
+#      requests:
+#        read:
+#          path: /settings/v3/users/
+#          method: GET
+#          request_params:
+#            - name: limit
+#              type: query
+#              default_value: 100
+#            - name: email
+#              type: path # will be removed
+#              identity: email
+#          pagination:
+#            strategy: link
+#            configuration:
+#              source: body
+#              path: paging.next.link
+#          postprocessors:
+#            - strategy: unwrap
+#              configuration:
+#                data_path: results
+#            - strategy: filter
+#              configuration:
+#                field: email
+#                value:
+#                  identity: email
+#    - name: user_provisioning
+#      requests:
+#        read:
+#          path: /settings/v3/users/<userId>
+#          method: GET
+#          request_params:
+#            - name: userId
+#              type: path
+#              references:
+#                - dataset: hubspot_connector_example
+#                  field: users.id
+#                  direction: from
+#            - name: email
+#              type: path # will be removed
+#              identity: email
+
 

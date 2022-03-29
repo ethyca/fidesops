@@ -73,13 +73,14 @@ class AuthenticatedClient:
         Returns an authenticated request based on the client config and
         incoming path, query, and body params.
         """
-        req = Request(
+        req: Request = Request(
             method=request_params.method,
             url=f"{self.uri}{request_params.path}",
             params=request_params.params,
-            data=request_params.body,
-        ).prepare()
-        return self.add_authentication(req, self.client_config.authentication)
+            json=request_params.json,
+        )
+        prepared: PreparedRequest = req.prepare()
+        return self.add_authentication(prepared, self.client_config.authentication)
 
     def send(self, request_params: SaaSRequestParams) -> Response:
         """
@@ -91,7 +92,6 @@ class AuthenticatedClient:
             response = self.session.send(prepared_request)
         except Exception:
             raise ConnectionException(f"Operational Error connecting to '{self.key}'.")
-
         if not response.ok:
             raise ClientUnsuccessfulException(status_code=response.status_code)
 
@@ -117,7 +117,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """Generates and executes a test connection based on the SaaS config"""
         test_request_path = self.saas_config.test_request.path
         prepared_request: SaaSRequestParams = SaaSRequestParams(
-            method=HTTPMethod.GET, path=test_request_path, params={}, body=None
+            method=HTTPMethod.GET, path=test_request_path, params={}, json=None
         )
         self.client().send(prepared_request)
         return ConnectionTestStatus.succeeded

@@ -38,7 +38,7 @@ def test_cursor(response_with_body):
         method=HTTPMethod.GET,
         path="/conversations",
         params={},
-        body=None
+        json=None
     )
 
     paginator = CursorPaginationStrategy(config)
@@ -49,7 +49,7 @@ def test_cursor(response_with_body):
         method=HTTPMethod.GET,
         path="/conversations",
         params={"after": 3},
-        body=None
+        json=None
     )
 
 
@@ -61,7 +61,7 @@ def test_missing_cursor_value(response_with_body):
         method=HTTPMethod.GET,
         path="/conversations",
         params={},
-        body=None
+        json=None
     )
 
     paginator = CursorPaginationStrategy(config)
@@ -79,7 +79,7 @@ def test_cursor_with_empty_list(response_with_empty_list):
         method=HTTPMethod.GET,
         path="/conversations",
         params={},
-        body=None
+        json=None
     )
 
     paginator = CursorPaginationStrategy(config)
