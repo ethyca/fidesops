@@ -1,0 +1,316 @@
+dataset:
+  - fides_key: sentry_connector
+    name: Sentry Dataset
+    description: A sample dataset representing the Sentry connector for Fidesops
+    collections:
+      - name: organizations
+        fields:
+          - name: id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: slug
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: status
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: id
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: name
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+          - name: name
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: isEarlyAdopter
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
+          - name: require2FA
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
+          - name: avatar
+            fields:
+              - name: avatarType
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: avatarUuid
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+          - name: features
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string[]
+      - name: employees
+        fields:
+          - name: id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: email
+            data_categories: [ user.provided.identifiable.contact.email ]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [ user.provided.identifiable.name ]
+            fidesops_meta:
+              data_type: string
+          - name: user
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: id
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: name
+                data_categories: [ user.provided.identifiable.name ]
+                fidesops_meta:
+                  data_type: string
+              - name: username
+                data_categories: [ user.provided.identifiable.credentials ]
+                fidesops_meta:
+                  data_type: string
+              - name: email
+                data_categories: [ user.provided.identifiable.contact.email ]
+                fidesops_meta:
+                  data_type: string
+              - name: avatarUrl
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: isActive
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: hasPasswordAuth
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: isManaged
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: dateJoined
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: lastLogin
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: has2fa
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: lastActive
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: isSuperuser
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: isStaff
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: emails
+                fidesops_meta:
+                  data_type: object[]
+                fields:
+                  - name: id
+                    data_categories: [ system.operations ]
+                    fidesops_meta:
+                      data_type: string
+                  - name: email
+                    data_categories: [ user.provided.identifiable.contact.email ]
+                    fidesops_meta:
+                      data_type: string
+                  - name: is_verified
+                    data_categories: [ system.operations ]
+                    fidesops_meta:
+                      data_type: boolean
+      - name: projects
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: slug
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: isPublic
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
+          - name: status
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: avatar
+            fields:
+              - name: avatarType
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: avatarUuid
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+          - name: features
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string[]
+          - name: organization
+            fields:
+              - name: id
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: slug
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: status
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: name
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: isEarlyAdopter
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: require2FA
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+      - name: issues
+        fields:
+          - name: id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: title
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: level
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: status
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: isPublic
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
+          - name: assignedTo
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: email
+                data_categories: [ user.provided.identifiable.contact.email ]
+                fidesops_meta:
+                  data_type: string
+              - name: type
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: id
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: name
+                data_categories: [ user.provided.identifiable.name ]
+                fidesops_meta:
+                  data_type: string
+      - name: user_feedback
+        fields:
+          - name: id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: comments
+            data_categories: [ user.provided ]
+            fidesops_meta:
+              data_type: string
+          - name: user
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: id
+                fidesops_meta:
+                  data_type: string
+              - name: identifier
+                fidesops_meta:
+                  data_type: string
+              - name: username
+                data_categories: [ user.provided.identifiable.credentials ]
+                fidesops_meta:
+                  data_type: string
+              - name: email
+                data_categories: [ user.provided.identifiable.contact.email ]
+              - name: name
+                data_categories: [ user.provided.identifiable.name ]
+              - name: ipAddress
+                data_categories: [ user.derived.identifiable.device.ip_address ]
+                fidesops_meta:
+                  data_type: string
+              - name: dateCreated
+                fidesops_meta:
+                  data_type: string
+              - name: avatarUrl
+                fidesops_meta:
+                  data_type: string
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+      - name: users
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
+          - name: identifier
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [ user.provided.identifiable.name ]
+            fidesops_meta:
+              data_type: string
+          - name: username
+            data_categories: [ user.provided.identifiable.credentials ]
+            fidesops_meta:
+              data_type: string
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: ipAddress
+            data_categories: [user.derived.identifiable.device.ip_address]
+            fidesops_meta:
+              data_type: string
