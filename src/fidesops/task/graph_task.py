@@ -132,10 +132,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     def dependent_identity_fields(self) -> bool:
         """If the current collection needs inputs from other collections, in addition to its seed data."""
         collection = self.traversal_node.node.collection
-        grouped_fields = [
-            collection.field(FieldPath(field)) for field in self.grouped_fields
-        ]
-        return any(field.identity for field in grouped_fields)
+        for field in self.grouped_fields:
+            if collection.field(FieldPath(field)).identity:
+                return True
+        return False
 
     def build_incoming_field_path_maps(
         self, group_dependent_fields: bool = False
@@ -183,7 +183,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         grouped_data: Dict[str, Any],
         dependent_field_mappings: COLLECTION_FIELD_PATH_MAP,
     ) -> Dict[str, Any]:
-        """Combine the seed data with the other dependent inputs. This is used when seed data into a collection requires
+        """Combine the seed data with the other dependent inputs. This is used when the seed data in a collection requires
         inputs from another collection to generate subsequent queries."""
         # Get the identity values from the seeds that were passed into this collection.
         seed_index = self.input_keys.index(ROOT_COLLECTION_ADDRESS)

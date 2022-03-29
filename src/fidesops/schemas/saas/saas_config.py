@@ -150,7 +150,7 @@ class Endpoint(BaseModel):
 
     name: str
     requests: Dict[Literal["read", "update", "delete"], SaaSRequest]
-    after: Optional[List[FidesCollectionKey]] = []
+    after: List[FidesCollectionKey] = []
 
 
 class ConnectorParam(BaseModel):
@@ -223,8 +223,7 @@ class SaaSConfig(BaseModel):
                         fields=fields,
                         grouped_inputs=grouped_inputs,
                         after={
-                            CollectionAddress(*s.split("."))
-                            for s in endpoint.after or []
+                            CollectionAddress(*s.split(".")) for s in endpoint.after
                         },
                     )
                 )
