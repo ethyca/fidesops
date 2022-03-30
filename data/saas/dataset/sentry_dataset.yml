@@ -29,6 +29,10 @@ dataset:
             data_categories: [ system.operations ]
             fidesops_meta:
               data_type: string
+          - name: dateCreated
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
           - name: isEarlyAdopter
             data_categories: [ system.operations ]
             fidesops_meta:
@@ -37,7 +41,13 @@ dataset:
             data_categories: [ system.operations ]
             fidesops_meta:
               data_type: boolean
+          - name: requireEmailVerification
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
           - name: avatar
+            fidesops_meta:
+              data_type: object
             fields:
               - name: avatarType
                 data_categories: [ system.operations ]
@@ -86,7 +96,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: avatarUrl
-                data_categories: [ system.operations ]
+                data_categories: [ user.provided.identifiable ]
                 fidesops_meta:
                   data_type: string
               - name: isActive
@@ -141,6 +151,62 @@ dataset:
                     data_categories: [ system.operations ]
                     fidesops_meta:
                       data_type: boolean
+              - name: avatar
+                fields:
+                  - name: avatarType
+                    data_categories: [ system.operations ]
+                    fidesops_meta:
+                      data_type: string
+                  - name: avatarUuid
+                    data_categories: [ system.operations ]
+                    fidesops_meta:
+                      data_type: string
+              - name: role
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: roleName
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: pending
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: expired
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: flags
+                fields:
+                  - name: sso:linked
+                    data_categories: [ system.operations ]
+                    fidesops_meta:
+                      data_type: boolean
+                  - name: sso_invalid
+                    data_categories: [ system.operations ]
+                    fidesops_meta:
+                      data_type: boolean
+                  - name: member-limit:restricted
+                    data_categories: [ system.operations ]
+                    fidesops_meta:
+                      data_type: boolean
+              - name: dateCreated
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: inviteStatus
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: inviterName
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: projects
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string[]
       - name: projects
         fields:
           - name: id
@@ -151,10 +217,6 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: status
-            data_categories: [ system.operations ]
-            fidesops_meta:
-              data_type: string
           - name: name
             data_categories: [ system.operations ]
             fidesops_meta:
@@ -163,7 +225,57 @@ dataset:
             data_categories: [ system.operations ]
             fidesops_meta:
               data_type: boolean
+          - name: isBookmarked
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
+          - name: color
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: dateCreated
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: firstEvent
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: firstTransactionEvent
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
+          - name: hasSessions
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
+          - name: features
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string[]
+          - name: status
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: platform
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: isInternal
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
+          - name: isMember
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
+          - name: hasAccess
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
           - name: avatar
+            fidesops_meta:
+              data_type: object
             fields:
               - name: avatarType
                 data_categories: [ system.operations ]
@@ -173,11 +285,9 @@ dataset:
                 data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
-          - name: features
-            data_categories: [ system.operations ]
-            fidesops_meta:
-              data_type: string[]
           - name: organization
+            fidesops_meta:
+              data_type: object
             fields:
               - name: id
                 data_categories: [ system.operations ]
@@ -188,10 +298,22 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: status
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: id
+                    data_categories: [ system.operations ]
+                    fidesops_meta:
+                      data_type: string
+                  - name: name
+                    data_categories: [ system.operations ]
+                    fidesops_meta:
+                      data_type: string
+              - name: name
                 data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
-              - name: name
+              - name: dateCreated
                 data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
@@ -203,6 +325,24 @@ dataset:
                 data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: boolean
+              - name: requireEmailVerification
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: avatar
+                fields:
+                  - name: avatarType
+                    data_categories: [ system.operations ]
+                    fidesops_meta:
+                      data_type: string
+                  - name: avatarUuid
+                    data_categories: [ system.operations ]
+                    fidesops_meta:
+                      data_type: string
+              - name: features
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string[]
       - name: issues
         fields:
           - name: id
@@ -210,10 +350,27 @@ dataset:
             fidesops_meta:
               data_type: string
               primary_key: True
+          - name: shareId
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: shortId
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
           - name: title
             data_categories: [ system.operations ]
             fidesops_meta:
               data_type: string
+          - name: culprit
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: permalink
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: logger
           - name: level
             data_categories: [ system.operations ]
             fidesops_meta:
@@ -222,10 +379,65 @@ dataset:
             data_categories: [ system.operations ]
             fidesops_meta:
               data_type: string
+          - name: statusDetails
           - name: isPublic
             data_categories: [ system.operations ]
             fidesops_meta:
               data_type: boolean
+          - name: platform
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: project
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: id
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: name
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: slug
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: platform
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+          - name: type
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: metadata
+            fields:
+              - name: value
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: type
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: filename
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: function
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: display_title_with_tree_label
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+          - name: numComments
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: integer
           - name: assignedTo
             fidesops_meta:
               data_type: object
@@ -246,6 +458,53 @@ dataset:
                 data_categories: [ user.provided.identifiable.name ]
                 fidesops_meta:
                   data_type: string
+          - name: isBookmarked
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
+          - name: isSubscribed
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
+          - name: subscriptionDetails
+            fields:
+              - name: reason
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+          - name: hasSeen
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
+          - name: annotations
+          - name: isUnhandled
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
+          - name: count
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: userCount
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: integer
+          - name: firstSeen
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: lastSeen
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: stats
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: 24h
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: integer[]
       - name: user_feedback
         fields:
           - name: id
@@ -273,15 +532,19 @@ dataset:
               data_type: object
             fields:
               - name: id
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: hash
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: tagValue
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: identifier
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: username
@@ -301,9 +564,11 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: dateCreated
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: avatarUrl
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
           - name: event
@@ -311,9 +576,11 @@ dataset:
               data_type: object
             fields:
               - name: id
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: eventID
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
           - name: issue
@@ -321,39 +588,48 @@ dataset:
               data_type: object
             fields:
               - name: id
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: shareId
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: shortId
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: title
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: culprit
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: permalink
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: logger
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: level
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: status
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: statusDetails
-                fidesops_meta:
-                  data_type: string
               - name: isPublic
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: boolean
               - name: platform
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: project
@@ -361,18 +637,23 @@ dataset:
                   data_type: object
                 fields:
                   - name: id
+                    data_categories: [ system.operations ]
                     fidesops_meta:
                       data_type: string
                   - name: name
+                    data_categories: [ system.operations ]
                     fidesops_meta:
                       data_type: string
                   - name: slug
+                    data_categories: [ system.operations ]
                     fidesops_meta:
                       data_type: string
                   - name: platform
+                    data_categories: [ system.operations ]
                     fidesops_meta:
                       data_type: string
               - name: type
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: metadata
@@ -392,52 +673,64 @@ dataset:
                     fidesops_meta:
                       data_type: string
               - name: numComments
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: integer
               - name: assignedTo
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: isBookmarked
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: boolean
               - name: isSubscribed
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: boolean
               - name: subscriptionDetails
-                fidesops_meta:
-                  data_type: string
+                data_categories: [ system.operations ]
               - name: hasSeen
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: boolean
               - name: annotations
-                fidesops_meta:
-                  data_type: string
               - name: isUnhandled
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: boolean
               - name: count
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: userCount
+                data_categories: [ system.operations ]
                 fidesops_meta:
-                  data_type: float
+                  data_type: integer
               - name: firstSeen
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
               - name: lastSeen
+                data_categories: [ system.operations ]
                 fidesops_meta:
                   data_type: string
       - name: person
         fields:
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: hash
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: tagValue
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: identifier
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: username
@@ -457,8 +750,10 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: dateCreated
+            data_categories: [ system.operations ]
             fidesops_meta:
               data_type: string
           - name: avatarUrl
+            data_categories: [ system.operations ]
             fidesops_meta:
               data_type: string

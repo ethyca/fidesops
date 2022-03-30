@@ -28,7 +28,7 @@ saas_secrets_dict = {
         "username": pydash.get(saas_config, "saas_example.username"),
         "api_key": pydash.get(saas_config, "saas_example.api_key"),
         "api_version": pydash.get(saas_config, "saas_example.api_version"),
-        "page_limit": pydash.get(saas_config, "saas_example.page_limit")
+        "page_limit": pydash.get(saas_config, "saas_example.page_limit"),
     },
     "mailchimp": {
         "domain": pydash.get(saas_config, "mailchimp.domain")
@@ -37,6 +37,11 @@ saas_secrets_dict = {
         or os.environ.get("MAILCHIMP_USERNAME"),
         "api_key": pydash.get(saas_config, "mailchimp.api_key")
         or os.environ.get("MAILCHIMP_API_KEY"),
+    },
+    "sentry": {
+        "host": pydash.get(saas_config, "sentry.host") or os.environ.get("SENTRY_HOST"),
+        "access_token": pydash.get(saas_config, "sentry.access_token")
+        or os.environ.get("SENTRY_ACCESS_TOKEN"),
     },
 }
 
@@ -49,23 +54,21 @@ def load_config(filename: str) -> Dict:
 
 @pytest.fixture
 def saas_configs() -> Dict[str, Dict]:
-    saas_configs = {}
-    saas_configs["saas_example"] = load_config(
-        "data/saas/config/saas_example_config.yml"
-    )
-    saas_configs["mailchimp"] = load_config("data/saas/config/mailchimp_config.yml")
+    saas_configs = {
+        "saas_example": load_config("data/saas/config/saas_example_config.yml"),
+        "mailchimp": load_config("data/saas/config/mailchimp_config.yml"),
+        "sentry": load_config("data/saas/config/sentry_config.yml"),
+    }
     return saas_configs
 
 
 @pytest.fixture
 def saas_datasets() -> Dict[str, Dict]:
-    saas_datasets = {}
-    saas_datasets["saas_example"] = load_dataset(
-        "data/saas/dataset/saas_example_dataset.yml"
-    )[0]
-    saas_datasets["mailchimp"] = load_dataset(
-        "data/saas/dataset/mailchimp_dataset.yml"
-    )[0]
+    saas_datasets = {
+        "saas_example": load_dataset("data/saas/dataset/saas_example_dataset.yml")[0],
+        "mailchimp": load_dataset("data/saas/dataset/mailchimp_dataset.yml")[0],
+        "sentry": load_dataset("data/saas/dataset/sentry_dataset.yml")[0],
+    }
     return saas_datasets
 
 
@@ -137,7 +140,7 @@ def connection_config_mailchimp(
 def dataset_config_mailchimp(
     db: Session,
     connection_config_mailchimp: ConnectionConfig,
-    saas_datasets: Dict[str, Dict]
+    saas_datasets: Dict[str, Dict],
 ) -> Generator:
     saas_dataset = saas_datasets["mailchimp"]
     fides_key = saas_dataset["fides_key"]
@@ -148,6 +151,47 @@ def dataset_config_mailchimp(
         db=db,
         data={
             "connection_config_id": connection_config_mailchimp.id,
+            "fides_key": fides_key,
+            "dataset": saas_dataset,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def connection_config_sentry(db: Session, saas_configs: Dict[str, Dict]) -> Generator:
+    saas_config = SaaSConfig(**saas_configs["sentry"])
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": saas_config.fides_key,
+            "name": saas_config.fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": saas_secrets_dict["sentry"],
+            "saas_config": saas_configs["sentry"],
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture
+def dataset_config_sentry(
+    db: Session,
+    connection_config_sentry: ConnectionConfig,
+    saas_datasets: Dict[str, Dict],
+) -> Generator:
+    saas_dataset = saas_datasets["sentry"]
+    fides_key = saas_dataset["fides_key"]
+    connection_config_sentry.name = fides_key
+    connection_config_sentry.key = fides_key
+    connection_config_sentry.save(db=db)
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config_sentry.id,
             "fides_key": fides_key,
             "dataset": saas_dataset,
         },
@@ -208,6 +252,13 @@ def mailchimp_identity_email():
 
 
 @pytest.fixture(scope="function")
+def sentry_identity_email():
+    return pydash.get(saas_config, "sentry.identity_email") or os.environ.get(
+        "SENTRY_IDENTITY_EMAIL"
+    )
+
+
+@pytest.fixture(scope="function")
 def reset_mailchimp_data(
     connection_config_mailchimp, mailchimp_identity_email
 ) -> Generator:
@@ -217,7 +268,10 @@ def reset_mailchimp_data(
     """
     connector = SaaSConnector(connection_config_mailchimp)
     request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.GET, path="/3.0/search-members", query_params={"query": mailchimp_identity_email}, body=None
+        method=HTTPMethod.GET,
+        path="/3.0/search-members",
+        query_params={"query": mailchimp_identity_email},
+        body=None,
     )
     response = connector.create_client().send(request)
     body = response.json()
@@ -227,6 +281,6 @@ def reset_mailchimp_data(
         method=HTTPMethod.PUT,
         path=f'/3.0/lists/{member["list_id"]}/members/{member["id"]}',
         query_params={},
-        body=json.dumps(member)
+        body=json.dumps(member),
     )
     connector.create_client().send(request)
