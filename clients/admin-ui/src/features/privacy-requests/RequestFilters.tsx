@@ -1,7 +1,6 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import debounce from 'lodash.debounce';
-
 import {
   Flex,
   Text,
@@ -13,13 +12,14 @@ import {
   InputLeftAddon,
   Stack,
 } from '@fidesui/react';
+
+import PIIToggle from './PIIToggle';
 import {
   DownloadSolidIcon,
   CloseSolidIcon,
   SearchLineIcon,
 } from '../common/Icon';
-
-import PIIToggle from './PIIToggle';
+import { statusPropMap } from './RequestBadge';
 
 import { PrivacyRequestStatus } from './types';
 import {
@@ -28,7 +28,6 @@ import {
   selectRequestStatus,
   clearAllFilters,
 } from './privacy-requests.slice';
-import { statusPropMap } from './RequestBadge';
 
 const useRequestFilters = () => {
   const status = useSelector(selectRequestStatus);

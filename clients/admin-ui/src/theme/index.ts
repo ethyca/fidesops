@@ -6,6 +6,9 @@ const theme = extendTheme({
       body: {
         bg: 'white',
       },
+      html: {
+        height: '100%',
+      },
     },
   },
 });

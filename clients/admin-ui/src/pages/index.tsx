@@ -2,7 +2,7 @@ import React from 'react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import { getSession } from 'next-auth/react';
-import { Flex, Heading, Text, Button, Box } from '@fidesui/react';
+import { Flex, Heading, Button, Box } from '@fidesui/react';
 import { wrapper } from '../app/store';
 
 import Header from '../features/common/Header';
@@ -12,7 +12,6 @@ import { ArrowDownLineIcon } from '../features/common/Icon';
 import RequestTable from '../features/privacy-requests/RequestTable';
 import RequestFilters from '../features/privacy-requests/RequestFilters';
 
-import { useGetAllPrivacyRequestsQuery } from '../features/privacy-requests/privacy-requests.slice';
 import { assignToken } from '../features/user/user.slice';
 
 const Home: NextPage = () => (
@@ -62,7 +61,6 @@ export const getServerSideProps = wrapper.getServerSideProps(
     const session = await getSession(context);
     if (session && typeof session.accessToken !== 'undefined') {
       await store.dispatch(assignToken(session.accessToken));
-      console.log('Dispatched token assignment', session.accessToken);
     }
     return { props: {} };
   }
