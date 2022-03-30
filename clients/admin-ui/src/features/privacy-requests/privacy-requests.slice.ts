@@ -11,6 +11,7 @@ import {
 
 interface PrivacyRequestParams {
   status?: PrivacyRequestStatus;
+  id: string;
 }
 
 // Subject requests API
@@ -29,11 +30,12 @@ export const privacyRequestApi = createApi({
   }),
   endpoints: (build) => ({
     getAllPrivacyRequests: build.query<PrivacyRequest[], PrivacyRequestParams>({
-      query: ({ status }) => ({
+      query: ({ status, id }) => ({
         url: `privacy-request`,
         params: {
           include_identities: true,
           status,
+          id,
         },
       }),
       transformResponse: (response: PrivacyRequestResponse) => response.items,
@@ -47,11 +49,12 @@ export const { useGetAllPrivacyRequestsQuery } = privacyRequestApi;
 interface SubjectRequestsState {
   revealPII: boolean;
   status?: PrivacyRequestStatus;
-  id?: string;
+  id: string;
 }
 
 const initialState: SubjectRequestsState = {
   revealPII: false,
+  id: '',
 };
 
 export const subjectRequestsSlice = createSlice({
@@ -95,6 +98,7 @@ export const selectPrivacyRequestFilters = (
   state: AppState
 ): PrivacyRequestParams => ({
   status: state.subjectRequests.status,
+  id: state.subjectRequests.id,
 });
 
 export default subjectRequestsSlice.reducer;

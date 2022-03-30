@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Table,
   Text,
@@ -23,13 +23,14 @@ import {
 import { format } from 'date-fns-tz';
 import { useSelector } from 'react-redux';
 
+import debounce from 'lodash.debounce';
 import { MoreIcon } from '../common/Icon';
 import RequestBadge from './RequestBadge';
 
 import { PrivacyRequest } from './types';
 import { useObscuredPII } from './helpers';
 import {
-  selectRequestStatus,
+  selectPrivacyRequestFilters,
   useGetAllPrivacyRequestsQuery,
 } from './privacy-requests.slice';
 
@@ -167,10 +168,21 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
   );
 };
 
-const RequestTable: React.FC<RequestTableProps> = () => {
-  const status = useSelector(selectRequestStatus);
-  const { data: requests = [] } = useGetAllPrivacyRequestsQuery({ status });
+const useRequestTable = () => {
+  const filters = useSelector(selectPrivacyRequestFilters);
+  const [cachedFilters, setCachedFilters] = useState(filters);
+  const updateCachedFilters = useRef(
+    debounce((updatedFilters) => setCachedFilters(updatedFilters), 250)
+  );
+  useEffect(() => {
+    updateCachedFilters.current(filters);
+  }, [setCachedFilters, filters]);
+  const { data: requests = [] } = useGetAllPrivacyRequestsQuery(cachedFilters);
+  return { requests };
+};
 
+const RequestTable: React.FC<RequestTableProps> = () => {
+  const { requests } = useRequestTable();
   return (
     <>
       <Table size="sm">

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import debounce from 'lodash.debounce';
 import {
   Flex,
   Text,
@@ -27,16 +26,16 @@ import {
   setRequestId,
   selectRequestStatus,
   clearAllFilters,
+  selectPrivacyRequestFilters,
 } from './privacy-requests.slice';
 
 const useRequestFilters = () => {
+  const { id } = useSelector(selectPrivacyRequestFilters);
   const status = useSelector(selectRequestStatus);
   const dispatch = useDispatch();
-  const handleSearchChange = debounce(
-    (event: React.ChangeEvent<HTMLInputElement>) =>
-      dispatch(setRequestId(event.target.value)),
-    250
-  );
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(setRequestId(event.target.value));
+  };
   const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     dispatch(setRequestStatus(event.target.value as PrivacyRequestStatus));
   };
@@ -48,6 +47,7 @@ const useRequestFilters = () => {
     handleSearchChange,
     handleStatusChange,
     handleClearAllFilters,
+    id,
   };
 };
 
@@ -61,6 +61,7 @@ const RequestFilters: React.FC = () => {
     handleSearchChange,
     handleStatusChange,
     handleClearAllFilters,
+    id,
   } = useRequestFilters();
   return (
     <Stack direction="row" spacing={4} mb={6}>
@@ -88,6 +89,7 @@ const RequestFilters: React.FC = () => {
           minWidth={200}
           placeholder="Search"
           size="sm"
+          value={id}
           onChange={handleSearchChange}
         />
       </InputGroup>
