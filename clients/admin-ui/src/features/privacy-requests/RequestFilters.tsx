@@ -24,14 +24,17 @@ import { PrivacyRequestStatus } from './types';
 import {
   setRequestStatus,
   setRequestId,
-  selectRequestStatus,
+  setRequestFrom,
+  setRequestTo,
   clearAllFilters,
   selectPrivacyRequestFilters,
+  requestCSVDownload,
 } from './privacy-requests.slice';
+import { selectUserToken } from '../user/user.slice';
 
 const useRequestFilters = () => {
-  const { id } = useSelector(selectPrivacyRequestFilters);
-  const status = useSelector(selectRequestStatus);
+  const filters = useSelector(selectPrivacyRequestFilters);
+  const token = useSelector(selectUserToken);
   const dispatch = useDispatch();
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(setRequestId(event.target.value));
@@ -39,15 +42,27 @@ const useRequestFilters = () => {
   const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     dispatch(setRequestStatus(event.target.value as PrivacyRequestStatus));
   };
+  const handleFromChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(setRequestFrom(event?.target.value));
+  };
+  const handleToChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(setRequestTo(event?.target.value));
+  };
   const handleClearAllFilters = () => {
     dispatch(clearAllFilters());
   };
+  const handleDownloadClick = () => {
+    requestCSVDownload({ ...filters, token });
+  };
+
   return {
-    status,
     handleSearchChange,
     handleStatusChange,
+    handleFromChange,
+    handleToChange,
     handleClearAllFilters,
-    id,
+    handleDownloadClick,
+    ...filters,
   };
 };
 
@@ -60,8 +75,13 @@ const RequestFilters: React.FC = () => {
     status,
     handleSearchChange,
     handleStatusChange,
+    handleFromChange,
+    handleToChange,
     handleClearAllFilters,
+    handleDownloadClick,
     id,
+    from,
+    to,
   } = useRequestFilters();
   return (
     <Stack direction="row" spacing={4} mb={6}>
@@ -90,16 +110,22 @@ const RequestFilters: React.FC = () => {
           placeholder="Search"
           size="sm"
           value={id}
+          name="search"
           onChange={handleSearchChange}
         />
       </InputGroup>
       <InputGroup size="sm">
         <InputLeftAddon>From</InputLeftAddon>
-        <Input type="date" />
+        <Input
+          type="date"
+          name="From"
+          value={from}
+          onChange={handleFromChange}
+        />
       </InputGroup>
       <InputGroup size="sm">
         <InputLeftAddon>To</InputLeftAddon>
-        <Input type="date" />
+        <Input type="date" name="To" value={to} onChange={handleToChange} />
       </InputGroup>
       <Flex flexShrink={0} alignItems="center">
         <Text fontSize="xs" mr={2} size="sm">
@@ -112,6 +138,7 @@ const RequestFilters: React.FC = () => {
         flexShrink={0}
         rightIcon={<DownloadSolidIcon />}
         size="sm"
+        onClick={handleDownloadClick}
       >
         Download
       </Button>

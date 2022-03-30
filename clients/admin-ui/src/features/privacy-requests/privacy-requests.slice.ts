@@ -5,14 +5,24 @@ import { AppState } from '../../app/store';
 
 import {
   PrivacyRequest,
+  PrivacyRequestParams,
   PrivacyRequestResponse,
   PrivacyRequestStatus,
 } from './types';
 
-interface PrivacyRequestParams {
-  status?: PrivacyRequestStatus;
-  id: string;
-}
+// Helpers
+export const mapFiltersToSearchParams = ({
+  status,
+  id,
+  from,
+  to,
+}: PrivacyRequestParams) => ({
+  include_identities: 'true',
+  ...(status ? { status } : {}),
+  ...(id ? { id } : {}),
+  ...(from ? { created_gt: from } : {}),
+  ...(to ? { created_lt: to } : {}),
+});
 
 // Subject requests API
 export const privacyRequestApi = createApi({
@@ -30,13 +40,9 @@ export const privacyRequestApi = createApi({
   }),
   endpoints: (build) => ({
     getAllPrivacyRequests: build.query<PrivacyRequest[], PrivacyRequestParams>({
-      query: ({ status, id }) => ({
+      query: (filters) => ({
         url: `privacy-request`,
-        params: {
-          include_identities: true,
-          status,
-          id,
-        },
+        params: mapFiltersToSearchParams(filters),
       }),
       transformResponse: (response: PrivacyRequestResponse) => response.items,
     }),
@@ -45,16 +51,57 @@ export const privacyRequestApi = createApi({
 
 export const { useGetAllPrivacyRequestsQuery } = privacyRequestApi;
 
+export const requestCSVDownload = ({
+  id,
+  from,
+  to,
+  status,
+  token,
+}: PrivacyRequestParams & { token: string | null }) => {
+  if (!token) {
+    return null;
+  }
+
+  return fetch(
+    `http://0.0.0.0:8080/api/v1/privacy-request?${new URLSearchParams({
+      ...mapFiltersToSearchParams({
+        id,
+        from,
+        to,
+        status,
+      }),
+      download_csv: 'true',
+    })}`,
+    {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+    .then((res) => res.blob())
+    .then((data) => {
+      const a = document.createElement('a');
+      a.href = window.URL.createObjectURL(data);
+      a.download = 'privacy-requests.csv';
+      a.click();
+    });
+};
+
 // Subject requests state (filters, etc.)
 interface SubjectRequestsState {
   revealPII: boolean;
   status?: PrivacyRequestStatus;
   id: string;
+  from: string;
+  to: string;
 }
 
 const initialState: SubjectRequestsState = {
   revealPII: false,
   id: '',
+  from: '',
+  to: '',
 };
 
 export const subjectRequestsSlice = createSlice({
@@ -73,6 +120,14 @@ export const subjectRequestsSlice = createSlice({
       ...state,
       id: action.payload,
     }),
+    setRequestFrom: (state, action: PayloadAction<string>) => ({
+      ...state,
+      from: action.payload,
+    }),
+    setRequestTo: (state, action: PayloadAction<string>) => ({
+      ...state,
+      to: action.payload,
+    }),
     clearAllFilters: ({ revealPII }) => ({
       ...initialState,
       revealPII,
@@ -86,8 +141,14 @@ export const subjectRequestsSlice = createSlice({
   },
 });
 
-export const { setRevealPII, setRequestId, setRequestStatus, clearAllFilters } =
-  subjectRequestsSlice.actions;
+export const {
+  setRevealPII,
+  setRequestId,
+  setRequestStatus,
+  setRequestFrom,
+  setRequestTo,
+  clearAllFilters,
+} = subjectRequestsSlice.actions;
 
 export const selectRevealPII = (state: AppState) =>
   state.subjectRequests.revealPII;
@@ -99,6 +160,8 @@ export const selectPrivacyRequestFilters = (
 ): PrivacyRequestParams => ({
   status: state.subjectRequests.status,
   id: state.subjectRequests.id,
+  from: state.subjectRequests.from,
+  to: state.subjectRequests.to,
 });
 
 export default subjectRequestsSlice.reducer;

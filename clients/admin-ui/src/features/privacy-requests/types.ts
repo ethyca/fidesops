@@ -21,3 +21,10 @@ export interface PrivacyRequest {
 export interface PrivacyRequestResponse {
   items: PrivacyRequest[];
 }
+
+export interface PrivacyRequestParams {
+  status?: PrivacyRequestStatus;
+  id: string;
+  from: string;
+  to: string;
+}

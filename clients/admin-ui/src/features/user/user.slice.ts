@@ -29,6 +29,6 @@ export const userSlice = createSlice({
 
 export const { assignToken } = userSlice.actions;
 
-export const userToken = (state: AppState) => state.user.token;
+export const selectUserToken = (state: AppState) => state.user.token;
 
 export default userSlice.reducer;
