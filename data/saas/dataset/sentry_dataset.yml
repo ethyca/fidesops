@@ -151,6 +151,10 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
+          - name: status
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
           - name: name
             data_categories: [ system.operations ]
             fidesops_meta:
@@ -159,10 +163,6 @@ dataset:
             data_categories: [ system.operations ]
             fidesops_meta:
               data_type: boolean
-          - name: status
-            data_categories: [ system.operations ]
-            fidesops_meta:
-              data_type: string
           - name: avatar
             fields:
               - name: avatarType
@@ -209,6 +209,7 @@ dataset:
             data_categories: [ system.operations ]
             fidesops_meta:
               data_type: string
+              primary_key: True
           - name: title
             data_categories: [ system.operations ]
             fidesops_meta:
@@ -251,8 +252,16 @@ dataset:
             data_categories: [ system.operations ]
             fidesops_meta:
               data_type: string
+          - name: eventID
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
           - name: name
             data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: email
+            data_categories: [ user.provided.identifiable.contact.email ]
             fidesops_meta:
               data_type: string
           - name: comments
@@ -266,6 +275,12 @@ dataset:
               - name: id
                 fidesops_meta:
                   data_type: string
+              - name: hash
+                fidesops_meta:
+                  data_type: string
+              - name: tagValue
+                fidesops_meta:
+                  data_type: string
               - name: identifier
                 fidesops_meta:
                   data_type: string
@@ -275,8 +290,12 @@ dataset:
                   data_type: string
               - name: email
                 data_categories: [ user.provided.identifiable.contact.email ]
+                fidesops_meta:
+                  data_type: string
               - name: name
                 data_categories: [ user.provided.identifiable.name ]
+                fidesops_meta:
+                  data_type: string
               - name: ipAddress
                 data_categories: [ user.derived.identifiable.device.ip_address ]
                 fidesops_meta:
@@ -287,19 +306,138 @@ dataset:
               - name: avatarUrl
                 fidesops_meta:
                   data_type: string
-          - name: email
-            data_categories: [user.provided.identifiable.contact.email]
-      - name: users
+          - name: event
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: id
+                fidesops_meta:
+                  data_type: string
+              - name: eventID
+                fidesops_meta:
+                  data_type: string
+          - name: issue
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: id
+                fidesops_meta:
+                  data_type: string
+              - name: shareId
+                fidesops_meta:
+                  data_type: string
+              - name: shortId
+                fidesops_meta:
+                  data_type: string
+              - name: title
+                fidesops_meta:
+                  data_type: string
+              - name: culprit
+                fidesops_meta:
+                  data_type: string
+              - name: permalink
+                fidesops_meta:
+                  data_type: string
+              - name: logger
+                fidesops_meta:
+                  data_type: string
+              - name: level
+                fidesops_meta:
+                  data_type: string
+              - name: status
+                fidesops_meta:
+                  data_type: string
+              - name: statusDetails
+                fidesops_meta:
+                  data_type: string
+              - name: isPublic
+                fidesops_meta:
+                  data_type: boolean
+              - name: platform
+                fidesops_meta:
+                  data_type: string
+              - name: project
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: id
+                    fidesops_meta:
+                      data_type: string
+                  - name: name
+                    fidesops_meta:
+                      data_type: string
+                  - name: slug
+                    fidesops_meta:
+                      data_type: string
+                  - name: platform
+                    fidesops_meta:
+                      data_type: string
+              - name: type
+                fidesops_meta:
+                  data_type: string
+              - name: metadata
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: value
+                    fidesops_meta:
+                      data_type: string
+                  - name: type
+                    fidesops_meta:
+                      data_type: string
+                  - name: filename
+                    fidesops_meta:
+                      data_type: string
+                  - name: function
+                    fidesops_meta:
+                      data_type: string
+              - name: numComments
+                fidesops_meta:
+                  data_type: integer
+              - name: assignedTo
+                fidesops_meta:
+                  data_type: string
+              - name: isBookmarked
+                fidesops_meta:
+                  data_type: boolean
+              - name: isSubscribed
+                fidesops_meta:
+                  data_type: boolean
+              - name: subscriptionDetails
+                fidesops_meta:
+                  data_type: string
+              - name: hasSeen
+                fidesops_meta:
+                  data_type: boolean
+              - name: annotations
+                fidesops_meta:
+                  data_type: string
+              - name: isUnhandled
+                fidesops_meta:
+                  data_type: boolean
+              - name: count
+                fidesops_meta:
+                  data_type: string
+              - name: userCount
+                fidesops_meta:
+                  data_type: float
+              - name: firstSeen
+                fidesops_meta:
+                  data_type: string
+              - name: lastSeen
+                fidesops_meta:
+                  data_type: string
+      - name: person
         fields:
           - name: id
             data_categories: [system.operations]
-            fidesops_meta:
-              primary_key: True
-          - name: identifier
+          - name: hash
             fidesops_meta:
               data_type: string
-          - name: name
-            data_categories: [ user.provided.identifiable.name ]
+          - name: tagValue
+            fidesops_meta:
+              data_type: string
+          - name: identifier
             fidesops_meta:
               data_type: string
           - name: username
@@ -310,7 +448,17 @@ dataset:
             data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
               data_type: string
+          - name: name
+            data_categories: [ user.provided.identifiable.name ]
+            fidesops_meta:
+              data_type: string
           - name: ipAddress
             data_categories: [user.derived.identifiable.device.ip_address]
+            fidesops_meta:
+              data_type: string
+          - name: dateCreated
+            fidesops_meta:
+              data_type: string
+          - name: avatarUrl
             fidesops_meta:
               data_type: string

@@ -10,3 +10,9 @@ domain = ""
 username = ""
 api_key = ""
 identity_email = ""
+
+
+[sentry]
+host = ""
+access_token = ""
+identity_email = ""

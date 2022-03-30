@@ -70,13 +70,17 @@ saas_config:
       requests:
         update:
           method: PUT
-          path: /api/0/issues/<issue_id>
+          path: /api/0/issues/<issue_id>/
+          headers:
+            - name: Content-Type
+              value: application/json
           param_values:
             - name: issue_id
               references:
                 - dataset: sentry_connector
                   field: issues.id
                   direction: from
+          body: "{\"assignedTo\": \"\"}"
         read:
           method: GET
           path: /api/0/projects/<organization_slug>/<project_slug>/issues/
@@ -130,7 +134,7 @@ saas_config:
                 field: email
                 value:
                   identity: email
-    - name: users
+    - name: person
       after: [ sentry_connector.projects ]
       requests:
         read:
