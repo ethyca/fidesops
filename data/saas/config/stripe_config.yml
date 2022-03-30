@@ -37,24 +37,6 @@ saas_config:
           - name: email
             identity: email
         data_path: data
-      update:
-        method: POST
-        path: /v1/customers/<customer_id>
-        param_values:
-          - name: customer_id
-            references:
-              - dataset: stripe_connector_example
-                field: customer.id
-                direction: from
-      delete:
-        method: DELETE
-        path: /v1/customers/<customer_id>
-        param_values:
-          - name: customer_id
-            references:
-              - dataset: stripe_connector_example
-                field: customer.id
-                direction: from
   - name: charge
     requests:
       read: 
@@ -103,15 +85,6 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
-      update:
-        method: POST
-        path: /v1/dispute/<dispute_id>
-        param_values:
-          - name: dispute_id
-            references:
-              - dataset: stripe_connector_example
-                field: dispute.id
-                direction: from
   - name: payment_intent
     requests:
       read:
@@ -186,15 +159,6 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
-      update:
-        method: POST
-        path: /v1/payment_methods/<payment_method_id>
-        param_values:
-          - name: payment_method_id
-            references:
-              - dataset: stripe_connector_example
-                field: payment_method.id
-                direction: from
   - name: bank_account
     requests:
       read:
@@ -219,34 +183,6 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
-      update:
-        method: POST
-        path: /v1/customers/<customer_id>/sources/<bank_account_id>
-        param_values:
-          - name: customer_id
-            references:
-              - dataset: stripe_connector_example
-                field: customer.id
-                direction: from
-          - name: bank_account_id
-            references:
-              - dataset: stripe_connector_example
-                field: bank_account.id
-                direction: from
-      delete:
-        method: DELETE
-        path: /v1/customers/<customer_id>/sources/<bank_account_id>
-        param_values:
-          - name: customer_id
-            references:
-              - dataset: stripe_connector_example
-                field: customer.id
-                direction: from
-          - name: bank_account_id
-            references:
-              - dataset: stripe_connector_example
-                field: bank_account.id
-                direction: from
   - name: card
     requests:
       read:
@@ -271,34 +207,6 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
-      update:
-        method: POST
-        path: /v1/customers/<customer_id>/sources/<card_id>
-        param_values:
-          - name: customer_id
-            references:
-              - dataset: stripe_connector_example
-                field: customer.id
-                direction: from
-          - name: card_id
-            references:
-              - dataset: stripe_connector_example
-                field: card.id
-                direction: from
-      delete:
-        method: DELETE
-        path: /v1/customers/<customer_id>/sources/<card_id>
-        param_values:
-          - name: customer_id
-            references:
-              - dataset: stripe_connector_example
-                field: customer.id
-                direction: from
-          - name: card_id
-            references:
-              - dataset: stripe_connector_example
-                field: card.id
-                direction: from
   - name: credit_note
     requests:
       read:
@@ -367,20 +275,6 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
-      delete:
-        method: DELETE
-        path: /v1/customers/<customer_id>/tax_ids/<tax_id>
-        param_values:
-          - name: customer_id
-            references:
-              - dataset: stripe_connector_example
-                field: customer.id
-                direction: from
-          - name: tax_id
-            references:
-              - dataset: stripe_connector_example
-                field: tax_id.id
-                direction: from
   - name: invoice
     requests:
       read:
@@ -405,15 +299,6 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
-      delete:
-        method: DELETE
-        path: /v1/invoices/<invoice_id>
-        param_values:
-          - name: invoice_id
-            references:
-              - dataset: stripe_connector_example
-                field: invoice.id
-                direction: from
   - name: invoice_item
     requests:
       read:
@@ -438,15 +323,6 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
-      delete:
-        method: DELETE
-        path: /v1/invoiceitems/<invoice_item_id>
-        param_values:
-         - name: invoice_item_id
-           references:
-              - dataset: stripe_connector_example
-                field: invoice_item.id
-                direction: from
   - name: subscription
     requests:
       read:
@@ -471,12 +347,3 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
-      delete:
-        method: DELETE
-        path: /v1/subscriptions/<subscription_id>
-        param_values:
-          - name: subscription_id
-            references:
-              - dataset: stripe_connector_example
-                field: subscription.id
-                direction: from
