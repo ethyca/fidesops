@@ -25,8 +25,8 @@ def stripe_secrets():
         or os.environ.get("STRIPE_API_KEY"),
         "payment_types": pydash.get(saas_config, "stripe.payment_types")
         or os.environ.get("STRIPE_PAYMENT_TYPES"),
-        "page_limit": pydash.get(saas_config, "stripe.page_limit")
-        or os.environ.get("STRIPE_PAGE_LIMIT"),
+        "items_per_page": pydash.get(saas_config, "stripe.items_per_page")
+        or os.environ.get("STRIPE_ITEMS_PER_PAGE"),
     }
 
 

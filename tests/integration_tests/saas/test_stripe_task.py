@@ -9,8 +9,8 @@ from fidesops.task import graph_task
 from tests.graph.graph_test_util import assert_rows_match, records_matching_fields
 
 
-@pytest.mark.integration
 @pytest.mark.integration_saas
+@pytest.mark.integration_stripe
 def test_stripe_access_request_task(
     db,
     policy,

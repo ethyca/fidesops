@@ -14,9 +14,6 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: address
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: city
             data_categories: [system.operations]
@@ -59,9 +56,6 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: invoice_settings
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: custom_fields
             data_categories: [system.operations]
@@ -88,14 +82,8 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: shipping
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: address
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: city
               data_categories: [system.operations]
@@ -130,18 +118,12 @@ dataset:
             fidesops_meta:
               data_type: string
         - name: sources
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: object
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: data
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: id
               data_categories: [system.operations]
@@ -236,18 +218,12 @@ dataset:
             fidesops_meta:
               data_type: string
         - name: subscriptions
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: object
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: data
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: id
               data_categories: [system.operations]
@@ -294,9 +270,6 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: tax_ids
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: object
             data_categories: [system.operations]
@@ -317,14 +290,8 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: billing_details
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: address
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: city
               data_categories: [system.operations]
@@ -407,23 +374,14 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: payment_method_details
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: card
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: brand
               data_categories: [system.operations]
               fidesops_meta:
                 data_type: string
             - name: checks
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
               fields:
               - name: address_line1_check
                 data_categories: [system.operations]
@@ -498,9 +456,6 @@ dataset:
           fidesops_meta:
             data_type: boolean
         - name: refunds
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: object
             data_categories: [system.operations]
@@ -539,7 +494,187 @@ dataset:
           fidesops_meta:
             data_type: string
       - name: dispute
-        fields: []
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: object
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: amount
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: balance_transactions
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: charge
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: created
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: currency
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: evidence
+            fields:
+            - name: access_activity_log
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: billing_address
+              data_categories: [user.provided.identifiable.contact]
+              fidesops_meta:
+                data_type: string
+            - name: cancellation_policy
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: cancellation_policy_disclosure
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: cancellation_rebuttal
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: customer_communication
+              data_categories: [user.provided.identifiable.contact]
+              fidesops_meta:
+                data_type: string
+            - name: customer_email_address
+              data_categories: [user.provided.identifiable.contact.email]
+              fidesops_meta:
+                data_type: string
+            - name: customer_name
+              data_categories: [user.provided.identifiable.name]
+              fidesops_meta:
+                data_type: string
+            - name: customer_purchase_ip
+              data_categories: [user.derived.identifiable.device.ip_address]
+              fidesops_meta:
+                data_type: string
+            - name: customer_signature
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: duplicate_charge_documentation
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: duplicate_charge_explanation
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: duplicate_charge_id
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: product_description
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: receipt
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: refund_policy
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: refund_policy_disclosure
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: refund_refusal_explanation
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: service_date
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: service_documentation
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: shipping_address
+              data_categories: [user.provided.identifiable.contact]
+              fidesops_meta:
+                data_type: string
+            - name: shipping_carrier
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: shipping_date
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: shipping_documentation
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: shipping_tracking_number
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: uncategorized_file
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: uncategorized_text
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+          - name: evidence_details
+            fields:
+            - name: due_by
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: integer
+            - name: has_evidence
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: integer
+            - name: past_due
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: integer
+            - name: submission_count
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: integer
+          - name: is_charge_refundable
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: livemode
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: metadata
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: object
+          - name: payment_intent
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: reason
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: status
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
       - name: payment_intent
         fields:
         - name: id
@@ -583,18 +718,12 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: charges
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: object
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: data
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: id
               data_categories: [system.operations]
@@ -629,14 +758,8 @@ dataset:
               fidesops_meta:
                 data_type: string
             - name: billing_details
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
               fields:
               - name: address
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
                 fields:
                 - name: city
                   data_categories: [system.operations]
@@ -735,9 +858,6 @@ dataset:
               fidesops_meta:
                 data_type: string
             - name: outcome
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
               fields:
               - name: network_status
                 data_categories: [system.operations]
@@ -776,23 +896,14 @@ dataset:
               fidesops_meta:
                 data_type: string
             - name: payment_method_details
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
               fields:
               - name: card
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
                 fields:
                 - name: brand
                   data_categories: [system.operations]
                   fidesops_meta:
                     data_type: string
                 - name: checks
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
                   fields:
                   - name: address_line1_check
                     data_categories: [system.operations]
@@ -867,9 +978,6 @@ dataset:
               fidesops_meta:
                 data_type: boolean
             - name: refunds
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
               fields:
               - name: object
                 data_categories: [system.operations]
@@ -988,14 +1096,8 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: payment_method_options
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: card
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: installments
               data_categories: [system.operations]
@@ -1108,14 +1210,8 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: payment_method_options
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: card
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: request_three_d_secure
               data_categories: [system.operations]
@@ -1148,14 +1244,8 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: billing_details
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: address
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: city
               data_categories: [system.operations]
@@ -1194,18 +1284,12 @@ dataset:
             fidesops_meta:
               data_type: string
         - name: card
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: brand
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: checks
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: address_line1_check
               data_categories: [system.operations]
@@ -1248,9 +1332,6 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: three_d_secure_usage
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: supported
               data_categories: [system.operations]
@@ -1545,18 +1626,12 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: lines
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: object
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: data
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: id
               data_categories: [system.operations]
@@ -1591,9 +1666,6 @@ dataset:
               fidesops_meta:
                 data_type: integer
             - name: tax_amounts
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
               fields:
               - name: amount
                 data_categories: [system.operations]
@@ -1608,9 +1680,6 @@ dataset:
                 fidesops_meta:
                   data_type: string
             - name: tax_rates
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
               fields:
               - name: id
                 data_categories: [system.operations]
@@ -1717,9 +1786,6 @@ dataset:
           fidesops_meta:
             data_type: integer
         - name: tax_amounts
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: amount
             data_categories: [system.operations]
@@ -1792,9 +1858,6 @@ dataset:
           fidesops_meta:
             data_type: boolean
         - name: metadata
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: order_id
             data_categories: [system.operations]
@@ -1839,9 +1902,6 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: verification
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: status
             data_categories: [system.operations]
@@ -1930,9 +1990,6 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: customer_address
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: city
             data_categories: [system.operations]
@@ -1971,14 +2028,8 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: customer_shipping
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: address
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: city
               data_categories: [system.operations]
@@ -2037,18 +2088,12 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: discount
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: object
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: coupon
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: id
               data_categories: [system.operations]
@@ -2147,18 +2192,12 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: lines
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: object
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: data
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: id
               data_categories: [system.operations]
@@ -2193,9 +2232,6 @@ dataset:
               fidesops_meta:
                 data_type: boolean
             - name: period
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
               fields:
               - name: end
                 data_categories: [system.operations]
@@ -2298,9 +2334,6 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: status_transitions
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: finalized_at
             data_categories: [system.operations]
@@ -2347,7 +2380,19 @@ dataset:
           fidesops_meta:
             data_type: integer
       - name: invoice_item
-        fields: []
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: object
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: amount
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
       - name: subscription
         fields:
         - name: id
@@ -2419,18 +2464,12 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: discount
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: object
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: coupon
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: id
               data_categories: [system.operations]
@@ -2509,18 +2548,12 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: items
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: object
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: data
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
             fields:
             - name: id
               data_categories: [system.operations]
@@ -2539,9 +2572,6 @@ dataset:
               fidesops_meta:
                 data_type: integer
             - name: plan
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
               fields:
               - name: id
                 data_categories: [system.operations]
@@ -2664,9 +2694,6 @@ dataset:
           fidesops_meta:
             data_type: string
         - name: plan
-          data_categories: [system.operations]
-          fidesops_meta:
-            data_type: string
           fields:
           - name: id
             data_categories: [system.operations]
@@ -2772,9 +2799,3 @@ dataset:
           data_categories: [system.operations]
           fidesops_meta:
             data_type: string
-      - name: issuing_cardholder
-        fields: []
-      - name: issuing_cards
-        fields: []
-      - name: issuing_authorization
-        fields: []

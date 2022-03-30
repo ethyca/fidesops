@@ -73,6 +73,7 @@ saas_config:
                 direction: from
           - name: limit
             connector_param: items_per_page
+        data_path: data
         pagination:
           strategy: cursor
           configuration:
@@ -165,8 +166,6 @@ saas_config:
         method: GET
         path: /v1/customers/<customer_id>/payment_methods
         query_params:
-          - name: customer
-            value: <customer_id>
           - name: type
             value: <type>
           - name: limit
@@ -361,7 +360,7 @@ saas_config:
                 field: customer.id
                 direction: from
           - name: limit
-            connector_param: <items_per_page>
+            connector_param: items_per_page
         data_path: data
         pagination:
           strategy: cursor
@@ -391,7 +390,7 @@ saas_config:
           - name: customer
             value: <customer_id>
           - name: limit
-            value: limit
+            value: <limit>
         param_values:
           - name: customer_id
             references:
@@ -419,7 +418,7 @@ saas_config:
     requests:
       read:
         method: GET
-        path: /v1/invoice_items
+        path: /v1/invoiceitems
         query_params:
           - name: customer
             value: <customer_id>
@@ -481,81 +480,3 @@ saas_config:
               - dataset: stripe_connector_example
                 field: subscription.id
                 direction: from
-  - name: issuing_cardholder
-    requests:
-      read:
-        method: GET
-        path: /v1/issuing/cardholders
-        query_params:
-          - name: email
-            value: <email>
-          - name: limit
-            value: <limit>
-        param_values:
-          - name: email
-            identity: email
-          - name: limit
-            connector_param: items_per_page
-        data_path: data
-        pagination:
-          strategy: cursor
-          configuration:
-            cursor_param: starting_after
-            field: id
-      update:
-        method: POST
-        path: /v1/issuing/cardholders/<issuing_cardholder_id>
-        param_values:
-          - name: issuing_cardholder_id
-            references:
-              - dataset: stripe_connector_example
-                field: issuing_cardholder.id
-                direction: from
-  - name: issuing_cards
-    requests:
-      read:
-        method: GET
-        path: /v1/issuing/cards
-        query_params:
-          - name: cardholder
-            value: <cardholder_id>
-          - name: limit
-            value: <limit>
-        param_values:
-          - name: cardholder_id
-            references:
-              - dataset: stripe_connector_example
-                field: issuing_cardholder.id
-                direction: from
-          - name: limit
-            connector_param: items_per_page
-        data_path: data
-        pagination:
-          strategy: cursor
-          configuration:
-            cursor_param: starting_after
-            field: id
-  - name: issuing_authorization
-    requests:
-      read:
-        method: GET
-        path: /v1/issuing/authorizations
-        query_params:
-          - name: cardholder
-            value: <cardholder_id>
-          - name: limit
-            value: <limit>
-        param_values:
-          - name: cardholder_id
-            references:
-              - dataset: stripe_connector_example
-                field: issuing_cardholder.id
-                direction: from
-          - name: limit
-            connector_param: items_per_page
-        data_path: data
-        pagination:
-          strategy: cursor
-          configuration:
-            cursor_param: starting_after
-            field: id
