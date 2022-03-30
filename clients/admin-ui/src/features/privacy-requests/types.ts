@@ -13,6 +13,10 @@ export interface PrivacyRequest {
     email?: string;
     phone?: string;
   };
+  policy: {
+    name: string;
+    key: string;
+  };
   created_at: string;
   reviewed_by: string;
   id: string;

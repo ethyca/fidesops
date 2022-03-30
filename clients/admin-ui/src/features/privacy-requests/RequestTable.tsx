@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Tag,
   Table,
   Text,
   Thead,
@@ -100,7 +101,18 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
       <Td pl={0} py={1}>
         <RequestBadge status={request.status} />
       </Td>
-      <Td py={1} />
+      <Td py={1}>
+        <Tag
+          color="white"
+          bg="primary.400"
+          px={2}
+          py={0.5}
+          size="sm"
+          fontWeight="medium"
+        >
+          {request.policy.name}
+        </Tag>
+      </Td>
       <Td py={1}>
         <Text fontSize="xs">
           <PII
