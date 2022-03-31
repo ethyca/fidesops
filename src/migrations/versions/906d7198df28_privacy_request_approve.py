@@ -17,8 +17,9 @@ depends_on = None
 
 
 def upgrade():
-    op.execute("alter type privacyrequeststatus add value 'approved'")
-    op.execute("alter type privacyrequeststatus add value 'denied'")
+    with op.get_context().autocommit_block():
+        op.execute("alter type privacyrequeststatus add value 'approved'")
+        op.execute("alter type privacyrequeststatus add value 'denied'")
 
     op.add_column(
         "privacyrequest",
