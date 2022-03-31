@@ -14,4 +14,4 @@ identity_email = ""
 [hubspot]
 domain = ""
 hapikey = ""
-account_email = ""
+identity_email = ""

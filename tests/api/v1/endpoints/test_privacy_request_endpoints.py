@@ -87,7 +87,7 @@ class TestCreatePrivacyRequest:
         ]
         resp = api_client.post(url, json=data)
         assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
+        response_data = resp.json_body()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
@@ -115,7 +115,7 @@ class TestCreatePrivacyRequest:
         ]
         resp = api_client.post(url, json=data)
         assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
+        response_data = resp.json_body()["succeeded"]
         assert len(response_data) == 1
         assert response_data[0]["status"] == "pending"
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
@@ -144,7 +144,7 @@ class TestCreatePrivacyRequest:
         ]
         resp = api_client.post(url, json=data)
         assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
+        response_data = resp.json_body()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
@@ -201,7 +201,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         assert start_processing_mock.called
 
-        response_data = resp.json()["succeeded"]
+        response_data = resp.json_body()["succeeded"]
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
 
@@ -227,7 +227,7 @@ class TestCreatePrivacyRequest:
         ]
         resp = api_client.post(V1_URL_PREFIX + PRIVACY_REQUESTS, json=data)
         assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
+        response_data = resp.json_body()["succeeded"]
         assert len(response_data) == 1
         assert response_data[0]["external_id"] == external_id
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
@@ -257,7 +257,7 @@ class TestCreatePrivacyRequest:
         ]
         resp = api_client.post(url, json=data)
         assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
+        response_data = resp.json_body()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         key = get_identity_cache_key(
@@ -290,7 +290,7 @@ class TestCreatePrivacyRequest:
         ]
         resp = api_client.post(url, json=data)
         assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
+        response_data = resp.json_body()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         secret_key = get_masking_secret_cache_key(
@@ -315,7 +315,7 @@ class TestCreatePrivacyRequest:
         ]
         resp = api_client.post(url, json=data)
         assert resp.status_code == 422
-        assert resp.json()["detail"][0]["msg"] == "Encryption key must be 16 bytes long"
+        assert resp.json_body()["detail"][0]["msg"] == "Encryption key must be 16 bytes long"
 
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
@@ -340,7 +340,7 @@ class TestCreatePrivacyRequest:
         ]
         resp = api_client.post(url, json=data)
         assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
+        response_data = resp.json_body()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         encryption_key = get_encryption_cache_key(
@@ -367,9 +367,9 @@ class TestCreatePrivacyRequest:
         ]
         resp = api_client.post(url, json=data)
         assert resp.status_code == 200
-        response_data = resp.json()["succeeded"]
+        response_data = resp.json_body()["succeeded"]
         assert len(response_data) == 0
-        response_data = resp.json()["failed"]
+        response_data = resp.json_body()["failed"]
         assert len(response_data) == 1
 
 
@@ -439,7 +439,7 @@ class TestGetPrivacyRequests:
             "size": page_size,
         }
 
-        resp = response.json()
+        resp = response.json_body()
         assert resp == expected_resp
 
     def test_get_privacy_requests_with_identity(
@@ -455,7 +455,7 @@ class TestGetPrivacyRequests:
             url + f"?status=complete&include_identities=true", headers=auth_header
         )
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
         assert (
@@ -469,7 +469,7 @@ class TestGetPrivacyRequests:
         # Now test the identities are omitted if not explicitly requested
         response = api_client.get(url + f"?status=complete", headers=auth_header)
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
         assert resp["items"][0].get("identity") is None
@@ -478,7 +478,7 @@ class TestGetPrivacyRequests:
             url + f"?status=complete&include_identities=false", headers=auth_header
         )
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
         assert resp["items"][0].get("identity") is None
@@ -495,13 +495,13 @@ class TestGetPrivacyRequests:
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(url + f"?status=complete", headers=auth_header)
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
 
         response = api_client.get(url + f"?status=error", headers=auth_header)
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == failed_privacy_request.id
 
@@ -520,7 +520,7 @@ class TestGetPrivacyRequests:
             url + f"?external_id={succeeded_privacy_request.id}", headers=auth_header
         )
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert len(resp["items"]) == 0
 
         privacy_request.external_id = "test_external_id_1"
@@ -530,7 +530,7 @@ class TestGetPrivacyRequests:
             url + f"?external_id=test_external_id_1", headers=auth_header
         )
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == privacy_request.id
 
@@ -546,12 +546,12 @@ class TestGetPrivacyRequests:
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(url + f"?created_lt=2019-01-01", headers=auth_header)
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert len(resp["items"]) == 0
 
         response = api_client.get(url + f"?created_gt=2019-01-01", headers=auth_header)
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert len(resp["items"]) == 3
         assert resp["items"][0]["id"] == privacy_request.id
         assert resp["items"][1]["id"] == succeeded_privacy_request.id
@@ -569,14 +569,14 @@ class TestGetPrivacyRequests:
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(url + f"?started_lt=2021-05-01", headers=auth_header)
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert len(resp["items"]) == 2
         assert resp["items"][0]["id"] == privacy_request.id
         assert resp["items"][1]["id"] == failed_privacy_request.id
 
         response = api_client.get(url + f"?started_gt=2021-05-01", headers=auth_header)
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
 
@@ -594,14 +594,14 @@ class TestGetPrivacyRequests:
             url + f"?completed_lt=2021-10-01", headers=auth_header
         )
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert len(resp["items"]) == 0
 
         response = api_client.get(
             url + f"?completed_gt=2021-10-01", headers=auth_header
         )
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
 
@@ -617,12 +617,12 @@ class TestGetPrivacyRequests:
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(url + f"?errored_lt=2021-01-01", headers=auth_header)
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert len(resp["items"]) == 0
 
         response = api_client.get(url + f"?errored_gt=2021-01-01", headers=auth_header)
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == failed_privacy_request.id
 
@@ -642,7 +642,7 @@ class TestGetPrivacyRequests:
         response = api_client.get(url + f"?verbose=True", headers=auth_header)
         assert 200 == response.status_code
 
-        resp = response.json()
+        resp = response.json_body()
         assert (
             postgres_execution_log.updated_at < second_postgres_execution_log.updated_at
         )
@@ -763,7 +763,7 @@ class TestGetPrivacyRequests:
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(url + f"?verbose=True", headers=auth_header)
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
         assert (
             len(resp["items"][0]["results"]["my-postgres-db"])
             == EMBEDDED_EXECUTION_LOG_LIMIT
@@ -856,7 +856,7 @@ class TestGetExecutionLogs:
             headers=auth_header,
         )
         assert 200 == response.status_code
-        resp = response.json()
+        resp = response.json_body()
 
         expected_resp = {
             "items": [
@@ -984,7 +984,7 @@ class TestRequestPreview:
         response = api_client.put(url, headers=auth_header, json=data)
         assert response.status_code == 400
         assert (
-            response.json()["detail"]
+            response.json_body()["detail"]
             == "Referred to object postgres_example_test_dataset:customer:id does not "
             "exist. Make sure all referenced datasets are included in the request body."
         )
@@ -1058,7 +1058,7 @@ class TestApprovePrivacyRequest:
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200
 
-        response_body = response.json()
+        response_body = response.json_body()
         assert response_body["succeeded"] == []
         assert len(response_body["failed"]) == 1
         assert (
@@ -1081,7 +1081,7 @@ class TestApprovePrivacyRequest:
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200
 
-        response_body = response.json()
+        response_body = response.json_body()
         assert response_body["succeeded"] == []
         assert len(response_body["failed"]) == 1
         assert response_body["failed"][0]["message"] == "Cannot transition status"
@@ -1109,7 +1109,7 @@ class TestApprovePrivacyRequest:
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200
 
-        response_body = response.json()
+        response_body = response.json_body()
         assert len(response_body["succeeded"]) == 1
         assert len(response_body["failed"]) == 0
         assert response_body["succeeded"][0]["status"] == "approved"
@@ -1146,7 +1146,7 @@ class TestApprovePrivacyRequest:
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200
 
-        response_body = response.json()
+        response_body = response.json_body()
         assert len(response_body["succeeded"]) == 1
         assert len(response_body["failed"]) == 0
         assert response_body["succeeded"][0]["status"] == "approved"
@@ -1185,7 +1185,7 @@ class TestDenyPrivacyRequest:
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200
 
-        response_body = response.json()
+        response_body = response.json_body()
         assert response_body["succeeded"] == []
         assert len(response_body["failed"]) == 1
         assert (
@@ -1208,7 +1208,7 @@ class TestDenyPrivacyRequest:
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200
 
-        response_body = response.json()
+        response_body = response.json_body()
         assert response_body["succeeded"] == []
         assert len(response_body["failed"]) == 1
         assert response_body["failed"][0]["message"] == "Cannot transition status"
@@ -1242,7 +1242,7 @@ class TestDenyPrivacyRequest:
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200
 
-        response_body = response.json()
+        response_body = response.json_body()
         assert len(response_body["succeeded"]) == 1
         assert len(response_body["failed"]) == 0
         assert response_body["succeeded"][0]["status"] == "denied"

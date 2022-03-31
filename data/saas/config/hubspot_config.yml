@@ -19,6 +19,7 @@ saas_config:
           connector_param: hapikey
 
   test_request:
+    method: GET
     path: /companies/v2/companies/paged
 
   endpoints:
@@ -30,19 +31,18 @@ saas_config:
           body: '{
             "filterGroups": [{
               "filters": [{
-                "value": <email>,
+                "value": "<email>",
                 "propertyName": "email",
                 "operator": "EQ"
               }]
             }]
           }'
-          request_params:
-            - name: email
-              type: body
-              identity: email
+          query_params:
             - name: limit
-              type: query
-              default_value: 100
+              value: 100
+          param_values:
+            - name: email
+              identity: email
           postprocessors:
             - strategy: unwrap
               configuration:
@@ -60,9 +60,8 @@ saas_config:
                 <masked_object_fields>
             }
           }'
-          request_params:
+          param_values:
             - name: contactId
-              type: path
               references:
                 - dataset: hubspot_connector_example
                   field: contacts_search.id
@@ -71,13 +70,15 @@ saas_config:
       requests:
         read:
           path: /crm/v3/owners
-          request_params:
+          method: GET
+          query_params:
             - name: email
-              type: query
-              identity: email
+              value: <email>
             - name: limit
-              type: query
-              default_value: 100
+              value: 100
+          param_values:
+            - name: email
+              identity: email
           postprocessors:
             - strategy: unwrap
               configuration:
@@ -92,15 +93,13 @@ saas_config:
 #        read:
 #          path: /marketing-emails/v1/emails
 #          method: GET
-#          request_params:
+#          query_params:
 #            - name: limit
-#              type: query
-#              default_value: 100
+#              value: 100
 #            - name: offset
-#              type: query
-#              default_value: 0
-#            - name: email
-#              type: path # will be removed
+#              value: 0
+#          param_values:
+#            - name: placeholder
 #              identity: email
 #          data_path: objects
 #          postprocessors:
@@ -118,9 +117,8 @@ saas_config:
 #        update:
 #          path: marketing-emails/v1/emails/<emailId>
 #          method: PUT
-#          request_params:
+#          param_values:
 #            - name: emailId
-#              type: path
 #              references:
 #                - dataset: hubspot_connector_example
 #                  field: marketing_emails.id
@@ -131,25 +129,22 @@ saas_config:
           path: /communication-preferences/v3/status/email/<email>
           method: GET
           data_path: subscriptionStatuses
-          request_params:
+          param_values:
             - name: email
-              type: path
               identity: email
         update:
           path: /communication-preferences/v3/unsubscribe
           method: POST
           body: '{
-            "emailAddress": <email>,
-            "subscriptionId": <subscriptionId>,
+            "emailAddress": "<email>",
+            "subscriptionId": "<subscriptionId>",
             "legalBasis": "LEGITIMATE_INTEREST_CLIENT",
             "legalBasisExplanation": "At users request, we opted them out"
           }'
-          request_params:
+          param_values:
             - name: email
-              type: body
               identity: email
             - name: subscriptionId
-              type: body
               references:
                 - dataset: hubspot_connector_example
                   field: subscription.id
@@ -159,12 +154,11 @@ saas_config:
 #        read:
 #          path: /settings/v3/users/
 #          method: GET
-#          request_params:
+#          query_params:
 #            - name: limit
-#              type: query
-#              default_value: 100
-#            - name: email
-#              type: path # will be removed
+#              value: 100
+#          param_values:
+#            - name: placeholder
 #              identity: email
 #          pagination:
 #            strategy: link
@@ -185,15 +179,13 @@ saas_config:
 #        read:
 #          path: /settings/v3/users/<userId>
 #          method: GET
-#          request_params:
+#          param_values:
 #            - name: userId
-#              type: path
 #              references:
 #                - dataset: hubspot_connector_example
 #                  field: users.id
 #                  direction: from
-#            - name: email
-#              type: path # will be removed
+#            - name: placeholder
 #              identity: email
 
 

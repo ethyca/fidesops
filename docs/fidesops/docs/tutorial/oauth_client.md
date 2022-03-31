@@ -13,6 +13,7 @@ Add a method to our Python script that will call the fidesops API to create a to
 
 ### Define helper methods
 `fidesdemo/flaskr/fidesops.py`
+
 ```python
 def get_access_token(client_id, client_secret):
     """
@@ -25,7 +26,7 @@ def get_access_token(client_id, client_secret):
     }
     response = requests.post(f"{FIDESOPS_URL}/api/v1/oauth/token", data=data)
     logger.info(f"Creating access token. Status {response.status_code}")
-    return response.json()["access_token"]
+    return response.json_body()["access_token"]
 ```
 
 Add another method that will both create a client and assign scopes to that client. It's also useful to define a helper method to build 
@@ -39,13 +40,16 @@ def oauth_headers(access_token):
     """Return valid authorization headers given the provided OAuth access token"""
     return {"Authorization": f"Bearer {access_token}"}
 ```
+
 ```python
 ...
+
+
 def create_oauth_client(access_token):
     """
     Create a new OAuth client in fidesops.Returns the response JSON if successful.
     """
-    
+
     # Here we're giving the client many scopes, but in a production app, just give the client the scopes they actually need.
     scopes_data = [
         "client:create",
@@ -74,7 +78,7 @@ def create_oauth_client(access_token):
         f"{FIDESOPS_URL}/api/v1/oauth/client", headers=oauth_headers(access_token), json=scopes_data
     )
     logger.info(f"Creating Oauth Client. Status {response.status_code}")
-    return response.json()
+    return response.json_body()
 
 ```
 

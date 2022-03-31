@@ -21,6 +21,7 @@ Policy we want applied to that Privacy Request, as well as the starting identity
 to locate the remaining user information:
 
 ### Define helper method
+
 ```python
 def create_privacy_request(email, policy_key):
     """
@@ -41,7 +42,7 @@ def create_privacy_request(email, policy_key):
     )
     logger.info(f"Executing a Privacy Request. Status {response.status_code}")
     logger.info(f"Check fidesdemo/fidesuploads for upload package.")
-    return response.json()
+    return response.json_body()
 ```
 
 ### Call helper method to run Privacy Request

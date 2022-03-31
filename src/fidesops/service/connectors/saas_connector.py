@@ -78,7 +78,7 @@ class AuthenticatedClient:
             url=f"{self.uri}{request_params.path}",
             headers=request_params.headers,
             params=request_params.query_params,
-            json=request_params.json,
+            json=request_params.json_body,
         ).prepare()
         return self.add_authentication(req, self.client_config.authentication)
 

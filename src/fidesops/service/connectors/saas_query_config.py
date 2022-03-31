@@ -111,14 +111,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 query_param.value, param_values
             )
 
-        body = self.assign_placeholders(current_request.body, param_values)
+        body: str = self.assign_placeholders(current_request.body, param_values)
 
         return SaaSRequestParams(
             method=current_request.method,
             path=path,
             headers=headers,
             query_params=query_params,
-            json=json.loads(body) if body else update_values,
+            json_body=json.loads(body) if body else update_values,
         )
 
     def generate_query(

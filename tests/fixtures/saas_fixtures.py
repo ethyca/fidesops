@@ -38,6 +38,12 @@ saas_secrets_dict = {
         "api_key": pydash.get(saas_config, "mailchimp.api_key")
         or os.environ.get("MAILCHIMP_API_KEY"),
     },
+    "hubspot": {
+        "domain": pydash.get(saas_config, "hubspot.domain")
+        or os.environ.get("HUBSPOT_DOMAIN"),
+        "hapikey": pydash.get(saas_config, "hubspot.hapikey")
+        or os.environ.get("HUBSPOT_HAPIKEY"),
+    },
 }
 
 
@@ -54,6 +60,7 @@ def saas_configs() -> Dict[str, Dict]:
         "data/saas/config/saas_example_config.yml"
     )
     saas_configs["mailchimp"] = load_config("data/saas/config/mailchimp_config.yml")
+    saas_configs["hubspot"] = load_config("data/saas/config/hubspot_config.yml")
     return saas_configs
 
 
@@ -65,6 +72,9 @@ def saas_datasets() -> Dict[str, Dict]:
     )[0]
     saas_datasets["mailchimp"] = load_dataset(
         "data/saas/dataset/mailchimp_dataset.yml"
+    )[0]
+    saas_datasets["hubspot"] = load_dataset(
+        "data/saas/dataset/hubspot_dataset.yml"
     )[0]
     return saas_datasets
 
@@ -157,6 +167,49 @@ def dataset_config_mailchimp(
 
 
 @pytest.fixture(scope="function")
+def connection_config_hubspot(
+        db: Session, saas_configs: Dict[str, Dict]
+) -> Generator:
+    saas_config = SaaSConfig(**saas_configs["hubspot"])
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": saas_config.fides_key,
+            "name": saas_config.fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": saas_secrets_dict["hubspot"],
+            "saas_config": saas_configs["hubspot"],
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture
+def dataset_config_hubspot(
+        db: Session,
+        connection_config_hubspot: ConnectionConfig,
+        saas_datasets: Dict[str, Dict]
+) -> Generator:
+    saas_dataset = saas_datasets["hubspot"]
+    fides_key = saas_dataset["fides_key"]
+    connection_config_hubspot.name = fides_key
+    connection_config_hubspot.key = fides_key
+    connection_config_hubspot.save(db=db)
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config_hubspot.id,
+            "fides_key": fides_key,
+            "dataset": saas_dataset,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
 def connection_config_saas_example_without_saas_config(
     db: Session,
 ) -> Generator:
@@ -208,6 +261,13 @@ def mailchimp_identity_email():
 
 
 @pytest.fixture(scope="function")
+def hubspot_identity_email():
+    return pydash.get(saas_config, "hubspot.identity_email") or os.environ.get(
+        "HUBSPOT_IDENTITY_EMAIL"
+    )
+
+
+@pytest.fixture(scope="function")
 def reset_mailchimp_data(
     connection_config_mailchimp, mailchimp_identity_email
 ) -> Generator:
@@ -217,7 +277,7 @@ def reset_mailchimp_data(
     """
     connector = SaaSConnector(connection_config_mailchimp)
     request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.GET, path="/3.0/search-members", query_params={"query": mailchimp_identity_email}, json=None
+        method=HTTPMethod.GET, path="/3.0/search-members", query_params={"query": mailchimp_identity_email}
     )
     response = connector.create_client().send(request)
     body = response.json()
@@ -227,6 +287,6 @@ def reset_mailchimp_data(
         method=HTTPMethod.PUT,
         path=f'/3.0/lists/{member["list_id"]}/members/{member["id"]}',
         query_params={},
-        json=member
+        json_body=member
     )
     connector.create_client().send(request)

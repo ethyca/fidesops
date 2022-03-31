@@ -124,6 +124,92 @@ def test_saas_access_request_task(
 
 
 @pytest.mark.integration_saas
+@pytest.mark.integration_hubspot
+def test_saas_access_request_task(
+        db,
+        policy,
+        connection_config_hubspot,
+        dataset_config_hubspot,
+        hubspot_identity_email,
+) -> None:
+    """Full access request based on the Mailchimp SaaS config"""
+
+    privacy_request = PrivacyRequest(
+        id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
+    )
+    identity_attribute = "email"
+    identity_value = hubspot_identity_email
+    identity_kwargs = {identity_attribute: identity_value}
+    identity = PrivacyRequestIdentity(**identity_kwargs)
+    privacy_request.cache_identity(identity)
+
+    dataset_name = connection_config_hubspot.get_saas_config().fides_key
+    merged_graph = dataset_config_hubspot.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    v = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [connection_config_hubspot],
+        {"email": hubspot_identity_email},
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:contacts"],
+        min_size=1,
+        keys=[],
+    )
+    assert_rows_match(
+        v[f"{dataset_name}:owners"],
+        min_size=1,
+        keys=[],
+    )
+    assert_rows_match(
+        v[f"{dataset_name}:subscription_preferences"],
+        min_size=1,
+        keys=[],
+    )
+
+    # links
+    assert v[f"{dataset_name}:contacts"][0]["properties"]["email"] == hubspot_identity_email
+
+    logs = (
+        ExecutionLog.query(db=db)
+            .filter(ExecutionLog.privacy_request_id == privacy_request.id)
+            .all()
+    )
+
+    logs = [log.__dict__ for log in logs]
+    assert (
+            len(
+                records_matching_fields(
+                    logs, dataset_name=dataset_name, collection_name="contacts"
+                )
+            )
+            > 0
+    )
+    assert (
+            len(
+                records_matching_fields(
+                    logs,
+                    dataset_name=dataset_name,
+                    collection_name="owners",
+                )
+            )
+            > 0
+    )
+    assert (
+            len(
+                records_matching_fields(
+                    logs, dataset_name=dataset_name, collection_name="subscription_preferences"
+                )
+            )
+            > 0
+    )
+
+
+@pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
 def test_saas_erasure_request_task(
     db,
