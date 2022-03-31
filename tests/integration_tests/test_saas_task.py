@@ -202,6 +202,7 @@ def test_saas_erasure_request_task(
 
 
 @pytest.mark.integration_saas
+@pytest.mark.saas_connector_sentry
 def test_sentry_saas_access_request_task(
     db,
     policy,
