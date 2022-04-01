@@ -172,6 +172,7 @@ test_request:
 This is where we define how we are going to access and update each collection in the corresponding Dataset. The endpoint section contains the following members:
 
 - `name` This name corresponds to a Collection in the corresponding Dataset.
+- `after` To configure if this endpoint should run after other endpoints or collections. This should be a list of collection addresses, for example: `after: [ mailchimp_connector_example.member ]` would cause the current endpoint to run after the member endpoint.
 - `requests` A map of `read`, `update`, and `delete` requests for this collection. Each collection can define a way to read and a way to update the data. Each request is made up of:
     - `method` The HTTP method used for the endpoint.
     - `path` A static or dynamic resource path. The dynamic portions of the path are enclosed within angle brackets `<dynamic_value>` and are replaced with values from `param_values`.
@@ -184,12 +185,13 @@ This is where we define how we are going to access and update each collection in
         - `references` These are the same as `references` in the Dataset schema. It is used to define the source of the value for the given request_param.
         - `identity` Used to access the identity values passed into the privacy request such as email or phone number.
         - `connector_param` Used to access the user-configured secrets for the connection.
+    - `ignore_errors` A boolean. If true, we will ignore non-200 status codes.
     - `data_path`: The expression used to access the collection information from the raw JSON response.
     - `postprocessors` An optional list of response post-processing strategies. We will ignore this for the example scenarios below but an in depth-explanation can be found under [SaaS Post-Processors](saas_postprocessors.md)
     - `pagination` An optional strategy used to get the next set of results from APIs with resources spanning multiple pages. Details can be found under [SaaS Pagination](saas_pagination.md).
     - `grouped_inputs` An optional list of reference fields whose inputs are dependent upon one another.  For example, an endpoint may need both an `organization_id` and a `project_id` from another endpoint.  These aren't independent values, as a `project_id` belongs to an `organization_id`.  You would specify this as ["organization_id", "project_id"].
 
-## Request params in more detail
+## Param values in more detail
 The `param_values` list is what provides the values to our various placeholders in the path, headers, query params and body. Values can be `identities` such as email or phone number, `references` to fields in other collections, or `connector_params` which are defined as part of configuring a SaaS connector. Whenever a placeholder is encountered, the placeholder name is looked up in the list of `param_values` and corresponding value is used instead. Here is an example of placeholders being used in various locations:
 
 ```yaml
