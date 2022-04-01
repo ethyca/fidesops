@@ -101,7 +101,7 @@ def reset_mailchimp_data(mailchimp_connection_config, mailchimp_identity_email) 
     request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/3.0/search-members",
-        params={"query": mailchimp_identity_email},
+        query_params={"query": mailchimp_identity_email},
         body=None,
     )
     response = connector.create_client().send(request)
