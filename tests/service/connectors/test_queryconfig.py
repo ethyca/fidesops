@@ -729,9 +729,14 @@ class TestSaaSQueryConfig:
         )
 
     def test_generate_update_stmt_custom_http_method(
-            self, erasure_policy_string_rewrite, combined_traversal, saas_example_connection_config
+        self,
+        erasure_policy_string_rewrite,
+        combined_traversal,
+        saas_example_connection_config,
     ):
-        saas_config: Optional[SaaSConfig] = saas_example_connection_config.get_saas_config()
+        saas_config: Optional[
+            SaaSConfig
+        ] = saas_example_connection_config.get_saas_config()
         saas_config.endpoints[2].requests.get("update").method = HTTPMethod.POST
         endpoints = saas_config.top_level_endpoint_dict
 
