@@ -11,6 +11,11 @@ username = ""
 api_key = ""
 identity_email = ""
 
+[stripe]
+host = ""
+api_key = ""
+payment_types = ""
+page_limit = ""
 
 [sentry]
 host = ""
