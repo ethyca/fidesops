@@ -26,7 +26,7 @@ def sentry_secrets():
         "host": pydash.get(saas_config, "sentry.host") or os.environ.get("SENTRY_HOST"),
         "access_token": pydash.get(saas_config, "sentry.access_token")
         or os.environ.get("SENTRY_ACCESS_TOKEN"),
-    },
+    }
 
 @pytest.fixture(scope="function")
 def sentry_identity_email():
