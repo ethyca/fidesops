@@ -39,7 +39,7 @@ def test_sentry_saas_access_request_task(
     )
 
     assert_rows_match(
-        v["sentry_connector:organizations"],
+        v[f"{dataset_name}:organizations"],
         min_size=1,
         keys=[
             "id",
@@ -55,7 +55,7 @@ def test_sentry_saas_access_request_task(
         ],
     )
     assert_rows_match(
-        v["sentry_connector:employees"],
+        v[f"{dataset_name}:employees"],
         min_size=1,
         keys=[
             "id",
@@ -74,7 +74,7 @@ def test_sentry_saas_access_request_task(
         ],
     )
     assert_rows_match(
-        v["sentry_connector:projects"],
+        v[f"{dataset_name}:projects"],
         min_size=3,
         keys=[
             "id",
@@ -101,7 +101,7 @@ def test_sentry_saas_access_request_task(
     # TODO add test for issues once data is populated
 
     assert_rows_match(
-        v["sentry_connector:user_feedback"],
+        v[f"{dataset_name}:user_feedback"],
         min_size=1,
         keys=[
             "id",
@@ -118,7 +118,7 @@ def test_sentry_saas_access_request_task(
 
     # Person returns empty dicts
     assert_rows_match(
-        v["sentry_connector:person"],
+        v[f"{dataset_name}:person"],
         min_size=1,
         keys=[
             "id",
@@ -142,30 +142,30 @@ def test_sentry_saas_access_request_task(
     )
 
     assert set(filtered_results.keys()) == {
-        "sentry_connector:person",
-        "sentry_connector:employees",
-        "sentry_connector:user_feedback",
+        f"{dataset_name}:person",
+        f"{dataset_name}:employees",
+        f"{dataset_name}:user_feedback",
     }
 
-    assert set(filtered_results["sentry_connector:person"][0].keys()) == {
+    assert set(filtered_results[f"{dataset_name}:person"][0].keys()) == {
         "email",
         "name",
         "username",
     }
     assert (
-        filtered_results["sentry_connector:person"][0]["email"] == sentry_identity_email
+        filtered_results[f"{dataset_name}:person"][0]["email"] == sentry_identity_email
     )
 
-    assert set(filtered_results["sentry_connector:employees"][0].keys()) == {
+    assert set(filtered_results[f"{dataset_name}:employees"][0].keys()) == {
         "email",
         "user",
         "name",
     }
     assert (
-        filtered_results["sentry_connector:employees"][0]["email"]
+        filtered_results[f"{dataset_name}:employees"][0]["email"]
         == sentry_identity_email
     )
-    assert set(filtered_results["sentry_connector:employees"][0]["user"].keys()) == {
+    assert set(filtered_results[f"{dataset_name}:employees"][0]["user"].keys()) == {
         "email",
         "name",
         "avatarUrl",
@@ -174,32 +174,32 @@ def test_sentry_saas_access_request_task(
     }
 
     assert (
-        filtered_results["sentry_connector:employees"][0]["user"]["email"]
+        filtered_results[f"{dataset_name}:employees"][0]["user"]["email"]
         == sentry_identity_email
     )
-    assert filtered_results["sentry_connector:employees"][0]["user"]["emails"] == [
+    assert filtered_results[f"{dataset_name}:employees"][0]["user"]["emails"] == [
         {"email": sentry_identity_email}
     ]
 
-    assert set(filtered_results["sentry_connector:user_feedback"][0].keys()) == {
+    assert set(filtered_results[f"{dataset_name}:user_feedback"][0].keys()) == {
         "email",
         "user",
         "comments",
         "name",
     }
     assert (
-        filtered_results["sentry_connector:user_feedback"][0]["email"]
+        filtered_results[f"{dataset_name}:user_feedback"][0]["email"]
         == sentry_identity_email
     )
 
     assert set(
-        filtered_results["sentry_connector:user_feedback"][0]["user"].keys()
+        filtered_results[f"{dataset_name}:user_feedback"][0]["user"].keys()
     ) == {
         "email",
         "name",
         "username",
     }
     assert (
-        filtered_results["sentry_connector:user_feedback"][0]["user"]["email"]
+        filtered_results[f"{dataset_name}:user_feedback"][0]["user"]["email"]
         == sentry_identity_email
     )
