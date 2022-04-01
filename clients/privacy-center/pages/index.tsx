@@ -24,7 +24,7 @@ const Home: NextPage = () => {
   const { isOpen, onClose, onOpen, openAction } = useRequestModal();
 
   useEffect(() => {
-    if(alert?.status === 'error') {
+    if(alert?.status) {
       const closeAlertTimer = setTimeout(() => setAlert(null), 8000);
       return () => clearTimeout(closeAlertTimer)
     }
