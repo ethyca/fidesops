@@ -80,11 +80,11 @@ saas_config:
                 - dataset: sentry_connector
                   field: issues.id
                   direction: from
-          body: "{\"assignedTo\": \"\"}"
+          body: '{"assignedTo": ""}'
         read:
           method: GET
           path: /api/0/projects/<organization_slug>/<project_slug>/issues/
-          grouped_inputs: [ organization_slug, project_slug, query ]
+          grouped_inputs: [organization_slug, project_slug, query]
           query_params:
             - name: query
               value: assigned:<query>
@@ -123,25 +123,25 @@ saas_config:
                 - dataset: sentry_connector
                   field: projects.slug
                   direction: from
-          pagination:
-            strategy: link
-            configuration:
-              source: headers
-              rel: next
           postprocessors:
             - strategy: filter
               configuration:
                 field: email
                 value:
                   identity: email
+          pagination:
+            strategy: link
+            configuration:
+              source: headers
+              rel: next
     - name: person
-      after: [ sentry_connector.projects ]
+      after: [sentry_connector.projects]
       requests:
         read:
           method: GET
           ignore_errors: true
           path: /api/0/projects/<organization_slug>/<project_slug>/users/
-          grouped_inputs: [ organization_slug, project_slug, query ]
+          grouped_inputs: [organization_slug, project_slug, query]
           query_params:
             - name: query
               value: email:<query>
