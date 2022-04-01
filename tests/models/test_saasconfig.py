@@ -70,10 +70,10 @@ def test_saas_config_to_dataset(saas_example_config: Dict[str, Dict]):
 
 
 @pytest.mark.unit_saas
-def test_saas_config_ignore_errors_param(saas_configs: Dict[str, Dict]):
+def test_saas_config_ignore_errors_param(saas_example_config: Dict[str, Dict]):
     """Verify saas config ignore errors"""
     # convert endpoint references to dataset references to be able to hook SaaS connectors into the graph traversal
-    saas_config = SaaSConfig(**saas_configs["saas_example"])
+    saas_config = SaaSConfig(**saas_example_config)
 
     collections_endpoint = next(
         end for end in saas_config.endpoints if end.name == "conversations"
