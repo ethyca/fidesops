@@ -122,11 +122,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
-        test_request = self.saas_config.test_request
+        test_request: SaaSRequest = self.saas_config.test_request
         prepared_request: SaaSRequestParams = SaaSRequestParams(
             method=test_request.method, path=test_request.path
         )
-        self.client().send(prepared_request)
+        client: AuthenticatedClient = self.create_client_from_request(test_request)
+        client.send(prepared_request)
         return ConnectionTestStatus.succeeded
 
     def build_uri(self) -> str:
@@ -139,6 +140,29 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         uri = self.build_uri()
         logger.info(f"Creating client to {uri}")
         return AuthenticatedClient(uri, self.configuration)
+
+    def build_client_with_config(
+        self, client_config: ClientConfig
+    ) -> AuthenticatedClient:
+        """Sets the clientConfig on the SaasConnector, and also sets on the created AuthenticatedClient"""
+        self.client_config = client_config
+        client: AuthenticatedClient = self.create_client()
+        client.client_config = client_config
+        return client
+
+    def create_client_from_request(
+        self, saas_request: SaaSRequest
+    ) -> AuthenticatedClient:
+        """
+        Permits authentication to be overridden at the request-level.
+        Use authentication on the request if specified, otherwise, just use
+        the authentication configured for the overall saas connector.
+        """
+        if saas_request.client_config:
+            logger.info(f"Updating client config to {saas_request.client_config}")
+            return self.build_client_with_config(saas_request.client_config)
+
+        return self.build_client_with_config(self.saas_config.client_config)
 
     def retrieve_data(
         self,
@@ -185,10 +209,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Executes the prepared request and handles response postprocessing and pagination.
         Returns processed data and request_params for next page of data if available.
         """
-
-        response: Response = self.client().send(
-            prepared_request, saas_request.ignore_errors
-        )
+        client: AuthenticatedClient = self.create_client_from_request(saas_request)
+        response: Response = client.send(prepared_request, saas_request.ignore_errors)
 
         # unwrap response using data_path
         try:
@@ -297,8 +319,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             "update"
         ]
         rows_updated = 0
+        client = self.create_client_from_request(update_request)
         for prepared_request in prepared_requests:
-            self.client().send(prepared_request, update_request.ignore_errors)
+            client.send(prepared_request, update_request.ignore_errors)
             rows_updated += 1
         return rows_updated
 
