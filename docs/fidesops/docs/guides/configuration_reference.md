@@ -52,6 +52,7 @@ The `fidesops.toml` file should specify the following variables:
 |`TASK_RETRY_DELAY` | `FIDESOPS__EXECUTION__TASK_RETRY_DELAY` | int | 20 | 5 | The delays between retries in seconds
 |`TASK_RETRY_BACKOFF` | `FIDESOPS__EXECUTION__TASK_RETRY_BACKOFF` | int | 2 | 2 | The backoff factor for retries, to space out repeated retries.
 |`REQUIRE_MANUAL_REQUEST_APPROVAL` | `FIDESOPS__EXECUTION__REQUIRE_MANUAL_REQUEST_APPROVAL` | bool | False | False | Whether privacy requests require explicit approval to execute
+|`MASKING_STRICT` | `FIDESOPS__EXECUTION__MASKING_STRICT` | bool | True | True | Mask via updates only.  If False, can use defined deletes or GDPR endpoints, which can can delete data beyond what is specified on the Policy.
 
 
 ## An example `fidesops.toml` configuration file
@@ -84,6 +85,7 @@ TASK_RETRY_COUNT=3
 TASK_RETRY_DELAY=20
 TASK_RETRY_BACKOFF=2
 REQUIRE_MANUAL_REQUEST_APPROVAL=True
+MASKING_STRICT=True
 ```
 
 Please note: The configuration is case-sensitive, so the variables must be specified in UPPERCASE.
@@ -134,5 +136,6 @@ Please note: Fidesops will filter out any sensitive configuration variables. The
 - `TASK_RETRY_DELAY`
 - `TASK_RETRY_BACKOFF`
 - `REQUIRE_MANUAL_REQUEST_APPROVAL`
+- `MASKING_STRICT`
 
 For more information please see the [api docs](/fidesops/api#operations-tag-Config).
