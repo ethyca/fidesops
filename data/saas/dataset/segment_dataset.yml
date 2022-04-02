@@ -3,12 +3,6 @@ dataset:
     name: Segment Dataset
     description: A sample dataset representing the Segment connector for Fidesops
     collections:
-      - name: segment_user_del
-        fields:
-          - name: userId
-            data_categories: [user.derived.identifiable.unique_id]
-            fidesops_meta:
-              primary_key: True
       - name: segment_user
         fields:
           - name: segment_id
@@ -22,11 +16,9 @@ dataset:
               - name: collection
                 data_categories: [system.operations]
               - name: type
-                data_categories: [system.operations]                
+                data_categories: [system.operations]
               - name: id
                 data_categories: [user.derived.identifiable.unique_id]
-                  fidesops_meta:
-                    primary_key: True
           - name: context
             data_categories: [system.operations]
           - name: library
@@ -78,15 +70,15 @@ dataset:
               - name: state
                 data_categories: [user.provided.identifiable.contact.state]
                 fidesops_meta:
-                  data_type: string     
+                  data_type: string
           - name: age
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.non_specific_age]
           - name: avatar
             data_categories: [system.operations]
           - name: createdAt
             data_categories: [system.operations]
           - name: description
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable]
           - name: email
             data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
@@ -101,16 +93,34 @@ dataset:
               data_type: string
           - name: id
             data_categories: [user.derived.identifiable.unique_id]
-            fidesops_meta:
-              primary_key: True
           - name: industry
-            data_categories: [system.operations]            
+            data_categories: [system.operations]
+          - name: lastName
+          - name: name
+            data_categories: [ user.provided.identifiable.name ]
+            fidesops_meta:
+              data_type: string
+          - name: phone
+            data_categories: [ user.provided.identifiable.contact.phone_number ]
+            fidesops_meta:
+              data_type: string
+          - name: subscriptionStatus
+          - name: title
+            data_categories: [ user.provided.identifiable.name ]
+            fidesops_meta:
+              data_type: string
+          - name: username
+            data_categories: [ user.provided.identifiable.name ]
+            fidesops_meta:
+              data_type: string
+          - name: website
+            data_categories: [ user.provided.identifiable ]
+            fidesops_meta:
+              data_type: string
       - name: external_ids
         fields:
           - name: id
             data_categories: [user.derived.identifiable.unique_id]
-            fidesops_meta:
-              primary_key: True
           - name: type
             data_categories: [system.operations]
           - name: source_id

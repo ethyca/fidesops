@@ -6,6 +6,8 @@ saas_config:
 
   connector_params:
     - name: domain
+    - name: profile_domain
+    - name: config_domain
     - name: workspace
     - name: access_token
     - name: namespace_id
@@ -16,129 +18,138 @@ saas_config:
     host:
       connector_param: domain
     authentication:
-      strategy: basic_authentication
+      strategy: bearer_authentication
       configuration:
-        username:
-          connector_param: segment_access_secret
+        token:
+          connector_param: access_token
 
   test_request:
-    path: /<api_version>/workspaces
-    # TODO - custom authorization hasn't written this time
-    # TODO - Please refer to the original YAML for further details
-    request_params:
-      - name: api_version
-        type: path
-        default_value: v1beta
-    
+    method: GET
+    path: /v1beta/workspaces/
+
   endpoints:
-  - name: segment_user_del
-    requests:
-      delete:
-        # TODO - custom authorization hasn't written this time
-        # TODO - Please refer to the original YAML for further details  
-
-        # TODO - custom HTTP method hasn't written this time
-        # TODO - Please refer to the original YAML for further details      
-
-         # TODO - custom HTTP body hasn't written this time
-        # TODO - Please refer to the original YAML for further details     
-        path: /<api_version>/workspaces/<workspace_name>/regulations
-        request_params:
-          - name: api_version
-            type: path
-            default_value: v1beta
-          - name: workspace_name
-            type: path
-            default_value: workspace
-            # TODO - Getting connector param value for request_params hasn't written this time
-            # TODO - Please refer to the original YAML for further details
   - name: segment_user
     requests:
       read:
-        path: /<api_version>/spaces/<namespace_id>/collections/users/profiles/user_id:<user_id>/metadata
-        request_params:
-          - name: api_version
-            type: path
-            default_value: v1
+        method: GET
+        path: /v1/spaces/<namespace_id>/collections/users/profiles/user_id:<user_id>/metadata
+        param_values:
           - name: namespace_id
-            type: path
-            default_value: namespace_id
-            # TODO - Getting connector param value for request_params hasn't written this time
-            # TODO - Please refer to the original YAML for further details
+            connector_param: namespace_id
           - name: user_id
-            type: path
-            identity: userId       
-      # TODO - sourceValueChecker hasn't written at this time
-      # TODO - Please refer to the original YAML for further details
+            identity: email
+        client_config:
+          protocol: https
+          host:
+            connector_param: profile_domain
+          authentication:
+            strategy: basic_authentication
+            configuration:
+              username:
+                connector_param: segment_access_secret
   - name: track_events
     requests:
       read:
-        path: /<api_version>/spaces/<namespace_id>/collections/users/profiles/<segment_id>/events
-        request_params:
-          - name: api_version
-            type: path
-            default_value: v1
+        method: GET
+        path: /v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/events
+        param_values:
           - name: namespace_id
-            type: path
-            default_value: namespace_id
-            # TODO - Getting connector param value for request_params hasn't written this time
-            # TODO - Please refer to the original YAML for further details
+            connector_param: namespace_id
           - name: segment_id
-            type: path
-            references:
-              - dataset: segment_connector_example
-                field: segment_user.segment_id
-                direction: from          
-        data_path: data
-  - name: traits
-    requests:
-      read:
-        path: /<api_version>/spaces/<namespace_id>/collections/users/profiles/<segment_id>/traits
-        request_params:
-          - name: api_version
-            type: path
-            default_value: v1   
-          - name: namespace_id
-            type: path
-            default_value: namespace_id
-            # TODO - Getting connector param value for request_params hasn't written this time
-            # TODO - Please refer to the original YAML for further details
-          - name: segment_id
-            type: path
             references:
               - dataset: segment_connector_example
                 field: segment_user.segment_id
                 direction: from
-          - name: limit
-            type: query
-            default_value: 17
-          - name: next
-            default_value: link
-            # TODO - Getting connector param value for request_params hasn't written this time
-            # TODO - Please refer to the original YAML for further details
-        data_path: traits    
+        data_path: data
         pagination:
           strategy: link
           configuration:
             source: body
-            path: cursor.next
-  - name: external_ids
+            path: cursor.url
+        client_config:
+          protocol: https
+          host:
+            connector_param: profile_domain
+          authentication:
+            strategy: basic_authentication
+            configuration:
+              username:
+                connector_param: segment_access_secret
+  - name: traits
     requests:
       read:
-        path: /<api_version>/spaces/<namespace_id>/collections/users/profiles/<segment_id>/external_ids
-        request_params:
-          - name: api_version
-            type: path
-            default_value: v1
+        method: GET
+        path: /v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/traits
+        query_params:
+          - name: limit
+            value: 17
+        param_values:
           - name: namespace_id
-            type: path
-            default_value: namespace_id
-            # TODO - Getting connector param value for request_params hasn't written this time
-            # TODO - Please refer to the original YAML for further details
+            connector_param: namespace_id
           - name: segment_id
-            type: path
             references:
               - dataset: segment_connector_example
                 field: segment_user.segment_id
                 direction: from
-        data_path: data                
+        data_path: traits
+        pagination:
+          strategy: link
+          configuration:
+            source: body
+            path: cursor.url
+        client_config:
+          protocol: https
+          host:
+            connector_param: profile_domain
+          authentication:
+            strategy: basic_authentication
+            configuration:
+              username:
+                connector_param: segment_access_secret
+  - name: external_ids
+    requests:
+      read:
+        method: GET
+        path: /v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/external_ids
+        param_values:
+          - name: namespace_id
+            connector_param: namespace_id
+          - name: segment_id
+            references:
+              - dataset: segment_connector_example
+                field: segment_user.segment_id
+                direction: from
+        data_path: data
+        pagination:
+          strategy: link
+          configuration:
+            source: body
+            path: cursor.url
+        client_config:
+          protocol: https
+          host:
+            connector_param: profile_domain
+          authentication:
+            strategy: basic_authentication
+            configuration:
+              username:
+                connector_param: segment_access_secret
+
+  data_protection_request:
+    method: POST
+    path: /v1beta/workspaces/<workspace_name>/regulations
+    param_values:
+      - name: workspace_name
+        connector_param: workspace
+      - name: user_id
+        identity: email
+    body: '{\"regulation_type\": \"Suppress_With_Delete\", \"attributes\": {\"name\": \"userId\",\"values\": [\"<user_id>\",]}}'
+    client_config:
+      protocol: https
+      host:
+        connector_param: config_domain
+      authentication:
+        strategy: bearer_authentication
+        configuration:
+          username:
+            connector_param: access_token
