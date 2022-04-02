@@ -55,7 +55,7 @@ class AuthenticatedClient:
             username_key = pydash.get(configuration, "username.connector_param")
             password_key = pydash.get(configuration, "password.connector_param")
             req.prepare_auth(
-                auth=(self.secrets[username_key], self.secrets[password_key])
+                auth=(self.secrets[username_key], self.secrets.get(password_key))
             )
         elif strategy == "bearer_authentication":
             token_key = pydash.get(configuration, "token.connector_param")
