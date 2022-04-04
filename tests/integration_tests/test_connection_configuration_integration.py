@@ -1442,8 +1442,8 @@ class TestSaasConnector:
         with pytest.raises(ConnectionException):
             connector.test_connection()
 
-    def test_get_masking_request_from_config(self, connection_config_mailchimp):
-        connector: SaaSConnector = get_connector(connection_config_mailchimp)
+    def test_get_masking_request_from_config(self, mailchimp_connection_config):
+        connector: SaaSConnector = get_connector(mailchimp_connection_config)
         saas_request: SaaSRequest = connector.get_masking_request_from_config("member")
 
         # Assert we pulled the update method off of the member collection
@@ -1487,6 +1487,3 @@ class TestSaasConnector:
         config.execution.MASKING_STRICT = True
         del conversation_endpoint.requests["delete"]
         connector.saas_config.data_protection_request = None
-
-
-

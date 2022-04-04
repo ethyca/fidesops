@@ -19,7 +19,7 @@ from fidesops.common_exceptions import (
     PostProcessingException,
 )
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.saas_config import Strategy, SaaSRequest, ClientConfig
+from fidesops.schemas.saas.saas_config import Strategy, SaaSRequest
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
     get_strategy as get_postprocessor_strategy,
 )
@@ -304,6 +304,18 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         try:
             # Return first viable option
+            action_type = next(
+                action
+                for action in [
+                    "update" if update else None,
+                    "data_protection_request" if gdpr_delete else None,
+                    "delete" if delete else None,
+                ]
+                if action
+            )
+            logger.info(
+                f"Selecting '{action_type}' action to perform masking request for '{collection_name}' collection."
+            )
             return next(request for request in [update, gdpr_delete, delete] if request)
         except StopIteration:
             return None
