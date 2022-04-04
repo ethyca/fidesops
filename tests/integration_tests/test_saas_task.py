@@ -161,11 +161,6 @@ def test_saas_access_request_task(
         keys=[],
     )
     assert_rows_match(
-        v[f"{dataset_name}:owners"],
-        min_size=1,
-        keys=[],
-    )
-    assert_rows_match(
         v[f"{dataset_name}:subscription_preferences"],
         min_size=1,
         keys=[],

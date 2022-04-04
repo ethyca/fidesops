@@ -51,7 +51,7 @@ class TestGetPolicies:
             headers=auth_header,
         )
         assert resp.status_code == 200
-        data = resp.json_body()
+        data = resp.json()
 
         assert "items" in data
         assert data["total"] == 1
@@ -107,8 +107,8 @@ class TestGetPolicyDetail:
             headers=auth_header,
         )
         assert resp.status_code == 200
-        data = resp.json_body()
-        print(json.dumps(resp.json_body(), indent=2))
+        data = resp.json()
+        print(json.dumps(resp.json(), indent=2))
         assert data["key"] == policy.key
         assert "rules" in data
         assert len(data["rules"]) == 1
@@ -130,12 +130,12 @@ class TestGetPolicyDetail:
             headers=auth_header,
         )
         assert resp.status_code == 200
-        print(json.dumps(resp.json_body(), indent=2))
+        print(json.dumps(resp.json(), indent=2))
         print(f"POLICY = {policy.__dict__}")
         print(f"RULES = {policy.rules}")
         print(f"RULES = {policy.rules[0]}")
         print(f"RULES = {policy.rules[0].__dict__}")
-        data = resp.json_body()
+        data = resp.json()
 
         assert "items" in data
         assert data["total"] == 1
@@ -222,7 +222,7 @@ class TestCreatePolicies:
         resp = api_client.patch(url, json=payload, headers=auth_header)
         assert resp.status_code == 200
 
-        data = resp.json_body()
+        data = resp.json()
         assert len(data["succeeded"]) == 2
 
         elements = data["succeeded"]
@@ -256,7 +256,7 @@ class TestCreatePolicies:
         resp = api_client.patch(url, json=data, headers=auth_header)
         assert resp.status_code == 200
 
-        data = resp.json_body()
+        data = resp.json()
         assert len(data["failed"]) == 2
 
     def test_create_policy_creates_key(
@@ -273,7 +273,7 @@ class TestCreatePolicies:
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
         resp = api_client.patch(url, json=data, headers=auth_header)
         assert resp.status_code == 200
-        response_data = resp.json_body()["succeeded"]
+        response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
 
         pol = Policy.filter(
@@ -302,7 +302,7 @@ class TestCreatePolicies:
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
         resp = api_client.patch(url, json=data, headers=auth_header)
         assert resp.status_code == 200
-        response_data = resp.json_body()["succeeded"]
+        response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
 
         policy_data = response_data[0]
@@ -355,7 +355,7 @@ class TestCreatePolicies:
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
         resp = api_client.patch(url, json=data, headers=auth_header)
         assert resp.status_code == 200
-        response_data = resp.json_body()["succeeded"]
+        response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
 
 
@@ -437,7 +437,7 @@ class TestCreateRules:
         )
 
         assert resp.status_code == 200
-        response_data = resp.json_body()["succeeded"]
+        response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         rule_data = response_data[0]
         assert "storage_destination" in rule_data
@@ -465,7 +465,7 @@ class TestCreateRules:
             headers=auth_header,
         )
         assert resp.status_code == 200
-        response_data = resp.json_body()["failed"]
+        response_data = resp.json()["failed"]
         assert len(response_data) == 1
 
     def test_create_erasure_rule_for_policy(
@@ -494,7 +494,7 @@ class TestCreateRules:
         )
 
         assert resp.status_code == 200
-        response_data = resp.json_body()["succeeded"]
+        response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         rule_data = response_data[0]
         assert "masking_strategy" in rule_data
@@ -540,7 +540,7 @@ class TestCreateRules:
         )
 
         assert resp.status_code == 200
-        response_data = resp.json_body()["failed"]
+        response_data = resp.json()["failed"]
         assert len(response_data) == 1
         assert (
             response_data[0]["message"]
@@ -651,7 +651,7 @@ class TestRuleTargets:
         )
 
         assert resp.status_code == 200
-        response_data = resp.json_body()["succeeded"]
+        response_data = resp.json()["succeeded"]
         assert len(response_data) == 2
 
     def test_create_duplicate_rule_targets(
@@ -682,10 +682,10 @@ class TestRuleTargets:
         )
 
         assert resp.status_code == 200
-        assert len(resp.json_body()["succeeded"]) == 1
-        assert len(resp.json_body()["failed"]) == 1
+        assert len(resp.json()["succeeded"]) == 1
+        assert len(resp.json()["failed"]) == 1
         assert (
-            resp.json_body()["failed"][0]["message"]
+            resp.json()["failed"][0]["message"]
             == f"DataCategory {data_category} is already specified on Rule with ID {rule.id}"
         )
 
@@ -745,7 +745,7 @@ class TestRuleTargets:
         )
 
         assert resp.status_code == 200
-        response_data = resp.json_body()["succeeded"]
+        response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
 
         updated_target = RuleTarget.get(db=db, id=existing_target.id)
@@ -793,7 +793,7 @@ class TestRuleTargets:
         )
 
         assert resp.status_code == 200
-        response_data = resp.json_body()["failed"]
+        response_data = resp.json()["failed"]
         assert len(response_data) == 1
         assert (
             response_data[0]["message"]
@@ -866,10 +866,10 @@ class TestRuleTargets:
         )
 
         assert resp.status_code == 200
-        succeeded = resp.json_body()["succeeded"]
+        succeeded = resp.json()["succeeded"]
         assert len(succeeded) == 1
 
-        failed = resp.json_body()["failed"]
+        failed = resp.json()["failed"]
         assert len(failed) == 1
         assert (
             failed[0]["message"]

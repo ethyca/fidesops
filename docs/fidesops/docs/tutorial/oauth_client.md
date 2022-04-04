@@ -26,7 +26,7 @@ def get_access_token(client_id, client_secret):
     }
     response = requests.post(f"{FIDESOPS_URL}/api/v1/oauth/token", data=data)
     logger.info(f"Creating access token. Status {response.status_code}")
-    return response.json_body()["access_token"]
+    return response.json()["access_token"]
 ```
 
 Add another method that will both create a client and assign scopes to that client. It's also useful to define a helper method to build 
@@ -78,7 +78,7 @@ def create_oauth_client(access_token):
         f"{FIDESOPS_URL}/api/v1/oauth/client", headers=oauth_headers(access_token), json=scopes_data
     )
     logger.info(f"Creating Oauth Client. Status {response.status_code}")
-    return response.json_body()
+    return response.json()
 
 ```
 

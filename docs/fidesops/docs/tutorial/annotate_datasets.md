@@ -79,7 +79,7 @@ def create_dataset(connection_key, yaml_path, access_token):
         json=dataset_create_data,
     )
     logger.info(f"Creating an annotated Dataset. Status {response.status_code}")
-    return response.json_body()
+    return response.json()
 ```
 
 ### Call helper method to create a dataset

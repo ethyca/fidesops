@@ -22,7 +22,7 @@ class TestGetConnections:
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 200
 
-        config = resp.json_body()
+        config = resp.json()
         assert "database" in config
         assert "password" not in config["database"]
         assert "redis" in config

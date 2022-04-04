@@ -36,7 +36,7 @@ def create_policy(key, access_token):
         json=policy_create_data,
     )
     logger.info(f"Creating a Policy. Status {response.status_code}")
-    return response.json_body()
+    return response.json()
 ```   
 
 ```python
@@ -66,7 +66,7 @@ def create_policy_rule(
     )
 
     logger.info(f"Creating a rule. Status {response.status_code}")
-    return response.json_body()
+    return response.json()
 ```    
 
 ```python
@@ -91,7 +91,7 @@ def create_policy_rule_target(policy_key, rule_key, data_category, access_token)
     )
 
     logger.info(f"Creating a Rule Target. Status {response.status_code}")
-    return response.json_body()
+    return response.json()
 ```
 ```python
 ...

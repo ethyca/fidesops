@@ -131,7 +131,7 @@ class TestCreateClient:
         )
 
         assert 422 == response.status_code
-        assert response.json_body()["detail"].startswith("Invalid Scope.")
+        assert response.json()["detail"].startswith("Invalid Scope.")
 
 
 class TestGetClientScopes:

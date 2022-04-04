@@ -42,7 +42,7 @@ def create_privacy_request(email, policy_key):
     )
     logger.info(f"Executing a Privacy Request. Status {response.status_code}")
     logger.info(f"Check fidesdemo/fidesuploads for upload package.")
-    return response.json_body()
+    return response.json()
 ```
 
 ### Call helper method to run Privacy Request

@@ -265,8 +265,8 @@ class TestUserLogin:
 
         db.refresh(user)
         assert user.client is not None
-        assert list(response.json_body().keys()) == ["access_token"]
-        token = response.json_body()["access_token"]
+        assert list(response.json().keys()) == ["access_token"]
+        token = response.json()["access_token"]
 
         token_data = json.loads(extract_payload(token))
 
@@ -286,8 +286,8 @@ class TestUserLogin:
 
         db.refresh(user)
         assert user.client is not None
-        assert list(response.json_body().keys()) == ["access_token"]
-        token = response.json_body()["access_token"]
+        assert list(response.json().keys()) == ["access_token"]
+        token = response.json()["access_token"]
 
         token_data = json.loads(extract_payload(token))
 

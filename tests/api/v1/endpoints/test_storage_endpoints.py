@@ -366,7 +366,7 @@ class TestPatchStorageConfig:
             ],
         )
         assert response.status_code == 422
-        errors = response.json_body()["detail"]
+        errors = response.json()["detail"]
         assert "details" in errors[0]["loc"]
         assert errors[0]["msg"] == "[\"field required ('bucket',)\"]"
 
@@ -427,7 +427,7 @@ class TestPutStorageConfigSecretsS3:
         )
 
         assert response.status_code == 400
-        assert response.json_body() == {
+        assert response.json() == {
             "detail": [
                 "field required ('aws_access_key_id',)",
                 "field required ('aws_secret_access_key',)",
@@ -679,7 +679,7 @@ class TestPutStorageConfigSecretsOneTrust:
         )
 
         assert 400 == response.status_code
-        assert response.json_body()["detail"] == ["field required ('onetrust_client_id',)"]
+        assert response.json()["detail"] == ["field required ('onetrust_client_id',)"]
 
 
 class TestGetStorageConfigs:

@@ -348,7 +348,7 @@ class TestMySQLConnectionPutSecretsAPI:
             json=payload,
         )
         assert resp.status_code == 200
-        body = resp.json_body()
+        body = resp.json()
 
         assert (
             body["msg"]
@@ -599,7 +599,7 @@ class TestMariaDBConnectionPutSecretsAPI:
             json=payload,
         )
         assert resp.status_code == 200
-        body = resp.json_body()
+        body = resp.json()
 
         assert (
             body["msg"]
@@ -858,7 +858,7 @@ class TestMicrosoftSQLServerConnection:
             json=payload,
         )
         assert resp.status_code == 200
-        body = resp.json_body()
+        body = resp.json()
 
         assert (
             body["msg"]

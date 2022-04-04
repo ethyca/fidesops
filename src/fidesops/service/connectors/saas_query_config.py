@@ -187,7 +187,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         update_values: Dict[str, Any] = unflatten_dict(update_value_map)
 
         # removes outer {} wrapper from body for greater flexibility in custom body config
-        param_values["masked_object_fields"] = update_values[1:-1]
+        param_values["masked_object_fields"] = json.dumps(update_values)[1:-1]
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = self.map_param_values(

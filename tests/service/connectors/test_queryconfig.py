@@ -655,7 +655,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations/abc/messages"
         assert prepared_request.query_params == {}
-        assert prepared_request.body is None
+        assert prepared_request.json_body is None
 
         # header, query, and path params with connector param references
         config = SaaSQueryConfig(
@@ -826,4 +826,4 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.PUT.value
         assert prepared_request.path == "/2.0/payment_methods"
         assert prepared_request.query_params == {}
-        assert prepared_request.body == json.dumps({"customer_name": "MASKED"})
+        assert prepared_request.json_body == {"customer_name": "MASKED"}

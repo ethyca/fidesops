@@ -31,7 +31,7 @@ def create_postgres_connection(key, access_token):
         json=connection_create_data,
     )
     logger.info(f"Creating PostgreSQL ConnectionConfig. Status {response.status_code}")
-    return response.json_body()
+    return response.json()
 
 ```
 
@@ -57,7 +57,7 @@ def configure_postgres_connection(
         json=connection_secrets_data,
     )
     logger.info(f"Updating PostgreSQL Secrets. Status {response.status_code}.")
-    return response.json_body()
+    return response.json()
 
 ```
 

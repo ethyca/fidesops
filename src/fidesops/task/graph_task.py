@@ -521,6 +521,7 @@ def run_access_request(
             all terminating addresses before calling this."""
 
             return resources.get_all_cached_objects()
+
         try:
 
             env: Dict[CollectionAddress, Any] = {}
@@ -532,8 +533,9 @@ def run_access_request(
             v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
 
             return v.compute()
-        except Exception as exc:
+        except Exception as exc:  # pylint: disable=W0703
             logger.error("Exception: %s", exc)
+
 
 def get_cached_data_for_erasures(
     privacy_request_id: str,
