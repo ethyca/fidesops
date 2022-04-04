@@ -1,6 +1,6 @@
 from json import JSONDecodeError
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, Literal
 import pydash
 from requests import Session, Request, PreparedRequest, Response
 from fidesops.common_exceptions import FidesopsException
@@ -292,7 +292,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """Get the configured SaaSRequest for use in masking.
         An update request is preferred, but we can use a gdpr delete endpoint or delete endpoint if not MASKING_STRICT.
         """
-        requests = self.endpoints[collection_name].requests
+        requests: Dict[
+            Literal["read", "update", "delete"], SaaSRequest
+        ] = self.endpoints[collection_name].requests
 
         update: Optional[SaaSRequest] = requests.get("update")
         gdpr_delete: Optional[SaaSRequest] = None
@@ -304,7 +306,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         try:
             # Return first viable option
-            action_type = next(
+            action_type: str = next(
                 action
                 for action in [
                     "update" if update else None,
@@ -331,7 +333,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         query_config = self.query_config(node)
         if not query_config.masking_request:
             raise Exception(
-                f"No masking request configured for {node.address.collection}"
+                f"Either no masking request configured or no valid masking request for {node.address.collection}. "
+                f"Check that MASKING_STRICT env var is appropriately set"
             )
         prepared_requests = [
             query_config.generate_update_stmt(row, policy, privacy_request)
