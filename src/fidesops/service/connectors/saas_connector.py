@@ -159,7 +159,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         the authentication configured for the overall saas connector.
         """
         if saas_request.client_config:
-            logger.info(f"Updating client config to {saas_request.client_config}")
             return self._build_client_with_config(saas_request.client_config)
 
         return self._build_client_with_config(self.saas_config.client_config)
