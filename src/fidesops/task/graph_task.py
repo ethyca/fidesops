@@ -522,19 +522,15 @@ def run_access_request(
 
             return resources.get_all_cached_objects()
 
-        try:
+        env: Dict[CollectionAddress, Any] = {}
+        end_nodes = traversal.traverse(env, collect_tasks_fn)
 
-            env: Dict[CollectionAddress, Any] = {}
-            end_nodes = traversal.traverse(env, collect_tasks_fn)
+        dsk = {k: (t.access_request, *t.input_keys) for k, t in env.items()}
+        dsk[ROOT_COLLECTION_ADDRESS] = (start_function(traversal.seed_data),)
+        dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
+        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
 
-            dsk = {k: (t.access_request, *t.input_keys) for k, t in env.items()}
-            dsk[ROOT_COLLECTION_ADDRESS] = (start_function(traversal.seed_data),)
-            dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
-            v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
-
-            return v.compute()
-        except Exception as exc:  # pylint: disable=W0703
-            logger.error("Exception: %s", exc)
+        return v.compute()
 
 
 def get_cached_data_for_erasures(

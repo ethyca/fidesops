@@ -1,7 +1,7 @@
 from urllib.parse import urlsplit, parse_qs, urlencode, urlunsplit
 
 
-def set_query_parameter(url, param_name, param_value):
+def set_query_parameter(url: str, param_name: str, param_value: str) -> str:
     """Given a URL, set or replace a query parameter and return the
     modified URL.
 
