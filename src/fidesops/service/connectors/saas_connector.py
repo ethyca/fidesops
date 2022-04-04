@@ -18,7 +18,7 @@ from fidesops.common_exceptions import (
     PostProcessingException,
 )
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.saas_config import Strategy, SaaSRequest
+from fidesops.schemas.saas.saas_config import Strategy, SaaSRequest, ClientConfig
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
     get_strategy as get_postprocessor_strategy,
 )
@@ -141,7 +141,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         logger.info(f"Creating client to {uri}")
         return AuthenticatedClient(uri, self.configuration)
 
-    def build_client_with_config(
+    def _build_client_with_config(
         self, client_config: ClientConfig
     ) -> AuthenticatedClient:
         """Sets the clientConfig on the SaasConnector, and also sets on the created AuthenticatedClient"""
@@ -160,9 +160,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
         if saas_request.client_config:
             logger.info(f"Updating client config to {saas_request.client_config}")
-            return self.build_client_with_config(saas_request.client_config)
+            return self._build_client_with_config(saas_request.client_config)
 
-        return self.build_client_with_config(self.saas_config.client_config)
+        return self._build_client_with_config(self.saas_config.client_config)
 
     def retrieve_data(
         self,

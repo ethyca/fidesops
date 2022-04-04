@@ -6,12 +6,11 @@ saas_config:
 
   connector_params:
     - name: domain
-    - name: profile_domain
-    - name: config_domain
+    - name: personas_domain
     - name: workspace
     - name: access_token
     - name: namespace_id
-    - name: segment_access_secret
+    - name: access_secret
 
   client_config:
     protocol: https
@@ -41,12 +40,12 @@ saas_config:
         client_config:
           protocol: https
           host:
-            connector_param: profile_domain
+            connector_param: personas_domain
           authentication:
             strategy: basic_authentication
             configuration:
               username:
-                connector_param: segment_access_secret
+                connector_param: access_secret
   - name: track_events
     requests:
       read:
@@ -69,12 +68,12 @@ saas_config:
         client_config:
           protocol: https
           host:
-            connector_param: profile_domain
+            connector_param: personas_domain
           authentication:
             strategy: basic_authentication
             configuration:
               username:
-                connector_param: segment_access_secret
+                connector_param: access_secret
   - name: traits
     requests:
       read:
@@ -100,12 +99,12 @@ saas_config:
         client_config:
           protocol: https
           host:
-            connector_param: profile_domain
+            connector_param: personas_domain
           authentication:
             strategy: basic_authentication
             configuration:
               username:
-                connector_param: segment_access_secret
+                connector_param: access_secret
   - name: external_ids
     requests:
       read:
@@ -128,12 +127,12 @@ saas_config:
         client_config:
           protocol: https
           host:
-            connector_param: profile_domain
+            connector_param: personas_domain
           authentication:
             strategy: basic_authentication
             configuration:
               username:
-                connector_param: segment_access_secret
+                connector_param: access_secret
 
   data_protection_request:
     method: POST
