@@ -24,6 +24,7 @@ saas_config:
 
   test_request:
     path: /api/users/docs@iterable.com
+    method: GET
     
   endpoints:
   - name: events
