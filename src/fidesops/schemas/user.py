@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 
 from pydantic import validator
 
@@ -48,3 +49,10 @@ class UserCreateResponse(BaseSchema):
     """Response after creating a FidesopsUser"""
 
     id: str
+
+
+class PrivacyRequestReviewerRespoonse(BaseSchema):
+    """"""
+
+    id: str
+    username: str

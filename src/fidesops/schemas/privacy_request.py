@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Optional, Dict
+from fidesops.schemas.user import PrivacyRequestReviewerRespoonse
 
 from pydantic import Field, validator
 from fidesops.schemas.shared_schemas import FidesOpsKey
@@ -82,6 +83,7 @@ class PrivacyRequestResponse(BaseSchema):
     started_processing_at: Optional[datetime]
     reviewed_at: Optional[datetime]
     reviewed_by: Optional[str]
+    reviewer: Optional[PrivacyRequestReviewerRespoonse]
     finished_processing_at: Optional[datetime]
     status: PrivacyRequestStatus
     external_id: Optional[str]

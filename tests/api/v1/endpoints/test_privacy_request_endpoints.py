@@ -399,6 +399,30 @@ class TestGetPrivacyRequests:
         )
         assert 400 == response.status_code
 
+    def test_get_privacy_requests_displays_reviewer(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        privacy_request,
+        user,
+        postgres_execution_log,
+        mongo_execution_log,
+    ):
+        privacy_request.reviewer = user
+        privacy_request.save(db=db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            url + f"?id={privacy_request.id}", headers=auth_header
+        )
+        assert 200 == response.status_code
+
+        reviewer = response.json()["items"][0]["reviewer"]
+        assert reviewer
+        assert user.id == reviewer["id"]
+        assert user.username == reviewer["username"]
+
     def test_get_privacy_requests_by_id(
         self,
         api_client: TestClient,
