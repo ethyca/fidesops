@@ -93,7 +93,7 @@ Please note: The configuration is case-sensitive, so the variables must be speci
  ENV Variable | Default | Description |
 |---|---|---|
 | `LOG_PII` | False | If this is set to "True", pii values will display unmasked in log output. This variable should always be set to "False" in production systems.|
-| `DEV_MODE` | False | If "True", the fidesops server will run with hot-reloading of files. This variable should always be set to "False" in production systems.|
+| `DEV_MODE` | False | If "True", the fidesops server will run with hot-reloading of files, log error tracebacks, and log details of third party requests. This variable should always be set to "False" in production systems.|
 | `FIDESOPS_CONFIG_PATH` | None | If this variable is set to a path, that path will be used to load .toml files first. That is, any .toml files on this path will override any installed .toml files.
 
 ## - Reporting a running application's configuration

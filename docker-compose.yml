@@ -23,6 +23,9 @@ services:
         target: /fidesops
         read_only: False
       - /fidesops/src/fidesops.egg-info
+    environment:
+      - DEV_MODE=${DEV_MODE}
+      - LOG_PII=${LOG_PII}
 
   db:
     image: postgres:12

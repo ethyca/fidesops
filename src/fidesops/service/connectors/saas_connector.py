@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import pydash
 from requests import Session, Request, PreparedRequest, Response
 from fidesops.common_exceptions import FidesopsException
+from fidesops.core.config import config
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
@@ -87,6 +88,7 @@ class AuthenticatedClient:
         """
         try:
             prepared_request = self.get_authenticated_request(request_params)
+            log_request_for_debugging(prepared_request)  # Dev mode only
             response = self.session.send(prepared_request)
         except Exception:
             raise ConnectionException(f"Operational Error connecting to '{self.key}'.")
@@ -103,6 +105,17 @@ class AuthenticatedClient:
             raise ClientUnsuccessfulException(status_code=response.status_code)
 
         return response
+
+
+def log_request_for_debugging(prepared_request: PreparedRequest) -> None:
+    """Log SaaS request in dev mode only"""
+    if config.dev_mode:
+        logger.info(
+            "\n\n-----------SAAS REQUEST-----------"
+            f"\n{prepared_request.method} {prepared_request.url}"
+            f"\nheaders: {prepared_request.headers}"
+            f"\nbody: {prepared_request.body.format() if isinstance(prepared_request.body, bytes) else prepared_request.body}"
+        )
 
 
 class SaaSConnector(BaseConnector[AuthenticatedClient]):
