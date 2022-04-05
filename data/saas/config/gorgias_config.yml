@@ -38,17 +38,18 @@ saas_config:
       requests:
         read:
           path: /api/customers
-          request_params:
+          method: GET
+          query_params:
             - name: email
-              type: query
-              identity: email
-              data_type: string
+              value: <email>
             - name: per_page
-              type: query
               value: 30
             - name: page
-              type: query
               value: 1
+          param_values:
+            - name: email
+              identity: email
+              data_type: string
           data_path: data
           pagination:
             strategy: offset
@@ -57,9 +58,9 @@ saas_config:
               increment_by: 1                        
         delete:
           path: /api/customers/<customerId>
-          request_params:
+          method: DELETE
+          param_values:
             - name: customerId
-              type: path
               references:
                 - dataset: gorgias_connector_example
                   field: customer.id
@@ -68,22 +69,23 @@ saas_config:
       requests:
         read:
           path: /api/tickets
-          request_params:
+          method: GET
+          query_params:
             - name: customer_id
-              type: query
+              value: <customer_id>
+            - name: per_page
+              value: 30
+            - name: page
+              value: 1
+              # TODO - connector_param wasn’t supported at the time it was written.
+              # per_page value has to be supplied
+              # Please to refer to the original YAML spec as this originally had a DATA_STORE 
+          param_values:
+            - name: customer_id
               references:
                 - dataset: gorgias_connector_example
                   field: customer.id
                   direction: from  
-            - name: per_page
-              type: query
-              value: 30
-              # TODO - connector_param wasn’t supported at the time it was written.
-              # per_page value has to be supplied
-              # Please to refer to the original YAML spec as this originally had a DATA_STORE 
-            - name: page
-              type: query
-              value: 1
               # TODO - pagination wasn’t supported at the time it was written.
               # below page value has to come from pagination section 
           data_path: data
@@ -94,9 +96,9 @@ saas_config:
               increment_by: 1
         delete:
           path: /api/tickets/<ticketId>
-          request_params:
+          method: DELETE
+          param_values:
             - name: ticketId
-              type: path
               references:
                 - dataset: gorgias_connector_example
                   field: tickets.id
@@ -105,22 +107,21 @@ saas_config:
       requests:
         read:
           path: /api/tickets/<ticket_id>/messages
-          request_params:
+          method: GET
+          query_params:
+            - name: per_page
+              value: 30
+            - name: page
+              value: 1              
+          param_values:
             - name: ticket_id
-              type: path
               references:
                 - dataset: gorgias_connector_example
                   field: tickets.id
                   direction: from
-            - name: per_page
-              type: query
-              value: 30
               # TODO - connector_param wasn’t supported at the time it was written.
               # per_page value has to be supplied
               # Please to refer to the original YAML spec as this originally had a DATA_STORE 
-            - name: page
-              type: query
-              value: 1
           data_path: data
           pagination:
             strategy: page
