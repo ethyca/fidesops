@@ -51,7 +51,7 @@ If an `external_id` was provided at request creation, we can also track the priv
 
 `GET api/v1/privacy-request?external_id=<external_id>`
 
-NB. These parameters will return matching Privacy Requests based on startswith matches.
+Please note: These parameters will return matching Privacy Requests based on startswith matches.
 
 ### Privacy Request Filtering Options
 
