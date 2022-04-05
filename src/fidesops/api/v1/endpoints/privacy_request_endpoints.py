@@ -303,7 +303,7 @@ def get_request_status(
 
     # Further restrict all PrivacyRequests by query params
     if id:
-        query = query.filter(PrivacyRequest.id == id)
+        query = query.filter(PrivacyRequest.id.ilike(f"{id}%"))
     if external_id:
         query = query.filter(PrivacyRequest.external_id == external_id)
     if status:
