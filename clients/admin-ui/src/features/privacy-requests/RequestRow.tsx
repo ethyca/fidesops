@@ -182,6 +182,8 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
           pointerEvents={showMenu ? 'auto' : 'none'}
           onFocus={handleFocus}
           onBlur={handleBlur}
+          shadow="base"
+          borderRadius="md"
         >
           {request.status === 'pending' ? (
             <>
