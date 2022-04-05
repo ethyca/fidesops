@@ -15,14 +15,17 @@ export default NextAuth({
       },
       async authorize(credentials) {
         // map email and password fields to client-level credentials temporarily
-        const res = await fetch(process.env.NEXT_PUBLIC_LOGIN_ENDPOINT!, {
-          method: 'POST',
-          body: JSON.stringify({
-            username: credentials!.email,
-            password: credentials!.password,
-          }),
-          headers: { 'Content-Type': 'application/json' },
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_FIDESOPS_API!}/login`,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              username: credentials!.email,
+              password: credentials!.password,
+            }),
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
 
         const user = await res.json();
 
