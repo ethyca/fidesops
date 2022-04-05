@@ -30,9 +30,9 @@ saas_config:
         method: GET
         query_params:
           - name: per_page
-            default_value: 50
+            value: 50
           - name: page
-            default_value: 1
+            value: 1
         param_values:
           - name: email
             identity: email
