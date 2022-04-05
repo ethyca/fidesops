@@ -32,7 +32,7 @@ export const mapFiltersToSearchParams = ({
 export const privacyRequestApi = createApi({
   reducerPath: 'privacyRequestApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://0.0.0.0:8080/api/v1',
+    baseUrl: process.env.NEXT_PUBLIC_FIDESOPS_API!,
     prepareHeaders: (headers, { getState }) => {
       const { token } = (getState() as AppState).user;
       headers.set('Access-Control-Allow-Origin', '*');
@@ -101,7 +101,9 @@ export const requestCSVDownload = ({
   }
 
   return fetch(
-    `http://0.0.0.0:8080/api/v1/privacy-request?${new URLSearchParams({
+    `${
+      process.env.NEXT_PUBLIC_FIDESOPS_API
+    }/privacy-request?${new URLSearchParams({
       ...mapFiltersToSearchParams({
         id,
         from,
