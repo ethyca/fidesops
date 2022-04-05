@@ -26,33 +26,30 @@ saas_config:
     requests:
       read:
         path: /users/export/ids
-        # TODO - Custom method wasn't supported at the time it was written
-        # Please to refer to the original YAML spec as this originally had a method
-
+        method: POST
         # TODO - body payload wasn't supported at the time it was written
         # Please to refer to the original YAML spec as this originally had a body
         data_path: users
       update:
         path: /users/track
-        # TODO - Custom method wasn't supported at the time it was written
-        # Please to refer to the original YAML spec as this originally had a method
-
+        method: POST
         # TODO - body payload wasn't supported at the time it was written
         # Please to refer to the original YAML spec as this originally had a body
       delete:
         path: /users/delete
-        # TODO - Custom method wasn't supported at the time it was written
-        # Please to refer to the original YAML spec as this originally had a method
-
+        method: POST
         # TODO - body payload wasn't supported at the time it was written
         # Please to refer to the original YAML spec as this originally had a body
   - name: canvas_data
     requests:
       read:
         path: /canvas/details
-        request_params:
-          - name: canvas_id  
-            type: query
+        method: GET
+        query_params:
+          - name: canvas_id
+            value: <canvas_id>
+        param_values:
+          - name: canvas_id
             references:
               - dataset: braze_connector_example
                 field: user.users.canvases_received.api_canvas_id
@@ -62,14 +59,17 @@ saas_config:
   - name: subscription_groups
     requests:
       read:
-        path: /subscription/user/status    
-        request_params:
+        path: /subscription/user/status
+        query_params:
           - name: email
-            type: query
+            value: <email>
+          - name: external_id
+            value: <external_id>
+        param_values:
+          - name: email
             identity: email
             data_type: string
           - name: external_id
-            type: query
             references:
               - dataset: braze_connector_example
                 field: user.users.external_id
@@ -78,9 +78,11 @@ saas_config:
     requests:
       read:
         path: /campaigns/details
-        request_params:
+        query_params: 
           - name: campaign_id
-            type: query
+            value: <campaign_id>
+        param_values:
+          - name: campaign_id
             references:
               - dataset: braze_connector_example
                 field: user.users.campaigns_received.api_campaign_id
