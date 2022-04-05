@@ -21,6 +21,7 @@ saas_config:
 
   test_request:
     path: /v1/api/segments
+    method: GET
 
   endpoints:
   - name: customer_search
