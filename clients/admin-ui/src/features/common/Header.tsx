@@ -42,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({ username }) => (
           <MenuButton as={Button} size="sm" variant="ghost">
             <UserIcon color="gray.700" />
           </MenuButton>
-          <MenuList>
+          <MenuList shadow="xl">
             <Stack px={3} py={2} spacing={0}>
               <Text fontWeight="medium">{username}</Text>
               <Text fontSize="sm" color="gray.600">

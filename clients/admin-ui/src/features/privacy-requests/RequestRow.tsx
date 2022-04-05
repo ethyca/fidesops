@@ -232,7 +232,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
               <MoreIcon color="gray.700" w={18} h={18} />
             </MenuButton>
             <Portal>
-              <MenuList>
+              <MenuList shadow="xl">
                 <MenuItem
                   _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
                   onClick={handleIdCopy}

@@ -35,13 +35,13 @@ const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
         <Button variant="ghost" mr={4} colorScheme="complimentary">
           Subject Requests
         </Button>
-        <Button variant="ghost" mr={4}>
+        <Button variant="ghost" disabled mr={4}>
           Datastore Connections
         </Button>
-        <Button variant="ghost" mr={4}>
+        <Button variant="ghost" disabled mr={4}>
           User Management
         </Button>
-        <Button variant="ghost" rightIcon={<ArrowDownLineIcon />}>
+        <Button variant="ghost" disabled rightIcon={<ArrowDownLineIcon />}>
           More
         </Button>
       </Flex>
