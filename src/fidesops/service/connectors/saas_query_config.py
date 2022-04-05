@@ -104,13 +104,17 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         does not specify a body.
         """
 
-        path: Optional[str] = self.assign_placeholders(current_request.path, param_values)
+        path: Optional[str] = self.assign_placeholders(
+            current_request.path, param_values
+        )
 
         headers: Dict[str, Any] = {}
         for header in current_request.headers:
             header_value = self.assign_placeholders(header.value, param_values)
             if header_value:
-                headers[header.name] = self.assign_placeholders(header.value, param_values)
+                headers[header.name] = self.assign_placeholders(
+                    header.value, param_values
+                )
 
         query_params: Dict[str, Any] = {}
         for query_param in current_request.query_params:
@@ -121,7 +125,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             if query_param_value:
                 query_params[query_param.name] = query_param_value
 
-        body: Optional[str] = self.assign_placeholders(current_request.body, param_values)
+        body: Optional[str] = self.assign_placeholders(
+            current_request.body, param_values
+        )
 
         return SaaSRequestParams(
             method=current_request.method,
