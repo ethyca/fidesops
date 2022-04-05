@@ -24,6 +24,7 @@ export interface PrivacyRequest {
 
 export interface PrivacyRequestResponse {
   items: PrivacyRequest[];
+  total: number;
 }
 
 export interface PrivacyRequestParams {
@@ -31,4 +32,6 @@ export interface PrivacyRequestParams {
   id: string;
   from: string;
   to: string;
+  page: number;
+  size: number;
 }

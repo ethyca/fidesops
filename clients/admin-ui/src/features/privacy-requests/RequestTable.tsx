@@ -22,7 +22,7 @@ import {
   useToast,
 } from '@fidesui/react';
 import { format } from 'date-fns-tz';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import debounce from 'lodash.debounce';
 import { MoreIcon } from '../common/Icon';
@@ -35,6 +35,7 @@ import {
   useGetAllPrivacyRequestsQuery,
   useApproveRequestMutation,
   useDenyRequestMutation,
+  setPage,
 } from './privacy-requests.slice';
 
 interface RequestTableProps {
@@ -225,6 +226,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
 };
 
 const useRequestTable = () => {
+  const dispatch = useDispatch();
   const filters = useSelector(selectPrivacyRequestFilters);
   const [cachedFilters, setCachedFilters] = useState(filters);
   const updateCachedFilters = useRef(
@@ -233,12 +235,38 @@ const useRequestTable = () => {
   useEffect(() => {
     updateCachedFilters.current(filters);
   }, [setCachedFilters, filters]);
-  const { data: requests = [] } = useGetAllPrivacyRequestsQuery(cachedFilters);
-  return { requests };
+
+  const handlePreviousPage = () => {
+    dispatch(setPage(filters.page - 1));
+  };
+
+  const handleNextPage = () => {
+    dispatch(setPage(filters.page + 1));
+  };
+
+  const { data, isLoading } = useGetAllPrivacyRequestsQuery(cachedFilters);
+  const { items: requests, total } = data || { items: [], total: 0 };
+  return {
+    ...filters,
+    isLoading,
+    requests,
+    total,
+    handleNextPage,
+    handlePreviousPage,
+  };
 };
 
 const RequestTable: React.FC<RequestTableProps> = () => {
-  const { requests } = useRequestTable();
+  const {
+    requests,
+    isLoading,
+    total,
+    page,
+    size,
+    handleNextPage,
+    handlePreviousPage,
+  } = useRequestTable();
+  console.log(isLoading);
   return (
     <>
       <Table size="sm">
@@ -261,13 +289,23 @@ const RequestTable: React.FC<RequestTableProps> = () => {
       </Table>
       <Flex justifyContent="space-between" mt={6}>
         <Text fontSize="xs" color="gray.600">
-          {requests ? requests.length : 0} results
+          Showing {(page - 1) * size} to {Math.min(total, page * size)} of{' '}
+          {total} results
         </Text>
         <div>
-          <Button disabled mr={2} size="sm">
+          <Button
+            disabled={page <= 1}
+            mr={2}
+            size="sm"
+            onClick={handlePreviousPage}
+          >
             Previous
           </Button>
-          <Button disabled size="sm">
+          <Button
+            disabled={page * size >= total}
+            size="sm"
+            onClick={handleNextPage}
+          >
             Next
           </Button>
         </div>

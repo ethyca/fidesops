@@ -16,13 +16,21 @@ export const mapFiltersToSearchParams = ({
   id,
   from,
   to,
-}: PrivacyRequestParams) => ({
-  include_identities: 'true',
-  ...(status ? { status } : {}),
-  ...(id ? { id } : {}),
-  ...(from ? { created_gt: from } : {}),
-  ...(to ? { created_lt: to } : {}),
-});
+  page,
+  size,
+}: Partial<PrivacyRequestParams>) => {
+  const vals = {
+    include_identities: 'true',
+    ...(status ? { status } : {}),
+    ...(id ? { id } : {}),
+    ...(from ? { created_gt: from } : {}),
+    ...(to ? { created_lt: to } : {}),
+    ...(page ? { page: `${page}` } : {}),
+    ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
+  };
+  console.log(vals);
+  return vals;
+};
 
 // Subject requests API
 export const privacyRequestApi = createApi({
@@ -40,12 +48,14 @@ export const privacyRequestApi = createApi({
   }),
   tagTypes: ['Request'],
   endpoints: (build) => ({
-    getAllPrivacyRequests: build.query<PrivacyRequest[], PrivacyRequestParams>({
+    getAllPrivacyRequests: build.query<
+      PrivacyRequestResponse,
+      PrivacyRequestParams
+    >({
       query: (filters) => ({
         url: `privacy-request`,
         params: mapFiltersToSearchParams(filters),
       }),
-      transformResponse: (response: PrivacyRequestResponse) => response.items,
       providesTags: () => ['Request'],
     }),
     approveRequest: build.mutation<
@@ -127,6 +137,8 @@ interface SubjectRequestsState {
   id: string;
   from: string;
   to: string;
+  page: number;
+  size: number;
 }
 
 const initialState: SubjectRequestsState = {
@@ -134,6 +146,8 @@ const initialState: SubjectRequestsState = {
   id: '',
   from: '',
   to: '',
+  page: 1,
+  size: 25,
 };
 
 export const subjectRequestsSlice = createSlice({
@@ -164,6 +178,14 @@ export const subjectRequestsSlice = createSlice({
       ...initialState,
       revealPII,
     }),
+    setPage: (state, action: PayloadAction<number>) => ({
+      ...state,
+      page: action.payload,
+    }),
+    setSize: (state, action: PayloadAction<number>) => ({
+      ...state,
+      size: action.payload,
+    }),
   },
   extraReducers: {
     [HYDRATE]: (state, action) => ({
@@ -179,6 +201,7 @@ export const {
   setRequestStatus,
   setRequestFrom,
   setRequestTo,
+  setPage,
   clearAllFilters,
 } = subjectRequestsSlice.actions;
 
@@ -194,6 +217,8 @@ export const selectPrivacyRequestFilters = (
   id: state.subjectRequests.id,
   from: state.subjectRequests.from,
   to: state.subjectRequests.to,
+  page: state.subjectRequests.page,
+  size: state.subjectRequests.size,
 });
 
 export default subjectRequestsSlice.reducer;
