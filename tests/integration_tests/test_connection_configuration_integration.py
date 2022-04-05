@@ -1,3 +1,5 @@
+from fidesops.core.config import config
+from fidesops.schemas.saas.saas_config import SaaSRequest, Endpoint
 from fidesops.service.connectors.saas_connector import AuthenticatedClient
 import pytest
 import json
@@ -1192,16 +1194,16 @@ class TestMongoConnectionPutSecretsAPI:
 class TestSaaSConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
     def url(
-        self, oauth_client: ClientDetail, policy, connection_config_mailchimp
+        self, oauth_client: ClientDetail, policy, mailchimp_connection_config
     ) -> str:
-        return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mailchimp.key}/secret"
+        return f"{V1_URL_PREFIX}{CONNECTIONS}/{mailchimp_connection_config.key}/secret"
 
     def test_saas_connection_incorrect_secrets(
         self,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
-        connection_config_mailchimp,
+        mailchimp_connection_config,
         url,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
@@ -1216,22 +1218,22 @@ class TestSaaSConnectionPutSecretsAPI:
         body = json.loads(resp.text)
         assert (
             body["msg"]
-            == f"Secrets updated for ConnectionConfig with key: {connection_config_mailchimp.key}."
+            == f"Secrets updated for ConnectionConfig with key: {mailchimp_connection_config.key}."
         )
         assert body["test_status"] == "failed"
         assert (
-            f"Operational Error connecting to '{connection_config_mailchimp.key}'."
+            f"Operational Error connecting to '{mailchimp_connection_config.key}'."
             == body["failure_reason"]
         )
 
-        db.refresh(connection_config_mailchimp)
-        assert connection_config_mailchimp.secrets == {
+        db.refresh(mailchimp_connection_config)
+        assert mailchimp_connection_config.secrets == {
             "domain": "can",
             "username": "someone",
             "api_key": "letmein",
         }
-        assert connection_config_mailchimp.last_test_timestamp is not None
-        assert connection_config_mailchimp.last_test_succeeded is False
+        assert mailchimp_connection_config.last_test_timestamp is not None
+        assert mailchimp_connection_config.last_test_succeeded is False
 
     def test_saas_connection_connect_with_components(
         self,
@@ -1239,11 +1241,11 @@ class TestSaaSConnectionPutSecretsAPI:
         api_client: TestClient,
         db: Session,
         generate_auth_header,
-        connection_config_mailchimp,
-        saas_secrets,
+        mailchimp_connection_config,
+        mailchimp_secrets,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = saas_secrets["mailchimp"]
+        payload = mailchimp_secrets
         resp = api_client.put(
             url,
             headers=auth_header,
@@ -1254,27 +1256,27 @@ class TestSaaSConnectionPutSecretsAPI:
         body = json.loads(resp.text)
         assert (
             body["msg"]
-            == f"Secrets updated for ConnectionConfig with key: {connection_config_mailchimp.key}."
+            == f"Secrets updated for ConnectionConfig with key: {mailchimp_connection_config.key}."
         )
         assert body["test_status"] == "succeeded"
         assert body["failure_reason"] is None
 
-        db.refresh(connection_config_mailchimp)
-        assert connection_config_mailchimp.secrets == saas_secrets["mailchimp"]
-        assert connection_config_mailchimp.last_test_timestamp is not None
-        assert connection_config_mailchimp.last_test_succeeded is True
+        db.refresh(mailchimp_connection_config)
+        assert mailchimp_connection_config.secrets == mailchimp_secrets
+        assert mailchimp_connection_config.last_test_timestamp is not None
+        assert mailchimp_connection_config.last_test_succeeded is True
 
     def test_saas_connection_connect_missing_secrets(
         self,
         url,
         api_client: TestClient,
         generate_auth_header,
-        saas_secrets,
+        saas_example_secrets,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = {
-            "domain": saas_secrets["saas_example"]["domain"],
-            "username": saas_secrets["saas_example"]["username"],
+            "domain": saas_example_secrets["domain"],
+            "username": saas_example_secrets["username"],
         }
         resp = api_client.put(
             url,
@@ -1291,10 +1293,10 @@ class TestSaaSConnectionPutSecretsAPI:
         url,
         api_client: TestClient,
         generate_auth_header,
-        saas_secrets,
+        mailchimp_secrets,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = {**saas_secrets["mailchimp"], "extra": "junk"}
+        payload = {**mailchimp_secrets, "extra": "junk"}
         resp = api_client.put(
             url,
             headers=auth_header,
@@ -1314,10 +1316,10 @@ class TestSaaSConnectionTestSecretsAPI:
         self,
         oauth_client: ClientDetail,
         policy,
-        connection_config_mailchimp,
-        dataset_config_mailchimp,
+        mailchimp_connection_config,
+        mailchimp_dataset_config,
     ) -> str:
-        return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mailchimp.key}/test"
+        return f"{V1_URL_PREFIX}{CONNECTIONS}/{mailchimp_connection_config.key}/test"
 
     def test_connection_configuration_test_not_authenticated(
         self,
@@ -1325,16 +1327,16 @@ class TestSaaSConnectionTestSecretsAPI:
         api_client: TestClient,
         db: Session,
         generate_auth_header,
-        connection_config_mailchimp,
+        mailchimp_connection_config,
     ):
-        assert connection_config_mailchimp.last_test_timestamp is None
+        assert mailchimp_connection_config.last_test_timestamp is None
 
         resp = api_client.get(url)
         assert resp.status_code == 401
 
-        db.refresh(connection_config_mailchimp)
-        assert connection_config_mailchimp.last_test_timestamp is None
-        assert connection_config_mailchimp.last_test_succeeded is None
+        db.refresh(mailchimp_connection_config)
+        assert mailchimp_connection_config.last_test_timestamp is None
+        assert mailchimp_connection_config.last_test_succeeded is None
 
     def test_connection_configuration_test_incorrect_scopes(
         self,
@@ -1342,9 +1344,9 @@ class TestSaaSConnectionTestSecretsAPI:
         api_client: TestClient,
         db: Session,
         generate_auth_header,
-        connection_config_mailchimp,
+        mailchimp_connection_config,
     ):
-        assert connection_config_mailchimp.last_test_timestamp is None
+        assert mailchimp_connection_config.last_test_timestamp is None
 
         auth_header = generate_auth_header(scopes=[STORAGE_READ])
         resp = api_client.get(
@@ -1353,9 +1355,9 @@ class TestSaaSConnectionTestSecretsAPI:
         )
         assert resp.status_code == 403
 
-        db.refresh(connection_config_mailchimp)
-        assert connection_config_mailchimp.last_test_timestamp is None
-        assert connection_config_mailchimp.last_test_succeeded is None
+        db.refresh(mailchimp_connection_config)
+        assert mailchimp_connection_config.last_test_timestamp is None
+        assert mailchimp_connection_config.last_test_succeeded is None
 
     def test_connection_configuration_test_failed_response(
         self,
@@ -1363,12 +1365,12 @@ class TestSaaSConnectionTestSecretsAPI:
         api_client: TestClient,
         db: Session,
         generate_auth_header,
-        connection_config_mailchimp,
+        mailchimp_connection_config,
     ):
-        assert connection_config_mailchimp.last_test_timestamp is None
+        assert mailchimp_connection_config.last_test_timestamp is None
 
-        connection_config_mailchimp.secrets = {"domain": "invalid_domain"}
-        connection_config_mailchimp.save(db)
+        mailchimp_connection_config.secrets = {"domain": "invalid_domain"}
+        mailchimp_connection_config.save(db)
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
             url,
@@ -1379,17 +1381,17 @@ class TestSaaSConnectionTestSecretsAPI:
         body = json.loads(resp.text)
         assert body["test_status"] == "failed"
         assert (
-            f"Operational Error connecting to '{connection_config_mailchimp.key}'."
+            f"Operational Error connecting to '{mailchimp_connection_config.key}'."
             == body["failure_reason"]
         )
         assert (
             body["msg"]
-            == f"Test completed for ConnectionConfig with key: {connection_config_mailchimp.key}."
+            == f"Test completed for ConnectionConfig with key: {mailchimp_connection_config.key}."
         )
 
-        db.refresh(connection_config_mailchimp)
-        assert connection_config_mailchimp.last_test_timestamp is not None
-        assert connection_config_mailchimp.last_test_succeeded is False
+        db.refresh(mailchimp_connection_config)
+        assert mailchimp_connection_config.last_test_timestamp is not None
+        assert mailchimp_connection_config.last_test_succeeded is False
 
     def test_connection_configuration_test(
         self,
@@ -1397,9 +1399,9 @@ class TestSaaSConnectionTestSecretsAPI:
         api_client: TestClient,
         db: Session,
         generate_auth_header,
-        connection_config_mailchimp,
+        mailchimp_connection_config,
     ):
-        assert connection_config_mailchimp.last_test_timestamp is None
+        assert mailchimp_connection_config.last_test_timestamp is None
 
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
@@ -1411,31 +1413,77 @@ class TestSaaSConnectionTestSecretsAPI:
         body = json.loads(resp.text)
         assert (
             body["msg"]
-            == f"Test completed for ConnectionConfig with key: {connection_config_mailchimp.key}."
+            == f"Test completed for ConnectionConfig with key: {mailchimp_connection_config.key}."
         )
         assert body["failure_reason"] is None
         assert body["test_status"] == "succeeded"
 
-        db.refresh(connection_config_mailchimp)
-        assert connection_config_mailchimp.last_test_timestamp is not None
-        assert connection_config_mailchimp.last_test_succeeded is True
+        db.refresh(mailchimp_connection_config)
+        assert mailchimp_connection_config.last_test_timestamp is not None
+        assert mailchimp_connection_config.last_test_succeeded is True
 
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
 class TestSaasConnector:
     def test_saas_connector(
-        self, db: Session, connection_config_mailchimp, dataset_config_mailchimp
+        self, db: Session, mailchimp_connection_config, mailchimp_dataset_config
     ):
-        connector = get_connector(connection_config_mailchimp)
+        connector = get_connector(mailchimp_connection_config)
         assert connector.__class__ == SaaSConnector
 
         client = connector.client()
         assert client.__class__ == AuthenticatedClient
         assert connector.test_connection() == ConnectionTestStatus.succeeded
 
-        connection_config_mailchimp.secrets = {"domain": "bad_host"}
-        connection_config_mailchimp.save(db)
-        connector = get_connector(connection_config_mailchimp)
+        mailchimp_connection_config.secrets = {"domain": "bad_host"}
+        mailchimp_connection_config.save(db)
+        connector = get_connector(mailchimp_connection_config)
         with pytest.raises(ConnectionException):
             connector.test_connection()
+
+    def test_get_masking_request_from_config(self, mailchimp_connection_config):
+        connector: SaaSConnector = get_connector(mailchimp_connection_config)
+        saas_request: SaaSRequest = connector.get_masking_request_from_config("member")
+
+        # Assert we pulled the update method off of the member collection
+        assert saas_request.method == "PUT"
+        assert saas_request.path == "/3.0/lists/<list_id>/members/<subscriber_hash>"
+
+        # No update methods defined on other collections
+        assert connector.get_masking_request_from_config("conversations") is None
+        assert connector.get_masking_request_from_config("messages") is None
+
+        # Define delete request on conversations endpoint
+        conversation_endpoint = next(endpoint for endpoint in connector.saas_config.endpoints if endpoint.name =="conversations")
+        conversation_endpoint.requests["delete"] = SaaSRequest(
+            method="DELETE",
+            path="/api/0/<conversation>/<conversation_id>/"
+        )
+        # Delete endpoint not used because MASKING_STRICT is True
+        assert config.execution.MASKING_STRICT is True
+        assert connector.get_masking_request_from_config("conversations") is None
+
+        # Override MASKING_STRICT to False
+        config.execution.MASKING_STRICT = False
+
+        # Now delete endpoint is selected as conversations masking request
+        saas_request: SaaSRequest = connector.get_masking_request_from_config("conversations")
+        assert saas_request.path == "/api/0/<conversation>/<conversation_id>/"
+        assert saas_request.method == "DELETE"
+
+        # Define GDPR Delete
+        connector.saas_config.data_protection_request = SaaSRequest(
+            method="PUT",
+            path="/api/0/gdpr_delete"
+        )
+
+        # Assert GDPR Delete takes priority over Delete
+        saas_request: SaaSRequest = connector.get_masking_request_from_config("conversations")
+        assert saas_request.path == "/api/0/gdpr_delete"
+        assert saas_request.method == "PUT"
+
+        # Reset
+        config.execution.MASKING_STRICT = True
+        del conversation_endpoint.requests["delete"]
+        connector.saas_config.data_protection_request = None

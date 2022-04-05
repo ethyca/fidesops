@@ -115,7 +115,7 @@ saas_config:
 A SaaS config schema contains the following metadata fields:
 
 - `fides_key` Used to uniquely identify the connector, this field is used to link a SaaS config to a dataset.
-- `name` A human readable name for the connector.
+- `name` A human-readable name for the connector.
 - `description` Used to add a useful description.
 - `version` Used to track different versions of the SaaS config.
 
@@ -125,6 +125,8 @@ And the following complex fields which we will cover in detail below:
 - `client_config`
 - `test_request`
 - `endpoints`
+- `data_protection_request`
+
 #### Connector params
 The `connector_params` field is used to describe a list of settings which a user must configure as part of the setup. This section should just include the name of the parameter but not the actual value. These are added as part of the ConnectionConfig [secrets](database_connectors.md#set-the-connectionconfigs-secrets).
 
@@ -168,6 +170,30 @@ test_request:
   method: GET
   path: /3.0/lists
 ```
+
+#### Data Protection Request
+If your third party integration supports something like a GDPR delete endpoint, that can be configured as a `data_protection_request`.  It has similar attributes to the test request or endpoint requests, but it is generally one endpoint that removes all user PII in one go. 
+```yaml
+  data_protection_request:
+    method: POST
+    path: /v1beta/workspaces/<workspace_name>/regulations
+    param_values:
+      - name: workspace_name
+        connector_param: workspace
+      - name: user_id
+        identity: email
+    body: '{"regulation_type": "Suppress_With_Delete", "attributes": {"name": "userId", "values": ["<user_id>",]}}'
+    client_config:
+      protocol: https
+      host:
+        connector_param: config_domain
+      authentication:
+        strategy: bearer_authentication
+        configuration:
+          username:
+            connector_param: access_token
+
+```
 #### Endpoints
 This is where we define how we are going to access and update each collection in the corresponding Dataset. The endpoint section contains the following members:
 
@@ -191,7 +217,7 @@ This is where we define how we are going to access and update each collection in
     - `pagination` An optional strategy used to get the next set of results from APIs with resources spanning multiple pages. Details can be found under [SaaS Pagination](saas_pagination.md).
     - `grouped_inputs` An optional list of reference fields whose inputs are dependent upon one another.  For example, an endpoint may need both an `organization_id` and a `project_id` from another endpoint.  These aren't independent values, as a `project_id` belongs to an `organization_id`.  You would specify this as ["organization_id", "project_id"].
 
-## Request params in more detail
+## Param values in more detail
 The `param_values` list is what provides the values to our various placeholders in the path, headers, query params and body. Values can be `identities` such as email or phone number, `references` to fields in other collections, or `connector_params` which are defined as part of configuring a SaaS connector. Whenever a placeholder is encountered, the placeholder name is looked up in the list of `param_values` and corresponding value is used instead. Here is an example of placeholders being used in various locations:
 
 ```yaml

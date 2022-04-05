@@ -73,23 +73,29 @@ class TestSQLQueryConfig:
         }
 
         # values exist for all query keys
-        assert found_query_keys(
-            payment_card_node,
-            {
-                "id": ["A"],
-                "customer_id": ["V"],
-                "ignore_me": ["X"],
-            },
-        ) == {"id", "customer_id"}
+        assert (
+            found_query_keys(
+                payment_card_node,
+                {
+                    "id": ["A"],
+                    "customer_id": ["V"],
+                    "ignore_me": ["X"],
+                },
+            )
+            == {"id", "customer_id"}
+        )
         # with no values OR an empty set, these are omitted
-        assert found_query_keys(
-            payment_card_node,
-            {
-                "id": ["A"],
-                "customer_id": [],
-                "ignore_me": ["X"],
-            },
-        ) == {"id"}
+        assert (
+            found_query_keys(
+                payment_card_node,
+                {
+                    "id": ["A"],
+                    "customer_id": [],
+                    "ignore_me": ["X"],
+                },
+            )
+            == {"id"}
+        )
         assert found_query_keys(
             payment_card_node, {"id": ["A"], "ignore_me": ["X"]}
         ) == {"id"}
@@ -97,21 +103,27 @@ class TestSQLQueryConfig:
         assert found_query_keys(payment_card_node, {}) == set()
 
     def test_typed_filtered_values(self):
-        assert payment_card_node.typed_filtered_values(
-            {
-                "id": ["A"],
-                "customer_id": ["V"],
-                "ignore_me": ["X"],
-            }
-        ) == {"id": ["A"], "customer_id": ["V"]}
+        assert (
+            payment_card_node.typed_filtered_values(
+                {
+                    "id": ["A"],
+                    "customer_id": ["V"],
+                    "ignore_me": ["X"],
+                }
+            )
+            == {"id": ["A"], "customer_id": ["V"]}
+        )
 
-        assert payment_card_node.typed_filtered_values(
-            {
-                "id": ["A"],
-                "customer_id": [],
-                "ignore_me": ["X"],
-            }
-        ) == {"id": ["A"]}
+        assert (
+            payment_card_node.typed_filtered_values(
+                {
+                    "id": ["A"],
+                    "customer_id": [],
+                    "ignore_me": ["X"],
+                }
+            )
+            == {"id": ["A"]}
+        )
 
         assert payment_card_node.typed_filtered_values(
             {"id": ["A"], "ignore_me": ["X"]}
@@ -604,16 +616,16 @@ class TestMongoQueryConfig:
 class TestSaaSQueryConfig:
     @pytest.fixture(scope="function")
     def combined_traversal(
-        self, connection_config_saas_example, dataset_config_saas_example
+        self, saas_example_connection_config, saas_example_dataset_config
     ):
-        merged_graph = dataset_config_saas_example.get_graph()
+        merged_graph = saas_example_dataset_config.get_graph()
         graph = DatasetGraph(merged_graph)
         return Traversal(graph, {"email": "customer-1@example.com"})
 
     def test_generate_query(
-        self, policy, combined_traversal, connection_config_saas_example
+        self, policy, combined_traversal, saas_example_connection_config
     ):
-        saas_config = connection_config_saas_example.get_saas_config()
+        saas_config = saas_example_connection_config.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
 
         member = combined_traversal.traversal_node_dict[
@@ -698,16 +710,17 @@ class TestSaaSQueryConfig:
         self,
         erasure_policy_string_rewrite,
         combined_traversal,
-        connection_config_saas_example,
+        saas_example_connection_config,
     ):
-        saas_config = connection_config_saas_example.get_saas_config()
+        saas_config = saas_example_connection_config.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
+        update_request = endpoints["member"].requests.get("update")
 
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
         ]
 
-        config = SaaSQueryConfig(member, endpoints, {})
+        config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
             "id": "123",
             "merge_fields": {"FNAME": "First", "LNAME": "Last"},
@@ -732,19 +745,20 @@ class TestSaaSQueryConfig:
         self,
         erasure_policy_string_rewrite,
         combined_traversal,
-        connection_config_saas_example,
+        saas_example_connection_config,
     ):
         saas_config: Optional[
             SaaSConfig
-        ] = connection_config_saas_example.get_saas_config()
+        ] = saas_example_connection_config.get_saas_config()
         saas_config.endpoints[2].requests.get("update").method = HTTPMethod.POST
         endpoints = saas_config.top_level_endpoint_dict
 
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
         ]
+        update_request = endpoints["member"].requests.get("update")
 
-        config = SaaSQueryConfig(member, endpoints, {})
+        config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
             "id": "123",
             "merge_fields": {"FNAME": "First", "LNAME": "Last"},
@@ -769,11 +783,11 @@ class TestSaaSQueryConfig:
         self,
         erasure_policy_string_rewrite,
         combined_traversal,
-        connection_config_saas_example,
+        saas_example_connection_config,
     ):
         saas_config: Optional[
             SaaSConfig
-        ] = connection_config_saas_example.get_saas_config()
+        ] = saas_example_connection_config.get_saas_config()
         saas_config.endpoints[2].requests.get(
             "update"
         ).body = '{"properties": {<masked_object_fields>, "list_id": "<list_id>"}}'
@@ -792,13 +806,14 @@ class TestSaaSQueryConfig:
             body_param_value
         )
         endpoints = saas_config.top_level_endpoint_dict
+        update_request = endpoints["member"].requests.get("update")
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
         ]
         payment_methods = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "payment_methods")
         ]
-        config = SaaSQueryConfig(member, endpoints, {})
+        config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
             "id": "123",
             "merge_fields": {"FNAME": "First", "LNAME": "Last"},
@@ -825,7 +840,10 @@ class TestSaaSQueryConfig:
         )
 
         # update with connector_param reference
-        config = SaaSQueryConfig(payment_methods, endpoints, {"api_version": "2.0"})
+        update_request = endpoints["payment_methods"].requests.get("update")
+        config = SaaSQueryConfig(
+            payment_methods, endpoints, {"api_version": "2.0"}, update_request
+        )
         row = {"type": "card", "customer_name": "First Last"}
         prepared_request = config.generate_update_stmt(
             row, erasure_policy_string_rewrite, privacy_request
