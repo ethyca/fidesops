@@ -54,8 +54,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         filtered_data = self.node.typed_filtered_values(input_data)
 
-        # populate the SaaS request with reference values from other datasets provided to this node
         request_params = []
+        
+        # Build SaaS requests for fields that are independent of each other
         for string_path, reference_values in filtered_data.items():
             for value in reference_values:
                 request_params.append(
@@ -72,17 +73,23 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         return request_params
 
     @staticmethod
-    def assign_placeholders(value: str, param_values: Dict[str, Any]) -> str:
+    def assign_placeholders(value: str, param_values: Dict[str, Any]) -> Optional[str]:
         """
         Finds all the placeholders (indicated by <>) in the passed in value
         and replaces them with the actual param values
+
+        Returns None if any of the placeholders cannot be found in the param_values
         """
         if value and isinstance(value, str):
             placeholders = re.findall("<(.+?)>", value)
             for placeholder in placeholders:
-                value = value.replace(
-                    f"<{placeholder}>", str(param_values[placeholder])
-                )
+                placeholder_value = param_values.get(placeholder)
+                if placeholder_value:
+                    value = value.replace(
+                        f"<{placeholder}>", str(placeholder_value)
+                    )
+                else:
+                    return None
         return value
 
     def map_param_values(
@@ -102,14 +109,17 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         path: str = self.assign_placeholders(current_request.path, param_values)
 
         headers: Dict[str, Any] = {}
-        for header in current_request.headers or []:
+        for header in current_request.headers:
             headers[header.name] = self.assign_placeholders(header.value, param_values)
 
         query_params: Dict[str, Any] = {}
-        for query_param in current_request.query_params or []:
-            query_params[query_param.name] = self.assign_placeholders(
+        for query_param in current_request.query_params:
+            query_param_value = self.assign_placeholders(
                 query_param.value, param_values
             )
+            # only create query param if placeholders were replaced with actual values
+            if query_param_value:
+                query_params[query_param.name] = query_param_value
 
         body = self.assign_placeholders(current_request.body, param_values)
 
@@ -137,7 +147,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         param_values: Dict[str, Any] = {}
         for param_value in current_request.param_values:
             if param_value.references or param_value.identity:
-                param_values[param_value.name] = input_data[param_value.name][0]
+                # TODO: how to handle missing reference or identity values in a way
+                # in a way that is obvious based on configuration
+                input_list = input_data.get(param_value.name)
+                if input_list:
+                    param_values[param_value.name] = input_list[0]
             elif param_value.connector_param:
                 param_values[param_value.name] = pydash.get(
                     self.secrets, param_value.connector_param

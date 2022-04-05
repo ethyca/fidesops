@@ -2,10 +2,10 @@ import pytest
 import random
 
 from fidesops.graph.graph import DatasetGraph
-from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
+from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-
 from fidesops.task import graph_task
+from fidesops.task.filter_results import filter_data_categories
 from tests.graph.graph_test_util import assert_rows_match, records_matching_fields
 
 
@@ -49,8 +49,8 @@ def test_stripe_access_request_task(
         keys=[
             "account_holder_name",
             "account_holder_type",
+            "account_type",
             "bank_name",
-            "card",
             "country",
             "currency",
             "customer",
@@ -65,7 +65,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:card"],
-        min_size=1,
+        min_size=2,
         keys=[
             "address_city",
             "address_country",
@@ -94,16 +94,30 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:charge"],
-        min_size=1,
+        min_size=2,
         keys=[
+            "amount",
+            "amount_captured",
+            "amount_refunded",
+            "application",
+            "application_fee",
+            "application_fee_amount",
+            "balance_transaction",
             "billing_details",
+            "calculated_statement_descriptor",
+            "captured",
+            "created",
             "currency",
             "customer",
             "description",
+            "disputed",
+            "failure_balance_transaction",
+            "failure_code",
             "failure_message",
+            "fraud_details",
             "id",
             "invoice",
-            "metadata",
+            "livemode",
             "object",
             "on_behalf_of",
             "order",
@@ -115,13 +129,14 @@ def test_stripe_access_request_task(
             "receipt_number",
             "receipt_url",
             "refunded",
-            "refunds",
             "review",
             "shipping",
             "source_transfer",
             "statement_descriptor",
             "statement_descriptor_suffix",
             "status",
+            "transfer_data",
+            "transfer_group",
         ],
     )
 
@@ -135,12 +150,11 @@ def test_stripe_access_request_task(
             "customer",
             "customer_balance_transaction",
             "discount_amount",
+            "discount_amounts",
             "id",
             "invoice",
-            "lines",
             "livemode",
             "memo",
-            "metadata",
             "number",
             "object",
             "out_of_band_amount",
@@ -161,28 +175,32 @@ def test_stripe_access_request_task(
         min_size=1,
         keys=[
             "address",
+            "balance",
+            "created",
             "currency",
             "default_source",
+            "delinquent",
             "description",
+            "discount",
             "email",
             "id",
+            "invoice_prefix",
             "invoice_settings",
             "livemode",
             "name",
+            "next_invoice_sequence",
             "object",
             "phone",
             "preferred_locales",
             "shipping",
-            "sources",
-            "subscriptions",
             "tax_exempt",
-            "tax_ids",
+            "test_clock",
         ],
     )
 
     assert_rows_match(
         v[f"{dataset_name}:customer_balance_transaction"],
-        min_size=1,
+        min_size=5,
         keys=[
             "amount",
             "created",
@@ -194,7 +212,6 @@ def test_stripe_access_request_task(
             "id",
             "invoice",
             "livemode",
-            "metadata",
             "object",
             "type",
         ],
@@ -202,7 +219,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:dispute"],
-        min_size=1,
+        min_size=2,
         keys=[
             "amount",
             "balance_transactions",
@@ -214,7 +231,6 @@ def test_stripe_access_request_task(
             "id",
             "is_charge_refundable",
             "livemode",
-            "metadata",
             "object",
             "payment_intent",
             "reason",
@@ -224,7 +240,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:invoice"],
-        min_size=1,
+        min_size=4,
         keys=[
             "account_country",
             "account_name",
@@ -235,6 +251,7 @@ def test_stripe_access_request_task(
             "attempt_count",
             "attempted",
             "auto_advance",
+            "automatic_tax",
             "billing_reason",
             "charge",
             "collection_method",
@@ -254,23 +271,28 @@ def test_stripe_access_request_task(
             "default_tax_rates",
             "description",
             "discount",
+            "discounts",
             "due_date",
             "ending_balance",
             "footer",
             "hosted_invoice_url",
             "id",
             "invoice_pdf",
-            "lines",
+            "last_finalization_error",
             "livemode",
             "next_payment_attempt",
             "number",
             "object",
+            "on_behalf_of",
             "paid",
+            "paid_out_of_band",
             "payment_intent",
+            "payment_settings",
             "period_end",
             "period_start",
             "post_payment_credit_notes_amount",
             "pre_payment_credit_notes_amount",
+            "quote",
             "receipt_number",
             "starting_balance",
             "statement_descriptor",
@@ -279,30 +301,54 @@ def test_stripe_access_request_task(
             "subscription",
             "subtotal",
             "tax",
-            "tax_percent",
+            "test_clock",
             "total",
             "total_tax_amounts",
+            "transfer_data",
             "webhooks_delivered_at",
         ],
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:invoice_item"], min_size=1, keys=["amount", "id", "object"]
+        v[f"{dataset_name}:invoice_item"],
+        min_size=4,
+        keys=[
+            "amount",
+            "currency",
+            "customer",
+            "date",
+            "description",
+            "discountable",
+            "discounts",
+            "id",
+            "invoice",
+            "livemode",
+            "object",
+            "period",
+            "price",
+            "proration",
+            "quantity",
+            "subscription",
+            "tax_rates",
+            "test_clock",
+            "unit_amount",
+            "unit_amount_decimal",
+        ],
     )
 
     assert_rows_match(
         v[f"{dataset_name}:payment_intent"],
-        min_size=1,
+        min_size=4,
         keys=[
             "amount",
             "amount_capturable",
             "amount_received",
             "application",
             "application_fee_amount",
+            "automatic_payment_methods",
             "canceled_at",
             "cancellation_reason",
             "capture_method",
-            "charges",
             "client_secret",
             "confirmation_method",
             "created",
@@ -319,11 +365,11 @@ def test_stripe_access_request_task(
             "payment_method",
             "payment_method_options",
             "payment_method_types",
+            "processing",
             "receipt_email",
             "review",
             "setup_future_usage",
             "shipping",
-            "source",
             "statement_descriptor",
             "statement_descriptor_suffix",
             "status",
@@ -334,7 +380,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:payment_method"],
-        min_size=1,
+        min_size=2,
         keys=[
             "billing_details",
             "card",
@@ -349,7 +395,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:setup_intent"],
-        min_size=1,
+        min_size=3,
         keys=[
             "application",
             "cancellation_reason",
@@ -359,6 +405,7 @@ def test_stripe_access_request_task(
             "description",
             "id",
             "last_setup_error",
+            "latest_attempt",
             "livemode",
             "mandate",
             "next_action",
@@ -378,6 +425,7 @@ def test_stripe_access_request_task(
         min_size=1,
         keys=[
             "application_fee_percent",
+            "automatic_tax",
             "billing_cycle_anchor",
             "billing_thresholds",
             "cancel_at",
@@ -395,20 +443,20 @@ def test_stripe_access_request_task(
             "discount",
             "ended_at",
             "id",
-            "items",
             "latest_invoice",
             "livemode",
             "next_pending_invoice_item_invoice",
             "object",
+            "pause_collection",
+            "payment_settings",
             "pending_invoice_item_interval",
             "pending_setup_intent",
             "pending_update",
-            "plan",
-            "quantity",
             "schedule",
             "start_date",
             "status",
-            "tax_percent",
+            "test_clock",
+            "transfer_data",
             "trial_end",
             "trial_start",
         ],
@@ -430,138 +478,24 @@ def test_stripe_access_request_task(
         ],
     )
 
-    logs = (
-        ExecutionLog.query(db=db)
-        .filter(ExecutionLog.privacy_request_id == privacy_request.id)
-        .all()
+    target_categories = {"user"}
+    filtered_results = filter_data_categories(
+        v, target_categories, graph.data_category_field_mapping
     )
 
-    logs = [log.__dict__ for log in logs]
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="bank_account"
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="card"
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="charge"
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="credit_note"
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="customer"
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs,
-                dataset_name=dataset_name,
-                collection_name="customer_balance_transaction",
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="dispute"
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="invoice"
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="invoice_item"
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="payment_intent"
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="payment_method"
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="setup_intent"
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="subscription"
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="tax_id"
-            )
-        )
-        > 0
-    )
+    assert set(filtered_results.keys()) == {
+        f"{dataset_name}:bank_account",
+        f"{dataset_name}:card",
+        f"{dataset_name}:charge",
+        f"{dataset_name}:credit_note",
+        f"{dataset_name}:customer",
+        f"{dataset_name}:customer_balance_transaction",
+        f"{dataset_name}:dispute",
+        f"{dataset_name}:invoice",
+        f"{dataset_name}:invoice_item",
+        f"{dataset_name}:payment_intent",
+        f"{dataset_name}:payment_method",
+        f"{dataset_name}:setup_intent",
+        f"{dataset_name}:subscription",
+        f"{dataset_name}:tax_id",
+    }

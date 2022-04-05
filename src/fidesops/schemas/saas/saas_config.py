@@ -81,8 +81,8 @@ class SaaSRequest(BaseModel):
 
     path: str
     method: HTTPMethod
-    headers: Optional[List[Header]]
-    query_params: Optional[List[QueryParam]]
+    headers: Optional[List[Header]] = []
+    query_params: Optional[List[QueryParam]] = []
     body: Optional[str]
     param_values: Optional[List[ParamValue]]
     data_path: Optional[str]
