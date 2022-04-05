@@ -18,19 +18,15 @@ export const mapFiltersToSearchParams = ({
   to,
   page,
   size,
-}: Partial<PrivacyRequestParams>) => {
-  const vals = {
-    include_identities: 'true',
-    ...(status ? { status } : {}),
-    ...(id ? { id } : {}),
-    ...(from ? { created_gt: from } : {}),
-    ...(to ? { created_lt: to } : {}),
-    ...(page ? { page: `${page}` } : {}),
-    ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
-  };
-  console.log(vals);
-  return vals;
-};
+}: Partial<PrivacyRequestParams>) => ({
+  include_identities: 'true',
+  ...(status ? { status } : {}),
+  ...(id ? { id } : {}),
+  ...(from ? { created_gt: from } : {}),
+  ...(to ? { created_lt: to } : {}),
+  ...(page ? { page: `${page}` } : {}),
+  ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
+});
 
 // Subject requests API
 export const privacyRequestApi = createApi({
@@ -160,18 +156,22 @@ export const subjectRequestsSlice = createSlice({
     }),
     setRequestStatus: (state, action: PayloadAction<PrivacyRequestStatus>) => ({
       ...state,
+      page: initialState.page,
       status: action.payload,
     }),
     setRequestId: (state, action: PayloadAction<string>) => ({
       ...state,
+      page: initialState.page,
       id: action.payload,
     }),
     setRequestFrom: (state, action: PayloadAction<string>) => ({
       ...state,
+      page: initialState.page,
       from: action.payload,
     }),
     setRequestTo: (state, action: PayloadAction<string>) => ({
       ...state,
+      page: initialState.page,
       to: action.payload,
     }),
     clearAllFilters: ({ revealPII }) => ({
@@ -184,6 +184,7 @@ export const subjectRequestsSlice = createSlice({
     }),
     setSize: (state, action: PayloadAction<number>) => ({
       ...state,
+      page: initialState.page,
       size: action.payload,
     }),
   },

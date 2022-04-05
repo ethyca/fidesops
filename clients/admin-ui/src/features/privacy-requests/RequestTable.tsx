@@ -266,7 +266,6 @@ const RequestTable: React.FC<RequestTableProps> = () => {
     handleNextPage,
     handlePreviousPage,
   } = useRequestTable();
-  console.log(isLoading);
   return (
     <>
       <Table size="sm">

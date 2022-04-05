@@ -14,7 +14,7 @@ import RequestFilters from '../features/privacy-requests/RequestFilters';
 
 import { assignToken } from '../features/user/user.slice';
 
-const Home: NextPage = () => (
+const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
   <div>
     <Head>
       <title>Fides Admin UI</title>
@@ -22,7 +22,7 @@ const Home: NextPage = () => (
       <link rel="icon" href="/favicon.ico" />
     </Head>
 
-    <Header />
+    <Header username={session.username} />
 
     <main>
       <Flex
@@ -61,8 +61,15 @@ export const getServerSideProps = wrapper.getServerSideProps(
     const session = await getSession(context);
     if (session && typeof session.accessToken !== 'undefined') {
       await store.dispatch(assignToken(session.accessToken));
+      return { props: { session } };
     }
-    return { props: {} };
+
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
   }
 );
 

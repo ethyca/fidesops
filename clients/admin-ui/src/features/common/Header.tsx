@@ -1,11 +1,27 @@
-import { Flex, Link } from '@fidesui/react';
-
+import React from 'react';
+import {
+  Flex,
+  Link,
+  Button,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Text,
+  MenuDivider,
+  Stack,
+} from '@fidesui/react';
+import { signOut } from 'next-auth/react';
 import NextLink from 'next/link';
 import Image from 'next/image';
 
-import { UserIcon, GearIcon } from './Icon';
+import { UserIcon } from './Icon';
 
-const Header = () => (
+interface HeaderProps {
+  username: string;
+}
+
+const Header: React.FC<HeaderProps> = ({ username }) => (
   <header>
     <Flex
       bg="gray.50"
@@ -22,8 +38,27 @@ const Header = () => (
         </Link>
       </NextLink>
       <Flex alignItems="center">
-        <GearIcon color="gray.700" mr={5} />
-        <UserIcon color="gray.700" />
+        <Menu>
+          <MenuButton as={Button} size="sm" variant="ghost">
+            <UserIcon color="gray.700" />
+          </MenuButton>
+          <MenuList>
+            <Stack px={3} py={2} spacing={0}>
+              <Text fontWeight="medium">{username}</Text>
+              <Text fontSize="sm" color="gray.600">
+                Administrator
+              </Text>
+            </Stack>
+            <MenuDivider />
+            <MenuItem
+              px={3}
+              _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
+              onClick={() => signOut()}
+            >
+              Sign out
+            </MenuItem>
+          </MenuList>
+        </Menu>
       </Flex>
     </Flex>
   </header>

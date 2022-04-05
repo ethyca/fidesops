@@ -28,7 +28,10 @@ export default NextAuth({
 
         // If no error and we have user data, return it
         if (res.ok && user) {
-          return user;
+          return {
+            ...user,
+            username: credentials!.email,
+          };
         }
 
         // Return null if user data could not be retrieved
@@ -39,13 +42,19 @@ export default NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user?.access_token) {
-        Object.assign(token, { token: user.access_token });
+        Object.assign(token, {
+          token: user.access_token,
+          username: user.username,
+        });
       }
 
       return token;
     },
     async session({ session, token }) {
-      Object.assign(session, { accessToken: token.token });
+      Object.assign(session, {
+        accessToken: token.token,
+        username: token.username,
+      });
       return session;
     },
   },
