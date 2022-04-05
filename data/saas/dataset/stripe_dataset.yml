@@ -561,8 +561,46 @@ dataset:
           data_categories: [system.operations]
         - name: setup_future_usage
           data_categories: [system.operations]
-        - name: shipping # TODO: check populated response
-          data_categories: [system.operations]
+        - name: shipping
+          fields:
+            - name: address
+              fields:
+                - name: city
+                  data_categories: [user.provided.identifiable.contact.city]
+                  fidesops_meta:
+                    data_type: string
+                - name: country
+                  data_categories: [user.provided.identifiable.contact.country]
+                  fidesops_meta:
+                    data_type: string
+                - name: line1
+                  data_categories: [user.provided.identifiable.contact.street]
+                  fidesops_meta:
+                    data_type: string
+                - name: line2
+                  data_categories: [user.provided.identifiable.contact.street]
+                  fidesops_meta:
+                    data_type: string
+                - name: postal_code
+                  data_categories: [user.provided.identifiable.contact.postal_code]
+                  fidesops_meta:
+                    data_type: string
+                - name: state
+                  data_categories: [user.provided.identifiable.contact.state]
+                  fidesops_meta:
+                    data_type: string
+            - name: carrier
+              data_categories: [system.operations]
+            - name: name
+              data_categories: [user.provided.identifiable.name]
+              fidesops_meta:
+                data_type: string
+            - name: phone
+              data_categories: [user.provided.identifiable.contact.phone_number]
+              fidesops_meta:
+                data_type: string
+            - name: tracking_number
+              data_categories: [system.operations]
         - name: statement_descriptor
           data_categories: [system.operations]
         - name: statement_descriptor_suffix
@@ -1168,7 +1206,6 @@ dataset:
             data_categories: [system.operations]
         - name: discounts
           data_categories: [system.operations]
-          # TODO add discount object
         - name: due_date
           data_categories: [system.operations]
         - name: ending_balance
@@ -1276,7 +1313,7 @@ dataset:
           data_categories: [system.operations]
         - name: discountable
           data_categories: [system.operations]
-        - name: discounts # TODO: discounts object
+        - name: discounts
           data_categories: [system.operations]
         - name: invoice
           data_categories: [system.operations]
