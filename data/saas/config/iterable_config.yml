@@ -30,29 +30,31 @@ saas_config:
     requests:
       read:
         path: /api/export/userEvents
+        method: GET
         # TODO - parsers hasn't implemented while writing this
         # TODO - Please refer the original YAML for the details
-        request_params:
+        query_params:
           - name: email
-            type: query
-            identity: email
+            value: <email>
           - name: includeCustomEvents
-            default_value: true
+            value: true
+        param_values:
+          - name: email
+            identity: email
   - name: user
     requests:
       read:
         path: /api/users/<email>
-        request_params:
+        method: GET
+        param_values:
           - name: email
-            type: query
             identity: email
         data_path: user
       # TODO - responseValidator hasn't implemented while writing this
       # TODO - Please refer to the original YAML for the details        
       delete:
         path: /api/users/forget
-      # TODO - custom HTTP methods hasn't implemented while writing this
-      # TODO - Please refer to the original YAML for the details           
-
-      # TODO - custom HTTP body hasn't implemented while writing this
-      # TODO - Please refer to the original YAML for the details   
+        method: POST
+        body: '{
+          "email": "<email>"
+        }' 
