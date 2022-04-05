@@ -41,7 +41,7 @@ def test_stripe_access_request_task(
         {"email": stripe_identity_email},
     )
 
-    assert v[f"{dataset_name}:customer"][0]["email"] == stripe_identity_email
+    # verify all collections are returned with the expected number of rows and fields
 
     assert_rows_match(
         v[f"{dataset_name}:bank_account"],
@@ -477,6 +477,63 @@ def test_stripe_access_request_task(
             "verification",
         ],
     )
+
+    # verify we only returned data for our identity email
+
+    assert v[f"{dataset_name}:customer"][0]["email"] == stripe_identity_email
+    customer_id: str = v[f"{dataset_name}:customer"][0]["id"]
+    charge_id: str = v[f"{dataset_name}:charge"][0]["id"]
+    payment_intent_id: str = v[f"{dataset_name}:payment_intent"][0]["id"]
+
+    for bank_account in v[f"{dataset_name}:bank_account"]:
+        assert bank_account["customer"] == customer_id
+
+    for card in v[f"{dataset_name}:card"]:
+        assert card["customer"] == customer_id
+
+    for charge in v[f"{dataset_name}:charge"]:
+        assert charge["customer"] == customer_id
+
+    for credit_note in v[f"{dataset_name}:credit_note"]:
+        assert credit_note["customer"] == customer_id
+
+    for bank_account in v[f"{dataset_name}:bank_account"]:
+        assert bank_account["customer"] == customer_id
+
+    for customer_balance_transaction in v[
+        f"{dataset_name}:customer_balance_transaction"
+    ]:
+        assert customer_balance_transaction["customer"] == customer_id
+
+    # disputes are retrieved by charge.id or payment_intent.id
+    for dispute in v[f"{dataset_name}:dispute"]:
+        assert (
+            dispute["charge"] == charge_id
+            or dispute["payment_intent_id"] == payment_intent_id
+        )
+
+    for invoice in v[f"{dataset_name}:invoice"]:
+        assert invoice["customer"] == customer_id
+
+    for invoice_item in v[f"{dataset_name}:invoice_item"]:
+        assert invoice_item["customer"] == customer_id
+
+    for payment_intent in v[f"{dataset_name}:payment_intent"]:
+        assert payment_intent["customer"] == customer_id
+
+    for payment_method in v[f"{dataset_name}:payment_method"]:
+        assert payment_method["customer"] == customer_id
+
+    for setup_intent in v[f"{dataset_name}:setup_intent"]:
+        assert setup_intent["customer"] == customer_id
+
+    for subscription in v[f"{dataset_name}:subscription"]:
+        assert subscription["customer"] == customer_id
+
+    for tax_id in v[f"{dataset_name}:tax_id"]:
+        assert tax_id["customer"] == customer_id
+
+    # verify we keep the expected fields after filtering by the user data category
 
     target_categories = {"user"}
     filtered_results = filter_data_categories(

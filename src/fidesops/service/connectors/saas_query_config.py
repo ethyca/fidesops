@@ -55,7 +55,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         filtered_data = self.node.typed_filtered_values(input_data)
 
         request_params = []
-        
+
         # Build SaaS requests for fields that are independent of each other
         for string_path, reference_values in filtered_data.items():
             for value in reference_values:
@@ -85,9 +85,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             for placeholder in placeholders:
                 placeholder_value = param_values.get(placeholder)
                 if placeholder_value:
-                    value = value.replace(
-                        f"<{placeholder}>", str(placeholder_value)
-                    )
+                    value = value.replace(f"<{placeholder}>", str(placeholder_value))
                 else:
                     return None
         return value

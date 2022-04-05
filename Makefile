@@ -124,7 +124,11 @@ pytest-integration-external: compose-build
 
 pytest-saas: compose-build
 	@echo "Running integration tests for SaaS connectors"
-	@docker-compose run -e MAILCHIMP_DOMAIN -e MAILCHIMP_USERNAME -e MAILCHIMP_API_KEY -e MAILCHIMP_IDENTITY_EMAIL -e SENTRY_HOST -e SENTRY_ACCESS_TOKEN -e SENTRY_IDENTITY_EMAIL  $(IMAGE_NAME) \
+	@docker-compose run \
+		-e MAILCHIMP_DOMAIN -e MAILCHIMP_USERNAME -e MAILCHIMP_API_KEY -e MAILCHIMP_IDENTITY_EMAIL \
+		-e SENTRY_HOST -e SENTRY_ACCESS_TOKEN -e SENTRY_IDENTITY_EMAIL \
+		-e STRIPE_HOST -e STRIPE_API_KEY -e STRIPE_PAYMENT_TYPES -e STRIPE_ITEMS_PER_PAGE -e STRIPE_IDENTITY_EMAIL \
+		$(IMAGE_NAME) \
 		pytest $(pytestpath) -m "integration_saas"
 
 
