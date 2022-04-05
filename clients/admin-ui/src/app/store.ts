@@ -2,10 +2,11 @@ import { configureStore } from '@reduxjs/toolkit';
 import { createWrapper } from 'next-redux-wrapper';
 
 import { setupListeners } from '@reduxjs/toolkit/query/react';
-import privacyRequestsReducer, {
+import {
+  reducer as privacyRequestsReducer,
   privacyRequestApi,
-} from '../features/privacy-requests/privacy-requests.slice';
-import userReducer from '../features/user/user.slice';
+} from '../features/privacy-requests';
+import { reducer as userReducer } from '../features/user';
 
 const makeStore = () => {
   const store = configureStore({

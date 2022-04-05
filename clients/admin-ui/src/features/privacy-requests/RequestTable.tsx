@@ -257,15 +257,8 @@ const useRequestTable = () => {
 };
 
 const RequestTable: React.FC<RequestTableProps> = () => {
-  const {
-    requests,
-    isLoading,
-    total,
-    page,
-    size,
-    handleNextPage,
-    handlePreviousPage,
-  } = useRequestTable();
+  const { requests, total, page, size, handleNextPage, handlePreviousPage } =
+    useRequestTable();
   return (
     <>
       <Table size="sm">
@@ -288,7 +281,7 @@ const RequestTable: React.FC<RequestTableProps> = () => {
       </Table>
       <Flex justifyContent="space-between" mt={6}>
         <Text fontSize="xs" color="gray.600">
-          Showing {(page - 1) * size} to {Math.min(total, page * size)} of{' '}
+          Showing {(page - 1) * size + 1} to {Math.min(total, page * size)} of{' '}
           {total} results
         </Text>
         <div>
