@@ -305,7 +305,7 @@ def get_request_status(
     if id:
         query = query.filter(PrivacyRequest.id.ilike(f"{id}%"))
     if external_id:
-        query = query.filter(PrivacyRequest.external_id == external_id)
+        query = query.filter(PrivacyRequest.external_id.ilike(f"{external_id}%"))
     if status:
         query = query.filter(PrivacyRequest.status == status)
     if created_lt:
