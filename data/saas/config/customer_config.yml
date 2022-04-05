@@ -27,9 +27,12 @@ saas_config:
     requests:
       read:
         path: /v1/api/customers
-        request_params:
+        method: GET
+        query_params:
           - name: email
-            type: query
+            value: <email>
+        param_values:
+          - name: email
             identity: email
             data_type: string
         data_path: results
@@ -37,9 +40,9 @@ saas_config:
     requests:
       read:
         path: /v1/api/customers/<customer_id>/attributes
-        request_params:
+        method: GET
+        param_values:
           - name: customer_id
-            type: path
             references:
               - dataset: customer_connector_example
                 field: customer_search.results.id # TODO - Can we confirm the results data_path is appropriate
@@ -48,9 +51,9 @@ saas_config:
       delete:
         # TODO - Has to figure out a way to send different host values
         path: /api/v1/customers/<customer_id>
-        request_params:
+        method: GET
+        param_values:
           - name: customer_id
-            type: path
             references:
               - dataset: customer_connector_example
                 field: customers.customer.id
@@ -59,9 +62,9 @@ saas_config:
     requests:
       read:
         path: /v1/api/customers/<customer_id>/segments
-        request_params:
+        method: GET
+        param_values:
           - name: customer_id
-            type: path
             references:
               - dataset: customer_connector_example
                 field: customer_search.results.id
@@ -69,11 +72,11 @@ saas_config:
         data_path: segments
       delete:
         path: /api/v1/segments/<segment_id>/remove_customers
+        method: POST
         # TODO - custom authorization hasn't implemented at the time writing this
         # TODO - Custom HTTP method and body for POST hasn't implemented at the time writing this
-        request_params:
+        param_values:
           - name: segment_id
-            type: path
             references:
               - dataset: customer_connector_example
                 field: segments.segments.id
@@ -82,9 +85,9 @@ saas_config:
     requests:
       read:
         path: /v1/api/customers/<customer_id>/activities
-        request_params:
+        method: GET
+        param_values:
           - name: customer_id
-            type: path
             references:
               - dataset: customer_connector_example
                 field: customer_search.results.id
@@ -94,9 +97,9 @@ saas_config:
     requests:
       read:
         path: /v1/api/customers/<customer_id>/messages
-        request_params:
+        method: GET
+        param_values:
           - name: customer_id
-            type: path
             references:
               - dataset: customer_connector_example
                 field: customer_search.results.id
