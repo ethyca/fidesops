@@ -91,6 +91,7 @@ const RequestFilters: React.FC = () => {
         minWidth="144px"
         value={status || ''}
         onChange={handleStatusChange}
+        borderRadius="md"
       >
         <StatusOption status="approved" />
         <StatusOption status="complete" />
@@ -109,23 +110,31 @@ const RequestFilters: React.FC = () => {
           minWidth={200}
           placeholder="Search"
           size="sm"
+          borderRadius="md"
           value={id}
           name="search"
           onChange={handleSearchChange}
         />
       </InputGroup>
       <InputGroup size="sm">
-        <InputLeftAddon>From</InputLeftAddon>
+        <InputLeftAddon borderRadius="md">From</InputLeftAddon>
         <Input
           type="date"
           name="From"
           value={from}
           onChange={handleFromChange}
+          borderRadius="md"
         />
       </InputGroup>
       <InputGroup size="sm">
-        <InputLeftAddon>To</InputLeftAddon>
-        <Input type="date" name="To" value={to} onChange={handleToChange} />
+        <InputLeftAddon borderRadius="md">To</InputLeftAddon>
+        <Input
+          type="date"
+          borderRadius="md"
+          name="To"
+          value={to}
+          onChange={handleToChange}
+        />
       </InputGroup>
       <Flex flexShrink={0} alignItems="center">
         <Text fontSize="xs" mr={2} size="sm">
