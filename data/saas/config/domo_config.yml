@@ -23,30 +23,28 @@ saas_config:
 
   test_request:
     path: /oauth/token
-    # TODO - Custom method wasn't supported at the time it was written
-    # Please to refer to the original YAML spec as this originally had a method
+    method: POST
+    body: '{
+      "grant_type": "client_credentials"
+    }'
 
     # TODO - Custom mimeType wasn't supported at the time it was written
     # Please to refer to the original YAML spec as this originally had a mimeType    
     
     # TODO - Different authorization wasn't supported at the time it was written
-    # Please to refer to the original YAML spec as this originally had a authorization
-
-    # TODO - body payload wasn't supported at the time it was written
-    # Please to refer to the original YAML spec as this originally had a body    
+    # Please to refer to the original YAML spec as this originally had a authorization  
 
   endpoints:
   - name: users
     requests:
       read:
         path: /v1/users
-        request_params:
+        method: GET
+        query_params:
           - name: limit
-            type: query
-            default_value: 500
+            value: 500
           - name: offset
-            type: query
-            default_value: 0
+            value: 0
           # TODO - Different authorization wasn't supported at the time it was written
           # Please to refer to the original YAML spec as this originally had a authorization           
         postprocessors:
@@ -63,15 +61,14 @@ saas_config:
             limit: 10000
       update:
         path: /v1/users/<id>
+        method: PUT
         # TODO - Custom method PUT wasn't supported at the time it was written
         # Please to refer to the original YAML spec as this originally had a method        
-        request_params:    
+        param_values:    
           - name: id
-            type: path
             references:
               - dataset: domo_connector_example
                 field: users.id
                 direction: from
-
         # TODO - page structure wasn't supported at the time it was written
         # Please to refer to the original YAML spec as this originally had a method                   
