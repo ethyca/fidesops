@@ -20,23 +20,23 @@ saas_config:
 
   test_request:
     path: /v1/users
+    method: GET
     
   endpoints:
   - name: candidate
     requests:
       read:
         path: /v1/candidates
-        request_params:
-          - name: email
-            type: query
-            identity: email
-            data_type: string
+        method: GET
+        query_params:
           - name: per_page
-            type: query
             default_value: 50
           - name: page
-            type: query
             default_value: 1
+        param_values:
+          - name: email
+            identity: email
+            data_type: string
         pagination:
           strategy: offset
           configuration:
@@ -44,24 +44,24 @@ saas_config:
             increment_by: 1
       update:
         path: /v1/candidates/<candidate_id>
+        method: PATCH
         # TODO - Please to refer to the original YAML spec as this originally had a UPDATE operation
         # Has to send a customer header "On-Behalf-Of" with value of user_id connector_param
         # TODO - Custom headers wasn't supported at the time it was written
-        request_params:
+        param_values:
           - name: candidate_id
-            type: path
             references:
               - dataset: greenhouse_connector_example
                 field: candidate.id
                 direction: from
       delete:
         path: /v1/candidates/<candidate_id>
+        method: DELETE
         # TODO - Please to refer to the original YAML spec as this originally had a DELETE operation
         # Has to send a customer header "On-Behalf-Of" with value of user_id connector_param
         # TODO - Custom headers wasn't supported at the time it was written
-        request_params:
+        param_values:
           - name: candidate_id
-            type: path
             references:
               - dataset: greenhouse_connector_example
                 field: candidate.id
