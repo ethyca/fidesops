@@ -24,11 +24,14 @@ saas_config:
 
   test_request:
     path: /api/customers
-    request_params:
+    method: GET
+    query_params:
       - name: email
-        type: query
+        value: <email>
+    param_values:
+      - name: email
         data_type: string
-        default_value: foo@bar.com
+        value: foo@bar.com
 
   endpoints:    
     - name: customer
@@ -42,10 +45,10 @@ saas_config:
               data_type: string
             - name: per_page
               type: query
-              default_value: 30
+              value: 30
             - name: page
               type: query
-              default_value: 1
+              value: 1
           data_path: data
           pagination:
             strategy: offset
@@ -74,13 +77,13 @@ saas_config:
                   direction: from  
             - name: per_page
               type: query
-              default_value: 30
+              value: 30
               # TODO - connector_param wasn’t supported at the time it was written.
               # per_page value has to be supplied
               # Please to refer to the original YAML spec as this originally had a DATA_STORE 
             - name: page
               type: query
-              default_value: 1
+              value: 1
               # TODO - pagination wasn’t supported at the time it was written.
               # below page value has to come from pagination section 
           data_path: data
@@ -111,13 +114,13 @@ saas_config:
                   direction: from
             - name: per_page
               type: query
-              default_value: 30
+              value: 30
               # TODO - connector_param wasn’t supported at the time it was written.
               # per_page value has to be supplied
               # Please to refer to the original YAML spec as this originally had a DATA_STORE 
             - name: page
               type: query
-              default_value: 1
+              value: 1
           data_path: data
           pagination:
             strategy: page
