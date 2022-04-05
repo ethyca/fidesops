@@ -20,6 +20,7 @@ saas_config:
 
   test_request:
     path: /events/list
+    method: GET
     
   endpoints:
   - name: user
@@ -60,6 +61,7 @@ saas_config:
     requests:
       read:
         path: /subscription/user/status
+        method: GET
         query_params:
           - name: email
             value: <email>
@@ -78,6 +80,7 @@ saas_config:
     requests:
       read:
         path: /campaigns/details
+        method: GET
         query_params: 
           - name: campaign_id
             value: <campaign_id>
