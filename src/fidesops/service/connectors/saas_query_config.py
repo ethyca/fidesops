@@ -111,7 +111,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         headers: Dict[str, Any] = {}
         for header in current_request.headers:
             header_value = self.assign_placeholders(header.value, param_values)
-            if header_value:
+            if header_value is not None:
                 headers[header.name] = self.assign_placeholders(
                     header.value, param_values
                 )
@@ -122,7 +122,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 query_param.value, param_values
             )
             # only create query param if placeholders were replaced with actual values
-            if query_param_value:
+            if query_param_value is not None:
                 query_params[query_param.name] = query_param_value
 
         body: Optional[str] = self.assign_placeholders(
