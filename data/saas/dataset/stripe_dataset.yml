@@ -64,12 +64,8 @@ dataset:
           fields:
           - name: custom_fields
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: default_payment_method
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
         - name: livemode
           data_categories: [system.operations]
         - name: name
@@ -284,7 +280,9 @@ dataset:
           - name: type
             data_categories: [system.operations]
         - name: receipt_email
-          data_categories: [system.operations]
+          data_categories: [user.provided.identifiable.contact.email]
+          fidesops_meta:
+            data_type: string
         - name: receipt_number
           data_categories: [system.operations]
         - name: receipt_url

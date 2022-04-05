@@ -499,3 +499,119 @@ def test_stripe_access_request_task(
         f"{dataset_name}:subscription",
         f"{dataset_name}:tax_id",
     }
+
+    assert set(filtered_results[f"{dataset_name}:bank_account"][0].keys()) == {
+        "account_holder_name",
+        "bank_name",
+        "country",
+        "id",
+        "last4",
+        "routing_number",
+    }
+
+    assert set(filtered_results[f"{dataset_name}:card"][0].keys()) == {
+        "address_city",
+        "address_country",
+        "address_line1",
+        "address_line2",
+        "address_state",
+        "address_zip",
+        "country",
+        "dynamic_last4",
+        "id",
+        "last4",
+        "name",
+    }
+
+    assert set(filtered_results[f"{dataset_name}:charge"][0].keys()) == {
+        "amount",
+        "amount_captured",
+        "amount_refunded",
+        "billing_details",
+        "id",
+        "payment_method_details",
+        "receipt_email",
+        "source",
+    }
+
+    assert set(filtered_results[f"{dataset_name}:credit_note"][0].keys()) == {
+        "amount",
+        "discount_amount",
+        "id",
+        "subtotal",
+        "total",
+    }
+
+    assert set(filtered_results[f"{dataset_name}:customer"][0].keys()) == {
+        "address",
+        "balance",
+        "email",
+        "id",
+        "name",
+        "phone",
+        "preferred_locales",
+        "shipping",
+    }
+
+    assert set(
+        filtered_results[f"{dataset_name}:customer_balance_transaction"][0].keys()
+    ) == {"ending_balance", "id"}
+
+    assert set(filtered_results[f"{dataset_name}:dispute"][0].keys()) == {
+        "amount",
+        "evidence",
+        "id",
+    }
+
+    assert set(filtered_results[f"{dataset_name}:invoice"][0].keys()) == {
+        "account_country",
+        "account_name",
+        "amount_due",
+        "amount_paid",
+        "amount_remaining",
+        "customer_address",
+        "customer_email",
+        "customer_name",
+        "customer_phone",
+        "customer_shipping",
+        "discount",
+        "id",
+        "starting_balance",
+        "subtotal",
+        "total",
+    }
+
+    assert set(filtered_results[f"{dataset_name}:invoice_item"][0].keys()) == {
+        "amount",
+        "id",
+        "price",
+        "unit_amount",
+        "unit_amount_decimal",
+    }
+
+    assert set(filtered_results[f"{dataset_name}:payment_intent"][0].keys()) == {
+        "amount",
+        "amount_capturable",
+        "amount_received",
+        "id",
+        "receipt_email",
+    }
+
+    assert set(filtered_results[f"{dataset_name}:payment_method"][0].keys()) == {
+        "billing_details",
+        "card",
+        "id",
+    }
+
+    assert set(filtered_results[f"{dataset_name}:setup_intent"][0].keys()) == {"id"}
+
+    assert set(filtered_results[f"{dataset_name}:subscription"][0].keys()) == {
+        "discount",
+        "id",
+    }
+
+    assert set(filtered_results[f"{dataset_name}:tax_id"][0].keys()) == {
+        "country",
+        "id",
+        "verification",
+    }
