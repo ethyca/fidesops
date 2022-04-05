@@ -33,6 +33,8 @@ import { useObscuredPII } from './helpers';
 import {
   selectPrivacyRequestFilters,
   useGetAllPrivacyRequestsQuery,
+  useApproveRequestMutation,
+  useDenyRequestMutation,
 } from './privacy-requests.slice';
 
 interface RequestTableProps {
@@ -47,10 +49,14 @@ const useRequestRow = (request: PrivacyRequest) => {
   const toast = useToast();
   const [hovered, setHovered] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [approveRequest, approveRequestResult] = useApproveRequestMutation();
+  const [denyRequest, denyRequestResult] = useDenyRequestMutation();
   const handleMenuOpen = () => setMenuOpen(true);
   const handleMenuClose = () => setMenuOpen(false);
   const handleMouseEnter = () => setHovered(true);
   const handleMouseLeave = () => setHovered(false);
+  const handleApproveRequest = () => approveRequest(request);
+  const handleDenyRequest = () => denyRequest(request);
   const { onCopy } = useClipboard(request.id);
   const handleIdCopy = () => {
     onCopy();
@@ -70,12 +76,16 @@ const useRequestRow = (request: PrivacyRequest) => {
     }
   };
   return {
+    approveRequestResult,
+    denyRequestResult,
     hovered,
     handleMenuClose,
     handleMenuOpen,
     handleMouseEnter,
     handleMouseLeave,
     handleIdCopy,
+    handleApproveRequest,
+    handleDenyRequest,
     menuOpen,
   };
 };
@@ -87,8 +97,12 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
     handleMenuClose,
     handleMouseEnter,
     handleMouseLeave,
+    handleApproveRequest,
+    handleDenyRequest,
     handleIdCopy,
     menuOpen,
+    approveRequestResult,
+    denyRequestResult,
   } = useRequestRow(request);
   return (
     <Tr
@@ -152,12 +166,42 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
             top="50%"
             transform="translate(1px, -50%)"
           >
-            <Button size="xs" mr="-px" bg="white">
-              Approve
-            </Button>
-            <Button size="xs" mr="-px" bg="white">
-              Deny
-            </Button>
+            {request.status === 'pending' ? (
+              <>
+                <Button
+                  size="xs"
+                  mr="-px"
+                  bg="white"
+                  onClick={handleApproveRequest}
+                  isLoading={approveRequestResult.isLoading}
+                  _loading={{
+                    opacity: 1,
+                    div: { opacity: 0.4 },
+                  }}
+                  _hover={{
+                    bg: 'gray.100',
+                  }}
+                >
+                  Approve
+                </Button>
+                <Button
+                  size="xs"
+                  mr="-px"
+                  bg="white"
+                  onClick={handleDenyRequest}
+                  isLoading={denyRequestResult.isLoading}
+                  _loading={{
+                    opacity: 1,
+                    div: { opacity: 0.4 },
+                  }}
+                  _hover={{
+                    bg: 'gray.100',
+                  }}
+                >
+                  Deny
+                </Button>
+              </>
+            ) : null}
             <Menu onOpen={handleMenuOpen} onClose={handleMenuClose}>
               <MenuButton as={Button} size="xs" bg="white">
                 <MoreIcon color="gray.700" w={18} h={18} />

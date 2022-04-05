@@ -38,6 +38,7 @@ export const privacyRequestApi = createApi({
       return headers;
     },
   }),
+  tagTypes: ['Request'],
   endpoints: (build) => ({
     getAllPrivacyRequests: build.query<PrivacyRequest[], PrivacyRequestParams>({
       query: (filters) => ({
@@ -45,11 +46,42 @@ export const privacyRequestApi = createApi({
         params: mapFiltersToSearchParams(filters),
       }),
       transformResponse: (response: PrivacyRequestResponse) => response.items,
+      providesTags: () => ['Request'],
+    }),
+    approveRequest: build.mutation<
+      PrivacyRequest,
+      Partial<PrivacyRequest> & Pick<PrivacyRequest, 'id'>
+    >({
+      query: ({ id }) => ({
+        url: 'privacy-request/administrate/approve',
+        method: 'PATCH',
+        body: {
+          request_ids: [id],
+        },
+      }),
+      invalidatesTags: ['Request'],
+    }),
+    denyRequest: build.mutation<
+      PrivacyRequest,
+      Partial<PrivacyRequest> & Pick<PrivacyRequest, 'id'>
+    >({
+      query: ({ id }) => ({
+        url: 'privacy-request/administrate/deny',
+        method: 'PATCH',
+        body: {
+          request_ids: [id],
+        },
+      }),
+      invalidatesTags: ['Request'],
     }),
   }),
 });
 
-export const { useGetAllPrivacyRequestsQuery } = privacyRequestApi;
+export const {
+  useGetAllPrivacyRequestsQuery,
+  useApproveRequestMutation,
+  useDenyRequestMutation,
+} = privacyRequestApi;
 
 export const requestCSVDownload = ({
   id,
