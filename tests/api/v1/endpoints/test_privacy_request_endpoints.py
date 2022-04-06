@@ -472,6 +472,7 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "reviewer": None,
                     "policy": {
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
@@ -515,6 +516,7 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "reviewer": None,
                     "policy": {
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
@@ -640,9 +642,9 @@ class TestGetPrivacyRequests:
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 3
-        assert resp["items"][0]["id"] == privacy_request.id
+        assert resp["items"][0]["id"] == failed_privacy_request.id
         assert resp["items"][1]["id"] == succeeded_privacy_request.id
-        assert resp["items"][2]["id"] == failed_privacy_request.id
+        assert resp["items"][2]["id"] == privacy_request.id
 
     def test_filter_privacy_requests_by_started(
         self,
@@ -658,8 +660,8 @@ class TestGetPrivacyRequests:
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 2
-        assert resp["items"][0]["id"] == privacy_request.id
-        assert resp["items"][1]["id"] == failed_privacy_request.id
+        assert resp["items"][0]["id"] == failed_privacy_request.id
+        assert resp["items"][1]["id"] == privacy_request.id
 
         response = api_client.get(url + f"?started_gt=2021-05-01", headers=auth_header)
         assert 200 == response.status_code
@@ -747,6 +749,7 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "reviewer": None,
                     "policy": {
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
@@ -1474,6 +1477,7 @@ class TestResumePrivacyRequest:
             "identity": None,
             "reviewed_at": None,
             "reviewed_by": None,
+            "reviewer": None,
             "policy": {
                 "key": privacy_request.policy.key,
                 "name": privacy_request.policy.name,
