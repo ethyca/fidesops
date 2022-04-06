@@ -1,5 +1,4 @@
 import re
-from typing import Optional
 
 from pydantic import validator
 
@@ -52,7 +51,7 @@ class UserCreateResponse(BaseSchema):
 
 
 class PrivacyRequestReviewer(BaseSchema):
-    """"""
+    """Data we can expose via the PrivacyRequest.reviewer relation"""
 
     id: str
     username: str
