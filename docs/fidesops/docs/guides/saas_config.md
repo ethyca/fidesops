@@ -279,27 +279,27 @@ read:
   query_params:
     - name: charge
       value: <charge_id>
-    - name: payment_intent
-      value: <payment_intent_id>
+    - name: line_item
+      value: <line_item_id>
   param_values:
   - name: charge_id
     references:
-      - dataset: stripe_connector_example
+      - dataset: connector_example
         field: charge.id
         direction: from
-  - name: payment_intent_id
+  - name: line_item_id
     references:
-      - dataset: stripe_connector_example
-        field: payment_intent.id
+      - dataset: connector_example
+        field: charge.line_item.id
         direction: from
 ```
 ```yaml
-GET /v1/disputes?charge_id=1
-GET /v1/disputes?charge_id=2
-GET /v1/disputes?charge_id=3
-GET /v1/disputes?payment_intent_id=a
-GET /v1/disputes?payment_intent_id=b
-GET /v1/disputes?payment_intent_id=c
+GET /v1/disputes?charge=1
+GET /v1/disputes?charge=2
+GET /v1/disputes?charge=3
+GET /v1/disputes?line_item=a
+GET /v1/disputes?line_item=b
+GET /v1/disputes?line_item=c
 ```
 
 **With grouped inputs**
@@ -311,24 +311,24 @@ read:
   query_params:
     - name: charge
       value: <charge_id>
-    - name: payment_intent
-      value: <payment_intent_id>
+    - name: line_item
+      value: <line_item_id>
   param_values:
   - name: charge_id
     references:
-      - dataset: stripe_connector_example
+      - dataset: connector_example
         field: charge.id
         direction: from
-  - name: payment_intent_id
+  - name: line_item_id
     references:
-      - dataset: stripe_connector_example
-        field: payment_intent.id
+      - dataset: connector_example
+        field: charge.line_item.id
         direction: from
 ```
 ```yaml
-GET /v1/disputes?charge_id=1&payment_intent_id=a
-GET /v1/disputes?charge_id=2&payment_intent_id=b
-GET /v1/disputes?charge_id=3&payment_intent_id=c
+GET /v1/disputes?charge=1&line_item=a
+GET /v1/disputes?charge=2&line_item=b
+GET /v1/disputes?charge=3&line_item=c
 ```
 
 #### Body
