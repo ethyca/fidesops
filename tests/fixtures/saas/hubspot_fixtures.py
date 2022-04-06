@@ -46,7 +46,7 @@ def hubspot_dataset() -> Dict[str, Any]:
 
 @pytest.fixture(scope="function")
 def connection_config_hubspot(
-        db: Session, hubspot_config, hubspot_secrets
+        db: Session, hubspot_config, hubspot_secrets,
 ) -> Generator:
     fides_key = hubspot_config["fides_key"]
     connection_config = ConnectionConfig.create(
@@ -68,7 +68,8 @@ def connection_config_hubspot(
 def dataset_config_hubspot(
         db: Session,
         connection_config_hubspot: ConnectionConfig,
-        hubspot_dataset
+        hubspot_dataset,
+        hubspot_config,
 ) -> Generator:
     fides_key = hubspot_config["fides_key"]
     connection_config_hubspot.name = fides_key

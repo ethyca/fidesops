@@ -128,7 +128,6 @@ saas_config:
         read:
           path: /communication-preferences/v3/status/email/<email>
           method: GET
-          data_path: subscriptionStatuses
           param_values:
             - name: email
               identity: email
