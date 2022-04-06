@@ -345,8 +345,8 @@ def test_create_and_process_access_request_saas_mailchimp(
 @pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
-def test_create_and_process_erasure_request_saas_mailchimp(
-    trigger_webhook_mock,
+def test_create_and_process_erasure_request_saas(
+    _,
     mailchimp_connection_config,
     mailchimp_dataset_config,
     db,
