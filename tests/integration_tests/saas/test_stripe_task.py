@@ -394,33 +394,6 @@ def test_stripe_access_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:setup_intent"],
-        min_size=3,
-        keys=[
-            "application",
-            "cancellation_reason",
-            "client_secret",
-            "created",
-            "customer",
-            "description",
-            "id",
-            "last_setup_error",
-            "latest_attempt",
-            "livemode",
-            "mandate",
-            "next_action",
-            "object",
-            "on_behalf_of",
-            "payment_method",
-            "payment_method_options",
-            "payment_method_types",
-            "single_use_mandate",
-            "status",
-            "usage",
-        ],
-    )
-
-    assert_rows_match(
         v[f"{dataset_name}:subscription"],
         min_size=1,
         keys=[
@@ -524,9 +497,6 @@ def test_stripe_access_request_task(
     for payment_method in v[f"{dataset_name}:payment_method"]:
         assert payment_method["customer"] == customer_id
 
-    for setup_intent in v[f"{dataset_name}:setup_intent"]:
-        assert setup_intent["customer"] == customer_id
-
     for subscription in v[f"{dataset_name}:subscription"]:
         assert subscription["customer"] == customer_id
 
@@ -552,7 +522,6 @@ def test_stripe_access_request_task(
         f"{dataset_name}:invoice_item",
         f"{dataset_name}:payment_intent",
         f"{dataset_name}:payment_method",
-        f"{dataset_name}:setup_intent",
         f"{dataset_name}:subscription",
         f"{dataset_name}:tax_id",
     }
@@ -561,7 +530,6 @@ def test_stripe_access_request_task(
         "account_holder_name",
         "bank_name",
         "country",
-        "id",
         "last4",
         "routing_number",
     }
@@ -575,7 +543,6 @@ def test_stripe_access_request_task(
         "address_zip",
         "country",
         "dynamic_last4",
-        "id",
         "last4",
         "name",
     }
@@ -585,7 +552,6 @@ def test_stripe_access_request_task(
         "amount_captured",
         "amount_refunded",
         "billing_details",
-        "id",
         "payment_method_details",
         "receipt_email",
         "source",
@@ -594,7 +560,6 @@ def test_stripe_access_request_task(
     assert set(filtered_results[f"{dataset_name}:credit_note"][0].keys()) == {
         "amount",
         "discount_amount",
-        "id",
         "subtotal",
         "total",
     }
@@ -603,7 +568,6 @@ def test_stripe_access_request_task(
         "address",
         "balance",
         "email",
-        "id",
         "name",
         "phone",
         "preferred_locales",
@@ -612,12 +576,11 @@ def test_stripe_access_request_task(
 
     assert set(
         filtered_results[f"{dataset_name}:customer_balance_transaction"][0].keys()
-    ) == {"ending_balance", "id"}
+    ) == {"ending_balance"}
 
     assert set(filtered_results[f"{dataset_name}:dispute"][0].keys()) == {
         "amount",
         "evidence",
-        "id",
     }
 
     assert set(filtered_results[f"{dataset_name}:invoice"][0].keys()) == {
@@ -632,7 +595,6 @@ def test_stripe_access_request_task(
         "customer_phone",
         "customer_shipping",
         "discount",
-        "id",
         "starting_balance",
         "subtotal",
         "total",
@@ -640,8 +602,6 @@ def test_stripe_access_request_task(
 
     assert set(filtered_results[f"{dataset_name}:invoice_item"][0].keys()) == {
         "amount",
-        "id",
-        "price",
         "unit_amount",
         "unit_amount_decimal",
     }
@@ -650,25 +610,20 @@ def test_stripe_access_request_task(
         "amount",
         "amount_capturable",
         "amount_received",
-        "id",
         "receipt_email",
+        "shipping",
     }
 
     assert set(filtered_results[f"{dataset_name}:payment_method"][0].keys()) == {
         "billing_details",
         "card",
-        "id",
     }
-
-    assert set(filtered_results[f"{dataset_name}:setup_intent"][0].keys()) == {"id"}
 
     assert set(filtered_results[f"{dataset_name}:subscription"][0].keys()) == {
         "discount",
-        "id",
     }
 
     assert set(filtered_results[f"{dataset_name}:tax_id"][0].keys()) == {
         "country",
-        "id",
         "verification",
     }

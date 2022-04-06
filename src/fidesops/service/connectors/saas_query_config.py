@@ -27,8 +27,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         secrets: Dict[str, Any],
     ):
         super().__init__(node)
+        self.collection_name = node.address.collection
         self.endpoints = endpoints
         self.secrets = secrets
+        self.action = None
 
     def get_request_by_action(self, action: str) -> SaaSRequest:
         """
@@ -36,6 +38,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         current collection and preferred action (read, update, delete)
         """
         try:
+            self.action = action
             collection_name = self.node.address.collection
             request = self.endpoints[collection_name].requests[action]
             logger.info(
@@ -44,7 +47,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             return request
         except KeyError:
             raise ValueError(
-                f"The `{action}` action is not defined for the `{collection_name}` endpoint in {self.node.node.dataset.connection_key}"
+                f"The '{action}' action is not defined for the '{collection_name}' endpoint in {self.node.node.dataset.connection_key}"
             )
 
     def generate_requests(
@@ -107,17 +110,22 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         path: Optional[str] = self.assign_placeholders(
             current_request.path, param_values
         )
+        if path is None:
+            raise ValueError(
+                f"Unable to replace placeholders in the path for the '{self.action}' request of the '{self.collection_name}' collection."
+            )
 
         headers: Dict[str, Any] = {}
-        for header in current_request.headers:
+        for header in current_request.headers or []:
             header_value = self.assign_placeholders(header.value, param_values)
+            # only create header if placeholders were replaced with actual values
             if header_value is not None:
                 headers[header.name] = self.assign_placeholders(
                     header.value, param_values
                 )
 
         query_params: Dict[str, Any] = {}
-        for query_param in current_request.query_params:
+        for query_param in current_request.query_params or []:
             query_param_value = self.assign_placeholders(
                 query_param.value, param_values
             )
@@ -128,6 +136,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         body: Optional[str] = self.assign_placeholders(
             current_request.body, param_values
         )
+        # if we declared a body and it's None after assigning placeholders we should error the request
+        if current_request.body and body is None:
+            raise ValueError(
+                f"Unable to replace placeholders in body for the '{self.action}' request of the '{self.collection_name}' collection."
+            )
 
         return SaaSRequestParams(
             method=current_request.method,

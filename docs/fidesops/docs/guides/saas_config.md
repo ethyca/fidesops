@@ -224,6 +224,89 @@ messages:
         - name: version
           connector_param: version
 ```
+## How are requests generated?
+The following HTTP request properties are generated for each request based on the endpoint configuration:
+
+- method
+- path
+- headers
+- query params
+- body
+
+#### Method
+This is a required field since a read, update, or delete endpoint might use any of the HTTP methods to perform the given action.
+
+#### Path
+This can be a static value or use placeholders. If the placeholders to build the path are not found at request-time, the request will fail.
+
+#### Headers and query params
+These can also be static or use placeholders. If a placeholder is missing, the request will continue and omit the given header or query param in the request.
+
+If reference values are used for the placeholders, each value will be processed independently unless the `grouped_inputs` field is set. The following examples use query params but this applies to headers as well.
+
+**With ungrouped inputs (default)**
+```yaml
+read:
+  method: GET
+  path: /v1/disputes
+  query_params:
+    - name: charge
+      value: <charge_id>
+    - name: payment_intent
+      value: <payment_intent_id>
+  param_values:
+  - name: charge_id
+    references:
+      - dataset: stripe_connector_example
+        field: charge.id
+        direction: from
+  - name: payment_intent_id
+    references:
+      - dataset: stripe_connector_example
+        field: payment_intent.id
+        direction: from
+```
+```yaml
+GET /v1/disputes?charge_id=1
+GET /v1/disputes?charge_id=2
+GET /v1/disputes?charge_id=3
+GET /v1/disputes?payment_intent_id=a
+GET /v1/disputes?payment_intent_id=b
+GET /v1/disputes?payment_intent_id=c
+```
+
+**With grouped inputs**
+```yaml
+read:
+  method: GET
+  path: /v1/disputes
+  grouped_inputs: [charge_id, payment_intent_id]
+  query_params:
+    - name: charge
+      value: <charge_id>
+    - name: payment_intent
+      value: <payment_intent_id>
+  param_values:
+  - name: charge_id
+    references:
+      - dataset: stripe_connector_example
+        field: charge.id
+        direction: from
+  - name: payment_intent_id
+    references:
+      - dataset: stripe_connector_example
+        field: payment_intent.id
+        direction: from
+```
+```yaml
+GET /v1/disputes?charge_id=1&payment_intent_id=a
+GET /v1/disputes?charge_id=2&payment_intent_id=b
+GET /v1/disputes?charge_id=3&payment_intent_id=c
+```
+
+#### Body
+The body can be static or use placeholders. If the placeholders to build the body are not found at request-time, the request will fail.
+
 
 ## Example scenarios
 #### Dynamic path with dataset references

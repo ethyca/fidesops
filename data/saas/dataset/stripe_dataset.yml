@@ -6,7 +6,7 @@ dataset:
       - name: customer
         fields:
         - name: id
-          data_categories: [user.derived.identifiable.unique_id]
+          data_categories: [system.operations]
           fidesops_meta:
             primary_key: True
             data_type: string
@@ -125,7 +125,7 @@ dataset:
       - name: charge
         fields:
         - name: id
-          data_categories: [user.derived.identifiable.unique_id]
+          data_categories: [system.operations]
           fidesops_meta:
             primary_key: True
             data_type: string
@@ -350,7 +350,7 @@ dataset:
             - name: funding
               data_categories: [system.operations]
             - name: id
-              data_categories: [user.derived.identifiable.unique_id]
+              data_categories: [system.operations]
             - name: last4
               data_categories: [user.provided.identifiable.financial.account_number]
               fidesops_meta:
@@ -378,7 +378,7 @@ dataset:
       - name: dispute
         fields:
           - name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [system.operations]
             fidesops_meta:
               primary_key: True
               data_type: string
@@ -487,7 +487,7 @@ dataset:
       - name: payment_intent
         fields:
         - name: id
-          data_categories: [user.derived.identifiable.unique_id]
+          data_categories: [system.operations]
           fidesops_meta:
             primary_key: True
             data_type: string
@@ -611,61 +611,10 @@ dataset:
           data_categories: [system.operations]
         - name: transfer_group
           data_categories: [system.operations]
-      - name: setup_intent
-        fields:
-        - name: id
-          data_categories: [user.derived.identifiable.unique_id]
-          fidesops_meta:
-            primary_key: True
-            data_type: string
-        - name: object
-          data_categories: [system.operations]
-        - name: application
-          data_categories: [system.operations]
-        - name: cancellation_reason
-          data_categories: [system.operations]
-        - name: client_secret
-          data_categories: [system.operations]
-        - name: created
-          data_categories: [system.operations]
-        - name: customer
-          data_categories: [system.operations]
-        - name: description
-          data_categories: [system.operations]
-        - name: last_setup_error
-          data_categories: [system.operations]
-        - name: latest_attempt
-          data_categories: [system.operations]
-        - name: livemode
-          data_categories: [system.operations]
-        - name: mandate
-          data_categories: [system.operations]
-        - name: next_action
-          data_categories: [system.operations]
-        - name: on_behalf_of
-          data_categories: [system.operations]
-        - name: payment_method
-          data_categories: [system.operations]
-        - name: payment_method_options
-          fields:
-          - name: card
-            fields:
-            - name: mandate_options
-              data_categories: [system.operations]
-            - name: request_three_d_secure
-              data_categories: [system.operations]
-        - name: payment_method_types
-          data_categories: [system.operations]
-        - name: single_use_mandate
-          data_categories: [system.operations]
-        - name: status
-          data_categories: [system.operations]
-        - name: usage
-          data_categories: [system.operations]
       - name: payment_method
         fields:
         - name: id
-          data_categories: [user.derived.identifiable.unique_id]
+          data_categories: [system.operations]
           fidesops_meta:
             primary_key: True
             data_type: string
@@ -764,7 +713,7 @@ dataset:
       - name: bank_account
         fields:
         - name: id
-          data_categories: [user.derived.identifiable.unique_id]
+          data_categories: [system.operations]
           fidesops_meta:
             primary_key: True
             data_type: string
@@ -804,7 +753,7 @@ dataset:
       - name: card
         fields:
         - name: id
-          data_categories: [user.derived.identifiable.unique_id]
+          data_categories: [system.operations]
           fidesops_meta:
             primary_key: True
             data_type: string
@@ -873,7 +822,7 @@ dataset:
       - name: credit_note
         fields:
         - name: id
-          data_categories: [user.derived.identifiable.unique_id]
+          data_categories: [system.operations]
           fidesops_meta:
             primary_key: True
             data_type: string
@@ -946,7 +895,7 @@ dataset:
       - name: customer_balance_transaction
         fields:
         - name: id
-          data_categories: [user.derived.identifiable.unique_id]
+          data_categories: [system.operations]
           fidesops_meta:
             primary_key: True
             data_type: string
@@ -979,7 +928,7 @@ dataset:
       - name: tax_id
         fields:
         - name: id
-          data_categories: [user.derived.identifiable.unique_id]
+          data_categories: [system.operations]
           fidesops_meta:
             primary_key: True
             data_type: string
@@ -1014,7 +963,7 @@ dataset:
       - name: invoice
         fields:
         - name: id
-          data_categories: [user.derived.identifiable.unique_id]
+          data_categories: [system.operations]
           fidesops_meta:
             primary_key: True
             data_type: string
@@ -1163,7 +1112,7 @@ dataset:
           - name: coupon
             fields:
             - name: id
-              data_categories: [user.derived.identifiable.unique_id]
+              data_categories: [system.operations]
               fidesops_meta:
                 data_type: string
             - name: object
@@ -1293,7 +1242,7 @@ dataset:
       - name: invoice_item
         fields:
         - name: id
-          data_categories: [user.derived.identifiable.unique_id]
+          data_categories: [system.operations]
           fidesops_meta:
             primary_key: True
             data_type: string
@@ -1328,7 +1277,7 @@ dataset:
         - name: price
           fields:
           - name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: object
@@ -1384,7 +1333,7 @@ dataset:
       - name: subscription
         fields:
         - name: id
-          data_categories: [user.derived.identifiable.unique_id]
+          data_categories: [system.operations]
           fidesops_meta:
             data_type: string
         - name: object
@@ -1430,7 +1379,7 @@ dataset:
           - name: coupon
             fields:
             - name: id
-              data_categories: [user.derived.identifiable.unique_id]
+              data_categories: [system.operations]
               fidesops_meta:
                 data_type: string
             - name: object

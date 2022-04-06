@@ -116,30 +116,6 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
-  - name: setup_intent
-    requests:
-      read:
-        method: GET
-        path: /v1/setup_intents
-        query_params:
-          - name: customer
-            value: <customer_id>
-          - name: limit
-            value: <limit>
-        param_values:
-          - name: customer_id
-            references:
-              - dataset: stripe_connector_example
-                field: customer.id
-                direction: from
-          - name: limit
-            connector_param: items_per_page
-        data_path: data
-        pagination:
-          strategy: cursor
-          configuration:
-            cursor_param: starting_after
-            field: id
   - name: payment_method
     requests:
       read:
