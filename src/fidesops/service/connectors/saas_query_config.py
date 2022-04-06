@@ -32,7 +32,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self.endpoints = endpoints
         self.secrets = secrets
         self.masking_request = masking_request
-        self.action = None
+        self.action: Optional[str] = None
 
     def get_request_by_action(self, action: str) -> SaaSRequest:
         """
