@@ -61,6 +61,16 @@ class Strategy(BaseModel):
     configuration: Dict[str, Any]
 
 
+class ClientConfig(BaseModel):
+    """Definition for an authenticated base HTTP client"""
+
+    protocol: str
+    host: Union[
+        str, ConnectorParamRef
+    ]  # can be defined inline or be a connector_param reference
+    authentication: Strategy
+
+
 class Header(BaseModel):
     name: str
     value: str
@@ -85,6 +95,7 @@ class SaaSRequest(BaseModel):
     query_params: Optional[List[QueryParam]] = []
     body: Optional[str]
     param_values: Optional[List[ParamValue]]
+    client_config: Optional[ClientConfig]
     data_path: Optional[str]
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
@@ -160,16 +171,6 @@ class ConnectorParam(BaseModel):
     name: str
 
 
-class ClientConfig(BaseModel):
-    """Definition for an authenticated base HTTP client"""
-
-    protocol: str
-    host: Union[
-        str, ConnectorParamRef
-    ]  # can be defined inline or be a connector_param reference
-    authentication: Strategy
-
-
 class SaaSConfig(BaseModel):
     """
     Used to store endpoint and param configurations for a SaaS connector.
@@ -189,6 +190,7 @@ class SaaSConfig(BaseModel):
     client_config: ClientConfig
     endpoints: List[Endpoint]
     test_request: SaaSRequest
+    data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:

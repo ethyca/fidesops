@@ -73,23 +73,29 @@ class TestSQLQueryConfig:
         }
 
         # values exist for all query keys
-        assert found_query_keys(
-            payment_card_node,
-            {
-                "id": ["A"],
-                "customer_id": ["V"],
-                "ignore_me": ["X"],
-            },
-        ) == {"id", "customer_id"}
+        assert (
+            found_query_keys(
+                payment_card_node,
+                {
+                    "id": ["A"],
+                    "customer_id": ["V"],
+                    "ignore_me": ["X"],
+                },
+            )
+            == {"id", "customer_id"}
+        )
         # with no values OR an empty set, these are omitted
-        assert found_query_keys(
-            payment_card_node,
-            {
-                "id": ["A"],
-                "customer_id": [],
-                "ignore_me": ["X"],
-            },
-        ) == {"id"}
+        assert (
+            found_query_keys(
+                payment_card_node,
+                {
+                    "id": ["A"],
+                    "customer_id": [],
+                    "ignore_me": ["X"],
+                },
+            )
+            == {"id"}
+        )
         assert found_query_keys(
             payment_card_node, {"id": ["A"], "ignore_me": ["X"]}
         ) == {"id"}
@@ -97,21 +103,27 @@ class TestSQLQueryConfig:
         assert found_query_keys(payment_card_node, {}) == set()
 
     def test_typed_filtered_values(self):
-        assert payment_card_node.typed_filtered_values(
-            {
-                "id": ["A"],
-                "customer_id": ["V"],
-                "ignore_me": ["X"],
-            }
-        ) == {"id": ["A"], "customer_id": ["V"]}
+        assert (
+            payment_card_node.typed_filtered_values(
+                {
+                    "id": ["A"],
+                    "customer_id": ["V"],
+                    "ignore_me": ["X"],
+                }
+            )
+            == {"id": ["A"], "customer_id": ["V"]}
+        )
 
-        assert payment_card_node.typed_filtered_values(
-            {
-                "id": ["A"],
-                "customer_id": [],
-                "ignore_me": ["X"],
-            }
-        ) == {"id": ["A"]}
+        assert (
+            payment_card_node.typed_filtered_values(
+                {
+                    "id": ["A"],
+                    "customer_id": [],
+                    "ignore_me": ["X"],
+                }
+            )
+            == {"id": ["A"]}
+        )
 
         assert payment_card_node.typed_filtered_values(
             {"id": ["A"], "ignore_me": ["X"]}
@@ -637,7 +649,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/search-members"
         assert prepared_request.query_params == {"query": "customer-1@example.com"}
-        assert prepared_request.body is None
+        assert prepared_request.json_body is None
 
         # static path with multiple query params with default values
         config = SaaSQueryConfig(conversations, endpoints, {})
@@ -647,7 +659,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations"
         assert prepared_request.query_params == {"count": 1000, "offset": 0}
-        assert prepared_request.body is None
+        assert prepared_request.json_body is None
 
         # dynamic path with no query params
         config = SaaSQueryConfig(messages, endpoints, {})
@@ -655,7 +667,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations/abc/messages"
         assert prepared_request.query_params == {}
-        assert prepared_request.body is None
+        assert prepared_request.json_body is None
 
         # header, query, and path params with connector param references
         config = SaaSQueryConfig(
@@ -677,7 +689,7 @@ class TestSaaSQueryConfig:
             "limit": "10",
             "query": "customer-1@example.com",
         }
-        assert prepared_request.body is None
+        assert prepared_request.json_body is None
 
         # query and path params with connector param references
         config = SaaSQueryConfig(
@@ -692,7 +704,6 @@ class TestSaaSQueryConfig:
             "limit": "10",
             "query": "customer-1@example.com",
         }
-        assert prepared_request.body is None
 
     def test_generate_update_stmt(
         self,
@@ -702,12 +713,13 @@ class TestSaaSQueryConfig:
     ):
         saas_config = saas_example_connection_config.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
+        update_request = endpoints["member"].requests.get("update")
 
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
         ]
 
-        config = SaaSQueryConfig(member, endpoints, {})
+        config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
             "id": "123",
             "merge_fields": {"FNAME": "First", "LNAME": "Last"},
@@ -722,11 +734,9 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.PUT.value
         assert prepared_request.path == "/3.0/lists/abc/members/123"
         assert prepared_request.query_params == {}
-        assert prepared_request.body == json.dumps(
-            {
+        assert prepared_request.json_body == {
                 "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-            }
-        )
+        }
 
     def test_generate_update_stmt_custom_http_method(
         self,
@@ -743,8 +753,9 @@ class TestSaaSQueryConfig:
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
         ]
+        update_request = endpoints["member"].requests.get("update")
 
-        config = SaaSQueryConfig(member, endpoints, {})
+        config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
             "id": "123",
             "merge_fields": {"FNAME": "First", "LNAME": "Last"},
@@ -759,11 +770,9 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.POST.value
         assert prepared_request.path == "/3.0/lists/abc/members/123"
         assert prepared_request.query_params == {}
-        assert prepared_request.body == json.dumps(
-            {
+        assert prepared_request.json_body == {
                 "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-            }
-        )
+        }
 
     def test_generate_update_stmt_with_request_body(
         self,
@@ -792,13 +801,14 @@ class TestSaaSQueryConfig:
             body_param_value
         )
         endpoints = saas_config.top_level_endpoint_dict
+        update_request = endpoints["member"].requests.get("update")
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
         ]
         payment_methods = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "payment_methods")
         ]
-        config = SaaSQueryConfig(member, endpoints, {})
+        config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
             "id": "123",
             "merge_fields": {"FNAME": "First", "LNAME": "Last"},
@@ -814,18 +824,19 @@ class TestSaaSQueryConfig:
             path="/3.0/lists/abc/members/123",
             headers={},
             query_params={},
-            body=json.dumps(
-                {
-                    "properties": {
-                        "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-                        "list_id": "abc",
-                    }
+            json_body={
+                "properties": {
+                    "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
+                    "list_id": "abc",
                 }
-            ),
+            }
         )
 
         # update with connector_param reference
-        config = SaaSQueryConfig(payment_methods, endpoints, {"api_version": "2.0"})
+        update_request = endpoints["payment_methods"].requests.get("update")
+        config = SaaSQueryConfig(
+            payment_methods, endpoints, {"api_version": "2.0"}, update_request
+        )
         row = {"type": "card", "customer_name": "First Last"}
         prepared_request = config.generate_update_stmt(
             row, erasure_policy_string_rewrite, privacy_request
@@ -833,4 +844,4 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.PUT.value
         assert prepared_request.path == "/2.0/payment_methods"
         assert prepared_request.query_params == {}
-        assert prepared_request.body == json.dumps({"customer_name": "MASKED"})
+        assert prepared_request.json_body == {"customer_name": "MASKED"}

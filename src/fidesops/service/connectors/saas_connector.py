@@ -1,9 +1,10 @@
 from json import JSONDecodeError
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, Literal
 import pydash
 from requests import Session, Request, PreparedRequest, Response
 from fidesops.common_exceptions import FidesopsException
+from fidesops.core.config import config
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
@@ -18,7 +19,7 @@ from fidesops.common_exceptions import (
     PostProcessingException,
 )
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.saas_config import Strategy, SaaSRequest
+from fidesops.schemas.saas.saas_config import Strategy, SaaSRequest, ClientConfig
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
     get_strategy as get_postprocessor_strategy,
 )
@@ -28,6 +29,7 @@ from fidesops.service.pagination.pagination_strategy_factory import (
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
+from fidesops.util.url_util import set_query_parameter
 
 logger = logging.getLogger(__name__)
 
@@ -55,11 +57,14 @@ class AuthenticatedClient:
             username_key = pydash.get(configuration, "username.connector_param")
             password_key = pydash.get(configuration, "password.connector_param")
             req.prepare_auth(
-                auth=(self.secrets[username_key], self.secrets[password_key])
+                auth=(self.secrets[username_key], self.secrets.get(password_key))
             )
         elif strategy == "bearer_authentication":
             token_key = pydash.get(configuration, "token.connector_param")
             req.headers["Authorization"] = "Bearer " + self.secrets[token_key]
+        elif strategy == "query_param":
+            token_key = pydash.get(configuration, "token.connector_param")
+            req.url = set_query_parameter(req.url, token_key, self.secrets[token_key])
         return req
 
     def get_authenticated_request(
@@ -69,12 +74,12 @@ class AuthenticatedClient:
         Returns an authenticated request based on the client config and
         incoming path, headers, query, and body params.
         """
-        req = Request(
+        req: PreparedRequest = Request(
             method=request_params.method,
             url=f"{self.uri}{request_params.path}",
             headers=request_params.headers,
             params=request_params.query_params,
-            data=request_params.body,
+            json=request_params.json_body,
         ).prepare()
         return self.add_authentication(req, self.client_config.authentication)
 
@@ -90,7 +95,6 @@ class AuthenticatedClient:
             response = self.session.send(prepared_request)
         except Exception:
             raise ConnectionException(f"Operational Error connecting to '{self.key}'.")
-
         if not response.ok:
             if ignore_errors:
                 logger.info(
@@ -117,16 +121,23 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.collection_name = None
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
-        """Returns the query config for a SaaS connector"""
-        return SaaSQueryConfig(node, self.endpoints, self.secrets)
+        """Returns the query config for a given node"""
+        collection_name = node.address.collection
+        configured_masking_request = self.get_masking_request_from_config(
+            collection_name
+        )
+        return SaaSQueryConfig(
+            node, self.endpoints, self.secrets, configured_masking_request
+        )
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
-        test_request = self.saas_config.test_request
+        test_request: SaaSRequest = self.saas_config.test_request
         prepared_request: SaaSRequestParams = SaaSRequestParams(
             method=test_request.method, path=test_request.path
         )
-        self.client().send(prepared_request)
+        client: AuthenticatedClient = self.create_client_from_request(test_request)
+        client.send(prepared_request)
         return ConnectionTestStatus.succeeded
 
     def build_uri(self) -> str:
@@ -139,6 +150,28 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         uri = self.build_uri()
         logger.info(f"Creating client to {uri}")
         return AuthenticatedClient(uri, self.configuration)
+
+    def _build_client_with_config(
+        self, client_config: ClientConfig
+    ) -> AuthenticatedClient:
+        """Sets the clientConfig on the SaasConnector, and also sets on the created AuthenticatedClient"""
+        self.client_config = client_config
+        client: AuthenticatedClient = self.create_client()
+        client.client_config = client_config
+        return client
+
+    def create_client_from_request(
+        self, saas_request: SaaSRequest
+    ) -> AuthenticatedClient:
+        """
+        Permits authentication to be overridden at the request-level.
+        Use authentication on the request if specified, otherwise, just use
+        the authentication configured for the overall saas connector.
+        """
+        if saas_request.client_config:
+            return self._build_client_with_config(saas_request.client_config)
+
+        return self._build_client_with_config(self.saas_config.client_config)
 
     def retrieve_data(
         self,
@@ -185,10 +218,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Executes the prepared request and handles response postprocessing and pagination.
         Returns processed data and request_params for next page of data if available.
         """
-
-        response: Response = self.client().send(
-            prepared_request, saas_request.ignore_errors
-        )
+        client: AuthenticatedClient = self.create_client_from_request(saas_request)
+        response: Response = client.send(prepared_request, saas_request.ignore_errors)
 
         # unwrap response using data_path
         try:
@@ -279,6 +310,42 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         return rows
 
+    def get_masking_request_from_config(
+        self, collection_name: str
+    ) -> Optional[SaaSRequest]:
+        """Get the configured SaaSRequest for use in masking.
+        An update request is preferred, but we can use a gdpr delete endpoint or delete endpoint if not MASKING_STRICT.
+        """
+        requests: Dict[
+            Literal["read", "update", "delete"], SaaSRequest
+        ] = self.endpoints[collection_name].requests
+
+        update: Optional[SaaSRequest] = requests.get("update")
+        gdpr_delete: Optional[SaaSRequest] = None
+        delete: Optional[SaaSRequest] = None
+
+        if not config.execution.MASKING_STRICT:
+            gdpr_delete = self.saas_config.data_protection_request
+            delete = requests.get("delete")
+
+        try:
+            # Return first viable option
+            action_type: str = next(
+                action
+                for action in [
+                    "update" if update else None,
+                    "data_protection_request" if gdpr_delete else None,
+                    "delete" if delete else None,
+                ]
+                if action
+            )
+            logger.info(
+                f"Selecting '{action_type}' action to perform masking request for '{collection_name}' collection."
+            )
+            return next(request for request in [update, gdpr_delete, delete] if request)
+        except StopIteration:
+            return None
+
     def mask_data(
         self,
         node: TraversalNode,
@@ -288,17 +355,19 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated"""
         query_config = self.query_config(node)
+        if not query_config.masking_request:
+            raise Exception(
+                f"Either no masking request configured or no valid masking request for {node.address.collection}. "
+                f"Check that MASKING_STRICT env var is appropriately set"
+            )
         prepared_requests = [
             query_config.generate_update_stmt(row, policy, privacy_request)
             for row in rows
         ]
-        self.collection_name = node.address.collection
-        update_request: SaaSRequest = self.endpoints[self.collection_name].requests[
-            "update"
-        ]
         rows_updated = 0
+        client = self.create_client_from_request(query_config.masking_request)
         for prepared_request in prepared_requests:
-            self.client().send(prepared_request, update_request.ignore_errors)
+            client.send(prepared_request, query_config.masking_request.ignore_errors)
             rows_updated += 1
         return rows_updated
 
