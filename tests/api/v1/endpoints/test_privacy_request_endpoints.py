@@ -423,6 +423,26 @@ class TestGetPrivacyRequests:
         assert user.id == reviewer["id"]
         assert user.username == reviewer["username"]
 
+    def test_get_privacy_requests_accept_datetime(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        privacy_request,
+        postgres_execution_log,
+        mongo_execution_log,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        for date_format in ["%Y-%m-%dT00:00:00.000Z", "%Y-%m-%d"]:
+            date_input = privacy_request.created_at.strftime(date_format)
+            response = api_client.get(
+                url + f"?created_gt={date_input}",
+                headers=auth_header,
+            )
+
+        assert 200 == response.status_code
+
     def test_get_privacy_requests_by_id(
         self,
         api_client: TestClient,

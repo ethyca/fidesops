@@ -51,7 +51,7 @@ class UserCreateResponse(BaseSchema):
     id: str
 
 
-class PrivacyRequestReviewerResponse(BaseSchema):
+class PrivacyRequestReviewer(BaseSchema):
     """"""
 
     id: str
