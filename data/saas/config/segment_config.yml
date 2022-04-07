@@ -7,12 +7,10 @@ saas_config:
   connector_params:
     - name: domain
     - name: personas_domain
-    - name: api_domain
     - name: workspace
     - name: access_token
     - name: namespace_id
     - name: access_secret
-    - name: user_token
 
 
   client_config:
