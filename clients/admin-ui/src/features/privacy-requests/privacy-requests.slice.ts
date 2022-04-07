@@ -89,7 +89,7 @@ export const {
   useDenyRequestMutation,
 } = privacyRequestApi;
 
-export const requestCSVDownload = ({
+export const requestCSVDownload = async ({
   id,
   from,
   to,
@@ -119,13 +119,19 @@ export const requestCSVDownload = ({
       },
     }
   )
-    .then((res) => res.blob())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Got a bad response from the server');
+      }
+      return response.blob();
+    })
     .then((data) => {
       const a = document.createElement('a');
       a.href = window.URL.createObjectURL(data);
       a.download = 'privacy-requests.csv';
       a.click();
-    });
+    })
+    .catch((error) => Promise.reject(error));
 };
 
 // Subject requests state (filters, etc.)

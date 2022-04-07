@@ -10,6 +10,7 @@ import {
   InputLeftElement,
   InputLeftAddon,
   Stack,
+  useToast,
 } from '@fidesui/react';
 
 import PIIToggle from './PIIToggle';
@@ -36,6 +37,7 @@ const useRequestFilters = () => {
   const filters = useSelector(selectPrivacyRequestFilters);
   const token = useSelector(selectUserToken);
   const dispatch = useDispatch();
+  const toast = useToast();
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(setRequestId(event.target.value));
   };
@@ -51,8 +53,24 @@ const useRequestFilters = () => {
   const handleClearAllFilters = () => {
     dispatch(clearAllFilters());
   };
-  const handleDownloadClick = () => {
-    requestCSVDownload({ ...filters, token });
+  const handleDownloadClick = async () => {
+    let message;
+    try {
+      await requestCSVDownload({ ...filters, token });
+    } catch (error) {
+      if (error instanceof Error) {
+        message = error.message;
+      } else {
+        message = 'Unknown error occurred';
+      }
+    }
+    if (message) {
+      toast({
+        description: `${message}`,
+        duration: 5000,
+        status: 'error',
+      });
+    }
   };
 
   return {
@@ -106,7 +124,7 @@ const RequestFilters: React.FC = () => {
           <SearchLineIcon color="gray.300" w="17px" h="17px" />
         </InputLeftElement>
         <Input
-          type="text"
+          type="search"
           minWidth={200}
           placeholder="Search"
           size="sm"

@@ -14,18 +14,24 @@ export default NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        // map email and password fields to client-level credentials temporarily
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_FIDESOPS_API!}/login`,
-          {
+        let res;
+
+        try {
+          res = await fetch(`${process.env.NEXT_PUBLIC_FIDESOPS_API!}/login`, {
             method: 'POST',
             body: JSON.stringify({
               username: credentials!.email,
               password: credentials!.password,
             }),
             headers: { 'Content-Type': 'application/json' },
-          }
-        );
+          });
+        } catch (error) {
+          throw new Error('Failed to authenticate');
+        }
+
+        if (!res || !res.ok) {
+          throw new Error('Failed to authenticate');
+        }
 
         const user = await res.json();
 

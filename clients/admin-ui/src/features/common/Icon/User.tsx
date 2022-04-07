@@ -1,4 +1,4 @@
-import { createIcon } from '@chakra-ui/react';
+import { createIcon } from '@fidesui/react';
 
 export default createIcon({
   displayName: 'UserIcon',

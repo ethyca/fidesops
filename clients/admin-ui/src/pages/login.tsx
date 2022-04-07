@@ -16,23 +16,37 @@ import {
   Button,
   FormErrorMessage,
   chakra,
+  useToast,
 } from '@fidesui/react';
+import { useRouter } from 'next/router';
 
 const useLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
+  const router = useRouter();
   const formik = useFormik({
     initialValues: {
       email: '',
       password: '',
     },
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       setIsLoading(true);
-      signIn('credentials', {
+      const response = await signIn<'credentials'>('credentials', {
         ...values,
         callbackUrl: `${window.location.origin}`,
-        redirect: true,
+        redirect: false,
       });
       setIsLoading(false);
+      if (response && response.ok) {
+        router.push('/');
+        toast.closeAll();
+      } else {
+        toast({
+          status: 'error',
+          description:
+            'Login failed. Please check your credentials and try again.',
+        });
+      }
     },
     validate: (values) => {
       const errors: {
