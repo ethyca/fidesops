@@ -11,13 +11,34 @@ username = ""
 api_key = ""
 identity_email = ""
 
+[hubspot]
+domain = ""
+hapikey = ""
+identity_email = ""
+
 [stripe]
 host = ""
 api_key = ""
 payment_types = ""
 page_limit = ""
+identity_email = ""
 
 [sentry]
 host = ""
 access_token = ""
+identity_email = ""
+erasure_access_token = ""
+erasure_identity_email = ""
+user_id_erasure = ""
+issue_url = ""
+
+[segment]
+domain = ""
+api_domain = ""
+personas_domain = ""
+workspace = ""
+access_token = ""
+namespace_id = ""
+access_secret = ""
+user_token = ""
 identity_email = ""

@@ -28,9 +28,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         masking_request: Optional[SaaSRequest] = None,
     ):
         super().__init__(node)
+        self.collection_name = node.address.collection
         self.endpoints = endpoints
         self.secrets = secrets
         self.masking_request = masking_request
+        self.action: Optional[str] = None
 
     def get_request_by_action(self, action: str) -> SaaSRequest:
         """
@@ -38,6 +40,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         current collection and preferred action (read, update, delete)
         """
         try:
+            self.action = action
             collection_name = self.node.address.collection
             request = self.endpoints[collection_name].requests[action]
             logger.info(
@@ -46,7 +49,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             return request
         except KeyError:
             raise ValueError(
-                f"The `{action}` action is not defined for the `{collection_name}` endpoint in {self.node.node.dataset.connection_key}"
+                f"The '{action}' action is not defined for the '{collection_name}' endpoint in {self.node.node.dataset.connection_key}"
             )
 
     def generate_requests(
@@ -56,8 +59,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         filtered_data = self.node.typed_filtered_values(input_data)
 
-        # populate the SaaS request with reference values from other datasets provided to this node
         request_params = []
+
+        # Build SaaS requests for fields that are independent of each other
         for string_path, reference_values in filtered_data.items():
             for value in reference_values:
                 request_params.append(
@@ -74,24 +78,28 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         return request_params
 
     @staticmethod
-    def assign_placeholders(value: str, param_values: Dict[str, Any]) -> str:
+    def assign_placeholders(value: str, param_values: Dict[str, Any]) -> Optional[str]:
         """
         Finds all the placeholders (indicated by <>) in the passed in value
         and replaces them with the actual param values
+
+        Returns None if any of the placeholders cannot be found in the param_values
         """
         if value and isinstance(value, str):
             placeholders = re.findall("<(.+?)>", value)
             for placeholder in placeholders:
-                value = value.replace(
-                    f"<{placeholder}>", str(param_values[placeholder])
-                )
+                placeholder_value = param_values.get(placeholder)
+                if placeholder_value:
+                    value = value.replace(f"<{placeholder}>", str(placeholder_value))
+                else:
+                    return None
         return value
 
     def map_param_values(
         self,
         current_request: SaaSRequest,
         param_values: Dict[str, Any],
-        update_values: Optional[str],
+        update_values: Optional[Dict[str, Any]],
     ) -> SaaSRequestParams:
         """
         Visits path, headers, query, and body params in the current request and replaces
@@ -101,26 +109,47 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         does not specify a body.
         """
 
-        path: str = self.assign_placeholders(current_request.path, param_values)
+        path: Optional[str] = self.assign_placeholders(
+            current_request.path, param_values
+        )
+        if path is None:
+            raise ValueError(
+                f"Unable to replace placeholders in the path for the '{self.action}' request of the '{self.collection_name}' collection."
+            )
 
         headers: Dict[str, Any] = {}
         for header in current_request.headers or []:
-            headers[header.name] = self.assign_placeholders(header.value, param_values)
+            header_value = self.assign_placeholders(header.value, param_values)
+            # only create header if placeholders were replaced with actual values
+            if header_value is not None:
+                headers[header.name] = self.assign_placeholders(
+                    header.value, param_values
+                )
 
         query_params: Dict[str, Any] = {}
         for query_param in current_request.query_params or []:
-            query_params[query_param.name] = self.assign_placeholders(
+            query_param_value = self.assign_placeholders(
                 query_param.value, param_values
             )
+            # only create query param if placeholders were replaced with actual values
+            if query_param_value is not None:
+                query_params[query_param.name] = query_param_value
 
-        body = self.assign_placeholders(current_request.body, param_values)
+        body: Optional[str] = self.assign_placeholders(
+            current_request.body, param_values
+        )
+        # if we declared a body and it's None after assigning placeholders we should error the request
+        if current_request.body and body is None:
+            raise ValueError(
+                f"Unable to replace placeholders in body for the '{self.action}' request of the '{self.collection_name}' collection."
+            )
 
         return SaaSRequestParams(
             method=current_request.method,
             path=path,
             headers=headers,
             query_params=query_params,
-            body=body if body else update_values,
+            json_body=json.loads(body) if body else update_values,
         )
 
     def generate_query(
@@ -139,7 +168,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         param_values: Dict[str, Any] = {}
         for param_value in current_request.param_values:
             if param_value.references or param_value.identity:
-                param_values[param_value.name] = input_data[param_value.name][0]
+                # TODO: how to handle missing reference or identity values in a way
+                # in a way that is obvious based on configuration
+                input_list = input_data.get(param_value.name)
+                if input_list:
+                    param_values[param_value.name] = input_list[0]
             elif param_value.connector_param:
                 param_values[param_value.name] = pydash.get(
                     self.secrets, param_value.connector_param
@@ -186,10 +219,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # mask row values
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
-        update_values: str = json.dumps(unflatten_dict(update_value_map))
+        update_values: Dict[str, Any] = unflatten_dict(update_value_map)
 
         # removes outer {} wrapper from body for greater flexibility in custom body config
-        param_values["masked_object_fields"] = update_values[1:-1]
+        param_values["masked_object_fields"] = json.dumps(update_values)[1:-1]
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = self.map_param_values(
