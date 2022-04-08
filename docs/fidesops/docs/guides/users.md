@@ -11,7 +11,7 @@ We include some user-related endpoints for the Fidesops Admin UI. In this sectio
 
 To create the first user:
 
-Run `make server` in top-level `fidesops` directory, then run `make user`.
+In the top-level `fidesops` directory, run `make user`.
 
 Wait for a prompt to supply a username and password (password requires 8 or more characters, upper and lowercase chars, a number, and a symbol). This will create an Admin Root UI User that you can use to login and create other users.
 
