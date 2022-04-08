@@ -224,7 +224,6 @@ def test_segment_saas_erasure_request_task(
 
     # Create user for GDPR delete
     erasure_email = create_segment_test_data(segment_connection_config, segment_identity_email)
-    time.sleep(2)
     privacy_request = PrivacyRequest(
         id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
     )
