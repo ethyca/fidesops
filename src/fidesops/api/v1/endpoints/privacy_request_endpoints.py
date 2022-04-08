@@ -299,6 +299,21 @@ def get_request_status(
             detail="Cannot specify both succeeded and failed query params.",
         )
 
+    for end, start, field_name in [
+        [created_lt, created_gt, "created"],
+        [completed_lt, completed_gt, "completed"],
+        [errored_lt, errored_gt, "errorer"],
+        [started_lt, started_gt, "started"],
+    ]:
+        if all([end, start]):
+            if end < start:
+                # With date fields, if the start date is after the end date, return a 400
+                # because no records will lie within this range.
+                raise HTTPException(
+                    status_code=HTTP_400_BAD_REQUEST,
+                    detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
+                )
+
     query = db.query(PrivacyRequest)
 
     # Further restrict all PrivacyRequests by query params

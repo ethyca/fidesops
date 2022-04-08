@@ -646,6 +646,28 @@ class TestGetPrivacyRequests:
         assert resp["items"][1]["id"] == succeeded_privacy_request.id
         assert resp["items"][2]["id"] == privacy_request.id
 
+    def test_filter_privacy_requests_by_conflicting_date_fields(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_request,
+        succeeded_privacy_request,
+        failed_privacy_request,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        # Search for privacy requests after 2019, but before 2018. This should return an error.
+        start = "2019-01-01"
+        end = "2018-01-01"
+        response = api_client.get(
+            url + f"?created_gt={start}&created_lt={end}", headers=auth_header
+        )
+        assert 400 == response.status_code
+        assert (
+            response.json()["detail"]
+            == f"Value specified for created_lt: {end} must be after created_gt: {start}."
+        )
+
     def test_filter_privacy_requests_by_started(
         self,
         api_client: TestClient,
