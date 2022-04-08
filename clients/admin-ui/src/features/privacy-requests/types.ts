@@ -17,6 +17,10 @@ export interface PrivacyRequest {
     name: string;
     key: string;
   };
+  reviewer: {
+    id: string;
+    username: string;
+  };
   created_at: string;
   reviewed_by: string;
   id: string;

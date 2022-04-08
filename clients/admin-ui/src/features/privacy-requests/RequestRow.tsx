@@ -111,6 +111,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
     focused,
   } = useRequestRow(request);
   const showMenu = hovered || menuOpen || focused;
+
   return (
     <Tr
       key={request.id}
@@ -153,7 +154,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
       </Td>
       <Td py={1}>
         <Text fontSize="xs">
-          <PII data={request.reviewed_by || ''} />
+          <PII data={request.reviewer ? request.reviewer.username : ''} />
         </Text>
       </Td>
       <Td py={1}>
