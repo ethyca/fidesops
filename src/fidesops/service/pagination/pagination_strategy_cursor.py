@@ -47,7 +47,7 @@ class CursorPaginationStrategy(PaginationStrategy):
             method=request_params.method,
             path=request_params.path,
             query_params=request_params.query_params,
-            body=request_params.body
+            body=request_params.body,
         )
 
     @staticmethod

@@ -159,7 +159,7 @@ def to_graph_field(
             # If specified on array field, lifts and passes into sub-fields, for example,
             # arrays of objects
             return_all_elements = True
-        
+
         if meta_section.read_only:
             read_only = True
 
@@ -176,7 +176,7 @@ def to_graph_field(
         is_array=is_array,
         sub_fields=sub_fields,
         return_all_elements=return_all_elements,
-        read_only=read_only
+        read_only=read_only,
     )
 
 

@@ -251,6 +251,7 @@ class Field(BaseModel, ABC):
 
     read_only: Optional[bool] = None
     """Optionally specify if a field is read-only, meaning it can't be updated or deleted. """
+
     class Config:
         """for pydantic incorporation of custom non-pydantic types"""
 
@@ -356,7 +357,7 @@ def generate_field(
     is_array: bool,
     sub_fields: List[Field],
     return_all_elements: Optional[bool],
-    read_only: Optional[bool]
+    read_only: Optional[bool],
 ) -> Field:
     """Generate a graph field."""
 
@@ -379,7 +380,7 @@ def generate_field(
         length=length,
         is_array=is_array,
         return_all_elements=return_all_elements,
-        read_only=read_only
+        read_only=read_only,
     )
 
 

@@ -109,7 +109,7 @@ class FidesopsMeta(BaseModel):
     """Optionally specify to query for the entire array if the array is an entrypoint into the node. Default is False."""
     read_only: Optional[bool]
     """Optionally specify if a field is read-only, meaning it can't be updated or deleted."""
-    
+
     @validator("data_type")
     def valid_data_type(cls, v: Optional[str]) -> Optional[str]:
         """Validate that all annotated data categories exist in the taxonomy"""

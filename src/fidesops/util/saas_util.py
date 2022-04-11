@@ -122,6 +122,7 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
             )
     return output
 
+
 def deep_merge(target: dict, source: dict) -> None:
     """
     Adds all leaf values in the source dictionary to the target dictionary.

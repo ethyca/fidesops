@@ -282,11 +282,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         return saas_request_params
 
-    def all_value_map(self, row) -> Dict[str, Any]:
+    def all_value_map(self, row: Row) -> Dict[str, Any]:
         """
-        Takes a row and preserves only the values that are defined in the Dataset
+        Takes a row and preserves only the fields that are defined in the Dataset
         and are not flagged as read-only. Used for scenarios when an update endpoint
-        has required fields other just the fields being updated.
+        has required fields other than just the fields being updated.
         """
         all_value_map: Dict[str, Any] = {}
         for field_path, field in self.field_map().items():
