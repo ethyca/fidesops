@@ -12,6 +12,9 @@ import { ArrowDownLineIcon } from '../features/common/Icon';
 import RequestTable from '../features/privacy-requests/RequestTable';
 import RequestFilters from '../features/privacy-requests/RequestFilters';
 
+import UserManagementTable from '../features/user-management/UserManagementTable';
+import UserManagementTableActions from '../features/user-management/UserManagementTableActions';
+
 import { assignToken } from '../features/user/user.slice';
 
 const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
@@ -38,7 +41,7 @@ const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
         <Button variant="ghost" disabled mr={4}>
           Datastore Connections
         </Button>
-        <Button variant="ghost" disabled mr={4}>
+        <Button variant="ghost" mr={4} colorScheme="complimentary">
           User Management
         </Button>
         <Button variant="ghost" disabled rightIcon={<ArrowDownLineIcon />}>
@@ -51,6 +54,13 @@ const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
         </Heading>
         <RequestFilters />
         <RequestTable />
+      </Box>
+      <Box>
+        <Heading mb={8} fontSize="2xl" fontWeight="semibold">
+          User Management
+        </Heading>
+        <UserManagementTableActions />
+        <UserManagementTable />
       </Box>
     </main>
   </div>
