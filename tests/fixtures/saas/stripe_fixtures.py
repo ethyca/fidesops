@@ -1,4 +1,6 @@
+import json
 import os
+from multidimensional_urlencode import urlencode
 from typing import Any, Dict, Generator
 from fidesops.core.config import load_toml
 from fidesops.db import session
@@ -10,6 +12,7 @@ from fidesops.models.connectionconfig import (
 from fidesops.models.datasetconfig import DatasetConfig
 import pytest
 import pydash
+import requests
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 from sqlalchemy.orm import Session
@@ -35,6 +38,11 @@ def stripe_identity_email():
     return pydash.get(saas_config, "stripe.identity_email") or os.environ.get(
         "STRIPE_IDENTITY_EMAIL"
     )
+
+
+@pytest.fixture(scope="function")
+def stripe_erasure_identity_email():
+    return "ethyca+stripe+rtf@example.com"
 
 
 @pytest.fixture
@@ -87,3 +95,64 @@ def stripe_dataset_config(
     )
     yield dataset
     dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def stripe_create_erasure_data(stripe_secrets) -> Generator:
+
+    base_url = f"https://{stripe_secrets['host']}"
+
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": f"Bearer {stripe_secrets['api_key']}",
+    }
+
+    # customer
+
+    customer_data = {
+        "address": {
+            "city": "Anaheim",
+            "country": "US",
+            "line1": "123 Fake St",
+            "line2": "Apt 1",
+            "postal_code": "92882",
+            "state": "CA",
+        },
+        "balance": 0,
+        "description": "RTF Test Customer",
+        "email": "ethyca+stripe+rtf@example.com",
+        "name": "Ethyca RTF",
+        "phone": "+19515551234",
+        "preferred_locales": ["en-US"],
+        "shipping": {
+            "address": {
+                "city": "Anaheim",
+                "country": "US",
+                "line1": "123 Fake St",
+                "line2": "Apt 1",
+                "postal_code": "92882",
+                "state": "CA",
+            },
+            "name": "Ethyca RTF",
+            "phone": "+19515551234",
+        },
+    }
+
+    response = requests.post(
+        url=f"{base_url}/v1/customers",
+        headers=headers,
+        data=urlencode(customer_data),
+    )
+
+    customer = response.json()
+
+    # create other stuff
+
+    yield customer
+
+    requests.delete(
+        url=f"{base_url}/v1/customers/{customer['id']}",
+        headers=headers
+    )
+
+    

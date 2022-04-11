@@ -158,3 +158,18 @@ saas_config:
                 direction: from
           - name: query
             identity: email
+  - name: customer
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/1
+        param_values:
+          - name: placeholder
+            identity: email
+      update:
+        method: POST
+        path: /v1/customers/1
+        headers:
+          - name: Content-Type
+            value: application/x-www-form-urlencoded
+        body: '{<all_object_fields>}'

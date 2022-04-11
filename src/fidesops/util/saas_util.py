@@ -121,3 +121,14 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
                 f"Error unflattening dictionary, conflicting levels detected: {exc}"
             )
     return output
+
+def deep_merge(target: dict, source: dict) -> None:
+    """
+    Adds all leaf values in the source dictionary to the target dictionary.
+    This is a destructive operation since the target is modified in place.
+    """
+    for key, value in source.items():
+        if isinstance(value, dict):
+            deep_merge(target.setdefault(key, {}), value)
+        else:
+            target[key] = value

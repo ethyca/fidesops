@@ -649,7 +649,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/search-members"
         assert prepared_request.query_params == {"query": "customer-1@example.com"}
-        assert prepared_request.json_body is None
+        assert prepared_request.body is None
 
         # static path with multiple query params with default values
         config = SaaSQueryConfig(conversations, endpoints, {})
@@ -659,7 +659,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations"
         assert prepared_request.query_params == {"count": 1000, "offset": 0}
-        assert prepared_request.json_body is None
+        assert prepared_request.body is None
 
         # dynamic path with no query params
         config = SaaSQueryConfig(messages, endpoints, {})
@@ -667,7 +667,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations/abc/messages"
         assert prepared_request.query_params == {}
-        assert prepared_request.json_body is None
+        assert prepared_request.body is None
 
         # header, query, and path params with connector param references
         config = SaaSQueryConfig(
@@ -689,7 +689,7 @@ class TestSaaSQueryConfig:
             "limit": "10",
             "query": "customer-1@example.com",
         }
-        assert prepared_request.json_body is None
+        assert prepared_request.body is None
 
         # query and path params with connector param references
         config = SaaSQueryConfig(
@@ -733,10 +733,13 @@ class TestSaaSQueryConfig:
         )
         assert prepared_request.method == HTTPMethod.PUT.value
         assert prepared_request.path == "/3.0/lists/abc/members/123"
+        assert prepared_request.headers == {"Content-Type": "application/json"}
         assert prepared_request.query_params == {}
-        assert prepared_request.json_body == {
+        assert prepared_request.body == json.dumps(
+            {
                 "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-        }
+            }
+        )
 
     def test_generate_update_stmt_custom_http_method(
         self,
@@ -769,10 +772,13 @@ class TestSaaSQueryConfig:
         )
         assert prepared_request.method == HTTPMethod.POST.value
         assert prepared_request.path == "/3.0/lists/abc/members/123"
+        assert prepared_request.headers == {"Content-Type": "application/json"}
         assert prepared_request.query_params == {}
-        assert prepared_request.json_body == {
+        assert prepared_request.body == json.dumps(
+            {
                 "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-        }
+            }
+        )
 
     def test_generate_update_stmt_with_request_body(
         self,
@@ -808,6 +814,7 @@ class TestSaaSQueryConfig:
         payment_methods = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "payment_methods")
         ]
+
         config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
             "id": "123",
@@ -822,14 +829,16 @@ class TestSaaSQueryConfig:
         assert prepared_request == SaaSRequestParams(
             method=HTTPMethod.PUT,
             path="/3.0/lists/abc/members/123",
-            headers={},
+            headers={"Content-Type": "application/json"},
             query_params={},
-            json_body={
-                "properties": {
-                    "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-                    "list_id": "abc",
+            body=json.dumps(
+                {
+                    "properties": {
+                        "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
+                        "list_id": "abc",
+                    }
                 }
-            }
+            ),
         )
 
         # update with connector_param reference
@@ -843,5 +852,42 @@ class TestSaaSQueryConfig:
         )
         assert prepared_request.method == HTTPMethod.PUT.value
         assert prepared_request.path == "/2.0/payment_methods"
+        assert prepared_request.headers == {"Content-Type": "application/json"}
         assert prepared_request.query_params == {}
-        assert prepared_request.json_body == {"customer_name": "MASKED"}
+        assert prepared_request.body == json.dumps({"customer_name": "MASKED"})
+
+    def test_generate_update_stmt_with_url_encoded_body(
+        self,
+        erasure_policy_string_rewrite,
+        combined_traversal,
+        saas_example_connection_config,
+    ):
+        saas_config: Optional[
+            SaaSConfig
+        ] = saas_example_connection_config.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+        customer = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "customer")
+        ]
+
+        # update with multidimensional urlcoding
+        # omit read-only fields and fields not defined in the dataset
+        # 'created' and 'id' are flagged as read-only and 'livemode' is not in the dataset
+        update_request = endpoints["customer"].requests.get("update")
+        config = SaaSQueryConfig(customer, endpoints, {}, update_request)
+        row = {
+            "id": 1,
+            "name": {"first": "A", "last": "B"},
+            "created": 1649198338,
+            "livemode": False,
+        }
+        prepared_request = config.generate_update_stmt(
+            row, erasure_policy_string_rewrite, privacy_request
+        )
+        assert prepared_request.method == HTTPMethod.POST.value
+        assert prepared_request.path == "/v1/customers/1"
+        assert prepared_request.headers == {
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+        assert prepared_request.query_params == {}
+        assert prepared_request.body == "name%5Bfirst%5D=MASKED&name%5Blast%5D=MASKED"

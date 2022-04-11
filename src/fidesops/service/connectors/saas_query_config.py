@@ -1,16 +1,19 @@
 import logging
 import json
 import re
-from typing import Any, Dict, List, Optional, TypeVar
+from typing import Any, Dict, List, Optional, TypeVar, Union
+from fidesops.graph.config import ScalarField
+
 import pydash
+from multidimensional_urlencode import urlencode
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.graph.traversal import TraversalNode
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.saas.saas_config import Endpoint, SaaSRequest
 from fidesops.service.connectors.query_config import QueryConfig
-from fidesops.util.collection_util import Row
-from fidesops.util.saas_util import unflatten_dict, FIDESOPS_GROUPED_INPUTS
+from fidesops.util.collection_util import Row, merge_dicts
+from fidesops.util.saas_util import deep_merge, unflatten_dict, FIDESOPS_GROUPED_INPUTS
 
 logger = logging.getLogger(__name__)
 
@@ -104,9 +107,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         """
         Visits path, headers, query, and body params in the current request and replaces
         the placeholders with the request param values.
-
-        The update_values are added to the body, if available, and the current_request
-        does not specify a body.
         """
 
         path: Optional[str] = self.assign_placeholders(
@@ -149,14 +149,56 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             path=path,
             headers=headers,
             query_params=query_params,
-            json_body=json.loads(body) if body else update_values,
+            body=self.build_body(headers, body, update_values),
         )
+
+    @staticmethod
+    def build_body(
+        headers: Dict[str, Any],
+        body: Optional[str],
+        update_values: Optional[Dict[str, Any]],
+    ) -> Optional[Union[str, Dict[str, Any]]]:
+        """
+        Builds the appropriately formatted body based on the content type (if found)
+        defaulting to application/json if a content type is not provided.
+
+        Uses update_values as a default value if available and a body is not provided.
+        """
+
+        content_type = next(
+            (
+                value
+                for header, value in headers.items()
+                if header.lower() == "content-type"
+            ),
+            None,
+        )
+
+        # add Content-Type: application/json if a content type is not provided
+        if content_type is None:
+            content_type = "application/json"
+            headers["Content-Type"] = "application/json"
+
+        if content_type == "application/json":
+            if body:
+                return body
+            elif update_values:
+                return json.dumps(update_values)
+        elif content_type == "application/x-www-form-urlencoded":
+            if body:
+                return urlencode(json.loads(body))
+            elif update_values:
+                return urlencode(update_values)
+        elif content_type == "text/plain":
+            return body if body else update_values
+
+        return None
 
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
     ) -> SaaSRequestParams:
         """
-        This returns the header, query, and path params needed to make an API call.
+        This returns the method, path, header, query, and body params needed to make an API call.
         This is the API equivalent of building the components of a database
         query statement (select statement, where clause, limit, offset, etc.)
         """
@@ -166,7 +208,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
         param_values: Dict[str, Any] = {}
-        for param_value in current_request.param_values:
+        for param_value in current_request.param_values or []:
             if param_value.references or param_value.identity:
                 # TODO: how to handle missing reference or identity values in a way
                 # in a way that is obvious based on configuration
@@ -191,8 +233,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> SaaSRequestParams:
         """
-        Prepares the update request by masking the fields in the row data based on the policy.
-        This masked row is then added as the body to a dynamically generated SaaS request.
+        This returns the method, path, header, query, and body params needed to make an API call.
+        The fields in the row are masked according the the policy and added to the request body
+        if specified by the body field of the masking request.
         """
 
         current_request: SaaSRequest = self.masking_request
@@ -203,7 +246,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
         param_values: Dict[str, Any] = {}
-        for param_value in current_request.param_values:
+        for param_value in current_request.param_values or []:
             if param_value.references:
                 param_values[param_value.name] = pydash.get(
                     collection_values, param_value.references[0].field
@@ -219,19 +262,42 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # mask row values
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
-        update_values: Dict[str, Any] = unflatten_dict(update_value_map)
+        masked_object: Dict[str, Any] = unflatten_dict(update_value_map)
+
+        # map of all values including those not being masked/updated
+        all_value_map: Dict[str, Any] = self.all_value_map(row)
+        complete_object: Dict[str, Any] = unflatten_dict(all_value_map)
+        deep_merge(complete_object, masked_object)
 
         # removes outer {} wrapper from body for greater flexibility in custom body config
-        param_values["masked_object_fields"] = json.dumps(update_values)[1:-1]
+        param_values["masked_object_fields"] = json.dumps(masked_object)[1:-1]
+        param_values["all_object_fields"] = json.dumps(complete_object)[1:-1]
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = self.map_param_values(
-            current_request, param_values, update_values
+            current_request, param_values, masked_object
         )
 
         logger.info(f"Populated request params for {current_request.path}")
 
         return saas_request_params
+
+    def all_value_map(self, row) -> Dict[str, Any]:
+        """
+        Takes a row and preserves only the values that are defined in the Dataset
+        and are not flagged as read-only. Used for scenarios when an update endpoint
+        has required fields other just the fields being updated.
+        """
+        all_value_map: Dict[str, Any] = {}
+        for field_path, field in self.field_map().items():
+            # only map scalar fields that are not read-only
+            if isinstance(field, ScalarField) and not field.read_only:
+                # only map if the value exists on the row
+                if pydash.get(row, field_path.string_path) is not None:
+                    all_value_map[field_path.string_path] = pydash.get(
+                        row, field_path.string_path
+                    )
+        return all_value_map
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string"""

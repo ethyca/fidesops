@@ -37,6 +37,19 @@ saas_config:
           - name: email
             identity: email
         data_path: data
+      update:
+        method: POST
+        path: /v1/customers/<customer_id>
+        headers:
+          - name: Content-Type
+            value: application/x-www-form-urlencoded
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+        body: '{<all_object_fields>}'
   - name: charge
     requests:
       read: 

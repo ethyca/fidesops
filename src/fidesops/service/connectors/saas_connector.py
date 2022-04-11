@@ -79,7 +79,7 @@ class AuthenticatedClient:
             url=f"{self.uri}{request_params.path}",
             headers=request_params.headers,
             params=request_params.query_params,
-            json=request_params.json_body,
+            data=request_params.body,
         ).prepare()
         return self.add_authentication(req, self.client_config.authentication)
 
@@ -88,7 +88,7 @@ class AuthenticatedClient:
     ) -> Response:
         """
         Builds and executes an authenticated request.
-        The HTTP method is determined by the request_params.
+        Optionally ignores non-200 responses if ignore_errors is set to True
         """
         try:
             prepared_request = self.get_authenticated_request(request_params)
@@ -121,7 +121,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.collection_name = None
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
-        """Returns the query config for a given node"""
+        """
+        Returns the query config for a given node which includes the endpoints,
+        connector param values, and the masking request for the current collection.
+        """
         collection_name = node.address.collection
         configured_masking_request = self.get_masking_request_from_config(
             collection_name
@@ -154,7 +157,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     def _build_client_with_config(
         self, client_config: ClientConfig
     ) -> AuthenticatedClient:
-        """Sets the clientConfig on the SaasConnector, and also sets on the created AuthenticatedClient"""
+        """Sets the client_config on the SaasConnector, and also sets it on the created AuthenticatedClient"""
         self.client_config = client_config
         client: AuthenticatedClient = self.create_client()
         client.client_config = client_config
@@ -166,7 +169,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
         Permits authentication to be overridden at the request-level.
         Use authentication on the request if specified, otherwise, just use
-        the authentication configured for the overall saas connector.
+        the authentication configured for the overall SaaS connector.
         """
         if saas_request.client_config:
             return self._build_client_with_config(saas_request.client_config)
@@ -360,10 +363,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"Either no masking request configured or no valid masking request for {node.address.collection}. "
                 f"Check that MASKING_STRICT env var is appropriately set"
             )
+
         prepared_requests = [
             query_config.generate_update_stmt(row, policy, privacy_request)
             for row in rows
         ]
+
         rows_updated = 0
         client = self.create_client_from_request(query_config.masking_request)
         for prepared_request in prepared_requests:
