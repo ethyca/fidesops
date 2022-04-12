@@ -15,7 +15,9 @@ import {
   // useToast,
 } from '@fidesui/react';
 
-const useAddNewUserForm = () => {
+// Can we use the same form for the create, view, and edit pages? The only difference is breadcrumbs
+
+const useUserForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const formik = useFormik({
     initialValues: {
@@ -63,7 +65,7 @@ const useAddNewUserForm = () => {
   return { ...formik, isLoading };
 };
 
-const AddNewUser: NextPage = () => {
+const UserForm: NextPage = () => {
   const {
     errors,
     handleBlur,
@@ -72,7 +74,7 @@ const AddNewUser: NextPage = () => {
     isLoading,
     touched,
     values,
-  } = useAddNewUserForm();
+  } = useUserForm();
   return (
     <div>
       <Head>
@@ -158,7 +160,7 @@ const AddNewUser: NextPage = () => {
               flex="1"
               mr={3}
               size="sm"
-              onClick={cancelAddNewUser}
+              onClick={cancelCreateNewUser}
             >
               Cancel
             </Button>
@@ -181,4 +183,4 @@ const AddNewUser: NextPage = () => {
   );
 };
 
-export default AddNewUser;
+export default UserForm;
