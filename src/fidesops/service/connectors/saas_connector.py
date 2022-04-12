@@ -360,6 +360,17 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"Either no masking request configured or no valid masking request for {node.address.collection}. "
                 f"Check that MASKING_STRICT env var is appropriately set"
             )
+        # unwrap response using data_path
+        if query_config.masking_request.data_path and rows:
+            rows = pydash.get(rows[0], query_config.masking_request.data_path)
+
+        # post-process access request response specific to masking request needs
+        rows = self.process_response_data(
+            rows,
+            privacy_request.get_cached_identity_data(),
+            query_config.masking_request.postprocessors,
+        )
+
         prepared_requests = [
             query_config.generate_update_stmt(row, policy, privacy_request)
             for row in rows

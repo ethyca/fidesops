@@ -114,7 +114,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         )
         if path is None:
             raise ValueError(
-                f"Unable to replace placeholders in the path for the '{self.action}' request of the '{self.collection_name}' collection."
+                f"At least one param_values references an invalid field for the '{self.action}' request of the '{self.collection_name}' collection."
             )
 
         headers: Dict[str, Any] = {}

@@ -1,0 +1,56 @@
+"use strict";
+/*
+ * ATTENTION: An "eval-source-map" devtool has been used.
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file with attached SourceMaps in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+(() => {
+var exports = {};
+exports.id = "pages/api/auth/[...nextauth]";
+exports.ids = ["pages/api/auth/[...nextauth]"];
+exports.modules = {
+
+/***/ "next-auth":
+/*!****************************!*\
+  !*** external "next-auth" ***!
+  \****************************/
+/***/ ((module) => {
+
+module.exports = require("next-auth");
+
+/***/ }),
+
+/***/ "next-auth/providers/credentials":
+/*!**************************************************!*\
+  !*** external "next-auth/providers/credentials" ***!
+  \**************************************************/
+/***/ ((module) => {
+
+module.exports = require("next-auth/providers/credentials");
+
+/***/ }),
+
+/***/ "./src/pages/api/auth/[...nextauth].ts":
+/*!*********************************************!*\
+  !*** ./src/pages/api/auth/[...nextauth].ts ***!
+  \*********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\n/* harmony import */ var next_auth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! next-auth */ \"next-auth\");\n/* harmony import */ var next_auth__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(next_auth__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var next_auth_providers_credentials__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! next-auth/providers/credentials */ \"next-auth/providers/credentials\");\n/* harmony import */ var next_auth_providers_credentials__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(next_auth_providers_credentials__WEBPACK_IMPORTED_MODULE_1__);\nfunction ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }\n\nfunction _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }\n\nfunction _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }\n\n\n\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (next_auth__WEBPACK_IMPORTED_MODULE_0___default()({\n  providers: [next_auth_providers_credentials__WEBPACK_IMPORTED_MODULE_1___default()({\n    name: 'Credentials',\n    credentials: {\n      email: {\n        label: 'Email',\n        type: 'text',\n        placeholder: 'you@yourdomain.com'\n      },\n      password: {\n        label: 'Password',\n        type: 'password'\n      }\n    },\n\n    async authorize(credentials) {\n      let res;\n\n      try {\n        res = await fetch(`${\"http://0.0.0.0:8080/api/v1\"}/login`, {\n          method: 'POST',\n          body: JSON.stringify({\n            username: credentials.email,\n            password: credentials.password\n          }),\n          headers: {\n            'Content-Type': 'application/json'\n          }\n        });\n      } catch (error) {\n        throw new Error('Failed to authenticate');\n      }\n\n      if (!res || !res.ok) {\n        throw new Error('Failed to authenticate');\n      }\n\n      const user = await res.json(); // If no error and we have user data, return it\n\n      if (res.ok && user) {\n        return _objectSpread(_objectSpread({}, user), {}, {\n          username: credentials.email\n        });\n      } // Return null if user data could not be retrieved\n\n\n      return null;\n    }\n\n  })],\n  callbacks: {\n    async jwt({\n      token,\n      user\n    }) {\n      if (user !== null && user !== void 0 && user.access_token) {\n        Object.assign(token, {\n          token: user.access_token,\n          username: user.username\n        });\n      }\n\n      return token;\n    },\n\n    async session({\n      session,\n      token\n    }) {\n      Object.assign(session, {\n        accessToken: token.token,\n        username: token.username\n      });\n      return session;\n    }\n\n  }\n}));//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9zcmMvcGFnZXMvYXBpL2F1dGgvWy4uLm5leHRhdXRoXS50cy5qcyIsIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7OztBQUFBO0FBQ0E7QUFFQSxpRUFBZUEsZ0RBQVEsQ0FBQztBQUN0QkUsRUFBQUEsU0FBUyxFQUFFLENBQ1RELHNFQUFtQixDQUFDO0FBQ2xCRSxJQUFBQSxJQUFJLEVBQUUsYUFEWTtBQUVsQkMsSUFBQUEsV0FBVyxFQUFFO0FBQ1hDLE1BQUFBLEtBQUssRUFBRTtBQUNMQyxRQUFBQSxLQUFLLEVBQUUsT0FERjtBQUVMQyxRQUFBQSxJQUFJLEVBQUUsTUFGRDtBQUdMQyxRQUFBQSxXQUFXLEVBQUU7QUFIUixPQURJO0FBTVhDLE1BQUFBLFFBQVEsRUFBRTtBQUFFSCxRQUFBQSxLQUFLLEVBQUUsVUFBVDtBQUFxQkMsUUFBQUEsSUFBSSxFQUFFO0FBQTNCO0FBTkMsS0FGSzs7QUFVbEIsVUFBTUcsU0FBTixDQUFnQk4sV0FBaEIsRUFBNkI7QUFDM0IsVUFBSU8sR0FBSjs7QUFFQSxVQUFJO0FBQ0ZBLFFBQUFBLEdBQUcsR0FBRyxNQUFNQyxLQUFLLENBQUUsR0FBRUMsNEJBQXNDLFFBQTFDLEVBQW1EO0FBQ2xFRyxVQUFBQSxNQUFNLEVBQUUsTUFEMEQ7QUFFbEVDLFVBQUFBLElBQUksRUFBRUMsSUFBSSxDQUFDQyxTQUFMLENBQWU7QUFDbkJDLFlBQUFBLFFBQVEsRUFBRWhCLFdBQVcsQ0FBRUMsS0FESjtBQUVuQkksWUFBQUEsUUFBUSxFQUFFTCxXQUFXLENBQUVLO0FBRkosV0FBZixDQUY0RDtBQU1sRVksVUFBQUEsT0FBTyxFQUFFO0FBQUUsNEJBQWdCO0FBQWxCO0FBTnlELFNBQW5ELENBQWpCO0FBUUQsT0FURCxDQVNFLE9BQU9DLEtBQVAsRUFBYztBQUNkLGNBQU0sSUFBSUMsS0FBSixDQUFVLHdCQUFWLENBQU47QUFDRDs7QUFFRCxVQUFJLENBQUNaLEdBQUQsSUFBUSxDQUFDQSxHQUFHLENBQUNhLEVBQWpCLEVBQXFCO0FBQ25CLGNBQU0sSUFBSUQsS0FBSixDQUFVLHdCQUFWLENBQU47QUFDRDs7QUFFRCxZQUFNRSxJQUFJLEdBQUcsTUFBTWQsR0FBRyxDQUFDZSxJQUFKLEVBQW5CLENBcEIyQixDQXNCM0I7O0FBQ0EsVUFBSWYsR0FBRyxDQUFDYSxFQUFKLElBQVVDLElBQWQsRUFBb0I7QUFDbEIsK0NBQ0tBLElBREw7QUFFRUwsVUFBQUEsUUFBUSxFQUFFaEIsV0FBVyxDQUFFQztBQUZ6QjtBQUlELE9BNUIwQixDQThCM0I7OztBQUNBLGFBQU8sSUFBUDtBQUNEOztBQTFDaUIsR0FBRCxDQURWLENBRFc7QUErQ3RCc0IsRUFBQUEsU0FBUyxFQUFFO0FBQ1QsVUFBTUMsR0FBTixDQUFVO0FBQUVDLE1BQUFBLEtBQUY7QUFBU0osTUFBQUE7QUFBVCxLQUFWLEVBQTJCO0FBQ3pCLFVBQUlBLElBQUosYUFBSUEsSUFBSixlQUFJQSxJQUFJLENBQUVLLFlBQVYsRUFBd0I7QUFDdEJDLFFBQUFBLE1BQU0sQ0FBQ0MsTUFBUCxDQUFjSCxLQUFkLEVBQXFCO0FBQ25CQSxVQUFBQSxLQUFLLEVBQUVKLElBQUksQ0FBQ0ssWUFETztBQUVuQlYsVUFBQUEsUUFBUSxFQUFFSyxJQUFJLENBQUNMO0FBRkksU0FBckI7QUFJRDs7QUFFRCxhQUFPUyxLQUFQO0FBQ0QsS0FWUTs7QUFXVCxVQUFNSSxPQUFOLENBQWM7QUFBRUEsTUFBQUEsT0FBRjtBQUFXSixNQUFBQTtBQUFYLEtBQWQsRUFBa0M7QUFDaENFLE1BQUFBLE1BQU0sQ0FBQ0MsTUFBUCxDQUFjQyxPQUFkLEVBQXVCO0FBQ3JCQyxRQUFBQSxXQUFXLEVBQUVMLEtBQUssQ0FBQ0EsS0FERTtBQUVyQlQsUUFBQUEsUUFBUSxFQUFFUyxLQUFLLENBQUNUO0FBRkssT0FBdkI7QUFJQSxhQUFPYSxPQUFQO0FBQ0Q7O0FBakJRO0FBL0NXLENBQUQsQ0FBdkIiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly9maWRlc3VpLXRlbXBsYXRlLy4vc3JjL3BhZ2VzL2FwaS9hdXRoL1suLi5uZXh0YXV0aF0udHM/NTBhMSJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgTmV4dEF1dGggZnJvbSAnbmV4dC1hdXRoJztcbmltcG9ydCBDcmVkZW50aWFsc1Byb3ZpZGVyIGZyb20gJ25leHQtYXV0aC9wcm92aWRlcnMvY3JlZGVudGlhbHMnO1xuXG5leHBvcnQgZGVmYXVsdCBOZXh0QXV0aCh7XG4gIHByb3ZpZGVyczogW1xuICAgIENyZWRlbnRpYWxzUHJvdmlkZXIoe1xuICAgICAgbmFtZTogJ0NyZWRlbnRpYWxzJyxcbiAgICAgIGNyZWRlbnRpYWxzOiB7XG4gICAgICAgIGVtYWlsOiB7XG4gICAgICAgICAgbGFiZWw6ICdFbWFpbCcsXG4gICAgICAgICAgdHlwZTogJ3RleHQnLFxuICAgICAgICAgIHBsYWNlaG9sZGVyOiAneW91QHlvdXJkb21haW4uY29tJyxcbiAgICAgICAgfSxcbiAgICAgICAgcGFzc3dvcmQ6IHsgbGFiZWw6ICdQYXNzd29yZCcsIHR5cGU6ICdwYXNzd29yZCcgfSxcbiAgICAgIH0sXG4gICAgICBhc3luYyBhdXRob3JpemUoY3JlZGVudGlhbHMpIHtcbiAgICAgICAgbGV0IHJlcztcblxuICAgICAgICB0cnkge1xuICAgICAgICAgIHJlcyA9IGF3YWl0IGZldGNoKGAke3Byb2Nlc3MuZW52Lk5FWFRfUFVCTElDX0ZJREVTT1BTX0FQSSF9L2xvZ2luYCwge1xuICAgICAgICAgICAgbWV0aG9kOiAnUE9TVCcsXG4gICAgICAgICAgICBib2R5OiBKU09OLnN0cmluZ2lmeSh7XG4gICAgICAgICAgICAgIHVzZXJuYW1lOiBjcmVkZW50aWFscyEuZW1haWwsXG4gICAgICAgICAgICAgIHBhc3N3b3JkOiBjcmVkZW50aWFscyEucGFzc3dvcmQsXG4gICAgICAgICAgICB9KSxcbiAgICAgICAgICAgIGhlYWRlcnM6IHsgJ0NvbnRlbnQtVHlwZSc6ICdhcHBsaWNhdGlvbi9qc29uJyB9LFxuICAgICAgICAgIH0pO1xuICAgICAgICB9IGNhdGNoIChlcnJvcikge1xuICAgICAgICAgIHRocm93IG5ldyBFcnJvcignRmFpbGVkIHRvIGF1dGhlbnRpY2F0ZScpO1xuICAgICAgICB9XG5cbiAgICAgICAgaWYgKCFyZXMgfHwgIXJlcy5vaykge1xuICAgICAgICAgIHRocm93IG5ldyBFcnJvcignRmFpbGVkIHRvIGF1dGhlbnRpY2F0ZScpO1xuICAgICAgICB9XG5cbiAgICAgICAgY29uc3QgdXNlciA9IGF3YWl0IHJlcy5qc29uKCk7XG5cbiAgICAgICAgLy8gSWYgbm8gZXJyb3IgYW5kIHdlIGhhdmUgdXNlciBkYXRhLCByZXR1cm4gaXRcbiAgICAgICAgaWYgKHJlcy5vayAmJiB1c2VyKSB7XG4gICAgICAgICAgcmV0dXJuIHtcbiAgICAgICAgICAgIC4uLnVzZXIsXG4gICAgICAgICAgICB1c2VybmFtZTogY3JlZGVudGlhbHMhLmVtYWlsLFxuICAgICAgICAgIH07XG4gICAgICAgIH1cblxuICAgICAgICAvLyBSZXR1cm4gbnVsbCBpZiB1c2VyIGRhdGEgY291bGQgbm90IGJlIHJldHJpZXZlZFxuICAgICAgICByZXR1cm4gbnVsbDtcbiAgICAgIH0sXG4gICAgfSksXG4gIF0sXG4gIGNhbGxiYWNrczoge1xuICAgIGFzeW5jIGp3dCh7IHRva2VuLCB1c2VyIH0pIHtcbiAgICAgIGlmICh1c2VyPy5hY2Nlc3NfdG9rZW4pIHtcbiAgICAgICAgT2JqZWN0LmFzc2lnbih0b2tlbiwge1xuICAgICAgICAgIHRva2VuOiB1c2VyLmFjY2Vzc190b2tlbixcbiAgICAgICAgICB1c2VybmFtZTogdXNlci51c2VybmFtZSxcbiAgICAgICAgfSk7XG4gICAgICB9XG5cbiAgICAgIHJldHVybiB0b2tlbjtcbiAgICB9LFxuICAgIGFzeW5jIHNlc3Npb24oeyBzZXNzaW9uLCB0b2tlbiB9KSB7XG4gICAgICBPYmplY3QuYXNzaWduKHNlc3Npb24sIHtcbiAgICAgICAgYWNjZXNzVG9rZW46IHRva2VuLnRva2VuLFxuICAgICAgICB1c2VybmFtZTogdG9rZW4udXNlcm5hbWUsXG4gICAgICB9KTtcbiAgICAgIHJldHVybiBzZXNzaW9uO1xuICAgIH0sXG4gIH0sXG59KTtcbiJdLCJuYW1lcyI6WyJOZXh0QXV0aCIsIkNyZWRlbnRpYWxzUHJvdmlkZXIiLCJwcm92aWRlcnMiLCJuYW1lIiwiY3JlZGVudGlhbHMiLCJlbWFpbCIsImxhYmVsIiwidHlwZSIsInBsYWNlaG9sZGVyIiwicGFzc3dvcmQiLCJhdXRob3JpemUiLCJyZXMiLCJmZXRjaCIsInByb2Nlc3MiLCJlbnYiLCJORVhUX1BVQkxJQ19GSURFU09QU19BUEkiLCJtZXRob2QiLCJib2R5IiwiSlNPTiIsInN0cmluZ2lmeSIsInVzZXJuYW1lIiwiaGVhZGVycyIsImVycm9yIiwiRXJyb3IiLCJvayIsInVzZXIiLCJqc29uIiwiY2FsbGJhY2tzIiwiand0IiwidG9rZW4iLCJhY2Nlc3NfdG9rZW4iLCJPYmplY3QiLCJhc3NpZ24iLCJzZXNzaW9uIiwiYWNjZXNzVG9rZW4iXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./src/pages/api/auth/[...nextauth].ts\n");
+
+/***/ })
+
+};
+;
+
+// load runtime
+var __webpack_require__ = require("../../../webpack-api-runtime.js");
+__webpack_require__.C(exports);
+var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
+var __webpack_exports__ = (__webpack_exec__("./src/pages/api/auth/[...nextauth].ts"));
+module.exports = __webpack_exports__;
+
+})();

@@ -13,6 +13,9 @@ from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 from sqlalchemy.orm import Session
 
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
+from fidesops.service.connectors import SaaSConnector
+from fidesops.util import cryptographic_util
 
 saas_config = load_toml("saas_config.toml")
 
@@ -32,6 +35,11 @@ def hubspot_identity_email():
     return pydash.get(saas_config, "hubspot.identity_email") or os.environ.get(
         "HUBSPOT_IDENTITY_EMAIL"
     )
+
+
+@pytest.fixture(scope="session")
+def hubspot_erasure_identity_email():
+    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 
 @pytest.fixture
@@ -85,3 +93,43 @@ def dataset_config_hubspot(
     )
     yield dataset
     dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def setup_teardown_erasure_hubspot_data(connection_config_hubspot, hubspot_erasure_identity_email) -> Generator:
+    """
+    Gets the current value of the resource and restores it after the test is complete.
+    Used for erasure tests.
+    """
+
+    connector = SaaSConnector(connection_config_hubspot)
+
+    # create contact
+    contacts_request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path=f"/crm/v3/objects/contacts",
+        json_body={
+            "properties": {
+                "company": "test company",
+                "email": hubspot_erasure_identity_email,
+                "firstname": "SomeoneFirstname",
+                "lastname": "SomeoneLastname",
+                "phone": "(123) 123-1234",
+                "website": "someone.net"
+            }
+        },
+    )
+    contacts_response = connector.create_client().send(contacts_request)
+    contact_body = contacts_response.json()
+    contact_id = contact_body["id"]
+
+    # no need to subscribe contact, since creating a contact auto-subscribes them
+
+    yield contact_id
+
+    # delete contact
+    delete_request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.DELETE,
+        path=f"/crm/v3/objects/contacts/{contact_id}",
+    )
+    connector.create_client().send(delete_request)
