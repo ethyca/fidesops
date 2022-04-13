@@ -252,6 +252,7 @@ class TestField:
             is_array=False,
             sub_fields=[],
             return_all_elements=None,
+            read_only=None
         )
         array_field = generate_field(
             name="arr",
@@ -264,6 +265,7 @@ class TestField:
             is_array=True,
             sub_fields=[],
             return_all_elements=True,
+            read_only=None
         )
         object_field = generate_field(
             name="obj",
@@ -276,6 +278,7 @@ class TestField:
             is_array=False,
             sub_fields=[string_field, array_field],
             return_all_elements=None,
+            read_only=None
         )
         object_array_field = generate_field(
             name="obj_a",
@@ -288,6 +291,7 @@ class TestField:
             is_array=True,
             sub_fields=[string_field, object_field],
             return_all_elements=None,
+            read_only=None
         )
 
         assert _is_string_field(string_field)
@@ -403,6 +407,7 @@ class TestField:
                 is_array=False,
                 sub_fields=[apt_no_sub_field],
                 return_all_elements=None,
+                read_only=False
             )
 
 
