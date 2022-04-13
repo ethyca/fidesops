@@ -125,9 +125,9 @@ def setup_teardown_erasure_hubspot_data(connection_config_hubspot, hubspot_erasu
     contacts_body = contacts_response.json()
     contact_id = contacts_body["id"]
 
-    time.sleep(2)  # Pause before making access/erasure requests
-
     # no need to subscribe contact, since creating a contact auto-subscribes them
+
+    time.sleep(4)  # Allows contact to be propagated in Hubspot before calling access / erasure requests
 
     yield contact_id
 
