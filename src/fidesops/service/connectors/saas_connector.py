@@ -127,7 +127,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
         # store collection_name for logging purposes
         self.collection_name = node.address.collection
-        action, configured_masking_request = self.get_masking_request_from_config(self.collection_name)
+        action, configured_masking_request = self.get_masking_request_from_config(
+            self.collection_name
+        )
         return SaaSQueryConfig(
             node, self.endpoints, self.secrets, action, configured_masking_request
         )
@@ -344,7 +346,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             logger.info(
                 f"Selecting '{action_type}' action to perform masking request for '{collection_name}' collection."
             )
-            return action_type, next(request for request in [update, gdpr_delete, delete] if request)
+            return action_type, next(
+                request for request in [update, gdpr_delete, delete] if request
+            )
         except StopIteration:
             return None, None
 

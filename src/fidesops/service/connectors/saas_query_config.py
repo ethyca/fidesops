@@ -194,9 +194,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         elif content_type == "text/plain":
             output = body
         else:
-            raise FidesopsException(
-                f"Unsupported Content-Type: {content_type}"
-            )
+            raise FidesopsException(f"Unsupported Content-Type: {content_type}")
 
         return headers, output
 
