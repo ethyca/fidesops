@@ -181,14 +181,20 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             content_type = "application/json"
             headers["Content-Type"] = "application/json"
 
-        if content_type == "application/json":
-            return body
-        elif content_type == "application/x-www-form-urlencoded":
-            return urlencode(json.loads(body))
-        elif content_type == "text/plain":
-            return body
+        output: Optional[Union[str, Dict[str, Any]]] = None
 
-        raise FidesopsException(f"No mapping exists for Content-Type: {content_type}")
+        if content_type == "application/json":
+            output = body
+        elif content_type == "application/x-www-form-urlencoded":
+            output = urlencode(json.loads(body))
+        elif content_type == "text/plain":
+            output = body
+        else:
+            raise FidesopsException(
+                f"No mapping exists for Content-Type: {content_type}"
+            )
+
+        return output
 
     def get_masking_request(self) -> Optional[SaaSRequest]:
         """

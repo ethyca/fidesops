@@ -95,6 +95,7 @@ saas_config:
               - dataset: saas_connector_example
                 field: member.id
                 direction: from
+        body: '{<masked_object_fields>}'
   - name: payment_methods
     requests:
       read:
@@ -127,6 +128,7 @@ saas_config:
         param_values:
           - name: version
             connector_param: api_version
+        body: '{<masked_object_fields>}'
   - name: projects
     requests:
       read:
