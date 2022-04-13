@@ -183,7 +183,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             content_type = "application/json"
             headers["Content-Type"] = "application/json"
 
-        output = None
+        output: Optional[Union[str, Dict[str, Any]]] = None
         if content_type == "application/json":
             if body:
                 output = body
