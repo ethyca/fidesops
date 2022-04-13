@@ -127,7 +127,7 @@ def setup_teardown_erasure_hubspot_data(connection_config_hubspot, hubspot_erasu
 
     # no need to subscribe contact, since creating a contact auto-subscribes them
 
-    time.sleep(4)  # Allows contact to be propagated in Hubspot before calling access / erasure requests
+    time.sleep(10)  # Allows contact to be propagated in Hubspot before calling access / erasure requests
 
     yield contact_id
 
