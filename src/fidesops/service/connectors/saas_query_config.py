@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
 import pydash
 from multidimensional_urlencode import urlencode
 from fidesops.common_exceptions import FidesopsException
-from fidesops.core.config import config
 from fidesops.graph.config import ScalarField
 
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
@@ -26,6 +25,7 @@ T = TypeVar("T")
 class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
     """Query config that generates populated SaaS requests for a given collection"""
 
+    # pylint: disable=R0913
     def __init__(
         self,
         node: TraversalNode,
