@@ -50,6 +50,15 @@ saas_config:
                 field: customer.id
                 direction: from
         body: '{<all_object_fields>}'
+      delete:
+        method: DELETE
+        path: /v1/customers/<customer_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
   - name: charge
     requests:
       read: 
@@ -105,6 +114,18 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
+      update:
+        method: POST
+        path: /v1/disputes/<dispute_id>
+        headers:
+          - name: Content-Type
+            value: application/x-www-form-urlencoded
+        param_values:
+          - name: dispute_id
+            references:
+              - dataset: stripe_connector_example
+                field: dispute.id
+                direction: from
   - name: payment_intent
     requests:
       read:
@@ -155,6 +176,18 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
+      update:
+        method: POST
+        path: /v1/payment_methods/<payment_method_id>
+        headers:
+          - name: Content-Type
+            value: application/x-www-form-urlencoded
+        param_values:
+          - name: payment_method_id
+            references:
+              - dataset: stripe_connector_example
+                field: payment_method.id
+                direction: from
   - name: bank_account
     requests:
       read:
@@ -179,6 +212,37 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
+      update:
+        method: POST
+        path: /v1/customers/<customer_id>/sources/<bank_account_id>
+        headers:
+          - name: Content-Type
+            value: application/x-www-form-urlencoded
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: bank_account_id
+            references:
+              - dataset: stripe_connector_example
+                field: bank_account.id
+                direction: from
+      delete:
+        method: DELETE
+        path: /v1/customers/<customer_id>/sources/<bank_account_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: bank_account_id
+            references:
+              - dataset: stripe_connector_example
+                field: bank_account.id
+                direction: from
   - name: card
     requests:
       read:
@@ -203,6 +267,37 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
+      update:
+        method: POST
+        path: /v1/customers/<customer_id>/sources/<card_id>
+        headers:
+          - name: Content-Type
+            value: application/x-www-form-urlencoded
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: card_id
+            references:
+              - dataset: stripe_connector_example
+                field: card.id
+                direction: from
+      delete:
+        method: DELETE
+        path: /v1/customers/<customer_id>/sources/<card_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: card_id
+            references:
+              - dataset: stripe_connector_example
+                field: card.id
+                direction: from
   - name: credit_note
     requests:
       read:

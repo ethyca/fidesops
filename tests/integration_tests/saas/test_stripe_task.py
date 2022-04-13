@@ -2,7 +2,7 @@ import pytest
 import random
 
 from fidesops.graph.graph import DatasetGraph
-from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
+from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.task import graph_task
 from fidesops.task.graph_task import get_cached_data_for_erasures
@@ -640,8 +640,6 @@ def test_stripe_erasure_request_task(
 ) -> None:
     """Full erasure request based on the Stripe SaaS config"""
 
-    print(f"customer.id: {stripe_create_erasure_data['id']}")
-
     privacy_request = PrivacyRequest(
         id=f"test_stripe_erasure_request_task_{random.randint(0, 1000)}"
     )
@@ -652,7 +650,7 @@ def test_stripe_erasure_request_task(
     merged_graph = stripe_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    graph_task.run_access_request(
+    v = graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -660,7 +658,7 @@ def test_stripe_erasure_request_task(
         {"email": stripe_erasure_identity_email},
     )
 
-    v = graph_task.run_erasure(
+    x = graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
@@ -669,18 +667,18 @@ def test_stripe_erasure_request_task(
         get_cached_data_for_erasures(privacy_request.id),
     )
 
-    assert v == {
+    assert x == {
         f"{dataset_name}:customer": 1,
         f"{dataset_name}:tax_id": 0,
         f"{dataset_name}:invoice_item": 0,
         f"{dataset_name}:charge": 0,
         f"{dataset_name}:invoice": 0,
-        f"{dataset_name}:card": 0,
+        f"{dataset_name}:card": 1,
         f"{dataset_name}:customer_balance_transaction": 0,
         f"{dataset_name}:payment_intent": 0,
-        f"{dataset_name}:payment_method": 0,
+        f"{dataset_name}:payment_method": 2,
         f"{dataset_name}:credit_note": 0,
-        f"{dataset_name}:bank_account": 0,
+        f"{dataset_name}:bank_account": 1,
         f"{dataset_name}:subscription": 0,
-        f"{dataset_name}:dispute": 0,
+        f"{dataset_name}:dispute": 1,
     }

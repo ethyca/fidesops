@@ -2,17 +2,18 @@ import logging
 import json
 import re
 from typing import Any, Dict, List, Optional, TypeVar, Union
-from fidesops.graph.config import ScalarField
-
 import pydash
 from multidimensional_urlencode import urlencode
+from fidesops.core.config import config
+from fidesops.graph.config import ScalarField
+
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.graph.traversal import TraversalNode
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.saas.saas_config import Endpoint, SaaSRequest
 from fidesops.service.connectors.query_config import QueryConfig
-from fidesops.util.collection_util import Row, merge_dicts
+from fidesops.util.collection_util import Row
 from fidesops.util.saas_util import deep_merge, unflatten_dict, FIDESOPS_GROUPED_INPUTS
 
 logger = logging.getLogger(__name__)
@@ -28,21 +29,22 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         node: TraversalNode,
         endpoints: Dict[str, Endpoint],
         secrets: Dict[str, Any],
-        masking_request: Optional[SaaSRequest] = None,
+        data_protection_request: Optional[SaaSRequest] = None,
     ):
         super().__init__(node)
         self.collection_name = node.address.collection
         self.endpoints = endpoints
         self.secrets = secrets
-        self.masking_request = masking_request
+        self.data_protection_request = data_protection_request
         self.action: Optional[str] = None
 
-    def get_request_by_action(self, action: str) -> SaaSRequest:
+    def get_request_by_action(self, action: str) -> Optional[SaaSRequest]:
         """
         Returns the appropriate request config based on the
         current collection and preferred action (read, update, delete)
         """
         try:
+            # store action name for logging purposes
             self.action = action
             collection_name = self.node.address.collection
             request = self.endpoints[collection_name].requests[action]
@@ -51,9 +53,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             )
             return request
         except KeyError:
-            raise ValueError(
+            logger.info(
                 f"The '{action}' action is not defined for the '{collection_name}' endpoint in {self.node.node.dataset.connection_key}"
             )
+            return None
 
     def generate_requests(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
@@ -194,6 +197,38 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         return None
 
+    def get_masking_request(self) -> Optional[SaaSRequest]:
+        """
+        Get the configured SaaSRequest for use in masking.
+        An update request is preferred, but we can use a gdpr endpoint
+        or delete endpoint if not MASKING_STRICT.
+        """
+        update: Optional[SaaSRequest] = self.get_request_by_action("update")
+        gdpr_delete: Optional[SaaSRequest] = None
+        delete: Optional[SaaSRequest] = None
+
+        if not config.execution.MASKING_STRICT:
+            gdpr_delete = self.data_protection_request
+            delete = self.get_request_by_action("delete")
+
+        try:
+            # Return first viable option
+            action_type: str = next(
+                action
+                for action in [
+                    "update" if update else None,
+                    "data_protection_request" if gdpr_delete else None,
+                    "delete" if delete else None,
+                ]
+                if action
+            )
+            logger.info(
+                f"Selecting '{action_type}' action to perform masking request for '{self.collection_name}' collection."
+            )
+            return next(request for request in [update, gdpr_delete, delete] if request)
+        except StopIteration:
+            return None
+
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
     ) -> SaaSRequestParams:
@@ -238,9 +273,17 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         if specified by the body field of the masking request.
         """
 
-        current_request: SaaSRequest = self.masking_request
+        current_request: SaaSRequest = self.get_masking_request()
         collection_name: str = self.node.address.collection
-        collection_values: Dict[str, Row] = {collection_name: row}
+
+        # A combined dictionary of the collections that have already been retrieved
+        # along with the current row. This is to support the case where an update
+        # needs reference values from other collections, not just the values in
+        # the current row.
+        collection_values: Dict[str, Row] = {
+            **self.get_cached_results(request),
+            **{collection_name: row},
+        }
         identity_data: Dict[str, Any] = request.get_cached_identity_data()
 
         # create the source of param values to populate the various placeholders
@@ -298,6 +341,16 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                         row, field_path.string_path
                     )
         return all_value_map
+
+    @staticmethod
+    def get_cached_results(request: PrivacyRequest) -> Dict[str, Any]:
+        """
+        Returns a map of the first item in each collection of the current
+        dataset (if available).
+        """
+        return {
+            k.split(":")[-1]: v[0] if v else v for k, v in request.get_results().items()
+        }
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string"""

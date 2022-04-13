@@ -1,4 +1,3 @@
-import json
 import os
 from multidimensional_urlencode import urlencode
 from typing import Any, Dict, Generator
@@ -108,7 +107,6 @@ def stripe_create_erasure_data(stripe_secrets) -> Generator:
     }
 
     # customer
-
     customer_data = {
         "address": {
             "city": "Anaheim",
@@ -146,13 +144,65 @@ def stripe_create_erasure_data(stripe_secrets) -> Generator:
 
     customer = response.json()
 
-    # create other stuff
-
-    yield customer
-
-    requests.delete(
+    # create dispute by adding a fraudulent card and charging it
+    response = requests.post(
         url=f"{base_url}/v1/customers/{customer['id']}",
+        headers=headers,
+        data=urlencode({"source": "tok_createDispute"}),
+    )
+    card = response.json()["sources"]["data"][0]
+
+    requests.post(
+        url=f"{base_url}/v1/charges",
+        headers=headers,
+        data=urlencode(
+            {
+                "customer": customer["id"],
+                "source": card["id"],
+                "amount": 1000,
+                "currency": "usd",
+            }
+        ),
+    )
+
+    # bank account
+    requests.post(
+        url=f"{base_url}/v1/customers/{customer['id']}/sources",
+        headers=headers,
+        data=urlencode({"source": "btok_us_verified"}),
+    )
+
+    # create and attach payment method to customer
+    response = requests.post(
+        url=f"{base_url}/v1/payment_methods",
+        headers=headers,
+        data=urlencode(
+            {
+                "type": "card",
+                "card": {
+                    "number": 4242424242424242,
+                    "exp_month": 4,
+                    "exp_year": 2023,
+                    "cvc": 314,
+                },
+            }
+        ),
+    )
+    payment_method = response.json()
+
+    requests.post(
+        url=f"{base_url}/v1/payment_methods/{payment_method['id']}/attach",
+        params={"customer": customer["id"]},
         headers=headers
     )
 
-    
+    # valid card
+    requests.post(
+        url=f"{base_url}/v1/customers/{customer['id']}",
+        headers=headers,
+        data=urlencode({"source": "tok_visa"}),
+    )
+
+    yield customer
+
+    requests.delete(url=f"{base_url}/v1/customers/{customer['id']}", headers=headers)
