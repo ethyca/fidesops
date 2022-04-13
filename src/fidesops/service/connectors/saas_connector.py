@@ -126,7 +126,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
         # store collection_name for logging purposes
         self.collection_name = node.address.collection
-        return SaaSQueryConfig(node, self.endpoints, self.secrets, self.saas_config.data_protection_request)
+        return SaaSQueryConfig(
+            node, self.endpoints, self.secrets, self.saas_config.data_protection_request
+        )
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
