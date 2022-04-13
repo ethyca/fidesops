@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, TypeVar, Union
 
 import pydash
 from multidimensional_urlencode import urlencode
+from fidesops.common_exceptions import FidesopsException
 from fidesops.core.config import config
 from fidesops.graph.config import ScalarField
 
@@ -103,10 +104,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         return value
 
     def map_param_values(
-        self,
-        current_request: SaaSRequest,
-        param_values: Dict[str, Any],
-        update_values: Optional[Dict[str, Any]],
+        self, current_request: SaaSRequest, param_values: Dict[str, Any]
     ) -> SaaSRequestParams:
         """
         Visits path, headers, query, and body params in the current request and replaces
@@ -153,20 +151,17 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             path=path,
             headers=headers,
             query_params=query_params,
-            body=self.build_body(headers, body, update_values),
+            body=self.build_body(headers, body),
         )
 
     @staticmethod
     def build_body(
         headers: Dict[str, Any],
         body: Optional[str],
-        update_values: Optional[Dict[str, Any]],
     ) -> Optional[Union[str, Dict[str, Any]]]:
         """
-        Builds the appropriately formatted body based on the content type (if found)
+        Builds the appropriately formatted body based on the content type,
         defaulting to application/json if a content type is not provided.
-
-        Uses update_values as a default value if available and a body is not provided.
         """
 
         content_type = next(
@@ -178,26 +173,22 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             None,
         )
 
+        if body is None:
+            return None
+
         # add Content-Type: application/json if a content type is not provided
         if content_type is None:
             content_type = "application/json"
             headers["Content-Type"] = "application/json"
 
-        output: Optional[Union[str, Dict[str, Any]]] = None
         if content_type == "application/json":
-            if body:
-                output = body
-            elif update_values:
-                output = json.dumps(update_values)
+            return body
         elif content_type == "application/x-www-form-urlencoded":
-            if body:
-                output = urlencode(json.loads(body))
-            elif update_values:
-                output = urlencode(update_values)
+            return urlencode(json.loads(body))
         elif content_type == "text/plain":
-            output = body if body else update_values
+            return body
 
-        return output
+        raise FidesopsException(f"No mapping exists for Content-Type: {content_type}")
 
     def get_masking_request(self) -> Optional[SaaSRequest]:
         """
@@ -259,7 +250,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = self.map_param_values(
-            current_request, param_values, None
+            current_request, param_values
         )
 
         logger.info(f"Populated request params for {current_request.path}")
@@ -320,7 +311,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = self.map_param_values(
-            current_request, param_values, masked_object
+            current_request, param_values
         )
 
         logger.info(f"Populated request params for {current_request.path}")

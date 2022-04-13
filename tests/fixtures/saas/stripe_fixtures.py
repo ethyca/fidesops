@@ -1,6 +1,7 @@
 import os
 from multidimensional_urlencode import urlencode
 from typing import Any, Dict, Generator
+
 from fidesops.core.config import load_toml
 from fidesops.db import session
 from fidesops.models.connectionconfig import (
@@ -152,6 +153,7 @@ def stripe_create_erasure_data(stripe_secrets) -> Generator:
     )
     card = response.json()["sources"]["data"][0]
 
+    # charge
     requests.post(
         url=f"{base_url}/v1/charges",
         headers=headers,
@@ -170,6 +172,65 @@ def stripe_create_erasure_data(stripe_secrets) -> Generator:
         url=f"{base_url}/v1/customers/{customer['id']}/sources",
         headers=headers,
         data=urlencode({"source": "btok_us_verified"}),
+    )
+
+    # invoice item
+    requests.post(
+        url=f"{base_url}/v1/invoiceitems",
+        headers=headers,
+        params={"customer": customer["id"]},
+        data=urlencode({"amount": 200, "currency": "usd"}),
+    )
+
+    # pulls in the previously created invoice item automatically to create the invoice
+    response = requests.post(
+        url=f"{base_url}/v1/invoices",
+        headers=headers,
+        params={"customer": customer["id"]},
+    )
+    invoice = response.json()
+
+    # finalize invoice
+    requests.post(
+        url=f"{base_url}/v1/invoices/{invoice['id']}/finalize", headers=headers
+    )
+
+    # credit note
+    requests.post(
+        url=f"{base_url}/v1/credit_notes",
+        headers=headers,
+        params={"invoice": invoice["id"]},
+        data=urlencode(
+            {
+                "lines[0]": {
+                    "type": "invoice_line_item",
+                    "invoice_line_item": invoice["lines"]["data"][0]["id"],
+                    "quantity": 1,
+                }
+            }
+        ),
+    )
+
+    # customer balance transaction
+    requests.post(
+        url=f"{base_url}/v1/customers/{customer['id']}/balance_transactions",
+        headers=headers,
+        data=urlencode({"amount": -500, "currency": "usd"}),
+    )
+
+    # payment intent
+    requests.post(
+        url=f"{base_url}/v1/payment_intents",
+        headers=headers,
+        data=urlencode(
+            {
+                "customer": customer["id"],
+                "amount": 2000,
+                "currency": "usd",
+                "payment_method_types[]": "ach_debit",
+                "confirm": True,
+            }
+        ),
     )
 
     # create and attach payment method to customer
@@ -193,14 +254,37 @@ def stripe_create_erasure_data(stripe_secrets) -> Generator:
     requests.post(
         url=f"{base_url}/v1/payment_methods/{payment_method['id']}/attach",
         params={"customer": customer["id"]},
-        headers=headers
+        headers=headers,
     )
 
-    # valid card
+    # setup intent
     requests.post(
-        url=f"{base_url}/v1/customers/{customer['id']}",
+        url=f"{base_url}/v1/setup_intents",
+        params={"customer": customer["id"], "payment_method_types[]": "card"},
         headers=headers,
-        data=urlencode({"source": "tok_visa"}),
+    )
+
+    # get an existing price and use it to create a subscription
+    response = requests.get(
+        url=f"{base_url}/v1/prices",
+        params={"type": "recurring"},
+        headers=headers,
+    )
+    price = response.json()["data"][0]
+
+    requests.post(
+        url=f"{base_url}/v1/subscriptions",
+        headers=headers,
+        data=urlencode(
+            {"customer": customer["id"], "items[0]": {"price": price["id"]}}
+        ),
+    )
+
+    # tax id
+    requests.post(
+        url=f"{base_url}/v1/customers/{customer['id']}/tax_ids",
+        headers=headers,
+        data=urlencode({"type": "us_ein", "value": "000000000"}),
     )
 
     yield customer
