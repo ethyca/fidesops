@@ -2,6 +2,7 @@ import logging
 import json
 import re
 from typing import Any, Dict, List, Optional, TypeVar, Union
+
 import pydash
 from multidimensional_urlencode import urlencode
 from fidesops.core.config import config
@@ -182,20 +183,21 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             content_type = "application/json"
             headers["Content-Type"] = "application/json"
 
+        output = None
         if content_type == "application/json":
             if body:
-                return body
+                output = body
             elif update_values:
-                return json.dumps(update_values)
+                output = json.dumps(update_values)
         elif content_type == "application/x-www-form-urlencoded":
             if body:
-                return urlencode(json.loads(body))
+                output = urlencode(json.loads(body))
             elif update_values:
-                return urlencode(update_values)
+                output = urlencode(update_values)
         elif content_type == "text/plain":
-            return body if body else update_values
+            output = body if body else update_values
 
-        return None
+        return output
 
     def get_masking_request(self) -> Optional[SaaSRequest]:
         """
