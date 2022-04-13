@@ -1,7 +1,7 @@
 import logging
 import json
 import re
-from typing import Any, Dict, List, Optional, TypeVar, Union
+from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
 
 import pydash
 from multidimensional_urlencode import urlencode
@@ -147,22 +147,25 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 f"Unable to replace placeholders in body for the '{self.action}' request of the '{self.collection_name}' collection."
             )
 
+        # format the body based on the content type
+        updated_headers, formatted_body = self.format_body(headers, body)
+
         return SaaSRequestParams(
             method=current_request.method,
             path=path,
-            headers=headers,
+            headers=updated_headers,
             query_params=query_params,
-            body=self.build_body(headers, body),
+            body=formatted_body,
         )
 
     @staticmethod
-    def build_body(
+    def format_body(
         headers: Dict[str, Any],
         body: Optional[str],
-    ) -> Optional[Union[str, Dict[str, Any]]]:
+    ) -> Tuple[Dict[str, Any], Optional[str]]:
         """
         Builds the appropriately formatted body based on the content type,
-        defaulting to application/json if a content type is not provided.
+        adding application/json to the headers if a content type is not provided.
         """
 
         content_type = next(
@@ -175,7 +178,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         )
 
         if body is None:
-            return None
+            return headers, None
 
         # add Content-Type: application/json if a content type is not provided
         if content_type is None:
@@ -192,10 +195,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             output = body
         else:
             raise FidesopsException(
-                f"No mapping exists for Content-Type: {content_type}"
+                f"Unsupported Content-Type: {content_type}"
             )
 
-        return output
+        return headers, output
 
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]

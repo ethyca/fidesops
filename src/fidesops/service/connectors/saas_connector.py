@@ -314,7 +314,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def get_masking_request_from_config(
         self, collection_name: str
-    ) -> Tuple[str, Optional[SaaSRequest]]:
+    ) -> Tuple[Optional[str], Optional[SaaSRequest]]:
         """Returns a tuple of the preferred action and SaaSRequest to use for masking.
         An update request is preferred, but we can use a gdpr delete endpoint or delete endpoint if not MASKING_STRICT.
         """
@@ -358,8 +358,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """Execute a masking request. Return the number of rows that have been updated."""
 
         query_config = self.query_config(node)
-        masking_request = query_config.masking_request
-        if not masking_request:
+        if not query_config.masking_request:
             logger.warning(
                 f"Either no masking request configured or no valid masking request for {node.address.collection}. "
                 f"Check that MASKING_STRICT env var is appropriately set"
