@@ -100,6 +100,9 @@ def user_login(
             status_code=HTTP_403_FORBIDDEN, detail="Incorrect password."
         )
 
+    # perform what's needed on the user model object
+    user.login(db)
+
     client: ClientDetail = user.client
     if not client:
         logger.info("Creating client for login")

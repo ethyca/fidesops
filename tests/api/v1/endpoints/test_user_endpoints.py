@@ -275,6 +275,15 @@ class TestUserLogin:
 
         user.client.delete(db)
 
+    def test_login_updates_last_login_date(self, db, url, user, api_client):
+        body = {"username": user.username, "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"}
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == 200
+
+        db.refresh(user)
+        assert user.last_login_at is not None
+
     def test_login_uses_existing_client(self, db, url, user, api_client):
         body = {"username": user.username, "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"}
 

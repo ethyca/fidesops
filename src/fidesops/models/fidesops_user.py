@@ -1,4 +1,5 @@
-from typing import Dict, Any
+from datetime import datetime
+from typing import Dict, Any, Tuple
 
 from sqlalchemy import Column, String, DateTime
 from sqlalchemy.orm import Session, relationship
@@ -22,14 +23,19 @@ class FidesopsUser(Base):
     )
 
     @classmethod
+    def hash_password(cls, password: str) -> Tuple[str, str]:
+        salt = generate_salt()
+        hashed_password = hash_with_salt(
+            password.encode(config.security.ENCODING),
+            salt.encode(config.security.ENCODING),
+        )
+        return hashed_password, salt
+
+    @classmethod
     def create(cls, db: Session, data: Dict[str, Any]) -> "FidesopsUser":
         """Create a FidesopsUser by hashing the password with a generated salt
         and storing the hashed password and the salt"""
-        salt = generate_salt()
-        hashed_password = hash_with_salt(
-            data["password"].encode(config.security.ENCODING),
-            salt.encode(config.security.ENCODING),
-        )
+        hashed_password, salt = FidesopsUser.hash_password(data["password"])
 
         user = super().create(
             db,
@@ -50,3 +56,18 @@ class FidesopsUser(Base):
         )
 
         return provided_password_hash == self.hashed_password
+
+    def login(self, db:Session) -> None:
+        """Performs any update to the user model object needed when logging in"""
+        self.last_login_at = datetime.utcnow()
+        self.save(db)
+
+    def update_password(self, db: Session, new_password: str):
+        """Updates the user's password to the specified value.
+        No validations are performed on the old/existing password within this function."""
+
+        hashed_password, salt = FidesopsUser.hash_password(new_password)
+        self.hash_password = hashed_password
+        self.salt = salt
+        self.password_reset_at = datetime.utcnow()
+        self.save(db)
