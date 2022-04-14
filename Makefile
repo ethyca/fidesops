@@ -48,17 +48,17 @@ server-shell: compose-build
 
 integration-shell:
 	@virtualenv -p python3 fidesops_test_dispatch; \
-		source fidesops_test_dispatch/bin/activate; \
+		. fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --open_shell --datastores $(datastores)
 
 integration-env:
 	@virtualenv -p python3 fidesops_test_dispatch; \
-		source fidesops_test_dispatch/bin/activate; \
+		. fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --run_application --datastores $(datastores)
 
 quickstart:
 	@virtualenv -p python3 fidesops_test_dispatch; \
-		source fidesops_test_dispatch/bin/activate; \
+		. fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --datastores mongodb postgres --run_quickstart
 
 ####################
@@ -110,7 +110,7 @@ pytest: compose-build
 
 pytest-integration:
 	@virtualenv -p python3 fidesops_test_dispatch; \
-		source fidesops_test_dispatch/bin/activate; \
+		. fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --run_tests --datastores $(datastores)
 
 # These tests connect to external third-party test databases
@@ -178,5 +178,5 @@ docs-serve: docs-build
 
 user:
 	@virtualenv -p python3 fidesops_test_dispatch; \
-		source fidesops_test_dispatch/bin/activate; \
+		. fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --datastores postgres --run_create_superuser
