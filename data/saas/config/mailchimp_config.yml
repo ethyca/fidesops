@@ -90,3 +90,4 @@ saas_config:
               - dataset: mailchimp_connector_example
                 field: member.id
                 direction: from
+        body: '{<masked_object_fields>}'
