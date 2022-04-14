@@ -113,6 +113,6 @@ def reset_mailchimp_data(
         method=HTTPMethod.PUT,
         headers={"Content-Type": "application/json"},
         path=f'/3.0/lists/{member["list_id"]}/members/{member["id"]}',
-        body=member,
+        body=json.dumps(member),
     )
     connector.create_client().send(request)
