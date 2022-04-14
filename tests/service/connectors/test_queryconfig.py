@@ -10,6 +10,7 @@ from fidesops.graph.config import (
     ScalarField,
     FieldAddress,
 )
+from fidesops.core.config import config
 from fidesops.graph.graph import DatasetGraph, Edge
 from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.datasetconfig import convert_dataset_to_graph
@@ -17,7 +18,7 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fidesops.schemas.saas.saas_config import SaaSConfig, ParamValue
+from fidesops.schemas.saas.saas_config import SaaSConfig, ParamValue, SaaSRequest
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
 from fidesops.service.connectors.query_config import SQLQueryConfig, MongoQueryConfig
@@ -630,7 +631,7 @@ class TestSaaSQueryConfig:
         ]
 
         # static path with single query param
-        config = SaaSQueryConfig(member, endpoints, {}, "read")
+        config = SaaSQueryConfig(member, endpoints, {})
         prepared_request: SaaSRequestParams = config.generate_query(
             {"email": ["customer-1@example.com"]}, policy
         )
@@ -640,7 +641,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.body is None
 
         # static path with multiple query params with default values
-        config = SaaSQueryConfig(conversations, endpoints, {}, "read")
+        config = SaaSQueryConfig(conversations, endpoints, {})
         prepared_request = config.generate_query(
             {"placeholder": ["customer-1@example.com"]}, policy
         )
@@ -650,7 +651,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.body is None
 
         # dynamic path with no query params
-        config = SaaSQueryConfig(messages, endpoints, {}, "read")
+        config = SaaSQueryConfig(messages, endpoints, {})
         prepared_request = config.generate_query({"conversation_id": ["abc"]}, policy)
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations/abc/messages"
@@ -662,7 +663,6 @@ class TestSaaSQueryConfig:
             payment_methods,
             endpoints,
             {"api_version": "2.0", "page_limit": 10, "api_key": "letmein"},
-            "read",
         )
         prepared_request = config.generate_query(
             {"email": ["customer-1@example.com"]}, policy
@@ -682,7 +682,7 @@ class TestSaaSQueryConfig:
 
         # query and path params with connector param references
         config = SaaSQueryConfig(
-            payment_methods, endpoints, {"api_version": "2.0", "page_limit": 10}, "read"
+            payment_methods, endpoints, {"api_version": "2.0", "page_limit": 10}
         )
         prepared_request = config.generate_query(
             {"email": ["customer-1@example.com"]}, policy
@@ -708,7 +708,7 @@ class TestSaaSQueryConfig:
             CollectionAddress(saas_config.fides_key, "member")
         ]
 
-        config = SaaSQueryConfig(member, endpoints, {}, "update", update_request)
+        config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
             "id": "123",
             "merge_fields": {"FNAME": "First", "LNAME": "Last"},
@@ -747,7 +747,7 @@ class TestSaaSQueryConfig:
         ]
         update_request = endpoints["member"].requests.get("update")
 
-        config = SaaSQueryConfig(member, endpoints, {}, "update", update_request)
+        config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
             "id": "123",
             "merge_fields": {"FNAME": "First", "LNAME": "Last"},
@@ -804,7 +804,7 @@ class TestSaaSQueryConfig:
             CollectionAddress(saas_config.fides_key, "payment_methods")
         ]
 
-        config = SaaSQueryConfig(member, endpoints, {}, "update", update_request)
+        config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
             "id": "123",
             "merge_fields": {"FNAME": "First", "LNAME": "Last"},
@@ -833,7 +833,7 @@ class TestSaaSQueryConfig:
         # update with connector_param reference
         update_request = endpoints["payment_methods"].requests.get("update")
         config = SaaSQueryConfig(
-            payment_methods, endpoints, {"api_version": "2.0"}, "update", update_request
+            payment_methods, endpoints, {"api_version": "2.0"}, update_request
         )
         row = {"type": "card", "customer_name": "First Last"}
         prepared_request = config.generate_update_stmt(
@@ -863,7 +863,7 @@ class TestSaaSQueryConfig:
         # omit read-only fields and fields not defined in the dataset
         # 'created' and 'id' are flagged as read-only and 'livemode' is not in the dataset
         update_request = endpoints["customer"].requests.get("update")
-        config = SaaSQueryConfig(customer, endpoints, {}, "update", update_request)
+        config = SaaSQueryConfig(customer, endpoints, {}, update_request)
         row = {
             "id": 1,
             "name": {"first": "A", "last": "B"},
@@ -880,3 +880,72 @@ class TestSaaSQueryConfig:
         }
         assert prepared_request.query_params == {}
         assert prepared_request.body == "name%5Bfirst%5D=MASKED&name%5Blast%5D=MASKED"
+
+
+    def test_get_masking_request(self, combined_traversal, saas_example_connection_config):
+        saas_config: Optional[
+            SaaSConfig
+        ] = saas_example_connection_config.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+
+        member = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "member")
+        ]
+        conversations = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "conversations")
+        ]
+        messages = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "messages")
+        ]
+
+        query_config = SaaSQueryConfig(member, endpoints, {})
+        saas_request = query_config.get_masking_request()
+
+        # Assert we pulled the update method off of the member collection
+        assert saas_request.method == "PUT"
+        assert saas_request.path == "/3.0/lists/<list_id>/members/<subscriber_hash>"
+
+        # No update methods defined on other collections
+        query_config = SaaSQueryConfig(conversations, endpoints, {})
+        saas_request = query_config.get_masking_request()
+        assert saas_request is None
+
+        query_config = SaaSQueryConfig(messages, endpoints, {})
+        saas_request = query_config.get_masking_request()
+        assert saas_request is None
+
+        # Define delete request on conversations endpoint
+        endpoints["conversations"].requests["delete"] = SaaSRequest(
+            method="DELETE",
+            path="/api/0/<conversation>/<conversation_id>/"
+        )
+        # Delete endpoint not used because MASKING_STRICT is True
+        assert config.execution.MASKING_STRICT is True
+
+        query_config = SaaSQueryConfig(conversations, endpoints, {})
+        saas_request = query_config.get_masking_request()
+        assert saas_request is None
+
+        # Override MASKING_STRICT to False
+        config.execution.MASKING_STRICT = False
+
+        # Now delete endpoint is selected as conversations masking request
+        saas_request: SaaSRequest = query_config.get_masking_request()
+        assert saas_request.path == "/api/0/<conversation>/<conversation_id>/"
+        assert saas_request.method == "DELETE"
+
+        # Define GDPR Delete
+        data_protection_request = SaaSRequest(
+            method="PUT",
+            path="/api/0/gdpr_delete"
+        )
+        query_config = SaaSQueryConfig(conversations, endpoints, {}, data_protection_request)
+
+        # Assert GDPR Delete takes priority over Delete
+        saas_request: SaaSRequest = query_config.get_masking_request()
+        assert saas_request.path == "/api/0/gdpr_delete"
+        assert saas_request.method == "PUT"
+
+        # Reset
+        config.execution.MASKING_STRICT = True
+        del endpoints["conversations"].requests["delete"]

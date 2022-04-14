@@ -1,9 +1,8 @@
 from json import JSONDecodeError
 import logging
-from typing import Any, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 import pydash
 from requests import Session, Request, PreparedRequest, Response
-from fidesops.core.config import config
 from fidesops.common_exceptions import FidesopsException
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
@@ -127,11 +126,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
         # store collection_name for logging purposes
         self.collection_name = node.address.collection
-        action, configured_masking_request = self.get_masking_request_from_config(
-            node.address.collection
-        )
         return SaaSQueryConfig(
-            node, self.endpoints, self.secrets, action, configured_masking_request
+            node, self.endpoints, self.secrets, self.saas_config.data_protection_request
         )
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
@@ -314,44 +310,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         return rows
 
-    def get_masking_request_from_config(
-        self, collection_name: str
-    ) -> Tuple[Optional[str], Optional[SaaSRequest]]:
-        """Returns a tuple of the preferred action and SaaSRequest to use for masking.
-        An update request is preferred, but we can use a gdpr delete endpoint or delete endpoint if not MASKING_STRICT.
-        """
-        requests: Dict[
-            Literal["read", "update", "delete"], SaaSRequest
-        ] = self.endpoints[collection_name].requests
-
-        update: Optional[SaaSRequest] = requests.get("update")
-        gdpr_delete: Optional[SaaSRequest] = None
-        delete: Optional[SaaSRequest] = None
-
-        if not config.execution.MASKING_STRICT:
-            gdpr_delete = self.saas_config.data_protection_request
-            delete = requests.get("delete")
-
-        try:
-            # Return first viable option
-            action_type: str = next(
-                action
-                for action in [
-                    "update" if update else None,
-                    "data_protection_request" if gdpr_delete else None,
-                    "delete" if delete else None,
-                ]
-                if action
-            )
-            logger.info(
-                f"Selecting '{action_type}' action to perform masking request for '{collection_name}' collection."
-            )
-            return action_type, next(
-                request for request in [update, gdpr_delete, delete] if request
-            )
-        except StopIteration:
-            return None, None
-
     def mask_data(
         self,
         node: TraversalNode,
@@ -362,7 +320,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """Execute a masking request. Return the number of rows that have been updated."""
 
         query_config = self.query_config(node)
-        if not query_config.masking_request:
+        masking_request = query_config.get_masking_request()
+        if not masking_request:
             logger.warning(
                 f"Either no masking request configured or no valid masking request for {node.address.collection}. "
                 f"Check that MASKING_STRICT env var is appropriately set"
@@ -375,9 +334,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         ]
 
         rows_updated = 0
-        client = self.create_client_from_request(query_config.masking_request)
+        client = self.create_client_from_request(masking_request)
         for prepared_request in prepared_requests:
-            client.send(prepared_request, query_config.masking_request.ignore_errors)
+            client.send(prepared_request, masking_request.ignore_errors)
             rows_updated += 1
         return rows_updated
 

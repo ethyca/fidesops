@@ -7,7 +7,7 @@ import pydash
 from multidimensional_urlencode import urlencode
 from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.config import ScalarField
-
+from fidesops.core.config import config
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.graph.traversal import TraversalNode
 from fidesops.models.policy import Policy
@@ -25,21 +25,19 @@ T = TypeVar("T")
 class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
     """Query config that generates populated SaaS requests for a given collection"""
 
-    # pylint: disable=R0913
     def __init__(
         self,
         node: TraversalNode,
         endpoints: Dict[str, Endpoint],
         secrets: Dict[str, Any],
-        action: Optional[str],
-        masking_request: Optional[SaaSRequest] = None,
+        data_protection_request: Optional[SaaSRequest] = None,
     ):
         super().__init__(node)
         self.collection_name = node.address.collection
         self.endpoints = endpoints
         self.secrets = secrets
-        self.masking_request = masking_request
-        self.action = action
+        self.data_protection_request = data_protection_request
+        self.action: Optional[str] = None
 
     def get_request_by_action(self, action: str) -> Optional[SaaSRequest]:
         """
@@ -59,6 +57,41 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             logger.info(
                 f"The '{action}' action is not defined for the '{collection_name}' endpoint in {self.node.node.dataset.connection_key}"
             )
+            return None
+
+    def get_masking_request(self) -> Optional[SaaSRequest]:
+        """Returns a tuple of the preferred action and SaaSRequest to use for masking.
+        An update request is preferred, but we can use a gdpr delete endpoint or delete endpoint if not MASKING_STRICT.
+        """
+
+        update: Optional[SaaSRequest] = self.get_request_by_action("update")
+        gdpr_delete: Optional[SaaSRequest] = None
+        delete: Optional[SaaSRequest] = None
+
+        if not config.execution.MASKING_STRICT:
+            gdpr_delete = self.data_protection_request
+            delete = self.get_request_by_action("delete")
+
+        try:
+            # Return first viable option
+            action_type: str = next(
+                action
+                for action in [
+                    "update" if update else None,
+                    "data_protection_request" if gdpr_delete else None,
+                    "delete" if delete else None,
+                ]
+                if action
+            )
+
+            # store action name for logging purposes
+            self.action = action_type
+
+            logger.info(
+                f"Selecting '{action_type}' action to perform masking request for '{self.collection_name}' collection."
+            )
+            return next(request for request in [update, gdpr_delete, delete] if request)
+        except StopIteration:
             return None
 
     def generate_requests(
@@ -242,7 +275,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         if specified by the body field of the masking request.
         """
 
-        current_request: SaaSRequest = self.masking_request
+        current_request: SaaSRequest = self.get_masking_request()
         collection_name: str = self.node.address.collection
 
         # A combined dictionary of the collections that have already been retrieved
