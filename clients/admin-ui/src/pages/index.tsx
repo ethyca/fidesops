@@ -2,18 +2,13 @@ import React from 'react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import { getSession } from 'next-auth/react';
-import { Flex, Heading, Button, Box } from '@fidesui/react';
+import { Heading, Box } from '@fidesui/react';
 import { wrapper } from '../app/store';
 
-import Header from '../features/common/Header';
-
-import { ArrowDownLineIcon } from '../features/common/Icon';
+import NavBar from '../features/common/NavBar';
 
 import RequestTable from '../features/privacy-requests/RequestTable';
 import RequestFilters from '../features/privacy-requests/RequestFilters';
-
-import UserManagementTable from '../features/user-management/UserManagementTable';
-import UserManagementTableActions from '../features/user-management/UserManagementTableActions';
 
 import { assignToken } from '../features/user/user.slice';
 
@@ -25,42 +20,15 @@ const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
       <link rel="icon" href="/favicon.ico" />
     </Head>
 
-    <Header username={session.username} />
+    <NavBar session={session} />
 
     <main>
-      <Flex
-        borderBottom="1px"
-        borderTop="1px"
-        px={9}
-        py={1}
-        borderColor="gray.100"
-      >
-        <Button variant="ghost" mr={4} colorScheme="complimentary">
-          Subject Requests
-        </Button>
-        <Button variant="ghost" disabled mr={4}>
-          Datastore Connections
-        </Button>
-        <Button variant="ghost" mr={4} colorScheme="complimentary">
-          User Management
-        </Button>
-        <Button variant="ghost" disabled rightIcon={<ArrowDownLineIcon />}>
-          More
-        </Button>
-      </Flex>
       <Box px={9} py={10}>
         <Heading mb={8} fontSize="2xl" fontWeight="semibold">
           Subject Requests
         </Heading>
         <RequestFilters />
         <RequestTable />
-      </Box>
-      <Box>
-        <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-          User Management
-        </Heading>
-        <UserManagementTableActions />
-        <UserManagementTable />
       </Box>
     </main>
   </div>

@@ -1,55 +1,17 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import {
-  Flex,
-  Text,
   Button,
-  Select,
   Input,
   InputGroup,
   InputLeftElement,
-  InputLeftAddon,
   Stack,
-  useToast,
 } from '@fidesui/react';
 
 import {
   SearchLineIcon,
 } from '../common/Icon';
-// import { statusPropMap } from './RequestBadge';
-
-// import { PrivacyRequestStatus } from './types';
-// import {
-//   setRequestStatus,
-//   setRequestId,
-//   setRequestFrom,
-//   setRequestTo,
-//   clearAllFilters,
-//   selectPrivacyRequestFilters,
-//   requestCSVDownload,
-// } from './privacy-requests.slice';
-// import { selectUserToken } from '../user/user.slice';
-
-const useUserManagementTableActions = () => {
-  const filters = useSelector(selectPrivacyRequestFilters);
-  const token = useSelector(selectUserToken);
-  const dispatch = useDispatch();
-  const toast = useToast();
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(setRequestId(event.target.value));
-  };
-
-  return {
-    handleSearchChange,
-    ...filters,
-  };
-};
 
 const UserManagementTableActions: React.FC = () => {
-  const {
-    handleSearchChange,
-    id,
-  } = useUserManagementTableActions();
   return (
     <Stack direction="row" spacing={4} mb={6}>
       <InputGroup size="sm">
@@ -59,19 +21,21 @@ const UserManagementTableActions: React.FC = () => {
         <Input
           type="search"
           minWidth={200}
-          placeholder="Search"
+          placeholder="Search by Name or Username"
           size="sm"
           borderRadius="md"
-          value={id}
+          // value={id}
           name="search"
-          onChange={handleSearchChange}
+          // onChange={handleSearch}
         />
       </InputGroup>
       <Button
-        variant="ghost"
+        variant="solid"
+        bg="primary.800"
+        color="white"
         flexShrink={0}
         size="sm"
-        onClick={handleAddNewUserClick}
+        // onClick={handleNewUserClick}
       >
         Add New User
       </Button>

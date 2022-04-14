@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { NextPage } from 'next';
-import Head from 'next/head';
+// import Head from 'next/head';
 import { useFormik } from 'formik';
 
 import {
@@ -12,10 +12,7 @@ import {
   Button,
   FormErrorMessage,
   chakra,
-  // useToast,
 } from '@fidesui/react';
-
-// Can we use the same form for the create, view, and edit pages? The only difference is breadcrumbs
 
 const useUserForm = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -28,6 +25,7 @@ const useUserForm = () => {
     onSubmit: async (values) => {
       setIsLoading(true);
       // const response = await 
+      // will create or update the user
       // });
       setIsLoading(false);
       // if (response && response.ok) {
@@ -35,7 +33,7 @@ const useUserForm = () => {
       //   toast({
       //     status: 'error',
       //     description:
-      //       'Creating new user failed.',
+      //       'Creating/Updating new user failed.',
       //   });
       // }
     },
@@ -77,13 +75,7 @@ const UserForm: NextPage = () => {
   } = useUserForm();
   return (
     <div>
-      <Head>
-        <title>FidesUI App - User Management - Add New User</title>
-        <meta name="description" content="Add a new user" />
-      </Head>
-
       <main>
-        {/* Breadcrumb component here */}
         <Heading fontSize="3xl" colorScheme="primary">
           Profile
         </Heading>
@@ -155,12 +147,14 @@ const UserForm: NextPage = () => {
             </FormControl>
 
             {/* Preferences checkboxes here */}
+            {/* These buttons should only exist when creating or updating user */}
             <Button
               variant="outline"
               flex="1"
               mr={3}
               size="sm"
-              onClick={cancelCreateNewUser}
+              // onClick={cancelCreateNewUser}
+              // this onclick for cancel update and cancel create?
             >
               Cancel
             </Button>
@@ -171,7 +165,7 @@ const UserForm: NextPage = () => {
               _hover={{ bg: 'primary.400' }}
               _active={{ bg: 'primary.500' }}
               colorScheme="primary"
-              disabled={!(isValid && dirty)}
+              // disabled={!(isValid && dirty)}
               size="sm"
             >
               Save

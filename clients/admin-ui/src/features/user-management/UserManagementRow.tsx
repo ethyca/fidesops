@@ -37,7 +37,7 @@ const UserManagementRow: React.FC = (user) => {
   return (
   <>
     <Tr
-      key={user.id}
+      // key={user.id}
       _hover={{ bg: 'gray.50' }}
       bg={showMenu ? 'gray.50' : 'white'}
       height="36px"
@@ -51,7 +51,8 @@ const UserManagementRow: React.FC = (user) => {
           size="sm"
           fontWeight="medium"
         >
-          {user.name}
+          {/* {user.name} */}
+          Name
         </Tag>
       </Td>
       <ButtonGroup>
@@ -67,13 +68,13 @@ const UserManagementRow: React.FC = (user) => {
               <MenuList shadow="xl">
                 <MenuItem
                   _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
-                  onClick={handleViewUser}
+                  // onClick={handleViewUser}
                 >
                   <Text fontSize="sm">View</Text>
                 </MenuItem>
                 <MenuItem
                   _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
-                  onClick={handleDeleteUser}
+                  // onClick={handleDeleteUser}
                 >
                   <Text fontSize="sm">Delete</Text>
                 </MenuItem>
