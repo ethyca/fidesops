@@ -1,7 +1,7 @@
 import logging
 import json
 import re
-from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Dict, List, Optional, Tuple, TypeVar
 
 import pydash
 from multidimensional_urlencode import urlencode
@@ -185,7 +185,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             content_type = "application/json"
             headers["Content-Type"] = "application/json"
 
-        output: Optional[Union[str, Dict[str, Any]]] = None
+        output: Optional[str] = None
 
         if content_type == "application/json":
             output = body

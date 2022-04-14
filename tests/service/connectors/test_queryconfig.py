@@ -73,29 +73,23 @@ class TestSQLQueryConfig:
         }
 
         # values exist for all query keys
-        assert (
-            found_query_keys(
-                payment_card_node,
-                {
-                    "id": ["A"],
-                    "customer_id": ["V"],
-                    "ignore_me": ["X"],
-                },
-            )
-            == {"id", "customer_id"}
-        )
+        assert found_query_keys(
+            payment_card_node,
+            {
+                "id": ["A"],
+                "customer_id": ["V"],
+                "ignore_me": ["X"],
+            },
+        ) == {"id", "customer_id"}
         # with no values OR an empty set, these are omitted
-        assert (
-            found_query_keys(
-                payment_card_node,
-                {
-                    "id": ["A"],
-                    "customer_id": [],
-                    "ignore_me": ["X"],
-                },
-            )
-            == {"id"}
-        )
+        assert found_query_keys(
+            payment_card_node,
+            {
+                "id": ["A"],
+                "customer_id": [],
+                "ignore_me": ["X"],
+            },
+        ) == {"id"}
         assert found_query_keys(
             payment_card_node, {"id": ["A"], "ignore_me": ["X"]}
         ) == {"id"}
@@ -103,27 +97,21 @@ class TestSQLQueryConfig:
         assert found_query_keys(payment_card_node, {}) == set()
 
     def test_typed_filtered_values(self):
-        assert (
-            payment_card_node.typed_filtered_values(
-                {
-                    "id": ["A"],
-                    "customer_id": ["V"],
-                    "ignore_me": ["X"],
-                }
-            )
-            == {"id": ["A"], "customer_id": ["V"]}
-        )
+        assert payment_card_node.typed_filtered_values(
+            {
+                "id": ["A"],
+                "customer_id": ["V"],
+                "ignore_me": ["X"],
+            }
+        ) == {"id": ["A"], "customer_id": ["V"]}
 
-        assert (
-            payment_card_node.typed_filtered_values(
-                {
-                    "id": ["A"],
-                    "customer_id": [],
-                    "ignore_me": ["X"],
-                }
-            )
-            == {"id": ["A"]}
-        )
+        assert payment_card_node.typed_filtered_values(
+            {
+                "id": ["A"],
+                "customer_id": [],
+                "ignore_me": ["X"],
+            }
+        ) == {"id": ["A"]}
 
         assert payment_card_node.typed_filtered_values(
             {"id": ["A"], "ignore_me": ["X"]}
@@ -642,7 +630,7 @@ class TestSaaSQueryConfig:
         ]
 
         # static path with single query param
-        config = SaaSQueryConfig(member, endpoints, {})
+        config = SaaSQueryConfig(member, endpoints, {}, "read")
         prepared_request: SaaSRequestParams = config.generate_query(
             {"email": ["customer-1@example.com"]}, policy
         )
@@ -652,7 +640,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.body is None
 
         # static path with multiple query params with default values
-        config = SaaSQueryConfig(conversations, endpoints, {})
+        config = SaaSQueryConfig(conversations, endpoints, {}, "read")
         prepared_request = config.generate_query(
             {"placeholder": ["customer-1@example.com"]}, policy
         )
@@ -662,7 +650,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.body is None
 
         # dynamic path with no query params
-        config = SaaSQueryConfig(messages, endpoints, {})
+        config = SaaSQueryConfig(messages, endpoints, {}, "read")
         prepared_request = config.generate_query({"conversation_id": ["abc"]}, policy)
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations/abc/messages"
@@ -674,6 +662,7 @@ class TestSaaSQueryConfig:
             payment_methods,
             endpoints,
             {"api_version": "2.0", "page_limit": 10, "api_key": "letmein"},
+            "read",
         )
         prepared_request = config.generate_query(
             {"email": ["customer-1@example.com"]}, policy
@@ -693,7 +682,7 @@ class TestSaaSQueryConfig:
 
         # query and path params with connector param references
         config = SaaSQueryConfig(
-            payment_methods, endpoints, {"api_version": "2.0", "page_limit": 10}
+            payment_methods, endpoints, {"api_version": "2.0", "page_limit": 10}, "read"
         )
         prepared_request = config.generate_query(
             {"email": ["customer-1@example.com"]}, policy
@@ -719,7 +708,7 @@ class TestSaaSQueryConfig:
             CollectionAddress(saas_config.fides_key, "member")
         ]
 
-        config = SaaSQueryConfig(member, endpoints, {}, update_request)
+        config = SaaSQueryConfig(member, endpoints, {}, "update", update_request)
         row = {
             "id": "123",
             "merge_fields": {"FNAME": "First", "LNAME": "Last"},
@@ -758,7 +747,7 @@ class TestSaaSQueryConfig:
         ]
         update_request = endpoints["member"].requests.get("update")
 
-        config = SaaSQueryConfig(member, endpoints, {}, update_request)
+        config = SaaSQueryConfig(member, endpoints, {}, "update", update_request)
         row = {
             "id": "123",
             "merge_fields": {"FNAME": "First", "LNAME": "Last"},
@@ -815,7 +804,7 @@ class TestSaaSQueryConfig:
             CollectionAddress(saas_config.fides_key, "payment_methods")
         ]
 
-        config = SaaSQueryConfig(member, endpoints, {}, update_request)
+        config = SaaSQueryConfig(member, endpoints, {}, "update", update_request)
         row = {
             "id": "123",
             "merge_fields": {"FNAME": "First", "LNAME": "Last"},
@@ -844,7 +833,7 @@ class TestSaaSQueryConfig:
         # update with connector_param reference
         update_request = endpoints["payment_methods"].requests.get("update")
         config = SaaSQueryConfig(
-            payment_methods, endpoints, {"api_version": "2.0"}, update_request
+            payment_methods, endpoints, {"api_version": "2.0"}, "update", update_request
         )
         row = {"type": "card", "customer_name": "First Last"}
         prepared_request = config.generate_update_stmt(
@@ -874,7 +863,7 @@ class TestSaaSQueryConfig:
         # omit read-only fields and fields not defined in the dataset
         # 'created' and 'id' are flagged as read-only and 'livemode' is not in the dataset
         update_request = endpoints["customer"].requests.get("update")
-        config = SaaSQueryConfig(customer, endpoints, {}, update_request)
+        config = SaaSQueryConfig(customer, endpoints, {}, "update", update_request)
         row = {
             "id": 1,
             "name": {"first": "A", "last": "B"},

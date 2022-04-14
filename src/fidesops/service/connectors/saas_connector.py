@@ -118,7 +118,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.saas_config = configuration.get_saas_config()
         self.client_config = self.saas_config.client_config
         self.endpoints = self.saas_config.top_level_endpoint_dict
-        self.collection_name = None
+        self.collection_name: Optional[str] = None
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
         """
@@ -128,7 +128,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         # store collection_name for logging purposes
         self.collection_name = node.address.collection
         action, configured_masking_request = self.get_masking_request_from_config(
-            self.collection_name
+            node.address.collection
         )
         return SaaSQueryConfig(
             node, self.endpoints, self.secrets, action, configured_masking_request
