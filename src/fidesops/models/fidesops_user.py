@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, DateTime
 from sqlalchemy.orm import Session, relationship
 
 from fidesops.core.config import config
@@ -14,6 +14,8 @@ class FidesopsUser(Base):
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String, nullable=False)
     salt = Column(String, nullable=False)
+    last_login_at = Column(DateTime(timezone=True), nullable=True)
+    password_reset_at = Column(DateTime(timezone=True), nullable=True)
 
     client = relationship(
         "ClientDetail", backref="user", cascade="all, delete", uselist=False
