@@ -57,7 +57,7 @@ class FidesopsUser(Base):
 
         return provided_password_hash == self.hashed_password
 
-    def login(self, db:Session) -> None:
+    def login(self, db: Session) -> None:
         """Performs any update to the user model object needed when logging in"""
         self.last_login_at = datetime.utcnow()
         self.save(db)
