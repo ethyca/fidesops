@@ -67,7 +67,7 @@ class FidesopsUser(Base):
         No validations are performed on the old/existing password within this function."""
 
         hashed_password, salt = FidesopsUser.hash_password(new_password)
-        self.hash_password = hashed_password
+        self.hashed_password = hashed_password
         self.salt = salt
         self.password_reset_at = datetime.utcnow()
         self.save(db)
