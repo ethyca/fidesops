@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import type { NextPage } from 'next';
+import NextLink from 'next/link';
 import { useFormik } from 'formik';
 import {
   Button,
@@ -231,20 +232,18 @@ const NewUserForm: NextPage = () => {
                 ))}
               </Stack>
             </CheckboxGroup>
+          </Stack>
             
-            <Button
-              variant="outline"
-              flex="1"
-              mr={3}
-              size="sm"
-              // onClick={cancelSubmit}
-              // this onclick for cancel create user -- does this redirect to the landing page table ?
-            >
-              Cancel
-            </Button>
+            <NextLink href="/user-management" passHref>
+              <Button
+                variant="outline"
+                size="sm"
+              >
+                Cancel
+              </Button>
+            </NextLink>
             <Button
               type="submit"
-              flex="1"
               bg="primary.800"
               _hover={{ bg: 'primary.400' }}
               _active={{ bg: 'primary.500' }}
@@ -253,8 +252,7 @@ const NewUserForm: NextPage = () => {
               size="sm"
             >
               Save
-            </Button> 
-          </Stack>
+            </Button>
         </chakra.form>
       </main>
     </div>
