@@ -1,24 +1,23 @@
 import React from 'react';
 import type { NextPage } from 'next';
-import Head from 'next/head';
 import { Box, Breadcrumb, BreadcrumbItem, BreadcrumbLink, Heading } from '@fidesui/react';
 
-import NavBar from '../../features/common/NavBar';
+import NavBar from '../../../features/common/NavBar';
 
 import { getSession } from 'next-auth/react';
-import { wrapper } from '../../app/store';
-import { assignToken } from '../../features/user/user.slice';
+import { wrapper } from '../../../app/store';
+import { assignToken } from '../../../features/user/user.slice';
 
-// import UserManagementTable from '../features/user-management/UserManagementTable';
-// import UserManagementTableActions from '../../features/user-management/UserManagementTableActions';
-import UserForm from '../../features/user-management/UserForm';
+// import UserForm from '../../features/user-management/UserForm';
 
-const UserProfile: NextPage<{ session: { username: string } }> = ({ session }) => (
+const Profile: NextPage<{ session: { username: string } }> = ({ session }) => (
   <div>
     <NavBar session={session} />
     <main>
+      {/* BREADCRUMBS */}
       <Box px={9} py={10}>
-        <UserForm />
+        {/* <UserForm /> */}
+        Profile page to view and edit user info
       </Box>
     </main>
   </div>
@@ -41,4 +40,4 @@ export const getServerSideProps = wrapper.getServerSideProps(
     }
   );
 
-export default UserProfile;
+export default Profile;

@@ -1,4 +1,5 @@
 import React from 'react';
+import NextLink from 'next/link';
 import {
   Button,
   Input,
@@ -11,7 +12,16 @@ import {
   SearchLineIcon,
 } from '../common/Icon';
 
+// const useUserManagementTableActions = () => {
+//   return {
+   
+//   };
+// }
+
 const UserManagementTableActions: React.FC = () => {
+  // const {
+  // } = useUserManagementTableActions();
+
   return (
     <Stack direction="row" spacing={4} mb={6}>
       <InputGroup size="sm">
@@ -29,16 +39,17 @@ const UserManagementTableActions: React.FC = () => {
           // onChange={handleSearch}
         />
       </InputGroup>
-      <Button
-        variant="solid"
-        bg="primary.800"
-        color="white"
-        flexShrink={0}
-        size="sm"
-        // onClick={handleNewUserClick}
-      >
-        Add New User
-      </Button>
+      <NextLink href="/user-management/new" passHref>
+        <Button
+          variant="solid"
+          bg="primary.800"
+          color="white"
+          flexShrink={0}
+          size="sm"
+        >
+          Add New User
+        </Button>
+      </NextLink>
     </Stack>
   );
 };

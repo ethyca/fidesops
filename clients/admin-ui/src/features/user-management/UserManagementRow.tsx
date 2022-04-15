@@ -69,12 +69,14 @@ const UserManagementRow: React.FC = (user) => {
                 <MenuItem
                   _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
                   // onClick={handleViewUser}
+                  // redirects to specific profile/[id] page
                 >
                   <Text fontSize="sm">View</Text>
                 </MenuItem>
                 <MenuItem
                   _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
                   // onClick={handleDeleteUser}
+                  // deletes user at [id]
                 >
                   <Text fontSize="sm">Delete</Text>
                 </MenuItem>

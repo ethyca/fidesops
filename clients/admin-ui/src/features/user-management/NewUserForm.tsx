@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import type { NextPage } from 'next';
-// import Head from 'next/head';
 import { useFormik } from 'formik';
-
 import {
-  Stack,
-  Heading,
-  FormControl,
-  FormLabel,
-  Input,
   Button,
-  FormErrorMessage,
   chakra,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Heading,
+  Input, 
+  Stack,
 } from '@fidesui/react';
+import config from './config/config.json';
+import { selectUserToken } from '../user/user.slice';
 
-const useUserForm = () => {
+const useNewUserForm = () => {
+  const token = useSelector(selectUserToken);
   const [isLoading, setIsLoading] = useState(false);
   const formik = useFormik({
     initialValues: {
@@ -24,18 +26,41 @@ const useUserForm = () => {
     },
     onSubmit: async (values) => {
       setIsLoading(true);
-      // const response = await 
-      // will create or update the user
-      // });
-      setIsLoading(false);
-      // if (response && response.ok) {
-      // } else {
-      //   toast({
-      //     status: 'error',
-      //     description:
-      //       'Creating/Updating new user failed.',
-      //   });
-      // }
+      const host =
+        process.env.NODE_ENV === 'development'
+          ? config.fidesops_host_development
+          : config.fidesops_host_production;
+
+      const body = 
+        {
+          "username": values.username,
+          "name": values.name,
+          "password": values.password,
+        }
+      ;
+
+      try {
+        const response = await fetch(`${host}/user`, {
+          method: 'POST',
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'authorization': `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        });
+
+        const data = await response.json();
+
+        if (data.succeeded.length) {
+          console.log("Success")
+        }
+
+      } catch (error) {
+        console.log("Error")
+        return;
+      }
     },
     validate: (values) => {
       const errors: {
@@ -49,7 +74,7 @@ const useUserForm = () => {
       }
 
       if (!values.name) {
-        errors.username = 'Name is required';
+        errors.name = 'Name is required';
       }
 
       if (!values.password) {
@@ -63,16 +88,19 @@ const useUserForm = () => {
   return { ...formik, isLoading };
 };
 
-const UserForm: NextPage = () => {
+const NewUserForm: NextPage = () => {
   const {
+    dirty,
     errors,
     handleBlur,
     handleChange,
     handleSubmit,
+    isValid,
     isLoading,
     touched,
     values,
-  } = useUserForm();
+  } = useNewUserForm();
+
   return (
     <div>
       <main>
@@ -146,30 +174,32 @@ const UserForm: NextPage = () => {
               <FormErrorMessage>{errors.password}</FormErrorMessage>
             </FormControl>
 
-            {/* Preferences checkboxes here */}
-            {/* These buttons should only exist when creating or updating user */}
-            <Button
-              variant="outline"
-              flex="1"
-              mr={3}
-              size="sm"
-              // onClick={cancelCreateNewUser}
-              // this onclick for cancel update and cancel create?
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              flex="1"
-              bg="primary.800"
-              _hover={{ bg: 'primary.400' }}
-              _active={{ bg: 'primary.500' }}
-              colorScheme="primary"
-              // disabled={!(isValid && dirty)}
-              size="sm"
-            >
-              Save
-            </Button>
+            {/* PREFERENCES BOX HERE */}
+            
+              <>
+                <Button
+                  variant="outline"
+                  flex="1"
+                  mr={3}
+                  size="sm"
+                  // onClick={cancelSubmit}
+                  // this onclick for cancel create user -- does this redirect to the landing page table ?
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  flex="1"
+                  bg="primary.800"
+                  _hover={{ bg: 'primary.400' }}
+                  _active={{ bg: 'primary.500' }}
+                  colorScheme="primary"
+                  disabled={!(isValid && dirty)}
+                  size="sm"
+                >
+                  Save
+                </Button>
+              </>
           </Stack>
         </chakra.form>
       </main>
@@ -177,4 +207,4 @@ const UserForm: NextPage = () => {
   );
 };
 
-export default UserForm;
+export default NewUserForm;
