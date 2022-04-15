@@ -30,7 +30,7 @@ Note: Order matters as it's defined in the config. In the above example, unwrap 
 
 ### For Update/Delete/GDPR endpoints
 
-For postprocessors defined in update requests, we're postprocessing the access request rows that were retrieved in a format that's needed for update statement.
+Post-processors can format the results of your access requests for use in subsequent update or delete statements.
 
 For example, if we need to return the following in an access request:
 
@@ -51,7 +51,7 @@ update:
     postprocessors:
       - strategy: filter
         configuration:
-          field: status
+          field: subscribed
           subscribed: TRUE
 ```
 
