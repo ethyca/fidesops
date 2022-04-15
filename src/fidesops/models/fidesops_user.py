@@ -24,6 +24,7 @@ class FidesopsUser(Base):
 
     @classmethod
     def hash_password(cls, password: str) -> Tuple[str, str]:
+        """Utility function to hash a user's password with a generated salt"""
         salt = generate_salt()
         hashed_password = hash_with_salt(
             password.encode(config.security.ENCODING),
