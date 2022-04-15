@@ -1,16 +1,15 @@
 import React from 'react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { getSession } from 'next-auth/react';
 import { Heading, Box } from '@fidesui/react';
+import { getSession } from 'next-auth/react';
 import { wrapper } from '../app/store';
+import { assignToken } from '../features/user/user.slice';
 
 import NavBar from '../features/common/NavBar';
 
 import RequestTable from '../features/privacy-requests/RequestTable';
 import RequestFilters from '../features/privacy-requests/RequestFilters';
-
-import { assignToken } from '../features/user/user.slice';
 
 const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
   <div>
@@ -20,7 +19,7 @@ const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
       <link rel="icon" href="/favicon.ico" />
     </Head>
 
-    <NavBar session={session} />
+    <NavBar />
 
     <main>
       <Box px={9} py={10}>

@@ -1,15 +1,18 @@
 import React from 'react';
 import {Flex, Button } from '@fidesui/react';
-import type { NextPage } from 'next';
+import { useSession } from "next-auth/react"
 import NextLink from 'next/link'
 
 import { ArrowDownLineIcon } from '../../features/common/Icon';
 
 import Header from './Header';
 
-const NavBar: NextPage<{ session: { username: string } }> = ({ session }) => (
+const NavBar = () => {
+  const { data: session } = useSession()
+
+  return (
   <>
-    <Header username={session.username} />
+    <Header username={session?.username} />
     <Flex
       borderBottom="1px"
       borderTop="1px"
@@ -42,6 +45,7 @@ const NavBar: NextPage<{ session: { username: string } }> = ({ session }) => (
       </NextLink>
     </Flex>
   </>
-);
+  )
+}
 
 export default NavBar;
