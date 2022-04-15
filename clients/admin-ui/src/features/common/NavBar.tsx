@@ -8,7 +8,7 @@ import { ArrowDownLineIcon } from '../../features/common/Icon';
 
 import Header from './Header';
 
-const NavBar = (activePage: boolean) => {
+const NavBar = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const username: string | any = session?.username

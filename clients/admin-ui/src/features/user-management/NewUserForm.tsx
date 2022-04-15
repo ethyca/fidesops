@@ -5,15 +5,58 @@ import { useFormik } from 'formik';
 import {
   Button,
   chakra,
+  Checkbox,
+  CheckboxGroup,
   FormControl,
   FormErrorMessage,
   FormLabel,
   Heading,
   Input, 
   Stack,
+  Text,
 } from '@fidesui/react';
 import config from './config/config.json';
 import { selectUserToken } from '../user/user.slice';
+
+interface Privilege {
+  privilege: string;
+  description: string;
+}
+
+export const userPrivilegesArray: Privilege[] = [
+  {
+    privilege: 'View subject requests',
+    description: 'Instructional line about these particular user preferences',
+  },
+  {
+    privilege: 'Approve subject requests',
+    description: 'Instructional line about these particular user preferences',
+  },
+  {
+    privilege: 'View datastore connections',
+    description: 'Instructional line about these particular user preferences',
+  },
+  {
+    privilege: 'Manage datastore connections',
+    description: 'Instructional line about these particular user preferences',
+  },
+  {
+    privilege: 'View policies',
+    description: 'Instructional line about these particular user preferences',
+  },
+  {
+    privilege: 'Create policies',
+    description: 'Instructional line about these particular user preferences',
+  },
+  {
+    privilege: 'Create users',
+    description: 'Instructional line about these particular user preferences',
+  },
+  {
+    privilege: 'Create roles',
+    description: 'Instructional line about these particular user preferences',
+  },
+];
 
 const useNewUserForm = () => {
   const token = useSelector(selectUserToken);
@@ -104,7 +147,7 @@ const NewUserForm: NextPage = () => {
   return (
     <div>
       <main>
-        <Heading fontSize="3xl" colorScheme="primary">
+        <Heading fontSize="xl" colorScheme="primary">
           Profile
         </Heading>
         <chakra.form
@@ -174,32 +217,43 @@ const NewUserForm: NextPage = () => {
               <FormErrorMessage>{errors.password}</FormErrorMessage>
             </FormControl>
 
-            {/* PREFERENCES BOX HERE */}
+            <Heading fontSize="xl" colorScheme="primary">
+              Preferences
+            </Heading>
+            <Text>Select privileges to assign to this user</Text>
+            <CheckboxGroup colorScheme="secondary">
+              <Stack spacing={[1, 5]} direction={'column'}>
+                {userPrivilegesArray.map((policy, idx) => (
+                  <>
+                    <Checkbox value={policy.privilege}>{policy.privilege}</Checkbox>
+                    <div>{policy.description}</div>
+                  </>
+                ))}
+              </Stack>
+            </CheckboxGroup>
             
-              <>
-                <Button
-                  variant="outline"
-                  flex="1"
-                  mr={3}
-                  size="sm"
-                  // onClick={cancelSubmit}
-                  // this onclick for cancel create user -- does this redirect to the landing page table ?
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  flex="1"
-                  bg="primary.800"
-                  _hover={{ bg: 'primary.400' }}
-                  _active={{ bg: 'primary.500' }}
-                  colorScheme="primary"
-                  disabled={!(isValid && dirty)}
-                  size="sm"
-                >
-                  Save
-                </Button>
-              </>
+            <Button
+              variant="outline"
+              flex="1"
+              mr={3}
+              size="sm"
+              // onClick={cancelSubmit}
+              // this onclick for cancel create user -- does this redirect to the landing page table ?
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              flex="1"
+              bg="primary.800"
+              _hover={{ bg: 'primary.400' }}
+              _active={{ bg: 'primary.500' }}
+              colorScheme="primary"
+              disabled={!(isValid && dirty)}
+              size="sm"
+            >
+              Save
+            </Button> 
           </Stack>
         </chakra.form>
       </main>
