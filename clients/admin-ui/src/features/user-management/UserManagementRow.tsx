@@ -39,7 +39,6 @@ const UserManagementRow: React.FC = (user) => {
     <Tr
       // key={user.id}
       _hover={{ bg: 'gray.50' }}
-      bg={showMenu ? 'gray.50' : 'white'}
       height="36px"
     >
     <Td pl={0} py={1}>
