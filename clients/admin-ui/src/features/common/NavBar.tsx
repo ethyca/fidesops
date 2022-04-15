@@ -2,17 +2,20 @@ import React from 'react';
 import {Flex, Button } from '@fidesui/react';
 import { useSession } from "next-auth/react"
 import NextLink from 'next/link'
+import { useRouter } from "next/router";
 
 import { ArrowDownLineIcon } from '../../features/common/Icon';
 
 import Header from './Header';
 
-const NavBar = () => {
-  const { data: session } = useSession()
+const NavBar = (activePage: boolean) => {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const username: string | any = session?.username
 
   return (
   <>
-    <Header username={session?.username} />
+    <Header username={username} />
     <Flex
       borderBottom="1px"
       borderTop="1px"
@@ -21,7 +24,7 @@ const NavBar = () => {
       borderColor="gray.100"
     >
       <NextLink href="/" passHref>
-        <Button as="a" variant="ghost" mr={4} colorScheme="complimentary">
+        <Button as="a" variant="ghost" mr={4} colorScheme={router.pathname === "/" ? "complimentary" : "ghost"}>
           Subject Requests
         </Button>
       </NextLink>
@@ -33,7 +36,7 @@ const NavBar = () => {
       </NextLink>
 
       <NextLink href="/user-management" passHref>
-        <Button as="a" variant="ghost" mr={4} colorScheme="ghost">
+        <Button as="a" variant="ghost" mr={4} colorScheme={router.pathname.startsWith("/user-management") ? "complimentary" : "ghost"}>
           User Management
         </Button>
       </NextLink>
