@@ -1,7 +1,8 @@
 from starlette.testclient import TestClient
 
+from fidesops.api.v1.urn_registry import HEALTH
+
 
 def test_health(api_client: TestClient) -> None:
-    url = "http://0.0.0.0:8080/health"
-    response = api_client.get(url)
+    response = api_client.get(HEALTH)
     assert response.json() == {"healthy": True}
