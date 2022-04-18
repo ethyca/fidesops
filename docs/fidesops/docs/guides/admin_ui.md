@@ -6,34 +6,32 @@ FidesOps provides a built-in control panel for managing privacy requests.
 
 ## Running Locally
 
-To get started, clone the [FidesOps repository](https://github.com/ethyca/fidesops/).
-
+To get started locally, clone the [FidesOps repository](https://github.com/ethyca/fidesops/), and ensure you have [Node.js](https://nodejs.org/en/download/) installed to run the application.
 ### Creating the root user
 
 In the top-level `fidesops` directory, run `make user`.
 
 A series of prompts will walk you through creating a username and password. Passwords require 8 or more characters, upper and lowercase characters, a number, and a symbol. 
 
-This will create an Admin UI Root User that can be used to access the in-browser control panel, and additional [user endpoints](#managing-users).
+This will create an Admin UI Root User that can be used to access additional [user endpoints](#managing-users).
 
-### Access the Control Panel
+### Accessing the Control Panel
 
 From the root `fidesops` directory, run the following:
 ``` sh
     cd clients/admin-ui
-    npm install
     npm run dev
 ```
 
-This will navigate you to the `admin-ui` directory, install the necessary packages, and run the development environment.
+This will navigate you to the `admin-ui` directory, and run the development environment.
 
-Navigate to `http://localhost:3000/`, and provide the Root User credentials you created in the previous step. For this user, the `email` field is simply the `user` that was created, and not a valid email address.
+Visit `http://localhost:3000/` in your browser, and provide user credentials to log in. 
 
-!!! tip "Only one root user can be created. Subsequent users should be managed via the available [Users endpoints](#creating-a-user)."
+!!! tip "While your [Root Account](#creating-the-root-user) can be used to access the UI, additional [endpoints](#managing-users) are available to create and manage individual users for production-grade deployments."
 
 ## Managing Users 
 
-The Admin UI also provides several user-related endpoints for managing access to the control panel. Example requests are included in the FidesOps [Postman Collection](./../postman/using_postman.md).
+Fidesops provides several user-related endpoints for managing access to the control panel. Example requests are included in the Fidesops [Postman Collection](./../postman/using_postman.md).
 
 
 ### User and Endpoint Scopes
