@@ -1135,13 +1135,7 @@ convenience (handy if you'll be running this script multiple times).</p>
 <span class="normal">15</span>
 <span class="normal">16</span>
 <span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="o">...</span>
-
-
-<span class="k">def</span> <span class="nf">create_policy</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
+<span class="normal">18</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">create_policy</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a request policy in fidesops with the given key.Returns the response JSON if successful, or throws an error otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1184,13 +1178,7 @@ convenience (handy if you'll be running this script multiple times).</p>
 <span class="normal">21</span>
 <span class="normal">22</span>
 <span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="o">...</span>
-
-
-<span class="k">def</span> <span class="nf">create_policy_rule</span><span class="p">(</span>
+<span class="normal">24</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">create_policy_rule</span><span class="p">(</span>
         <span class="n">policy_key</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">action_type</span><span class="p">,</span> <span class="n">storage_destination_key</span><span class="p">,</span> <span class="n">access_token</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -1234,13 +1222,7 @@ convenience (handy if you'll be running this script multiple times).</p>
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="o">...</span>
-
-
-<span class="k">def</span> <span class="nf">create_policy_rule_target</span><span class="p">(</span><span class="n">policy_key</span><span class="p">,</span> <span class="n">rule_key</span><span class="p">,</span> <span class="n">data_category</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
+<span class="normal">19</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">create_policy_rule_target</span><span class="p">(</span><span class="n">policy_key</span><span class="p">,</span> <span class="n">rule_key</span><span class="p">,</span> <span class="n">data_category</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a Policy Rule Target that matches the given data_category.</span>
 <span class="sd">    Returns the response JSON if successful, or throws an error otherwise.</span>
@@ -1261,17 +1243,15 @@ convenience (handy if you'll be running this script multiple times).</p>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 </code></pre></div>
 </td></tr></table>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="o">...</span>
-<span class="k">def</span> <span class="nf">delete_policy_rule</span><span class="p">(</span><span class="n">policy_key</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">delete_policy_rule</span><span class="p">(</span><span class="n">policy_key</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Deletes a Policy rule with the given key.</span>
 <span class="sd">    Returns the response JSON.</span>
