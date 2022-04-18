@@ -211,7 +211,7 @@ saas_config:
           - name: customer_id
             references:
               - dataset: stripe_connector_example
-                field: customer.id
+                field: bank_account.customer
                 direction: from
           - name: bank_account_id
             references:
@@ -267,7 +267,7 @@ saas_config:
           - name: customer_id
             references:
               - dataset: stripe_connector_example
-                field: customer.id
+                field: card.customer
                 direction: from
           - name: card_id
             references:
@@ -282,7 +282,7 @@ saas_config:
           - name: customer_id
             references:
               - dataset: stripe_connector_example
-                field: customer.id
+                field: card.customer
                 direction: from
           - name: card_id
             references:
@@ -364,7 +364,7 @@ saas_config:
           - name: customer_id
             references:
               - dataset: stripe_connector_example
-                field: customer.id
+                field: tax_id.customer
                 direction: from
           - name: tax_id
             references:

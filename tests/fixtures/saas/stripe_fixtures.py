@@ -98,7 +98,9 @@ def stripe_dataset_config(
 
 
 @pytest.fixture(scope="function")
-def stripe_create_erasure_data(stripe_secrets) -> Generator:
+def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Generator:
+
+    stripe_secrets = stripe_connection_config.secrets
 
     base_url = f"https://{stripe_secrets['host']}"
 
@@ -142,7 +144,7 @@ def stripe_create_erasure_data(stripe_secrets) -> Generator:
         headers=headers,
         data=urlencode(customer_data),
     )
-
+    assert response.ok
     customer = response.json()
 
     # create dispute by adding a fraudulent card and charging it
@@ -151,10 +153,11 @@ def stripe_create_erasure_data(stripe_secrets) -> Generator:
         headers=headers,
         data=urlencode({"source": "tok_createDispute"}),
     )
+    assert response.ok
     card = response.json()["sources"]["data"][0]
 
     # charge
-    requests.post(
+    response = requests.post(
         url=f"{base_url}/v1/charges",
         headers=headers,
         data=urlencode(
@@ -166,21 +169,24 @@ def stripe_create_erasure_data(stripe_secrets) -> Generator:
             }
         ),
     )
+    assert response.ok
 
     # bank account
-    requests.post(
+    response = requests.post(
         url=f"{base_url}/v1/customers/{customer['id']}/sources",
         headers=headers,
         data=urlencode({"source": "btok_us_verified"}),
     )
+    assert response.ok
 
     # invoice item
-    requests.post(
+    response = requests.post(
         url=f"{base_url}/v1/invoiceitems",
         headers=headers,
         params={"customer": customer["id"]},
         data=urlencode({"amount": 200, "currency": "usd"}),
     )
+    assert response.ok
 
     # pulls in the previously created invoice item automatically to create the invoice
     response = requests.post(
@@ -188,15 +194,17 @@ def stripe_create_erasure_data(stripe_secrets) -> Generator:
         headers=headers,
         params={"customer": customer["id"]},
     )
+    assert response.ok
     invoice = response.json()
 
     # finalize invoice
-    requests.post(
+    response = requests.post(
         url=f"{base_url}/v1/invoices/{invoice['id']}/finalize", headers=headers
     )
+    assert response.ok
 
     # credit note
-    requests.post(
+    response = requests.post(
         url=f"{base_url}/v1/credit_notes",
         headers=headers,
         params={"invoice": invoice["id"]},
@@ -210,16 +218,18 @@ def stripe_create_erasure_data(stripe_secrets) -> Generator:
             }
         ),
     )
+    assert response.ok
 
     # customer balance transaction
-    requests.post(
+    response = requests.post(
         url=f"{base_url}/v1/customers/{customer['id']}/balance_transactions",
         headers=headers,
         data=urlencode({"amount": -500, "currency": "usd"}),
     )
+    assert response.ok
 
     # payment intent
-    requests.post(
+    response = requests.post(
         url=f"{base_url}/v1/payment_intents",
         headers=headers,
         data=urlencode(
@@ -227,11 +237,12 @@ def stripe_create_erasure_data(stripe_secrets) -> Generator:
                 "customer": customer["id"],
                 "amount": 2000,
                 "currency": "usd",
-                "payment_method_types[]": "ach_debit",
+                "payment_method_types[]": "card",
                 "confirm": True,
             }
         ),
     )
+    assert response.ok
 
     # create and attach payment method to customer
     response = requests.post(
@@ -249,20 +260,23 @@ def stripe_create_erasure_data(stripe_secrets) -> Generator:
             }
         ),
     )
+    assert response.ok
     payment_method = response.json()
 
-    requests.post(
+    response = requests.post(
         url=f"{base_url}/v1/payment_methods/{payment_method['id']}/attach",
         params={"customer": customer["id"]},
         headers=headers,
     )
+    assert response.ok
 
     # setup intent
-    requests.post(
+    response = requests.post(
         url=f"{base_url}/v1/setup_intents",
         params={"customer": customer["id"], "payment_method_types[]": "card"},
         headers=headers,
     )
+    assert response.ok
 
     # get an existing price and use it to create a subscription
     response = requests.get(
@@ -270,23 +284,27 @@ def stripe_create_erasure_data(stripe_secrets) -> Generator:
         params={"type": "recurring"},
         headers=headers,
     )
+    assert response.ok
     price = response.json()["data"][0]
 
-    requests.post(
+    response = requests.post(
         url=f"{base_url}/v1/subscriptions",
         headers=headers,
         data=urlencode(
             {"customer": customer["id"], "items[0]": {"price": price["id"]}}
         ),
     )
+    assert response.ok
 
     # tax id
-    requests.post(
+    response = requests.post(
         url=f"{base_url}/v1/customers/{customer['id']}/tax_ids",
         headers=headers,
         data=urlencode({"type": "us_ein", "value": "000000000"}),
     )
+    assert response.ok
 
     yield customer
 
-    requests.delete(url=f"{base_url}/v1/customers/{customer['id']}", headers=headers)
+    response = requests.delete(url=f"{base_url}/v1/customers/{customer['id']}", headers=headers)
+    assert response.ok

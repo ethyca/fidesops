@@ -1,6 +1,6 @@
 import pytest
 import random
-
+import requests
 from fidesops.core.config import config
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.privacy_request import PrivacyRequest
@@ -8,6 +8,7 @@ from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.task import graph_task
 from fidesops.task.graph_task import get_cached_data_for_erasures
 from fidesops.task.filter_results import filter_data_categories
+from tests.fixtures.saas.stripe_fixtures import stripe_secrets
 from tests.graph.graph_test_util import assert_rows_match
 
 
@@ -1067,7 +1068,7 @@ def test_stripe_erasure_request_task(
     )
 
     # run erasure with MASKING_STRICT to execute the update actions
-    
+
     config.execution.MASKING_STRICT = True
 
     x = graph_task.run_erasure(
@@ -1095,6 +1096,42 @@ def test_stripe_erasure_request_task(
         f"{dataset_name}:subscription": 0,
         f"{dataset_name}:dispute": 0,
     }
+
+    stripe_secrets = stripe_connection_config.secrets
+    base_url = f"https://{stripe_secrets['host']}"
+
+    # customer
+    response = requests.get(
+        url=f"{base_url}/v1/customer", params={"email": stripe_erasure_identity_email}
+    )
+    customer = response.json()["data"][0]
+    customer_id = customer["id"]
+    assert customer["shipping"]["name"] == "MASKED"
+
+    # card
+    response = requests.get(
+        url=f"{base_url}/v1/customers/{customer_id}/sources",
+        params={"object": "card"},
+    )
+    card = response.json()
+    assert card["name"] == "MASKED"
+
+    # payment method
+    response = requests.get(
+        url=f"{base_url}/v1/customers/{customer_id}/payment_methods",
+        params={"type": "card"},
+    )
+    payment_methods = response.json()["data"]
+    for payment_method in payment_methods:
+        assert payment_method["billing_details"]["name"] == "MASKED"
+
+    # bank account
+    response = requests.get(
+        url=f"{base_url}/v1/customers/{customer_id}/sources",
+        params={"object": "bank_account"},
+    )
+    bank_account = response.json()
+    assert bank_account["account_holder_name"] == "MASKED"
 
     # run erasure without MASKING_STRICT to execute the delete actions
 
@@ -1125,6 +1162,59 @@ def test_stripe_erasure_request_task(
         f"{dataset_name}:subscription": 1,
         f"{dataset_name}:dispute": 0,
     }
+
+    # customer
+    response = requests.get(
+        url=f"{base_url}/v1/customer", params={"email": stripe_erasure_identity_email}
+    )
+    customer = response.json()["data"]
+    assert customer == []
+
+    # tax_id
+    response = requests.get(url=f"{base_url}/v1/customer/{customer_id}/tax_ids")
+    tax_ids = response.json()
+    assert tax_ids["error"]["message"] == f"No such customer: '{customer_id}'"
+
+    # invoice_item
+    response = requests.get(
+        url=f"{base_url}/v1/invoiceitems", params={"customer": {customer_id}}
+    )
+    invoice_item = response.json()["data"]
+    assert len(invoice_item) == 1
+
+    # card
+    response = requests.get(
+        url=f"{base_url}/v1/customers/{customer_id}/sources",
+        params={"object": "card"},
+    )
+    card = response.json()
+    assert card["error"]["message"] == f"No such customer: '{customer_id}'"
+
+    # payment_method
+    response = requests.get(
+        url=f"{base_url}/v1/customers/{customer_id}/payment_methods",
+        params={"type": "card"},
+    )
+    payment_methods = response.json()
+    assert (
+        payment_methods["error"]["message"] == f"No such customer: '{customer_id}'"
+    )
+
+    # bank_account
+    response = requests.get(
+        url=f"{base_url}/v1/customers/{customer_id}/sources",
+        params={"object": "bank_account"},
+    )
+    bank_account = response.json()
+    assert bank_account["error"]["message"] == f"No such customer: '{customer_id}'"
+
+    # subscription
+    response = requests.get(
+        url=f"{base_url}/v1/customers/{customer_id}/subscriptions",
+        params={"object": "bank_account"},
+    )
+    subscription = response.json()
+    assert subscription["error"]["message"] == f"No such customer: '{customer_id}'"
 
     # reset
     config.execution.MASKING_STRICT = True

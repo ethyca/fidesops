@@ -252,7 +252,7 @@ class TestField:
             is_array=False,
             sub_fields=[],
             return_all_elements=None,
-            read_only=None
+            read_only=None,
         )
         array_field = generate_field(
             name="arr",
@@ -265,7 +265,7 @@ class TestField:
             is_array=True,
             sub_fields=[],
             return_all_elements=True,
-            read_only=None
+            read_only=None,
         )
         object_field = generate_field(
             name="obj",
@@ -278,7 +278,7 @@ class TestField:
             is_array=False,
             sub_fields=[string_field, array_field],
             return_all_elements=None,
-            read_only=None
+            read_only=None,
         )
         object_array_field = generate_field(
             name="obj_a",
@@ -291,7 +291,7 @@ class TestField:
             is_array=True,
             sub_fields=[string_field, object_field],
             return_all_elements=None,
-            read_only=None
+            read_only=None,
         )
 
         assert _is_string_field(string_field)
@@ -407,8 +407,25 @@ class TestField:
                 is_array=False,
                 sub_fields=[apt_no_sub_field],
                 return_all_elements=None,
-                read_only=False
+                read_only=False,
             )
+
+    def test_generate_read_only_scalar_field(self):
+        field = generate_field(
+            name="id",
+            data_categories=["A.B.C"],
+            identity=None,
+            data_type_name="string",
+            references=[],
+            is_pk=False,
+            length=0,
+            is_array=False,
+            sub_fields=[],
+            return_all_elements=None,
+            read_only=True,
+        )
+        assert isinstance(field, ScalarField)
+        assert field.read_only
 
 
 class TestFieldPath:

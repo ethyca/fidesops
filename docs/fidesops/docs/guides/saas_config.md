@@ -205,7 +205,7 @@ This is where we define how we are going to access and update each collection in
     - `headers` and `query_params` The HTTP headers and query parameters to include in the request.
         - `name` the value to use for the header or query param name.
         - `value` can be a static value, one or more of `<dynamic_value>`, or a mix of static and dynamic values (prefix `<value>`) which will be replaced with the value sourced from the `request_param` with a matching name.
-    - `body` (optional) static or dynamic request body, with dynamic portions enclosed in brackets, just like `path`. These dynamic values will be replaced with values from `param_values`. For update requests, you'll need to additionally annotate `<masked_object_fields>` as a placeholder for the Fidesops generated update values.
+    - `body` (optional) static or dynamic request body, with dynamic portions enclosed in brackets, just like `path`. These dynamic values will be replaced with values from `param_values`.
     - `param_values`
         - `name` Used as the key to reference this value from dynamic values in the path, headers, query, or body params.
         - `references` These are the same as `references` in the Dataset schema. It is used to define the source of the value for the given request_param.
@@ -334,6 +334,41 @@ GET /v1/disputes?charge=3&line_item=c
 #### Body
 The body can be static or use placeholders. If the placeholders to build the body are not found at request-time, the request will fail.
 
+**Special considerations for updates**
+
+There are two useful placeholders that can be included in the body of an update:
+
+- `<masked_object_fields>` - the masked fields along with the masked value
+- `<all_object_fields>` - all of the object fields including the masked fields/values
+
+**Example**
+
+Starting with this row we received from an access request
+```json
+{
+  "id": 123,
+  "name": "Bobby Hill",
+  "address": "Arlen TX"
+}
+```
+If we wanted to mask the name, these would be the values of the two placeholders:
+
+| Placeholder | Value |
+|---|---|
+| `<masked_object_fields>` | `"name":"MASKED"` |
+| `<all_object_fields>` | `"id":123,"name":"MASKED","address":"Arlen TX"` |
+
+`all_object_fields` would be used if non-masked fields are required as part of the update payload.
+
+We can also flag a field as `read-only` in the dataset if we don't want it to be included as part of `<all_object_fields>` (for example, if including the `id` would cause an error).
+
+```yaml
+- name: id
+  data_categories: [system.operations]
+  fidesops_meta:
+    read_only: True
+```
+This would result in `"name":"MASKED","address":"Arlen TX"`.
 
 ## Example scenarios
 #### Dynamic path with dataset references

@@ -4,7 +4,7 @@ import re
 from typing import Any, Dict, List, Optional, Tuple, TypeVar
 
 import pydash
-from multidimensional_urlencode import urlencode
+from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.config import ScalarField
 from fidesops.core.config import config
@@ -14,8 +14,8 @@ from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.saas.saas_config import Endpoint, SaaSRequest
 from fidesops.service.connectors.query_config import QueryConfig
-from fidesops.util.collection_util import Row
-from fidesops.util.saas_util import deep_merge, unflatten_dict, FIDESOPS_GROUPED_INPUTS
+from fidesops.util.collection_util import Row, merge_dicts
+from fidesops.util.saas_util import unflatten_dict, FIDESOPS_GROUPED_INPUTS
 
 logger = logging.getLogger(__name__)
 
@@ -201,6 +201,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         adding application/json to the headers if a content type is not provided.
         """
 
+        if body is None:
+            return headers, None
+
         content_type = next(
             (
                 value
@@ -210,20 +213,17 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             None,
         )
 
-        if body is None:
-            return headers, None
-
         # add Content-Type: application/json if a content type is not provided
         if content_type is None:
             content_type = "application/json"
-            headers["Content-Type"] = "application/json"
+            headers["Content-Type"] = content_type
 
         output: Optional[str] = None
 
         if content_type == "application/json":
             output = body
         elif content_type == "application/x-www-form-urlencoded":
-            output = urlencode(json.loads(body))
+            output = multidimensional_urlencode(json.loads(body))
         elif content_type == "text/plain":
             output = body
         else:
@@ -241,6 +241,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         """
 
         current_request: SaaSRequest = self.get_request_by_action("read")
+        if not current_request:
+            raise FidesopsException(
+                f"The 'read' action is not defined for the '{self.collection_name}' "
+                f"endpoint in {self.node.node.dataset.connection_key}"
+            )
 
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
@@ -277,15 +282,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         current_request: SaaSRequest = self.get_masking_request()
         collection_name: str = self.node.address.collection
-
-        # A combined dictionary of the collections that have already been retrieved
-        # along with the current row. This is to support the case where an update
-        # needs reference values from other collections, not just the values in
-        # the current row.
-        collection_values: Dict[str, Row] = {
-            **self.get_cached_results(request),
-            **{collection_name: row},
-        }
+        collection_values: Dict[str, Row] = {collection_name: row}
         identity_data: Dict[str, Any] = request.get_cached_identity_data()
 
         # create the source of param values to populate the various placeholders
@@ -311,8 +308,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map of all values including those not being masked/updated
         all_value_map: Dict[str, Any] = self.all_value_map(row)
-        complete_object: Dict[str, Any] = unflatten_dict(all_value_map)
-        deep_merge(complete_object, masked_object)
+        # both maps use field paths for the keys so we can merge them before unflattening
+        complete_object: Dict[str, Any] = unflatten_dict(
+            merge_dicts(*[all_value_map, update_value_map])
+        )
 
         # removes outer {} wrapper from body for greater flexibility in custom body config
         param_values["masked_object_fields"] = json.dumps(masked_object)[1:-1]
@@ -343,16 +342,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                         row, field_path.string_path
                     )
         return all_value_map
-
-    @staticmethod
-    def get_cached_results(request: PrivacyRequest) -> Dict[str, Any]:
-        """
-        Returns a map of the first item in each collection of the current
-        dataset (if available).
-        """
-        return {
-            k.split(":")[-1]: v[0] if v else v for k, v in request.get_results().items()
-        }
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string"""

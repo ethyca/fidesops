@@ -322,11 +322,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         query_config = self.query_config(node)
         masking_request = query_config.get_masking_request()
         if not masking_request:
-            logger.warning(
+            raise Exception(
                 f"Either no masking request configured or no valid masking request for {node.address.collection}. "
                 f"Check that MASKING_STRICT env var is appropriately set"
             )
-            return 0
 
         prepared_requests = [
             query_config.generate_update_stmt(row, policy, privacy_request)
