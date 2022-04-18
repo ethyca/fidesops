@@ -29,3 +29,23 @@ class TestFidesopsUser:
                 db=db,
                 data={},
             )
+
+    def test_update_user_password(self, db: Session) -> None:
+        user = FidesopsUser.create(
+            db=db,
+            data={"username": "user_1", "password": "test_password"},
+        )
+
+        assert user.username == "user_1"
+        assert user.password_reset_at is None
+        assert user.credentials_valid("test_password")
+
+        user.update_password(db, "new_test_password")
+
+        assert user.username == "user_1"
+        assert user.password_reset_at is not None
+        assert user.credentials_valid("new_test_password")
+        assert user.hashed_password != "new_test_password"
+        assert not user.credentials_valid("test_password")
+
+        user.delete(db)
