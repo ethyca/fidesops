@@ -15,7 +15,7 @@
     
     
       
-        <title>Using the fidesops postman collection - Fidesops</title>
+        <title>Postman Collection - Fidesops</title>
       
     
     
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Using the fidesops postman collection
+              Postman Collection
             
           </span>
         </div>
@@ -415,12 +415,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
       
       
       
@@ -681,9 +683,99 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/users/" class="md-nav__link">
+      <a href="../../guides/admin_ui/" class="md-nav__link">
         Admin UI
       </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Postman Collection
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Postman Collection
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#loading-the-collection" class="md-nav__link">
+    Loading the collection
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bring-up-local-servers-and-mock-databases" class="md-nav__link">
+    Bring up local servers and mock databases
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#saving-authentication-variables" class="md-nav__link">
+    Saving Authentication variables
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-out-remaining-privacy-request-configuration" class="md-nav__link">
+    Building out remaining privacy request configuration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-a-privacy-request" class="md-nav__link">
+    Run a privacy request
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    Next steps
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1025,6 +1117,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    Next steps
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1040,89 +1139,135 @@
 
 
 <h1 id="using-the-fidesops-postman-collection">Using the fidesops postman collection</h1>
-<p>We include a minimal fidesops collection for executing example <code>access</code> and <code>erasure</code> privacy requests against
-mock external databases, and setting up the required prerequisite configuration.</p>
+<p>A minimal Postman collection is included to assist in setting up your fidesops configurations, and in executing example <code>access</code> and <code>erasure</code> privacy requests against mock external databases.</p>
 <h2 id="loading-the-collection">Loading the collection</h2>
 <ol>
 <li>Get <a href="https://www.postman.com/">Postman</a></li>
-<li>Postman &gt; File &gt; Import</li>
-</ol>
+<li>
+<p>Postman &gt; File &gt; Import</p>
 <p><img alt="File_Import" src="../../img/postman_images/import_collection.png" /></p>
-<ol>
-<li>Upload the Fidesops collection found in <code>docs/fidesops/docs/postman/Fidesops.postman_collection.json</code></li>
-</ol>
+</li>
+<li>
+<p>Upload the Fidesops collection found in <code>docs/fidesops/docs/postman/Fidesops.postman_collection.json</code></p>
 <p><img alt="Upload Fidesops Collection" src="../../img/postman_images/upload_files.png" /></p>
-<ol>
-<li>Click on the imported <code>Fidesops</code> collection in the left pane and then find <code>Variables</code> to edit <code>Fidesops</code> collection variables.</li>
-<li>Some variables are populated for you - the authentication variables you will have to add yourself below.</li>
-</ol>
+</li>
+<li>
+<p>Click on the imported <code>fidesops</code> collection in the left pane and then find <code>Variables</code> to edit <code>fidesops</code> collection variables.</p>
+<ul>
+<li>Some variables are populated for you, and some will be added in this guide's next steps.</li>
+</ul>
 <p><img alt="Open Fidesops Variables" src="../../img/postman_images/open_fidesops_variables.png" /></p>
-<ol>
-<li>Add your <code>OAUTH_ROOT_CLIENT_ID</code> and <code>OAUTH_ROOT_CLIENT_SECRET</code> under <code>CURRENT VALUE</code>.  I'm adding <code>fidesopsadmin</code> and <code>fidesopsadmin</code> secret, but you should add the appropriate values for your instance.</li>
-<li>Important: Click <code>Save</code></li>
-</ol>
+</li>
+<li>
+<p>Add your <code>OAUTH_ROOT_CLIENT_ID</code> and <code>OAUTH_ROOT_CLIENT_SECRET</code> under <code>CURRENT VALUE</code>.  </p>
+<ul>
+<li><code>fidesopsadmin</code> and <code>fidesopsadmin</code> are default configurations for testing, found in your <code>fidesops.toml</code>. Add the appropriate values for your instance if they differ.</li>
+<li><strong>Important:</strong> Click <code>Save</code>!</li>
+</ul>
 <p><img alt="Add root client id and secret" src="../../img/postman_images/add_root_client_id_and_secret.png" /></p>
+</li>
+</ol>
 <h2 id="bring-up-local-servers-and-mock-databases">Bring up local servers and mock databases</h2>
 <ol>
-<li>Run <code>make integration-env</code> in your terminal to bring up the <code>fidesops</code> server, <code>redis</code>, the <code>fidesops</code> postgres database, and some mock external databases like <code>mongodb_example</code> and <code>postgres_example</code> pre-populated with test data, to represent your datastores.</li>
-<li>Note: We'll be working through the list of requests in the <code>Minimum API calls to create an Access Privacy Request</code> folder.  Some of the returned data will need to be saved as additional <code>Fidesops</code> variables for use in other steps.
-<img alt="Fidesops container" src="../../img/postman_images/fidesops_container.png" /></li>
+<li>Run <code>make integration-env</code> in your terminal.<ul>
+<li>This brings up the <code>fidesops</code> server, <code>redis</code>, the <code>fidesops</code> postgres database, and some mock external databases like <code>mongodb_example</code> and <code>postgres_example</code>. These mock databases are pre-populated with test data to represent your datastores.</li>
+</ul>
+</li>
 </ol>
+<div class="admonition note">
+<p>The following list of requests is kept in the <code>Minimum API calls to create an Access Privacy Request</code> folder. Some of the returned data will need to be saved as additional variables for use in other steps.</p>
+</div>
+<p><img alt="Fidesops container" src="../../img/postman_images/fidesops_container.png" /></p>
 <h2 id="saving-authentication-variables">Saving Authentication variables</h2>
 <ol>
-<li>Click on the <code>Get Root Client Token</code> request and then click <code>Send</code> to send a <code>POST</code> request to fidesops to create a root token.</li>
-</ol>
+<li>
+<p>Click on the <code>Get Root Client Token</code> request, and click <code>Send</code> to send a <code>POST</code> request to fidesops to create a root token.</p>
 <p><img alt="Create root token" src="../../img/postman_images/create_root_client_token.png" /></p>
-<ol>
-<li>Copy the returned access token in the response body and paste it as the <code>Current Value</code> of <code>root_client_token</code> in Fidesops variables and click "Save".</li>
-</ol>
+</li>
+<li>
+<p>Copy the <code>access_token</code> returned in the response body, and paste it as the <code>Current Value</code> of <code>root_client_token</code> in Fidesops variables.</p>
+<ul>
+<li><strong>Important:</strong> Click <code>Save</code>!</li>
+</ul>
 <p><img alt="Get root token" src="../../img/postman_images/root_token_response.png" />
-<img alt="Save root token" src="../../img/postman_images/save_root_client_token.png" /></p>
-<ol>
-<li>Similarly, click on the next <code>Create Client</code> request and click <code>Send</code> to send <code>POST</code> request fo fidesops to create a client.</li>
+  <img alt="Save root token" src="../../img/postman_images/save_root_client_token.png" /></p>
+</li>
+<li>
+<p>Similarly, click on <code>Create Client</code>, and click <code>Send</code> to send a <code>POST</code> request to fidesops to create a new client.</p>
+<ul>
 <li>Copy the <code>client_id</code> and <code>client_secret</code> and paste into <code>Current Value</code> slots in Fidesops variables and click "Save".</li>
-<li>Finally, click on the <code>Get Client Token</code> request, and then click <code>Send</code> to send a <code>POST</code> request to create a token for the client we created in the previous step.</li>
-<li>Note: If you click on "Body" you can see that the client_id and client_secret have been added as form data for you.</li>
-</ol>
+</ul>
+</li>
+<li>
+<p>Finally, click on the <code>Get Client Token</code> request, and click <code>Send</code> to send another <code>POST</code> request to fidesops. This will create a token for the client made in the previous step.</p>
 <p><img alt="client variables" src="../../img/postman_images/client_form_data.png" /></p>
-<ol>
-<li>Save the returned token under <code>client_token</code> Current Value in the Fidesops variables.  The client_token will be automatically passed into the rest of your requests as the Bearer Token.</li>
-</ol>
+<ul>
+<li>If you click on <strong>Body</strong>, you can see that the <code>client_id</code> and <code>client_secret</code> have been added as form data for you.</li>
+</ul>
+</li>
+<li>
+<p>Save the returned token under <code>client_token</code> in the Fidesops variables.  The <code>client_token</code> will be automatically passed into the rest of your requests as the Bearer Token.</p>
 <p><img alt="final token" src="../../img/postman_images/final_token.png" /></p>
+</li>
+</ol>
 <h2 id="building-out-remaining-privacy-request-configuration">Building out remaining privacy request configuration</h2>
-<p>Run through the remaining requests in the <code>Minimum API calls to create an Access Privacy Request</code> folder. Because
-variables are automatically being populated for you, you should be able to click on each request, clicking "Send" for each one.
-Inspect the <code>Body</code> of each request to see what we're sending to fidesops:</p>
+<p>Run through the remaining requests in the <code>Minimum API calls to create an Access Privacy Request</code> folder. Because variables are automatically being populated for you, you should be able to click on each request, clicking <code>Send</code> for each one.</p>
+<p>Inspect the <code>Body</code> of each request to see what is sent to fidesops:</p>
 <ol>
-<li>Specify where your data is going</li>
-<li>SEND <code>Create/Update Storage</code> - Local Storage Config - Sets up a local folder which we'll upload your privacy request results (for local testing only)</li>
-<li>Configure what data we care about and what we'll do with it</li>
-<li>SEND <code>Create/Update Policies</code> - Creates a Policy where we'll start to spell out how to handle Privacy Requests</li>
-<li>SEND <code>Create/Update Access Rule</code> - Define an <code>access</code> Rule on that Policy that specifies results will be uploaded to our local storage</li>
-<li>SEND <code>Create/Update Rule Targets</code> - Specify a RuleTarget that says we will return data that has been marked as having a <code>user.provided.identifiable</code> data category</li>
-<li>Create ConnectionConfigs and add connection secrets for our <code>postgres_example</code> and <code>mongodb_example</code> mock databases:</li>
+<li>Specify where your data is going:<ol>
+<li>SEND <code>Create/Update Storage</code> - Local Storage Config - Sets up a local folder for uploading your privacy request results (local testing only)</li>
+</ol>
+</li>
+<li>Configure what data you care about, and what to do with it:<ol>
+<li>SEND <code>Create/Update Policies</code> - Creates a Policy to handle Privacy Requests</li>
+<li>SEND <code>Create/Update Access Rule</code> - Defines an <code>access</code> Rule on the previous Policy, which specifies results will be uploaded to the configured local storage</li>
+<li>SEND <code>Create/Update Rule Targets</code> - Specify a RuleTarget that says to will return data that has been marked as having a <code>user.provided.identifiable</code> data category</li>
+</ol>
+</li>
+<li>Create ConnectionConfigs, and add connection secrets for the <code>postgres_example</code> and <code>mongodb_example</code> mock databases:<ol>
 <li>SEND <code>Create/Update Connection Configs: Postgres</code></li>
 <li>SEND <code>Create/Update Connection Configs: Mongo</code></li>
 <li>SEND <code>Update Connection Secrets: Postgres</code></li>
 <li>SEND <code>Update Connection Secrets: Mongo</code></li>
-<li>Add our annotations of the Postgres and Mongo datastores</li>
+</ol>
+</li>
+<li>Add annotations of the Postgres and Mongo datastores:<ol>
 <li>SEND <code>Create/Update Postgres Dataset</code></li>
 <li>SEND <code>Create/Update Dataset Mongo</code></li>
 </ol>
-<p>Note: API calls to additional supported datastores (MsSQL, MySQL) are in separate folders within the collection. </p>
+</li>
+</ol>
+<div class="admonition note">
+<p>API calls to additional supported datastores (MsSQL, MySQL) are in separate folders within the collection. </p>
+</div>
 <h2 id="run-a-privacy-request">Run a privacy request</h2>
-<p>Now, we should have all the basic pieces needed to create an Access request.
-1. SEND <code>Create Access Privacy Requests</code> - If "succeeded", note the "id" that is returned. Note that succeeded means the privacy request has been created, and is pending, not that its execution is complete.</p>
+<p>You have now completed the basic configuration required to create an Access Request.</p>
+<ol>
+<li>
+<p>SEND <code>Create Access Privacy Requests</code></p>
+<ul>
+<li>If "succeeded", note the "id" that is returned. Succeeded means the privacy request has been created and is <em>pending,</em> not that its execution is complete.</li>
+</ul>
 <p><img alt="Succeeded Request" src="../../img/postman_images/succeeded_privacy_request.png" /></p>
-<ol>
-<li>Check your local <code>fides_uploads</code> folder that we configured earlier to see access request results.</li>
+</li>
+<li>
+<p>Check your local <code>fides_uploads</code> folder, configured earlier, to see access request results.</p>
+<ul>
 <li>This is run asynchronously, so it may take a few moments to complete.  This particular request should have retrieved data from both the <code>postgres_example</code> and <code>mongodb_example</code> databases with the <code>user.provided.identifiable</code> data_category</li>
-</ol>
+</ul>
 <p><img alt="Local Results" src="../../img/postman_images/local_results.png" /></p>
-<ol>
-<li>Check out other requests in the collection - the <code>Calls to create an Erasure Request</code> folder, walks you through configuring a separate erasure policy and executing an erasure request.</li>
-<li>Note that these erasure requests will mask data in your connected datastores (<code>postgres_example</code> and <code>mongo_example</code> here). If you connect your own live databases, data may be deleted.</li>
+</li>
 </ol>
+<h2 id="next-steps">Next steps</h2>
+<ol>
+<li>Check out other requests in the collection!<ul>
+<li>The <code>Calls to create an Erasure Request</code> folder walks you through configuring a separate erasure policy, and executing an erasure request.</li>
+</ul>
+</li>
+</ol>
+<div class="admonition note">
+<p>Note that these erasure requests will mask data in your connected datastores (<code>postgres_example</code> and <code>mongo_example</code> here. <strong>If you connect your own live databases, data may be deleted.</strong></p>
+</div>
 <p>Happy experimenting!</p>
 
               
@@ -1165,6 +1310,58 @@ Inspect the <code>Body</code> of each request to see what we're sending to fides
 <footer class="md-footer">
 
   <!-- Link to previous and/or next page -->
+  
+    <nav
+      class="md-footer__inner md-grid"
+      aria-label="Footer"
+    >
+
+      <!-- Link to previous page -->
+      
+        
+        <a
+          href="../../guides/admin_ui/"
+          class="md-footer__link md-footer__link--prev"
+          aria-label="Previous: Admin UI"
+          rel="prev"
+        >
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Admin UI
+            </div>
+          </div>
+        </a>
+      
+
+      <!-- Link to next page -->
+      
+        
+        <a
+          href="../../deployment/"
+          class="md-footer__link md-footer__link--next"
+          aria-label="Next: Deployment Guide"
+          rel="next"
+        >
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Deployment Guide
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
   
 
 
