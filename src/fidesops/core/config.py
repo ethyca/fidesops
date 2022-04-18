@@ -178,8 +178,8 @@ class FidesopsConfig(FidesSettings):
     execution: ExecutionSettings
 
     is_test_mode: bool = os.getenv("TESTING") == "True"
-    hot_reloading: bool = os.getenv("DEV_MODE") == "True"
-    dev_mode: bool = os.getenv("DEV_MODE") == "True"
+    hot_reloading: bool = os.getenv("FIDESOPS_HOT_RELOAD") == "True"
+    dev_mode: bool = os.getenv("FIDESOPS_DEV_MODE") == "True"
 
     class Config:  # pylint: disable=C0115
         case_sensitive = True
@@ -188,7 +188,7 @@ class FidesopsConfig(FidesSettings):
         f"Startup configuration: reloading = {hot_reloading}, dev_mode = {dev_mode}"
     )
     logger.warning(
-        f'Startup configuration: pii logging = {os.getenv("LOG_PII") == "True"}'
+        f'Startup configuration: pii logging = {os.getenv("FIDESOPS_LOG_PII") == "True"}'
     )
 
 
