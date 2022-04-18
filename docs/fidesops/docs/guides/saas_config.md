@@ -125,6 +125,8 @@ And the following complex fields which we will cover in detail below:
 - `client_config`
 - `test_request`
 - `endpoints`
+- `data_protection_request`
+
 #### Connector params
 The `connector_params` field is used to describe a list of settings which a user must configure as part of the setup. This section should just include the name of the parameter but not the actual value. These are added as part of the ConnectionConfig [secrets](database_connectors.md#set-the-connectionconfigs-secrets).
 
@@ -168,6 +170,30 @@ test_request:
   method: GET
   path: /3.0/lists
 ```
+
+#### Data Protection Request
+If your third party integration supports something like a GDPR delete endpoint, that can be configured as a `data_protection_request`.  It has similar attributes to the test request or endpoint requests, but it is generally one endpoint that removes all user PII in one go. 
+```yaml
+  data_protection_request:
+    method: POST
+    path: /v1beta/workspaces/<workspace_name>/regulations
+    param_values:
+      - name: workspace_name
+        connector_param: workspace
+      - name: user_id
+        identity: email
+    body: '{"regulation_type": "Suppress_With_Delete", "attributes": {"name": "userId", "values": ["<user_id>",]}}'
+    client_config:
+      protocol: https
+      host:
+        connector_param: config_domain
+      authentication:
+        strategy: bearer_authentication
+        configuration:
+          username:
+            connector_param: access_token
+
+```
 #### Endpoints
 This is where we define how we are going to access and update each collection in the corresponding Dataset. The endpoint section contains the following members:
 
@@ -190,6 +216,7 @@ This is where we define how we are going to access and update each collection in
     - `postprocessors` An optional list of response post-processing strategies. We will ignore this for the example scenarios below but an in depth-explanation can be found under [SaaS Post-Processors](saas_postprocessors.md)
     - `pagination` An optional strategy used to get the next set of results from APIs with resources spanning multiple pages. Details can be found under [SaaS Pagination](saas_pagination.md).
     - `grouped_inputs` An optional list of reference fields whose inputs are dependent upon one another.  For example, an endpoint may need both an `organization_id` and a `project_id` from another endpoint.  These aren't independent values, as a `project_id` belongs to an `organization_id`.  You would specify this as ["organization_id", "project_id"].
+    - `client_config` Specify optional embedded Client Configs if an individual request needs a different protocol, host, or authentication strategy from the base Client Config
 
 ## Param values in more detail
 The `param_values` list is what provides the values to our various placeholders in the path, headers, query params and body. Values can be `identities` such as email or phone number, `references` to fields in other collections, or `connector_params` which are defined as part of configuring a SaaS connector. Whenever a placeholder is encountered, the placeholder name is looked up in the list of `param_values` and corresponding value is used instead. Here is an example of placeholders being used in various locations:
@@ -224,6 +251,89 @@ messages:
         - name: version
           connector_param: version
 ```
+## How are requests generated?
+The following HTTP request properties are generated for each request based on the endpoint configuration:
+
+- method
+- path
+- headers
+- query params
+- body
+
+#### Method
+This is a required field since a read, update, or delete endpoint might use any of the HTTP methods to perform the given action.
+
+#### Path
+This can be a static value or use placeholders. If the placeholders to build the path are not found at request-time, the request will fail.
+
+#### Headers and query params
+These can also be static or use placeholders. If a placeholder is missing, the request will continue and omit the given header or query param in the request.
+
+If reference values are used for the placeholders, each value will be processed independently unless the `grouped_inputs` field is set. The following examples use query params but this applies to headers as well.
+
+**With ungrouped inputs (default)**
+```yaml
+read:
+  method: GET
+  path: /v1/disputes
+  query_params:
+    - name: charge
+      value: <charge_id>
+    - name: line_item
+      value: <line_item_id>
+  param_values:
+  - name: charge_id
+    references:
+      - dataset: connector_example
+        field: charge.id
+        direction: from
+  - name: line_item_id
+    references:
+      - dataset: connector_example
+        field: charge.line_item.id
+        direction: from
+```
+```yaml
+GET /v1/disputes?charge=1
+GET /v1/disputes?charge=2
+GET /v1/disputes?charge=3
+GET /v1/disputes?line_item=a
+GET /v1/disputes?line_item=b
+GET /v1/disputes?line_item=c
+```
+
+**With grouped inputs**
+```yaml
+read:
+  method: GET
+  path: /v1/disputes
+  grouped_inputs: [charge_id, payment_intent_id]
+  query_params:
+    - name: charge
+      value: <charge_id>
+    - name: line_item
+      value: <line_item_id>
+  param_values:
+  - name: charge_id
+    references:
+      - dataset: connector_example
+        field: charge.id
+        direction: from
+  - name: line_item_id
+    references:
+      - dataset: connector_example
+        field: charge.line_item.id
+        direction: from
+```
+```yaml
+GET /v1/disputes?charge=1&line_item=a
+GET /v1/disputes?charge=2&line_item=b
+GET /v1/disputes?charge=3&line_item=c
+```
+
+#### Body
+The body can be static or use placeholders. If the placeholders to build the body are not found at request-time, the request will fail.
+
 
 ## Example scenarios
 #### Dynamic path with dataset references
@@ -324,12 +434,12 @@ Sometimes, the update request needs a different body structure than what we obta
 update:
   method: PUT
   path: /crm/v3/objects/contacts
-  body: {
+  body: '{
     "properties": {
       <masked_object_fields>
       "user_ref_id": <user_ref_id>            
     }
-  }
+  }'
   param_values:
     - name: user_ref_id
       references:
