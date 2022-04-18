@@ -58,11 +58,6 @@ class FidesopsUser(Base):
 
         return provided_password_hash == self.hashed_password
 
-    def login(self, db: Session) -> None:
-        """Performs any update to the user model object needed when logging in"""
-        self.last_login_at = datetime.utcnow()
-        self.save(db)
-
     def update_password(self, db: Session, new_password: str) -> None:
         """Updates the user's password to the specified value.
         No validations are performed on the old/existing password within this function."""
