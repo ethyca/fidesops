@@ -27,7 +27,6 @@ router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 def perform_login(db: Session, user: FidesopsUser) -> ClientDetail:
     """Performs a login by updating the FidesopsUser instance and
     creating and returning an associated ClientDetail."""
-    user.last_login_at = datetime.utcnow()
 
     client: ClientDetail = user.client
     if not client:
@@ -36,7 +35,9 @@ def perform_login(db: Session, user: FidesopsUser) -> ClientDetail:
             db, SCOPE_REGISTRY, user_id=user.id
         )
 
+    user.last_login_at = datetime.utcnow()
     user.save(db)
+
     return client
 
 

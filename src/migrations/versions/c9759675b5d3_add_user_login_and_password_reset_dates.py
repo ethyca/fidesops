@@ -19,10 +19,10 @@ depends_on = None
 def upgrade():
     op.add_column(
         "fidesopsuser",
-        sa.Column("last_login_at", sa.Date(), nullable=True),
+        sa.Column("last_login_at", sa.DateTime(), nullable=True),
     )
     op.add_column(
-        "fidesopsuser", sa.Column("password_reset_at", sa.Date(), nullable=True)
+        "fidesopsuser", sa.Column("password_reset_at", sa.DateTime(), nullable=True)
     )
 
 
