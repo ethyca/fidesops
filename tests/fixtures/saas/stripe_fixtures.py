@@ -1,5 +1,5 @@
 import os
-from multidimensional_urlencode import urlencode
+from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from typing import Any, Dict, Generator
 
 from fidesops.core.config import load_toml
@@ -142,28 +142,38 @@ def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Ge
     response = requests.post(
         url=f"{base_url}/v1/customers",
         headers=headers,
-        data=urlencode(customer_data),
+        data=multidimensional_urlencode(customer_data),
     )
     assert response.ok
     customer = response.json()
+    customer_id = customer["id"]
 
     # create dispute by adding a fraudulent card and charging it
     response = requests.post(
         url=f"{base_url}/v1/customers/{customer['id']}",
         headers=headers,
-        data=urlencode({"source": "tok_createDispute"}),
+        data=multidimensional_urlencode({"source": "tok_createDispute"}),
     )
     assert response.ok
     card = response.json()["sources"]["data"][0]
+    card_id = card["id"]
+
+    # update card name to have something to mask
+    response = requests.post(
+        url=f"{base_url}/v1/customers/{customer_id}/sources/{card_id}",
+        headers=headers,
+        data=multidimensional_urlencode({"name": customer_data["name"]}),
+    )
+    assert response.ok
 
     # charge
     response = requests.post(
         url=f"{base_url}/v1/charges",
         headers=headers,
-        data=urlencode(
+        data=multidimensional_urlencode(
             {
-                "customer": customer["id"],
-                "source": card["id"],
+                "customer": customer_id,
+                "source": card_id,
                 "amount": 1000,
                 "currency": "usd",
             }
@@ -173,9 +183,18 @@ def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Ge
 
     # bank account
     response = requests.post(
-        url=f"{base_url}/v1/customers/{customer['id']}/sources",
+        url=f"{base_url}/v1/customers/{customer_id}/sources",
         headers=headers,
-        data=urlencode({"source": "btok_us_verified"}),
+        data=multidimensional_urlencode({"source": "btok_us_verified"}),
+    )
+    assert response.ok
+    bank_account = response.json()
+    bank_account_id = bank_account["id"]
+    # update bank account holder name to have something to mask
+    response = requests.post(
+        url=f"{base_url}/v1/customers/{customer_id}/sources/{bank_account_id}",
+        headers=headers,
+        data=multidimensional_urlencode({"account_holder_name": customer_data["name"]}),
     )
     assert response.ok
 
@@ -183,8 +202,8 @@ def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Ge
     response = requests.post(
         url=f"{base_url}/v1/invoiceitems",
         headers=headers,
-        params={"customer": customer["id"]},
-        data=urlencode({"amount": 200, "currency": "usd"}),
+        params={"customer": customer_id},
+        data=multidimensional_urlencode({"amount": 200, "currency": "usd"}),
     )
     assert response.ok
 
@@ -192,14 +211,15 @@ def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Ge
     response = requests.post(
         url=f"{base_url}/v1/invoices",
         headers=headers,
-        params={"customer": customer["id"]},
+        params={"customer": customer_id},
     )
     assert response.ok
     invoice = response.json()
+    invoice_id = invoice["id"]
 
     # finalize invoice
     response = requests.post(
-        url=f"{base_url}/v1/invoices/{invoice['id']}/finalize", headers=headers
+        url=f"{base_url}/v1/invoices/{invoice_id}/finalize", headers=headers
     )
     assert response.ok
 
@@ -207,8 +227,8 @@ def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Ge
     response = requests.post(
         url=f"{base_url}/v1/credit_notes",
         headers=headers,
-        params={"invoice": invoice["id"]},
-        data=urlencode(
+        params={"invoice": invoice_id},
+        data=multidimensional_urlencode(
             {
                 "lines[0]": {
                     "type": "invoice_line_item",
@@ -222,9 +242,9 @@ def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Ge
 
     # customer balance transaction
     response = requests.post(
-        url=f"{base_url}/v1/customers/{customer['id']}/balance_transactions",
+        url=f"{base_url}/v1/customers/{customer_id}/balance_transactions",
         headers=headers,
-        data=urlencode({"amount": -500, "currency": "usd"}),
+        data=multidimensional_urlencode({"amount": -500, "currency": "usd"}),
     )
     assert response.ok
 
@@ -232,9 +252,9 @@ def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Ge
     response = requests.post(
         url=f"{base_url}/v1/payment_intents",
         headers=headers,
-        data=urlencode(
+        data=multidimensional_urlencode(
             {
-                "customer": customer["id"],
+                "customer": customer_id,
                 "amount": 2000,
                 "currency": "usd",
                 "payment_method_types[]": "card",
@@ -248,7 +268,7 @@ def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Ge
     response = requests.post(
         url=f"{base_url}/v1/payment_methods",
         headers=headers,
-        data=urlencode(
+        data=multidimensional_urlencode(
             {
                 "type": "card",
                 "card": {
@@ -257,15 +277,17 @@ def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Ge
                     "exp_year": 2023,
                     "cvc": 314,
                 },
+                "billing_details": {"name": customer_data["name"]},
             }
         ),
     )
     assert response.ok
     payment_method = response.json()
+    payment_method_id = payment_method["id"]
 
     response = requests.post(
-        url=f"{base_url}/v1/payment_methods/{payment_method['id']}/attach",
-        params={"customer": customer["id"]},
+        url=f"{base_url}/v1/payment_methods/{payment_method_id}/attach",
+        params={"customer": customer_id},
         headers=headers,
     )
     assert response.ok
@@ -273,7 +295,7 @@ def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Ge
     # setup intent
     response = requests.post(
         url=f"{base_url}/v1/setup_intents",
-        params={"customer": customer["id"], "payment_method_types[]": "card"},
+        params={"customer": customer_id, "payment_method_types[]": "card"},
         headers=headers,
     )
     assert response.ok
@@ -286,25 +308,28 @@ def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Ge
     )
     assert response.ok
     price = response.json()["data"][0]
+    price_id = price["id"]
 
     response = requests.post(
         url=f"{base_url}/v1/subscriptions",
         headers=headers,
-        data=urlencode(
-            {"customer": customer["id"], "items[0]": {"price": price["id"]}}
+        data=multidimensional_urlencode(
+            {"customer": customer_id, "items[0]": {"price": price_id}}
         ),
     )
     assert response.ok
 
     # tax id
     response = requests.post(
-        url=f"{base_url}/v1/customers/{customer['id']}/tax_ids",
+        url=f"{base_url}/v1/customers/{customer_id}/tax_ids",
         headers=headers,
-        data=urlencode({"type": "us_ein", "value": "000000000"}),
+        data=multidimensional_urlencode({"type": "us_ein", "value": "000000000"}),
     )
     assert response.ok
 
     yield customer
 
-    response = requests.delete(url=f"{base_url}/v1/customers/{customer['id']}", headers=headers)
+    response = requests.delete(
+        url=f"{base_url}/v1/customers/{customer_id}", headers=headers
+    )
     assert response.ok
