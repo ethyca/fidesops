@@ -218,8 +218,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             content_type = "application/json"
             headers["Content-Type"] = content_type
 
-        output: Optional[str] = None
-
         if content_type == "application/json":
             output = body
         elif content_type == "application/x-www-form-urlencoded":
@@ -309,8 +307,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         # map of all values including those not being masked/updated
         all_value_map: Dict[str, Any] = self.all_value_map(row)
         # both maps use field paths for the keys so we can merge them before unflattening
+        # values in update_value_map will override values in all_value_map
         complete_object: Dict[str, Any] = unflatten_dict(
-            merge_dicts(*[all_value_map, update_value_map])
+            merge_dicts(all_value_map, update_value_map)
         )
 
         # removes outer {} wrapper from body for greater flexibility in custom body config

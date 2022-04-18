@@ -1196,6 +1196,7 @@ def test_stripe_erasure_request_task(
         params={"customer": {customer_id}},
     )
     invoice_item = response.json()["data"]
+    # Can't delete an invoice item that is attached to an invoice that is no longer editable
     assert len(invoice_item) == 1
 
     # card

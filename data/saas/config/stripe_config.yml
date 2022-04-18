@@ -50,15 +50,6 @@ saas_config:
                 field: customer.id
                 direction: from
         body: '{<all_object_fields>}'
-      delete:
-        method: DELETE
-        path: /v1/customers/<customer_id>
-        param_values:
-          - name: customer_id
-            references:
-              - dataset: stripe_connector_example
-                field: customer.id
-                direction: from
   - name: charge
     requests:
       read: 
@@ -219,20 +210,6 @@ saas_config:
                 field: bank_account.id
                 direction: from
         body: '{<masked_object_fields>}'
-      delete:
-        method: DELETE
-        path: /v1/customers/<customer_id>/sources/<bank_account_id>
-        param_values:
-          - name: customer_id
-            references:
-              - dataset: stripe_connector_example
-                field: customer.id
-                direction: from
-          - name: bank_account_id
-            references:
-              - dataset: stripe_connector_example
-                field: bank_account.id
-                direction: from
   - name: card
     requests:
       read:
@@ -275,20 +252,6 @@ saas_config:
                 field: card.id
                 direction: from
         body: '{<masked_object_fields>}'
-      delete:
-        method: DELETE
-        path: /v1/customers/<customer_id>/sources/<card_id>
-        param_values:
-          - name: customer_id
-            references:
-              - dataset: stripe_connector_example
-                field: card.customer
-                direction: from
-          - name: card_id
-            references:
-              - dataset: stripe_connector_example
-                field: card.id
-                direction: from
   - name: credit_note
     requests:
       read:
