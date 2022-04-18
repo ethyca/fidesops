@@ -95,7 +95,9 @@ class AuthenticatedClient:
             response = self.session.send(prepared_request)
         except Exception as exc:  # pylint: disable=W0703
             if config.dev_mode:  # pylint: disable=R1720
-                raise exc
+                raise ConnectionException(
+                    f"Operational Error connecting to '{self.key}' with error: {exc}"
+                )
             else:
                 raise ConnectionException(
                     f"Operational Error connecting to '{self.key}'."
