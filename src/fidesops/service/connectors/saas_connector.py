@@ -96,6 +96,7 @@ class AuthenticatedClient:
             response = self.session.send(prepared_request)
         except Exception:
             raise ConnectionException(f"Operational Error connecting to '{self.key}'.")
+
         if not response.ok:
             if ignore_errors:
                 logger.info(
@@ -115,9 +116,14 @@ def log_request_for_debugging(prepared_request: PreparedRequest) -> None:
     if config.dev_mode:
         logger.info(
             "\n\n-----------SAAS REQUEST-----------"
-            f"\n{prepared_request.method} {prepared_request.url}"
-            f"\nheaders: {prepared_request.headers}"
-            f"\nbody: {prepared_request.body.format() if isinstance(prepared_request.body, bytes) else prepared_request.body}"
+            "\n{} {}"
+            "\nheaders: {}"
+            "\nbody: {!r}".format(
+                prepared_request.method,
+                prepared_request.url,
+                prepared_request.headers,
+                prepared_request.body,
+            )
         )
 
 
