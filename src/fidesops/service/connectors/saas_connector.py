@@ -362,7 +362,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             )
         # unwrap response using data_path
         if query_config.masking_request.data_path and rows:
-            rows = pydash.get(rows[0], query_config.masking_request.data_path)
+            rows = [
+                pydash.get(row, query_config.masking_request.data_path) for row in rows
+            ]
 
         # post-process access request response specific to masking request needs
         rows = self.process_response_data(

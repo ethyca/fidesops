@@ -134,15 +134,14 @@ def test_saas_erasure_request_task(
         connection_config_hubspot,
         dataset_config_hubspot,
         hubspot_erasure_identity_email,
-        setup_teardown_erasure_hubspot_data,
+        hubspot_erasure_data,
 ) -> None:
     """Full erasure request based on the Hubspot SaaS config"""
     privacy_request = PrivacyRequest(
         id=f"test_saas_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity_attribute = "email"
-    identity_value = hubspot_erasure_identity_email
-    identity_kwargs = {identity_attribute: identity_value}
+    identity_kwargs = {identity_attribute: (hubspot_erasure_identity_email)}
     identity = PrivacyRequestIdentity(**identity_kwargs)
     privacy_request.cache_identity(identity)
 
@@ -150,12 +149,31 @@ def test_saas_erasure_request_task(
     merged_graph = dataset_config_hubspot.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    graph_task.run_access_request(
+    v = graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
         [connection_config_hubspot],
-        {"email": hubspot_erasure_identity_email},
+        identity_kwargs,
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:contacts"],
+        min_size=1,
+        keys=[
+            "archived",
+            "createdAt",
+            "id",
+            "properties"
+        ],
+    )
+    assert_rows_match(
+        v[f"{dataset_name}:subscription_preferences"],
+        min_size=1,
+        keys=[
+            "recipient",
+            "subscriptionStatuses"
+        ],
     )
 
     erasure = graph_task.run_erasure(
@@ -163,7 +181,7 @@ def test_saas_erasure_request_task(
         erasure_policy_string_rewrite,
         graph,
         [connection_config_hubspot],
-        {"email": hubspot_erasure_identity_email},
+        identity_kwargs,
         get_cached_data_for_erasures(privacy_request.id),
     )
 

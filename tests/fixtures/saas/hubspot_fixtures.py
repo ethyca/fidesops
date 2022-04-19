@@ -98,7 +98,7 @@ def dataset_config_hubspot(
 
 
 @pytest.fixture(scope="function")
-def setup_teardown_erasure_hubspot_data(connection_config_hubspot, hubspot_erasure_identity_email) -> Generator:
+def hubspot_erasure_data(connection_config_hubspot, hubspot_erasure_identity_email) -> Generator:
     """
     Gets the current value of the resource and restores it after the test is complete.
     Used for erasure tests.
@@ -127,7 +127,12 @@ def setup_teardown_erasure_hubspot_data(connection_config_hubspot, hubspot_erasu
 
     # no need to subscribe contact, since creating a contact auto-subscribes them
 
-    time.sleep(10)  # Allows contact to be propagated in Hubspot before calling access / erasure requests
+    # Allows contact to be propagated in Hubspot before calling access / erasure requests
+    remaining_tries = 5
+    while _contact_exists(connector) is False:
+        if remaining_tries < 1:
+            raise Exception(f"Contact with contact id {contact_id} could not be added to Hubspot")
+        time.sleep(5)
 
     yield contact_id
 
@@ -137,3 +142,32 @@ def setup_teardown_erasure_hubspot_data(connection_config_hubspot, hubspot_erasu
         path=f"/crm/v3/objects/contacts/{contact_id}",
     )
     connector.create_client().send(delete_request)
+
+    # verify contact is deleted
+    remaining_tries = 5
+    while _contact_exists(connector) is True:
+        if remaining_tries < 1:
+            raise Exception(f"Contact with contact id {contact_id} could not be deleted from Hubspot")
+        time.sleep(5)  # Ensures contact is deleted
+
+
+def _contact_exists(connector: SaaSConnector) -> bool:
+    """
+    Confirm whether contact exists by calling search api and comparing firstname str.
+   """
+    contact_request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path="/crm/v3/objects/contacts/search",
+        json_body={
+            "filterGroups": [{
+                "filters": [{
+                    "value": hubspot_erasure_identity_email,
+                    "propertyName": "email",
+                    "operator": "EQ"
+                }]
+            }]
+        },
+    )
+    contact_response = connector.create_client().send(contact_request)
+    contact_body = contact_response.json()
+    return bool(contact_body["results"][0]["properties"]["firstname"] == "SomeoneFirstname")
