@@ -330,7 +330,11 @@ class TestUserLogout:
 
         # Assert user is not deleted
         user_search = FidesopsUser.get_by(db, field="id", value=user_id)
+        db.refresh(user_search)
         assert user_search is not None
+
+        # Assert user does not still have client reference
+        assert user_search.client is None
 
     def test_logout(self, db, url, api_client, generate_auth_header, oauth_client):
         oauth_client_id = oauth_client.id
