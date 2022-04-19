@@ -334,16 +334,18 @@ GET /v1/disputes?charge=3&line_item=c
 #### Body
 The body can be static or use placeholders. If the placeholders to build the body are not found at request-time, the request will fail.
 
-**Special considerations for updates**
+**Placeholder options for updates**
 
-There are two useful placeholders that can be included in the body of an update:
+The following placeholders can be included in the body of an update:
 
-- `<masked_object_fields>` - the masked fields along with the masked value
-- `<all_object_fields>` - all of the object fields including the masked fields/values
+- `<masked_object_fields>` - any masked fields, along with their masked value
+- `<all_object_fields>` - all object fields, including the masked fields and values
+
+Fidesops will automatically fill in the value of these placeholders with the appropriate contents.
 
 **Example**
 
-Starting with this row we received from an access request
+An access request returned the following row: 
 ```json
 {
   "id": 123,
@@ -351,16 +353,19 @@ Starting with this row we received from an access request
   "address": "Arlen TX"
 }
 ```
-If we wanted to mask the name, these would be the values of the two placeholders:
+
+With the `name` field masked, the value of each placeholder would be:
 
 | Placeholder | Value |
 |---|---|
 | `<masked_object_fields>` | `"name":"MASKED"` |
 | `<all_object_fields>` | `"id":123,"name":"MASKED","address":"Arlen TX"` |
 
-`all_object_fields` would be used if non-masked fields are required as part of the update payload.
+!!! Tip "`all_object_fields` should be used if non-masked fields are required as part of the update payload."
 
-We can also flag a field as `read-only` in the dataset if we don't want it to be included as part of `<all_object_fields>` (for example, if including the `id` would cause an error).
+**Read-Only fields** 
+
+A field can be flagged as `read-only` in the dataset to exclude it from the value of `<all_object_fields>` (for example, if including the `id` would cause an error).
 
 ```yaml
 - name: id
@@ -368,7 +373,12 @@ We can also flag a field as `read-only` in the dataset if we don't want it to be
   fidesops_meta:
     read_only: True
 ```
-This would result in `"name":"MASKED","address":"Arlen TX"`.
+This would result in the following change, with `id` removed from the result:
+
+| Placeholder | Value |
+|---|---|
+| `<all_object_fields>` | `"name":"MASKED","address":"Arlen TX"` |
+
 
 ## Example scenarios
 #### Dynamic path with dataset references
