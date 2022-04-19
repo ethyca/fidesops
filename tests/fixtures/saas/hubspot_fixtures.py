@@ -129,7 +129,7 @@ def hubspot_erasure_data(connection_config_hubspot, hubspot_erasure_identity_ema
 
     # Allows contact to be propagated in Hubspot before calling access / erasure requests
     remaining_tries = 5
-    while _contact_exists(connector) is False:
+    while _contact_exists(hubspot_erasure_identity_email, connector) is False:
         if remaining_tries < 1:
             raise Exception(f"Contact with contact id {contact_id} could not be added to Hubspot")
         time.sleep(5)
@@ -145,13 +145,13 @@ def hubspot_erasure_data(connection_config_hubspot, hubspot_erasure_identity_ema
 
     # verify contact is deleted
     remaining_tries = 5
-    while _contact_exists(connector) is True:
+    while _contact_exists(hubspot_erasure_identity_email, connector) is True:
         if remaining_tries < 1:
             raise Exception(f"Contact with contact id {contact_id} could not be deleted from Hubspot")
         time.sleep(5)  # Ensures contact is deleted
 
 
-def _contact_exists(connector: SaaSConnector) -> bool:
+def _contact_exists(hubspot_erasure_identity_email: str, connector: SaaSConnector) -> bool:
     """
     Confirm whether contact exists by calling search api and comparing firstname str.
    """
@@ -170,4 +170,4 @@ def _contact_exists(connector: SaaSConnector) -> bool:
     )
     contact_response = connector.create_client().send(contact_request)
     contact_body = contact_response.json()
-    return bool(contact_body["results"][0]["properties"]["firstname"] == "SomeoneFirstname")
+    return bool(contact_body["results"] and contact_body["results"][0]["properties"]["firstname"] == "SomeoneFirstname")
