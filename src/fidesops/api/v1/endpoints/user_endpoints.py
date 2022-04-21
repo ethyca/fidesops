@@ -1,5 +1,9 @@
 import logging
 from fastapi import Security, Depends, APIRouter, HTTPException
+from fastapi_pagination.ext.sqlalchemy import paginate
+from fastapi_pagination import Page, Params
+from fastapi_pagination.bases import AbstractPage
+
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
@@ -12,13 +16,19 @@ from fidesops.api.v1.urn_registry import V1_URL_PREFIX
 from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.schemas.oauth import AccessToken
-from fidesops.schemas.user import UserCreate, UserCreateResponse, UserLogin
+from fidesops.schemas.user import (
+    UserCreate,
+    UserCreateResponse,
+    UserLogin,
+    UserResponse,
+)
 
 from fidesops.util.oauth_util import verify_oauth_client
 from sqlalchemy.orm import Session
 
 from fidesops.api.v1.scope_registry import (
     USER_CREATE,
+    USER_READ,
     USER_DELETE,
     SCOPE_REGISTRY,
 )
@@ -46,6 +56,34 @@ def create_user(
 
     user = FidesopsUser.create(db=db, data=user_data.dict())
     logger.info(f"Created user with id: '{user.id}'.")
+    return user
+
+
+@router.get(
+    urls.USERS,
+    dependencies=[Security(verify_oauth_client, scopes=[USER_READ])],
+    response_model=Page[UserResponse],
+)
+def get_users(
+    *, db: Session = Depends(deps.get_db), params: Params = Depends()
+) -> AbstractPage[FidesopsUser]:
+    """Returns a paginated list of all users"""
+    logger.info(f"Returned a paginated list of all users.")
+    return paginate(FidesopsUser.query(db), params=params)
+
+
+@router.get(
+    urls.USER_DETAIL,
+    dependencies=[Security(verify_oauth_client, scopes=[USER_READ])],
+    response_model=UserResponse,
+)
+def get_user(*, db: Session = Depends(deps.get_db), user_id: str) -> FidesopsUser:
+    """Returns a User based on an Id"""
+    logger.info(f"Returned a User based on Id")
+    user = FidesopsUser.get_by(db, field="id", value=user_id)
+    if user is None:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
+
     return user
 
 
