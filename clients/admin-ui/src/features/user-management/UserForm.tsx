@@ -59,9 +59,16 @@ export const userPrivilegesArray: Privilege[] = [
   },
 ];
 
-const useNewUserForm = () => {
+const useUserForm = () => {
+  // const dispatch = useDispatch();
   const token = useSelector(selectUserToken);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Initial values - GET individual user values if coming from the ID path
+  // useEffect(() => {
+  //   // Get user values
+  // }, []);
+
   const formik = useFormik({
     initialValues: {
       username: '',
@@ -129,10 +136,17 @@ const useNewUserForm = () => {
     },
   });
 
-  return { ...formik, isLoading };
+  // const { data, isLoading } = useGetUserQuery(userId);
+  // const { items } = data || { items: [] };
+
+  return {
+     ...formik, 
+    isLoading,
+    // items
+  };
 };
 
-const NewUserForm: NextPage = () => {
+const UserForm: NextPage = () => {
   const {
     dirty,
     errors,
@@ -143,7 +157,7 @@ const NewUserForm: NextPage = () => {
     isLoading,
     touched,
     values,
-  } = useNewUserForm();
+  } = useUserForm();
 
   return (
     <div>
@@ -259,4 +273,4 @@ const NewUserForm: NextPage = () => {
   );
 };
 
-export default NewUserForm;
+export default UserForm;

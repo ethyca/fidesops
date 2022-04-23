@@ -19,6 +19,7 @@ const UserManagementTable: React.FC = () => {
           </Tr>
         </Thead>
         <Tbody>
+          {/* Blocked until GET users is implemented */}
           {/* {users.map((user) => (
             <UserManagementRow user={user} key={user.id} />
           ))} */}

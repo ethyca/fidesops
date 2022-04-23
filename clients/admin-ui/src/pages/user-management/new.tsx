@@ -6,7 +6,7 @@ import NavBar from '../../features/common/NavBar';
 
 // import UserManagementTable from '../features/user-management/UserManagementTable';
 // import UserManagementTableActions from '../../features/user-management/UserManagementTableActions';
-import NewUserForm from '../../features/user-management/NewUserForm';
+import UserForm from '../../features/user-management/UserForm';
 
 const CreateNewUser: NextPage<{ session: { username: string } }> = ({ session }) => (
   <div>
@@ -14,7 +14,7 @@ const CreateNewUser: NextPage<{ session: { username: string } }> = ({ session })
     <main>
       {/* BREADCRUMBS */}
       <Box px={9} py={10}>
-        <NewUserForm />
+        <UserForm />
       </Box>
     </main>
   </div>
