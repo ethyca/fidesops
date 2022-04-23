@@ -70,7 +70,7 @@ const UserManagementRow: React.FC = (user) => {
                   // onClick={handleViewUser}
                   // redirects to specific profile/[id] page
                 >
-                  <Text fontSize="sm">View</Text>
+                  <Text fontSize="sm">Edit</Text>
                 </MenuItem>
                 <MenuItem
                   _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
