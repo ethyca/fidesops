@@ -1,11 +1,11 @@
 import React from 'react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { Box, Breadcrumb, BreadcrumbItem, BreadcrumbLink, Heading } from '@fidesui/react';
+import { Box, Heading } from '@fidesui/react';
 
 import NavBar from '../../features/common/NavBar';
 
-// import UserManagementTable from '../features/user-management/UserManagementTable';
+import UserManagementTable from '../../features/user-management/UserManagementTable';
 import UserManagementTableActions from '../../features/user-management/UserManagementTableActions';
 
 const UserManagement: NextPage<{ session: { username: string } }> = ({ session }) => (
@@ -24,21 +24,8 @@ const UserManagement: NextPage<{ session: { username: string } }> = ({ session }
         <Heading mb={8} fontSize="2xl" fontWeight="semibold">
           User Management
         </Heading>
-        {/* <Breadcrumb fontWeight='medium' fontSize='sm'>
-          <BreadcrumbItem>
-            <BreadcrumbLink href='/user-management'>User Management</BreadcrumbLink>
-          </BreadcrumbItem>
-
-          <BreadcrumbItem>
-            <BreadcrumbLink href='#'></BreadcrumbLink>
-          </BreadcrumbItem>
-
-          <BreadcrumbItem isCurrentPage>
-            <BreadcrumbLink href='#'></BreadcrumbLink>
-          </BreadcrumbItem>
-        </Breadcrumb> */}
         <UserManagementTableActions />
-        {/* <UserManagementTable /> */}
+        <UserManagementTable />
       </Box>
     </main>
   </div>

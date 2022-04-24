@@ -3,6 +3,7 @@ import {
     FormControl,
     FormLabel,
     Input,
+    MenuItem,
     Modal,
     ModalBody,
     ModalCloseButton,
@@ -10,15 +11,24 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
+    Text,
     useDisclosure,
   } from '@fidesui/react';
 
-function DeleteUserModal() {
+function DeleteUserModal(user) {
     const { isOpen, onOpen, onClose } = useDisclosure()
+    // const deleteUser(id) { 
+    //   // call delete user from API and delete by id here
+    // }
   
     return (
       <>
-        <Button onClick={onOpen}>Delete</Button>
+        <MenuItem
+          _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
+          onClick={onOpen}
+        >
+          <Text fontSize="sm">Delete</Text>
+        </MenuItem>
         <Modal
           isOpen={isOpen}
           onClose={onClose}
@@ -40,7 +50,11 @@ function DeleteUserModal() {
   
             <ModalFooter>
               <Button onClick={onClose}>Cancel</Button>
-              <Button colorScheme='blue' mr={3}>
+              {/* Disable delete user button when either field is blank or the fields don't match ? */}
+              <Button 
+              // onClick={deleteUser(user.id)}
+              // colorScheme='blue' 
+              mr={3}>
                 Delete User
               </Button>
             </ModalFooter>

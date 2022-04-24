@@ -12,10 +12,16 @@ import {
 } from './types';
 
 export interface State {
+  id: string;
+  page: number;
+  size: number;
   token: string | null;
 }
 
 const initialState: State = {
+  id: '',
+  page: 1,
+  size: 25,
   token: null,
 };
 
@@ -104,6 +110,11 @@ export const userSlice = createSlice({
       ...state,
       token: action.payload,
     }),
+    setUserId: (state, action: PayloadAction<string>) => ({
+      ...state,
+      page: initialState.page,
+      id: action.payload,
+    }),
   },
   extraReducers: {
     [HYDRATE]: (state, action) => ({
@@ -113,7 +124,7 @@ export const userSlice = createSlice({
   },
 });
 
-export const { assignToken } = userSlice.actions;
+export const { assignToken, setUserId } = userSlice.actions;
 
 export const selectUserToken = (state: AppState) => state.user.token;
 

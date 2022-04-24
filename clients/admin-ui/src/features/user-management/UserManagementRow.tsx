@@ -1,6 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
-  Tag,
   Text,
   Tr,
   Td,
@@ -14,6 +13,8 @@ import {
 } from '@fidesui/react';
 
 import { MoreIcon } from '../common/Icon';
+import DeleteUserModal from './DeleteUserModal';
+
 const useUserManagementRow = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const handleMenuOpen = () => setMenuOpen(true);
@@ -42,18 +43,10 @@ const UserManagementRow: React.FC = (user) => {
       height="36px"
     >
     <Td pl={0} py={1}>
-        <Tag
-          color="white"
-          bg="primary.400"
-          px={2}
-          py={0.5}
-          size="sm"
-          fontWeight="medium"
-        >
           {/* {user.name} */}
           Name
-        </Tag>
       </Td>
+      <Td pr={0} py={1} textAlign="end" position="relative">
       <ButtonGroup>
           <Menu onOpen={handleMenuOpen} onClose={handleMenuClose}>
           <MenuButton
@@ -67,22 +60,17 @@ const UserManagementRow: React.FC = (user) => {
               <MenuList shadow="xl">
                 <MenuItem
                   _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
-                  // onClick={handleViewUser}
-                  // redirects to specific profile/[id] page
+                  // onClick={handleEditUser}
+                  // redirects to specific profile/[id] page in edit view
                 >
                   <Text fontSize="sm">Edit</Text>
                 </MenuItem>
-                <MenuItem
-                  _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
-                  // onClick={handleDeleteUser}
-                  // deletes user at [id]
-                >
-                  <Text fontSize="sm">Delete</Text>
-                </MenuItem>
+                {DeleteUserModal(user)}
               </MenuList>
             </Portal>
           </Menu>
         </ButtonGroup>
+        </Td>
         </Tr>
         </>
   );

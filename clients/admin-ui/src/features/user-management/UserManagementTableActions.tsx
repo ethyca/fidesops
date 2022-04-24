@@ -1,4 +1,5 @@
 import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import NextLink from 'next/link';
 import {
   Button,
@@ -12,15 +13,24 @@ import {
   SearchLineIcon,
 } from '../common/Icon';
 
-// const useUserManagementTableActions = () => {
-//   return {
-   
-//   };
-// }
+import { setUserId } from '../user/user.slice';
+
+const useUserManagementTableActions = () => {
+  const dispatch = useDispatch();
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(setUserId(event.target.value));
+  };
+
+  return {
+    handleSearchChange,
+  };
+}
 
 const UserManagementTableActions: React.FC = () => {
-  // const {
-  // } = useUserManagementTableActions();
+  const {
+    handleSearchChange,
+    id,
+  } = useUserManagementTableActions();
 
   return (
     <Stack direction="row" spacing={4} mb={6}>
@@ -34,9 +44,9 @@ const UserManagementTableActions: React.FC = () => {
           placeholder="Search by Name or Username"
           size="sm"
           borderRadius="md"
-          // value={id}
+          value={id}
           name="search"
-          // onChange={handleSearch}
+          onChange={handleSearchChange}
         />
       </InputGroup>
       <NextLink href="/user-management/new" passHref>

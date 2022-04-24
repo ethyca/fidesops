@@ -7,7 +7,7 @@ import {
   Th,
 } from '@fidesui/react';
 
-// import UserManagementRow from './UserManagementRow';
+import UserManagementRow from './UserManagementRow';
 
 const UserManagementTable: React.FC = () => {
   return (
@@ -15,7 +15,7 @@ const UserManagementTable: React.FC = () => {
       <Table size="sm">
         <Thead>
           <Tr>
-            <Th pl={0}>User</Th>
+            <Th pl={0}>Name</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -23,6 +23,7 @@ const UserManagementTable: React.FC = () => {
           {/* {users.map((user) => (
             <UserManagementRow user={user} key={user.id} />
           ))} */}
+          <UserManagementRow />
         </Tbody>
       </Table>
     </>
