@@ -13,9 +13,10 @@ import {
   SearchLineIcon,
 } from '../common/Icon';
 
-import { setUserId } from '../user/user.slice';
+import { selectUserFilters, setUserId } from '../user/user.slice';
 
 const useUserManagementTableActions = () => {
+  const filters = useSelector(selectUserFilters);
   const dispatch = useDispatch();
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(setUserId(event.target.value));
@@ -23,13 +24,14 @@ const useUserManagementTableActions = () => {
 
   return {
     handleSearchChange,
+    ...filters,
   };
 }
 
 const UserManagementTableActions: React.FC = () => {
   const {
     handleSearchChange,
-    id,
+    user
   } = useUserManagementTableActions();
 
   return (
@@ -44,7 +46,7 @@ const UserManagementTableActions: React.FC = () => {
           placeholder="Search by Name or Username"
           size="sm"
           borderRadius="md"
-          value={id}
+          value={user.id}
           name="search"
           onChange={handleSearchChange}
         />

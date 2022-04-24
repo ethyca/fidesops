@@ -10,7 +10,9 @@ export interface UsersResponse {
 }
 
 export interface UsersParams {
-  search: string;
+  id: string;
+  page: number;
+  size: number;
 }
 
 export interface UserResponse {
@@ -21,5 +23,5 @@ export interface UserResponse {
 }
 
 export interface UserParams {
-  id: string;
+  user: User
 }

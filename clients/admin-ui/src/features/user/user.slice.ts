@@ -25,6 +25,18 @@ const initialState: State = {
   token: null,
 };
 
+// Helpers
+export const mapFiltersToSearchParams = ({
+  id,
+  page,
+  size,
+}: Partial<UsersParams>) => ({
+  ...(id ? { id } : {}),
+  ...(page ? { page: `${page}` } : {}),
+  ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
+});
+
+
 // User API
 export const userApi = createApi({
   reducerPath: 'userApi',
@@ -45,7 +57,10 @@ export const userApi = createApi({
       UsersResponse,
       UsersParams
     >({
-      query: () => ({ url: `users` }),
+      query: (filters) => ({ 
+        url: `users`,
+        params: mapFiltersToSearchParams(filters),
+      }),
       providesTags: () => ['User'],
     }),
     getUserById: build.query<
@@ -54,6 +69,16 @@ export const userApi = createApi({
     >({
       query: (id) => ({ url: `user/${id}` }),
       providesTags: () => ['User'],
+    }),
+    createUser: build.mutation<
+      User,
+      Partial<User> & Pick<User, 'id'>
+     >({
+      query: (user) => ({
+        url: 'user',
+        method: 'POST',
+        body: user,
+      })
     }),
     editUser: build.mutation<
       User,
@@ -127,5 +152,11 @@ export const userSlice = createSlice({
 export const { assignToken, setUserId } = userSlice.actions;
 
 export const selectUserToken = (state: AppState) => state.user.token;
+
+export const selectUserFilters = (
+  state: AppState
+): UserParams => ({
+  id: state.user.id,
+});
 
 export const { reducer } = userSlice;

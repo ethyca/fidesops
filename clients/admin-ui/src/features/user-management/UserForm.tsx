@@ -89,29 +89,7 @@ const useUserForm = () => {
           "password": values.password,
         }
       ;
-
-      try {
-        const response = await fetch(`${host}/user`, {
-          method: 'POST',
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'authorization': `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(body),
-        });
-
-        const data = await response.json();
-
-        if (data.succeeded.length) {
-          console.log("Success")
-        }
-
-      } catch (error) {
-        console.log("Error")
-        return;
-      }
+      // use POST action
     },
     validate: (values) => {
       const errors: {

@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Table,
   Thead,
@@ -9,7 +10,39 @@ import {
 
 import UserManagementRow from './UserManagementRow';
 
+import { selectUserFilters, useGetAllUsersQuery } from '../user/user.slice';
+
+const useUsersTable = () => {
+  const dispatch = useDispatch();
+  const filters = useSelector(selectUserFilters);
+
+  // const handlePreviousPage = () => {
+  //   dispatch(setPage(filters.page - 1));
+  // };
+
+  // const handleNextPage = () => {
+  //   dispatch(setPage(filters.page + 1));
+  // };
+
+  const { data, isLoading } = useGetAllUsersQuery(filters);
+  const { users } = data || { users: [] };
+  return {
+    ...filters,
+    isLoading,
+    users,
+    // handleNextPage,
+    // handlePreviousPage,
+  };
+}
+
 const UserManagementTable: React.FC = () => {
+  const { users, 
+    // page, size, handleNextPage, handlePreviousPage 
+  } =
+    useUsersTable();
+  // const startingItem = (page - 1) * size + 1;
+  // const endingItem = Math.min(total, page * size);
+
   return (
     <>
       <Table size="sm">
