@@ -327,11 +327,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"Check that MASKING_STRICT env var is appropriately set"
             )
         # unwrap response using data_path
-        if query_config.masking_request.data_path and rows:
+        if masking_request.data_path and rows:
             unwrapped = []
             for row in rows:
                 unwrapped.extend(
-                    pydash.get(row, query_config.masking_request.data_path)
+                    pydash.get(row, masking_request.data_path)
                 )
             rows = unwrapped
 
@@ -339,7 +339,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         rows = self.process_response_data(
             rows,
             privacy_request.get_cached_identity_data(),
-            query_config.masking_request.postprocessors,
+            masking_request.postprocessors,
         )
 
         prepared_requests = [
