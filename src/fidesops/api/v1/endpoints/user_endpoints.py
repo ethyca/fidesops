@@ -11,6 +11,7 @@ from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
 from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
 from fidesops.models.fidesops_user import FidesopsUser
+from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.schemas.oauth import AccessToken
 from fidesops.schemas.user import UserCreate, UserCreateResponse, UserLogin
 
@@ -20,7 +21,7 @@ from sqlalchemy.orm import Session
 from fidesops.api.v1.scope_registry import (
     USER_CREATE,
     USER_DELETE,
-    SCOPE_REGISTRY,
+    PRIVACY_REQUEST_READ,
 )
 
 logger = logging.getLogger(__name__)
@@ -46,6 +47,9 @@ def create_user(
 
     user = FidesopsUser.create(db=db, data=user_data.dict())
     logger.info(f"Created user with id: '{user.id}'.")
+    FidesopsUserPermissions.create(
+        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+    )
     return user
 
 
@@ -90,7 +94,9 @@ def user_login(
     *, db: Session = Depends(deps.get_db), user_data: UserLogin
 ) -> AccessToken:
     """Login the user by creating a client if it doesn't exist, and have that client generate a token"""
-    user = FidesopsUser.get_by(db, field="username", value=user_data.username)
+    user: FidesopsUser = FidesopsUser.get_by(
+        db, field="username", value=user_data.username
+    )
 
     if not user:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="No user found.")
@@ -103,8 +109,9 @@ def user_login(
     client: ClientDetail = user.client
     if not client:
         logger.info("Creating client for login")
+        # TODO: Figure out what to do if there are no default user permissions in DB
         client, _ = ClientDetail.create_client_and_secret(
-            db, SCOPE_REGISTRY, user_id=user.id
+            db, user.permissions.scopes, user_id=user.id
         )
 
     logger.info("Creating login access token")
