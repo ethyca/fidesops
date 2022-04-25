@@ -4,9 +4,8 @@ import { HYDRATE } from 'next-redux-wrapper';
 import type { AppState } from '../../app/store';
 
 import {
-  UserParams,
-  UserResponse,
   UsersParams,
+  UserResponse,
   UsersResponse,
   User,
 } from './types';
@@ -27,11 +26,9 @@ const initialState: State = {
 
 // Helpers
 export const mapFiltersToSearchParams = ({
-  id,
   page,
   size,
 }: Partial<UsersParams>) => ({
-  ...(id ? { id } : {}),
   ...(page ? { page: `${page}` } : {}),
   ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
 });
@@ -53,47 +50,35 @@ export const userApi = createApi({
   }),
   tagTypes: ['User'],
   endpoints: (build) => ({
-    getAllUsers: build.query<
-      UsersResponse,
-      UsersParams
-    >({
+    getAllUsers: build.query<UsersResponse, UsersParams>({
       query: (filters) => ({ 
         url: `users`,
         params: mapFiltersToSearchParams(filters),
       }),
-      providesTags: () => ['User'],
+      providesTags: ['User'],
     }),
-    getUserById: build.query<
-      UserResponse,
-      UserParams
-    >({
+    getUserById: build.query<UserResponse, User>({
       query: (id) => ({ url: `user/${id}` }),
-      providesTags: () => ['User'],
+      providesTags: ['User'],
     }),
-    createUser: build.mutation<
-      User,
-      Partial<User> & Pick<User, 'id'>
-     >({
+    createUser: build.mutation<User, Partial<User>>({
       query: (user) => ({
         url: 'user',
         method: 'POST',
         body: user,
       })
     }),
-    editUser: build.mutation<
-      User,
-      Partial<User> & Pick<User, 'id'>
-    >({
+    editUser: build.mutation<User, Partial<User> & Pick<User, 'id'>>({
       query: ({ id, ...patch }) => ({
         url: `user/${id}`,
         method: 'PATCH',
         body: patch,
       }),
       invalidatesTags: ['User'],
-      // For optimistic update
+      // For optimistic updates
       async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
         const patchResult = dispatch(
-          userApi.util.updateQueryData('getUserById', { id }, (draft) => {
+          userApi.util.updateQueryData('getUserById', {id, ...patch}, (draft) => {
             Object.assign(draft, patch)
           })
         )
@@ -140,6 +125,15 @@ export const userSlice = createSlice({
       page: initialState.page,
       id: action.payload,
     }),
+    setPage: (state, action: PayloadAction<number>) => ({
+      ...state,
+      page: action.payload,
+    }),
+    setSize: (state, action: PayloadAction<number>) => ({
+      ...state,
+      page: initialState.page,
+      size: action.payload,
+    }),
   },
   extraReducers: {
     [HYDRATE]: (state, action) => ({
@@ -149,14 +143,15 @@ export const userSlice = createSlice({
   },
 });
 
-export const { assignToken, setUserId } = userSlice.actions;
+export const { assignToken, setUserId, setPage } = userSlice.actions;
 
 export const selectUserToken = (state: AppState) => state.user.token;
 
 export const selectUserFilters = (
   state: AppState
-): UserParams => ({
-  id: state.user.id,
+): UsersParams => ({
+  page: state.subjectRequests.page,
+  size: state.subjectRequests.size,
 });
 
 export const { reducer } = userSlice;
