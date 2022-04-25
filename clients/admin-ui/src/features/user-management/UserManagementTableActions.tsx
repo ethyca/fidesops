@@ -19,6 +19,7 @@ const useUserManagementTableActions = () => {
   const filters = useSelector(selectUserFilters);
   const dispatch = useDispatch();
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(event.target.value)
     dispatch(setUserId(event.target.value));
   };
 
@@ -31,7 +32,6 @@ const useUserManagementTableActions = () => {
 const UserManagementTableActions: React.FC = () => {
   const {
     handleSearchChange,
-    user
   } = useUserManagementTableActions();
 
   return (
@@ -46,7 +46,7 @@ const UserManagementTableActions: React.FC = () => {
           placeholder="Search by Name or Username"
           size="sm"
           borderRadius="md"
-          value={user.id}
+          // value={user.id}
           name="search"
           onChange={handleSearchChange}
         />

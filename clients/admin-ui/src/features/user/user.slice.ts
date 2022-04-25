@@ -108,6 +108,7 @@ export const userApi = createApi({
 export const {
   useGetAllUsersQuery,
   useGetUserByIdQuery,
+  useCreateUserMutation,
   useEditUserMutation,
   useDeleteUserMutation,
 } = userApi;

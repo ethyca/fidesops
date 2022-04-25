@@ -17,52 +17,13 @@ import {
   Text,
 } from '@fidesui/react';
 import config from './config/config.json';
-import { selectUserToken } from '../user/user.slice';
-
-interface Privilege {
-  privilege: string;
-  description: string;
-}
-
-export const userPrivilegesArray: Privilege[] = [
-  {
-    privilege: 'View subject requests',
-    description: 'Instructional line about these particular user preferences',
-  },
-  {
-    privilege: 'Approve subject requests',
-    description: 'Instructional line about these particular user preferences',
-  },
-  {
-    privilege: 'View datastore connections',
-    description: 'Instructional line about these particular user preferences',
-  },
-  {
-    privilege: 'Manage datastore connections',
-    description: 'Instructional line about these particular user preferences',
-  },
-  {
-    privilege: 'View policies',
-    description: 'Instructional line about these particular user preferences',
-  },
-  {
-    privilege: 'Create policies',
-    description: 'Instructional line about these particular user preferences',
-  },
-  {
-    privilege: 'Create users',
-    description: 'Instructional line about these particular user preferences',
-  },
-  {
-    privilege: 'Create roles',
-    description: 'Instructional line about these particular user preferences',
-  },
-];
+import { selectUserToken, useCreateUserMutation } from '../user/user.slice';
 
 const useUserForm = () => {
   // const dispatch = useDispatch();
   const token = useSelector(selectUserToken);
   const [isLoading, setIsLoading] = useState(false);
+  const [createUser, createUserResult] = useCreateUserMutation();
 
   // Initial values - GET individual user values if coming from the ID path
   // useEffect(() => {
@@ -84,12 +45,15 @@ const useUserForm = () => {
 
       const body = 
         {
-          "username": values.username,
-          "name": values.name,
-          "password": values.password,
+          username: values.username,
+          name: values.name,
+          password: values.password,
         }
       ;
-      // use POST action
+
+      createUser(body);
+      setIsLoading(false);
+      // reset form or redirect after creating/editing?
     },
     validate: (values) => {
       const errors: {
@@ -216,12 +180,12 @@ const UserForm: NextPage = () => {
             <Text>Select privileges to assign to this user</Text>
             <CheckboxGroup colorScheme="secondary">
               <Stack spacing={[1, 5]} direction={'column'}>
-                {userPrivilegesArray.map((policy, idx) => (
+                {/* {userPrivilegesArray.map((policy, idx) => (
                   <>
                     <Checkbox value={policy.privilege}>{policy.privilege}</Checkbox>
                     <div>{policy.description}</div>
                   </>
-                ))}
+                ))} */}
               </Stack>
             </CheckboxGroup>
           </Stack>
