@@ -21,6 +21,8 @@ from fidesops.util import cryptographic_util
 
 saas_config = load_toml("saas_config.toml")
 
+HUBSPOT_FIRSTNAME = "SomeoneFirstname"
+
 
 @pytest.fixture(scope="function")
 def hubspot_secrets():
@@ -114,7 +116,7 @@ def hubspot_erasure_data(connection_config_hubspot, hubspot_erasure_identity_ema
             "properties": {
                 "company": "test company",
                 "email": hubspot_erasure_identity_email,
-                "firstname": "SomeoneFirstname",
+                "firstname": HUBSPOT_FIRSTNAME,
                 "lastname": "SomeoneLastname",
                 "phone": "(123) 123-1234",
                 "website": "someone.net"
@@ -170,4 +172,4 @@ def _contact_exists(hubspot_erasure_identity_email: str, connector: SaaSConnecto
     )
     contact_response = connector.create_client().send(contact_request)
     contact_body = contact_response.json()
-    return bool(contact_body["results"] and contact_body["results"][0]["properties"]["firstname"] == "SomeoneFirstname")
+    return bool(contact_body["results"] and contact_body["results"][0]["properties"]["firstname"] == HUBSPOT_FIRSTNAME)
