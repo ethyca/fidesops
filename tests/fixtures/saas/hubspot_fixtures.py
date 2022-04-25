@@ -112,7 +112,7 @@ def hubspot_erasure_data(connection_config_hubspot, hubspot_erasure_identity_ema
     contacts_request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,
         path=f"/crm/v3/objects/contacts",
-        json_body={
+        body={
             "properties": {
                 "company": "test company",
                 "email": hubspot_erasure_identity_email,
@@ -160,7 +160,7 @@ def _contact_exists(hubspot_erasure_identity_email: str, connector: SaaSConnecto
     contact_request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,
         path="/crm/v3/objects/contacts/search",
-        json_body={
+        body={
             "filterGroups": [{
                 "filters": [{
                     "value": hubspot_erasure_identity_email,

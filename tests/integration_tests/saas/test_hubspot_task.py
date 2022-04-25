@@ -198,7 +198,7 @@ def test_saas_erasure_request_task(
     contact_request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,
         path="/crm/v3/objects/contacts/search",
-        json_body={
+        body={
             "filterGroups": [{
                 "filters": [{
                     "value": hubspot_erasure_identity_email,
