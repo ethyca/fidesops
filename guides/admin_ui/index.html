@@ -1215,11 +1215,10 @@
 <p>This will create an Admin UI Root User that can be used to access additional <a href="#managing-users">user endpoints</a>.</p>
 <h3 id="accessing-the-control-panel">Accessing the Control Panel</h3>
 <p>From the root <code>fidesops</code> directory, run the following:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>    <span class="nb">cd</span> clients/admin-ui
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>    <span class="nb">cd</span> clients/admin-ui
     npm run dev
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>This will navigate you to the <code>admin-ui</code> directory, and run the development environment.</p>
 <p>Visit <code>http://localhost:3000/</code> in your browser, and provide user credentials to log in. </p>
 <div class="admonition tip">
@@ -1231,23 +1230,20 @@
 <p>User permissions are managed through access tokens, which contain scopes associated to individual endpoints. Endpoint access can be restricted by removing their scope from an access token.</p>
 <p>Creating a user currently provides access to all scopes.</p>
 <h3 id="logging-in">Logging in</h3>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>POST api/v1/login
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Request Body</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>POST api/v1/login
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Request Body</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;username&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test_username&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;password&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Suitablylongwithnumber8andsymbol$&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>Successful POST requests to the <code>login</code> endpoint will return an <code>access_token</code> with all available scopes. This token can be used to make subsequent requests to the Users endpoints.</p>
 <h3 id="logging-out">Logging out</h3>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>POST api/v1/logout
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>POST api/v1/logout
+</code></pre></div></td></tr></table></div>
 <table>
 <thead>
 <tr>
@@ -1266,18 +1262,16 @@
 </table>
 <p>The <code>logout</code> endpoint will invalidate the provided <code>access_token</code>, which must be included as the Bearer token in your request.</p>
 <h3 id="creating-a-user">Creating a user</h3>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>POST api/v1/user
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Request Body</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>POST api/v1/user
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Request Body</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;username&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;new_username&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;password&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;new_Suitablylongwithnumber8andsymbol$&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <table>
 <thead>
 <tr>
@@ -1296,9 +1290,8 @@
 </table>
 <p>The <code>user</code> endpoint will create an additional user with the <code>username</code> and <code>password</code> provided in the request body. An <code>access_token</code> with a scope of <code>user:create</code> is required.</p>
 <h3 id="deleting-a-user">Deleting a user</h3>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>DELETE api/v1/user/&lt;user_id&gt;
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>DELETE api/v1/user/&lt;user_id&gt;
+</code></pre></div></td></tr></table></div>
 <table>
 <thead>
 <tr>

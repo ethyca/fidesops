@@ -1115,7 +1115,7 @@
 <p>Next, we need to create a ConnectionConfig so fidesops can connect to our Flask App's database.</p>
 <p>Let's add a method that hits the PATCH <code>connection</code> endpoint, and creates a ConnectionConfig for a <code>postgres</code> database:</p>
 <h3 id="define-helper-methods">Define helper methods</h3>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1133,7 +1133,7 @@
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
-<span class="normal">19</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">create_postgres_connection</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
+<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_postgres_connection</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a connection in fidesops for our PostgreSQL database. Returns the response JSON if successful.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1152,10 +1152,9 @@
     <span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating PostgreSQL ConnectionConfig. Status </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>Secrets, like a username and password that are needed to access the Flask App's databases, are added separately:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1174,7 +1173,7 @@
 <span class="normal">17</span>
 <span class="normal">18</span>
 <span class="normal">19</span>
-<span class="normal">20</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">configure_postgres_connection</span><span class="p">(</span>
+<span class="normal">20</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">configure_postgres_connection</span><span class="p">(</span>
     <span class="n">key</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">dbname</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">access_token</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -1194,13 +1193,12 @@
     <span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Updating PostgreSQL Secrets. Status </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h3 id="call-helper-methods-to-connect-to-postgres">Call helper methods to connect to Postgres</h3>
 <p>Add calls for our new methods, to create a Postgres ConnectionConfig called <code>flaskr_postgres</code>, and 
 then update that connection's secrets with individual URI components.  This will encrypt and save the URI components 
 and also attempt to make a test connection to our Flask App's Postgres Database.
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1214,7 +1212,7 @@ and also attempt to make a test connection to our Flask App's Postgres Database.
 <span class="normal">12</span>
 <span class="normal">13</span>
 <span class="normal">14</span>
-<span class="normal">15</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="o">...</span>
     <span class="c1"># Connect to our PostgreSQL database</span>
     <span class="n">create_postgres_connection</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;flaskr_postgres&quot;</span><span class="p">,</span> <span class="n">access_token</span><span class="o">=</span><span class="n">access_token</span><span class="p">)</span>
@@ -1229,8 +1227,7 @@ and also attempt to make a test connection to our Flask App's Postgres Database.
         <span class="n">access_token</span><span class="o">=</span><span class="n">access_token</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="o">...</span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 
               
             </article>

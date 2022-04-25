@@ -1175,34 +1175,32 @@
 <h2 id="getting-started">Getting Started</h2>
 <p>First, create an access token for the "root" client, included in the deployment by default. The root client's token is all-powerful: It contains all scopes, so it can call any of the Fidesops APIs.</p>
 <p>To create the root token, you pass the <code>OAUTH_ROOT_CLIENT_ID</code> and <code>OAUTH_ROOT_CLIENT_SECRET</code> environment variables (which are automatically defined in your system) to the <code>POST /api/v1/oauth/token</code> endpoint. You also set the <code>grant_type</code> parameter to <code>client_credentials</code>:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>curl \
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>curl \
   -X POST &#39;http://&lt;HOST&gt;:8080/api/v1/oauth/token&#39; \
   -d client_id=$OAUTH_ROOT_CLIENT_ID \
   -d client_secret=$OAUTH_ROOT_CLIENT_SECRET \
   -d grant_type=client_credentials
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>You'll notice that there's no <code>Authorization</code> header. This is the only Fidesops API that doesn't require an access token.</p>
 <p>If the <code>token</code> call is successful, the response will return the root client's access token in the <code>access_token</code> property:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>HTTP/1.1 200 OK
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
   &quot;access_token&quot; : &quot;MTI4Q0JDJSrgyplbmMiOiJBjU2I..._X0hTMyXAyPx&quot;,
   /* ignore any other properties */
 }
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="creating-additional-clients">Creating Additional Clients</h2>
 <p>Because the root client's token is all-powerful, it can create new clients and new client ID/client secret pairs which can be used to create additional access tokens. </p>
 <div class="admonition note">
@@ -1210,37 +1208,35 @@ Content-Type: application/json
 <p>For general best practices, we recommend creating a client with scope <code>CLIENT_CREATE</code> to create any new clients. This will help to reduce the utilization of the all-scopes root client.</p>
 </div>
 <p>To create the client ID/secret pair, call <code>POST /api/v1/oauth/client</code>:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>curl \
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>curl \
   -X POST &#39;http://&lt;HOST&gt;:8080/api/v1/oauth/client&#39; \
   -H &#39;Authorization: Bearer &lt;root_access_token&gt;&#39;
   -H &#39;Content-Type: application/json&#39;
   -d &#39;{ &quot;scopes&quot;: [&quot;policy:read&quot;, &quot;rule:read&quot;]}&#39;
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>For this call, we have to populate the <code>Authorization</code> header. Notice that the header's value is formed  as <code>Bearer &lt;token&gt;</code>. We also have to declare the request's <code>Content-Type</code> to be <code>application/json</code>.</p>
 <h3 id="authorize-your-client-with-scopes">Authorize your Client with Scopes</h3>
 <p>To add scopes to the client, the body of your request must contain an array of scope tokens. </p>
 <p>You can retrieve the available scopes by calling <a href="/fidesops/api#operations-OAuth-read_scopes_api_v1_oauth_scope_get"><code>GET /api/v1/oauth/scopes</code></a>, or you can look in <a href="https://github.com/ethyca/fidesops/blob/main/src/fidesops/api/v1/scope_registry.py">the scope registry file</a>.</p>
 <p>If the call is successful, Fidesapi responds with a new client ID/client secret pair:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>HTTP/1.1 200 OK
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
   &quot;client_id&quot; : &quot;&lt;new_client_id&gt;&quot;
   &quot;client_secret&quot; : &quot;&lt;new_client_secret&gt;&quot;,
 }
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="create-access-token">Create Access Token</h2>
 <p>You then create a new access token by calling <a href="/fidesops/api#operations-OAuth-acquire_access_token_api_v1_oauth_token_post"><code>POST /api/v1/oauth/token</code></a> with the new credentials. </p>
 <p>In the above example, your new access token only lets the client read policies and rules -- the client nor create other clients, nor write policies, nor perform other operations using Fidesops APIs.</p>

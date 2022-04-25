@@ -1193,7 +1193,7 @@ information, or get more detailed information about the status of the requests o
 <p>This request displays concise, high-level information for all your PrivacyRequests including their status and related timestamps.</p>
 <p>Check out the <a href="/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get">API docs here</a>.</p>
 <p><code>GET api/v1/privacy-request</code></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1206,7 +1206,7 @@ information, or get more detailed information about the status of the requests o
 <span class="normal">11</span>
 <span class="normal">12</span>
 <span class="normal">13</span>
-<span class="normal">14</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;items&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
 <span class="w">        </span><span class="p">{</span><span class="w"></span>
 <span class="w">            </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pri_5f4feff5-fb60-4286-82bd-7e0748ce90ac&quot;</span><span class="p">,</span><span class="w"></span>
@@ -1220,8 +1220,7 @@ information, or get more detailed information about the status of the requests o
 <span class="w">    </span><span class="nt">&quot;page&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h3 id="single-privacy-request">Single Privacy Request</h3>
 <p>Use the <code>id</code> query param to view the high level status of a single privacy request.</p>
 <p><code>GET api/v1/privacy-request?id=&lt;privacy_request_id&gt;</code></p>
@@ -1261,7 +1260,7 @@ logs for <code>my-postgres-db</code> (when the <code>order</code> collection is 
 that were potentially returned or masked based on the Rules you've specified on the Policy. The embedded execution logs 
 are automatically truncated at 50 logs, so to view the entire list of logs, visit the execution logs endpoint separately.</p>
 <p><code>GET api/v1/privacy-request?id={privacy_request_id}&amp;verbose=True</code></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1329,7 +1328,7 @@ are automatically truncated at 50 logs, so to view the entire list of logs, visi
 <span class="normal">66</span>
 <span class="normal">67</span>
 <span class="normal">68</span>
-<span class="normal">69</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">69</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;items&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
 <span class="w">        </span><span class="p">{</span><span class="w"></span>
 <span class="w">            </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pri_2e0655c3-7a76-425e-8c4c-52fee32ce14b&quot;</span><span class="p">,</span><span class="w"></span>
@@ -1398,16 +1397,14 @@ are automatically truncated at 50 logs, so to view the entire list of logs, visi
 <span class="w">    </span><span class="nt">&quot;page&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="downloading-all-privacy-requests-as-a-csv">Downloading all privacy requests as a CSV</h2>
 <p>To get all privacy requests in CSV format, use the <code>download_csv</code> query param:</p>
 <p><code>GET api/v1/privacy-request/?download_csv=True</code></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>Time received,Subject identity,Policy key,Request status,Reviewer,Time approved/denied
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>Time received,Subject identity,Policy key,Request status,Reviewer,Time approved/denied
 2022-03-14 16:53:28.869258+00:00,{&#39;email&#39;: &#39;customer-1@example.com&#39;},my_primary_policy,complete,fid_16ffde2f-613b-4f79-bbae-41420b0f836b,2022-03-14 16:54:08.804283+00:00
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 
               
             </article>

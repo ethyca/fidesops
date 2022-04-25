@@ -1237,7 +1237,7 @@ add the <code>data_type: object</code> annotation, but the object type will be i
 <p>Data categories cannot be specified at the <code>object</code> level due to potential conflicts with nested fields. Instead,
 annotate the scalar fields within the object field.  Here, the <code>workplace_info.position</code> field has <code>data_category</code>
 <code>user.provided.identifiable.job_title</code>.</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1256,7 +1256,7 @@ annotate the scalar fields within the object field.  Here, the <code>workplace_i
 <span class="normal">17</span>
 <span class="normal">18</span>
 <span class="normal">19</span>
-<span class="normal">20</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="normal">20</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mongo_nested_object_example</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Mongo Example with Nested Objects</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example of a Mongo dataset that contains &#39;details&#39; about customers defined in the &#39;postgres_example_test_dataset&#39;</span><span class="w"></span>
@@ -1276,8 +1276,7 @@ annotate the scalar fields within the object field.  Here, the <code>workplace_i
 <span class="w">                </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
 <span class="w">                  </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
 <span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">id</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="how-do-i-reference-a-nested-field">How do I reference a nested field?</h2>
 <p>To define a relationship between a field on one collection and a nested field on another collection, use dot notation
 in the <code>fidesops_meta</code> references for as many levels are necessary.</p>
@@ -1287,7 +1286,7 @@ Under references, this field is denoted by <code>&lt;collection_name&gt;.&lt;fie
 <code>customer_details.workplace_info.id</code>.</p>
 <p>If we preferred, we could instead define this relationship on the <code>customer_details.workplace_info.id</code> field itself,
 with a direction of <code>from</code>, with field <code>mydatabase.customer.workplace_id</code>, and dataset <code>mydatabase</code>.</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1301,7 +1300,7 @@ with a direction of <code>from</code>, with field <code>mydatabase.customer.work
 <span class="normal">12</span>
 <span class="normal">13</span>
 <span class="normal">14</span>
-<span class="normal">15</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydatabase</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal database</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">our internal database of customer data</span><span class="w"></span>
@@ -1316,15 +1315,14 @@ with a direction of <code>from</code>, with field <code>mydatabase.customer.work
 <span class="w">                  </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer_details.workplace_info.id</span><span class="w"></span>
 <span class="w">                  </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">to</span><span class="w"></span>
 <span class="w">          </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="how-do-i-denote-an-array-field">How do I denote an Array Field?</h2>
 <p>There is not an official <code>array</code> type per se, since arrays can store scalar values or objects. Instead,  an array is represented
 by a <code>[]</code> flag on a field.</p>
 <h3 id="what-if-i-have-an-array-of-scalar-values">What if I have an array of scalar values?</h3>
 <p>In this example, our <code>mydatabase:customer</code> collection has a <code>travel_identifiers</code> field that is an array of strings,
 described by <code>data_type: string[]</code>.  An array of integers would be described by <code>data_type: integer[]</code>.
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1335,7 +1333,7 @@ described by <code>data_type: string[]</code>.  An array of integers would be de
 <span class="normal"> 9</span>
 <span class="normal">10</span>
 <span class="normal">11</span>
-<span class="normal">12</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydatabase</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal database</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">our internal database of customer data</span><span class="w"></span>
@@ -1347,14 +1345,13 @@ described by <code>data_type: string[]</code>.  An array of integers would be de
 <span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
 <span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string[]</span><span class="w"></span>
 <span class="w">              </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">system.operations</span><span class="p p-Indicator">]</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <h3 id="how-do-i-describe-a-nested-array">How do I describe a nested array?</h3>
 <p>In this example, our <code>mydatabase:customer</code> collection has a nested <code>workplace_info.direct_reports</code> array, that is an
 array of strings. In other words, we have a <code>workplace_info</code> object field, with sub-fields <code>employer</code>, <code>postion</code>, and <code>direct_reports</code>,
 where <code>direct_reports</code> is an array.  </p>
 <p>We define <code>direct_reports</code> as a subfield under <code>workplace_info</code>, as well as add the data_type <code>string[]</code> to <code>direct_reports</code>.</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1375,7 +1372,7 @@ where <code>direct_reports</code> is an array.  </p>
 <span class="normal">19</span>
 <span class="normal">20</span>
 <span class="normal">21</span>
-<span class="normal">22</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="normal">22</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydatabase</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal database</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">our internal database of customer data</span><span class="w"></span>
@@ -1397,13 +1394,12 @@ where <code>direct_reports</code> is an array.  </p>
 <span class="w">                </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">user.provided.identifiable.name</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w"></span>
 <span class="w">                </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
 <span class="w">                  </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string[]</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h3 id="what-if-my-collection-contains-an-array-of-objects">What if my collection contains an array of objects?</h3>
 <p>In this example, our <code>mydatabase:customer</code> collection has an <code>emergency_contacts</code> field which is an array of objects, or
 embedded documents, denoted by <code>data_type: object[]</code>.   Each object in the <code>emergency_contacts</code> array can contain a 
 <code>name</code>, <code>relationship</code>, and <code>phone</code> field.</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1424,7 +1420,7 @@ embedded documents, denoted by <code>data_type: object[]</code>.   Each object i
 <span class="normal">19</span>
 <span class="normal">20</span>
 <span class="normal">21</span>
-<span class="normal">22</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="normal">22</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydatabase</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal database</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">our internal database of customer data</span><span class="w"></span>
@@ -1446,14 +1442,13 @@ embedded documents, denoted by <code>data_type: object[]</code>.   Each object i
 <span class="w">                </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">user.provided.identifiable.contact.phone_number</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w"></span>
 <span class="w">                </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
 <span class="w">                  </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h3 id="how-do-i-reference-an-array-field">How do I reference an array field?</h3>
 <p>Generally, reference an array field as if it is any other field. You cannot currently reference a specific index in an array field, 
 but you can point a field to an array field, and we would search for matches within that array.</p>
 <p>In this example, <code>mydatabase:flights.plane</code> is an integer field that will be used to lookup records that match an integer
 in the <code>mydatabase:aircraft.planes</code> array.</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1488,7 +1483,7 @@ in the <code>mydatabase:aircraft.planes</code> array.</p>
 <span class="normal">33</span>
 <span class="normal">34</span>
 <span class="normal">35</span>
-<span class="normal">36</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="normal">36</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydatabase</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal database</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">our internal database of customer data</span><span class="w"></span>
@@ -1524,13 +1519,12 @@ in the <code>mydatabase:aircraft.planes</code> array.</p>
 <span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">system.operations</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w"></span>
 <span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
 <span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>In this more complicated example, a field in an array of objects is used to look up a different field in an array of 
 objects in another collection. Potentially multiple values from <code>mydatabase:customer.comments.comment_id</code> can be used 
 to query for corresponding values in <code>mydatabase:conversations.thread.comment</code>. Because this field is in an array of objects, 
 multiple matches may be found.</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1563,7 +1557,7 @@ multiple matches may be found.</p>
 <span class="normal">31</span>
 <span class="normal">32</span>
 <span class="normal">33</span>
-<span class="normal">34</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="normal">34</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydatabase</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal database</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">our internal database of customer data</span><span class="w"></span>
@@ -1597,8 +1591,7 @@ multiple matches may be found.</p>
 <span class="w">                </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">user.provided.identifiable.name</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w"></span>
 <span class="w">                </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
 <span class="w">                  </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="how-does-array-querying-work">How does array querying work?</h2>
 <p>There are some assumptions made with array querying that may or may not fit with how your data is structured.  If an array
 is an entrypoint into a collection (in other words, one collection references its array field), there is ambiguity around how

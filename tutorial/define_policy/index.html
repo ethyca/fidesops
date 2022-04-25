@@ -1118,7 +1118,7 @@ Policies with multiple Rules (how the data is handled), that each have Rule Targ
 <p>Below are methods to add a Policy, a Rule, and a Rule Target, plus a cleanup method that deletes Rules for
 convenience (handy if you'll be running this script multiple times).</p>
 <h3 id="define-helper-methods">Define helper methods</h3>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1135,7 +1135,7 @@ convenience (handy if you'll be running this script multiple times).</p>
 <span class="normal">15</span>
 <span class="normal">16</span>
 <span class="normal">17</span>
-<span class="normal">18</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">create_policy</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
+<span class="normal">18</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_policy</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a request policy in fidesops with the given key.Returns the response JSON if successful, or throws an error otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1153,9 +1153,8 @@ convenience (handy if you'll be running this script multiple times).</p>
     <span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating a Policy. Status </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1178,7 +1177,7 @@ convenience (handy if you'll be running this script multiple times).</p>
 <span class="normal">21</span>
 <span class="normal">22</span>
 <span class="normal">23</span>
-<span class="normal">24</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">create_policy_rule</span><span class="p">(</span>
+<span class="normal">24</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_policy_rule</span><span class="p">(</span>
         <span class="n">policy_key</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">action_type</span><span class="p">,</span> <span class="n">storage_destination_key</span><span class="p">,</span> <span class="n">access_token</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -1202,9 +1201,8 @@ convenience (handy if you'll be running this script multiple times).</p>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating a rule. Status </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-</code></pre></div>
-</td></tr></table>
-<p><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+</code></pre></div></td></tr></table></div>
+<p><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1222,7 +1220,7 @@ convenience (handy if you'll be running this script multiple times).</p>
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
-<span class="normal">19</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">create_policy_rule_target</span><span class="p">(</span><span class="n">policy_key</span><span class="p">,</span> <span class="n">rule_key</span><span class="p">,</span> <span class="n">data_category</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
+<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_policy_rule_target</span><span class="p">(</span><span class="n">policy_key</span><span class="p">,</span> <span class="n">rule_key</span><span class="p">,</span> <span class="n">data_category</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a Policy Rule Target that matches the given data_category.</span>
 <span class="sd">    Returns the response JSON if successful, or throws an error otherwise.</span>
@@ -1241,9 +1239,8 @@ convenience (handy if you'll be running this script multiple times).</p>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating a Rule Target. Status </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
@@ -1251,7 +1248,7 @@ convenience (handy if you'll be running this script multiple times).</p>
 <span class="normal">6</span>
 <span class="normal">7</span>
 <span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">delete_policy_rule</span><span class="p">(</span><span class="n">policy_key</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">delete_policy_rule</span><span class="p">(</span><span class="n">policy_key</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Deletes a Policy rule with the given key.</span>
 <span class="sd">    Returns the response JSON.</span>
@@ -1260,14 +1257,13 @@ convenience (handy if you'll be running this script multiple times).</p>
         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">FIDESOPS_URL</span><span class="si">}</span><span class="s2">/api/v1/policy/</span><span class="si">{</span><span class="n">policy_key</span><span class="si">}</span><span class="s2">/rule/</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
         <span class="n">headers</span><span class="o">=</span><span class="n">oauth_headers</span><span class="p">(</span><span class="n">access_token</span><span class="o">=</span><span class="n">access_token</span><span class="p">),</span>
     <span class="p">)</span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <h3 id="call-helper-methods-to-create-the-policy">Call helper methods to create the Policy</h3>
 <p>For simplicity's sake, let's just create one Policy, one Rule, and one Target.</p>
 <p>Our single Policy will have one Rule with type <code>access</code>, meaning we just want to <em>retrieve</em> user data, not delete it. 
 We also configure on the Rule that any results will be uploaded to our local Storage <code>example_storage</code>.</p>
 <p>Finally, we create a RuleTarget, that is looking for all data with the category <code>user.provided.identifiable</code> (and included subcategories). </p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1286,7 +1282,7 @@ We also configure on the Rule that any results will be uploaded to our local Sto
 <span class="normal">17</span>
 <span class="normal">18</span>
 <span class="normal">19</span>
-<span class="normal">20</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="normal">20</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
   <span class="o">...</span>
  <span class="c1"># Create a Policy that returns all user data</span>
     <span class="n">policy</span> <span class="o">=</span> <span class="n">create_policy</span><span class="p">(</span>
@@ -1306,8 +1302,7 @@ We also configure on the Rule that any results will be uploaded to our local Sto
     <span class="n">create_policy_rule_target</span><span class="p">(</span>
         <span class="s2">&quot;example_request_policy&quot;</span><span class="p">,</span> <span class="s2">&quot;access_user_data&quot;</span><span class="p">,</span> <span class="n">data_category</span><span class="p">,</span> <span class="n">access_token</span>
     <span class="p">)</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>If you look back at our annotated YAML <code>fides_resources/flaskr_postgres_dataset.yml</code>, we can see the relevant fields
 associated with this Data Category that we will expect in our final upload package:</p>
 <ul>

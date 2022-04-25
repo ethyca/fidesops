@@ -1254,11 +1254,10 @@
 <p>Follow our <a href="../../postman/using_postman/">Using Postman</a> guide to learn more about the how to use the collection.</p>
 <h3 id="api-urls">API URLs</h3>
 <p>We define API URLs for specific API versions as constants within <code>app.api.v1.urn_registry</code> (where <code>v1</code> can be substituted for that particular API version), then import those URLs into their specific API views. Since we are on the first version, there is no clear precedent set for overriding URLs between versions yet. The most likely change is that we'll override the <code>APIRouter</code> class instantiation with a different base path (ie. <code>/api/v2</code> instead of <code>/api/v1</code>). For example:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>PRIVACY_REQUEST = &quot;/privacy-request&quot;
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>PRIVACY_REQUEST = &quot;/privacy-request&quot;
 PRIVACY_REQUEST_DETAIL = &quot;/privacy-request/{privacy_request_id}&quot;
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>would both resolve as <code>/api/v1/privacy-request</code> and <code>/api/v1/privacy-request/{privacy_request_id}</code> respectively.</p>
 <h2 id="database-and-models">Database and Models</h2>
 <h3 id="the-orm-sqlalchemy">The ORM -- SQLAlchemy</h3>
@@ -1266,34 +1265,32 @@ PRIVACY_REQUEST_DETAIL = &quot;/privacy-request/{privacy_request_id}&quot;
 <h3 id="adding-models">Adding models</h3>
 <p>Database tables are defined with model classes. Model files should live in <code>src/app/models/</code>. Individual model classes must inherit from our custom base class at <code>app.db.base_class.Base</code> to ensure uniformity within the database. Multiple models per file are encouraged so long as they fit the same logical delineation within the project. An example model declaration is added below. For a comprehensive guide see: https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#declarative-mapping
 You should also import your model in src/fidesops/db/base.py so it is visible for alembic.
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>class Book(Base):
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>class Book(Base):
     __tablename__ = &#39;book&#39;
 
     id = Column(Integer, primary_key=True)
     name = Column(String, index=True)
     page_count = Column(Integer, nullable=True)
     author_id = Column(Integer, ForeignKey(&quot;author.id&quot;), nullable=False)
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 When models are added to the project, we must then add them to the database in a recordable and repeatable fashion using migrations.</p>
 <h3 id="using-the-database-via-models">Using the database via models</h3>
 <p>Once you've added database tables via project models, you're ready to read, write and update them via Python code. Some examples of common use cases here are listed below. Official documentation is here: https://docs.sqlalchemy.org/en/14/orm/query.html#sqlalchemy.orm.Query.</p>
 <ul>
 <li>Import our application's database session: <code>from fidesops.db.session import get_db_session</code></li>
 <li>Instantiate the database interaction object:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>SessionLocal = get_db_session()
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>SessionLocal = get_db_session()
 db = SessionLocal()
-</code></pre></div>
-</td></tr></table></li>
+</code></pre></div></td></tr></table></div></li>
 <li>Create a new row in a table:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
@@ -1301,7 +1298,7 @@ db = SessionLocal()
 <span class="normal">6</span>
 <span class="normal">7</span>
 <span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>db_obj = User(
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>db_obj = User(
     email=&quot;admin@fidesops.app&quot;,
     full_name=&quot;Fidesops Admin&quot;,
     is_superuser=True,
@@ -1310,21 +1307,19 @@ db = SessionLocal()
 db.add(db_obj)
 db.commit()
 db.refresh(db_obj)
-</code></pre></div>
-</td></tr></table></li>
+</code></pre></div></td></tr></table></div></li>
 <li>Fetch all objects in a table: <code>users = db.query(User).all()</code></li>
 <li>Fetch all objects in a table that meet some criteria: <code>active_users = db.query(User).filter(User.is_active == True)</code></li>
 <li>Get a specific row in a table: <code>user = db.query(User).get(User.email == "admin@fidesops.app")</code></li>
 <li>Update a specific row in a table:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>user.email = &quot;updated@fidesops.app&quot;
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>user.email = &quot;updated@fidesops.app&quot;
 db.add(user)
 db.commit()
 db.refresh()
-</code></pre></div>
-</td></tr></table></li>
+</code></pre></div></td></tr></table></div></li>
 </ul>
 <h3 id="connecting-to-the-database">Connecting to the database</h3>
 <p>When you run <code>make server</code> or <code>make server-shell</code>, the database will be spun up in a Docker container with port <code>5432</code> exposed on localhost. You can connect to it using the credentials found in <code>.fidesops.toml</code>, e.g.</p>
@@ -1351,19 +1346,18 @@ db.refresh()
 <p>When working on a PR with a migration, ensure that <code>down_revision</code> in the generated migration file correctly references the previous migration before submitting/merging the PR.</p>
 <h2 id="exception-handling">Exception Handling</h2>
 <p>Our preference for exception handling is by overriding the nearest sensible error, for example:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>class SomeException(ValueError):
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>class SomeException(ValueError):
     &quot;a docstring&quot;
 
 
 def some_method():
     raise SomeException(&quot;a message&quot;)
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="general-debugging-pdb">General debugging -- pdb</h2>
 <p>The project uses <code>pdb</code> for debugging as a <code>dev-requirement</code>. You can set breakpoints with <code>pdb</code> in much the same way you'd set them using <code>debugger</code> in Javascript. Insert <code>import pdb; pdb.set_trace()</code> into the line where you want the breakpoint to set, then run your Python code.</p>
 <h2 id="docker">Docker</h2>

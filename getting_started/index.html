@@ -1138,7 +1138,7 @@
 <ol>
 <li>
 <p>To replicate the demo environment in your own project, create a <code>docker-compose.yml</code> file like the example below in your application's root directory.</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>docker-compose.yml</code></span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>docker-compose.yml</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1191,7 +1191,7 @@
 <span class="normal">51</span>
 <span class="normal">52</span>
 <span class="normal">53</span>
-<span class="normal">54</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span><span class="w"></span>
+<span class="normal">54</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">services</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">fidesops</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ethyca/fidesops</span><span class="w"></span>
 <span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fidesops</span><span class="w"></span>
@@ -1245,8 +1245,7 @@
 
 <span class="nt">volumes</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">app-db-data</span><span class="p">:</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 </li>
 <li>
 <p>Ensure Docker is running, and run <code>docker compose up</code> from the project's root directory. This will pull the latest Fidesops Docker image, create the sample databases, and start the server.</p>

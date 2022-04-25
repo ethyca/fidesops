@@ -8,14 +8,14 @@
       
       
       
-        <link rel="canonical" href="https://ethyca.github.io/fidesops/deployment/">
+        <link rel="canonical" href="https://ethyca.github.io/fidesops/sass_connectors/">
       
       <link rel="icon" href="../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.7">
     
     
       
-        <title>Deployment Guide - Fidesops</title>
+        <title>Mailchimp - Fidesops</title>
       
     
     
@@ -73,7 +73,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#deployment-guide" class="md-skip">
+        <a href="#mailchimp" class="md-skip">
           Skip to content
         </a>
       
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Deployment Guide
+              Mailchimp
             
           </span>
         </div>
@@ -715,99 +715,11 @@
 
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Deployment Guide
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
         Deployment Guide
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#step-1-setup-hosted-database" class="md-nav__link">
-    Step 1: Setup Hosted Database
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 1: Setup Hosted Database">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#fidesops-postgresql-app-database-diagram" class="md-nav__link">
-    Fidesops PostgreSQL app database diagram
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-2-setup-hosted-cache" class="md-nav__link">
-    Step 2: Setup Hosted Cache
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-3-setup-fidesops-web-server" class="md-nav__link">
-    Step 3: Setup fidesops Web Server
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 3: Setup fidesops Web Server">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#install-fidesops-via-docker" class="md-nav__link">
-    Install fidesops via Docker
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#test-the-web-server" class="md-nav__link">
-    Test the Web Server
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1093,56 +1005,23 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#step-1-setup-hosted-database" class="md-nav__link">
-    Step 1: Setup Hosted Database
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 1: Setup Hosted Database">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#fidesops-postgresql-app-database-diagram" class="md-nav__link">
-    Fidesops PostgreSQL app database diagram
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-2-setup-hosted-cache" class="md-nav__link">
-    Step 2: Setup Hosted Cache
+  <a href="#implementation-summary" class="md-nav__link">
+    Implementation Summary
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-3-setup-fidesops-web-server" class="md-nav__link">
-    Step 3: Setup fidesops Web Server
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 3: Setup fidesops Web Server">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#install-fidesops-via-docker" class="md-nav__link">
-    Install fidesops via Docker
+  <a href="#connection-settings" class="md-nav__link">
+    Connection Settings
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#test-the-web-server" class="md-nav__link">
-    Test the Web Server
+      
+        <li class="md-nav__item">
+  <a href="#example-saas-configuration" class="md-nav__link">
+    Example SaaS Configuration
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1160,173 +1039,39 @@
                 
 
 
-<h1 id="deployment-guide">Deployment Guide</h1>
-<p>To quickly experiment with <code>fidesops</code>, it's easiest to clone the source repo and use the built-in docker compose configuration to get a fully working demo environment up and running. However, when you want to use <code>fidesops</code> in production, you'll want to deploy it in parts, leveraging whatever cloud infrastructure your organization is most familiar with.</p>
-<p>Fully deployed, <code>fidesops</code> has three individual systems you'll need to run:</p>
-<ol>
-<li><a href="#step-1-setup-hosted-database"><strong>Hosted Database</strong></a>: PostgreSQL database server used for permanent storage of configuration data for the web server</li>
-<li><a href="#step-2-setup-hosted-cache"><strong>Hosted Cache</strong></a>: Redis database server used as a temporary cache during execution and scheduling of tasks</li>
-<li><a href="#step-3-setup-fidesops-web-server"><strong>fidesops Web Server</strong></a>: Main application with API endpoints to configure, execute, and report on privacy requests</li>
-</ol>
-<p><img alt="Deployment Diagram" src="../img/Deployment_Diagram.png" /></p>
-<p>Let's review each individually.</p>
-<h2 id="step-1-setup-hosted-database">Step 1: Setup Hosted Database</h2>
-<p>Like most web applications, <code>fidesops</code> uses an application database for persistent storage. Any hosted PostgreSQL database solution will work (PostgreSQL version 12+), as long as it's accessible. Good options include:</p>
-<ul>
-<li>Managed PostgreSQL database services (e.g. AWS RDS, GCP Cloud SQL, Azure Database)</li>
-<li>Self-hosted PostgreSQL Docker container with a persistent volume mount (e.g. on a Kubernetes cluster)</li>
-<li>Self-hosted PostgreSQL server (e.g. on an EC2 server)</li>
-</ul>
-<p>NOTE: there <em>is no reason to expose this database to the public Internet</em> as long as it is will be accessible by your <code>fidesops</code> web server!</p>
-<p>Setting up a production-grade PostgreSQL database is likely something your team is already familiar with, so we won't revisit that here. Once it's up and running, make sure you create a unique user and database to use for <code>fidesops</code> (we recommended calling these both <code>fidesops</code>) and assign a secure password, then keep track of all those credentials. You'll need those values later to populate these configuration variables for <code>fidesops</code>:</p>
+<h1 id="mailchimp">Mailchimp</h1>
+<h2 id="implementation-summary">Implementation Summary</h2>
+<p>You may use the following endpoints in Mailchimp to retrieve and delete Personally Identifiable Information (PII) when a user submits a Data Subject Request (DSR).</p>
+<p>This table summarizes whether or not each available endpoint supports Right to Access and Right to Delete/Right to Forget </p>
 <table>
 <thead>
 <tr>
-<th>Config Variable</th>
-<th>Example</th>
-<th>Description</th>
+<th>Endpoint</th>
+<th>Right to Access</th>
+<th>Right to Delete</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>FIDESOPS__DATABASE__SERVER</code></td>
-<td>postgres.internal</td>
-<td>hostname for your database server</td>
+<td><a href="docs/link">Messages</a></td>
+<td>Yes/No</td>
+<td>Yes/No</td>
 </tr>
 <tr>
-<td><code>FIDESOPS__DATABASE__USER</code></td>
-<td>fidesops</td>
-<td>username <code>fidesops</code> should use to access the database</td>
+<td><a href="docs/link">Conversations</a></td>
+<td>Yes/No</td>
+<td>Yes/No</td>
 </tr>
 <tr>
-<td><code>FIDESOPS__DATABASE__PASSWORD</code></td>
-<td>fidesopssecret</td>
-<td>password <code>fidesops</code> should use to access the database</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__DATABASE__DB</code></td>
-<td>fidesops</td>
-<td>database name</td>
+<td><a href="docs/link">Members</a></td>
+<td>Yes/No</td>
+<td>Yes/No</td>
 </tr>
 </tbody>
 </table>
-<h3 id="fidesops-postgresql-app-database-diagram">Fidesops PostgreSQL <code>app</code> database diagram</h3>
-<p><img alt="PostgreSQL Database" src="../img/app_database.png" /></p>
-<h2 id="step-2-setup-hosted-cache">Step 2: Setup Hosted Cache</h2>
-<p>During privacy request execution, <code>fidesops</code> collects result data in a temporary Redis cache that automatically expires to ensure personal data is never retained erroneously. Any hosted Redis database will work for this purpose (Redis version 6.2.0+), from a simple Docker <a href="https://hub.docker.com/_/redis">redis</a> container to a managed service (e.g. AWS ElastiCache, GCP Memorystore, Azure Cache, Redis Cloud).</p>
-<p>NOTE: Similar to PostgreSQL, there <em>is no reason to expose this cache to the public Internet</em> as long as it is will be accessible by your <code>fidesops</code> web server!</p>
-<p>As with the PostgreSQL deployment, setting up a production-grade Redis cache is outside the scope of these docs. Once your Redis cache is available, ensure you enable a password (via Redis <a href="https://redis.io/commands/auth"><code>AUTH</code></a>) to provide additional security, and then keep track of all the connection credentials as you'll need these to configure <code>fidesops</code> in the next step with the following variables:</p>
-<table>
-<thead>
-<tr>
-<th>Config Variable</th>
-<th>Example</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>FIDESOPS__REDIS__HOST</code></td>
-<td>redis.internal</td>
-<td>hostname for your Redis server</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__REDIS__PORT</code></td>
-<td>6379</td>
-<td>port for your Redis server</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__REDIS__PASSWORD</code></td>
-<td>fidesopssecret</td>
-<td>password <code>fidesops</code> should use to access Redis</td>
-</tr>
-</tbody>
-</table>
-<h2 id="step-3-setup-fidesops-web-server">Step 3: Setup fidesops Web Server</h2>
-<p>The <code>fidesops</code> web server is a <a href="https://fastapi.tiangolo.com/">FastAPI</a> application with a <a href="https://www.uvicorn.org/">Uvicorn</a> server to handle requests. The host requirements for the <code>fidesops</code> web server are pretty minimal:</p>
-<ul>
-<li>A general purpose web server (e.g. for AWS EC2, a <code>t2.small</code> should be plenty)</li>
-<li>No persistent storage requirements (this is handled by the hosted database)</li>
-<li>Docker version 20.10.8 or newer (if installing via Docker)</li>
-<li>OR Python 3.8 or newer (if installing via Python)</li>
-</ul>
-<p>Depending on your preferences, you can install <code>fidesops</code> in one of two ways: <em>Docker</em> or <em>Python</em>.</p>
-<h3 id="install-fidesops-via-docker">Install fidesops via Docker</h3>
-<p>If you typically run your applications via Docker, you'll probably be familiar with pulling images and configuring them with environment variables. Setting up a <code>fidesops</code> container should contain no surprises.</p>
-<p>First, ensure that Docker is running on your host, with a minimum version of <code>20.10.8</code>.</p>
-<p>You can <code>docker pull ethyca/fidesops</code> to get the latest image from Ethyca's Docker Hub here: <a href="https://hub.docker.com/r/ethyca/fidesops">ethyca/fidesops</a>.</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>docker pull ethyca/fidesops
-</code></pre></div></td></tr></table></div>
-<p>Once pulled, you can run <code>docker run ethyca/fidesops</code> to start the server.</p>
-<p>To configure <code>fidesops</code> for your environment, however, you'll need to provide a number of required environment variables through <code>docker run</code>. You can accomplish this either by creating a <code>.env</code> file and passing it in via the <a href="https://docs.docker.com/engine/reference/commandline/run/#set-environment-variables--e---env---env-file"><code>--env-file {file}</code> option</a> or by providing individual variables with the <code>--env {VAR}</code> option. At a minimum, you'll need to provide the following as env variables:</p>
-<table>
-<thead>
-<tr>
-<th>Config Variable</th>
-<th>Example</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>FIDESOPS__SECURITY__APP_ENCRYPTION_KEY</code></td>
-<td>averyveryverysecretencryptionkey</td>
-<td>AES256 encryption key used for DB &amp; JWE encryption, must be exactly 32 characters (256bits)</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_ID</code></td>
-<td>fidesopsadmin</td>
-<td>client ID used for the "root" OAuth client</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_SECRET</code></td>
-<td>fidesopsadminsecret</td>
-<td>client secret used for the "root" OAuth client</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__DATABASE__SERVER</code></td>
-<td>postgres.internal</td>
-<td>hostname for your database server</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__DATABASE__PORT</code></td>
-<td>5432</td>
-<td>port for your database server</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__DATABASE__USER</code></td>
-<td>fidesops</td>
-<td>username <code>fidesops</code> should use to access the database</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__DATABASE__PASSWORD</code></td>
-<td>fidesopssecret</td>
-<td>password <code>fidesops</code> should use to access the database</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__DATABASE__DB</code></td>
-<td>fidesops</td>
-<td>database name</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__REDIS__HOST</code></td>
-<td>redis.internal</td>
-<td>hostname for your Redis server</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__REDIS__PORT</code></td>
-<td>6379</td>
-<td>port for your Redis server</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__REDIS__PASSWORD</code></td>
-<td>fidesopssecret</td>
-<td>password <code>fidesops</code> should use to access Redis</td>
-</tr>
-</tbody>
-</table>
-<p>Lastly, you'll also want to ensure you use the <code>-p 8080:8080</code> option to <code>docker run</code> to bind port 8080 (the web server) to port 8080 on the host, so you can connect from the outside.</p>
-<p>Putting this together:</p>
+<h2 id="connection-settings">Connection Settings</h2>
+<p>To retrieve </p>
+<h2 id="example-saas-configuration">Example SaaS Configuration</h2>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1352,47 +1097,165 @@
 <span class="normal">23</span>
 <span class="normal">24</span>
 <span class="normal">25</span>
-<span class="normal">26</span></pre></div></td><td class="code"><div><pre><span></span><code>docker run \
-  -p 8080:8080 \
-  --env FIDESOPS__SECURITY__APP_ENCRYPTION_KEY=&quot;averyveryverysecretencryptionkey&quot; \
-  --env FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_ID=&quot;fidesopsadmin&quot; \
-  --env FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_SECRET=&quot;fidesopsadminsecret&quot; \
-  --env FIDESOPS__DATABASE__SERVER=&quot;postgres.internal&quot; \
-  --env FIDESOPS__DATABASE__PORT=&quot;5432&quot; \
-  --env FIDESOPS__DATABASE__USER=&quot;fidesops&quot; \
-  --env FIDESOPS__DATABASE__PASSWORD=&quot;fidesopssecret&quot; \
-  --env FIDESOPS__DATABASE__DB=&quot;fidesops&quot; \
-  --env FIDESOPS__REDIS__HOST=&quot;redis.internal&quot; \
-  --env FIDESOPS__REDIS__PORT=6379 \
-  --env FIDESOPS__REDIS__PASSWORD=&quot;fidesopssecret&quot; \
-  ethyca/fidesops
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">saas_config</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mailchimp_connector_example</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Mailchimp SaaS Config</span><span class="w"></span>
+<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A sample schema representing the Mailchimp connector for Fidesops</span><span class="w"></span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0.1</span><span class="w"></span>
 
-INFO:fidesops.main:****************fidesops****************
-INFO:fidesops.main:Running any pending DB migrations...
-INFO:alembic.runtime.migration:Context impl PostgresqlImpl.
-INFO:alembic.runtime.migration:Will assume transactional DDL.
-INFO:fidesops.main:Starting scheduled request intake...
-INFO:apscheduler.scheduler:Scheduler started
-INFO:fidesops.main:Starting web server...
-INFO:uvicorn.error:Started server process [1]
-INFO:uvicorn.error:Waiting for application startup.
-INFO:uvicorn.error:Application startup complete.
-INFO:uvicorn.error:Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
+<span class="w">  </span><span class="nt">connector_params</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">domain</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">username</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api_key</span><span class="w"></span>
+
+<span class="w">  </span><span class="nt">client_config</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https</span><span class="w"></span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">connector_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">domain</span><span class="w"></span>
+<span class="w">    </span><span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">basic_authentication</span><span class="w"></span>
+<span class="w">      </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">username</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">connector_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">username</span><span class="w"></span>
+<span class="w">        </span><span class="nt">password</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">connector_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api_key</span><span class="w"></span>
+
+<span class="w">  </span><span class="nt">test_request</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/3.0/lists</span><span class="w"></span>
+
+<span class="w">  </span><span class="nt">endpoints</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">messages</span><span class="w"></span>
+<span class="w">    </span><span class="nt">requests</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">read</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
+<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/3.0/conversations/&lt;conversation_id&gt;/messages</span><span class="w"></span>
+<span class="w">        </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">conversation_id</span><span class="w"></span>
+<span class="w">            </span><span class="nt">references</span><span class="p">:</span><span class="w"></span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mailchimp_connector_example</span><span class="w"></span>
+<span class="w">                </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">conversations.id</span><span class="w"></span>
+<span class="w">                </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">conversation_messages</span><span class="w"></span>
+<span class="w">        </span><span class="nt">postprocessors</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">filter</span><span class="w"></span>
+<span class="w">            </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
+<span class="w">              </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from_email</span><span class="w"></span>
+<span class="w">              </span><span class="nt">value</span><span class="p">:</span><span class="w"></span>
+<span class="w">                </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">conversations</span><span class="w"></span>
+<span class="w">    </span><span class="nt">requests</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">read</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
+<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/3.0/conversations</span><span class="w"></span>
+<span class="w">        </span><span class="nt">query_params</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">count</span><span class="w"></span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">offset</span><span class="w"></span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w"></span>
+<span class="w">        </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">placeholder</span><span class="w"></span>
+<span class="w">            </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">conversations</span><span class="w"></span>
+<span class="w">        </span><span class="nt">pagination</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">offset</span><span class="w"></span>
+<span class="w">          </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="nt">incremental_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">offset</span><span class="w"></span>
+<span class="w">            </span><span class="nt">increment_by</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span><span class="w"></span>
+<span class="w">            </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10000</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">member</span><span class="w"></span>
+<span class="w">    </span><span class="nt">requests</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">read</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
+<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/3.0/search-members</span><span class="w"></span>
+<span class="w">        </span><span class="nt">query_params</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">query</span><span class="w"></span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;email&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="w">            </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">exact_matches.members</span><span class="w"></span>
+<span class="w">      </span><span class="nt">update</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PUT</span><span class="w"></span>
+<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/3.0/lists/&lt;list_id&gt;/members/&lt;subscriber_hash&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">list_id</span><span class="w"></span>
+<span class="w">            </span><span class="nt">references</span><span class="p">:</span><span class="w"></span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mailchimp_connector_example</span><span class="w"></span>
+<span class="w">                </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">member.list_id</span><span class="w"></span>
+<span class="w">                </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subscriber_hash</span><span class="w"></span>
+<span class="w">            </span><span class="nt">references</span><span class="p">:</span><span class="w"></span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mailchimp_connector_example</span><span class="w"></span>
+<span class="w">                </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">member.id</span><span class="w"></span>
+<span class="w">                </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
-<p>Or if you prefer to create your .env file and pass an <code>--env-file</code> variable, you can use the following: </p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>docker run \
-  -p 8080:8080 \
-  --env-file=&lt;ENV FILE NAME&gt;.env \
-  ethyca/fidesops
-</code></pre></div></td></tr></table></div>
-<p>Now, for most Docker hosts, you won't be calling <code>docker run</code> directly, and instead will be providing configuration variables to Kubernetes/Swarm/ECS/etc. As you can see in the <code>docker run</code> example above, this config is quite minimal and should just involve specifying (1) the image, (2) the port mapping, (3) all the various environment variables for configuration.</p>
-<p>Note that there's no need for a persistent volume mount for the web server, it's fully ephemeral and relies on the database for all it's permanent state.</p>
-<h3 id="test-the-web-server">Test the Web Server</h3>
-<p>To test that your server is running, visit <code>http://{server_url}/health</code> in your browser (e.g. http://0.0.0.0:8080/health) and you should see <code>{ "healthy": true }</code>.</p>
-<p>You now have a functional <code>fidesops</code> server running! Now you can use the API to set up your OAuth clients, connect to databases, configure policies, execute privacy requests, etc. To learn more, head to the <a href="../guides/oauth/">How-To Guides</a> for details.</p>
 
               
             </article>
@@ -1434,58 +1297,6 @@ INFO:uvicorn.error:Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
 <footer class="md-footer">
 
   <!-- Link to previous and/or next page -->
-  
-    <nav
-      class="md-footer__inner md-grid"
-      aria-label="Footer"
-    >
-
-      <!-- Link to previous page -->
-      
-        
-        <a
-          href="../postman/using_postman/"
-          class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Postman Collection"
-          rel="prev"
-        >
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              Postman Collection
-            </div>
-          </div>
-        </a>
-      
-
-      <!-- Link to next page -->
-      
-        
-        <a
-          href="../glossary/"
-          class="md-footer__link md-footer__link--next"
-          aria-label="Next: Glossary"
-          rel="next"
-        >
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              Glossary
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
 
 

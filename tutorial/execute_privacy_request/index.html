@@ -1141,22 +1141,21 @@
 <p>For more detailed information, <a href="../../guides/privacy_requests/">see the Privacy Request Guide</a>.</p>
 <hr />
 <p>To summarize so far, we have:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>1) Created a client for authentication
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>1) Created a client for authentication
 2) Created a connection from fidesops to our Flask App&#39;s Postgres Database
 3) Uploaded an annotated Dataset to fidesops so it knows how to traverse through the Flask App&#39;s tables
 4) Defined where to upload our user data after we&#39;ve retrieved it from the Flask App
 5) Defined Policies describing what data we&#39;re looking for and what to do with that data.
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>For our last step, we'll write a method that will let us create a Privacy Request.  We need to specify the
 Policy we want applied to that Privacy Request, as well as the starting identity of the user we'll need
 to locate the remaining user information:</p>
 <h3 id="define-helper-method">Define helper method</h3>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1175,7 +1174,7 @@ to locate the remaining user information:</p>
 <span class="normal">17</span>
 <span class="normal">18</span>
 <span class="normal">19</span>
-<span class="normal">20</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">create_privacy_request</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">policy_key</span><span class="p">):</span>
+<span class="normal">20</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_privacy_request</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">policy_key</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a Privacy Request that is executed against the given request Policy.</span>
 <span class="sd">    Returns the response JSON if successful, or throws an error otherwise.</span>
@@ -1195,12 +1194,11 @@ to locate the remaining user information:</p>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Executing a Privacy Request. Status </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Check fidesdemo/fides_uploads for upload package.&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h3 id="call-helper-method-to-run-privacy-request">Call helper method to run Privacy Request</h3>
 <p>This will create a request to fetch for all user data with category <code>user.provided.identifiable</code> associated 
 with email <code>user@example.com</code> and save it to our local Storage destination, by specifying the email and the Policy.</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
@@ -1208,7 +1206,7 @@ with email <code>user@example.com</code> and save it to our local Storage destin
 <span class="normal">6</span>
 <span class="normal">7</span>
 <span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="o">...</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="o">...</span>
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="o">...</span>
     <span class="c1"># Execute a Privacy Request for user@example.com</span>
@@ -1217,14 +1215,12 @@ with email <code>user@example.com</code> and save it to our local Storage destin
         <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span>
         <span class="n">policy_key</span><span class="o">=</span><span class="s2">&quot;example_request_policy&quot;</span><span class="p">,</span>
     <span class="p">)</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="execute-our-privacy-request">Execute our Privacy Request</h2>
 <p>In your terminal, within the <code>fidesdemo</code> directory, we'll run our script to execute the Privacy Request:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>python3 flaskr/fidesops.py
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>python3 flaskr/fidesops.py
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1236,7 +1232,7 @@ with email <code>user@example.com</code> and save it to our local Storage destin
 <span class="normal">10</span>
 <span class="normal">11</span>
 <span class="normal">12</span>
-<span class="normal">13</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>INFO:__main__:Creating access token. Status <span class="m">200</span>
+<span class="normal">13</span></pre></div></td><td class="code"><div><pre><span></span><code>INFO:__main__:Creating access token. Status <span class="m">200</span>
 INFO:__main__:Creating Oauth Client. Status <span class="m">200</span>
 INFO:__main__:Adding scopes to oauth client. Status <span class="m">200</span>
 INFO:__main__:Creating access token. Status <span class="m">200</span>
@@ -1249,11 +1245,10 @@ INFO:__main__:Creating a Rule. Status <span class="m">200</span>
 INFO:__main__:Creating a Rule Target. Status <span class="m">200</span>
 INFO:__main__:Executing a Privacy Request. Status <span class="m">200</span>
 INFO:__main__:Check fidesdemo/fidesuploads <span class="k">for</span> upload package.
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>Check your <code>fidesdemo/fides_uploads</code> directory for your data package (you may have to wait a few 
 moments for the file to appear):</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1278,7 +1273,7 @@ moments for the file to appear):</p>
 <span class="normal">23</span>
 <span class="normal">24</span>
 <span class="normal">25</span>
-<span class="normal">26</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">26</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;flaskr_postgres_dataset:products&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
 <span class="w">    </span><span class="p">{</span><span class="w"></span>
 <span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A description for example product #3&quot;</span><span class="p">,</span><span class="w"></span>
@@ -1304,8 +1299,7 @@ moments for the file to appear):</p>
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
 <span class="w">  </span><span class="p">]</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="issues">Issues?</h2>
 <ul>
 <li>Is <code>make server</code> running?</li>
@@ -1319,25 +1313,22 @@ moments for the file to appear):</p>
 </ul>
 </li>
 <li>Check the docker logs:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>docker ps
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>docker ps
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>        Name                      Command               State                         Ports
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>        Name                      Command               State                         Ports
 ------------------------------------------------------------------------------------------------------------------
 fidesdemo_db_1         docker-entrypoint.sh postgres    Up      <span class="m">0</span>.0.0.0:5432-&gt;5432/tcp,:::5432-&gt;5432/tcp
 fidesdemo_fidesctl_1   fidesctl webserver               Up      <span class="m">0</span>.0.0.0:8080-&gt;8080/tcp,:::8080-&gt;8080/tcp
 fidesdemo_fidesops_1   fidesops webserver               Up      <span class="m">8000</span>/tcp, <span class="m">0</span>.0.0.0:8000-&gt;8080/tcp,:::8000-&gt;8080/tcp
 fidesdemo_redis_1      docker-entrypoint.sh redis ...   Up      <span class="m">0</span>.0.0.0:6379-&gt;6379/tcp,:::6379-&gt;6379/tcp 
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>docker logs fidesdemo_fidesops_1
-</code></pre></div>
-</td></tr></table></li>
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>docker logs fidesdemo_fidesops_1
+</code></pre></div></td></tr></table></div></li>
 </ul>
 
               

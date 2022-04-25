@@ -1322,7 +1322,7 @@ updated with the same masked values across all sources.</p>
 <p>If you just want to use fidesops as a masking service, you can send a <code>PUT</code> request to the masking endpoint with the 
 value you'd like pseudonymized. This endpoint is also useful for getting a feel of how the different masking strategies work.</p>
 <p>Example: <code>PUT /masking/mask?value=test@example.com</code></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1331,7 +1331,7 @@ value you'd like pseudonymized. This endpoint is also useful for getting a feel 
 <span class="normal"> 7</span>
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="w">     </span><span class="p">{</span><span class="w"></span>
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">     </span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;strategy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;random_string_rewrite&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;configuration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">            </span><span class="nt">&quot;length&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"></span>
@@ -1341,18 +1341,16 @@ value you'd like pseudonymized. This endpoint is also useful for getting a feel 
 
 <span class="w">        </span><span class="p">}</span><span class="w"></span>
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p><code>Response 200 OK</code></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">    </span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;plain&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test@example.com&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;masked_value&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;idkeaotbrub346ycbmpo@masked.com&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>The email has been replaced with a random string of 20 characters, while still preserving that the value is an email.</p>
 <p>See <a href="/fidesops/api#operations-tag-Masking">Masking values API docs</a> on how to use fidesops to as a masking service .</p>
 <h2 id="configuration">Configuration</h2>
@@ -1360,7 +1358,7 @@ value you'd like pseudonymized. This endpoint is also useful for getting a feel 
 <p>To configure a specific masking strategy to be used for a Policy, you will create an <code>erasure</code> rule
 that captures that strategy for the Policy.</p>
 <p>Issue a PATCH request to <code>/policy/policy_key/rule</code>:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1373,7 +1371,7 @@ that captures that strategy for the Policy.</p>
 <span class="normal">11</span>
 <span class="normal">12</span>
 <span class="normal">13</span>
-<span class="normal">14</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="w">    </span><span class="p">[{</span><span class="w"></span>
+<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">    </span><span class="p">[{</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Global erasure rule&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;action_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;erasure&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string_rewrite_rule&quot;</span><span class="p">,</span><span class="w"></span>
@@ -1387,8 +1385,7 @@ that captures that strategy for the Policy.</p>
 <span class="w">            </span><span class="p">}</span><span class="w"></span>
 <span class="w">        </span><span class="p">}</span><span class="w"></span>
 <span class="w">    </span><span class="p">}]</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="supported-masking-strategies-and-associated-configuration-options">Supported Masking Strategies and Associated Configuration options</h2>
 <h3 id="null-rewrite">Null Rewrite</h3>
 <p>Masks the input value with a null value.</p>
@@ -1458,7 +1455,7 @@ strategies available, along with their configuration options. </p>
 MaskingStrategy has three methods - <code>mask</code>, <code>get_configuration_model</code> and <code>get_description</code>. For more detail on these 
 methods, visit the class in the fidesops repository. For now, we will focus on the implementation of
 <code>RandomStringRewriteMaskingStrategy</code> below:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1500,7 +1497,7 @@ methods, visit the class in the fidesops repository. For now, we will focus on t
 <span class="normal">40</span>
 <span class="normal">41</span>
 <span class="normal">42</span>
-<span class="normal">43</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">string</span>
+<span class="normal">43</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">string</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">secrets</span> <span class="kn">import</span> <span class="n">choice</span>
 
@@ -1543,8 +1540,7 @@ methods, visit the class in the fidesops repository. For now, we will focus on t
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">data_type_supported</span><span class="p">(</span><span class="n">data_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Not covered in this example&quot;&quot;&quot;</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>The <code>mask</code> method will be called with the value to be masked and the masked value will be the output. In this case,
 if a value is supplied, we want to replace it with a random mixture of ascii lowercase letters and digits of the 
 specified length. If format preservation is specified, for example, we still want to know that an email was an email, 
@@ -1559,7 +1555,7 @@ how to enable the linkage between the two. In other words, how do we run the mas
 The answer to that is the Masking Strategy Factory.</p>
 <p>The masking strategy factory is defined in the <code>masking_strategy_factory.py</code> file. The pertinent sections have been 
 pasted below:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1609,7 +1605,7 @@ pasted below:</p>
 <span class="normal">48</span>
 <span class="normal">49</span>
 <span class="normal">50</span>
-<span class="normal">51</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="normal">51</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">ValidationError</span>
@@ -1660,8 +1656,7 @@ pasted below:</p>
         <span class="k">return</span> <span class="n">strategy</span><span class="p">(</span><span class="n">configuration</span><span class="o">=</span><span class="n">strategy_config</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">FidesopsValidationError</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>The <code>SupportedMaskingStrategy</code> enum maps the strategy name to the masking strategy implementation class. </p>
 <p>After creating a new masking strategy and configuration, just register it in this enum, and it will be ready for use by the system.</p>
 

@@ -1123,17 +1123,16 @@
 <p>Let's clone <a href="https://github.com/ethyca/fidesdemo">Fides Demo</a>, and rewind to an earlier tag, so we can build out 
 the later commits together. Among other things, this will give us a Flask App to 
 mimic your application and some YAML files that annotate the Flask App's databases. 
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>git clone https://github.com/ethyca/fidesdemo
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>git clone https://github.com/ethyca/fidesdemo
 <span class="nb">cd</span> fidesdemo
 git checkout fidesctl-demo
 make install
 <span class="nb">source</span> venv/bin/activate
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>You can run <code>make server</code> and visit <a href="http://127.0.0.1:5000/">http://127.0.0.1:5000/</a> to explore the test app. It is a simple e-commerce 
 marketplace where users can buy and sell products. </p>
 <h2 id="install-fidesops-in-our-test-app">Install fidesops in our test app</h2>
@@ -1142,7 +1141,7 @@ and a Redis cache (for <em>temporarily</em> storing incoming PII). You'll notice
 up for you, and <code>fidesctl</code> is installed (although we won't dive into that tool here). In the Flask App's docker-compose file, 
 add both a container for <code>redis</code> and <code>fidesops</code> services beneath the fidesctl <code>service</code>:</p>
 <p><code>fidesdemo/docker-compose.yml</code>:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1175,7 +1174,7 @@ add both a container for <code>redis</code> and <code>fidesops</code> services b
 <span class="normal">31</span>
 <span class="normal">32</span>
 <span class="normal">33</span>
-<span class="normal">34</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span><span class="w"></span>
+<span class="normal">34</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">services</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
 <span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">redis</span><span class="p p-Indicator">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;redis:6.2.5-alpine&quot;</span><span class="w"></span>
@@ -1209,15 +1208,13 @@ add both a container for <code>redis</code> and <code>fidesops</code> services b
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESOPS__REDIS__HOST=redis</span><span class="w"></span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESOPS__REDIS__PORT=6379</span><span class="w"></span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESOPS__REDIS__PASSWORD=redispass</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <h2 id="verify-that-fidesops-is-installed">Verify that fidesops is installed</h2>
 <p>Run <code>make_server</code> again:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  <span class="nb">cd</span> fidesdemo
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  <span class="nb">cd</span> fidesdemo
   make server
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>Visit <a href="http://localhost:8000/docs">http://localhost:8000/docs</a> to check that fidesops is up and running and preview the set of API endpoints 
 that are available for us to run requests on fidesops.</p>
 

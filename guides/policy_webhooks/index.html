@@ -1251,14 +1251,14 @@ You will then define a <code>PolicyPreWebhook</code> or a <code>PolicyPostWebhoo
 how to connect to an external API endpoint. </p>
 <p>For more information on ConnectionConfigs, see how to <a href="/fidesops/api/#operations-Connections-put_connections_api_v1_connection_put">Create a ConnectionConfig.</a></p>
 <p>To start, send a <code>PATCH</code> request to <code>/v1/connection</code> to add an <code>https</code> ConnectionConfig:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">[</span><span class="w"></span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
 <span class="w">    </span><span class="p">{</span><span class="w"></span>
 <span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My Webhook Connection Configuration&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">      </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test_webhook_connection_config&quot;</span><span class="p">,</span><span class="w"></span>
@@ -1266,22 +1266,20 @@ how to connect to an external API endpoint. </p>
 <span class="w">      </span><span class="nt">&quot;access&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;read&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
 <span class="p">]</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h3 id="adding-connectionconfig-secrets">Adding ConnectionConfig Secrets</h3>
 <p>The secret details needed to talk to your API endpoint are defined by making a PUT to the ConnectionConfig Secrets endpoint:
 These credentials are stored encrypted in the <code>fidesops</code> <code>app</code> database.</p>
 <p>See API docs on how to <a href="/fidesops/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put">Set a ConnectionConfig's Secrets</a>.</p>
 <p><code>PUT</code> <code>/v1/connection/test_webhook_connection_config</code></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">    </span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://www.example.com&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;authorization&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test_authorization&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h3 id="defining-pre-execution-or-post-execution-policy-webhooks">Defining Pre-Execution or Post-Execution Policy Webhooks</h3>
 <p>After you've defined a <code>ConnectionConfig</code>, you can create lists of webhooks to run <em>before</em> (<code>PolicyPreWebhooks</code>)
 or <em>after</em> (<code>PolicyPostWebhooks</code>) a PrivacyRequest is executed.</p>
@@ -1290,7 +1288,7 @@ body in the desired order.  Any PolicyPreWebhooks on the Policy <em>not</em> inc
 Policy. The same applies for PolicyPostWebhooks.</p>
 <p>To update your list of PolicyPreWebhooks:</p>
 <p><code>PUT /policy/&lt;policy_key&gt;/webhook/pre_execution</code></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1303,7 +1301,7 @@ Policy. The same applies for PolicyPostWebhooks.</p>
 <span class="normal">11</span>
 <span class="normal">12</span>
 <span class="normal">13</span>
-<span class="normal">14</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">[</span><span class="w"></span>
+<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
 <span class="w">    </span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;connection_config_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test_webhook_connection_config&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;direction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;one_way&quot;</span><span class="p">,</span><span class="w"></span>
@@ -1317,8 +1315,7 @@ Policy. The same applies for PolicyPostWebhooks.</p>
 <span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Prep Systems Webhook&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
 <span class="p">]</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>This creates two webhooks that are run sequentially for the Policy before a PrivacyRequest runs.</p>
 <p>Similarly, to update your list of Post-Execution webhooks on a Policy:</p>
 <p><code>PUT /policy/&lt;policy_key&gt;/webhook/post_execution</code></p>
@@ -1331,19 +1328,18 @@ Note that updates to order can likewise update the order of related webhooks.</p
 <code>one_way</code> and will update its order from 0 to 1.  Because we've defined two PolicyPreWebhooks, this causes the 
 webhook at position 1 to move to position 0. </p>
 <p><code>PATCH /policy/&lt;policy_key&gt;/webhook/pre-execution/wake_up_snowflake_db</code></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;direction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;two_way&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h4 id="response">Response</h4>
 <p>Because this PATCH request updated the order of other webhooks, a reordered summary is included under the 
 <code>new_order</code> attribute:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1361,7 +1357,7 @@ webhook at position 1 to move to position 0. </p>
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
-<span class="normal">19</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;direction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;two_way&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wake_up_snowflake_db&quot;</span><span class="p">,</span><span class="w"></span>
@@ -1380,8 +1376,7 @@ webhook at position 1 to move to position 0. </p>
 <span class="w">        </span><span class="p">}</span><span class="w"></span>
 <span class="w">    </span><span class="p">]</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>Similarly, to update your a Post-Execution webhook on a Policy:</p>
 <p><code>PATCH /policy/&lt;policy_key&gt;/webhook/post_execution/&lt;post_execution_key&gt;</code></p>
 <p>See API docs for more information on how to <a href="/fidesops/api#operations-Policy_Webhooks-update_pre_execution_webhook_api_v1_policy__policy_key__webhook_pre_execution__pre_webhook_key__patch">PATCH a PolicyPreWebhook</a>
@@ -1390,7 +1385,7 @@ and how to <a href="/fidesops/api#operations-Policy_Webhooks-update_post_executi
 <p>Before and after running access or erasure requests, Fidesops will send requests to any configured webhooks in sequential order
 with the following request body:</p>
 <p>POST <user-defined URL>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
@@ -1398,7 +1393,7 @@ with the following request body:</p>
 <span class="normal">6</span>
 <span class="normal">7</span>
 <span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;privacy_request_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pri_029832ba-3b84-40f7-8946-82aec6f95448&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;direction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;one_way | two_way&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;callback_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pre | post&quot;</span><span class="p">,</span><span class="w"></span>
@@ -1407,22 +1402,20 @@ with the following request body:</p>
 <span class="w">    </span><span class="nt">&quot;phone_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;555-5555&quot;</span><span class="w"></span>
 <span class="w">  </span><span class="p">}</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>Most of these attributes were configured by you: the <code>direction</code>, the <code>callback_type</code> ("pre" for <code>PolicyPreWebhook</code>s that will run 
 before PrivacyRequest execution or "post" for <code>PolicyPostWebhook</code>s that will run after PrivacyRequestExecution).
 Known identities are also embedded in the request.</p>
 <p>For <code>two-way</code> <code>PolicyPreWebhooks</code>, we include specific headers in case you need to pause PrivacyRequest 
 execution while you take care of additional processing on your end.</p>
-<p><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<p><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="w">     </span><span class="p">{</span><span class="w"></span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">     </span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;reply-to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/privacy-request/&lt;privacy_request_id&gt;/resume&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;reply-to-token&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;jwe_token&gt;&quot;</span><span class="w"></span>
 <span class="w">     </span><span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
  To resume, you should send a request back to the <code>reply-to</code> URL with the <code>reply-to-token</code>.  The <code>reply-to-token</code> will
 expire when your redis cache expires: <code>config.redis.DEFAULT_TTL_SECONDS</code> (Fidesops uses the redis cache to temporarily
  store identity data).  At this point, your PrivacyRequest will be given an <code>error</code> status, and you would have to resubmit
@@ -1432,39 +1425,37 @@ the PrivacyRequest.</p>
 <code>one-way</code> webhook, or reply with <code>halt=True</code> if you want to pause execution and wait for your processing to finish.
 Note that only <code>PolicyPreWebhooks</code> can pause execution. </p>
 <p>We don't expect a response from <code>one-way</code> webhooks, but <code>two-way</code> webhooks should respond with the following: </p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;derived_identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer-1@gmail.com&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;phone_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;555-5555&quot;</span><span class="w"></span>
 <span class="w">  </span><span class="p">},</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;halt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;true | false&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>Derived identity is optional: a returned email or phone number will replace currently known emails or phone numbers.</p>
 <h2 id="resuming-privacyrequest-execution">Resuming PrivacyRequest Execution</h2>
 <p>If your webhook needed more processing time, once completed, send a request to the <code>reply-to</code> URL 
 given to you in the original request header with the <code>reply-to-token</code> auth token.</p>
 <p><code>POST privacy_request/&lt;privacy-request-id&gt;/resume</code></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;derived_identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer-1@gmail.com&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;phone_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;555-5555&quot;</span><span class="w"></span>
 <span class="w">  </span><span class="p">}</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>If there are no derived identities, an empty <code>{}</code> request body will suffice.</p>
 <p>The <code>reply-to-token</code> is a JWE containing the current webhook id, scopes to access the callback endpoint, 
 and the datetime the token is issued.  We unpack this and resume the privacy request execution after the 

@@ -1116,7 +1116,7 @@
 database. For tutorial purposes, we'll just write to a local file under <code>/fides_uploads</code>, but typically we'd want
 to upload this to a Storage location like S3.  S3 would require a follow-up step to set up AWS access keys and secrets.</p>
 <h3 id="define-helper-method">Define helper method</h3>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1137,7 +1137,7 @@ to upload this to a Storage location like S3.  S3 would require a follow-up step
 <span class="normal">19</span>
 <span class="normal">20</span>
 <span class="normal">21</span>
-<span class="normal">22</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">create_local_storage</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
+<span class="normal">22</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_local_storage</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a StorageConfig in fidesops to write to a local file. Returns the response JSON if successful.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1159,11 +1159,10 @@ to upload this to a Storage location like S3.  S3 would require a follow-up step
     <span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Defining an upload location. Status </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h3 id="call-helper-method-to-set-up-storage">Call helper method to set up Storage</h3>
 <p>This will define a local Storage location called <code>example_storage</code> that expects JSON data.  </p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
@@ -1171,7 +1170,7 @@ to upload this to a Storage location like S3.  S3 would require a follow-up step
 <span class="normal">6</span>
 <span class="normal">7</span>
 <span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>    <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>    <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
         <span class="o">...</span>
         <span class="c1"># Configure a Storage Config to upload the results</span>
         <span class="n">create_local_storage</span><span class="p">(</span>
@@ -1180,8 +1179,7 @@ to upload this to a Storage location like S3.  S3 would require a follow-up step
             <span class="n">access_token</span><span class="o">=</span><span class="n">access_token</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="o">...</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 
               
             </article>

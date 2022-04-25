@@ -1101,27 +1101,24 @@
 <h2 id="black-formatting">Black formatting</h2>
 <p>Fides's code is formatted using the <a href="https://github.com/ambv/black">black</a> style. This style is checked in a CI step, and merges to master are prevented if code does not conform.</p>
 <p>To apply black to your code, run black from the root Fidesops directory:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nb">cd</span> fidesops
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">cd</span> fidesops
 black .
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>A number of extensions are available for popular editors that will automatically apply black to your code.</p>
 <h2 id="pylint">Pylint</h2>
 <p>Fides's code is linted using <a href="https://pylint.org/">pylint</a>. Linter checks run as part of a CI step and merges to master are prevented if code does not conform.</p>
 <p>To apply pylint to your code, run pylint from the root Fidesops directory:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nb">cd</span> fidesops
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">cd</span> fidesops
 pylint src
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="mypy-typing">Mypy typing</h2>
 <p>Fides's code is statically-typed using <a href="http://mypy-lang.org/">mypy</a>. Type checking is validated as a CI step, and merges to master are prevented if code does not pass type checks. As a general rule, mypy typing requires all function arguments and return values to be annotated.</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nb">cd</span> fidesops
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">cd</span> fidesops
 mypy src
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 
               
             </article>

@@ -4696,6 +4696,10 @@
           "return_all_elements": {
             "title": "Return All Elements",
             "type": "boolean"
+          },
+          "read_only": {
+            "title": "Read Only",
+            "type": "boolean"
           }
         },
         "description": "Fidesops-specific annotations used for query traversal"

@@ -1373,7 +1373,7 @@ categories.</p>
 </ul>
 <p>While the ConnectionConfig object contains meta information about the database, you'll notice that it doesn't actually identify the database itself. We'll get to that when we set the ConnectionConfig's "secrets".</p>
 <h4 id="example-1-postgresql-connectionconfig">Example 1: PostgreSQL ConnectionConfig</h4>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1382,7 +1382,7 @@ categories.</p>
 <span class="normal"> 7</span>
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>PATCH api/v1/connection
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection
 
 [
   { 
@@ -1392,10 +1392,9 @@ categories.</p>
     &quot;access&quot;: &quot;read&quot;
   }
 ]
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h4 id="example-2-mongodb-connectionconfig">Example 2: MongoDB ConnectionConfig</h4>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1404,7 +1403,7 @@ categories.</p>
 <span class="normal"> 7</span>
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>PATCH api/v1/connection
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection
 
 [
   { 
@@ -1414,10 +1413,9 @@ categories.</p>
     &quot;access&quot;: &quot;write&quot;
   }
 ]
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h4 id="example-3-mysql-connectionconfig">Example 3: MySQL ConnectionConfig</h4>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
@@ -1425,7 +1423,7 @@ categories.</p>
 <span class="normal">6</span>
 <span class="normal">7</span>
 <span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>PATCH api/v1/connection 
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection 
 [
   { 
     &quot;name&quot;: &quot;My MySQL DB&quot;,
@@ -1434,10 +1432,9 @@ categories.</p>
     &quot;access&quot;: &quot;write&quot;
   }
 ]
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h4 id="example-4-mariadb-connectionconfig">Example 4: MariaDB ConnectionConfig</h4>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
@@ -1445,7 +1442,7 @@ categories.</p>
 <span class="normal">6</span>
 <span class="normal">7</span>
 <span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>PATCH api/v1/connection 
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection 
 [
   { 
     &quot;name&quot;: &quot;My Maria DB&quot;,
@@ -1454,10 +1451,9 @@ categories.</p>
     &quot;access&quot;: &quot;write&quot;
   }
 ]
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h4 id="example-5-mssql-connectionconfig">Example 5: MsSQL ConnectionConfig</h4>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
@@ -1465,7 +1461,7 @@ categories.</p>
 <span class="normal">6</span>
 <span class="normal">7</span>
 <span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>PATCH api/v1/connection 
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection 
 [
   { 
     &quot;name&quot;: &quot;My MsSQL DB&quot;,
@@ -1474,8 +1470,7 @@ categories.</p>
     &quot;access&quot;: &quot;write&quot;
   }
 ]
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h3 id="set-the-connectionconfigs-secrets">Set the ConnectionConfig's Secrets</h3>
 <p>After you create a ConnectionConfig, you explain how to connect to it by setting its "secrets": host, port, user, and password (note that the secrets used are specific to the DB connector). You do this by creating a ConnectionConfig Secrets object by calling the <a href="/fidesops/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put">Set a ConnectionConfig's Secrets</a> operation. You can set the object's attributes separately, or supply a single <code>url</code> string that encodes them all.</p>
 <p>If you set the <code>verify</code> query parameter to <code>true</code>, the operation  will  test the connection by issuing a trivial request to the database. The <code>test_status</code> response property announces the success of the connection attempt as <code>succeeded</code> or <code>failed</code>. If the attempt has failed, the <code>failure_reason</code> property gives further details about the failure.</p>
@@ -1483,7 +1478,7 @@ categories.</p>
 <p>Note: Fidesops encrypts all ConnectionConfig Secrets values before they're stored.</p>
 <h4 id="example-1-set-the-secrets-separately">Example 1: Set the secrets separately</h4>
 <p>This example sets the database secrets through separate properties and then tests the connection.</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
@@ -1491,7 +1486,7 @@ categories.</p>
 <span class="normal">6</span>
 <span class="normal">7</span>
 <span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>PUT /api/v1/connection/application-postgresql-db/secret?verify=true`
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>PUT /api/v1/connection/application-postgresql-db/secret?verify=true`
 
 {
    &quot;host&quot;: &quot;host.docker.internal&quot;,
@@ -1500,44 +1495,41 @@ categories.</p>
    &quot;username&quot;: &quot;postgres&quot;,
    &quot;password&quot;: &quot;postgres&quot;
 }
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h4 id="example-2-set-the-secrets-as-a-url">Example 2: Set the secrets as a URL</h4>
 <p>This example sets the database secrets as a single <code>url</code> property, and skips the connection test.</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>PUT api/v1/connection/my_mongo_db/secret?verify=false`
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>PUT api/v1/connection/my_mongo_db/secret?verify=false`
 
 {
     &quot;url&quot;: &quot;mongodb://mongo_user:mongo_pass@mongodb_example/mongo_test&quot;
 }
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h4 id="example-3-amazon-redshift-set-url-and-schema">Example 3: Amazon Redshift: Set URL and Schema</h4>
 <p>This Amazon Redshift example sets the database secrets as a <code>url</code> property and a <code>db_schema</code> property.  Redshift
 databases have one or more schemas, with the default being named <code>public</code>.  If you need to set a different schema,
 specify <code>db_schema</code> for Redshift, and it will be set as the <code>search_path</code> when querying.</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>PUT api/v1/connection/my_redshift_db/secret`
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>PUT api/v1/connection/my_redshift_db/secret`
 
 {
     &quot;url&quot;: &quot;redshift+psycopg2://username@host.amazonaws.com:5439/database&quot;,
     &quot;db_schema&quot;: &quot;my_test_schema&quot;
 }
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h4 id="example-4-google-bigquery">Example 4: Google BigQuery</h4>
 <p>For Google BigQuery, there are 2 items needed for secrets: </p>
 <p><code>dataset</code> - Name of your dataset. BigQuery datasets are top-level containers (within a project) that are used to organize and control access to your tables and views.</p>
 <p><code>keyfile_creds</code> - Credentials from your service account JSON keyfile, accessible for download from the GCP console.  </p>
 <p>Here's an example of what this looks like:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1553,7 +1545,7 @@ specify <code>db_schema</code> for Redshift, and it will be set as the <code>sea
 <span class="normal">14</span>
 <span class="normal">15</span>
 <span class="normal">16</span>
-<span class="normal">17</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>PUT api/v1/connection/my_bigquery_db/secret`
+<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code>PUT api/v1/connection/my_bigquery_db/secret`
 
 {
     &quot;dataset&quot;: &quot;some-dataset&quot;,
@@ -1570,45 +1562,41 @@ specify <code>db_schema</code> for Redshift, and it will be set as the <code>sea
         &quot;client_x509_cert_url&quot;: &quot;https://www.googleapis.com/robot/v1/metadata/x509/something%40project-12345.iam.gserviceaccount.com&quot;
     }
 }
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h3 id="testing-your-connection">Testing your connection</h3>
 <p>You can verify that a ConnectionConfig's secrets are valid at any time by calling the <a href="/fidesops/api#operations-Connections-test_connection_config_secrets_api_v1_connection__connection_key__test_get">Test a ConnectionConfig's Secrets</a> operation:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>GET /api/v1/connection/application-postgresql-db/test
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>GET /api/v1/connection/application-postgresql-db/test
+</code></pre></div></td></tr></table></div>
 <p>Once again, the <code>test_status</code> and <code>failure_reason</code> properties describe the success or failure of the test. If the test failed,
 you should adjust the ConnectionConfig Secrets properties through additional calls to <a href="/fidesops/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put">Set a ConnectionConfig's Secrets</a></p>
 <h4 id="example-1-connection-succeeded">Example 1: Connection Succeeded</h4>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Test completed for ConnectionConfig with key: app_postgres_db.&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;test_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;succeeded&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;failure_reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h4 id="example-2-connection-failed">Example 2: Connection Failed</h4>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Secrets updated for ConnectionConfig with key: app_mongo_db.&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;test_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;failed&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;failure_reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Operation Failure connecting to MongoDB.&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="how-do-connectionconfigs-differ-from-datasets">How do ConnectionConfigs differ from Datasets?</h2>
 <p>A Dataset is an annotation of your database schema; it describes the PII category (or Data Categories) for each field that the database contains. A ConnectionConfig holds the secrets to connect to the database. Each Dataset has a foreign key to a ConnectionConfig.</p>
 <p>After Fidesops connects to your database, it generates valid queries by consulting the annotations in the Dataset.</p>
 <p>Here is an example of how a "person" table in your PostgreSQL database might map to a Fidesops
 Dataset:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1625,7 +1613,7 @@ Dataset:</p>
 <span class="normal">15</span>
 <span class="normal">16</span>
 <span class="normal">17</span>
-<span class="normal">18</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>Person:
+<span class="normal">18</span></pre></div></td><td class="code"><div><pre><span></span><code>Person:
   id: str
   name: str
   email: str
@@ -1643,8 +1631,7 @@ dataset:
             data_categories: [user.provided.identifiable.contact.email]
           - name: id
             data_categories: [system.operations] 
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>See <a href="../datasets/">How-To: Configure Datasets</a> for more information.</p>
 
               

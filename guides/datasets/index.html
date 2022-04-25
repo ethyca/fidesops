@@ -1152,7 +1152,7 @@
 <p>Beyond collection and field names, Fidesops needs some additional information to fully configure a Dataset. Let's look at a simple example database, and how it would be translated into a configuration in Fidesops.</p>
 <h4 id="an-example-database">An example database</h4>
 <p>Here we have a database of customers and addresses (the example is a bit simplified from an actual SQL schema). We have a <code>customer</code> table that has a foreign key of <code>address_id</code> to an <code>address</code> table:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1165,7 +1165,7 @@
 <span class="normal">11</span>
 <span class="normal">12</span>
 <span class="normal">13</span>
-<span class="normal">14</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">CUSTOMER</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
+<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">CUSTOMER</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
 <span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="n">name</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="n">email</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">,</span><span class="w"></span>
@@ -1179,10 +1179,9 @@
 <span class="w">  </span><span class="k">state</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="n">zip</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="w"></span>
 <span class="p">);</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>A Fidesops Dataset consists of a declaration of fields, with metadata describing how those fields are related. We use the information about their relationship to navigate between different collections. The dataset declaration for the above schema looks like:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1234,7 +1233,7 @@
 <span class="normal">50</span>
 <span class="normal">51</span>
 <span class="normal">52</span>
-<span class="normal">53</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="normal">53</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydatabase</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal database</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">our internal database of customer data</span><span class="w"></span>
@@ -1287,8 +1286,7 @@
 <span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable.name</span><span class="p p-Indicator">]</span><span class="w"></span>
 <span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
 <span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h4 id="dataset-members">Dataset members</h4>
 <ul>
 <li><code>fides_key</code>: A unique identifier name for the dataset</li>

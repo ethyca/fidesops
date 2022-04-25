@@ -1173,7 +1173,7 @@
 we submit  a request to apply the <code>a-demo-policy</code> Policy to all target data in the <a href="../../glossary/">Identity Graph</a> that can be generated from the email address <code>identity@example.com</code> and the phone number <code>+1 (123) 456 7891</code>.
 Privacy Requests are executed immediately by default. This setting may be changed in the fidesops.toml configuration file.</p>
 <p><code>POST /api/v1/privacy-request</code></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1183,7 +1183,7 @@ Privacy Requests are executed immediately by default. This setting may be change
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">[</span><span class="w"></span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
 <span class="w">  </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;external_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a-user-defined-id&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;requested_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-10-31T16:00:00.000Z&quot;</span><span class="p">,</span><span class="w"></span>
@@ -1194,8 +1194,7 @@ Privacy Requests are executed immediately by default. This setting may be change
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
 <span class="w">  </span><span class="p">}</span><span class="w"></span>
 <span class="p">]</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <ul>
 <li>
 <p><code>external_id</code> is an optional  identifier of your own invention that lets you track the Privacy Request. See <a href="../reporting/">How-To: Report on Privacy Requests</a> for more information.</p>
@@ -1221,33 +1220,31 @@ Privacy Requests are executed immediately by default. This setting may be change
 Privacy Requests will require approval before executing. To approve or deny Privacy Requests, send a list of Privacy 
 Request ids to one of the following endpoints to approve or deny in bulk.</p>
 <p><code>PATCH api/v1/privacy-request/administrate/approve</code></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;request_ids&quot;</span><span class="p">:[</span><span class="w"></span>
 <span class="w">    </span><span class="s2">&quot;pri_2d181f15-486d-4bcf-a871-f50ed9f95673&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="s2">&quot;pri_2d181f15-486d-4bcf-a871-f50ed9f95673&quot;</span><span class="w"></span>
 <span class="w">  </span><span class="p">]</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p><code>PATCH api/v1/privacy-request/administrate/deny</code></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;request_ids&quot;</span><span class="p">:[</span><span class="w"></span>
 <span class="w">    </span><span class="s2">&quot;pri_2d181f15-486d-4bcf-a871-f50ed9f95673&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="s2">&quot;pri_2d181f15-486d-4bcf-a871-f50ed9f95673&quot;</span><span class="w"></span>
 <span class="w">  </span><span class="p">]</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="how-do-i-monitor-privacy-requests-as-they-execute">How do I monitor Privacy Requests as they execute?</h2>
 <p>Privacy Requests can be monitored at any time throughout their execution by submitting any of the following requests:</p>
 <p><code>GET api/v1/privacy-request?id=&lt;privacy_request_id&gt;</code></p>
@@ -1273,14 +1270,14 @@ We will use the supplied encryption_key to encrypt the contents of your JSON and
 When converted to bytes, your encryption_key must be 16 bytes long.  The data we return will have the nonce concatenated 
 to the encrypted data.</p>
 <p>POST /privacy-request
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">[</span><span class="w"></span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
 <span class="w">    </span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;requested_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-08-30T16:09:37.359Z&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer-1@example.com&quot;</span><span class="p">},</span><span class="w"></span>
@@ -1288,22 +1285,20 @@ to the encrypted data.</p>
 <span class="w">        </span><span class="nt">&quot;encryption_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test--encryption&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
 <span class="p">]</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <h2 id="decrypting-your-access-request-results">Decrypting your access request results</h2>
 <p>If you specified an encryption key, we encrypted the access result data using your key and an internally-generated <code>nonce</code> with an AES 
 256 algorithm in GCM mode.  The return value is a 12-byte nonce plus the encrypted data that is all b64encoded together.</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>+------------------+-------------------+
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>+------------------+-------------------+
 | nonce (12 bytes) | message (N bytes) |
 +------------------+-------------------+
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>For example, pretend you specified an encryption key of <code>test--encryption</code>, and the resulting data was uploaded to
 S3 in a JSON file: <code>GPUiK9tq5k/HfBnSN+J+OvLXZ+GCisapdI2KGP7A1WK+dz1XHef+hWb/SjszdqdNVGvziyY6GF5KIrvrXgxjZuaAvgU='</code>.  You will
 need to implement something similar to the snippet below on your end to decrypt:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1318,7 +1313,7 @@ need to implement something similar to the snippet below on your end to decrypt:
 <span class="normal">13</span>
 <span class="normal">14</span>
 <span class="normal">15</span>
-<span class="normal">16</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
+<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">base64</span>
 <span class="kn">from</span> <span class="nn">cryptography.hazmat.primitives.ciphers.aead</span> <span class="kn">import</span> <span class="n">AESGCM</span>
 
@@ -1334,11 +1329,9 @@ need to implement something similar to the snippet below on your end to decrypt:
 <span class="n">decrypted_str</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">decrypted_bytes</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
 
 <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">decrypted_str</span><span class="p">)</span>
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="p">{</span><span class="s2">&quot;street&quot;</span><span class="p">:</span> <span class="s2">&quot;test street&quot;</span><span class="p">,</span> <span class="s2">&quot;state&quot;</span><span class="p">:</span> <span class="s2">&quot;NY&quot;</span><span class="p">}</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="p">{</span><span class="s2">&quot;street&quot;</span><span class="p">:</span> <span class="s2">&quot;test street&quot;</span><span class="p">,</span> <span class="s2">&quot;state&quot;</span><span class="p">:</span> <span class="s2">&quot;NY&quot;</span><span class="p">}</span>
+</code></pre></div></td></tr></table></div>
 <p>If CSV data was uploaded, each CSV in the zipfile was encrypted using a different nonce, so you'll need to follow
 a similar process for each csv file.</p>
 

@@ -1162,13 +1162,12 @@
 </li>
 </ul>
 <p>In addition to specifying an execution strategy, a Rule contains one or more Data Categories, or "Targets", to which the rule applies. Putting it all together, we have:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>Policy
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>Policy
   |-&gt; Rules
       |-&gt; Targets
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>This is reflected in the API paths that create these elements:</p>
 <ul>
 <li><code>PATCH /policy</code></li>
@@ -1187,14 +1186,14 @@
 </div>
 <h2 id="create-a-policy">Create a Policy</h2>
 <p>Let's say you want to make a Policy that contains rules about a user's email address. You would start by first creating a Policy object:</p>
-<p><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<p><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>PATCH /api/v1/policy
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH /api/v1/policy
 
 [
   {
@@ -1202,12 +1201,11 @@
     &quot;key&quot;: &quot;user_email_address_polcy&quot;
   }
 ]
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 This policy is subtly different from the concept of a Policy in <a href="https://github.com/ethyca/fides">Fidesctl</a>. A <a href="https://ethyca.github.io/fides/language/resources/policy/">Fidesctl policy</a> dictates which data categories can be stored where. A Fidesops policy, on the other hand, dictates how to access, mask or erase data that matches specific data categories for privacy requests.</p>
 <h2 id="add-an-access-rule-to-your-policy">Add an Access Rule to your Policy</h2>
 <p>The policy creation operation returns a Policy key, which we'll use to add a Rule:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1216,7 +1214,7 @@ This policy is subtly different from the concept of a Policy in <a href="https:/
 <span class="normal"> 7</span>
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>PATCH /api/v1/policy/{policy_key}/rule
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH /api/v1/policy/{policy_key}/rule
 
 [
   {
@@ -1226,11 +1224,10 @@ This policy is subtly different from the concept of a Policy in <a href="https:/
     &quot;storage_destination_key&quot;: &quot;storage_key&quot;
   }
 ]
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>Note that <code>storage_key</code> must identify an existing StorageConfig object.</p>
 <p>Finally, we use the Rule key to add a Target:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
@@ -1238,7 +1235,7 @@ This policy is subtly different from the concept of a Policy in <a href="https:/
 <span class="normal">6</span>
 <span class="normal">7</span>
 <span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>PATCH /api/v1/policy/{policy_key}/rule/{rule_key}/target
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH /api/v1/policy/{policy_key}/rule/{rule_key}/target
 
 [
   {
@@ -1247,8 +1244,7 @@ This policy is subtly different from the concept of a Policy in <a href="https:/
     &quot;data_category&quot;: &quot;user.provided.identifiable.contact.email&quot;,
   }
 ]
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h3 id="rule-attributes">Rule Attributes</h3>
 <ul>
 <li><code>Rule.action_type</code>: Which action is this <code>Rule</code> handling?</li>
@@ -1260,7 +1256,7 @@ This policy is subtly different from the concept of a Policy in <a href="https:/
 <h2 id="add-an-erasure-rule-to-your-policy">Add an Erasure Rule to your Policy</h2>
 <p>The simple access policy we've created above, will simply pull all data of category <code>user.provided.identifiable.contact.email</code>, but in the event of an erasure request, we might also want to mask this information. </p>
 <p>PATCH /api/v1/policy/{policy_key}/rule
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1272,7 +1268,7 @@ This policy is subtly different from the concept of a Policy in <a href="https:/
 <span class="normal">10</span>
 <span class="normal">11</span>
 <span class="normal">12</span>
-<span class="normal">13</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">[</span><span class="w"></span>
+<span class="normal">13</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
 <span class="w">  </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Mask Provided Emails&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mask_provided_emails&quot;</span><span class="p">,</span><span class="w"></span>
@@ -1285,21 +1281,19 @@ This policy is subtly different from the concept of a Policy in <a href="https:/
 <span class="w">    </span><span class="p">},</span><span class="w"></span>
 <span class="w">  </span><span class="p">},</span><span class="w"></span>
 <span class="p">]</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 This will create a rule to hash a not-yet-specified value with a SHA-512 hash. We need to specify a target to hash, so we need to create a target for this rule:</p>
 <p>PATCH api/v1/policy/{policy_key}/rule/{rule_key}
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="w">  </span><span class="p">[</span><span class="w"></span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">  </span><span class="p">[</span><span class="w"></span>
 <span class="w">    </span><span class="p">{</span><span class="w"></span>
 <span class="w">      </span><span class="nt">&quot;data_category&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user.provided.identifiable.contact.email&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="p">},</span><span class="w"></span>
 <span class="w">  </span><span class="p">]</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>This policy, <code>user_email_address_polcy</code>, will now do the following:
 - Return all data inside the Identity Graph with a data category that matches (or is nested under) <code>user.provided.identifiable.contact</code>.
 - Mask all data inside the Identity Graph with a data category that matches <code>user.provided.identifiable.contact.email</code> with a the <code>SHA-512</code> hashing function.</p>
