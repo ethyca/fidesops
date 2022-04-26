@@ -1,3 +1,5 @@
+import json
+
 import pytest
 import random
 
@@ -12,6 +14,7 @@ from tests.graph.graph_test_util import assert_rows_match, records_matching_fiel
 
 from fidesops.task.filter_results import filter_data_categories
 from fidesops.task.graph_task import get_cached_data_for_erasures
+from fidesops.util.saas_util import format_body
 
 
 @pytest.mark.integration_saas
@@ -194,19 +197,24 @@ def test_saas_erasure_request_task(
 
     connector = SaaSConnector(connection_config_hubspot)
 
+    body = json.dumps({
+        "filterGroups": [{
+            "filters": [{
+                "value": hubspot_erasure_identity_email,
+                "propertyName": "email",
+                "operator": "EQ"
+            }]
+        }]
+    })
+
+    updated_headers, formatted_body = format_body({}, body)
+
     # Verify the user has been assigned to None
     contact_request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,
         path="/crm/v3/objects/contacts/search",
-        body={
-            "filterGroups": [{
-                "filters": [{
-                    "value": hubspot_erasure_identity_email,
-                    "propertyName": "email",
-                    "operator": "EQ"
-                }]
-            }]
-        },
+        headers=updated_headers,
+        body=formatted_body,
     )
     contact_response = connector.create_client().send(contact_request)
     contact_body = contact_response.json()

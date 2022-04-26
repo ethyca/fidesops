@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
 from fidesops.service.connectors import SaaSConnector
 from fidesops.util import cryptographic_util
+from fidesops.util.saas_util import format_body
 
 saas_config = load_toml("saas_config.toml")
 
@@ -109,20 +110,25 @@ def hubspot_erasure_data(connection_config_hubspot, hubspot_erasure_identity_ema
 
     connector = SaaSConnector(connection_config_hubspot)
 
+    body = json.dumps({
+        "properties": {
+            "company": "test company",
+            "email": hubspot_erasure_identity_email,
+            "firstname": HUBSPOT_FIRSTNAME,
+            "lastname": "SomeoneLastname",
+            "phone": "(123) 123-1234",
+            "website": "someone.net"
+        }
+    })
+
+    updated_headers, formatted_body = format_body({}, body)
+
     # create contact
     contacts_request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,
         path=f"/crm/v3/objects/contacts",
-        body=json.dumps({
-            "properties": {
-                "company": "test company",
-                "email": hubspot_erasure_identity_email,
-                "firstname": HUBSPOT_FIRSTNAME,
-                "lastname": "SomeoneLastname",
-                "phone": "(123) 123-1234",
-                "website": "someone.net"
-            }
-        }),
+        headers=updated_headers,
+        body=formatted_body,
     )
     contacts_response = connector.create_client().send(contacts_request)
     contacts_body = contacts_response.json()
@@ -158,18 +164,23 @@ def _contact_exists(hubspot_erasure_identity_email: str, connector: SaaSConnecto
     """
     Confirm whether contact exists by calling search api and comparing firstname str.
    """
+
+    body = json.dumps({
+        "filterGroups": [{
+            "filters": [{
+                "value": hubspot_erasure_identity_email,
+                "propertyName": "email",
+                "operator": "EQ"
+            }]
+        }]
+    })
+
+    updated_headers, formatted_body = format_body({}, body)
     contact_request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,
         path="/crm/v3/objects/contacts/search",
-        body=json.dumps({
-            "filterGroups": [{
-                "filters": [{
-                    "value": hubspot_erasure_identity_email,
-                    "propertyName": "email",
-                    "operator": "EQ"
-                }]
-            }]
-        }),
+        headers=updated_headers,
+        body=formatted_body,
     )
     contact_response = connector.create_client().send(contact_request)
     contact_body = contact_response.json()

@@ -90,7 +90,7 @@ class AuthenticatedClient:
         Optionally ignores non-200 responses if ignore_errors is set to True
         """
         try:
-            prepared_request = self.get_authenticated_request(request_params)
+            prepared_request: PreparedRequest = self.get_authenticated_request(request_params)
             response = self.session.send(prepared_request)
         except Exception:
             raise ConnectionException(f"Operational Error connecting to '{self.key}'.")
