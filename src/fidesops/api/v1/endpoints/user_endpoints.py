@@ -69,7 +69,9 @@ def get_users(
 ) -> AbstractPage[FidesopsUser]:
     """Returns a paginated list of all users"""
     logger.info(f"Returned a paginated list of all users.")
-    return paginate(FidesopsUser.query(db), params=params)
+    return paginate(
+        FidesopsUser.query(db).order_by(FidesopsUser.created_at.desc()), params=params
+    )
 
 
 @router.get(
