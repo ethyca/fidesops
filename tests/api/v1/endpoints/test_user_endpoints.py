@@ -14,6 +14,7 @@ from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
 )
 from fidesops.models.fidesops_user import FidesopsUser
+from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.util.oauth_util import generate_jwe, extract_payload
 from fidesops.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
@@ -120,10 +121,12 @@ class TestCreateUser:
         body = {"username": "test_user", "password": "TestP@ssword9"}
 
         response = api_client.post(url, headers=auth_header, json=body)
+
         user = FidesopsUser.get_by(db, field="username", value=body["username"])
         response_body = json.loads(response.text)
         assert response_body == {"id": user.id}
         assert 201 == response.status_code
+        assert user.permissions is not None
 
         user.delete(db)
 
@@ -164,6 +167,15 @@ class TestDeleteUser:
             },
         )
         saved_user_id = user.id
+
+        FidesopsUserPermissions.create(
+            db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+        )
+
+        assert user.permissions is not None
+        saved_permissions_id = user.permissions.id
+
+
         client, _ = ClientDetail.create_client_and_secret(
             db, [USER_DELETE], user_id=user.id
         )
@@ -191,6 +203,9 @@ class TestDeleteUser:
         client_search = ClientDetail.get_by(db, field="id", value=saved_client_id)
         assert client_search is None
 
+        permissions_search = FidesopsUserPermissions.get_by(db, field="id", value=saved_permissions_id)
+        assert permissions_search is None
+
     def test_delete_user_as_root(self, api_client, db, generate_auth_header, user):
         other_user = FidesopsUser.create(
             db=db,
@@ -199,11 +214,17 @@ class TestDeleteUser:
                 "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
             },
         )
+
+        FidesopsUserPermissions.create(
+            db=db, data={"user_id": other_user.id, "scopes": [PRIVACY_REQUEST_READ]}
+        )
+
         user_client, _ = ClientDetail.create_client_and_secret(
             db, [USER_DELETE], user_id=other_user.id
         )
         client_id = user_client.id
         saved_user_id = other_user.id
+        saved_permission_id = other_user.permissions.id
 
         # Temporarily set the user's client to be the Admin UI Root client
         client = user.client
@@ -227,6 +248,13 @@ class TestDeleteUser:
 
         user_search = FidesopsUser.get_by(db, field="id", value=saved_user_id)
         assert user_search is None
+
+        # Deleted user's client is also deleted
+        client_search = ClientDetail.get_by(db, field="id", value=client_id)
+        assert client_search is None
+
+        permissions_search = FidesopsUserPermissions.get_by(db, field="id", value=saved_permission_id)
+        assert permissions_search is None
 
         # Deleted user's client is also deleted
         client_search = ClientDetail.get_by(db, field="id", value=client_id)
@@ -259,7 +287,7 @@ class TestUserLogin:
         body = {"username": user.username, "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"}
 
         assert user.client is None  # client does not exist
-
+        assert user.permissions is not None
         response = api_client.post(url, headers={}, json=body)
         assert response.status_code == 200
 
@@ -271,7 +299,7 @@ class TestUserLogin:
         token_data = json.loads(extract_payload(token))
 
         assert token_data["client-id"] == user.client.id
-        assert token_data["scopes"] == SCOPE_REGISTRY
+        assert token_data["scopes"] == [PRIVACY_REQUEST_READ]
 
         user.client.delete(db)
 
@@ -322,6 +350,10 @@ class TestUserLogout:
         # Assert user is not deleted
         user_search = FidesopsUser.get_by(db, field="id", value=user_id)
         assert user_search is not None
+
+        # Assert user permissions are not deleted
+        permission_search = FidesopsUserPermissions.get_by(db, field="user_id", value=user_id)
+        assert permission_search is not None
 
     def test_logout(self, db, url, api_client, generate_auth_header, oauth_client):
         oauth_client_id = oauth_client.id

@@ -14,4 +14,7 @@ class FidesopsUserPermissions(Base):
     scopes = Column(
         ARRAY(String), nullable=False, default=f"{{{PRIVACY_REQUEST_READ}}}"
     )
-    user = relationship(FidesopsUser, backref=backref("permissions", uselist=False))
+    user = relationship(
+        FidesopsUser,
+        backref=backref("permissions", cascade="all,delete", uselist=False),
+    )
