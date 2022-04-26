@@ -1,3 +1,4 @@
+import json
 import time
 
 from fidesops.core.config import load_toml
@@ -112,7 +113,7 @@ def hubspot_erasure_data(connection_config_hubspot, hubspot_erasure_identity_ema
     contacts_request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,
         path=f"/crm/v3/objects/contacts",
-        body={
+        body=json.dumps({
             "properties": {
                 "company": "test company",
                 "email": hubspot_erasure_identity_email,
@@ -121,7 +122,7 @@ def hubspot_erasure_data(connection_config_hubspot, hubspot_erasure_identity_ema
                 "phone": "(123) 123-1234",
                 "website": "someone.net"
             }
-        },
+        }),
     )
     contacts_response = connector.create_client().send(contacts_request)
     contacts_body = contacts_response.json()
@@ -160,7 +161,7 @@ def _contact_exists(hubspot_erasure_identity_email: str, connector: SaaSConnecto
     contact_request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,
         path="/crm/v3/objects/contacts/search",
-        body={
+        body=json.dumps({
             "filterGroups": [{
                 "filters": [{
                     "value": hubspot_erasure_identity_email,
@@ -168,7 +169,7 @@ def _contact_exists(hubspot_erasure_identity_email: str, connector: SaaSConnecto
                     "operator": "EQ"
                 }]
             }]
-        },
+        }),
     )
     contact_response = connector.create_client().send(contact_request)
     contact_body = contact_response.json()
