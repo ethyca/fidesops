@@ -130,8 +130,8 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
 
 
 def format_body(
-        headers: Dict[str, Any],
-        body: Optional[str],
+    headers: Dict[str, Any],
+    body: Optional[str],
 ) -> Tuple[Dict[str, Any], Optional[str]]:
     """
     Builds the appropriately formatted body based on the content type,
