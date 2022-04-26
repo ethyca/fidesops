@@ -1,10 +1,10 @@
 import json
 import logging
 
-from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from collections import defaultdict
 from functools import reduce
 from typing import Any, Dict, List, Optional, Set, Tuple
+from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.config import Collection, Dataset, Field, CollectionAddress
 
