@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import type { NextPage } from 'next';
 import NextLink from 'next/link';
@@ -6,7 +6,6 @@ import { useFormik } from 'formik';
 import {
   Button,
   chakra,
-  Checkbox,
   CheckboxGroup,
   FormControl,
   FormErrorMessage,
@@ -17,27 +16,40 @@ import {
   Text,
 } from '@fidesui/react';
 import config from './config/config.json';
-import { selectUserToken, useCreateUserMutation } from '../user/user.slice';
+import { selectUserToken, useEditUserMutation, useCreateUserMutation, useGetUserByIdQuery} from '../user/user.slice';
+import { useRouter } from 'next/router';
 
-const useUserForm = () => {
-  // const dispatch = useDispatch();
+const useUserForm = (existingId: string | null) => {
   const token = useSelector(selectUserToken);
-  const [isLoading, setIsLoading] = useState(false);
   const [createUser, createUserResult] = useCreateUserMutation();
+  const [editUser, editUserResult] = useEditUserMutation();
+  // const {getUser, getUserResult} = useGetUserByIdQuery(existingId || null);
+  const router = useRouter();
 
   // Initial values - GET individual user values if coming from the ID path
-  // useEffect(() => {
-  //   // Get user values
-  // }, []);
+  useEffect(() => {
+    console.log("initial")
+    // if(existingId) {
+      // getUser(existingId)
+    // }
+  }, []);
+
+  const getUserResult = {
+    // username: "test",
+    // name: "test name",
+    // password: "test pass",
+    username: null,
+    name: null,
+    password: null,
+  }
 
   const formik = useFormik({
     initialValues: {
-      username: '',
-      name: '',
-      password: '',
+      username: getUserResult?.username || '',
+      name: getUserResult?.name || '',
+      password: getUserResult?.password ? '********' : '',
     },
     onSubmit: async (values) => {
-      setIsLoading(true);
       const host =
         process.env.NODE_ENV === 'development'
           ? config.fidesops_host_development
@@ -51,9 +63,15 @@ const useUserForm = () => {
         }
       ;
 
-      createUser(body);
-      setIsLoading(false);
-      // reset form or redirect after creating/editing?
+      if(!getUserResult) {
+        createUser(body);
+      }
+      // else {
+      //   console.log("editing")
+      //   editUser({existingId, ...body})
+      // }
+      // redirect after creating/editing?
+      router.push('/user-management')
     },
     validate: (values) => {
       const errors: {
@@ -79,16 +97,19 @@ const useUserForm = () => {
   });
 
   // const { data, isLoading } = useGetUserQuery(userId);
-  // const { items } = data || { items: [] };
+  // const { user } = data || { user: {} };
+  const user = existingId ? getUserResult : null
+
+  console.log(user)
 
   return {
      ...formik, 
-    isLoading,
-    // items
+    // isLoading: createUserResult.isLoading,
+    user
   };
 };
 
-const UserForm: NextPage = () => {
+const UserForm: NextPage<{existingId: string}> = ({ existingId }) => {
   const {
     dirty,
     errors,
@@ -96,10 +117,13 @@ const UserForm: NextPage = () => {
     handleChange,
     handleSubmit,
     isValid,
-    isLoading,
+    // isLoading,
     touched,
     values,
-  } = useUserForm();
+    user,
+  } = useUserForm(existingId);
+
+  console.log(existingId)
 
   return (
     <div>
@@ -129,6 +153,8 @@ const UserForm: NextPage = () => {
                   onBlur={handleBlur}
                   value={values.username}
                   isInvalid={touched.username && Boolean(errors.username)}
+                  isReadOnly={existingId ? true : false}
+                  isDisabled={existingId ? true : false}
                 />
                 <FormErrorMessage>{errors.username}</FormErrorMessage>
             </FormControl>
@@ -174,20 +200,20 @@ const UserForm: NextPage = () => {
               <FormErrorMessage>{errors.password}</FormErrorMessage>
             </FormControl>
 
-            <Heading fontSize="xl" colorScheme="primary">
+            {/* <Heading fontSize="xl" colorScheme="primary">
               Preferences
             </Heading>
             <Text>Select privileges to assign to this user</Text>
             <CheckboxGroup colorScheme="secondary">
-              <Stack spacing={[1, 5]} direction={'column'}>
+              <Stack spacing={[1, 5]} direction={'column'}> */}
                 {/* {userPrivilegesArray.map((policy, idx) => (
                   <>
                     <Checkbox value={policy.privilege}>{policy.privilege}</Checkbox>
                     <div>{policy.description}</div>
                   </>
                 ))} */}
-              </Stack>
-            </CheckboxGroup>
+              {/* </Stack>
+            </CheckboxGroup> */}
           </Stack>
             
             <NextLink href="/user-management" passHref>
@@ -204,7 +230,7 @@ const UserForm: NextPage = () => {
               _hover={{ bg: 'primary.400' }}
               _active={{ bg: 'primary.500' }}
               colorScheme="primary"
-              disabled={!(isValid && dirty)}
+              disabled={!existingId && !(isValid && dirty)}
               size="sm"
             >
               Save

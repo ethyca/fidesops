@@ -94,7 +94,7 @@ export const userApi = createApi({
         }
       },
     }),
-    deleteUser: build.mutation<{ success: boolean; id: number }, number>({
+    deleteUser: build.mutation<{ success: boolean; id: string }, string>({
       query: (id) => ({
         url: `user/${id}`,
         method: 'DELETE',

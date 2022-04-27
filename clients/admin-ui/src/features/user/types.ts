@@ -9,6 +9,7 @@ export interface UserResponse {
   id: string;
 }
 
+// userslistparams ?
 export interface UsersParams {
   page: number;
   size: number;

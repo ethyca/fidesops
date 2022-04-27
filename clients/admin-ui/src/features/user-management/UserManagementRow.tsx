@@ -14,6 +14,12 @@ import {
 
 import { MoreIcon } from '../common/Icon';
 import DeleteUserModal from './DeleteUserModal';
+import { User } from '../user/types';
+// import Router from 'next/router';
+
+interface UserManagementRowProps {
+  user: User;
+}
 
 const useUserManagementRow = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -27,12 +33,17 @@ const useUserManagementRow = () => {
   };
 };
 
-const UserManagementRow: React.FC = (user) => {
+const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   const {
     handleMenuOpen,
     handleMenuClose,
     menuOpen,
   } = useUserManagementRow();
+
+  // const handleEditUser = () => {
+  //   Router.push(/user-management/profile/${user.id})
+  // }
+
   const showMenu = menuOpen;
 
   return (
@@ -61,7 +72,6 @@ const UserManagementRow: React.FC = (user) => {
                 <MenuItem
                   _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
                   // onClick={handleEditUser}
-                  // redirects to specific profile/[id] page in edit view
                 >
                   <Text fontSize="sm">Edit</Text>
                 </MenuItem>

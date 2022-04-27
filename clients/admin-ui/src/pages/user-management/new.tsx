@@ -8,6 +8,10 @@ import NavBar from '../../features/common/NavBar';
 // import UserManagementTableActions from '../../features/user-management/UserManagementTableActions';
 import UserForm from '../../features/user-management/UserForm';
 
+import { assignToken } from '../../features/user/user.slice';
+import { getSession } from 'next-auth/react';
+import { wrapper } from '../../app/store';
+
 const CreateNewUser: NextPage<{ session: { username: string } }> = ({ session }) => (
   <div>
     <NavBar />
@@ -32,3 +36,20 @@ const CreateNewUser: NextPage<{ session: { username: string } }> = ({ session })
 );
 
 export default CreateNewUser;
+
+export const getServerSideProps = wrapper.getServerSideProps(
+  (store) => async (context) => {
+    const session = await getSession(context);
+    if (session && typeof session.accessToken !== 'undefined') {
+      await store.dispatch(assignToken(session.accessToken));
+      return { props: { session } };
+    }
+    
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+);

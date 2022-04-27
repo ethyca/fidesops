@@ -15,10 +15,16 @@ import {
     useDisclosure,
   } from '@fidesui/react';
 
-function DeleteUserModal(user) {
-    const { isOpen, onOpen, onClose } = useDisclosure()
-    // const deleteUser(id) { 
-    //   // call delete user from API and delete by id here
+  import { User } from '../user/types';
+  import { useDeleteUserMutation } from '../user/user.slice';
+
+function DeleteUserModal(user: User) {
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    const [deleteUser, deleteUserResult] = useDeleteUserMutation();
+    // const deleteUser() { 
+      // if(user.id) {
+      //   deleteUser(user.id)
+      // }
     // }
   
     return (

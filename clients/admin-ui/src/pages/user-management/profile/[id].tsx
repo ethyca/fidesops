@@ -1,10 +1,8 @@
 import React from 'react';
 import type { NextPage } from 'next';
 import { Box, Breadcrumb, BreadcrumbItem, BreadcrumbLink, Heading } from '@fidesui/react';
-
 import NavBar from '../../../features/common/NavBar';
-
-// import UserForm from '../../features/user-management/UserForm';
+import UserForm from '../../../features/user-management/UserForm';
 
 const Profile: NextPage<{ session: { username: string } }> = ({ session }) => (
   <div>
@@ -23,10 +21,22 @@ const Profile: NextPage<{ session: { username: string } }> = ({ session }) => (
           </BreadcrumbItem>
         </Breadcrumb>
         </Heading>
-        Profile page to view and edit user info
+        <UserForm 
+        // existingId={id}
+        existingId={"1"}
+        />
       </Box>
     </main>
   </div>
 );
 
 export default Profile;
+
+// export async function getServerSideProps(context) {
+  // const { id } = context.query;
+  // const res = await fetch(`https://restcountries.eu/rest/v2/name/${id}`);
+    // fetch is getUserById call
+  // const user = await res.json();
+
+  // return { props: { user } };
+// }
