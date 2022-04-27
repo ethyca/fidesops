@@ -274,14 +274,14 @@ def get_request_status(
     params: Params = Depends(),
     id: Optional[str] = None,
     status: Optional[PrivacyRequestStatus] = None,
-    created_lt: Optional[Union[date, datetime]] = None,
-    created_gt: Optional[Union[date, datetime]] = None,
-    started_lt: Optional[Union[date, datetime]] = None,
-    started_gt: Optional[Union[date, datetime]] = None,
-    completed_lt: Optional[Union[date, datetime]] = None,
-    completed_gt: Optional[Union[date, datetime]] = None,
-    errored_lt: Optional[Union[date, datetime]] = None,
-    errored_gt: Optional[Union[date, datetime]] = None,
+    created_lt: Optional[datetime] = None,
+    created_gt: Optional[datetime] = None,
+    started_lt: Optional[datetime] = None,
+    started_gt: Optional[datetime] = None,
+    completed_lt: Optional[datetime] = None,
+    completed_gt: Optional[datetime] = None,
+    errored_lt: Optional[datetime] = None,
+    errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
@@ -305,7 +305,11 @@ def get_request_status(
         [errored_lt, errored_gt, "errorer"],
         [started_lt, started_gt, "started"],
     ]:
-        if all([end, start]):
+        if end is None or start is None:
+            continue
+        if not (isinstance(end, datetime) and isinstance(start, datetime)):
+            continue
+        else:
             if end < start:
                 # With date fields, if the start date is after the end date, return a 400
                 # because no records will lie within this range.
