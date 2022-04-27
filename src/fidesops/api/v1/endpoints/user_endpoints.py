@@ -5,6 +5,7 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_403_FORBIDDEN,
 )
+from datetime import datetime
 
 from fidesops.api import deps
 from fidesops.api.v1 import urn_registry as urls
@@ -26,6 +27,23 @@ from fidesops.api.v1.scope_registry import (
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
+
+
+def perform_login(db: Session, user: FidesopsUser) -> ClientDetail:
+    """Performs a login by updating the FidesopsUser instance and
+    creating and returning an associated ClientDetail."""
+
+    client: ClientDetail = user.client
+    if not client:
+        logger.info("Creating client for login")
+        client, _ = ClientDetail.create_client_and_secret(
+            db, user.permissions.scopes, user_id=user.id
+        )
+
+    user.last_login_at = datetime.utcnow()
+    user.save(db)
+
+    return client
 
 
 @router.post(
@@ -106,13 +124,7 @@ def user_login(
             status_code=HTTP_403_FORBIDDEN, detail="Incorrect password."
         )
 
-    client: ClientDetail = user.client
-    if not client:
-        logger.info("Creating client for login")
-        # TODO: Figure out what to do if there are no default user permissions in DB
-        client, _ = ClientDetail.create_client_and_secret(
-            db, user.permissions.scopes, user_id=user.id
-        )
+    client: ClientDetail = perform_login(db, user)
 
     logger.info("Creating login access token")
     access_code = client.create_access_code_jwe()
