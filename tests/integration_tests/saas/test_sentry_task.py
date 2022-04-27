@@ -15,7 +15,7 @@ from tests.graph.graph_test_util import assert_rows_match
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_sentry
-def test_sentry_saas_access_request_task(
+def test_sentry_access_request_task(
     db,
     policy,
     sentry_connection_config,
@@ -205,7 +205,8 @@ def test_sentry_saas_access_request_task(
     )
 
 
-def sentry_erasure_test_prep(sentry_secrets, sentry_connection_config, db):
+def sentry_erasure_test_prep(sentry_connection_config, db):
+    sentry_secrets = sentry_connection_config.secrets
     # Set the assignedTo field on a sentry issue to a given employee
     token = sentry_secrets.get("erasure_access_token")
     issue_url = sentry_secrets.get("issue_url")
@@ -234,12 +235,12 @@ def sentry_erasure_test_prep(sentry_secrets, sentry_connection_config, db):
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_sentry
-def test_sentry_saas_erasure_request_task(
-    db, policy, sentry_connection_config, sentry_dataset_config, sentry_secrets
+def test_sentry_erasure_request_task(
+    db, policy, sentry_connection_config, sentry_dataset_config
 ) -> None:
     """Full erasure request based on the Sentry SaaS config. Also verifies issue data in access request"""
     erasure_email, issue_url, headers = sentry_erasure_test_prep(
-        sentry_secrets, sentry_connection_config, db
+        sentry_connection_config, db
     )
 
     privacy_request = PrivacyRequest(
