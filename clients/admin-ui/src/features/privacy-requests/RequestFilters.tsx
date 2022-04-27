@@ -104,7 +104,7 @@ const RequestFilters: React.FC = () => {
   return (
     <Stack direction="row" spacing={4} mb={6}>
       <Select
-        placeholder="Status"
+        placeholder="Select status"
         size="sm"
         minWidth="144px"
         value={status || ''}
@@ -140,6 +140,7 @@ const RequestFilters: React.FC = () => {
           type="date"
           name="From"
           value={from}
+          max={to || undefined}
           onChange={handleFromChange}
           borderRadius="md"
         />
@@ -151,6 +152,7 @@ const RequestFilters: React.FC = () => {
           borderRadius="md"
           name="To"
           value={to}
+          min={from || undefined}
           onChange={handleToChange}
         />
       </InputGroup>
