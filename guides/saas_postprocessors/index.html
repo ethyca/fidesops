@@ -553,6 +553,19 @@
     Configuration
   </a>
   
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#for-updatedeletegdpr-endpoints" class="md-nav__link">
+    For Update/Delete/GDPR endpoints
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1119,6 +1132,19 @@
     Configuration
   </a>
   
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#for-updatedeletegdpr-endpoints" class="md-nav__link">
+    For Update/Delete/GDPR endpoints
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1241,6 +1267,36 @@
 <span class="w">                </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 <p>Note: Order matters as it's defined in the config. In the above example, unwrap will be run first, then the output of unwrap will be used in the filter strategy.</p>
+<h3 id="for-updatedeletegdpr-endpoints">For Update/Delete/GDPR endpoints</h3>
+<p>Post-processors can format the results of your access requests for use in subsequent update or delete statements.</p>
+<p>For example, if we need to return the following in an access request:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="nt">&quot;recipient&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test@email.com&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;subscriptions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;123&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;subscribed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TRUE&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}]}</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
+<p>And we needed to perform an update request for each item within <code>subscriptions</code>, where <code>subscribed</code> = <code>TRUE</code>, then we'd need the following config for our update request:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">update</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">data_path</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subscriptionStatuses</span><span class="w"></span>
+<span class="w">    </span><span class="nt">postprocessors</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">filter</span><span class="w"></span>
+<span class="w">        </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subscribed</span><span class="w"></span>
+<span class="w">          </span><span class="nt">subscribed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TRUE</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
 <h2 id="supported-strategies">Supported Strategies</h2>
 <ul>
 <li><code>unwrap</code>: Gets object at given data path.</li>
