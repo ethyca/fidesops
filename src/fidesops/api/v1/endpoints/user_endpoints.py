@@ -31,6 +31,7 @@ from fidesops.api.v1.scope_registry import (
     USER_READ,
     USER_DELETE,
     SCOPE_REGISTRY,
+    ALL_USERS_READ,
 )
 
 logger = logging.getLogger(__name__)
@@ -61,7 +62,7 @@ def create_user(
 
 @router.get(
     urls.USERS,
-    dependencies=[Security(verify_oauth_client, scopes=[USER_READ])],
+    dependencies=[Security(verify_oauth_client, scopes=[ALL_USERS_READ])],
     response_model=Page[UserResponse],
 )
 def get_users(
