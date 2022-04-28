@@ -144,18 +144,26 @@ class TestEditUserPermissions:
             db=db,
             data={"username": "user_1", "password": "test_password"},
         )
+
         permissions = FidesopsUserPermissions.create(db=db, data={
             "user_id": user.id,
             "scopes": [PRIVACY_REQUEST_READ]
         })
 
-        body = {"id": permissions.id, "scopes": [PRIVACY_REQUEST_READ, SAAS_CONFIG_READ]}
+        ClientDetail.create_client_and_secret(
+            db, [PRIVACY_REQUEST_READ], user_id=user.id
+        )
+
+        updated_scopes = [PRIVACY_REQUEST_READ, SAAS_CONFIG_READ]
+        body = {"id": permissions.id, "scopes": updated_scopes}
         response = api_client.put(f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body)
         response_body = json.loads(response.text)
+        client: ClientDetail = ClientDetail.get_by(db, field='user_id', value=user.id)
         assert HTTP_200_OK == response.status_code
         assert response_body['id'] == permissions.id
-        print(response_body, flush=True)
-        assert response_body['scopes'] == [PRIVACY_REQUEST_READ, SAAS_CONFIG_READ]
+        assert response_body['scopes'] == updated_scopes
+        assert client.scopes == updated_scopes
+
         user.delete(db)
 
 
