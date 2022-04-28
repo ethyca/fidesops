@@ -14,10 +14,11 @@ class UserPermissionsCreate(BaseSchema):
     @validator("scopes")
     def validate_scopes(cls, scopes: List[str]) -> List[str]:
         """Validates that all incoming scopes are valid"""
-        if not all([scope in SCOPE_REGISTRY for scope in scopes]):
+        diff = set(scopes).difference(set(SCOPE_REGISTRY))
+        if len(diff) > 0:
             raise HTTPException(
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Invalid Scope. Scopes must be one of {SCOPE_REGISTRY}.",
+                detail=f"Invalid Scope(s) {diff}. Scopes must be one of {SCOPE_REGISTRY}.",
             )
         return scopes
 
