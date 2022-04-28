@@ -17,7 +17,6 @@ from fidesops.api.v1.scope_registry import (
     USER_DELETE,
     SCOPE_REGISTRY,
     PRIVACY_REQUEST_READ,
-    ALL_USERS_READ
 )
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.util.oauth_util import generate_jwe, extract_payload
@@ -255,14 +254,14 @@ class TestGetUsers:
         assert resp.status_code == 401
 
     def test_get_users_wrong_scope(self, api_client: TestClient, generate_auth_header, url):
-        auth_header = generate_auth_header(scopes=[USER_READ])
+        auth_header = generate_auth_header(scopes=[USER_DELETE])
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 403
 
     def test_get_users_no_users(
         self, api_client: TestClient, generate_auth_header, url
     ) -> None:
-        auth_header = generate_auth_header(scopes=[ALL_USERS_READ])
+        auth_header = generate_auth_header(scopes=[USER_READ])
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 200
         response_body = json.loads(resp.text)
@@ -281,11 +280,11 @@ class TestGetUser:
     def url_no_id(self, oauth_client: ClientDetail) -> str:
         return V1_URL_PREFIX + USERS
 
-    def test_get_users_not_authenticated(self, api_client: TestClient, url: str) -> None:
+    def test_get_user_not_authenticated(self, api_client: TestClient, url: str) -> None:
         resp = api_client.get(url, headers={})
         assert resp.status_code == 401
 
-    def test_get_users_wrong_scope(self, api_client: TestClient, generate_auth_header, url: str):
+    def test_get_user_wrong_scope(self, api_client: TestClient, generate_auth_header, url: str):
         auth_header = generate_auth_header(scopes=[USER_DELETE])
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 403
