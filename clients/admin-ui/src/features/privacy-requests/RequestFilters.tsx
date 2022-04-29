@@ -38,21 +38,15 @@ const useRequestFilters = () => {
   const token = useSelector(selectUserToken);
   const dispatch = useDispatch();
   const toast = useToast();
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setRequestId(event.target.value));
-  };
-  const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) =>
     dispatch(setRequestStatus(event.target.value as PrivacyRequestStatus));
-  };
-  const handleFromChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFromChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setRequestFrom(event?.target.value));
-  };
-  const handleToChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleToChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setRequestTo(event?.target.value));
-  };
-  const handleClearAllFilters = () => {
-    dispatch(clearAllFilters());
-  };
+  const handleClearAllFilters = () => dispatch(clearAllFilters());
   const handleDownloadClick = async () => {
     let message;
     try {
@@ -104,7 +98,7 @@ const RequestFilters: React.FC = () => {
   return (
     <Stack direction="row" spacing={4} mb={6}>
       <Select
-        placeholder="Status"
+        placeholder="Select status"
         size="sm"
         minWidth="144px"
         value={status || ''}
@@ -140,6 +134,7 @@ const RequestFilters: React.FC = () => {
           type="date"
           name="From"
           value={from}
+          max={to || undefined}
           onChange={handleFromChange}
           borderRadius="md"
         />
@@ -151,6 +146,7 @@ const RequestFilters: React.FC = () => {
           borderRadius="md"
           name="To"
           value={to}
+          min={from || undefined}
           onChange={handleToChange}
         />
       </InputGroup>

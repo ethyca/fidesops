@@ -4,11 +4,16 @@ import json
 
 import pytest
 
-from fidesops.api.v1.urn_registry import V1_URL_PREFIX, USERS, LOGIN, LOGOUT
+from fastapi_pagination import Params
+from starlette.testclient import TestClient
+
+
+from fidesops.api.v1.urn_registry import V1_URL_PREFIX, USERS, LOGIN, LOGOUT, USER_DETAIL
 from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
 from fidesops.api.v1.scope_registry import (
     STORAGE_READ,
     USER_CREATE,
+    USER_READ,
     USER_DELETE,
     SCOPE_REGISTRY,
     PRIVACY_REQUEST_READ,
@@ -21,6 +26,7 @@ from fidesops.schemas.jwt import (
     JWE_ISSUED_AT,
 )
 
+page_size = Params().size
 
 class TestCreateUser:
     @pytest.fixture(scope="function")
@@ -238,6 +244,61 @@ class TestDeleteUser:
         admin_client_search.delete(db)
 
 
+class TestGetUsers:
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client: ClientDetail) -> str:
+        return V1_URL_PREFIX + USERS
+
+    def test_get_users_not_authenticated(self, api_client: TestClient, url: str)-> None:
+        resp = api_client.get(url, headers={})
+        assert resp.status_code == 401
+
+    def test_get_users_wrong_scope(self, api_client: TestClient, generate_auth_header, url):
+        auth_header = generate_auth_header(scopes=[USER_DELETE])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 403
+
+    def test_get_users_no_users(
+        self, api_client: TestClient, generate_auth_header, url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[USER_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        response_body = json.loads(resp.text)
+        assert len(response_body["items"]) == 0
+        assert response_body["total"] == 0
+        assert response_body["page"] == 1
+        assert response_body["size"] == page_size
+
+
+class TestGetUser:
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client: ClientDetail) -> str:
+        return V1_URL_PREFIX + USER_DETAIL
+
+    @pytest.fixture(scope="function")
+    def url_no_id(self, oauth_client: ClientDetail) -> str:
+        return V1_URL_PREFIX + USERS
+
+    def test_get_user_not_authenticated(self, api_client: TestClient, url: str) -> None:
+        resp = api_client.get(url, headers={})
+        assert resp.status_code == 401
+
+    def test_get_user_wrong_scope(self, api_client: TestClient, generate_auth_header, url: str):
+        auth_header = generate_auth_header(scopes=[USER_DELETE])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 403
+
+    def test_get_user_does_not_exist(
+        self, api_client: TestClient, generate_auth_header, url_no_id: str
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[USER_READ])
+        resp = api_client.get(
+            f"{url_no_id}/this_is_a_nonexistent_key",
+            headers=auth_header,
+        )
+        assert resp.status_code == 404
+
 class TestUserLogin:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail) -> str:
@@ -275,6 +336,15 @@ class TestUserLogin:
 
         user.client.delete(db)
 
+    def test_login_updates_last_login_date(self, db, url, user, api_client):
+        body = {"username": user.username, "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"}
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == 200
+
+        db.refresh(user)
+        assert user.last_login_at is not None
+
     def test_login_uses_existing_client(self, db, url, user, api_client):
         body = {"username": user.username, "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"}
 
@@ -305,10 +375,11 @@ class TestUserLogout:
     def test_user_not_deleted_on_logout(self, db, url, api_client, user):
         user_id = user.id
         client_id = user.client.id
+        scopes = user.client.scopes
 
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
-            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_PAYLOAD_SCOPES: scopes,
+            JWE_PAYLOAD_CLIENT_ID: client_id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
         auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
@@ -321,7 +392,23 @@ class TestUserLogout:
 
         # Assert user is not deleted
         user_search = FidesopsUser.get_by(db, field="id", value=user_id)
+        db.refresh(user_search)
         assert user_search is not None
+
+        # Assert user does not still have client reference
+        assert user_search.client is None
+
+        # Ensure that the client token is invalidated after logout
+        # Assert a request with the outdated client token gives a 401
+        payload = {
+            JWE_PAYLOAD_SCOPES: scopes,
+            JWE_PAYLOAD_CLIENT_ID: client_id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        response = api_client.post(url, headers=auth_header, json={})
+        assert 403 == response.status_code
+
 
     def test_logout(self, db, url, api_client, generate_auth_header, oauth_client):
         oauth_client_id = oauth_client.id
