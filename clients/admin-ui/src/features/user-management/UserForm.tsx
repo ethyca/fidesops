@@ -150,7 +150,7 @@ const UserForm: NextPage<{ existingId: string }> = ({ existingId }) => {
                 id="username"
                 name="username"
                 focusBorderColor="primary.500"
-                placeholder="Enter new user name"
+                placeholder="Enter new username"
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.username}

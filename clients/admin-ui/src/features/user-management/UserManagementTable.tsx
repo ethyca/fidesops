@@ -26,6 +26,7 @@ const useUsersTable = () => {
     ...filters,
     isLoading,
     users,
+    total,
     // handleNextPage,
     // handlePreviousPage,
   };
@@ -34,6 +35,7 @@ const useUsersTable = () => {
 const UserManagementTable: React.FC = () => {
   const {
     users,
+    total,
     // page, size, handleNextPage, handlePreviousPage
   } = useUsersTable();
   // const startingItem = (page - 1) * size + 1;
@@ -44,15 +46,13 @@ const UserManagementTable: React.FC = () => {
       <Table size="sm">
         <Thead>
           <Tr>
-            <Th pl={0}>Name</Th>
+            <Th pl={0}>Username</Th>
           </Tr>
         </Thead>
         <Tbody>
-          {/* Blocked until GET users is implemented */}
-          {/* {users.map((user) => (
+          {users?.map((user) => (
             <UserManagementRow user={user} key={user.id} />
-          ))} */}
-          <UserManagementRow />
+          ))}
         </Tbody>
       </Table>
     </>
