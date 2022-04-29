@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-} from '@fidesui/react';
+import { Table, Thead, Tbody, Tr, Th } from '@fidesui/react';
 
 import UserManagementRow from './UserManagementRow';
 
@@ -24,9 +18,10 @@ const useUsersTable = () => {
   //   dispatch(setPage(filters.page + 1));
   // };
 
+  console.log(useGetAllUsersQuery(filters));
   const { data, isLoading } = useGetAllUsersQuery(filters);
-  const { users } = data || { users: [] };
-  
+  const { items: users, total } = data || { users: [], total: 0 };
+
   return {
     ...filters,
     isLoading,
@@ -34,13 +29,13 @@ const useUsersTable = () => {
     // handleNextPage,
     // handlePreviousPage,
   };
-}
+};
 
 const UserManagementTable: React.FC = () => {
-  const { users, 
-    // page, size, handleNextPage, handlePreviousPage 
-  } =
-    useUsersTable();
+  const {
+    users,
+    // page, size, handleNextPage, handlePreviousPage
+  } = useUsersTable();
   // const startingItem = (page - 1) * size + 1;
   // const endingItem = Math.min(total, page * size);
 

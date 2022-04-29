@@ -16,7 +16,8 @@ export interface UsersParams {
 }
 
 export interface UsersResponse {
-  users: User[];
+  items: User[];
+  total: number;
 }
 
 export interface UserPrivileges {

@@ -52,7 +52,7 @@ export const userApi = createApi({
   endpoints: (build) => ({
     getAllUsers: build.query<UsersResponse, UsersParams>({
       query: (filters) => ({ 
-        url: `users`,
+        url: `user`,
         params: mapFiltersToSearchParams(filters),
       }),
       providesTags: ['User'],

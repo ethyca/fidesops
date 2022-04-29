@@ -11,12 +11,17 @@ import {
   FormErrorMessage,
   FormLabel,
   Heading,
-  Input, 
+  Input,
   Stack,
   Text,
 } from '@fidesui/react';
 import config from './config/config.json';
-import { selectUserToken, useEditUserMutation, useCreateUserMutation, useGetUserByIdQuery} from '../user/user.slice';
+import {
+  selectUserToken,
+  useEditUserMutation,
+  useCreateUserMutation,
+  useGetUserByIdQuery,
+} from '../user/user.slice';
 import { useRouter } from 'next/router';
 
 const useUserForm = (existingId: string | null) => {
@@ -28,9 +33,9 @@ const useUserForm = (existingId: string | null) => {
 
   // Initial values - GET individual user values if coming from the ID path
   useEffect(() => {
-    console.log("initial")
+    console.log('initial');
     // if(existingId) {
-      // getUser(existingId)
+    // getUser(existingId)
     // }
   }, []);
 
@@ -41,7 +46,7 @@ const useUserForm = (existingId: string | null) => {
     username: null,
     name: null,
     password: null,
-  }
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -55,15 +60,12 @@ const useUserForm = (existingId: string | null) => {
           ? config.fidesops_host_development
           : config.fidesops_host_production;
 
-      const body = 
-        {
-          username: values.username,
-          name: values.name,
-          password: values.password,
-        }
-      ;
-
-      if(!getUserResult) {
+      const body = {
+        username: values.username,
+        name: values.name,
+        password: values.password,
+      };
+      if (!existingId) {
         createUser(body);
       }
       // else {
@@ -71,7 +73,7 @@ const useUserForm = (existingId: string | null) => {
       //   editUser({existingId, ...body})
       // }
       // redirect after creating/editing?
-      router.push('/user-management')
+      router.push('/user-management');
     },
     validate: (values) => {
       const errors: {
@@ -98,18 +100,18 @@ const useUserForm = (existingId: string | null) => {
 
   // const { data, isLoading } = useGetUserQuery(userId);
   // const { user } = data || { user: {} };
-  const user = existingId ? getUserResult : null
+  const user = existingId ? getUserResult : null;
 
-  console.log(user)
+  console.log(user);
 
   return {
-     ...formik, 
+    ...formik,
     // isLoading: createUserResult.isLoading,
-    user
+    user,
   };
 };
 
-const UserForm: NextPage<{existingId: string}> = ({ existingId }) => {
+const UserForm: NextPage<{ existingId: string }> = ({ existingId }) => {
   const {
     dirty,
     errors,
@@ -123,7 +125,7 @@ const UserForm: NextPage<{existingId: string}> = ({ existingId }) => {
     user,
   } = useUserForm(existingId);
 
-  console.log(existingId)
+  console.log(existingId);
 
   return (
     <div>
@@ -144,19 +146,19 @@ const UserForm: NextPage<{existingId: string}> = ({ existingId }) => {
               <FormLabel htmlFor="username" fontWeight="medium">
                 Username
               </FormLabel>
-                <Input
-                  id="username"
-                  name="username"
-                  focusBorderColor="primary.500"
-                  placeholder="Enter new user name"
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.username}
-                  isInvalid={touched.username && Boolean(errors.username)}
-                  isReadOnly={existingId ? true : false}
-                  isDisabled={existingId ? true : false}
-                />
-                <FormErrorMessage>{errors.username}</FormErrorMessage>
+              <Input
+                id="username"
+                name="username"
+                focusBorderColor="primary.500"
+                placeholder="Enter new user name"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.username}
+                isInvalid={touched.username && Boolean(errors.username)}
+                isReadOnly={existingId ? true : false}
+                isDisabled={existingId ? true : false}
+              />
+              <FormErrorMessage>{errors.username}</FormErrorMessage>
             </FormControl>
 
             <FormControl
@@ -166,19 +168,19 @@ const UserForm: NextPage<{existingId: string}> = ({ existingId }) => {
               <FormLabel htmlFor="name" fontWeight="medium">
                 Name
               </FormLabel>
-                <Input
-                  id="name"
-                  name="name"
-                  focusBorderColor="primary.500"
-                  placeholder="Enter name of user"
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.name}
-                  isInvalid={touched.name && Boolean(errors.name)}
-                />
-                <FormErrorMessage>{errors.name}</FormErrorMessage>
+              <Input
+                id="name"
+                name="name"
+                focusBorderColor="primary.500"
+                placeholder="Enter name of user"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.name}
+                isInvalid={touched.name && Boolean(errors.name)}
+              />
+              <FormErrorMessage>{errors.name}</FormErrorMessage>
             </FormControl>
-            
+
             <FormControl
               id="password"
               isInvalid={touched.password && Boolean(errors.password)}
@@ -206,35 +208,32 @@ const UserForm: NextPage<{existingId: string}> = ({ existingId }) => {
             <Text>Select privileges to assign to this user</Text>
             <CheckboxGroup colorScheme="secondary">
               <Stack spacing={[1, 5]} direction={'column'}> */}
-                {/* {userPrivilegesArray.map((policy, idx) => (
+            {/* {userPrivilegesArray.map((policy, idx) => (
                   <>
                     <Checkbox value={policy.privilege}>{policy.privilege}</Checkbox>
                     <div>{policy.description}</div>
                   </>
                 ))} */}
-              {/* </Stack>
+            {/* </Stack>
             </CheckboxGroup> */}
           </Stack>
-            
-            <NextLink href="/user-management" passHref>
-              <Button
-                variant="outline"
-                size="sm"
-              >
-                Cancel
-              </Button>
-            </NextLink>
-            <Button
-              type="submit"
-              bg="primary.800"
-              _hover={{ bg: 'primary.400' }}
-              _active={{ bg: 'primary.500' }}
-              colorScheme="primary"
-              disabled={!existingId && !(isValid && dirty)}
-              size="sm"
-            >
-              Save
+
+          <NextLink href="/user-management" passHref>
+            <Button variant="outline" size="sm">
+              Cancel
             </Button>
+          </NextLink>
+          <Button
+            type="submit"
+            bg="primary.800"
+            _hover={{ bg: 'primary.400' }}
+            _active={{ bg: 'primary.500' }}
+            colorScheme="primary"
+            disabled={!existingId && !(isValid && dirty)}
+            size="sm"
+          >
+            Save
+          </Button>
         </chakra.form>
       </main>
     </div>
