@@ -1320,8 +1320,8 @@ updated with the same masked values across all sources.</p>
 <p>Other reasons to mask instead of delete include legal requirements that have you retain certain data for a certain length of time.</p>
 <h2 id="using-fidesops-as-a-masking-service">Using fidesops as a masking service</h2>
 <p>If you just want to use fidesops as a masking service, you can send a <code>PUT</code> request to the masking endpoint with the 
-value you'd like pseudonymized. This endpoint is also useful for getting a feel of how the different masking strategies work.</p>
-<p>Example: <code>PUT /masking/mask?value=test@example.com</code></p>
+value(s) you'd like pseudonymized. This endpoint is also useful for getting a feel of how the different masking strategies work.</p>
+<p>Example: <code>PUT /masking/mask</code></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1331,14 +1331,18 @@ value you'd like pseudonymized. This endpoint is also useful for getting a feel 
 <span class="normal"> 7</span>
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">     </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;strategy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;random_string_rewrite&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;configuration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;length&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;format_preservation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;suffix&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;@masked.com&quot;</span><span class="w"></span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">     </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;values&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;test@example.com&quot;</span><span class="p">],</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;masking_strategy&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;strategy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;random_string_rewrite&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;configuration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;length&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;format_preservation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                    </span><span class="nt">&quot;suffix&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;@masked.com&quot;</span><span class="w"></span>
+<span class="w">                </span><span class="p">}</span><span class="w"></span>
 <span class="w">            </span><span class="p">}</span><span class="w"></span>
-
 <span class="w">        </span><span class="p">}</span><span class="w"></span>
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
@@ -1347,8 +1351,8 @@ value you'd like pseudonymized. This endpoint is also useful for getting a feel 
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;plain&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test@example.com&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;masked_value&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;idkeaotbrub346ycbmpo@masked.com&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;plain&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;test@example.com&quot;</span><span class="p">],</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;masked_value&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;idkeaotbrub346ycbmpo@masked.com&quot;</span><span class="p">]</span><span class="w"></span>
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 <p>The email has been replaced with a random string of 20 characters, while still preserving that the value is an email.</p>
@@ -1452,7 +1456,7 @@ that captures that strategy for the Policy.</p>
 strategies available, along with their configuration options. </p>
 <h2 id="extensibility">Extensibility</h2>
 <p>In fidesops, masking strategies are all built on top of an abstract base class - <code>MaskingStrategy</code>. 
-MaskingStrategy has three methods - <code>mask</code>, <code>get_configuration_model</code> and <code>get_description</code>. For more detail on these 
+MaskingStrategy has five methods - <code>mask</code>, <code>secrets_required</code>,  <code>get_configuration_model</code>, <code>get_description</code>, and <code>data_type_supported</code>. For more detail on these 
 methods, visit the class in the fidesops repository. For now, we will focus on the implementation of
 <code>RandomStringRewriteMaskingStrategy</code> below:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -1497,7 +1501,13 @@ methods, visit the class in the fidesops repository. For now, we will focus on t
 <span class="normal">40</span>
 <span class="normal">41</span>
 <span class="normal">42</span>
-<span class="normal">43</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">string</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">string</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">secrets</span> <span class="kn">import</span> <span class="n">choice</span>
 
@@ -1517,17 +1527,23 @@ methods, visit the class in the fidesops repository. For now, we will focus on t
         <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">length</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">format_preservation</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">format_preservation</span>
 
-    <span class="k">def</span> <span class="nf">mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">privacy_request_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
         <span class="sd">&quot;&quot;&quot;Replaces the value with a random lowercase string of the configured length&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
-        <span class="n">masked</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">choice</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)]</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_preservation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">formatter</span> <span class="o">=</span> <span class="n">FormatPreservation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">format_preservation</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">formatter</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">masked</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">masked</span>
+        <span class="n">masked_values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)):</span>
+            <span class="n">masked</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">choice</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_preservation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">formatter</span> <span class="o">=</span> <span class="n">FormatPreservation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">format_preservation</span><span class="p">)</span>
+                <span class="n">masked</span> <span class="o">=</span> <span class="n">formatter</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">masked</span><span class="p">)</span>
+            <span class="n">masked_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">masked</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">masked_values</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_configuration_model</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">MaskingConfiguration</span><span class="p">:</span>
@@ -1541,8 +1557,7 @@ methods, visit the class in the fidesops repository. For now, we will focus on t
     <span class="k">def</span> <span class="nf">data_type_supported</span><span class="p">(</span><span class="n">data_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Not covered in this example&quot;&quot;&quot;</span>
 </code></pre></div></td></tr></table></div>
-<p>The <code>mask</code> method will be called with the value to be masked and the masked value will be the output. In this case,
-if a value is supplied, we want to replace it with a random mixture of ascii lowercase letters and digits of the 
+<p>The <code>mask</code> method will be called with the list of values to be masked and the masked values will be the output. In this case, we want to replace the supplied values with a random mixture of ascii lowercase letters and digits of the 
 specified length. If format preservation is specified, for example, we still want to know that an email was an email, 
 we might tack on an email-like suffix.</p>
 <p>Note the arguments to the <strong>init</strong> method - there is a field configuration of type <code>RandomStringMaskingConfiguration</code>. 

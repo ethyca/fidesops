@@ -863,24 +863,13 @@
           "Masking"
         ],
         "summary": "Mask Value",
-        "description": "Masks the value provided using the provided masking strategy",
+        "description": "Masks the value(s) provided using the provided masking strategy",
         "operationId": "mask_value_api_v1_masking_mask_put",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Value",
-              "type": "string"
-            },
-            "name": "value",
-            "in": "query"
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PolicyMaskingSpec"
+                "$ref": "#/components/schemas/MaskingAPIRequest"
               }
             }
           },
@@ -2344,16 +2333,8 @@
             "required": false,
             "schema": {
               "title": "Created Lt",
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "date"
-                },
-                {
-                  "type": "string",
-                  "format": "date-time"
-                }
-              ]
+              "type": "string",
+              "format": "date-time"
             },
             "name": "created_lt",
             "in": "query"
@@ -2362,16 +2343,8 @@
             "required": false,
             "schema": {
               "title": "Created Gt",
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "date"
-                },
-                {
-                  "type": "string",
-                  "format": "date-time"
-                }
-              ]
+              "type": "string",
+              "format": "date-time"
             },
             "name": "created_gt",
             "in": "query"
@@ -2380,16 +2353,8 @@
             "required": false,
             "schema": {
               "title": "Started Lt",
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "date"
-                },
-                {
-                  "type": "string",
-                  "format": "date-time"
-                }
-              ]
+              "type": "string",
+              "format": "date-time"
             },
             "name": "started_lt",
             "in": "query"
@@ -2398,16 +2363,8 @@
             "required": false,
             "schema": {
               "title": "Started Gt",
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "date"
-                },
-                {
-                  "type": "string",
-                  "format": "date-time"
-                }
-              ]
+              "type": "string",
+              "format": "date-time"
             },
             "name": "started_gt",
             "in": "query"
@@ -2416,16 +2373,8 @@
             "required": false,
             "schema": {
               "title": "Completed Lt",
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "date"
-                },
-                {
-                  "type": "string",
-                  "format": "date-time"
-                }
-              ]
+              "type": "string",
+              "format": "date-time"
             },
             "name": "completed_lt",
             "in": "query"
@@ -2434,16 +2383,8 @@
             "required": false,
             "schema": {
               "title": "Completed Gt",
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "date"
-                },
-                {
-                  "type": "string",
-                  "format": "date-time"
-                }
-              ]
+              "type": "string",
+              "format": "date-time"
             },
             "name": "completed_gt",
             "in": "query"
@@ -2452,16 +2393,8 @@
             "required": false,
             "schema": {
               "title": "Errored Lt",
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "date"
-                },
-                {
-                  "type": "string",
-                  "format": "date-time"
-                }
-              ]
+              "type": "string",
+              "format": "date-time"
             },
             "name": "errored_lt",
             "in": "query"
@@ -2470,16 +2403,8 @@
             "required": false,
             "schema": {
               "title": "Errored Gt",
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "date"
-                },
-                {
-                  "type": "string",
-                  "format": "date-time"
-                }
-              ]
+              "type": "string",
+              "format": "date-time"
             },
             "name": "errored_gt",
             "in": "query"
@@ -3460,6 +3385,77 @@
       }
     },
     "/api/v1/user": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get Users",
+        "description": "Returns a paginated list of all users",
+        "operationId": "get_users_api_v1_user_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "name": "username",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_UserResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:read"
+            ]
+          }
+        ]
+      },
       "post": {
         "tags": [
           "Users"
@@ -3509,6 +3505,54 @@
       }
     },
     "/api/v1/user/{user_id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get User",
+        "description": "Returns a User based on an Id",
+        "operationId": "get_user_api_v1_user__user_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:read"
+            ]
+          }
+        ]
+      },
       "delete": {
         "tags": [
           "Users"
@@ -4898,20 +4942,46 @@
         "additionalProperties": false,
         "description": "MariaDB Secrets Schema for API Docs"
       },
+      "MaskingAPIRequest": {
+        "title": "MaskingAPIRequest",
+        "required": [
+          "values",
+          "masking_strategy"
+        ],
+        "type": "object",
+        "properties": {
+          "values": {
+            "title": "Values",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "masking_strategy": {
+            "$ref": "#/components/schemas/PolicyMaskingSpec"
+          }
+        },
+        "description": "The API Request for masking operations"
+      },
       "MaskingAPIResponse": {
         "title": "MaskingAPIResponse",
         "required": [
-          "plain"
+          "plain",
+          "masked_values"
         ],
         "type": "object",
         "properties": {
           "plain": {
             "title": "Plain",
-            "type": "string"
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
-          "masked_value": {
-            "title": "Masked Value",
-            "type": "string"
+          "masked_values": {
+            "title": "Masked Values",
+            "type": "array",
+            "items": {}
           }
         },
         "description": "The API Response returned upon masking completion"
@@ -5257,6 +5327,40 @@
                   "$ref": "#/components/schemas/PrivacyRequestResponse"
                 }
               ]
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
+      "Page_UserResponse_": {
+        "title": "Page[UserResponse]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponse"
             }
           },
           "total": {
@@ -6437,6 +6541,25 @@
           }
         },
         "description": "Similar to UserCreate except we do not need the extra validation on username and password"
+      },
+      "UserResponse": {
+        "title": "UserResponse",
+        "required": [
+          "id",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "description": "Response after requesting a User"
       },
       "ValidateDatasetResponse": {
         "title": "ValidateDatasetResponse",
