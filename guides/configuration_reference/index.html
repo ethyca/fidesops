@@ -1204,7 +1204,7 @@
 <h2 id="how-to-configure-the-fidesops-application">How to configure the Fidesops application</h2>
 <p>The Fidesops application configuration variables are provided in the <code>fidesops.toml</code> file in <code>.toml</code> format. Fidesops will take the first config file it finds from the following locations:</p>
 <ul>
-<li>The location according to the <code>FIDESOPS_CONFIG_PATH</code> environment variable</li>
+<li>The location according to the <code>FIDESOPS__CONFIG_PATH</code> environment variable</li>
 <li>The current working directory (<code>./fidesops.toml</code>)</li>
 <li>The parent of the current working directory (<code>../fidesops.toml</code>)</li>
 <li>The user's home directory (<code>~/fidesops.toml</code>)</li>
@@ -1487,17 +1487,22 @@ MASKING_STRICT=True
 </thead>
 <tbody>
 <tr>
-<td><code>LOG_PII</code></td>
+<td><code>FIDESOPS__LOG_PII</code></td>
 <td>False</td>
 <td>If this is set to "True", pii values will display unmasked in log output. This variable should always be set to "False" in production systems.</td>
 </tr>
 <tr>
-<td><code>DEV_MODE</code></td>
+<td><code>FIDESOPS__HOT_RELOAD</code></td>
 <td>False</td>
-<td>If "True", the fidesops server will run with hot-reloading of files. This variable should always be set to "False" in production systems.</td>
+<td>If "True", the fidesops server will reload code changes without you needing to restart the server. This variable should always be set to "False" in production systems.</td>
 </tr>
 <tr>
-<td><code>FIDESOPS_CONFIG_PATH</code></td>
+<td><code>FIDESOPS__DEV_MODE</code></td>
+<td>False</td>
+<td>If "True", the fidesops server will log error tracebacks, and log details of third party requests. This variable should always be set to "False" in production systems.</td>
+</tr>
+<tr>
+<td><code>FIDESOPS__CONFIG_PATH</code></td>
 <td>None</td>
 <td>If this variable is set to a path, that path will be used to load .toml files first. That is, any .toml files on this path will override any installed .toml files.</td>
 </tr>
