@@ -42,3 +42,8 @@ namespace_id = ""
 access_secret = ""
 user_token = ""
 identity_email = ""
+
+[sendgrid]
+host = ""
+api_key = ""
+identity_email = ""

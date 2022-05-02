@@ -44,6 +44,7 @@ from .fixtures.saas.sentry_fixtures import *
 from .fixtures.saas.stripe_fixtures import *
 from .fixtures.saas.hubspot_fixtures import *
 from .fixtures.saas.segment_fixtures import *
+from .fixtures.saas.sendgrid_fixtures import *
 
 logger = logging.getLogger(__name__)
 
