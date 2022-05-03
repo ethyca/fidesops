@@ -45,13 +45,12 @@ function DeleteUserModal(user: User) {
   const handleDeleteUser = () => {
     if (deletionValidation && user.id) {
       deleteUser(user.id);
+      onClose();
     } else {
       console.log('Cant delete');
       // throw error/alert ?
     }
   };
-
-  console.log(deletionValidation);
 
   return (
     <>

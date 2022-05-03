@@ -9,9 +9,7 @@ import {
   Stack,
 } from '@fidesui/react';
 
-import {
-  SearchLineIcon,
-} from '../common/Icon';
+import { SearchLineIcon } from '../common/Icon';
 
 import { selectUserFilters, setUserId } from '../user/user.slice';
 
@@ -19,7 +17,7 @@ const useUserManagementTableActions = () => {
   const filters = useSelector(selectUserFilters);
   const dispatch = useDispatch();
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.value)
+    // console.log(event.target.value)
     dispatch(setUserId(event.target.value));
   };
 
@@ -27,12 +25,10 @@ const useUserManagementTableActions = () => {
     handleSearchChange,
     ...filters,
   };
-}
+};
 
 const UserManagementTableActions: React.FC = () => {
-  const {
-    handleSearchChange,
-  } = useUserManagementTableActions();
+  const { handleSearchChange } = useUserManagementTableActions();
 
   return (
     <Stack direction="row" spacing={4} mb={6}>

@@ -22,9 +22,10 @@ import {
   useCreateUserMutation,
   useGetUserByIdQuery,
 } from '../user/user.slice';
+
 import { useRouter } from 'next/router';
 
-const useUserForm = (existingId: string | null) => {
+const useUserForm = (existingId?: string | null) => {
   const token = useSelector(selectUserToken);
   const [createUser, createUserResult] = useCreateUserMutation();
   const [editUser, editUserResult] = useEditUserMutation();
@@ -67,13 +68,17 @@ const useUserForm = (existingId: string | null) => {
       };
       if (!existingId) {
         createUser(body);
+        router.replace('/user-management');
       }
       // else {
       //   console.log("editing")
       //   editUser({existingId, ...body})
       // }
-      // redirect after creating/editing?
-      router.push('/user-management');
+
+      // redirect after creating/editing
+
+      // useGetAllUsersQuery(filters);
+      // router.push('/user-management');
     },
     validate: (values) => {
       const errors: {
@@ -111,7 +116,7 @@ const useUserForm = (existingId: string | null) => {
   };
 };
 
-const UserForm: NextPage<{ existingId: string }> = ({ existingId }) => {
+const UserForm: NextPage<{ existingId?: string }> = ({ existingId }) => {
   const {
     dirty,
     errors,
@@ -125,7 +130,7 @@ const UserForm: NextPage<{ existingId: string }> = ({ existingId }) => {
     user,
   } = useUserForm(existingId);
 
-  console.log(existingId);
+  // console.log(existingId);
 
   return (
     <div>

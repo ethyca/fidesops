@@ -1,6 +1,12 @@
 import React from 'react';
 import type { NextPage } from 'next';
-import { Box, Breadcrumb, BreadcrumbItem, BreadcrumbLink, Heading } from '@fidesui/react';
+import {
+  Box,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  Heading,
+} from '@fidesui/react';
 
 import NavBar from '../../features/common/NavBar';
 
@@ -12,22 +18,26 @@ import { assignToken } from '../../features/user/user.slice';
 import { getSession } from 'next-auth/react';
 import { wrapper } from '../../app/store';
 
-const CreateNewUser: NextPage<{ session: { username: string } }> = ({ session }) => (
+const CreateNewUser: NextPage<{ session: { username: string } }> = ({
+  session,
+}) => (
   <div>
     <NavBar />
     <main>
       <Box px={9} py={10}>
-      <Heading mb={8} fontSize="2xl" fontWeight="semibold">
+        <Heading mb={8} fontSize="2xl" fontWeight="semibold">
           User Management
-          <Breadcrumb fontWeight='medium' fontSize='sm'>
-          <BreadcrumbItem>
-            <BreadcrumbLink href='/user-management'>User Management</BreadcrumbLink>
-          </BreadcrumbItem>
+          <Breadcrumb fontWeight="medium" fontSize="sm">
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/user-management">
+                User Management
+              </BreadcrumbLink>
+            </BreadcrumbItem>
 
-          <BreadcrumbItem>
-            <BreadcrumbLink href='#'>Add New User</BreadcrumbLink>
-          </BreadcrumbItem>
-        </Breadcrumb>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="#">Add New User</BreadcrumbLink>
+            </BreadcrumbItem>
+          </Breadcrumb>
         </Heading>
         <UserForm />
       </Box>
@@ -44,7 +54,7 @@ export const getServerSideProps = wrapper.getServerSideProps(
       await store.dispatch(assignToken(session.accessToken));
       return { props: { session } };
     }
-    
+
     return {
       redirect: {
         destination: '/login',

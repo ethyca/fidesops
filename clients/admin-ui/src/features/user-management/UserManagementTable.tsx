@@ -5,6 +5,11 @@ import { Table, Thead, Tbody, Tr, Th } from '@fidesui/react';
 import UserManagementRow from './UserManagementRow';
 
 import { selectUserFilters, useGetAllUsersQuery } from '../user/user.slice';
+import { User } from '../user/types';
+
+interface UsersTableProps {
+  users?: User[];
+}
 
 const useUsersTable = () => {
   const dispatch = useDispatch();
@@ -18,7 +23,6 @@ const useUsersTable = () => {
   //   dispatch(setPage(filters.page + 1));
   // };
 
-  console.log(useGetAllUsersQuery(filters));
   const { data, isLoading } = useGetAllUsersQuery(filters);
   const { items: users, total } = data || { users: [], total: 0 };
 
@@ -32,7 +36,7 @@ const useUsersTable = () => {
   };
 };
 
-const UserManagementTable: React.FC = () => {
+const UserManagementTable: React.FC<UsersTableProps> = () => {
   const {
     users,
     total,
@@ -57,6 +61,10 @@ const UserManagementTable: React.FC = () => {
       </Table>
     </>
   );
+};
+
+UserManagementTable.defaultProps = {
+  users: [],
 };
 
 export default UserManagementTable;
