@@ -145,6 +145,27 @@ def test_create_access_rule_with_no_storage_destination_is_invalid(
     assert exc.value.args[0] == "Access Rules must have a storage destination."
 
 
+def test_create_erasure_rule_invalid(
+        db: Session,
+        policy_drp_action: Policy,
+) -> None:
+    with pytest.raises(RuleValidationError) as exc:
+        rule = Rule.create(
+            db=db,
+            data={
+                "action_type": ActionType.erasure.value,
+                "client_id": policy_drp_action.client_id,
+                "name": "Invalid Erasure Rule due to Policy being associated with the access DRP Action",
+                "policy_id": policy_drp_action.id,
+                "masking_strategy": {
+                    "strategy": NULL_REWRITE,
+                    "configuration": {},
+                },
+            },
+        )
+    assert exc.value.args[0] == "Since the associated Policy has a DRP access action, this rule must have the matching erasure action_type."
+
+
 def test_consent_action_is_unsupported(
     db: Session,
     policy: Policy,

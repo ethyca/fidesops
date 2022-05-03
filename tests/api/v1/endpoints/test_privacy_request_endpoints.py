@@ -478,6 +478,7 @@ class TestGetPrivacyRequests:
                     "reviewed_by": None,
                     "reviewer": None,
                     "policy": {
+                        "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                     },
@@ -522,6 +523,7 @@ class TestGetPrivacyRequests:
                     "reviewed_by": None,
                     "reviewer": None,
                     "policy": {
+                        "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                     },
@@ -790,6 +792,7 @@ class TestGetPrivacyRequests:
                     "reviewed_by": None,
                     "reviewer": None,
                     "policy": {
+                        "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                     },

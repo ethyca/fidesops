@@ -42,11 +42,20 @@ PATCH /api/v1/policy
 [
   {
     "name": "User Email Address",
-    "key": "user_email_address_polcy"
+    "key": "user_email_address_polcy",
+    "drp_action": "access" // optional
   }
 ]
 ```
 This policy is subtly different from the concept of a Policy in [Fidesctl](https://github.com/ethyca/fides). A [Fidesctl policy](https://ethyca.github.io/fides/language/resources/policy/) dictates which data categories can be stored where. A Fidesops policy, on the other hand, dictates how to access, mask or erase data that matches specific data categories for privacy requests.
+
+### Policy Attributes
+- `Policy.name`: User-friendly name for your Policy.
+- `Policy.key`: Unique key by which to reference the Policy.
+- `Policy.drp_action` (optional): Which DRP action is this Policy handling? DRP action is only needed if you intend on using Fidesops as provider for the Data Rights Protocol (DRP). Read more about DRP [here](https://github.com/consumer-reports-digital-lab/data-rights-protocol).
+    - `access`: A data subject access request. Must be used with an `access` Rule.
+    - `deletion`: A data subject erasure request. Must be used with an `erasure` Rule.
+
 
 ## Add an Access Rule to your Policy
 The policy creation operation returns a Policy key, which we'll use to add a Rule:
