@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
   Button,
   FormControl,
@@ -19,16 +20,38 @@ import { User } from '../user/types';
 import { useDeleteUserMutation } from '../user/user.slice';
 
 function DeleteUserModal(user: User) {
+  const [usernameValue, setUsernameValue] = useState('');
+  const [confirmValue, setConfirmValue] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [deleteUser, deleteUserResult] = useDeleteUserMutation();
 
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.name === 'username') {
+      setUsernameValue(event.target.value);
+    } else {
+      setConfirmValue(event.target.value);
+    }
+  };
+
+  const deletionValidation =
+    user.id &&
+    confirmValue &&
+    usernameValue &&
+    user.username === usernameValue &&
+    user.username === confirmValue
+      ? true
+      : false;
+
   const handleDeleteUser = () => {
-    if (user.id) {
+    if (deletionValidation && user.id) {
       deleteUser(user.id);
     } else {
       console.log('Cant delete');
+      // throw error/alert ?
     }
   };
+
+  console.log(deletionValidation);
 
   return (
     <>
@@ -46,20 +69,31 @@ function DeleteUserModal(user: User) {
           <ModalBody pb={6}>
             <FormControl>
               <FormLabel>Username</FormLabel>
-              <Input placeholder="Enter username" />
+              <Input
+                isInvalid={!deletionValidation}
+                name="username"
+                onChange={handleChange}
+                placeholder="Enter username"
+                value={usernameValue}
+              />
             </FormControl>
             <FormControl>
               <FormLabel>Confirm Username</FormLabel>
-              <Input placeholder="Confirm username" />
+              <Input
+                isInvalid={!deletionValidation}
+                name="confirmUsername"
+                onChange={handleChange}
+                placeholder="Confirm username"
+                value={confirmValue}
+              />
             </FormControl>
           </ModalBody>
 
           <ModalFooter>
             <Button onClick={onClose}>Cancel</Button>
-            {/* Disable delete user button when either field is blank or the fields don't match ? */}
             <Button
+              disabled={!deletionValidation}
               onClick={handleDeleteUser}
-              // colorScheme='blue'
               mr={3}
             >
               Delete User
