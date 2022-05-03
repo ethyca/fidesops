@@ -4,7 +4,7 @@ import { HYDRATE } from 'next-redux-wrapper';
 import type { AppState } from '../../app/store';
 
 import {
-  UsersParams,
+  UsersListParams,
   UserResponse,
   UsersResponse,
   User,
@@ -14,6 +14,7 @@ export interface State {
   id: string;
   page: number;
   size: number;
+  user: User;
   token: string | null;
 }
 
@@ -21,6 +22,7 @@ const initialState: State = {
   id: '',
   page: 1,
   size: 25,
+  user: {},
   token: null,
 };
 
@@ -28,9 +30,11 @@ const initialState: State = {
 export const mapFiltersToSearchParams = ({
   page,
   size,
-}: Partial<UsersParams>) => ({
+  user,
+}: Partial<UsersListParams>) => ({
   ...(page ? { page: `${page}` } : {}),
   ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
+  ...(user ? { username: user.username } : {}),
 });
 
 
@@ -50,12 +54,12 @@ export const userApi = createApi({
   }),
   tagTypes: ['User'],
   endpoints: (build) => ({
-    getAllUsers: build.query<UsersResponse, UsersParams>({
+    getAllUsers: build.query<UsersResponse, UsersListParams>({
       query: (filters) => ({ 
         url: `user`,
         params: mapFiltersToSearchParams(filters),
       }),
-      providesTags: ['User'],
+      providesTags: () => ['User'],
     }),
     getUserById: build.query<UserResponse, User>({
       query: (id) => ({ url: `user/${id}` }),
@@ -121,10 +125,10 @@ export const userSlice = createSlice({
       ...state,
       token: action.payload,
     }),
-    setUserId: (state, action: PayloadAction<string>) => ({
+    setUser: (state, action: PayloadAction<User>) => ({
       ...state,
       page: initialState.page,
-      id: action.payload,
+      user: action.payload,
     }),
     setPage: (state, action: PayloadAction<number>) => ({
       ...state,
@@ -144,15 +148,16 @@ export const userSlice = createSlice({
   },
 });
 
-export const { assignToken, setUserId, setPage } = userSlice.actions;
+export const { assignToken, setUser, setPage } = userSlice.actions;
 
 export const selectUserToken = (state: AppState) => state.user.token;
 
 export const selectUserFilters = (
   state: AppState
-): UsersParams => ({
-  page: state.subjectRequests.page,
-  size: state.subjectRequests.size,
+): UsersListParams => ({
+  page: state.user.page,
+  size: state.user.size,
+  user: state.user.user,
 });
 
 export const { reducer } = userSlice;

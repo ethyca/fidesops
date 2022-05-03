@@ -107,8 +107,6 @@ const useUserForm = (existingId?: string | null) => {
   // const { user } = data || { user: {} };
   const user = existingId ? getUserResult : null;
 
-  console.log(user);
-
   return {
     ...formik,
     // isLoading: createUserResult.isLoading,

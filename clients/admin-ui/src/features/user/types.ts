@@ -9,10 +9,10 @@ export interface UserResponse {
   id: string;
 }
 
-// userslistparams ?
-export interface UsersParams {
+export interface UsersListParams {
   page: number;
   size: number;
+  user: User;
 }
 
 export interface UsersResponse {
