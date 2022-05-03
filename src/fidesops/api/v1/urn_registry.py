@@ -78,7 +78,7 @@ USERS = "/user"
 USER_DETAIL = "/user/{user_id}"
 
 # User Permission URLs
-USER_PERMISSIONS = f"{USER_DETAIL}/permission"
+USER_PERMISSIONS = "/user/{user_id}/permission"
 
 # Login URLs
 LOGIN = "/login"
