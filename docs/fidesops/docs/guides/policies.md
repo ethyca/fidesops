@@ -53,8 +53,8 @@ This policy is subtly different from the concept of a Policy in [Fidesctl](https
 - `Policy.name`: User-friendly name for your Policy.
 - `Policy.key`: Unique key by which to reference the Policy.
 - `Policy.drp_action` (optional): Which DRP action is this Policy handling? DRP action is only needed if you intend on using Fidesops as provider for the Data Rights Protocol (DRP). Read more about DRP [here](https://github.com/consumer-reports-digital-lab/data-rights-protocol).
-    - `access`: A data subject access request. Must be used with an `access` Rule.
-    - `deletion`: A data subject erasure request. Must be used with an `erasure` Rule.
+    - `access`: A data subject access request. Should be used with an `access` Rule.
+    - `deletion`: A data subject erasure request. Should be used with an `erasure` Rule.
 
 
 ## Add an Access Rule to your Policy

@@ -1521,6 +1521,7 @@ class TestResumePrivacyRequest:
             "reviewed_by": None,
             "reviewer": None,
             "policy": {
+                "drp_action": None,
                 "key": privacy_request.policy.key,
                 "name": privacy_request.policy.name,
             },

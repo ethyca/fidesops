@@ -1,19 +1,19 @@
-"""adds drp_policy column to policy
+"""adds DRP action to policy
 
-Revision ID: 0e0b346819d7
-Revises: 530fb8533ca4
-Create Date: 2022-04-28 20:36:01.314299
+Revision ID: 5078badb90b9
+Revises: 90070db16d05
+Create Date: 2022-05-04 17:22:46.500067
 
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
+
 
 # revision identifiers, used by Alembic.
+from sqlalchemy.dialects import postgresql
 
-
-revision = "0e0b346819d7"
-down_revision = "530fb8533ca4"
+revision = "5078badb90b9"
+down_revision = "90070db16d05"
 branch_labels = None
 depends_on = None
 

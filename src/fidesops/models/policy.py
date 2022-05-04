@@ -110,13 +110,10 @@ def _validate_rule(
     action_type: Optional[str],
     storage_destination_id: Optional[str],
     masking_strategy: Optional[Dict[str, Union[str, Dict[str, str]]]],
-    drp_action: Optional[DrpAction],
 ) -> None:
     """Check that the rule's action_type and storage_destination are valid."""
     if not action_type:
         raise common_exceptions.RuleValidationError("action_type is required.")
-    if drp_action:
-        _validate_rule_with_drp_action(action_type, drp_action)
     if action_type == ActionType.erasure.value:
         if storage_destination_id is not None:
             raise common_exceptions.RuleValidationError(
@@ -134,18 +131,6 @@ def _validate_rule(
     if action_type in [ActionType.consent.value, ActionType.update.value]:
         raise common_exceptions.RuleValidationError(
             f"{action_type} Rules are not supported at this time."
-        )
-
-
-def _validate_rule_with_drp_action(rule_action: str, drp_action: DrpAction) -> None:
-    """Validate that rule action matches drp action"""
-    if drp_action == DrpAction.deletion and rule_action != ActionType.erasure.value:
-        raise common_exceptions.RuleValidationError(
-            "Since the associated Policy has a DRP deletion action, this rule must have the matching access action_type."
-        )
-    if drp_action == DrpAction.access and rule_action != ActionType.access.value:
-        raise common_exceptions.RuleValidationError(
-            "Since the associated Policy has a DRP access action, this rule must have the matching erasure action_type."
         )
 
 
@@ -184,7 +169,7 @@ class Policy(Base):
                     other_objs
                     and other_objs.filter_by(drp_action=data["drp_action"]).first()
                 ),
-                cls.name,
+                cls.__name__.lower(),
             )
             db_obj.update(db=db, data=data)
         else:
@@ -195,7 +180,7 @@ class Policy(Base):
                     bool(
                         db.query(cls).filter_by(drp_action=data["drp_action"]).first()
                     ),
-                    cls.name,
+                    cls.__name__.lower(),
                 )
             db_obj = cls.create(db=db, data=data)
 
@@ -339,7 +324,7 @@ class Rule(Base):
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
         """Validate this object's data before deferring to the superclass on update"""
-        associated_policy = db.query(Policy).filter_by(id=data["policy_id"]).first()
+        associated_policy: Optional[Policy] = db.query(Policy).filter_by(id=data["policy_id"]).first()
         _validate_rule(
             action_type=data.get("action_type"),
             storage_destination_id=data.get("storage_destination_id"),
@@ -381,11 +366,6 @@ class Rule(Base):
             if db_obj.policy_id != data["policy_id"]:
                 raise common_exceptions.RuleValidationError(
                     f"Rule with identifier {identifier} belongs to another policy."
-                )
-            associated_policy = db.query(Policy).filter_by(id=data["policy_id"]).first()
-            if associated_policy and associated_policy.drp_action:
-                _validate_rule_with_drp_action(
-                    data.get("action_type"), associated_policy.drp_action
                 )
             db_obj.update(db=db, data=data)
         else:

@@ -89,6 +89,12 @@ class Policy(BaseSchema):
     key: Optional[FidesOpsKey]
     drp_action: Optional[DrpAction]
 
+    class Config:
+        """Populate models with the raw value of enum fields, rather than the enum itself"""
+
+        use_enum_values = True
+        orm_mode = True
+
 
 class PolicyResponse(Policy):
     """A holistic view of a Policy record, including all foreign keys by default."""
