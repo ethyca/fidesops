@@ -112,10 +112,8 @@ class AuthenticatedClient:
         if not response.ok:
             if ignore_errors:
                 logger.info(
-                    f"Ignoring response with status code {response.status_code}."
+                    f"Ignoring errors on response with status code {response.status_code} as configured."
                 )
-                response = Response()
-                response._content = b"{}"  # pylint: disable=W0212
                 return response
 
             raise ClientUnsuccessfulException(status_code=response.status_code)
@@ -254,6 +252,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
         client: AuthenticatedClient = self.create_client_from_request(saas_request)
         response: Response = client.send(prepared_request, saas_request.ignore_errors)
+
+        # replace errored response with empty dictionary if we are ignoring errors
+        if saas_request.ignore_errors and not response.ok:
+            logger.info(
+                f"Ignoring errored response with status code {response.status_code}."
+            )
+            response = Response()
+            response._content = b"{}"  # pylint: disable=W0212
 
         # unwrap response using data_path
         try:
