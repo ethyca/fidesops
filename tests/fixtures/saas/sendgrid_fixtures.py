@@ -1,4 +1,3 @@
-from codecs import ignore_errors
 import json
 from fidesops.core.config import load_toml
 from fidesops.db import session
@@ -19,8 +18,7 @@ from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 from sqlalchemy.orm import Session
 import time
-import requests
-from starlette.status import HTTP_202_ACCEPTED, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_202_ACCEPTED
 
 saas_config = load_toml("saas_config.toml")
 SENDGRID_ERASURE_FIRSTNAME = "Erasurefirstname"
