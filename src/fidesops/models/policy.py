@@ -316,7 +316,7 @@ class Rule(Base):
         _validate_rule(
             action_type=self.action_type,
             storage_destination_id=self.storage_destination_id,
-            masking_strategy=self.masking_strategy
+            masking_strategy=self.masking_strategy,
         )
         return super().save(db=db)
 
@@ -329,7 +329,7 @@ class Rule(Base):
         _validate_rule(
             action_type=data.get("action_type"),
             storage_destination_id=data.get("storage_destination_id"),
-            masking_strategy=data.get("masking_strategy")
+            masking_strategy=data.get("masking_strategy"),
         )
         return super().create(db=db, data=data)
 
