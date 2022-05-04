@@ -74,15 +74,15 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-      - name: lists
-        fields:
-        - name: id
-          data_categories: [system.operations]
-          fidesops_meta:
-            primary_key: True
-        - name: name
-          data_categories: [user.provided.nonidentifiable] # not sure about this?
-          fidesops_meta:
-            data_type: string
+      # - name: lists
+      #   fields:
+      #   - name: id
+      #     data_categories: [system.operations]
+      #     fidesops_meta:
+      #       primary_key: True
+      #   - name: name
+      #     data_categories: [user.provided.nonidentifiable] # not sure about this?
+      #     fidesops_meta:
+      #       data_type: string
               
           

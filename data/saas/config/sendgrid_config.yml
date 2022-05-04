@@ -33,6 +33,23 @@ saas_config:
           - name: email
             identity: email
         data_path: result
+      update:
+        path: /v3/marketing/contacts
+        method: PUT
+        body: '{
+          "contacts" : [
+            {
+              "email": "<email>" ,
+              <masked_object_fields> 
+            }
+          ]  
+        }'
+        param_values:
+          - name: email
+            references:
+              - dataset: sendgrid_connector_example
+                field: contacts.email
+                direction: from
       delete:
         method: DELETE
         path: /v3/marketing/contacts
@@ -45,33 +62,33 @@ saas_config:
               - dataset: sendgrid_connector_example
                 field: contacts.id
                 direction: from
-  - name: lists
-    after: ['sendgrid_connector_example.contacts']
-    requests:
-      read:
-        method: GET
-        path: /v3/marketing/lists/<list_id>
-        param_values:
-          - name: list_id
-            references:
-              - dataset: sendgrid_connector_example
-                field: contacts.list_ids
-                direction: from
-      delete:
-        method: DELETE
-        path: /v3/marketing/lists/<list_id>/contacts
-        query_params:
-          - name: contact_ids
-            value: <contact_id>
-        param_values:
-          - name: list_id
-            references:
-              - dataset: sendgrid_connector_example
-                field: lists.id
-                direction: from
-          - name: contact_id
-            references:
-              - dataset: sendgrid_connector_example
-                field: contacts.id
-                direction: from
+  # - name: lists
+  #   after: ['sendgrid_connector_example.contacts']
+  #   requests:
+  #     read:
+  #       method: GET
+  #       path: /v3/marketing/lists/<list_id>
+  #       param_values:
+  #         - name: list_id
+  #           references:
+  #             - dataset: sendgrid_connector_example
+  #               field: contacts.list_ids
+  #               direction: from
+  #     delete:
+  #       method: DELETE
+  #       path: /v3/marketing/lists/<list_id>/contacts
+  #       query_params:
+  #         - name: contact_ids
+  #           value: <contact_id>
+  #       param_values:
+  #         - name: list_id
+  #           references:
+  #             - dataset: sendgrid_connector_example
+  #               field: lists.id
+  #               direction: from
+  #         - name: contact_id
+  #           references:
+  #             - dataset: sendgrid_connector_example
+  #               field: contacts.id
+  #               direction: from
  
