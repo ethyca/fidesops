@@ -15,7 +15,7 @@ import {
 import { MoreIcon } from '../common/Icon';
 import DeleteUserModal from './DeleteUserModal';
 import { User } from '../user/types';
-// import Router from 'next/router';
+import { useRouter } from 'next/router';
 
 interface UserManagementRowProps {
   user: User;
@@ -35,11 +35,12 @@ const useUserManagementRow = () => {
 
 const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   const { handleMenuOpen, handleMenuClose, menuOpen } = useUserManagementRow();
+  const router = useRouter();
 
-  // const handleEditUser = () => {
-  // Blocked until PATCH user available
-  //   Router.push(/user-management/profile/${user.id})
-  // }
+  const handleEditUser = () => {
+    // Blocked until PATCH user available
+    router.push(`/user-management/profile/${user.id}`);
+  };
 
   const showMenu = menuOpen;
 
@@ -60,7 +61,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
                   <MenuItem
                     _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
                     // Blocked until PATCH user available
-                    // onClick={handleEditUser}
+                    onClick={handleEditUser}
                   >
                     <Text fontSize="sm">Edit</Text>
                   </MenuItem>

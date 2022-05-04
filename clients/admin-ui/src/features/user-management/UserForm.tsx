@@ -6,7 +6,7 @@ import { useFormik } from 'formik';
 import {
   Button,
   chakra,
-  CheckboxGroup,
+  // CheckboxGroup,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -25,35 +25,21 @@ import {
 
 import { useRouter } from 'next/router';
 
-const useUserForm = (existingId?: string | null) => {
+const useUserForm = (
+  existingUser?: { data: { id: string; username: string } } | null
+) => {
   const token = useSelector(selectUserToken);
   const [createUser, createUserResult] = useCreateUserMutation();
-  const [editUser, editUserResult] = useEditUserMutation();
-  // const {getUser, getUserResult} = useGetUserByIdQuery(existingId || null);
+  // const [editUser, editUserResult] = useEditUserMutation();
   const router = useRouter();
-
-  // Initial values - GET individual user values if coming from the ID path
-  useEffect(() => {
-    console.log('initial');
-    // if(existingId) {
-    // getUser(existingId)
-    // }
-  }, []);
-
-  const getUserResult = {
-    // username: "test",
-    // name: "test name",
-    // password: "test pass",
-    username: null,
-    name: null,
-    password: null,
-  };
 
   const formik = useFormik({
     initialValues: {
-      username: getUserResult?.username || '',
-      name: getUserResult?.name || '',
-      password: getUserResult?.password ? '********' : '',
+      username: existingUser?.data?.username || 'hi',
+      name: '',
+      password: '',
+      // name: existingUser?.data?.name || '',
+      // password: existingUser?.data?.password ? '********' : '',
     },
     onSubmit: async (values) => {
       const host =
@@ -66,9 +52,12 @@ const useUserForm = (existingId?: string | null) => {
         name: values.name,
         password: values.password,
       };
-      if (!existingId) {
+
+      if (!existingUser) {
         createUser(body);
         router.replace('/user-management');
+      } else {
+        console.log('on edit page');
       }
       // else {
       //   console.log("editing")
@@ -87,6 +76,8 @@ const useUserForm = (existingId?: string | null) => {
         password?: string;
       } = {};
 
+      console.log('VALUES', values);
+
       if (!values.username) {
         errors.username = 'Username is required';
       }
@@ -103,18 +94,16 @@ const useUserForm = (existingId?: string | null) => {
     },
   });
 
-  // const { data, isLoading } = useGetUserQuery(userId);
-  // const { user } = data || { user: {} };
-  const user = existingId ? getUserResult : null;
-
   return {
     ...formik,
     // isLoading: createUserResult.isLoading,
-    user,
+    existingUser,
   };
 };
 
-const UserForm: NextPage<{ existingId?: string }> = ({ existingId }) => {
+const UserForm: NextPage<{
+  existingUser?: { data: { id: string; username: string } } | null;
+}> = ({ existingUser }) => {
   const {
     dirty,
     errors,
@@ -125,10 +114,9 @@ const UserForm: NextPage<{ existingId?: string }> = ({ existingId }) => {
     // isLoading,
     touched,
     values,
-    user,
-  } = useUserForm(existingId);
+  } = useUserForm(existingUser);
 
-  // console.log(existingId);
+  console.log('user', existingUser);
 
   return (
     <div>
@@ -156,10 +144,12 @@ const UserForm: NextPage<{ existingId?: string }> = ({ existingId }) => {
                 placeholder="Enter new username"
                 onChange={handleChange}
                 onBlur={handleBlur}
-                value={values.username}
+                value={
+                  existingUser ? existingUser?.data?.username : values.username
+                }
                 isInvalid={touched.username && Boolean(errors.username)}
-                isReadOnly={existingId ? true : false}
-                isDisabled={existingId ? true : false}
+                isReadOnly={existingUser ? true : false}
+                isDisabled={existingUser ? true : false}
               />
               <FormErrorMessage>{errors.username}</FormErrorMessage>
             </FormControl>
@@ -178,7 +168,7 @@ const UserForm: NextPage<{ existingId?: string }> = ({ existingId }) => {
                 placeholder="Enter name of user"
                 onChange={handleChange}
                 onBlur={handleBlur}
-                value={values.name}
+                value={existingUser ? existingUser?.data?.name : values.name}
                 isInvalid={touched.name && Boolean(errors.name)}
               />
               <FormErrorMessage>{errors.name}</FormErrorMessage>
@@ -197,7 +187,9 @@ const UserForm: NextPage<{ existingId?: string }> = ({ existingId }) => {
                 focusBorderColor="primary.500"
                 placeholder="********"
                 type="password"
-                value={values.password}
+                value={
+                  existingUser ? existingUser?.data?.password : values.password
+                }
                 onChange={handleChange}
                 onBlur={handleBlur}
                 isInvalid={touched.password && Boolean(errors.password)}
@@ -232,7 +224,7 @@ const UserForm: NextPage<{ existingId?: string }> = ({ existingId }) => {
             _hover={{ bg: 'primary.400' }}
             _active={{ bg: 'primary.500' }}
             colorScheme="primary"
-            disabled={!existingId && !(isValid && dirty)}
+            disabled={!existingUser && !(isValid && dirty)}
             size="sm"
           >
             Save

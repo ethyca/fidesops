@@ -5,7 +5,6 @@ import type { AppState } from '../../app/store';
 
 import {
   UsersListParams,
-  UserResponse,
   UsersResponse,
   User,
 } from './types';
@@ -61,7 +60,7 @@ export const userApi = createApi({
       }),
       providesTags: () => ['User'],
     }),
-    getUserById: build.query<UserResponse, User>({
+    getUserById: build.query<object, string>({
       query: (id) => ({ url: `user/${id}` }),
       providesTags: ['User'],
     }),
@@ -82,7 +81,7 @@ export const userApi = createApi({
       // For optimistic updates
       async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
         const patchResult = dispatch(
-          userApi.util.updateQueryData('getUserById', {id, ...patch}, (draft) => {
+          userApi.util.updateQueryData('getUserById', id, (draft) => {
             Object.assign(draft, patch)
           })
         )
