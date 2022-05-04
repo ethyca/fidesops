@@ -6,6 +6,7 @@ from fidesops.db.base_class import Base
 
 class AuditLogAction(EnumType):
     """Enum for audit log actions, reflecting what a  user did"""
+
     approved = "approved"
     denied = "denied"
 
