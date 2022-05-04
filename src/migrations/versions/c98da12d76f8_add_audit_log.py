@@ -1,7 +1,7 @@
 """add audit log
 
 Revision ID: c98da12d76f8
-Revises: 530fb8533ca4
+Revises: 90070db16d05
 Create Date: 2022-05-04 20:16:39.246537
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "c98da12d76f8"
-down_revision = "530fb8533ca4"
+down_revision = "90070db16d05"
 branch_labels = None
 depends_on = None
 
