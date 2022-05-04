@@ -256,7 +256,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         # replace errored response with empty dictionary if we are ignoring errors
         if saas_request.ignore_errors and not response.ok:
             logger.info(
-                f"Ignoring errored response with status code {response.status_code}."
+                f"Ignoring and clearing errored response with status code {response.status_code}."
             )
             response = Response()
             response._content = b"{}"  # pylint: disable=W0212
