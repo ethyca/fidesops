@@ -323,9 +323,6 @@ class Rule(Base):
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
         """Validate this object's data before deferring to the superclass on update"""
-        associated_policy: Optional[Policy] = (
-            db.query(Policy).filter_by(id=data["policy_id"]).first()
-        )
         _validate_rule(
             action_type=data.get("action_type"),
             storage_destination_id=data.get("storage_destination_id"),
