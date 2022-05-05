@@ -29,6 +29,7 @@ from fidesops.api.v1.scope_registry import (
     STORAGE_READ,
     USER_CREATE,
     USER_READ,
+    USER_UPDATE,
     USER_DELETE,
     SCOPE_REGISTRY,
     PRIVACY_REQUEST_READ,
@@ -41,6 +42,8 @@ from fidesops.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
     JWE_ISSUED_AT,
 )
+
+from tests.conftest import generate_auth_header_for_user
 
 page_size = Params().size
 
@@ -471,6 +474,45 @@ class TestGetUser:
         assert user_data["created_at"] == application_user.created_at.isoformat()
         assert user_data["first_name"] == application_user.first_name
         assert user_data["last_name"] == application_user.last_name
+
+
+class TestUpdateUser:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + USER_DETAIL
+
+    @pytest.fixture(scope="function")
+    def url_no_id(self) -> str:
+        return V1_URL_PREFIX + USERS
+
+    def test_update_user_names(
+        self,
+        api_client,
+        url_no_id,
+        application_user,
+    ) -> None:
+        NEW_FIRST_NAME = "another"
+        NEW_LAST_NAME = "name"
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[USER_UPDATE],
+        )
+        resp = api_client.put(
+            f"{url_no_id}/{application_user.id}",
+            headers=auth_header,
+            json={
+                "first_name": NEW_FIRST_NAME,
+                "last_name": NEW_LAST_NAME,
+            },
+        )
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["username"] == application_user.username
+        assert user_data["id"] == application_user.id
+        assert user_data["created_at"] == application_user.created_at.isoformat()
+        assert user_data["first_name"] == NEW_FIRST_NAME
+        assert user_data["last_name"] == NEW_LAST_NAME
 
 
 class TestUserLogin:
