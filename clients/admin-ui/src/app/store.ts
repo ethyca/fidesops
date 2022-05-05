@@ -6,10 +6,7 @@ import {
   reducer as privacyRequestsReducer,
   privacyRequestApi,
 } from '../features/privacy-requests';
-import { 
-  reducer as userReducer,
-  userApi,
-} from '../features/user';
+import { reducer as userReducer, userApi } from '../features/user';
 
 const makeStore = () => {
   const store = configureStore({
@@ -18,9 +15,13 @@ const makeStore = () => {
       subjectRequests: privacyRequestsReducer,
       [userApi.reducerPath]: userApi.reducer,
       user: userReducer,
+      managedUser: userReducer,
     },
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware().concat(privacyRequestApi.middleware, userApi.middleware),
+      getDefaultMiddleware().concat(
+        privacyRequestApi.middleware,
+        userApi.middleware
+      ),
     devTools: true,
   });
   setupListeners(store.dispatch);

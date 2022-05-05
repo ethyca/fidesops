@@ -13,11 +13,6 @@ import UserForm from '../../../features/user-management/UserForm';
 import { useGetUserByIdQuery } from '../../../features/user/user.slice';
 
 const Profile: NextPage = () => {
-  const router = useRouter();
-  const { id } = router.query;
-
-  const queriedUser = id ? useGetUserByIdQuery(id) : null;
-
   return (
     <div>
       <NavBar />
@@ -37,7 +32,7 @@ const Profile: NextPage = () => {
               </BreadcrumbItem>
             </Breadcrumb>
           </Heading>
-          <UserForm existingUser={queriedUser} />
+          <UserForm />
         </Box>
       </main>
     </div>

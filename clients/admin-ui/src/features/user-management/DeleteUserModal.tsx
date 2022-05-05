@@ -12,6 +12,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Stack,
   Text,
   useDisclosure,
 } from '@fidesui/react';
@@ -66,34 +67,48 @@ function DeleteUserModal(user: User) {
           <ModalHeader>Delete User</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <FormControl>
-              <FormLabel>Username</FormLabel>
-              <Input
-                isInvalid={!deletionValidation}
-                name="username"
-                onChange={handleChange}
-                placeholder="Enter username"
-                value={usernameValue}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel>Confirm Username</FormLabel>
-              <Input
-                isInvalid={!deletionValidation}
-                name="confirmUsername"
-                onChange={handleChange}
-                placeholder="Confirm username"
-                value={confirmValue}
-              />
-            </FormControl>
+            <Stack direction={'column'} spacing="15px">
+              <FormControl>
+                <Input
+                  isRequired
+                  name="username"
+                  onChange={handleChange}
+                  placeholder="Enter username"
+                  value={usernameValue}
+                />
+              </FormControl>
+              <FormControl>
+                <Input
+                  isRequired
+                  name="confirmUsername"
+                  onChange={handleChange}
+                  placeholder="Confirm username"
+                  value={confirmValue}
+                />
+              </FormControl>
+            </Stack>
           </ModalBody>
 
           <ModalFooter>
-            <Button onClick={onClose}>Cancel</Button>
+            <Button
+              onClick={onClose}
+              marginRight={'10px'}
+              size={'sm'}
+              variant={'solid'}
+              bg="white"
+              width={'50%'}
+            >
+              Cancel
+            </Button>
             <Button
               disabled={!deletionValidation}
               onClick={handleDeleteUser}
               mr={3}
+              size={'sm'}
+              variant="solid"
+              bg="primary.800"
+              color="white"
+              width={'50%'}
             >
               Delete User
             </Button>

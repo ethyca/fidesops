@@ -11,6 +11,7 @@ export interface State {
   size: number;
   user: User;
   token: string | null;
+  managedUser: User;
 }
 
 const initialState: State = {
@@ -19,6 +20,7 @@ const initialState: State = {
   size: 25,
   user: {},
   token: null,
+  managedUser: null,
 };
 
 // Helpers
@@ -56,11 +58,11 @@ export const userApi = createApi({
       providesTags: () => ['User'],
     }),
     getUserById: build.query<object, string>({
-      query: (id) => ({ url: `user/${id}/permission` }),
+      query: (id) => ({ url: `user/${id}` }),
       providesTags: ['User'],
     }),
     getUserPermissions: build.query<object, string>({
-      query: (id) => ({ url: `user/${id}` }),
+      query: (id) => ({ url: `user/${id}/permission` }),
       providesTags: ['User'],
     }),
     createUser: build.mutation<User, Partial<User>>({
@@ -174,6 +176,10 @@ export const userSlice = createSlice({
       page: initialState.page,
       size: action.payload,
     }),
+    setManagedUser: (state, action: PayloadAction<object>) => ({
+      ...state,
+      managedUser: action.payload,
+    }),
   },
   extraReducers: {
     [HYDRATE]: (state, action) => ({
@@ -183,7 +189,8 @@ export const userSlice = createSlice({
   },
 });
 
-export const { assignToken, setUser, setPage } = userSlice.actions;
+export const { assignToken, setManagedUser, setUser, setPage } =
+  userSlice.actions;
 
 export const selectUserToken = (state: AppState) => state.user.token;
 
@@ -192,5 +199,7 @@ export const selectUserFilters = (state: AppState): UsersListParams => ({
   size: state.user.size,
   user: state.user.user,
 });
+
+export const selectManagedUser = (state: AppState) => state.user.managedUser;
 
 export const { reducer } = userSlice;

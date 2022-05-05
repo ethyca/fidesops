@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import type { NextPage } from 'next';
 import NextLink from 'next/link';
@@ -19,6 +19,7 @@ import {
 import config from './config/config.json';
 import {
   selectUserToken,
+  selectManagedUser,
   useEditUserMutation,
   useUpdateUserPermissionsMutation,
   useCreateUserMutation,
@@ -26,30 +27,24 @@ import {
   useGetUserByIdQuery,
   useGetUserPermissionsQuery,
 } from '../user/user.slice';
-import { userPrivilegesArray } from '../user/types';
-
+import { userPrivilegesArray, User } from '../user/types';
 import { useRouter } from 'next/router';
 
-const useUserForm = (
-  existingUser?: {
-    data: { id: string; username: string; password: string; name: string };
-  } | null
-) => {
+const useUserForm = () => {
   const token = useSelector(selectUserToken);
   const [createUser, createUserResult] = useCreateUserMutation();
   const [createUserPermissions, createUserPermissionsResult] =
     useCreateUserPermissionsMutation();
   // const [editUser, editUserResult] = useEditUserMutation();
   const router = useRouter();
+  const existingUser = useSelector(selectManagedUser);
 
   const formik = useFormik({
     initialValues: {
-      username: existingUser?.data?.username || '',
-      name: existingUser?.data?.name || '',
-      password: existingUser?.data?.password ? '********' : '',
-      scopes: existingUser
-        ? useGetUserPermissionsQuery(existingUser.data.id)
-        : [],
+      username: existingUser ? existingUser?.username : '',
+      name: existingUser ? existingUser?.name : '',
+      password: existingUser ? '********' : '',
+      scopes: existingUser ? useGetUserPermissionsQuery(existingUser?.id) : [],
     },
     onSubmit: async (values) => {
       const host =
@@ -63,6 +58,8 @@ const useUserForm = (
         password: values.password,
       };
 
+      console.log(values);
+
       const permissionsBody = () => {
         const permissionsForUser: string[] = [];
         // add values.checkbox to array
@@ -75,7 +72,7 @@ const useUserForm = (
         return existingUser
           ? {
               scopes: permissionsForUser,
-              id: existingUser.data.id,
+              id: existingUser.id,
             }
           : {
               scopes: permissionsForUser,
@@ -119,27 +116,24 @@ const useUserForm = (
 
   return {
     ...formik,
-    // isLoading: createUserResult.isLoading,
     existingUser,
   };
 };
 
 const UserForm: NextPage<{
-  existingUser?: {
-    data: { id: string; username: string; password: string; name: string };
-  } | null;
-}> = ({ existingUser }) => {
+  existingUser?: User;
+}> = () => {
   const {
     dirty,
     errors,
+    existingUser,
     handleBlur,
     handleChange,
     handleSubmit,
     isValid,
-    // isLoading,
     touched,
     values,
-  } = useUserForm(existingUser);
+  } = useUserForm();
 
   return (
     <div>
@@ -167,9 +161,7 @@ const UserForm: NextPage<{
                 placeholder="Enter new username"
                 onChange={handleChange}
                 onBlur={handleBlur}
-                value={
-                  existingUser ? existingUser?.data?.username : values.username
-                }
+                value={existingUser ? existingUser?.username : values.username}
                 isInvalid={touched.username && Boolean(errors.username)}
                 isReadOnly={existingUser ? true : false}
                 isDisabled={existingUser ? true : false}
@@ -191,7 +183,7 @@ const UserForm: NextPage<{
                 placeholder="Enter name of user"
                 onChange={handleChange}
                 onBlur={handleBlur}
-                value={existingUser ? existingUser?.data?.name : values.name}
+                value={existingUser ? existingUser?.name : values.name}
                 isInvalid={touched.name && Boolean(errors.name)}
               />
               <FormErrorMessage>{errors.name}</FormErrorMessage>
@@ -210,9 +202,7 @@ const UserForm: NextPage<{
                 focusBorderColor="primary.500"
                 placeholder="********"
                 type="password"
-                value={
-                  existingUser ? existingUser?.data?.password : values.password
-                }
+                value={existingUser ? existingUser?.password : values.password}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 isInvalid={touched.password && Boolean(errors.password)}
@@ -232,7 +222,7 @@ const UserForm: NextPage<{
                       key={`${policy.privilege}-${idx}`}
                       onChange={handleChange}
                       value={policy.privilege}
-                      id="checkbox"
+                      id={`checkbox-${policy.privilege}-${idx}`}
                       name="checkbox"
                     >
                       {policy.privilege}

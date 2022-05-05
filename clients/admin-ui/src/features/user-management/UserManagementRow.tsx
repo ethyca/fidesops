@@ -11,11 +11,13 @@ import {
   MenuItem,
   Portal,
 } from '@fidesui/react';
+import { useDispatch } from 'react-redux';
 
 import { MoreIcon } from '../common/Icon';
 import DeleteUserModal from './DeleteUserModal';
 import { User } from '../user/types';
 import { useRouter } from 'next/router';
+import { useGetUserByIdQuery, setManagedUser } from '../user/user.slice';
 
 interface UserManagementRowProps {
   user: User;
@@ -36,9 +38,13 @@ const useUserManagementRow = () => {
 const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   const { handleMenuOpen, handleMenuClose, menuOpen } = useUserManagementRow();
   const router = useRouter();
+  const dispatch = useDispatch();
+
+  const { data } = useGetUserByIdQuery(user.id);
+  console.log(data);
 
   const handleEditUser = () => {
-    // Blocked until PATCH user available
+    dispatch(setManagedUser(data));
     router.push(`/user-management/profile/${user.id}`);
   };
 
