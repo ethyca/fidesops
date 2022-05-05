@@ -932,11 +932,12 @@ def sample_data():
 
 
 @pytest.fixture(scope="function")
-def user(db) -> FidesopsUser:
+def application_user(db) -> FidesopsUser:
+    unique_username = f"user-{uuid4()}"
     user = FidesopsUser.create(
         db=db,
         data={
-            "username": "user_1",
+            "username": unique_username,
             "password": "test_password",
             "first_name": "Test",
             "last_name": "User",

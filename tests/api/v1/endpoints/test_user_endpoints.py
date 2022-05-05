@@ -450,20 +450,20 @@ class TestGetUser:
         api_client: TestClient,
         generate_auth_header,
         url_no_id: str,
-        user,
+        application_user,
     ) -> None:
         auth_header = generate_auth_header(scopes=[USER_READ])
         resp = api_client.get(
-            f"{url_no_id}/{user.id}",
+            f"{url_no_id}/{application_user.id}",
             headers=auth_header,
         )
         assert resp.status_code == HTTP_200_OK
         user_data = resp.json()
-        assert user_data["username"] == user.username
-        assert user_data["id"] == user.id
-        assert user_data["created_at"] == user.created_at.isoformat()
-        assert user_data["first_name"] == user.first_name
-        assert user_data["last_name"] == user.last_name
+        assert user_data["username"] == application_user.username
+        assert user_data["id"] == application_user.id
+        assert user_data["created_at"] == application_user.created_at.isoformat()
+        assert user_data["first_name"] == application_user.first_name
+        assert user_data["last_name"] == application_user.last_name
 
 
 class TestUserLogin:
