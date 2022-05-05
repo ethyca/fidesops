@@ -96,7 +96,7 @@ def create_user(
     return user
 
 
-def _validate_current_user(user_id, user_from_token):
+def _validate_current_user(user_id: str, user_from_token: FidesopsUser) -> bool:
     if not user_from_token:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
