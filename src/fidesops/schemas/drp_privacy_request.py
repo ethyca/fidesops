@@ -13,7 +13,7 @@ class DrpMeta(BaseSchema):
 class DrpRegime(Enum):
     """Enum to hold Drp Regime. Only ccpa supported at this time"""
 
-    ccpa: "ccpa"
+    ccpa = "ccpa"
 
 
 class DrpPrivacyRequestCreate(BaseSchema):
