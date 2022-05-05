@@ -3656,6 +3656,169 @@
           }
         ]
       }
+    },
+    "/api/v1/user/{user_id}/permission": {
+      "get": {
+        "tags": [
+          "User Permissions"
+        ],
+        "summary": "Get User Permissions",
+        "operationId": "get_user_permissions_api_v1_user__user_id__permission_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPermissionsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user-permission:read"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "User Permissions"
+        ],
+        "summary": "Update User Permissions",
+        "operationId": "update_user_permissions_api_v1_user__user_id__permission_put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPermissionsEdit"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPermissionsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user-permission:update"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "User Permissions"
+        ],
+        "summary": "Create User Permissions",
+        "operationId": "create_user_permissions_api_v1_user__user_id__permission_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPermissionsCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPermissionsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user-permission:create"
+            ]
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -6541,6 +6704,72 @@
           }
         },
         "description": "Similar to UserCreate except we do not need the extra validation on username and password"
+      },
+      "UserPermissionsCreate": {
+        "title": "UserPermissionsCreate",
+        "required": [
+          "scopes"
+        ],
+        "type": "object",
+        "properties": {
+          "scopes": {
+            "title": "Scopes",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "Data required to create a FidesopsUserPermissions record"
+      },
+      "UserPermissionsEdit": {
+        "title": "UserPermissionsEdit",
+        "required": [
+          "scopes",
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "scopes": {
+            "title": "Scopes",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "description": "Data required to edit a FidesopsUserPermissions record"
+      },
+      "UserPermissionsResponse": {
+        "title": "UserPermissionsResponse",
+        "required": [
+          "scopes",
+          "id",
+          "user_id"
+        ],
+        "type": "object",
+        "properties": {
+          "scopes": {
+            "title": "Scopes",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "description": "Response after creating, editing, or retrieving a FidesopsUserPermissions record"
       },
       "UserResponse": {
         "title": "UserResponse",
