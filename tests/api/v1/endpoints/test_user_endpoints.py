@@ -1,4 +1,5 @@
 from datetime import datetime
+from email.mime import application
 from typing import List
 import json
 
@@ -478,10 +479,6 @@ class TestGetUser:
 
 class TestUpdateUser:
     @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return V1_URL_PREFIX + USER_DETAIL
-
-    @pytest.fixture(scope="function")
     def url_no_id(self) -> str:
         return V1_URL_PREFIX + USERS
 
@@ -541,6 +538,105 @@ class TestUpdateUser:
         assert user_data["created_at"] == application_user.created_at.isoformat()
         assert user_data["first_name"] == NEW_FIRST_NAME
         assert user_data["last_name"] == NEW_LAST_NAME
+
+
+class TestUpdateUserPassword:
+    @pytest.fixture(scope="function")
+    def url_no_id(self) -> str:
+        return V1_URL_PREFIX + USERS
+
+    def test_update_different_user_password(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        user,
+        application_user,
+    ) -> None:
+        OLD_PASSWORD = "oldpassword"
+        NEW_PASSWORD = "newpassword"
+        application_user.update_password(db=db, new_password=OLD_PASSWORD)
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[USER_UPDATE],
+        )
+        resp = api_client.post(
+            f"{url_no_id}/{user.id}/reset-password",
+            headers=auth_header,
+            json={
+                "old_password": OLD_PASSWORD,
+                "new_password": NEW_PASSWORD,
+            },
+        )
+        assert resp.status_code == HTTP_401_UNAUTHORIZED
+        assert (
+            resp.json()["detail"]
+            == "You are only authorised to update your own user data."
+        )
+
+        db.expunge(application_user)
+        application_user = application_user.refresh_from_db(db=db)
+        assert application_user.credentials_valid(password=OLD_PASSWORD)
+
+    def test_update_user_password_invalid(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        application_user,
+    ) -> None:
+        OLD_PASSWORD = "oldpassword"
+        NEW_PASSWORD = "newpassword"
+        application_user.update_password(db=db, new_password=OLD_PASSWORD)
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[USER_UPDATE],
+        )
+        resp = api_client.post(
+            f"{url_no_id}/{application_user.id}/reset-password",
+            headers=auth_header,
+            json={
+                "old_password": "mismatching password",
+                "new_password": NEW_PASSWORD,
+            },
+        )
+        assert resp.status_code == HTTP_401_UNAUTHORIZED
+        assert resp.json()["detail"] == "Incorrect password."
+
+        db.expunge(application_user)
+        application_user = application_user.refresh_from_db(db=db)
+        assert application_user.credentials_valid(password=OLD_PASSWORD)
+
+    def test_update_user_password(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        application_user,
+    ) -> None:
+        OLD_PASSWORD = "oldpassword"
+        NEW_PASSWORD = "newpassword"
+        application_user.update_password(db=db, new_password=OLD_PASSWORD)
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[USER_UPDATE],
+        )
+        resp = api_client.post(
+            f"{url_no_id}/{application_user.id}/reset-password",
+            headers=auth_header,
+            json={
+                "old_password": OLD_PASSWORD,
+                "new_password": NEW_PASSWORD,
+            },
+        )
+        assert resp.status_code == HTTP_200_OK
+
+        db.expunge(application_user)
+        application_user = application_user.refresh_from_db(db=db)
+        assert application_user.credentials_valid(password=NEW_PASSWORD)
 
 
 class TestUserLogin:
