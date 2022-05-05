@@ -234,11 +234,13 @@ def privacy_request_csv_download(
         ]
     )
     privacy_request_ids: List[str] = [r.id for r in privacy_request_query]
-    audit_log_query = db.query(AuditLog).filter(
+    denial_audit_log_query: Query = db.query(AuditLog).filter(
         AuditLog.action == AuditLogAction.denied.value,
         AuditLog.privacy_request_id.in_(privacy_request_ids),
     )
-    denial_audit_logs = {r.privacy_request_id: r.message for r in audit_log_query}
+    denial_audit_logs: Dict[str, str] = {
+        r.privacy_request_id: r.message for r in denial_audit_log_query
+    }
 
     for pr in privacy_request_query:
         denial_reason = (
@@ -650,7 +652,9 @@ def deny_privacy_request(
     """Deny a list of privacy requests and/or report failure"""
     user_id = client.user_id
 
-    def _process_request(privacy_request: PrivacyRequest, _: FidesopsRedis) -> None:
+    def _process_denial_request(
+        privacy_request: PrivacyRequest, _: FidesopsRedis
+    ) -> None:
         """Method for how to process requests - denied"""
 
         AuditLog.create(
@@ -668,5 +672,5 @@ def deny_privacy_request(
         privacy_request.save(db=db)
 
     return review_privacy_request(
-        db, cache, privacy_requests.request_ids, _process_request
+        db, cache, privacy_requests.request_ids, _process_denial_request
     )

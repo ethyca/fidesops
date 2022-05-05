@@ -131,7 +131,7 @@ class PrivacyRequest(Base):
         primaryjoin="foreign(ExecutionLog.privacy_request_id)==PrivacyRequest.id",
     )
 
-    # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
+    # passive_deletes="all" prevents audit logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.
     audit_logs = relationship(
         "AuditLog",
