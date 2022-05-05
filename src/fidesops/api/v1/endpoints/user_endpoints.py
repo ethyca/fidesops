@@ -16,6 +16,7 @@ from starlette.status import (
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
 )
@@ -30,14 +31,19 @@ from fidesops.schemas.oauth import AccessToken
 from fidesops.schemas.user import (
     UserCreate,
     UserCreateResponse,
+    UserUpdate,
     UserLogin,
     UserResponse,
 )
 
-from fidesops.util.oauth_util import verify_oauth_client
+from fidesops.util.oauth_util import (
+    get_current_user,
+    verify_oauth_client,
+)
 
 from fidesops.api.v1.scope_registry import (
     USER_CREATE,
+    USER_UPDATE,
     PRIVACY_REQUEST_READ,
     USER_READ,
     USER_DELETE,
@@ -87,6 +93,37 @@ def create_user(
         db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
     )
     return user
+
+
+@router.put(
+    urls.USER_DETAIL,
+    dependencies=[Security(verify_oauth_client, scopes=[USER_UPDATE])],
+    status_code=HTTP_200_OK,
+    response_model=UserResponse,
+)
+def update_user(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: FidesopsUser = Depends(get_current_user),
+    user_id: str,
+    data: UserUpdate,
+) -> FidesopsUser:
+    """Create a user given a username and password"""
+    if not current_user:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"User with ID {user_id} does not exist.",
+        )
+
+    if user_id != current_user.id:
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED,
+            detail=f"You are only authorised to update your own user data.",
+        )
+
+    current_user.update(db=db, data=data.dict())
+    logger.info(f"Updated user with id: '{current_user.id}'.")
+    return current_user
 
 
 @router.get(
