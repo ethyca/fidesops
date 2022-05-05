@@ -22,40 +22,49 @@ export interface UsersResponse {
 
 export interface UserPrivileges {
   privilege: string;
-  description: string;
+  scopes: string[];
+}
+
+export interface UserPermissions {
+  scopes: string[];
+  id?: string;
 }
 
 export const userPrivilegesArray: UserPrivileges[] = [
   {
     privilege: 'View subject requests',
-    description: 'Instructional line about these particular user preferences',
+    scopes: ['privacy-request:read'],
   },
   {
     privilege: 'Approve subject requests',
-    description: 'Instructional line about these particular user preferences',
+    scopes: ['privacy-request:administrate:approve'],
   },
   {
     privilege: 'View datastore connections',
-    description: 'Instructional line about these particular user preferences',
+    scopes: ['connection:read'],
   },
   {
     privilege: 'Manage datastore connections',
-    description: 'Instructional line about these particular user preferences',
+    scopes: [
+      'connection:read',
+      'connection:create_or_update',
+      'connection:delete',
+    ],
   },
   {
     privilege: 'View policies',
-    description: 'Instructional line about these particular user preferences',
+    scopes: ['policy:read'],
   },
   {
     privilege: 'Create policies',
-    description: 'Instructional line about these particular user preferences',
+    scopes: ['policy:create_or_update'],
   },
   {
     privilege: 'Create users',
-    description: 'Instructional line about these particular user preferences',
+    scopes: ['user:create'],
   },
   {
     privilege: 'Create roles',
-    description: 'Instructional line about these particular user preferences',
+    scopes: ['role:create'],
   },
 ];

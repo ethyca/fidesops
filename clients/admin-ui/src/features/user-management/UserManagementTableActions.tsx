@@ -17,7 +17,6 @@ const useUserManagementTableActions = () => {
   const filters = useSelector(selectUserFilters);
   const dispatch = useDispatch();
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // console.log(event.target.value)
     dispatch(setUser({ username: event.target.value }));
   };
 

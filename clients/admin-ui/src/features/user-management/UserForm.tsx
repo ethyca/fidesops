@@ -6,7 +6,8 @@ import { useFormik } from 'formik';
 import {
   Button,
   chakra,
-  // CheckboxGroup,
+  CheckboxGroup,
+  Checkbox,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -19,27 +20,36 @@ import config from './config/config.json';
 import {
   selectUserToken,
   useEditUserMutation,
+  useUpdateUserPermissionsMutation,
   useCreateUserMutation,
+  useCreateUserPermissionsMutation,
   useGetUserByIdQuery,
+  useGetUserPermissionsQuery,
 } from '../user/user.slice';
+import { userPrivilegesArray } from '../user/types';
 
 import { useRouter } from 'next/router';
 
 const useUserForm = (
-  existingUser?: { data: { id: string; username: string } } | null
+  existingUser?: {
+    data: { id: string; username: string; password: string; name: string };
+  } | null
 ) => {
   const token = useSelector(selectUserToken);
   const [createUser, createUserResult] = useCreateUserMutation();
+  const [createUserPermissions, createUserPermissionsResult] =
+    useCreateUserPermissionsMutation();
   // const [editUser, editUserResult] = useEditUserMutation();
   const router = useRouter();
 
   const formik = useFormik({
     initialValues: {
-      username: existingUser?.data?.username || 'hi',
-      name: '',
-      password: '',
-      // name: existingUser?.data?.name || '',
-      // password: existingUser?.data?.password ? '********' : '',
+      username: existingUser?.data?.username || '',
+      name: existingUser?.data?.name || '',
+      password: existingUser?.data?.password ? '********' : '',
+      scopes: existingUser
+        ? useGetUserPermissionsQuery(existingUser.data.id)
+        : [],
     },
     onSubmit: async (values) => {
       const host =
@@ -47,26 +57,41 @@ const useUserForm = (
           ? config.fidesops_host_development
           : config.fidesops_host_production;
 
-      const body = {
+      const userBody = {
         username: values.username,
         name: values.name,
         password: values.password,
       };
 
+      const permissionsBody = () => {
+        const permissionsForUser: string[] = [];
+        // add values.checkbox to array
+        // map through userPrivilegesArray
+        // map through checkboxes - if the value matches
+        // the privilege.privilege, then spread the privilege.scopes
+        // into the permissionsForUser array declared above
+        // use Set to check for duplicates
+
+        return existingUser
+          ? {
+              scopes: permissionsForUser,
+              id: existingUser.data.id,
+            }
+          : {
+              scopes: permissionsForUser,
+            };
+      };
+
       if (!existingUser) {
-        createUser(body);
+        createUser(userBody);
+        createUserPermissions(permissionsBody());
         router.replace('/user-management');
       } else {
         console.log('on edit page');
+        // editUser({existingId, ...body})
       }
-      // else {
-      //   console.log("editing")
-      //   editUser({existingId, ...body})
-      // }
 
       // redirect after creating/editing
-
-      // useGetAllUsersQuery(filters);
       // router.push('/user-management');
     },
     validate: (values) => {
@@ -75,8 +100,6 @@ const useUserForm = (
         name?: string;
         password?: string;
       } = {};
-
-      console.log('VALUES', values);
 
       if (!values.username) {
         errors.username = 'Username is required';
@@ -102,7 +125,9 @@ const useUserForm = (
 };
 
 const UserForm: NextPage<{
-  existingUser?: { data: { id: string; username: string } } | null;
+  existingUser?: {
+    data: { id: string; username: string; password: string; name: string };
+  } | null;
 }> = ({ existingUser }) => {
   const {
     dirty,
@@ -115,8 +140,6 @@ const UserForm: NextPage<{
     touched,
     values,
   } = useUserForm(existingUser);
-
-  console.log('user', existingUser);
 
   return (
     <div>
@@ -197,20 +220,27 @@ const UserForm: NextPage<{
               <FormErrorMessage>{errors.password}</FormErrorMessage>
             </FormControl>
 
-            {/* <Heading fontSize="xl" colorScheme="primary">
+            <Heading fontSize="xl" colorScheme="primary">
               Preferences
             </Heading>
             <Text>Select privileges to assign to this user</Text>
             <CheckboxGroup colorScheme="secondary">
-              <Stack spacing={[1, 5]} direction={'column'}> */}
-            {/* {userPrivilegesArray.map((policy, idx) => (
+              <Stack spacing={[1, 5]} direction={'column'}>
+                {userPrivilegesArray.map((policy, idx) => (
                   <>
-                    <Checkbox value={policy.privilege}>{policy.privilege}</Checkbox>
-                    <div>{policy.description}</div>
+                    <Checkbox
+                      key={`${policy.privilege}-${idx}`}
+                      onChange={handleChange}
+                      value={policy.privilege}
+                      id="checkbox"
+                      name="checkbox"
+                    >
+                      {policy.privilege}
+                    </Checkbox>
                   </>
-                ))} */}
-            {/* </Stack>
-            </CheckboxGroup> */}
+                ))}
+              </Stack>
+            </CheckboxGroup>
           </Stack>
 
           <NextLink href="/user-management" passHref>

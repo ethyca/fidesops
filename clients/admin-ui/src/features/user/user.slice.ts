@@ -3,11 +3,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { HYDRATE } from 'next-redux-wrapper';
 import type { AppState } from '../../app/store';
 
-import {
-  UsersListParams,
-  UsersResponse,
-  User,
-} from './types';
+import { User, UsersListParams, UserPermissions, UsersResponse } from './types';
 
 export interface State {
   id: string;
@@ -36,7 +32,6 @@ export const mapFiltersToSearchParams = ({
   ...(user ? { username: user.username } : {}),
 });
 
-
 // User API
 export const userApi = createApi({
   reducerPath: 'userApi',
@@ -54,13 +49,17 @@ export const userApi = createApi({
   tagTypes: ['User'],
   endpoints: (build) => ({
     getAllUsers: build.query<UsersResponse, UsersListParams>({
-      query: (filters) => ({ 
+      query: (filters) => ({
         url: `user`,
         params: mapFiltersToSearchParams(filters),
       }),
       providesTags: () => ['User'],
     }),
     getUserById: build.query<object, string>({
+      query: (id) => ({ url: `user/${id}/permission` }),
+      providesTags: ['User'],
+    }),
+    getUserPermissions: build.query<object, string>({
       query: (id) => ({ url: `user/${id}` }),
       providesTags: ['User'],
     }),
@@ -69,7 +68,17 @@ export const userApi = createApi({
         url: 'user',
         method: 'POST',
         body: user,
-      })
+      }),
+    }),
+    createUserPermissions: build.mutation<
+      UserPermissions,
+      Partial<UserPermissions>
+    >({
+      query: (user) => ({
+        url: `user/${user.id}/permission`,
+        method: 'POST',
+        body: user.scopes,
+      }),
     }),
     editUser: build.mutation<User, Partial<User> & Pick<User, 'id'>>({
       query: ({ id, ...patch }) => ({
@@ -82,18 +91,42 @@ export const userApi = createApi({
       async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
         const patchResult = dispatch(
           userApi.util.updateQueryData('getUserById', id, (draft) => {
-            Object.assign(draft, patch)
+            Object.assign(draft, patch);
           })
-        )
+        );
         try {
-          await queryFulfilled
+          await queryFulfilled;
         } catch {
-          patchResult.undo()
+          patchResult.undo();
           /**
            * Alternatively, on failure you can invalidate the corresponding cache tags
            * to trigger a re-fetch:
            * dispatch(api.util.invalidateTags(['User']))
            */
+        }
+      },
+    }),
+    updateUserPermissions: build.mutation<
+      UserPermissions,
+      Partial<UserPermissions> & Pick<UserPermissions, 'id'>
+    >({
+      query: ({ id, ...put }) => ({
+        url: `user/${id}/permission`,
+        method: 'PUT',
+        body: put,
+      }),
+      invalidatesTags: ['User'],
+      // For optimistic updates
+      async onQueryStarted({ id, ...put }, { dispatch, queryFulfilled }) {
+        const putResult = dispatch(
+          userApi.util.updateQueryData('getUserPermissions', id, (draft) => {
+            Object.assign(draft, put);
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          putResult.undo();
         }
       },
     }),
@@ -114,6 +147,9 @@ export const {
   useCreateUserMutation,
   useEditUserMutation,
   useDeleteUserMutation,
+  useUpdateUserPermissionsMutation,
+  useCreateUserPermissionsMutation,
+  useGetUserPermissionsQuery,
 } = userApi;
 
 export const userSlice = createSlice({
@@ -151,9 +187,7 @@ export const { assignToken, setUser, setPage } = userSlice.actions;
 
 export const selectUserToken = (state: AppState) => state.user.token;
 
-export const selectUserFilters = (
-  state: AppState
-): UsersListParams => ({
+export const selectUserFilters = (state: AppState): UsersListParams => ({
   page: state.user.page,
   size: state.user.size,
   user: state.user.user,
