@@ -2,7 +2,7 @@ import csv
 import io
 import logging
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import datetime
 from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Security
@@ -60,6 +60,11 @@ from fidesops.schemas.privacy_request import (
 )
 from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
+from fidesops.service.privacy_request.request_service import (
+    retrieve_policy,
+    build_required_privacy_request_kwargs,
+    cache_data,
+)
 from fidesops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.cache import FidesopsRedis
@@ -125,10 +130,8 @@ def create_privacy_request(
             continue
 
         logger.info(f"Finding policy with key '{privacy_request_data.policy_key}'")
-        policy = Policy.get_by(
-            db=db,
-            field="key",
-            value=privacy_request_data.policy_key,
+        policy: Optional[Policy] = retrieve_policy(
+            db, "key", privacy_request_data.policy_key
         )
         if policy is None:
             logger.warning(
@@ -142,47 +145,24 @@ def create_privacy_request(
             failed.append(failure)
             continue
 
-        kwargs = {
-            "requested_at": privacy_request_data.requested_at,
-            "policy_id": policy.id,
-            "status": "pending",
-        }
+        kwargs = build_required_privacy_request_kwargs(
+            privacy_request_data.requested_at, policy.id
+        )
         for field in optional_fields:
             attr = getattr(privacy_request_data, field)
             if attr is not None:
                 kwargs[field] = attr
 
         try:
-            privacy_request = PrivacyRequest.create(db=db, data=kwargs)
+            privacy_request: PrivacyRequest = create_privacy_request(db, kwargs)
 
-            # Store identity in the cache
-            logger.info(f"Caching identity for privacy request {privacy_request.id}")
-            privacy_request.cache_identity(privacy_request_data.identity)
-            privacy_request.cache_encryption(privacy_request_data.encryption_key)
-
-            # Store masking secrets in the cache
-            logger.info(
-                f"Caching masking secrets for privacy request {privacy_request.id}"
+            cache_data(
+                privacy_request,
+                policy,
+                privacy_request_data.identity,
+                privacy_request_data.encryption_key,
+                None,
             )
-            erasure_rules: List[Rule] = policy.get_rules_for_action(
-                action_type=ActionType.erasure
-            )
-            unique_masking_strategies_by_name: Set[str] = set()
-            for rule in erasure_rules:
-                strategy_name: str = rule.masking_strategy["strategy"]
-                configuration: MaskingConfiguration = rule.masking_strategy[
-                    "configuration"
-                ]
-                if strategy_name in unique_masking_strategies_by_name:
-                    continue
-                unique_masking_strategies_by_name.add(strategy_name)
-                masking_strategy = get_strategy(strategy_name, configuration)
-                if masking_strategy.secrets_required():
-                    masking_secrets: List[
-                        MaskingSecretCache
-                    ] = masking_strategy.generate_secrets_for_cache()
-                    for masking_secret in masking_secrets:
-                        privacy_request.cache_masking_secret(masking_secret)
 
             if not config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL:
                 PrivacyRequestRunner(
