@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def retrieve_policy(db: Session, field: str, value: Any) -> Optional[Policy]:
+    """Retrieve policy by any field/value"""
     return Policy.get_by(
         db=db,
         field=field,
@@ -27,14 +28,16 @@ def retrieve_policy(db: Session, field: str, value: Any) -> Optional[Policy]:
 def build_required_privacy_request_kwargs(
     requested_at: Optional[datetime], policy_id: str
 ) -> Dict[str, Any]:
+    """Build kwargs required for creating privacy request"""
     return {
         "requested_at": requested_at,
         "policy_id": policy_id,
-        "status": PrivacyRequestStatus.pending.value,
+        "status": "pending",
     }
 
 
 def create_privacy_request(db: Session, kwargs: Dict[str, Any]):
+    """Creates privacy request in db, given kwargs"""
     return PrivacyRequest.create(db=db, data=kwargs)
 
 
@@ -45,6 +48,7 @@ def cache_data(
     encryption_key: Optional[str],
     drp_request_body: Optional[DrpPrivacyRequestCreate],
 ) -> None:
+    """Cache privacy request data"""
     # Store identity and encryption key in the cache
     logger.info(f"Caching identity for privacy request {privacy_request.id}")
     privacy_request.cache_identity(identity)
