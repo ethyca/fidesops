@@ -156,7 +156,7 @@ def update_user_password(
 
     if not current_user.credentials_valid(data.old_password):
         raise HTTPException(
-            status_code=HTTP_403_FORBIDDEN, detail="Incorrect password."
+            status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect password."
         )
 
     current_user.update_password(db=db, new_password=data.new_password)
