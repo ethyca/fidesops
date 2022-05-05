@@ -63,7 +63,7 @@ A full list of attributes available to set on the Privacy Request can be found i
 
 Privacy Requests are executed immediately by default. By setting the REQUIRE_MANUAL_REQUEST_APPROVAL variable in your fidesops.toml to TRUE, 
 Privacy Requests will require approval before executing. To approve or deny Privacy Requests, send a list of Privacy 
-Request ids to one of the following endpoints to approve or deny in bulk.
+Request ids to one of the following endpoints to approve or deny in bulk. A denial reason can be provided when denying a Privacy Request.
 
 `PATCH api/v1/privacy-request/administrate/approve`
 
@@ -83,7 +83,8 @@ Request ids to one of the following endpoints to approve or deny in bulk.
   "request_ids":[
     "pri_2d181f15-486d-4bcf-a871-f50ed9f95673",
     "pri_2d181f15-486d-4bcf-a871-f50ed9f95673"
-  ]
+  ],
+  "reason": "Requests denied because they're duplicates"
 }
 ```
 
