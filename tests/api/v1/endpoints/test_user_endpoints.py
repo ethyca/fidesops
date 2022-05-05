@@ -369,6 +369,13 @@ class TestGetUsers:
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
+        user_data = response_body["items"][0]
+        assert user_data["username"]
+        assert user_data["id"]
+        assert user_data["created_at"]
+        assert user_data["first_name"]
+        assert user_data["last_name"]
+
         for i in range(total_users):
             saved_users[i].delete(db)
 
