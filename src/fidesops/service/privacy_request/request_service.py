@@ -5,7 +5,7 @@ from typing import Optional, Any, Dict, Set, List
 from sqlalchemy.orm import Session
 
 from fidesops.models.policy import Policy, ActionType
-from fidesops.models.privacy_request import PrivacyRequestStatus, PrivacyRequest
+from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
