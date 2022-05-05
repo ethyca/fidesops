@@ -715,8 +715,8 @@ def user(db: Session):
     )
 
     FidesopsUserPermissions.create(
-            db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
-        )
+        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+    )
 
     db.add(client)
     db.commit()
@@ -929,3 +929,18 @@ def sample_data():
             ["1", "a", [["z", "a", "a"]]],
         ],  # Lists elems are different types, not officially supported
     }
+
+
+@pytest.fixture(scope="function")
+def user(db) -> FidesopsUser:
+    user = FidesopsUser.create(
+        db=db,
+        data={
+            "username": "user_1",
+            "password": "test_password",
+            "first_name": "Test",
+            "last_name": "User",
+        },
+    )
+    yield user
+    user.delete(db=db)
