@@ -485,6 +485,34 @@ class TestUpdateUser:
     def url_no_id(self) -> str:
         return V1_URL_PREFIX + USERS
 
+    def test_update_different_users_names(
+        self,
+        api_client,
+        url_no_id,
+        user,
+        application_user,
+    ) -> None:
+        NEW_FIRST_NAME = "another"
+        NEW_LAST_NAME = "name"
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[USER_UPDATE],
+        )
+        resp = api_client.put(
+            f"{url_no_id}/{user.id}",
+            headers=auth_header,
+            json={
+                "first_name": NEW_FIRST_NAME,
+                "last_name": NEW_LAST_NAME,
+            },
+        )
+        assert resp.status_code == HTTP_401_UNAUTHORIZED
+        assert (
+            resp.json()["detail"]
+            == "You are only authorised to update your own user data."
+        )
+
     def test_update_user_names(
         self,
         api_client,

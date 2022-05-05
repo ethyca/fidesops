@@ -33,6 +33,7 @@ from fidesops.schemas.user import (
     UserCreateResponse,
     UserUpdate,
     UserLogin,
+    UserPasswordReset,
     UserResponse,
 )
 
@@ -95,6 +96,21 @@ def create_user(
     return user
 
 
+def _validate_current_user(user_id, user_from_token):
+    if not user_from_token:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"User with ID {user_id} does not exist.",
+        )
+
+    if user_id != user_from_token.id:
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED,
+            detail=f"You are only authorised to update your own user data.",
+        )
+    return True
+
+
 @router.put(
     urls.USER_DETAIL,
     dependencies=[Security(verify_oauth_client, scopes=[USER_UPDATE])],
@@ -108,20 +124,43 @@ def update_user(
     user_id: str,
     data: UserUpdate,
 ) -> FidesopsUser:
-    """Create a user given a username and password"""
-    if not current_user:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"User with ID {user_id} does not exist.",
-        )
-
-    if user_id != current_user.id:
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED,
-            detail=f"You are only authorised to update your own user data.",
-        )
+    """
+    Update a user given a `user_id`. By default this is limited to users
+    updating their own data.
+    """
+    _validate_current_user(user_id, current_user)
 
     current_user.update(db=db, data=data.dict())
+    logger.info(f"Updated user with id: '{current_user.id}'.")
+    return current_user
+
+
+@router.post(
+    urls.USER_PASSWORD_RESET,
+    dependencies=[Security(verify_oauth_client, scopes=[USER_UPDATE])],
+    status_code=HTTP_200_OK,
+    response_model=UserResponse,
+)
+def update_user_password(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: FidesopsUser = Depends(get_current_user),
+    user_id: str,
+    data: UserPasswordReset,
+) -> FidesopsUser:
+    """
+    Update a user's password given a `user_id`. By default this is limited to users
+    updating their own data.
+    """
+    _validate_current_user(user_id, current_user)
+
+    if not current_user.credentials_valid(data.old_password):
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN, detail="Incorrect password."
+        )
+
+    current_user.update_password(db=db, new_password=data.new_password)
+
     logger.info(f"Updated user with id: '{current_user.id}'.")
     return current_user
 
