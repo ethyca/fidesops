@@ -216,7 +216,7 @@ def create_or_update_rules(
                     "masking_strategy": masking_strategy_data,
                 },
             )
-        except KeyOrNameAlreadyExists as exc:
+        except (KeyOrNameAlreadyExists, IntegrityError) as exc:
             logger.warning(
                 f"Create/update failed for rule '{schema.key}' on policy {policy_key}: {exc}"
             )

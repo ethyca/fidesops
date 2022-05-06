@@ -1,7 +1,7 @@
 """adds DRP action to policy
 
 Revision ID: 5078badb90b9
-Revises: 29a7d707163a
+Revises: c98da12d76f8
 Create Date: 2022-05-04 17:22:46.500067
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 revision = "5078badb90b9"
-down_revision = "29a7d707163a"
+down_revision = "c98da12d76f8"
 branch_labels = None
 depends_on = None
 
