@@ -118,7 +118,11 @@ def create_or_update_policies(
                     "drp_action": policy_data.get("drp_action"),
                 },
             )
-        except (KeyOrNameAlreadyExists, DrpActionValidationError, IntegrityError) as exc:
+        except (
+            KeyOrNameAlreadyExists,
+            DrpActionValidationError,
+            IntegrityError,
+        ) as exc:
             logger.warning("Create/update failed for policy: %s", exc)
             failure = {
                 "message": exc.args[0],
