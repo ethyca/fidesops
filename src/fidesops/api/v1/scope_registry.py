@@ -1,6 +1,3 @@
-from fidesops.api.v1.urn_registry import USER_PASSWORD_RESET
-
-
 CLIENT_CREATE = "client:create"
 CLIENT_UPDATE = "client:update"
 CLIENT_READ = "client:read"
