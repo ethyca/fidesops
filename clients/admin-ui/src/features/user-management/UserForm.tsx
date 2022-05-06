@@ -222,27 +222,33 @@ const UserForm: NextPage<{
               <FormErrorMessage>{errors.last_name}</FormErrorMessage>
             </FormControl>
 
-            <FormControl
-              id="password"
-              isInvalid={touched.password && Boolean(errors.password)}
-            >
-              <FormLabel htmlFor="password" fontWeight="medium">
-                Password
-              </FormLabel>
-              <Input
-                id="password"
-                maxWidth={'40%'}
-                name="password"
-                focusBorderColor="primary.500"
-                placeholder={existingUser ? existingUser?.password : '********'}
-                type="password"
-                value={values.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                isInvalid={touched.password && Boolean(errors.password)}
-              />
-              <FormErrorMessage>{errors.password}</FormErrorMessage>
-            </FormControl>
+            {existingUser ? (
+              <div>Change Password</div>
+            ) : (
+              <>
+                <FormControl
+                  id="password"
+                  isInvalid={touched.password && Boolean(errors.password)}
+                >
+                  <FormLabel htmlFor="password" fontWeight="medium">
+                    Password
+                  </FormLabel>
+                  <Input
+                    id="password"
+                    maxWidth={'40%'}
+                    name="password"
+                    focusBorderColor="primary.500"
+                    placeholder={'Enter a password'}
+                    type="password"
+                    value={values.password}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    isInvalid={touched.password && Boolean(errors.password)}
+                  />
+                  <FormErrorMessage>{errors.password}</FormErrorMessage>
+                </FormControl>
+              </>
+            )}
 
             <Heading fontSize="xl" colorScheme="primary">
               Preferences

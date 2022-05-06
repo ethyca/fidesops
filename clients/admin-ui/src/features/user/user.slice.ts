@@ -11,7 +11,7 @@ export interface State {
   size: number;
   user: User;
   token: string | null;
-  managedUser: User;
+  managedUser: User | null;
 }
 
 const initialState: State = {
@@ -79,7 +79,7 @@ export const userApi = createApi({
       query: (user) => ({
         url: `user/${user?.data?.id}/permission`,
         method: 'POST',
-        body: { scopes: user.scopes },
+        body: { scopes: user.scope },
       }),
     }),
     editUser: build.mutation<User, Partial<User> & Pick<User, 'id'>>({
