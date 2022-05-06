@@ -17,7 +17,7 @@ import { MoreIcon } from '../common/Icon';
 import DeleteUserModal from './DeleteUserModal';
 import { User } from '../user/types';
 import { useRouter } from 'next/router';
-import { useGetUserByIdQuery, setManagedUser } from '../user/user.slice';
+import { setManagedUser } from '../user/user.slice';
 
 interface UserManagementRowProps {
   user: User;
@@ -40,11 +40,8 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const { data } = useGetUserByIdQuery(user.id);
-  console.log(data);
-
   const handleEditUser = () => {
-    dispatch(setManagedUser(data));
+    dispatch(setManagedUser(user));
     router.push(`/user-management/profile/${user.id}`);
   };
 
@@ -66,7 +63,6 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
                 <MenuList shadow="xl">
                   <MenuItem
                     _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
-                    // Blocked until PATCH user available
                     onClick={handleEditUser}
                   >
                     <Text fontSize="sm">Edit</Text>

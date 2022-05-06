@@ -37,7 +37,7 @@ export const userPrivilegesArray: UserPrivileges[] = [
   },
   {
     privilege: 'Approve subject requests',
-    scopes: ['privacy-request:administrate:approve'],
+    scopes: ['privacy-request:review'],
   },
   {
     privilege: 'View datastore connections',
@@ -45,11 +45,7 @@ export const userPrivilegesArray: UserPrivileges[] = [
   },
   {
     privilege: 'Manage datastore connections',
-    scopes: [
-      'connection:read',
-      'connection:create_or_update',
-      'connection:delete',
-    ],
+    scopes: ['connection:create_or_update', 'connection:delete'],
   },
   {
     privilege: 'View policies',
@@ -65,6 +61,6 @@ export const userPrivilegesArray: UserPrivileges[] = [
   },
   {
     privilege: 'Create roles',
-    scopes: ['role:create'],
+    scopes: ['user-permission:create'],
   },
 ];
