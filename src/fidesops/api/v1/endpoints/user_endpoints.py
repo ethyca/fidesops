@@ -48,6 +48,7 @@ from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     USER_READ,
     USER_DELETE,
+    USER_PASSWORD_RESET,
 )
 
 logger = logging.getLogger(__name__)
@@ -120,7 +121,6 @@ def _validate_current_user(user_id: str, user_from_token: FidesopsUser) -> bool:
 def update_user(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: FidesopsUser = Depends(get_current_user),
     user_id: str,
     data: UserUpdate,
 ) -> FidesopsUser:
@@ -128,16 +128,20 @@ def update_user(
     Update a user given a `user_id`. By default this is limited to users
     updating their own data.
     """
-    _validate_current_user(user_id, current_user)
+    user = FidesopsUser.get(db=db, id=user_id)
+    if not user:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found."
+        )
 
-    current_user.update(db=db, data=data.dict())
-    logger.info(f"Updated user with id: '{current_user.id}'.")
-    return current_user
+    user.update(db=db, data=data.dict())
+    logger.info(f"Updated user with id: '{user.id}'.")
+    return user
 
 
 @router.post(
     urls.USER_PASSWORD_RESET,
-    dependencies=[Security(verify_oauth_client, scopes=[USER_UPDATE])],
+    dependencies=[Security(verify_oauth_client, scopes=[USER_PASSWORD_RESET])],
     status_code=HTTP_200_OK,
     response_model=UserResponse,
 )

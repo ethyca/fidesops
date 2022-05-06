@@ -32,6 +32,7 @@ from fidesops.api.v1.scope_registry import (
     USER_READ,
     USER_UPDATE,
     USER_DELETE,
+    USER_PASSWORD_RESET,
     SCOPE_REGISTRY,
     PRIVACY_REQUEST_READ,
 )
@@ -504,11 +505,13 @@ class TestUpdateUser:
                 "last_name": NEW_LAST_NAME,
             },
         )
-        assert resp.status_code == HTTP_401_UNAUTHORIZED
-        assert (
-            resp.json()["detail"]
-            == "You are only authorised to update your own user data."
-        )
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["username"] == user.username
+        assert user_data["id"] == user.id
+        assert user_data["created_at"] == user.created_at.isoformat()
+        assert user_data["first_name"] == NEW_FIRST_NAME
+        assert user_data["last_name"] == NEW_LAST_NAME
 
     def test_update_user_names(
         self,
@@ -559,7 +562,7 @@ class TestUpdateUserPassword:
 
         auth_header = generate_auth_header_for_user(
             user=application_user,
-            scopes=[USER_UPDATE],
+            scopes=[USER_PASSWORD_RESET],
         )
         resp = api_client.post(
             f"{url_no_id}/{user.id}/reset-password",
@@ -592,7 +595,7 @@ class TestUpdateUserPassword:
 
         auth_header = generate_auth_header_for_user(
             user=application_user,
-            scopes=[USER_UPDATE],
+            scopes=[USER_PASSWORD_RESET],
         )
         resp = api_client.post(
             f"{url_no_id}/{application_user.id}/reset-password",
@@ -622,7 +625,7 @@ class TestUpdateUserPassword:
 
         auth_header = generate_auth_header_for_user(
             user=application_user,
-            scopes=[USER_UPDATE],
+            scopes=[USER_PASSWORD_RESET],
         )
         resp = api_client.post(
             f"{url_no_id}/{application_user.id}/reset-password",
