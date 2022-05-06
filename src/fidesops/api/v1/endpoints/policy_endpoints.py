@@ -118,7 +118,7 @@ def create_or_update_policies(
                     "drp_action": policy_data.get("drp_action"),
                 },
             )
-        except (KeyOrNameAlreadyExists, DrpActionValidationError) as exc:
+        except (KeyOrNameAlreadyExists, DrpActionValidationError, IntegrityError) as exc:
             logger.warning("Create/update failed for policy: %s", exc)
             failure = {
                 "message": exc.args[0],
@@ -216,7 +216,7 @@ def create_or_update_rules(
                     "masking_strategy": masking_strategy_data,
                 },
             )
-        except (KeyOrNameAlreadyExists, IntegrityError) as exc:
+        except KeyOrNameAlreadyExists as exc:
             logger.warning(
                 f"Create/update failed for rule '{schema.key}' on policy {policy_key}: {exc}"
             )
