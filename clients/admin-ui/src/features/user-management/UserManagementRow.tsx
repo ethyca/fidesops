@@ -46,12 +46,22 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   };
 
   const showMenu = menuOpen;
+  console.log(user);
 
   return (
     <>
       <Tr key={user.id} _hover={{ bg: 'gray.50' }} height="36px">
         <Td pl={0} py={1}>
           {user.username}
+        </Td>
+        <Td pl={0} py={1}>
+          {user.first_name}
+        </Td>
+        <Td pl={0} py={1}>
+          {user.last_name}
+        </Td>
+        <Td pl={0} py={1}>
+          {new Date(user.created_at).toUTCString()}
         </Td>
         <Td pr={0} py={1} textAlign="end" position="relative">
           <ButtonGroup>

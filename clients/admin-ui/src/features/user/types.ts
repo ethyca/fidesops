@@ -1,8 +1,10 @@
 export interface User {
   id?: string;
-  name?: string;
+  first_name?: string;
+  last_name?: string;
   username?: string;
   password?: string;
+  created_at?: string;
 }
 
 export interface UserResponse {

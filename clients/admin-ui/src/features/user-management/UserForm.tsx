@@ -42,7 +42,8 @@ const useUserForm = () => {
   const formik = useFormik({
     initialValues: {
       username: existingUser ? existingUser?.username : '',
-      name: existingUser ? existingUser?.name : '',
+      first_name: existingUser ? existingUser?.first_name : '',
+      last_name: existingUser ? existingUser?.last_name : '',
       password: existingUser ? '********' : '',
       scopes: existingUser ? useGetUserPermissionsQuery(existingUser?.id) : [],
     },
@@ -54,11 +55,10 @@ const useUserForm = () => {
 
       const userBody = {
         username: values.username,
-        name: values.name,
+        first_name: values.first_name,
+        last_name: values.last_name,
         password: values.password,
       };
-
-      console.log(values);
 
       const permissionsBody = () => {
         const permissionsForUser: string[] = [];
@@ -94,7 +94,8 @@ const useUserForm = () => {
     validate: (values) => {
       const errors: {
         username?: string;
-        name?: string;
+        first_name?: string;
+        last_name?: string;
         password?: string;
       } = {};
 
@@ -102,8 +103,12 @@ const useUserForm = () => {
         errors.username = 'Username is required';
       }
 
-      if (!values.name) {
-        errors.name = 'Name is required';
+      if (!values.first_name) {
+        errors.first_name = 'First name is required';
+      }
+
+      if (!values.last_name) {
+        errors.last_name = 'Last name is required';
       }
 
       if (!values.password) {
@@ -170,23 +175,47 @@ const UserForm: NextPage<{
             </FormControl>
 
             <FormControl
-              id="name"
-              isInvalid={touched.name && Boolean(errors.name)}
+              id="first_name"
+              isInvalid={touched.first_name && Boolean(errors.first_name)}
             >
-              <FormLabel htmlFor="name" fontWeight="medium">
-                Name
+              <FormLabel htmlFor="first_name" fontWeight="medium">
+                First Name
               </FormLabel>
               <Input
-                id="name"
-                name="name"
+                id="first_name"
+                name="first_name"
                 focusBorderColor="primary.500"
-                placeholder="Enter name of user"
+                placeholder="Enter first name of user"
                 onChange={handleChange}
                 onBlur={handleBlur}
-                value={existingUser ? existingUser?.name : values.name}
-                isInvalid={touched.name && Boolean(errors.name)}
+                value={
+                  existingUser ? existingUser?.first_name : values.first_name
+                }
+                isInvalid={touched.first_name && Boolean(errors.first_name)}
               />
-              <FormErrorMessage>{errors.name}</FormErrorMessage>
+              <FormErrorMessage>{errors.first_name}</FormErrorMessage>
+            </FormControl>
+
+            <FormControl
+              id="last_name"
+              isInvalid={touched.last_name && Boolean(errors.last_name)}
+            >
+              <FormLabel htmlFor="last_name" fontWeight="medium">
+                Last Name
+              </FormLabel>
+              <Input
+                id="last_name"
+                name="last_name"
+                focusBorderColor="primary.500"
+                placeholder="Enter last name of user"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={
+                  existingUser ? existingUser?.last_name : values.last_name
+                }
+                isInvalid={touched.last_name && Boolean(errors.last_name)}
+              />
+              <FormErrorMessage>{errors.last_name}</FormErrorMessage>
             </FormControl>
 
             <FormControl
