@@ -40,6 +40,7 @@ const useRequestRow = (request: PrivacyRequest) => {
   const [focused, setFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState( false);
+  const [denialReason, setDenialReason] = useState("");
   const [approveRequest, approveRequestResult] = useApproveRequestMutation();
   const [denyRequest, denyRequestResult] = useDenyRequestMutation();
   const handleMenuOpen = () => setMenuOpen(true);
@@ -95,6 +96,8 @@ const useRequestRow = (request: PrivacyRequest) => {
     handleDenyRequest,
     hoverButtonRef,
     shiftFocusToHoverMenu,
+    denialReason,
+    setDenialReason
   };
 };
 
@@ -119,6 +122,8 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
     handleFocus,
     handleBlur,
     focused,
+    denialReason,
+    setDenialReason
   } = useRequestRow(request);
   const showMenu = hovered || menuOpen || focused;
 
@@ -233,7 +238,9 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
               </Button>
             </>
           ) : null}
-          {modalOpen? <DenyModal isOpen handleMenuClose={handleModalClose}/>: null}
+          {modalOpen? <DenyModal isOpen handleMenuClose={handleModalClose} denialReason={denialReason} onChange={(e)=>{
+            setDenialReason(e.target.value);
+          }}/>: null}
           <Menu onOpen={handleMenuOpen} onClose={handleMenuClose}>
             <MenuButton
               as={Button}

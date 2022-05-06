@@ -90,6 +90,7 @@ export const privacyRequestApi = createApi({
         method: 'PATCH',
         body: {
           request_ids: [id],
+          reason: "placeholder, testing 123"
         },
       }),
       invalidatesTags: ['Request'],
