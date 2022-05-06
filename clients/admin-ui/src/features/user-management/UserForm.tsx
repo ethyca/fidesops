@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { NextPage } from 'next';
 import NextLink from 'next/link';
@@ -37,9 +37,10 @@ const useUserForm = () => {
     useCreateUserPermissionsMutation();
   // const [editUser, editUserResult] = useEditUserMutation();
   const router = useRouter();
-  const existingUser = useSelector(selectManagedUser);
-  const existingScopes = useGetUserPermissionsQuery(existingUser?.id);
-  // console.log('EXISTING', existingScopes.data.scopes);
+  const { id } = router.query;
+  const { data: existingUser } = useGetUserByIdQuery(id);
+  const { data: existingScopes, isLoading: scopesLoading } =
+    useGetUserPermissionsQuery(id);
 
   const formik = useFormik({
     initialValues: {
@@ -47,11 +48,7 @@ const useUserForm = () => {
       first_name: existingUser ? existingUser?.first_name : '',
       last_name: existingUser ? existingUser?.last_name : '',
       password: existingUser ? '********' : '',
-      // scopes: existingUser
-      //   ? existingScopes?.data?.scopes.filter(
-      //       (scope) => scope === values.scopes
-      //     )
-      //   : [],
+      scopes: {},
     },
     onSubmit: async (values) => {
       const host =
@@ -67,7 +64,8 @@ const useUserForm = () => {
       };
 
       const permissionsBody = () => {
-        const allScopes = [...values.scopes];
+        // const allScopes = [...values.scopes];
+        const allScopes = [];
         return allScopes;
       };
 
@@ -113,6 +111,24 @@ const useUserForm = () => {
       return errors;
     },
   });
+
+  useEffect(() => {
+    // TODO: write in some error handling
+    if (existingScopes) {
+      formik.setFieldValue(
+        'scopes',
+        existingScopes.scopes.reduce(
+          (scopes, scope) => ({
+            ...scopes,
+            [scope]: true,
+          }),
+          {} as {
+            [key: string]: boolean;
+          }
+        )
+      );
+    }
+  }, [scopesLoading]);
 
   return {
     ...formik,
@@ -261,10 +277,9 @@ const UserForm: NextPage<{
                     <Checkbox
                       key={`${policy.privilege}-${idx}`}
                       onChange={handleChange}
-                      value={policy.scope}
                       id={`scopes-${policy.privilege}-${idx}`}
                       name="scopes"
-                      checked={values.scopes}
+                      isChecked={values.scopes[policy.scope]}
                     >
                       {policy.privilege}
                     </Checkbox>

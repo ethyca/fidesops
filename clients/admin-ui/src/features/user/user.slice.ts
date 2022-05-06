@@ -58,7 +58,10 @@ export const userApi = createApi({
       providesTags: () => ['User'],
     }),
     getUserById: build.query<object, string>({
-      query: (id) => ({ url: `user/${id}` }),
+      query: (id) => {
+        console.log('Getting user by id', id);
+        return { url: `user/${id}` };
+      },
       providesTags: ['User'],
     }),
     getUserPermissions: build.query<object, string>({
@@ -71,6 +74,7 @@ export const userApi = createApi({
         method: 'POST',
         body: user,
       }),
+      invalidatesTags: ['User'],
     }),
     createUserPermissions: build.mutation<
       UserPermissions,
@@ -81,6 +85,7 @@ export const userApi = createApi({
         method: 'POST',
         body: { scopes: user.scope },
       }),
+      invalidatesTags: ['User'],
     }),
     editUser: build.mutation<User, Partial<User> & Pick<User, 'id'>>({
       query: ({ id, ...patch }) => ({
@@ -138,7 +143,7 @@ export const userApi = createApi({
         method: 'DELETE',
       }),
       // Invalidates all queries that subscribe to this User `id` only
-      invalidatesTags: (result, error, id) => [{ type: 'User', id }],
+      invalidatesTags: ['User'],
     }),
   }),
 });

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import type { NextPage } from 'next';
 import {
   Box,
@@ -10,7 +11,15 @@ import {
 import { useRouter } from 'next/router';
 import NavBar from '../../../features/common/NavBar';
 import UserForm from '../../../features/user-management/UserForm';
-import { useGetUserByIdQuery } from '../../../features/user/user.slice';
+import {
+  useGetUserByIdQuery,
+  userApi,
+  assignToken,
+  setManagedUser,
+} from '../../../features/user/user.slice';
+
+import { wrapper } from '../../../app/store';
+import { getSession } from 'next-auth/react';
 
 const Profile: NextPage = () => {
   return (
@@ -40,3 +49,31 @@ const Profile: NextPage = () => {
 };
 
 export default Profile;
+
+export const getServerSideProps = wrapper.getServerSideProps(
+  (store) => async (context) => {
+    const session = await getSession(context);
+    if (session && typeof session.accessToken !== 'undefined') {
+      await store.dispatch(assignToken(session.accessToken));
+      console.log('Found ID on this page', context.query.id);
+
+      if (context.query.id) {
+        store.dispatch(
+          userApi.endpoints.getUserById.initiate(context.query.id)
+        );
+        store.dispatch(
+          userApi.endpoints.getUserPermissions.initiate(context.query.id)
+        );
+        await Promise.all(userApi.util.getRunningOperationPromises());
+      }
+      return { props: { session, query: context.query } };
+    }
+
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+);

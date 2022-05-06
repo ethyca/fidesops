@@ -46,7 +46,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   };
 
   const showMenu = menuOpen;
-  console.log(user);
+  // console.log(user);
 
   return (
     <>

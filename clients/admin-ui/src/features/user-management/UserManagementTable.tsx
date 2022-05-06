@@ -49,10 +49,12 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
     <>
       <Table size="sm">
         <Thead>
-          <Th pl={0}>Username</Th>
-          <Th pl={0}>First Name</Th>
-          <Th pl={0}>Last Name</Th>
-          <Th pl={0}>Created At</Th>
+          <Tr>
+            <Th pl={0}>Username</Th>
+            <Th pl={0}>First Name</Th>
+            <Th pl={0}>Last Name</Th>
+            <Th pl={0}>Created At</Th>
+          </Tr>
         </Thead>
         <Tbody>
           {users?.map((user) => (
