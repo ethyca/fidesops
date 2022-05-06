@@ -77,9 +77,9 @@ export const userApi = createApi({
       Partial<UserPermissions>
     >({
       query: (user) => ({
-        url: `user/${user.id}/permission`,
+        url: `user/${user?.data?.id}/permission`,
         method: 'POST',
-        body: user.scopes,
+        body: { scopes: user.scopes },
       }),
     }),
     editUser: build.mutation<User, Partial<User> & Pick<User, 'id'>>({

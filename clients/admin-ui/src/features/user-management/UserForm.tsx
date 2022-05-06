@@ -38,6 +38,8 @@ const useUserForm = () => {
   // const [editUser, editUserResult] = useEditUserMutation();
   const router = useRouter();
   const existingUser = useSelector(selectManagedUser);
+  const existingScopes = useGetUserPermissionsQuery(existingUser?.id);
+  // console.log('EXISTING', existingScopes.data.scopes);
 
   const formik = useFormik({
     initialValues: {
@@ -45,7 +47,11 @@ const useUserForm = () => {
       first_name: existingUser ? existingUser?.first_name : '',
       last_name: existingUser ? existingUser?.last_name : '',
       password: existingUser ? '********' : '',
-      scopes: existingUser ? useGetUserPermissionsQuery(existingUser?.id) : [],
+      // scopes: existingUser
+      //   ? existingScopes?.data?.scopes.filter(
+      //       (scope) => scope === values.scopes
+      //     )
+      //   : [],
     },
     onSubmit: async (values) => {
       const host =
@@ -61,35 +67,24 @@ const useUserForm = () => {
       };
 
       const permissionsBody = () => {
-        const permissionsForUser: string[] = [];
-        // add values.checkbox to array
-        // map through userPrivilegesArray
-        // map through checkboxes - if the value matches
-        // the privilege.privilege, then spread the privilege.scopes
-        // into the permissionsForUser array declared above
-        // use Set to check for duplicates
-
-        return existingUser
-          ? {
-              scopes: permissionsForUser,
-              id: existingUser.id,
-            }
-          : {
-              scopes: permissionsForUser,
-            };
+        const allScopes = [...values.scopes];
+        return allScopes;
       };
 
       if (!existingUser) {
-        createUser(userBody);
-        createUserPermissions(permissionsBody());
-        router.replace('/user-management');
+        createUser(userBody)
+          .then((result) => {
+            result = { ...result, scopes: permissionsBody() };
+            console.log('result', result);
+            createUserPermissions(result);
+          })
+          .then((result) => router.replace('/user-management'));
       } else {
         console.log('on edit page');
+        console.log('permissionsBody', permissionsBody());
         // editUser({existingId, ...body})
+        // router.push('/user-management');
       }
-
-      // redirect after creating/editing
-      // router.push('/user-management');
     },
     validate: (values) => {
       const errors: {
@@ -161,12 +156,15 @@ const UserForm: NextPage<{
               </FormLabel>
               <Input
                 id="username"
+                maxWidth={'40%'}
                 name="username"
                 focusBorderColor="primary.500"
-                placeholder="Enter new username"
+                placeholder={
+                  existingUser ? existingUser?.last_name : 'Enter new username'
+                }
                 onChange={handleChange}
                 onBlur={handleBlur}
-                value={existingUser ? existingUser?.username : values.username}
+                value={values.username}
                 isInvalid={touched.username && Boolean(errors.username)}
                 isReadOnly={existingUser ? true : false}
                 isDisabled={existingUser ? true : false}
@@ -183,14 +181,17 @@ const UserForm: NextPage<{
               </FormLabel>
               <Input
                 id="first_name"
+                maxWidth={'40%'}
                 name="first_name"
                 focusBorderColor="primary.500"
-                placeholder="Enter first name of user"
+                placeholder={
+                  existingUser
+                    ? existingUser?.last_name
+                    : 'Enter first name of user'
+                }
                 onChange={handleChange}
                 onBlur={handleBlur}
-                value={
-                  existingUser ? existingUser?.first_name : values.first_name
-                }
+                value={values.first_name}
                 isInvalid={touched.first_name && Boolean(errors.first_name)}
               />
               <FormErrorMessage>{errors.first_name}</FormErrorMessage>
@@ -205,14 +206,17 @@ const UserForm: NextPage<{
               </FormLabel>
               <Input
                 id="last_name"
+                maxWidth={'40%'}
                 name="last_name"
                 focusBorderColor="primary.500"
-                placeholder="Enter last name of user"
+                placeholder={
+                  existingUser
+                    ? existingUser?.last_name
+                    : 'Enter last name of user'
+                }
                 onChange={handleChange}
                 onBlur={handleBlur}
-                value={
-                  existingUser ? existingUser?.last_name : values.last_name
-                }
+                value={values.last_name}
                 isInvalid={touched.last_name && Boolean(errors.last_name)}
               />
               <FormErrorMessage>{errors.last_name}</FormErrorMessage>
@@ -227,11 +231,12 @@ const UserForm: NextPage<{
               </FormLabel>
               <Input
                 id="password"
+                maxWidth={'40%'}
                 name="password"
                 focusBorderColor="primary.500"
-                placeholder="********"
+                placeholder={existingUser ? existingUser?.password : '********'}
                 type="password"
-                value={existingUser ? existingUser?.password : values.password}
+                value={values.password}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 isInvalid={touched.password && Boolean(errors.password)}
@@ -250,9 +255,10 @@ const UserForm: NextPage<{
                     <Checkbox
                       key={`${policy.privilege}-${idx}`}
                       onChange={handleChange}
-                      value={policy.privilege}
-                      id={`checkbox-${policy.privilege}-${idx}`}
-                      name="checkbox"
+                      value={policy.scope}
+                      id={`scopes-${policy.privilege}-${idx}`}
+                      name="scopes"
+                      checked={values.scopes}
                     >
                       {policy.privilege}
                     </Checkbox>

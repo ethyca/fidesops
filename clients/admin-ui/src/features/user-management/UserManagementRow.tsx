@@ -61,7 +61,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
           {user.last_name}
         </Td>
         <Td pl={0} py={1}>
-          {new Date(user.created_at).toUTCString()}
+          {user.created_at ? new Date(user.created_at).toUTCString() : null}
         </Td>
         <Td pr={0} py={1} textAlign="end" position="relative">
           <ButtonGroup>

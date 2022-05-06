@@ -24,45 +24,51 @@ export interface UsersResponse {
 
 export interface UserPrivileges {
   privilege: string;
-  scopes: string[];
+  scope?: string;
 }
 
 export interface UserPermissions {
-  scopes: string[];
-  id?: string;
+  data?: {
+    id?: string;
+  };
+  scope?: string;
 }
 
 export const userPrivilegesArray: UserPrivileges[] = [
   {
     privilege: 'View subject requests',
-    scopes: ['privacy-request:read'],
+    scope: 'privacy-request:read',
   },
   {
     privilege: 'Approve subject requests',
-    scopes: ['privacy-request:review'],
+    scope: 'privacy-request:review',
   },
   {
     privilege: 'View datastore connections',
-    scopes: ['connection:read'],
+    scope: 'connection:read',
   },
   {
-    privilege: 'Manage datastore connections',
-    scopes: ['connection:create_or_update', 'connection:delete'],
+    privilege: 'Create or Update datastore connections',
+    scope: 'connection:create_or_update',
+  },
+  {
+    privilege: 'Delete datastore connections',
+    scope: 'connection:delete',
   },
   {
     privilege: 'View policies',
-    scopes: ['policy:read'],
+    scope: 'policy:read',
   },
   {
     privilege: 'Create policies',
-    scopes: ['policy:create_or_update'],
+    scope: 'policy:create_or_update',
   },
   {
     privilege: 'Create users',
-    scopes: ['user:create'],
+    scope: 'user:create',
   },
   {
     privilege: 'Create roles',
-    scopes: ['user-permission:create'],
+    scope: 'user-permission:create',
   },
 ];
