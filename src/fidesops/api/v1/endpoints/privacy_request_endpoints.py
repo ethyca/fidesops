@@ -38,7 +38,7 @@ from fidesops.graph.traversal import Traversal
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import ActionType, Policy, PolicyPreWebhook
+from fidesops.models.policy import Policy, PolicyPreWebhook
 from fidesops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
@@ -46,9 +46,6 @@ from fidesops.models.privacy_request import (
 )
 from fidesops.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fidesops.schemas.external_https import PrivacyRequestResumeFormat
-from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
-from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
-from fidesops.schemas.policy import Rule
 from fidesops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
@@ -58,12 +55,11 @@ from fidesops.schemas.privacy_request import (
     PrivacyRequestVerboseResponse,
     ReviewPrivacyRequestIds,
 )
-from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.service.privacy_request.request_service import (
     retrieve_policy,
     build_required_privacy_request_kwargs,
-    cache_data,
+    cache_data, privacy_request_create,
 )
 from fidesops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fidesops.task.task_resources import TaskResources
@@ -154,7 +150,7 @@ def create_privacy_request(
                 kwargs[field] = attr
 
         try:
-            privacy_request: PrivacyRequest = create_privacy_request(db, kwargs)
+            privacy_request: PrivacyRequest = privacy_request_create(db, kwargs)
 
             cache_data(
                 privacy_request,

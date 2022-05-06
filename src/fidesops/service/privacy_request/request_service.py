@@ -36,7 +36,7 @@ def build_required_privacy_request_kwargs(
     }
 
 
-def create_privacy_request(db: Session, kwargs: Dict[str, Any]):
+def privacy_request_create(db: Session, kwargs: Dict[str, Any]) -> PrivacyRequest:
     """Creates privacy request in db, given kwargs"""
     return PrivacyRequest.create(db=db, data=kwargs)
 
