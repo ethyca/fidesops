@@ -2798,7 +2798,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ReviewPrivacyRequestIds"
+                "$ref": "#/components/schemas/DenyPrivacyRequests"
               }
             }
           },
@@ -4435,6 +4435,28 @@
           }
         },
         "description": "Describes whether or not the parent dataset is traversable; if not, includes\nan error message describing the traversal issues."
+      },
+      "DenyPrivacyRequests": {
+        "title": "DenyPrivacyRequests",
+        "required": [
+          "request_ids"
+        ],
+        "type": "object",
+        "properties": {
+          "request_ids": {
+            "title": "Request Ids",
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "description": "Pass in a list of privacy request ids and rejection reason"
       },
       "DryRunDatasetResponse": {
         "title": "DryRunDatasetResponse",
@@ -6668,6 +6690,14 @@
           "password": {
             "title": "Password",
             "type": "string"
+          },
+          "first_name": {
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "title": "Last Name",
+            "type": "string"
           }
         },
         "description": "Data required to create a FidesopsUser"
@@ -6775,7 +6805,8 @@
         "title": "UserResponse",
         "required": [
           "id",
-          "username"
+          "username",
+          "created_at"
         ],
         "type": "object",
         "properties": {
@@ -6785,6 +6816,19 @@
           },
           "username": {
             "title": "Username",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "first_name": {
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "title": "Last Name",
             "type": "string"
           }
         },

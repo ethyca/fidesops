@@ -1216,11 +1216,9 @@ Privacy Requests are executed immediately by default. This setting may be change
 </ul>
 <p>A full list of attributes available to set on the Privacy Request can be found in the <a href="/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get">API docs</a>.</p>
 <h2 id="how-can-i-approve-or-deny-a-privacy-request">How can I approve or deny a Privacy Request?</h2>
-<p>Privacy Requests are executed immediately by default. By setting the REQUIRE_MANUAL_REQUEST_APPROVAL variable in your fidesops.toml to TRUE, 
-Privacy Requests will require approval before executing. To approve or deny Privacy Requests, send a list of Privacy 
-Request ids to one of the following endpoints to approve or deny in bulk.</p>
-<p><code>PATCH api/v1/privacy-request/administrate/approve</code></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<p>Privacy Requests are executed immediately by default. To review Privacy Requests before they are executed, set the <code>REQUIRE_MANUAL_REQUEST_APPROVAL</code> variable in your <code>fidesops.toml</code> to <code>TRUE</code>.</p>
+<p>To process Privacy Requests, send a list of Privacy Request IDs to the <code>approve</code> or <code>deny</code> endpoints. Both endpoints support processing requests in bulk.</p>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>PATCH api/v1/privacy-request/administrate/approve</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
@@ -1232,17 +1230,19 @@ Request ids to one of the following endpoints to approve or deny in bulk.</p>
 <span class="w">  </span><span class="p">]</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
-<p><code>PATCH api/v1/privacy-request/administrate/deny</code></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<p>An optional denial reason can be provided when denying a Privacy Request:</p>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>PATCH api/v1/privacy-request/administrate/deny</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;request_ids&quot;</span><span class="p">:[</span><span class="w"></span>
 <span class="w">    </span><span class="s2">&quot;pri_2d181f15-486d-4bcf-a871-f50ed9f95673&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="s2">&quot;pri_2d181f15-486d-4bcf-a871-f50ed9f95673&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="p">]</span><span class="w"></span>
+<span class="w">  </span><span class="p">],</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Requests denied because they&#39;re duplicates&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 <h2 id="how-do-i-monitor-privacy-requests-as-they-execute">How do I monitor Privacy Requests as they execute?</h2>
