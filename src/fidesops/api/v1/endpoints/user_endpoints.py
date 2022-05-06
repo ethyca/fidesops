@@ -97,7 +97,7 @@ def create_user(
     return user
 
 
-def _validate_current_user(user_id: str, user_from_token: FidesopsUser) -> bool:
+def _validate_current_user(user_id: str, user_from_token: FidesopsUser) -> None:
     if not user_from_token:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -109,7 +109,6 @@ def _validate_current_user(user_id: str, user_from_token: FidesopsUser) -> bool:
             status_code=HTTP_401_UNAUTHORIZED,
             detail=f"You are only authorised to update your own user data.",
         )
-    return True
 
 
 @router.put(
