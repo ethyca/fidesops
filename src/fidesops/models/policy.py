@@ -85,16 +85,10 @@ when project migrations are consolidated.
 """
 
 
-def _validate_drp_action(
-    drp_action: Optional[str], drp_action_exists: bool, class_name: str
-) -> None:
+def _validate_drp_action(drp_action: Optional[str]) -> None:
     """Check that DRP action is supported"""
     if not drp_action:
         return
-    if drp_action_exists:
-        raise common_exceptions.DrpActionValidationError(
-            f"DRP Action {drp_action} already exists in {class_name}."
-        )
     if drp_action in [
         DrpAction.sale_opt_in.value,
         DrpAction.sale_opt_out.value,
@@ -153,37 +147,14 @@ class Policy(Base):
     @classmethod
     def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
         """Overrides base create or update to add custom error for drp action already exists"""
-        db_obj = None
-        if data.get("id") is not None:
-            # If `id` has been included in `data`, preference that
-            db_obj = cls.get(db=db, id=data["id"])
-        elif data.get("key") is not None:
-            # Otherwise, try with `key`
-            db_obj = cls.get_by(db=db, field="key", value=data["key"])
-
+        db_obj = cls.get_by_key_or_id(db=db, data=data)
+        if hasattr(cls, "drp_action"):
+            data["drp_action"] = data.get("drp_action", None)
+            _validate_drp_action(data["drp_action"])
         if db_obj:
-            other_objs = db.query(cls).filter(id != db_obj.id)  # pylint: disable=W0143
-            _validate_drp_action(
-                data["drp_action"],
-                bool(
-                    other_objs
-                    and other_objs.filter_by(drp_action=data["drp_action"]).first()
-                ),
-                cls.__name__.lower(),
-            )
             db_obj.update(db=db, data=data)
         else:
-            if hasattr(cls, "drp_action"):
-                data["drp_action"] = data.get("drp_action", None)
-                _validate_drp_action(
-                    data["drp_action"],
-                    bool(
-                        db.query(cls).filter_by(drp_action=data["drp_action"]).first()
-                    ),
-                    cls.__name__.lower(),
-                )
             db_obj = cls.create(db=db, data=data)
-
         return db_obj
 
     def delete(self, db: Session) -> Optional[FidesopsBase]:
