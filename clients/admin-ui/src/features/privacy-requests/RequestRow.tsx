@@ -27,6 +27,7 @@ import {
   useApproveRequestMutation,
   useDenyRequestMutation,
 } from './privacy-requests.slice';
+import DenyModal from "./DenyModal";
 
 const PII: React.FC<{ data: string }> = ({ data }) => (
   <>{useObscuredPII(data)}</>
@@ -38,10 +39,13 @@ const useRequestRow = (request: PrivacyRequest) => {
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState( false);
   const [approveRequest, approveRequestResult] = useApproveRequestMutation();
   const [denyRequest, denyRequestResult] = useDenyRequestMutation();
   const handleMenuOpen = () => setMenuOpen(true);
   const handleMenuClose = () => setMenuOpen(false);
+  const handleModalOpen = () => setModalOpen(true);
+  const handleModalClose = () => setModalOpen(false);
   const handleMouseEnter = () => setHovered(true);
   const handleMouseLeave = () => setHovered(false);
   const shiftFocusToHoverMenu = () => {
@@ -77,6 +81,9 @@ const useRequestRow = (request: PrivacyRequest) => {
     hovered,
     focused,
     menuOpen,
+    modalOpen,
+    handleModalOpen,
+    handleModalClose,
     handleMenuClose,
     handleMenuOpen,
     handleMouseEnter,
@@ -105,6 +112,9 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
     approveRequestResult,
     denyRequestResult,
     hoverButtonRef,
+    modalOpen,
+    handleModalClose,
+    handleModalOpen,
     shiftFocusToHoverMenu,
     handleFocus,
     handleBlur,
@@ -209,7 +219,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
                 size="xs"
                 mr="-px"
                 bg="white"
-                onClick={handleDenyRequest}
+                onClick={handleModalOpen}
                 isLoading={denyRequestResult.isLoading}
                 _loading={{
                   opacity: 1,
@@ -223,6 +233,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
               </Button>
             </>
           ) : null}
+          {modalOpen? <DenyModal isOpen handleMenuClose={handleModalClose}/>: null}
           <Menu onOpen={handleMenuOpen} onClose={handleMenuClose}>
             <MenuButton
               as={Button}
