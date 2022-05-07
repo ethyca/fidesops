@@ -4458,6 +4458,18 @@
         },
         "description": "Pass in a list of privacy request ids and rejection reason"
       },
+      "DrpAction": {
+        "title": "DrpAction",
+        "enum": [
+          "access",
+          "deletion",
+          "sale:opt_out",
+          "sale:opt_in",
+          "access:categories",
+          "access:specific"
+        ],
+        "description": "Enum to hold valid DRP actions. For more details, see:\nhttps://github.com/consumer-reports-digital-lab/data-rights-protocol#301-supported-rights-actions"
+      },
       "DryRunDatasetResponse": {
         "title": "DryRunDatasetResponse",
         "required": [
@@ -5609,6 +5621,9 @@
             "title": "Key",
             "pattern": "^[a-zA-Z0-9_.]+$",
             "type": "string"
+          },
+          "drp_action": {
+            "$ref": "#/components/schemas/DrpAction"
           }
         },
         "description": "An external representation of a Fidesops Policy"
@@ -5671,6 +5686,9 @@
             "title": "Key",
             "pattern": "^[a-zA-Z0-9_.]+$",
             "type": "string"
+          },
+          "drp_action": {
+            "$ref": "#/components/schemas/DrpAction"
           },
           "rules": {
             "title": "Rules",

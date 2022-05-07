@@ -609,6 +609,19 @@
     Create a Policy
   </a>
   
+    <nav class="md-nav" aria-label="Create a Policy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#policy-attributes" class="md-nav__link">
+    Policy Attributes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1092,6 +1105,19 @@
     Create a Policy
   </a>
   
+    <nav class="md-nav" aria-label="Create a Policy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#policy-attributes" class="md-nav__link">
+    Policy Attributes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1193,16 +1219,49 @@
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH /api/v1/policy
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH /api/v1/policy
 
 [
   {
     &quot;name&quot;: &quot;User Email Address&quot;,
-    &quot;key&quot;: &quot;user_email_address_polcy&quot;
+    &quot;key&quot;: &quot;user_email_address_polcy&quot;,
+    &quot;drp_action&quot;: &quot;access&quot; // optional
   }
 ]
 </code></pre></div></td></tr></table></div>
 This policy is subtly different from the concept of a Policy in <a href="https://github.com/ethyca/fides">Fidesctl</a>. A <a href="https://ethyca.github.io/fides/language/resources/policy/">Fidesctl policy</a> dictates which data categories can be stored where. A Fidesops policy, on the other hand, dictates how to access, mask or erase data that matches specific data categories for privacy requests.</p>
+<h3 id="policy-attributes">Policy Attributes</h3>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Policy.name</code></td>
+<td>User-friendly name for your Policy.</td>
+</tr>
+<tr>
+<td><code>Policy.key</code></td>
+<td>Unique key by which to reference the Policy.</td>
+</tr>
+<tr>
+<td><code>Policy.drp_action</code></td>
+<td><b>Optional.</b> A <a href="https://github.com/consumer-reports-digital-lab/data-rights-protocol">Data Rights Protocol</a> action to associate to this policy.</td>
+</tr>
+<tr>
+<td><code>access</code></td>
+<td>A data subject access request. Should be used with an <code>access</code> Rule.</td>
+</tr>
+<tr>
+<td><code>deletion</code></td>
+<td>A data subject erasure request. Should be used with an <code>erasure</code> Rule.</td>
+</tr>
+</tbody>
+</table>
 <h2 id="add-an-access-rule-to-your-policy">Add an Access Rule to your Policy</h2>
 <p>The policy creation operation returns a Policy key, which we'll use to add a Rule:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
