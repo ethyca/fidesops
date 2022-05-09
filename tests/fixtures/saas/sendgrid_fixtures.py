@@ -202,10 +202,8 @@ def _get_contact_id_if_exists(
         contact_request, ignore_errors=True
     )
 
-    # this handles when the contact doesn't exist
-    # really a 404 is returned, but the saas client catches the 404
-    # and instead just returns a totally empty response object
-    if None == contact_response.status_code:
+    # we expect 404 if contact doesn't exist
+    if 404 == contact_response.status_code:
         return None
 
     return contact_response.json()["result"][sendgrid_erasure_identity_email][
