@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Optional, List
 
+from fidesops.models.policy import DrpAction
 from fidesops.schemas.base_class import BaseSchema
 
 
@@ -21,7 +22,12 @@ class DrpPrivacyRequestCreate(BaseSchema):
 
     meta: DrpMeta
     regime: Optional[DrpRegime]
-    exercise: str  # todo - import DrpAction enum once other PR is merged
+    exercise: DrpAction
     relationships: Optional[List[str]]
     identity: str
     status_callback: Optional[str]
+
+    class Config:
+        """Populate models with the raw value of enum fields, rather than the enum itself"""
+
+        use_enum_values = True
