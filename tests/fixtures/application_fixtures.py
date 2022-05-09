@@ -1,11 +1,10 @@
 import logging
 from datetime import datetime, timedelta, timezone
-import os
 from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
 
-from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
+from fidesops.api.v1.scope_registry import SCOPE_REGISTRY, PRIVACY_REQUEST_READ
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
 from fidesops.util.data_category import DataCategory
@@ -14,12 +13,11 @@ import pydash
 import pytest
 import yaml
 from faker import Faker
-from pymongo import MongoClient
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fidesops.core.config import load_file, load_toml
-from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
+from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import (
     ConnectionConfig,
     AccessLevel,
@@ -34,13 +32,13 @@ from fidesops.models.policy import (
     PolicyPreWebhook,
     PolicyPostWebhook,
 )
-from fidesops.models.privacy_request import ExecutionLog
+
 from fidesops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
-    ExecutionLogStatus,
 )
 from fidesops.models.storage import StorageConfig, ResponseFormat
+from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.schemas.storage.storage import (
     FileNaming,
     StorageDetails,
@@ -516,6 +514,56 @@ def policy(
 
 
 @pytest.fixture(scope="function")
+def policy_drp_action(
+        db: Session,
+        oauth_client: ClientDetail,
+        storage_config: StorageConfig,
+) -> Generator:
+    access_request_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example access request policy drp",
+            "key": "example_access_request_policy_drp",
+            "drp_action": "access",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    access_request_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.access.value,
+            "client_id": oauth_client.id,
+            "name": "Access Request Rule DRP",
+            "policy_id": access_request_policy.id,
+            "storage_destination_id": storage_config.id,
+        },
+    )
+
+    rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.provided.identifiable").value,
+            "rule_id": access_request_rule.id,
+        },
+    )
+    yield access_request_policy
+    try:
+        rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        access_request_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        access_request_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def erasure_policy_string_rewrite(
     db: Session,
     oauth_client: ClientDetail,
@@ -715,6 +763,11 @@ def user(db: Session):
         scopes=SCOPE_REGISTRY,
         user_id=user.id,
     )
+
+    FidesopsUserPermissions.create(
+        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+    )
+
     db.add(client)
     db.commit()
     db.refresh(client)
@@ -926,3 +979,19 @@ def sample_data():
             ["1", "a", [["z", "a", "a"]]],
         ],  # Lists elems are different types, not officially supported
     }
+
+
+@pytest.fixture(scope="function")
+def application_user(db) -> FidesopsUser:
+    unique_username = f"user-{uuid4()}"
+    user = FidesopsUser.create(
+        db=db,
+        data={
+            "username": unique_username,
+            "password": "test_password",
+            "first_name": "Test",
+            "last_name": "User",
+        },
+    )
+    yield user
+    user.delete(db=db)
