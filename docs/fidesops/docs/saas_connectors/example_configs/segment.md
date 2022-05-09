@@ -1,113 +1,178 @@
 
-# Mailchimp
+# Segment
 
 ## Implementation Summary
-You may use the following endpoints in Mailchimp to retrieve and delete Personally Identifiable Information (PII) when a user submits a Data Subject Request (DSR).
-
-This table summarizes whether each available endpoint supports Right to Access and Right to Delete/Right to Forget 
+Fidesops uses the following Segment endpoints to retrieve and delete Personally Identifiable Information (PII) when processing a Data Subject Request (DSR). Right to Access and Right to Delete (Right to Forget) support for each endpoint is noted below.
 
 |Endpoint | Right to Access | Right to Delete |
 |----|----|----|
-|[Messages](docs/link) | Yes/No | Yes/No |
-|[Conversations](docs/link) | Yes/No | Yes/No |
-|[Members](docs/link) | Yes/No | Yes/No |
-
+|[Users](https://segment.com/docs/personas/profile-api/#api-reference) | Yes | No |
+|[Events](https://segment.com/docs/personas/profile-api/#api-reference) | Yes | No |
+|[Traits](https://segment.com/docs/personas/profile-api/#api-reference) | Yes | No |
+|[External IDs](https://segment.com/docs/personas/profile-api/#api-reference) | Yes | No |
+|[Regulations](https://segment.com/docs/privacy/user-deletion-and-suppression/#overview) | Yes | Yes |
 
 ## Connection Settings
-To retrieve 
-x
-## Example SaaS Configuration
+Fidesops provides as [Postman collection](../../postman/using_postman.md) for easily establishing connections to your third party applications. Additional connection instructions may be found in the [configuration guide](../saas_config.md).
+
+## Example Segment Configuration
 ```yaml
 saas_config:
-  fides_key: mailchimp_connector_example
-  name: Mailchimp SaaS Config
-  description: A sample schema representing the Mailchimp connector for Fidesops
+  fides_key: segment_connector_example
+  name: Segment SaaS Config
+  description: A sample schema representing the Segment connector for Fidesops
   version: 0.0.1
 
   connector_params:
     - name: domain
-    - name: username
-    - name: api_key
+    - name: personas_domain
+    - name: workspace
+    - name: access_token
+    - name: namespace_id
+    - name: access_secret
+
 
   client_config:
     protocol: https
     host:
       connector_param: domain
     authentication:
-      strategy: basic_authentication
+      strategy: bearer_authentication
       configuration:
-        username:
-          connector_param: username
-        password:
-          connector_param: api_key
+        token:
+          connector_param: access_token
 
   test_request:
     method: GET
-    path: /3.0/lists
+    path: /v1beta/workspaces/
 
   endpoints:
-  - name: messages
+  - name: segment_user
     requests:
       read:
         method: GET
-        path: /3.0/conversations/<conversation_id>/messages
+        path: /v1/spaces/<namespace_id>/collections/users/profiles/user_id:<user_id>/metadata
         param_values:
-          - name: conversation_id
-            references:
-              - dataset: mailchimp_connector_example
-                field: conversations.id
-                direction: from
-        data_path: conversation_messages
-        postprocessors:
-          - strategy: filter
+          - name: namespace_id
+            connector_param: namespace_id
+          - name: user_id
+            identity: email
+        client_config:
+          protocol: https
+          host:
+            connector_param: personas_domain
+          authentication:
+            strategy: basic_authentication
             configuration:
-              field: from_email
-              value:
-                identity: email
-  - name: conversations
+              username:
+                connector_param: access_secret
+  - name: track_events
     requests:
       read:
         method: GET
-        path: /3.0/conversations
-        query_params:
-          - name: count
-            value: 1000
-          - name: offset
-            value: 0
+        path: /v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/events
         param_values:
-          - name: placeholder
-            identity: email
-        data_path: conversations
+          - name: namespace_id
+            connector_param: namespace_id
+          - name: segment_id
+            references:
+              - dataset: segment_connector_example
+                field: segment_user.segment_id
+                direction: from
+        data_path: data
         pagination:
-          strategy: offset
+          strategy: link
           configuration:
-            incremental_param: offset
-            increment_by: 1000
-            limit: 10000
-  - name: member
+            source: body
+            path: cursor.url
+        client_config:
+          protocol: https
+          host:
+            connector_param: personas_domain
+          authentication:
+            strategy: basic_authentication
+            configuration:
+              username:
+                connector_param: access_secret
+  - name: traits
     requests:
       read:
         method: GET
-        path: /3.0/search-members
+        path: /v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/traits
         query_params:
-          - name: query
-            value: <email>
+          - name: limit
+            value: 17
         param_values:
-          - name: email
-            identity: email
-        data_path: exact_matches.members
-      update:
-        method: PUT
-        path: /3.0/lists/<list_id>/members/<subscriber_hash>
+          - name: namespace_id
+            connector_param: namespace_id
+          - name: segment_id
+            references:
+              - dataset: segment_connector_example
+                field: segment_user.segment_id
+                direction: from
+        data_path: traits
+        pagination:
+          strategy: link
+          configuration:
+            source: body
+            path: cursor.url
+        client_config:
+          protocol: https
+          host:
+            connector_param: personas_domain
+          authentication:
+            strategy: basic_authentication
+            configuration:
+              username:
+                connector_param: access_secret
+  - name: external_ids
+    requests:
+      read:
+        method: GET
+        path: /v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/external_ids
         param_values:
-          - name: list_id
+          - name: namespace_id
+            connector_param: namespace_id
+          - name: segment_id
             references:
-              - dataset: mailchimp_connector_example
-                field: member.list_id
+              - dataset: segment_connector_example
+                field: segment_user.segment_id
                 direction: from
-          - name: subscriber_hash
-            references:
-              - dataset: mailchimp_connector_example
-                field: member.id
-                direction: from
+        data_path: data
+        pagination:
+          strategy: link
+          configuration:
+            source: body
+            path: cursor.url
+        client_config:
+          protocol: https
+          host:
+            connector_param: personas_domain
+          authentication:
+            strategy: basic_authentication
+            configuration:
+              username:
+                connector_param: access_secret
+
+  data_protection_request:
+    method: POST
+    path: /v1beta/workspaces/<workspace_name>/regulations
+    headers:
+      - name: Content-Type
+        value: application/json
+    param_values:
+      - name: workspace_name
+        connector_param: workspace
+      - name: user_id
+        identity: email
+    body: '{"regulation_type": "Suppress_With_Delete", "attributes": {"name": "userId", "values": ["<user_id>"]}}'
+    client_config:
+      protocol: https
+      host:
+        connector_param: domain
+      authentication:
+        strategy: bearer_authentication
+        configuration:
+          token:
+            connector_param: access_token
 ```

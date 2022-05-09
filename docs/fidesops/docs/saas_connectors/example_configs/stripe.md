@@ -1,113 +1,466 @@
 
-# Mailchimp
+# Stripe
 
 ## Implementation Summary
-You may use the following endpoints in Mailchimp to retrieve and delete Personally Identifiable Information (PII) when a user submits a Data Subject Request (DSR).
-
-This table summarizes whether each available endpoint supports Right to Access and Right to Delete/Right to Forget 
+Fidesops uses the following Stripe endpoints to retrieve and delete Personally Identifiable Information (PII) when processing a Data Subject Request (DSR). Right to Access and Right to Delete (Right to Forget) support for each endpoint is noted below.
 
 |Endpoint | Right to Access | Right to Delete |
 |----|----|----|
-|[Messages](docs/link) | Yes/No | Yes/No |
-|[Conversations](docs/link) | Yes/No | Yes/No |
-|[Members](docs/link) | Yes/No | Yes/No |
-
+|[Customers](https://stripe.com/docs/api/customers/update) | Yes | No |
+|[Charges](https://stripe.com/docs/api/charges/list) | Yes | No |
+|[Disputes](https://stripe.com/docs/api/disputes/list) | Yes | No |
+|[PaymentIntents](https://stripe.com/docs/api/payment_intents/list) | Yes | No |
+|[PaymentMethods](https://stripe.com/docs/api/payment_methods/list) | Yes | No |
+|[BankAccounts](https://stripe.com/docs/api/customer_bank_accounts/list) | Yes | No |
+|[BankAccounts](https://stripe.com/docs/api/customer_bank_accounts/list) | Yes | No |
+|[Cards](https://stripe.com/docs/api/cards/list) | Yes | No |
+|[Credit Notes](https://stripe.com/docs/api/credit_notes/list) | Yes | No |
+|[Customer Balance Transaction](https://stripe.com/docs/api/customer_balance_transactions/list) | Yes | No |
+|[Tax IDs](https://stripe.com/docs/api/customer_tax_ids/list) | Yes | Yes |
+|[Invoices](https://stripe.com/docs/api/invoices/list) | Yes | Yes |
+|[Invoice Item](https://stripe.com/docs/api/invoiceitems/list) | Yes | Yes |
+|[Subscriptions](https://stripe.com/docs/api/subscriptions/list) | Yes | Yes |
 
 ## Connection Settings
-To retrieve 
-x
-## Example SaaS Configuration
+Fidesops provides as [Postman collection](../../postman/using_postman.md) for easily establishing connections to your third party applications. Additional connection instructions may be found in the [configuration guide](../saas_config.md).
+
+## Example Stripe Configuration
 ```yaml
 saas_config:
-  fides_key: mailchimp_connector_example
-  name: Mailchimp SaaS Config
-  description: A sample schema representing the Mailchimp connector for Fidesops
+  fides_key: stripe_connector_example
+  name: Stripe SaaS Config
+  description: A sample schema representing the Stripe connector for Fidesops
   version: 0.0.1
 
   connector_params:
-    - name: domain
-    - name: username
+    - name: host
     - name: api_key
+    - name: payment_types
+    - name: items_per_page
 
   client_config:
     protocol: https
     host:
-      connector_param: domain
+      connector_param: host
     authentication:
-      strategy: basic_authentication
+      strategy: bearer_authentication
       configuration:
-        username:
-          connector_param: username
-        password:
+        token:
           connector_param: api_key
 
   test_request:
     method: GET
-    path: /3.0/lists
-
+    path: /v1/customers
+    
   endpoints:
-  - name: messages
+  - name: customer
     requests:
       read:
         method: GET
-        path: /3.0/conversations/<conversation_id>/messages
-        param_values:
-          - name: conversation_id
-            references:
-              - dataset: mailchimp_connector_example
-                field: conversations.id
-                direction: from
-        data_path: conversation_messages
-        postprocessors:
-          - strategy: filter
-            configuration:
-              field: from_email
-              value:
-                identity: email
-  - name: conversations
-    requests:
-      read:
-        method: GET
-        path: /3.0/conversations
+        path: /v1/customers
         query_params:
-          - name: count
-            value: 1000
-          - name: offset
-            value: 0
-        param_values:
-          - name: placeholder
-            identity: email
-        data_path: conversations
-        pagination:
-          strategy: offset
-          configuration:
-            incremental_param: offset
-            increment_by: 1000
-            limit: 10000
-  - name: member
-    requests:
-      read:
-        method: GET
-        path: /3.0/search-members
-        query_params:
-          - name: query
+          - name: email
             value: <email>
         param_values:
           - name: email
             identity: email
-        data_path: exact_matches.members
+        data_path: data
       update:
-        method: PUT
-        path: /3.0/lists/<list_id>/members/<subscriber_hash>
+        method: POST
+        path: /v1/customers/<customer_id>
+        headers:
+          - name: Content-Type
+            value: application/x-www-form-urlencoded
         param_values:
-          - name: list_id
+          - name: customer_id
             references:
-              - dataset: mailchimp_connector_example
-                field: member.list_id
+              - dataset: stripe_connector_example
+                field: customer.id
                 direction: from
-          - name: subscriber_hash
+        body: '{<all_object_fields>}'
+  - name: charge
+    requests:
+      read: 
+        method: GET
+        path: /v1/charges
+        query_params:
+          - name: customer
+            value: <customer_id>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
             references:
-              - dataset: mailchimp_connector_example
-                field: member.id
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: dispute
+    requests:
+      read:
+        method: GET
+        path: /v1/disputes
+        query_params:
+          - name: charge
+            value: <charge_id>
+          - name: payment_intent
+            value: <payment_intent_id>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: charge_id
+            references:
+              - dataset: stripe_connector_example
+                field: charge.id
+                direction: from
+          - name: payment_intent_id
+            references:
+              - dataset: stripe_connector_example
+                field: payment_intent.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: payment_intent
+    requests:
+      read:
+        method: GET
+        path: /v1/payment_intents
+        query_params:
+          - name: customer
+            value: <customer_id>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: payment_method
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/<customer_id>/payment_methods
+        query_params:
+          - name: type
+            value: <type>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: type
+            connector_param: payment_types
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+      update:
+        method: POST
+        path: /v1/payment_methods/<payment_method_id>
+        headers:
+          - name: Content-Type
+            value: application/x-www-form-urlencoded
+        param_values:
+          - name: payment_method_id
+            references:
+              - dataset: stripe_connector_example
+                field: payment_method.id
+                direction: from
+        body: '{<masked_object_fields>}'
+  - name: bank_account
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/<customer_id>/sources
+        query_params:
+          - name: object
+            value: bank_account
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+      update:
+        method: POST
+        path: /v1/customers/<customer_id>/sources/<bank_account_id>
+        headers:
+          - name: Content-Type
+            value: application/x-www-form-urlencoded
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: bank_account.customer
+                direction: from
+          - name: bank_account_id
+            references:
+              - dataset: stripe_connector_example
+                field: bank_account.id
+                direction: from
+        body: '{<masked_object_fields>}'
+  - name: card
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/<customer_id>/sources
+        query_params:
+          - name: object
+            value: card
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+      update:
+        method: POST
+        path: /v1/customers/<customer_id>/sources/<card_id>
+        headers:
+          - name: Content-Type
+            value: application/x-www-form-urlencoded
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: card.customer
+                direction: from
+          - name: card_id
+            references:
+              - dataset: stripe_connector_example
+                field: card.id
+                direction: from
+        body: '{<masked_object_fields>}'
+  - name: credit_note
+    requests:
+      read:
+        method: GET
+        path: /v1/credit_notes
+        query_params:
+          - name: customer
+            value: <customer_id>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: customer_balance_transaction
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/<customer_id>/balance_transactions
+        query_params:
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: tax_id
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/<customer_id>/tax_ids
+        query_params:
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+      delete:
+        method: DELETE
+        path: /v1/customers/<customer_id>/tax_ids/<tax_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: tax_id.customer
+                direction: from
+          - name: tax_id
+            references:
+              - dataset: stripe_connector_example
+                field: tax_id.id
+                direction: from
+  - name: invoice
+    requests:
+      read:
+        method: GET
+        path: /v1/invoices
+        query_params:
+          - name: customer
+            value: <customer_id>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+      delete:
+        method: DELETE
+        ignore_errors: true # You can only delete draft invoices. You can't delete invoices created by subscriptions.
+        path: /v1/invoices/<invoice_id>
+        param_values:
+          - name: invoice_id
+            references:
+              - dataset: stripe_connector_example
+                field: invoice.id
+                direction: from
+  - name: invoice_item
+    requests:
+      read:
+        method: GET
+        path: /v1/invoiceitems
+        query_params:
+          - name: customer
+            value: <customer_id>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+      delete:
+        method: DELETE
+        ignore_errors: true # Can't delete an invoice item that is attached to an invoice that is no longer editable
+        path: /v1/invoiceitems/<invoice_item_id>
+        param_values:
+         - name: invoice_item_id
+           references:
+              - dataset: stripe_connector_example
+                field: invoice_item.id
+                direction: from
+  - name: subscription
+    requests:
+      read:
+        method: GET
+        path: /v1/subscriptions
+        query_params:
+          - name: customer
+            value: <customer_id>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+      delete:
+        method: DELETE
+        path: /v1/subscriptions/<subscription_id>
+        param_values:
+          - name: subscription_id
+            references:
+              - dataset: stripe_connector_example
+                field: subscription.id
                 direction: from
 ```

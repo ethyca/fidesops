@@ -1,113 +1,186 @@
-
-# Mailchimp
+# Sentry
 
 ## Implementation Summary
-You may use the following endpoints in Mailchimp to retrieve and delete Personally Identifiable Information (PII) when a user submits a Data Subject Request (DSR).
-
-This table summarizes whether each available endpoint supports Right to Access and Right to Delete/Right to Forget 
+Fidesops uses the following Sentry endpoints to retrieve and delete Personally Identifiable Information (PII) when processing a Data Subject Request (DSR). Right to Access and Right to Delete (Right to Forget) support for each endpoint is noted below.
 
 |Endpoint | Right to Access | Right to Delete |
 |----|----|----|
-|[Messages](docs/link) | Yes/No | Yes/No |
-|[Conversations](docs/link) | Yes/No | Yes/No |
-|[Members](docs/link) | Yes/No | Yes/No |
+|[Organizations](https://docs.sentry.io/api/organizations/list-your-organizations/) | Yes | No |
+|[Users](https://docs.sentry.io/api/organizations/list-an-organizations-users/) | Yes | No |
+|[Projects](https://docs.sentry.io/api/organizations/list-an-organizations-projects/) | Yes | No |
+|[Issues](https://docs.sentry.io/api/events/list-a-projects-issues/) | Yes | No |
+|[User Feedback](https://docs.sentry.io/api/projects/list-a-projects-user-feedback/) | Yes | No |
+
 
 
 ## Connection Settings
-To retrieve 
-x
-## Example SaaS Configuration
+Fidesops provides as [Postman collection](../../postman/using_postman.md) for easily establishing connections to your third party applications. Additional connection instructions may be found in the [configuration guide](../saas_config.md).
+
+## Example Sentry Configuration
 ```yaml
 saas_config:
-  fides_key: mailchimp_connector_example
-  name: Mailchimp SaaS Config
-  description: A sample schema representing the Mailchimp connector for Fidesops
+  fides_key: sentry_connector
+  name: Sentry SaaS Config
+  description: A sample schema representing the Sentry connector for Fidesops
   version: 0.0.1
 
   connector_params:
-    - name: domain
-    - name: username
-    - name: api_key
+    - name: host
+    - name: access_token
 
   client_config:
     protocol: https
     host:
-      connector_param: domain
+      connector_param: host
     authentication:
-      strategy: basic_authentication
+      strategy: bearer_authentication
       configuration:
-        username:
-          connector_param: username
-        password:
-          connector_param: api_key
+        token:
+          connector_param: access_token
 
   test_request:
     method: GET
-    path: /3.0/lists
+    path: /api/0/organizations/
 
   endpoints:
-  - name: messages
-    requests:
-      read:
-        method: GET
-        path: /3.0/conversations/<conversation_id>/messages
-        param_values:
-          - name: conversation_id
-            references:
-              - dataset: mailchimp_connector_example
-                field: conversations.id
-                direction: from
-        data_path: conversation_messages
-        postprocessors:
-          - strategy: filter
+    - name: organizations
+      requests:
+        read:
+          method: GET
+          path: /api/0/organizations/
+          param_values:
+            - name: placeholder
+              identity: email
+          pagination:
+            strategy: link
             configuration:
-              field: from_email
-              value:
-                identity: email
-  - name: conversations
-    requests:
-      read:
-        method: GET
-        path: /3.0/conversations
-        query_params:
-          - name: count
-            value: 1000
-          - name: offset
-            value: 0
-        param_values:
-          - name: placeholder
-            identity: email
-        data_path: conversations
-        pagination:
-          strategy: offset
-          configuration:
-            incremental_param: offset
-            increment_by: 1000
-            limit: 10000
-  - name: member
-    requests:
-      read:
-        method: GET
-        path: /3.0/search-members
-        query_params:
-          - name: query
-            value: <email>
-        param_values:
-          - name: email
-            identity: email
-        data_path: exact_matches.members
-      update:
-        method: PUT
-        path: /3.0/lists/<list_id>/members/<subscriber_hash>
-        param_values:
-          - name: list_id
-            references:
-              - dataset: mailchimp_connector_example
-                field: member.list_id
-                direction: from
-          - name: subscriber_hash
-            references:
-              - dataset: mailchimp_connector_example
-                field: member.id
-                direction: from
+              source: headers
+              rel: next
+    - name: employees
+      requests:
+        read:
+          method: GET
+          path: /api/0/organizations/<organization_slug>/users/
+          param_values:
+            - name: organization_slug
+              references:
+                - dataset: sentry_connector
+                  field: organizations.slug
+                  direction: from
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: email
+                value:
+                  identity: email
+    - name: projects
+      requests:
+        read:
+          method: GET
+          path: /api/0/projects/
+          param_values:
+            - name: placeholder
+              identity: email
+          pagination:
+            strategy: link
+            configuration:
+              source: headers
+              rel: next
+    - name: issues
+      requests:
+        update:
+          method: PUT
+          path: /api/0/issues/<issue_id>/
+          headers:
+            - name: Content-Type
+              value: application/json
+          param_values:
+            - name: issue_id
+              references:
+                - dataset: sentry_connector
+                  field: issues.id
+                  direction: from
+          body: '{"assignedTo": ""}'
+        read:
+          method: GET
+          path: /api/0/projects/<organization_slug>/<project_slug>/issues/
+          grouped_inputs: [organization_slug, project_slug, query]
+          query_params:
+            - name: query
+              value: assigned:<query>
+          param_values:
+            - name: organization_slug
+              references:
+                - dataset: sentry_connector
+                  field: projects.organization.slug
+                  direction: from
+            - name: project_slug
+              references:
+                - dataset: sentry_connector
+                  field: projects.slug
+                  direction: from
+            - name: query
+              identity: email
+          pagination:
+            strategy: link
+            configuration:
+              source: headers
+              rel: next
+    - name: user_feedback
+      requests:
+        read:
+          method: GET
+          path: /api/0/projects/<organization_slug>/<project_slug>/user-feedback/
+          grouped_inputs: [organization_slug, project_slug]
+          param_values:
+            - name: organization_slug
+              references:
+                - dataset: sentry_connector
+                  field: projects.organization.slug
+                  direction: from
+            - name: project_slug
+              references:
+                - dataset: sentry_connector
+                  field: projects.slug
+                  direction: from
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: email
+                value:
+                  identity: email
+          pagination:
+            strategy: link
+            configuration:
+              source: headers
+              rel: next
+    - name: person
+      after: [sentry_connector.projects]
+      requests:
+        read:
+          method: GET
+          ignore_errors: true
+          path: /api/0/projects/<organization_slug>/<project_slug>/users/
+          grouped_inputs: [organization_slug, project_slug, query]
+          query_params:
+            - name: query
+              value: email:<query>
+          param_values:
+            - name: organization_slug
+              references:
+                - dataset: sentry_connector
+                  field: projects.organization.slug
+                  direction: from
+            - name: project_slug
+              references:
+                - dataset: sentry_connector
+                  field: projects.slug
+                  direction: from
+            - name: query
+              identity: email
+          pagination:
+            strategy: link
+            configuration:
+              source: headers
+              rel: next
 ```

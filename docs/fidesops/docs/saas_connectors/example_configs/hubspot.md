@@ -2,112 +2,214 @@
 # Hubspot
 
 ## Implementation Summary
-You may use the following endpoints in Mailchimp to retrieve and delete Personally Identifiable Information (PII) when a user submits a Data Subject Request (DSR).
-
-This table summarizes whether each available endpoint supports Right to Access and Right to Delete/Right to Forget 
+Fidesops uses the following Hubspot endpoints to retrieve and delete Personally Identifiable Information (PII) when processing a Data Subject Request (DSR). Right to Access and Right to Delete (Right to Forget) support for each endpoint is noted below.
 
 |Endpoint | Right to Access | Right to Delete |
 |----|----|----|
-|[Messages](docs/link) | Yes/No | Yes/No |
-|[Conversations](docs/link) | Yes/No | Yes/No |
-|[Members](docs/link) | Yes/No | Yes/No |
+|[Search](https://developers.hubspot.com/docs/api/crm/search) | Yes | No |
+|[Contacts](https://developers.hubspot.com/docs/api/crm/contacts) | Yes | Yes |
+|[Owners](https://developers.hubspot.com/docs/api/crm/owners) | Yes | No |
+|[Marketing Emails](https://developers.hubspot.com/docs/api/marketing/marketing-emails) | Yes | No |
+|[Communication Preferences](https://developers.hubspot.com/docs/api/marketing-api/subscriptions-preferences#endpoint?spec=POST-/communication-preferences/v3/unsubscribe) | Yes | Yes |
+|[Users](https://developers.hubspot.com/docs/api/settings/user-provisioning) | Yes | No |
+
 
 
 ## Connection Settings
-To retrieve 
-x
-## Example SaaS Configuration
+Fidesops provides as [Postman collection](../../postman/using_postman.md) for easily establishing connections to your third party applications. Additional connection instructions may be found in the [configuration guide](../saas_config.md).
+
+## Example Hubspot Configuration
 ```yaml
 saas_config:
-  fides_key: mailchimp_connector_example
-  name: Mailchimp SaaS Config
-  description: A sample schema representing the Mailchimp connector for Fidesops
+  fides_key: hubspot_connector_example
+  name: Hubspot SaaS Config
+  description: A sample schema representing the Hubspot connector for Fidesops
   version: 0.0.1
 
   connector_params:
     - name: domain
-    - name: username
-    - name: api_key
+    - name: hapikey
 
   client_config:
     protocol: https
     host:
       connector_param: domain
     authentication:
-      strategy: basic_authentication
+      strategy: query_param
       configuration:
-        username:
-          connector_param: username
-        password:
-          connector_param: api_key
+        token:
+          connector_param: hapikey
 
   test_request:
     method: GET
-    path: /3.0/lists
+    path: /companies/v2/companies/paged
 
   endpoints:
-  - name: messages
-    requests:
-      read:
-        method: GET
-        path: /3.0/conversations/<conversation_id>/messages
-        param_values:
-          - name: conversation_id
-            references:
-              - dataset: mailchimp_connector_example
-                field: conversations.id
-                direction: from
-        data_path: conversation_messages
-        postprocessors:
-          - strategy: filter
+    - name: contacts
+      requests:
+        read:
+          path: /crm/v3/objects/contacts/search
+          method: POST
+          body: '{
+            "filterGroups": [{
+              "filters": [{
+                "value": "<email>",
+                "propertyName": "email",
+                "operator": "EQ"
+              }]
+            }]
+          }'
+          query_params:
+            - name: limit
+              value: 100
+          param_values:
+            - name: email
+              identity: email
+          postprocessors:
+            - strategy: unwrap
+              configuration:
+                data_path: results
+          pagination:
+            strategy: link
             configuration:
-              field: from_email
-              value:
-                identity: email
-  - name: conversations
-    requests:
-      read:
-        method: GET
-        path: /3.0/conversations
-        query_params:
-          - name: count
-            value: 1000
-          - name: offset
-            value: 0
-        param_values:
-          - name: placeholder
-            identity: email
-        data_path: conversations
-        pagination:
-          strategy: offset
-          configuration:
-            incremental_param: offset
-            increment_by: 1000
-            limit: 10000
-  - name: member
-    requests:
-      read:
-        method: GET
-        path: /3.0/search-members
-        query_params:
-          - name: query
-            value: <email>
-        param_values:
-          - name: email
-            identity: email
-        data_path: exact_matches.members
-      update:
-        method: PUT
-        path: /3.0/lists/<list_id>/members/<subscriber_hash>
-        param_values:
-          - name: list_id
-            references:
-              - dataset: mailchimp_connector_example
-                field: member.list_id
-                direction: from
-          - name: subscriber_hash
-            references:
-              - dataset: mailchimp_connector_example
-                field: member.id
-                direction: from
+              source: body
+              path: paging.next.link
+        update:
+          path: /crm/v3/objects/contacts/<contactId>
+          method: PATCH
+          body: '{
+              <masked_object_fields>
+          }'
+          param_values:
+            - name: contactId
+              references:
+                - dataset: hubspot_connector_example
+                  field: contacts.id
+                  direction: from
+    - name: owners
+      requests:
+        read:
+          path: /crm/v3/owners
+          method: GET
+          query_params:
+            - name: email
+              value: <email>
+            - name: limit
+              value: 100
+          param_values:
+            - name: email
+              identity: email
+          postprocessors:
+            - strategy: unwrap
+              configuration:
+                data_path: results
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: paging.next.link
+#    - name: marketing_emails
+#      requests:
+#        read:
+#          path: /marketing-emails/v1/emails
+#          method: GET
+#          query_params:
+#            - name: limit
+#              value: 100
+#            - name: offset
+#              value: 0
+#          param_values:
+#            - name: placeholder
+#              identity: email
+#          data_path: objects
+#          postprocessors:
+#            - strategy: filter
+#              configuration:
+#                field: authorEmail  # or email?
+#                value:
+#                  identity: email
+#          pagination:
+#            strategy: offset
+#            configuration:
+#              incremental_param: offset
+#              increment_by: 100
+#              limit: 10000
+#        update:
+#          path: marketing-emails/v1/emails/<emailId>
+#          method: PUT
+#          param_values:
+#            - name: emailId
+#              references:
+#                - dataset: hubspot_connector_example
+#                  field: marketing_emails.id
+#                  direction: from
+    - name: subscription_preferences
+      requests:
+        read:
+          path: /communication-preferences/v3/status/email/<email>
+          method: GET
+          param_values:
+            - name: email
+              identity: email
+        update:
+          path: /communication-preferences/v3/unsubscribe
+          method: POST
+          body: '{
+            "emailAddress": "<email>",
+            "subscriptionId": "<subscriptionId>",
+            "legalBasis": "LEGITIMATE_INTEREST_CLIENT",
+            "legalBasisExplanation": "At users request, we opted them out"
+          }'
+          data_path: subscriptionStatuses
+          param_values:
+            - name: email
+              identity: email
+            - name: subscriptionId
+              references:
+                - dataset: hubspot_connector_example
+                  field: subscription_preferences.id
+                  direction: from
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: status
+                value: SUBSCRIBED
+#    - name: users
+#      requests:
+#        read:
+#          path: /settings/v3/users/
+#          method: GET
+#          query_params:
+#            - name: limit
+#              value: 100
+#          param_values:
+#            - name: placeholder
+#              identity: email
+#          pagination:
+#            strategy: link
+#            configuration:
+#              source: body
+#              path: paging.next.link
+#          postprocessors:
+#            - strategy: unwrap
+#              configuration:
+#                data_path: results
+#            - strategy: filter
+#              configuration:
+#                field: email
+#                value:
+#                  identity: email
+#    - name: user_provisioning
+#      requests:
+#        read:
+#          path: /settings/v3/users/<userId>
+#          method: GET
+#          param_values:
+#            - name: userId
+#              references:
+#                - dataset: hubspot_connector_example
+#                  field: users.id
+#                  direction: from
+#            - name: placeholder
+#              identity: email
 ```
