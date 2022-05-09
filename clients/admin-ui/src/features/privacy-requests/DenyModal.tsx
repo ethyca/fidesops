@@ -14,13 +14,16 @@ import React from 'react';
 
 type DenyModalProps ={
     isOpen: boolean
+    isLoading: boolean
     handleMenuClose:  () => void
+    handleDenyRequest:  (reason: string) => Promise<any>
     denialReason: string
-    onChange: ()=> void
+    onChange: (e:any)=> void
+
 }
 
-const DenyModal = ({ isOpen, handleMenuClose, denialReason, onChange}: DenyModalProps ) => (
-    <Modal isOpen={isOpen} onClose={handleMenuClose} isCentered>
+const DenyModal = ({ isOpen, isLoading,handleMenuClose, denialReason, onChange, handleDenyRequest}: DenyModalProps ) => (
+    <Modal isOpen={isOpen} onClose={handleMenuClose} isCentered returnFocusOnClose={false}>
         <ModalOverlay />
         <ModalContent width='100%' maxWidth='456px'>
             <ModalHeader>Data subject request denial</ModalHeader>
@@ -28,7 +31,7 @@ const DenyModal = ({ isOpen, handleMenuClose, denialReason, onChange}: DenyModal
                 Please enter a reason for denying this data subject request
             </ModalBody>
             <ModalBody>
-                <Textarea focusBorderColor="primary.600" value={denialReason} onChange={onChange}/>
+                <Textarea focusBorderColor="primary.600" value={denialReason} onChange={onChange} disabled={isLoading}/>
             </ModalBody>
             <ModalFooter>
                 <Button
@@ -37,6 +40,7 @@ const DenyModal = ({ isOpen, handleMenuClose, denialReason, onChange}: DenyModal
                     maxWidth='198px'
                     colorScheme='gray.200'
                     mr={3}
+                    disabled={isLoading}
                     onClick={handleMenuClose}>
                     Close
                 </Button>
@@ -46,7 +50,12 @@ const DenyModal = ({ isOpen, handleMenuClose, denialReason, onChange}: DenyModal
                     maxWidth='198px'
                     colorScheme='primary'
                     variant='solid'
-                    onClick={()=>{console.log("denial reason: ", denialReason)}}
+                    isLoading={isLoading}
+                    onClick={()=>{
+                        handleDenyRequest(denialReason).then(()=>{
+                            handleMenuClose()
+                        })
+                    }}
                     >
                     Confirm
                 </Button>

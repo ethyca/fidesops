@@ -8,6 +8,7 @@ import {
   PrivacyRequestParams,
   PrivacyRequestResponse,
   PrivacyRequestStatus,
+  DenyPrivacyRequest
 } from './types';
 
 // Helpers
@@ -83,14 +84,14 @@ export const privacyRequestApi = createApi({
     }),
     denyRequest: build.mutation<
       PrivacyRequest,
-      Partial<PrivacyRequest> & Pick<PrivacyRequest, 'id'>
+      DenyPrivacyRequest
     >({
-      query: ({ id }) => ({
+      query: ({ id, reason },) => ({
         url: 'privacy-request/administrate/deny',
         method: 'PATCH',
         body: {
           request_ids: [id],
-          reason: "placeholder, testing 123"
+          reason
         },
       }),
       invalidatesTags: ['Request'],

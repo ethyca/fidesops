@@ -45,8 +45,6 @@ const useRequestRow = (request: PrivacyRequest) => {
   const [denyRequest, denyRequestResult] = useDenyRequestMutation();
   const handleMenuOpen = () => setMenuOpen(true);
   const handleMenuClose = () => setMenuOpen(false);
-  const handleModalOpen = () => setModalOpen(true);
-  const handleModalClose = () => setModalOpen(false);
   const handleMouseEnter = () => setHovered(true);
   const handleMouseLeave = () => setHovered(false);
   const shiftFocusToHoverMenu = () => {
@@ -57,8 +55,15 @@ const useRequestRow = (request: PrivacyRequest) => {
   const handleFocus = () => setFocused(true);
   const handleBlur = () => setFocused(false);
   const handleApproveRequest = () => approveRequest(request);
-  const handleDenyRequest = () => denyRequest(request);
+  const handleDenyRequest = ( reason: string) => denyRequest( { id: request.id, reason});
   const { onCopy } = useClipboard(request.id);
+  const handleModalOpen = () => setModalOpen(true);
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setFocused(false);
+    setHovered(false);
+    setMenuOpen(false);
+  }
   const handleIdCopy = () => {
     onCopy();
     if (typeof window !== 'undefined') {
@@ -225,7 +230,6 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
                 mr="-px"
                 bg="white"
                 onClick={handleModalOpen}
-                isLoading={denyRequestResult.isLoading}
                 _loading={{
                   opacity: 1,
                   div: { opacity: 0.4 },
@@ -236,11 +240,18 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
               >
                 Deny
               </Button>
+              <DenyModal
+                  isOpen={modalOpen}
+                  isLoading={ denyRequestResult.isLoading}
+                  handleMenuClose={handleModalClose}
+                  handleDenyRequest={handleDenyRequest}
+                  denialReason={denialReason}
+                  onChange={(e)=>{
+                    setDenialReason(e.target.value)
+              }}/>
             </>
           ) : null}
-          {modalOpen? <DenyModal isOpen handleMenuClose={handleModalClose} denialReason={denialReason} onChange={(e)=>{
-            setDenialReason(e.target.value);
-          }}/>: null}
+
           <Menu onOpen={handleMenuOpen} onClose={handleMenuClose}>
             <MenuButton
               as={Button}
