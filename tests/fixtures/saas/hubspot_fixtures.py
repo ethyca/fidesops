@@ -137,11 +137,11 @@ def hubspot_erasure_data(connection_config_hubspot, hubspot_erasure_identity_ema
     # no need to subscribe contact, since creating a contact auto-subscribes them
 
     # Allows contact to be propagated in Hubspot before calling access / erasure requests
-    remaining_tries = 10
+    retries = 10
     while _contact_exists(hubspot_erasure_identity_email, connector) is False:
-        remaining_tries -= 1
-        if remaining_tries < 1:
+        if not retries:
             raise Exception(f"Contact with contact id {contact_id} could not be added to Hubspot")
+        retries -= 1
         time.sleep(5)
 
     yield contact_id
@@ -154,11 +154,11 @@ def hubspot_erasure_data(connection_config_hubspot, hubspot_erasure_identity_ema
     connector.create_client().send(delete_request)
 
     # verify contact is deleted
-    remaining_tries = 10
+    retries = 10
     while _contact_exists(hubspot_erasure_identity_email, connector) is True:
-        remaining_tries -= 1
-        if remaining_tries < 1:
+        if not retries:
             raise Exception(f"Contact with contact id {contact_id} could not be deleted from Hubspot")
+        retries -= 1
         time.sleep(5)  # Ensures contact is deleted
 
 

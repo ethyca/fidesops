@@ -1,7 +1,14 @@
+import os
 import random
 import time
+from typing import Any, Dict, Generator
+
+import pydash
+import pytest
 import requests
 from faker import Faker
+from sqlalchemy.orm import Session
+
 from fidesops.core.config import load_toml
 from fidesops.db import session
 from fidesops.models.connectionconfig import (
@@ -10,13 +17,8 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-import pytest
-import pydash
-import os
-from typing import Any, Dict, Generator
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
-from sqlalchemy.orm import Session
 
 saas_config = load_toml("saas_config.toml")
 
@@ -24,22 +26,15 @@ saas_config = load_toml("saas_config.toml")
 @pytest.fixture(scope="function")
 def segment_secrets():
     return {
-        "domain": pydash.get(saas_config, "segment.domain")
-        or os.environ.get("SEGMENT_DOMAIN"),
+        "domain": pydash.get(saas_config, "segment.domain") or os.environ.get("SEGMENT_DOMAIN"),
         "personas_domain": pydash.get(saas_config, "segment.personas_domain")
         or os.environ.get("SEGMENT_PERSONAS_DOMAIN"),
-        "workspace": pydash.get(saas_config, "segment.workspace")
-        or os.environ.get("SEGMENT_WORKSPACE"),
-        "access_token": pydash.get(saas_config, "segment.access_token")
-        or os.environ.get("SEGMENT_ACCESS_TOKEN"),
-        "namespace_id": pydash.get(saas_config, "segment.namespace_id")
-        or os.environ.get("SEGMENT_NAMESPACE_ID"),
-        "access_secret": pydash.get(saas_config, "segment.access_secret")
-        or os.environ.get("SEGMENT_ACCESS_SECRET"),
-        "api_domain": pydash.get(saas_config, "segment.api_domain")
-        or os.environ.get("SEGMENT_API_DOMAIN"),
-        "user_token": pydash.get(saas_config, "segment.user_token")
-        or os.environ.get("SEGMENT_USER_TOKEN"),
+        "workspace": pydash.get(saas_config, "segment.workspace") or os.environ.get("SEGMENT_WORKSPACE"),
+        "access_token": pydash.get(saas_config, "segment.access_token") or os.environ.get("SEGMENT_ACCESS_TOKEN"),
+        "namespace_id": pydash.get(saas_config, "segment.namespace_id") or os.environ.get("SEGMENT_NAMESPACE_ID"),
+        "access_secret": pydash.get(saas_config, "segment.access_secret") or os.environ.get("SEGMENT_ACCESS_SECRET"),
+        "api_domain": pydash.get(saas_config, "segment.api_domain") or os.environ.get("SEGMENT_API_DOMAIN"),
+        "user_token": pydash.get(saas_config, "segment.user_token") or os.environ.get("SEGMENT_USER_TOKEN"),
     }
 
 
@@ -194,13 +189,13 @@ def segment_erasure_data(
     assert response.ok
 
     # Wait until user returns data
-    remaining_tries = 10
+    retries = 10
     while (segment_id := _get_user_id(email, segment_secrets)) is None:
-        remaining_tries -= 1
-        if remaining_tries < 1:
+        if not retries:
             raise Exception(
                 "The user endpoint did not return the required data for testing during the time limit"
             )
+        retries -= 1
         time.sleep(5)
 
     # Create event
@@ -216,11 +211,11 @@ def segment_erasure_data(
     assert response.ok
 
     # Wait until track_events returns data
-    remaining_tries = 10
+    retries = 10
     while _get_track_events(segment_id, segment_secrets) is None:
-        remaining_tries -= 1
-        if remaining_tries < 1:
+        if not retries:
             raise Exception(
                 "The track_events endpoint did not return the required data for testing during the time limit"
             )
+        retries -= 1
         time.sleep(5)

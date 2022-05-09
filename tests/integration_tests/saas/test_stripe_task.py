@@ -1,14 +1,16 @@
-from typing import List
-import pytest
 import random
+from typing import List
+
+import pytest
 import requests
+
 from fidesops.core.config import config
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.task import graph_task
-from fidesops.task.graph_task import get_cached_data_for_erasures
 from fidesops.task.filter_results import filter_data_categories
+from fidesops.task.graph_task import get_cached_data_for_erasures
 from tests.graph.graph_test_util import assert_rows_match
 
 
