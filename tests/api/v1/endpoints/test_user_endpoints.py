@@ -1,4 +1,5 @@
 from datetime import datetime
+from email.mime import application
 from typing import List
 import json
 
@@ -14,16 +15,24 @@ from starlette.status import (
     HTTP_401_UNAUTHORIZED,
     HTTP_400_BAD_REQUEST,
     HTTP_422_UNPROCESSABLE_ENTITY,
-    HTTP_404_NOT_FOUND
+    HTTP_404_NOT_FOUND,
 )
 
-from fidesops.api.v1.urn_registry import V1_URL_PREFIX, USERS, LOGIN, LOGOUT, USER_DETAIL
+from fidesops.api.v1.urn_registry import (
+    V1_URL_PREFIX,
+    USERS,
+    LOGIN,
+    LOGOUT,
+    USER_DETAIL,
+)
 from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
 from fidesops.api.v1.scope_registry import (
     STORAGE_READ,
     USER_CREATE,
     USER_READ,
+    USER_UPDATE,
     USER_DELETE,
+    USER_PASSWORD_RESET,
     SCOPE_REGISTRY,
     PRIVACY_REQUEST_READ,
 )
@@ -36,7 +45,10 @@ from fidesops.schemas.jwt import (
     JWE_ISSUED_AT,
 )
 
+from tests.conftest import generate_auth_header_for_user
+
 page_size = Params().size
+
 
 class TestCreateUser:
     @pytest.fixture(scope="function")
@@ -142,8 +154,30 @@ class TestCreateUser:
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
+        user.delete(db)
 
+    def test_create_user_with_name(
+        self,
+        db,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header([USER_CREATE])
+        body = {
+            "username": "test_user",
+            "password": "TestP@ssword9",
+            "first_name": "Test",
+            "last_name": "User",
+        }
 
+        response = api_client.post(url, headers=auth_header, json=body)
+
+        user = FidesopsUser.get_by(db, field="username", value=body["username"])
+        response_body = json.loads(response.text)
+        assert HTTP_201_CREATED == response.status_code
+        assert response_body == {"id": user.id}
+        assert user.permissions is not None
         user.delete(db)
 
 
@@ -191,7 +225,6 @@ class TestDeleteUser:
         assert user.permissions is not None
         saved_permissions_id = user.permissions.id
 
-
         client, _ = ClientDetail.create_client_and_secret(
             db, [USER_DELETE], user_id=user.id
         )
@@ -219,7 +252,9 @@ class TestDeleteUser:
         client_search = ClientDetail.get_by(db, field="id", value=saved_client_id)
         assert client_search is None
 
-        permissions_search = FidesopsUserPermissions.get_by(db, field="id", value=saved_permissions_id)
+        permissions_search = FidesopsUserPermissions.get_by(
+            db, field="id", value=saved_permissions_id
+        )
         assert permissions_search is None
 
     def test_delete_user_as_root(self, api_client, db, generate_auth_header, user):
@@ -269,7 +304,9 @@ class TestDeleteUser:
         client_search = ClientDetail.get_by(db, field="id", value=client_id)
         assert client_search is None
 
-        permissions_search = FidesopsUserPermissions.get_by(db, field="id", value=saved_permission_id)
+        permissions_search = FidesopsUserPermissions.get_by(
+            db, field="id", value=saved_permission_id
+        )
         assert permissions_search is None
 
         # Deleted user's client is also deleted
@@ -287,11 +324,15 @@ class TestGetUsers:
     def url(self, oauth_client: ClientDetail) -> str:
         return V1_URL_PREFIX + USERS
 
-    def test_get_users_not_authenticated(self, api_client: TestClient, url: str)-> None:
+    def test_get_users_not_authenticated(
+        self, api_client: TestClient, url: str
+    ) -> None:
         resp = api_client.get(url, headers={})
         assert resp.status_code == HTTP_401_UNAUTHORIZED
 
-    def test_get_users_wrong_scope(self, api_client: TestClient, generate_auth_header, url):
+    def test_get_users_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
         auth_header = generate_auth_header(scopes=[USER_DELETE])
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == HTTP_403_FORBIDDEN
@@ -308,13 +349,17 @@ class TestGetUsers:
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
-
-    def test_get_users(self, api_client:TestClient, generate_auth_header, url, db):
+    def test_get_users(self, api_client: TestClient, generate_auth_header, url, db):
         create_auth_header = generate_auth_header(scopes=[USER_CREATE])
         saved_users: List[FidesopsUser] = []
         total_users = 25
         for i in range(total_users):
-            body = {"username": f"user{i}@example.com", "password": "Password123!"}
+            body = {
+                "username": f"user{i}@example.com",
+                "password": "Password123!",
+                "first_name": "Test",
+                "last_name": "User",
+            }
             resp = api_client.post(url, headers=create_auth_header, json=body)
             assert resp.status_code == HTTP_201_CREATED
             user = FidesopsUser.get_by(db, field="username", value=body["username"])
@@ -329,11 +374,19 @@ class TestGetUsers:
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
+        user_data = response_body["items"][0]
+        assert user_data["username"]
+        assert user_data["id"]
+        assert user_data["created_at"]
+        assert user_data["first_name"]
+        assert user_data["last_name"]
+
         for i in range(total_users):
             saved_users[i].delete(db)
 
-
-    def test_get_filtered_users(self, api_client:TestClient, generate_auth_header, url, db):
+    def test_get_filtered_users(
+        self, api_client: TestClient, generate_auth_header, url, db
+    ):
         create_auth_header = generate_auth_header(scopes=[USER_CREATE])
         saved_users: List[FidesopsUser] = []
         total_users = 50
@@ -370,10 +423,8 @@ class TestGetUsers:
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
-
         for i in range(total_users):
             saved_users[i].delete(db)
-
 
 
 class TestGetUser:
@@ -389,7 +440,9 @@ class TestGetUser:
         resp = api_client.get(url, headers={})
         assert resp.status_code == HTTP_401_UNAUTHORIZED
 
-    def test_get_user_wrong_scope(self, api_client: TestClient, generate_auth_header, url: str):
+    def test_get_user_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, url: str
+    ):
         auth_header = generate_auth_header(scopes=[USER_DELETE])
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == HTTP_403_FORBIDDEN
@@ -403,6 +456,191 @@ class TestGetUser:
             headers=auth_header,
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
+
+    def test_get_user(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url_no_id: str,
+        application_user,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[USER_READ])
+        resp = api_client.get(
+            f"{url_no_id}/{application_user.id}",
+            headers=auth_header,
+        )
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["username"] == application_user.username
+        assert user_data["id"] == application_user.id
+        assert user_data["created_at"] == application_user.created_at.isoformat()
+        assert user_data["first_name"] == application_user.first_name
+        assert user_data["last_name"] == application_user.last_name
+
+
+class TestUpdateUser:
+    @pytest.fixture(scope="function")
+    def url_no_id(self) -> str:
+        return V1_URL_PREFIX + USERS
+
+    def test_update_different_users_names(
+        self,
+        api_client,
+        url_no_id,
+        user,
+        application_user,
+    ) -> None:
+        NEW_FIRST_NAME = "another"
+        NEW_LAST_NAME = "name"
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[USER_UPDATE],
+        )
+        resp = api_client.put(
+            f"{url_no_id}/{user.id}",
+            headers=auth_header,
+            json={
+                "first_name": NEW_FIRST_NAME,
+                "last_name": NEW_LAST_NAME,
+            },
+        )
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["username"] == user.username
+        assert user_data["id"] == user.id
+        assert user_data["created_at"] == user.created_at.isoformat()
+        assert user_data["first_name"] == NEW_FIRST_NAME
+        assert user_data["last_name"] == NEW_LAST_NAME
+
+    def test_update_user_names(
+        self,
+        api_client,
+        url_no_id,
+        application_user,
+    ) -> None:
+        NEW_FIRST_NAME = "another"
+        NEW_LAST_NAME = "name"
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[USER_UPDATE],
+        )
+        resp = api_client.put(
+            f"{url_no_id}/{application_user.id}",
+            headers=auth_header,
+            json={
+                "first_name": NEW_FIRST_NAME,
+                "last_name": NEW_LAST_NAME,
+            },
+        )
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["username"] == application_user.username
+        assert user_data["id"] == application_user.id
+        assert user_data["created_at"] == application_user.created_at.isoformat()
+        assert user_data["first_name"] == NEW_FIRST_NAME
+        assert user_data["last_name"] == NEW_LAST_NAME
+
+
+class TestUpdateUserPassword:
+    @pytest.fixture(scope="function")
+    def url_no_id(self) -> str:
+        return V1_URL_PREFIX + USERS
+
+    def test_update_different_user_password(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        user,
+        application_user,
+    ) -> None:
+        OLD_PASSWORD = "oldpassword"
+        NEW_PASSWORD = "newpassword"
+        application_user.update_password(db=db, new_password=OLD_PASSWORD)
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[USER_PASSWORD_RESET],
+        )
+        resp = api_client.post(
+            f"{url_no_id}/{user.id}/reset-password",
+            headers=auth_header,
+            json={
+                "old_password": OLD_PASSWORD,
+                "new_password": NEW_PASSWORD,
+            },
+        )
+        assert resp.status_code == HTTP_401_UNAUTHORIZED
+        assert (
+            resp.json()["detail"]
+            == "You are only authorised to update your own user data."
+        )
+
+        db.expunge(application_user)
+        application_user = application_user.refresh_from_db(db=db)
+        assert application_user.credentials_valid(password=OLD_PASSWORD)
+
+    def test_update_user_password_invalid(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        application_user,
+    ) -> None:
+        OLD_PASSWORD = "oldpassword"
+        NEW_PASSWORD = "newpassword"
+        application_user.update_password(db=db, new_password=OLD_PASSWORD)
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[USER_PASSWORD_RESET],
+        )
+        resp = api_client.post(
+            f"{url_no_id}/{application_user.id}/reset-password",
+            headers=auth_header,
+            json={
+                "old_password": "mismatching password",
+                "new_password": NEW_PASSWORD,
+            },
+        )
+        assert resp.status_code == HTTP_401_UNAUTHORIZED
+        assert resp.json()["detail"] == "Incorrect password."
+
+        db.expunge(application_user)
+        application_user = application_user.refresh_from_db(db=db)
+        assert application_user.credentials_valid(password=OLD_PASSWORD)
+
+    def test_update_user_password(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        application_user,
+    ) -> None:
+        OLD_PASSWORD = "oldpassword"
+        NEW_PASSWORD = "newpassword"
+        application_user.update_password(db=db, new_password=OLD_PASSWORD)
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[USER_PASSWORD_RESET],
+        )
+        resp = api_client.post(
+            f"{url_no_id}/{application_user.id}/reset-password",
+            headers=auth_header,
+            json={
+                "old_password": OLD_PASSWORD,
+                "new_password": NEW_PASSWORD,
+            },
+        )
+        assert resp.status_code == HTTP_200_OK
+
+        db.expunge(application_user)
+        application_user = application_user.refresh_from_db(db=db)
+        assert application_user.credentials_valid(password=NEW_PASSWORD)
+
 
 class TestUserLogin:
     @pytest.fixture(scope="function")
@@ -501,7 +739,9 @@ class TestUserLogout:
         assert user_search is not None
 
         # Assert user permissions are not deleted
-        permission_search = FidesopsUserPermissions.get_by(db, field="user_id", value=user_id)
+        permission_search = FidesopsUserPermissions.get_by(
+            db, field="user_id", value=user_id
+        )
         assert permission_search is not None
 
         # Assert user does not still have client reference
@@ -517,7 +757,6 @@ class TestUserLogout:
         auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
         response = api_client.post(url, headers=auth_header, json={})
         assert HTTP_403_FORBIDDEN == response.status_code
-
 
     def test_logout(self, db, url, api_client, generate_auth_header, oauth_client):
         oauth_client_id = oauth_client.id
