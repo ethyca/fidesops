@@ -29,7 +29,7 @@ const closeModal = (
   });
 };
 
-const DenyModal = ({
+const DenyPrivacyRequestModal = ({
   isOpen,
   isLoading,
   handleMenuClose,
@@ -87,4 +87,4 @@ const DenyModal = ({
   </Modal>
 );
 
-export default DenyModal;
+export default DenyPrivacyRequestModal;

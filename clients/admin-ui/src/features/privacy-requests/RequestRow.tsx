@@ -27,7 +27,7 @@ import {
   useApproveRequestMutation,
   useDenyRequestMutation,
 } from './privacy-requests.slice';
-import DenyModal from './DenyModal';
+import DenyPrivacyRequestModal from './DenyPrivacyRequestModal';
 
 const PII: React.FC<{ data: string }> = ({ data }) => (
   <>{useObscuredPII(data)}</>
@@ -244,7 +244,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
               >
                 Deny
               </Button>
-              <DenyModal
+              <DenyPrivacyRequestModal
                 isOpen={modalOpen}
                 isLoading={denyRequestResult.isLoading}
                 handleMenuClose={handleModalClose}
