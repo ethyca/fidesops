@@ -18,7 +18,7 @@ from fidesops.util.encryption.aes_gcm_encryption_scheme import verify_encryption
 
 
 class PrivacyRequestDRPStatus(EnumType):
-    """"""
+    """A list of privacy request statuses specified by the Data Rights Protocol."""
 
     open = "open"
     in_progress = "in_progress"
@@ -29,7 +29,7 @@ class PrivacyRequestDRPStatus(EnumType):
 
 
 class PrivacyRequestDRPStatusResponse(BaseSchema):
-    """"""
+    """A Fidesops PrivacyRequest updated to fit the Data Rights Protocol specification."""
 
     request_id: str
     received_at: datetime
