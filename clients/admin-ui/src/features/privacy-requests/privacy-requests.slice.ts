@@ -86,7 +86,7 @@ export const privacyRequestApi = createApi({
       PrivacyRequest,
       DenyPrivacyRequest
     >({
-      query: ({ id, reason },) => ({
+      query: ({ id, reason }) => ({
         url: 'privacy-request/administrate/deny',
         method: 'PATCH',
         body: {

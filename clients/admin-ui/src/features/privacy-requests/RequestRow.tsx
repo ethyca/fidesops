@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from "react";
 import {
   Tag,
   Text,
@@ -15,18 +15,18 @@ import {
   AlertTitle,
   useClipboard,
   useToast,
-} from '@fidesui/react';
-import { format } from 'date-fns-tz';
+} from "@fidesui/react";
+import { format } from "date-fns-tz";
 
-import { MoreIcon } from '../common/Icon';
-import RequestBadge from './RequestBadge';
+import { MoreIcon } from "../common/Icon";
+import RequestBadge from "./RequestBadge";
 
-import { PrivacyRequest } from './types';
-import { useObscuredPII } from './helpers';
+import { PrivacyRequest } from "./types";
+import { useObscuredPII } from "./helpers";
 import {
   useApproveRequestMutation,
   useDenyRequestMutation,
-} from './privacy-requests.slice';
+} from "./privacy-requests.slice";
 import DenyModal from "./DenyModal";
 
 const PII: React.FC<{ data: string }> = ({ data }) => (
@@ -39,7 +39,7 @@ const useRequestRow = (request: PrivacyRequest) => {
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [modalOpen, setModalOpen] = useState( false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [denialReason, setDenialReason] = useState("");
   const [approveRequest, approveRequestResult] = useApproveRequestMutation();
   const [denyRequest, denyRequestResult] = useDenyRequestMutation();
@@ -55,7 +55,8 @@ const useRequestRow = (request: PrivacyRequest) => {
   const handleFocus = () => setFocused(true);
   const handleBlur = () => setFocused(false);
   const handleApproveRequest = () => approveRequest(request);
-  const handleDenyRequest = ( reason: string) => denyRequest( { id: request.id, reason});
+  const handleDenyRequest = (reason: string) =>
+    denyRequest({ id: request.id, reason });
   const { onCopy } = useClipboard(request.id);
   const handleModalOpen = () => setModalOpen(true);
   const handleModalClose = () => {
@@ -63,12 +64,15 @@ const useRequestRow = (request: PrivacyRequest) => {
     setFocused(false);
     setHovered(false);
     setMenuOpen(false);
-  }
+    if (!denyRequestResult.isLoading) {
+      setDenialReason("");
+    }
+  };
   const handleIdCopy = () => {
     onCopy();
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       toast({
-        title: 'Request ID copied',
+        title: "Request ID copied",
         duration: 5000,
         render: () => (
           <Alert bg="gray.600" borderRadius="6px" display="flex">
@@ -76,7 +80,7 @@ const useRequestRow = (request: PrivacyRequest) => {
           </Alert>
         ),
         containerStyle: {
-          minWidth: '0px',
+          minWidth: "0px",
         },
       });
     }
@@ -102,7 +106,7 @@ const useRequestRow = (request: PrivacyRequest) => {
     hoverButtonRef,
     shiftFocusToHoverMenu,
     denialReason,
-    setDenialReason
+    setDenialReason,
   };
 };
 
@@ -128,15 +132,15 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
     handleBlur,
     focused,
     denialReason,
-    setDenialReason
+    setDenialReason,
   } = useRequestRow(request);
   const showMenu = hovered || menuOpen || focused;
 
   return (
     <Tr
       key={request.id}
-      _hover={{ bg: 'gray.50' }}
-      bg={showMenu ? 'gray.50' : 'white'}
+      _hover={{ bg: "gray.50" }}
+      bg={showMenu ? "gray.50" : "white"}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       height="36px"
@@ -161,20 +165,20 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
           <PII
             data={
               request.identity
-                ? request.identity.email || request.identity.phone || ''
-                : ''
+                ? request.identity.email || request.identity.phone || ""
+                : ""
             }
           />
         </Text>
       </Td>
       <Td py={1}>
         <Text fontSize="xs">
-          {format(new Date(request.created_at), 'MMMM d, Y, KK:mm:ss z')}
+          {format(new Date(request.created_at), "MMMM d, Y, KK:mm:ss z")}
         </Text>
       </Td>
       <Td py={1}>
         <Text fontSize="xs">
-          <PII data={request.reviewer ? request.reviewer.username : ''} />
+          <PII data={request.reviewer ? request.reviewer.username : ""} />
         </Text>
       </Td>
       <Td py={1}>
@@ -200,13 +204,13 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
           top="50%"
           transform="translate(1px, -50%)"
           opacity={showMenu ? 1 : 0}
-          pointerEvents={showMenu ? 'auto' : 'none'}
+          pointerEvents={showMenu ? "auto" : "none"}
           onFocus={handleFocus}
           onBlur={handleBlur}
           shadow="base"
           borderRadius="md"
         >
-          {request.status === 'pending' ? (
+          {request.status === "pending" ? (
             <>
               <Button
                 size="xs"
@@ -219,7 +223,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
                   div: { opacity: 0.4 },
                 }}
                 _hover={{
-                  bg: 'gray.100',
+                  bg: "gray.100",
                 }}
                 ref={hoverButtonRef}
               >
@@ -235,20 +239,21 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
                   div: { opacity: 0.4 },
                 }}
                 _hover={{
-                  bg: 'gray.100',
+                  bg: "gray.100",
                 }}
               >
                 Deny
               </Button>
               <DenyModal
-                  isOpen={modalOpen}
-                  isLoading={ denyRequestResult.isLoading}
-                  handleMenuClose={handleModalClose}
-                  handleDenyRequest={handleDenyRequest}
-                  denialReason={denialReason}
-                  onChange={(e)=>{
-                    setDenialReason(e.target.value)
-              }}/>
+                isOpen={modalOpen}
+                isLoading={denyRequestResult.isLoading}
+                handleMenuClose={handleModalClose}
+                handleDenyRequest={handleDenyRequest}
+                denialReason={denialReason}
+                onChange={(e) => {
+                  setDenialReason(e.target.value);
+                }}
+              />
             </>
           ) : null}
 
@@ -257,14 +262,14 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
               as={Button}
               size="xs"
               bg="white"
-              ref={request.status !== 'pending' ? hoverButtonRef : null}
+              ref={request.status !== "pending" ? hoverButtonRef : null}
             >
               <MoreIcon color="gray.700" w={18} h={18} />
             </MenuButton>
             <Portal>
               <MenuList shadow="xl">
                 <MenuItem
-                  _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
+                  _focus={{ color: "complimentary.500", bg: "gray.100" }}
                   onClick={handleIdCopy}
                 >
                   <Text fontSize="sm">Copy Request ID</Text>
