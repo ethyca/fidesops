@@ -1,4 +1,3 @@
-
 from datetime import datetime
 from unittest import mock
 
@@ -7,7 +6,8 @@ import pytest
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.urn_registry import (
-    V1_URL_PREFIX, DRP_EXERCISE,
+    V1_URL_PREFIX,
+    DRP_EXERCISE,
 )
 from fidesops.core.config import config
 
@@ -27,26 +27,26 @@ class TestCreateDrpPrivacyRequest:
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_create_drp_privacy_request(
-            self,
-            run_access_request_mock,
-            url,
-            db,
-            api_client: TestClient,
-            policy_drp_action,
-            cache,
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy_drp_action,
+        cache,
     ):
 
         config.security.DRP_JWT_SECRET = "secret"
         identity = {"email": "test@example.com"}
-        encoded_identity: str = jwt.encode(identity, config.security.DRP_JWT_SECRET, algorithms="HS256")
+        encoded_identity: str = jwt.encode(
+            identity, config.security.DRP_JWT_SECRET, algorithms="HS256"
+        )
         data = {
-                "meta": {"version": "0.5"},
-                "regime": "ccpa",
-                "exercise": [
-                    "access"
-                ],
-                "identity": encoded_identity,
-            }
+            "meta": {"version": "0.5"},
+            "regime": "ccpa",
+            "exercise": ["access"],
+            "identity": encoded_identity,
+        }
         resp = api_client.post(url, json=data)
         assert resp.status_code == 200
         response_data = resp.json()
@@ -66,11 +66,11 @@ class TestCreateDrpPrivacyRequest:
         config.security.DRP_JWT_SECRET = None
 
     def test_create_drp_privacy_request_no_jwt(
-            self,
-            url,
-            db,
-            api_client: TestClient,
-            policy_drp_action,
+        self,
+        url,
+        db,
+        api_client: TestClient,
+        policy_drp_action,
     ):
 
         identity = {"email": "test@example.com"}
@@ -78,25 +78,25 @@ class TestCreateDrpPrivacyRequest:
         data = {
             "meta": {"version": "0.5"},
             "regime": "ccpa",
-            "exercise": [
-                "access"
-            ],
+            "exercise": ["access"],
             "identity": encoded_identity,
         }
         resp = api_client.post(url, json=data)
         assert resp.status_code == 400
 
     def test_create_drp_privacy_request_no_exercise(
-            self,
-            url,
-            db,
-            api_client: TestClient,
-            policy_drp_action,
+        self,
+        url,
+        db,
+        api_client: TestClient,
+        policy_drp_action,
     ):
 
         config.security.DRP_JWT_SECRET = "secret"
         identity = {"email": "test@example.com"}
-        encoded_identity: str = jwt.encode(identity, config.security.DRP_JWT_SECRET, algorithms="HS256")
+        encoded_identity: str = jwt.encode(
+            identity, config.security.DRP_JWT_SECRET, algorithms="HS256"
+        )
         data = {
             "meta": {"version": "0.5"},
             "regime": "ccpa",
@@ -108,16 +108,18 @@ class TestCreateDrpPrivacyRequest:
         config.security.DRP_JWT_SECRET = None
 
     def test_create_drp_privacy_request_invalid_exercise(
-            self,
-            url,
-            db,
-            api_client: TestClient,
-            policy_drp_action,
+        self,
+        url,
+        db,
+        api_client: TestClient,
+        policy_drp_action,
     ):
 
         config.security.DRP_JWT_SECRET = "secret"
         identity = {"email": "test@example.com"}
-        encoded_identity: str = jwt.encode(identity, config.security.DRP_JWT_SECRET, algorithms="HS256")
+        encoded_identity: str = jwt.encode(
+            identity, config.security.DRP_JWT_SECRET, algorithms="HS256"
+        )
         data = {
             "meta": {"version": "0.5"},
             "regime": "ccpa",
@@ -129,16 +131,18 @@ class TestCreateDrpPrivacyRequest:
         config.security.DRP_JWT_SECRET = None
 
     def test_create_drp_privacy_request_no_associated_policy(
-            self,
-            url,
-            db,
-            api_client: TestClient,
-            policy,
+        self,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
     ):
 
         config.security.DRP_JWT_SECRET = "secret"
         identity = {"email": "test@example.com"}
-        encoded_identity: str = jwt.encode(identity, config.security.DRP_JWT_SECRET, algorithms="HS256")
+        encoded_identity: str = jwt.encode(
+            identity, config.security.DRP_JWT_SECRET, algorithms="HS256"
+        )
         data = {
             "meta": {"version": "0.5"},
             "regime": "ccpa",

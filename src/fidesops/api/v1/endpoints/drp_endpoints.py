@@ -2,23 +2,26 @@ import logging
 from typing import Dict, Any, Optional
 
 import jwt
-from fastapi import HTTPException, Depends, APIRouter, Request
+from fastapi import HTTPException, Depends, APIRouter, Security
 from requests import Session
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY, HTTP_424_FAILED_DEPENDENCY, HTTP_200_OK, \
     HTTP_400_BAD_REQUEST
 
 from fidesops import common_exceptions
 from fidesops.api import deps
+from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.core.config import config
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.drp_privacy_request import DrpPrivacyRequestCreate, DrpIdentity
+from fidesops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.service.drp.drp_fidesops_identity_mapper_service import DrpFidesopsIdentityMapper
+from fidesops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.service.privacy_request.request_service import build_required_privacy_request_kwargs, cache_data
 from fidesops.util.cache import FidesopsRedis
+from fidesops.util.oauth_util import verify_oauth_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)
@@ -28,15 +31,14 @@ EMBEDDED_EXECUTION_LOG_LIMIT = 50
 @router.post(
     urls.DRP_EXERCISE,
     status_code=HTTP_200_OK,
-    response_model=Dict[str, Any],  # fixme: replace with DrpPrivacyRequestStatus once other PR is merged
+    response_model=PrivacyRequestDRPStatusResponse
 )
 def create_drp_privacy_request(
         *,
-        request: Request,
         cache: FidesopsRedis = Depends(deps.get_cache),
         db: Session = Depends(deps.get_db),
         data: DrpPrivacyRequestCreate,
-) -> Dict[str, Any]:
+) -> PrivacyRequestDRPStatusResponse:
     """
     Given a drp privacy request body, create and execute
     a corresponding Fidesops PrivacyRequest
@@ -69,7 +71,7 @@ def create_drp_privacy_request(
 
         decrypted_identity: DrpIdentity = jwt.decode(data.identity, jwt_key, algorithms="HS256")
 
-        mapped_identity: PrivacyRequestIdentity = DrpFidesopsIdentityMapper.map(drp_identity=decrypted_identity)
+        mapped_identity: PrivacyRequestIdentity = DrpFidesopsMapper.map_identity(drp_identity=decrypted_identity)
 
         cache_data(privacy_request, policy, mapped_identity, None, data)
 
@@ -78,11 +80,11 @@ def create_drp_privacy_request(
             privacy_request=privacy_request,
         ).submit()
 
-        return {
-            "request_id": privacy_request.id,
-            "received_at": privacy_request.requested_at,
-            "status": "test"  # fixme- replace once other pr is merged
-        }
+        return PrivacyRequestDRPStatusResponse(
+            request_id=privacy_request.id,
+            received_at=privacy_request.requested_at,
+            status=DrpFidesopsMapper.map_status(privacy_request.status),
+        )
 
     except common_exceptions.RedisConnectionError as exc:
         logger.error("RedisConnectionError: %s", exc)
@@ -97,3 +99,38 @@ def create_drp_privacy_request(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail="DRP privacy request could not be exercised",
         )
+
+@router.get(
+    urls.DRP_STATUS,
+    dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
+    response_model=PrivacyRequestDRPStatusResponse,
+)
+def get_request_status_drp(
+        privacy_request_id: str,
+        *,
+        db: Session = Depends(deps.get_db),
+) -> PrivacyRequestDRPStatusResponse:
+    """
+    Returns PrivacyRequest information where the respective privacy request is associated with
+    a policy that implements a Data Rights Protocol action.
+    """
+
+    logger.info(f"Finding request for DRP with ID: {privacy_request_id}")
+    request = PrivacyRequest.get(
+        db=db,
+        id=privacy_request_id,
+    )
+    if not request or not request.policy or not request.policy.drp_action:
+        # If no request is found with this ID, or that request has no policy,
+        # or that request's policy has no associated drp_action.
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"Privacy request with ID {privacy_request_id} does not exist, or is not associated with a data rights protocol action.",
+        )
+
+    logger.info(f"Privacy request with ID: {privacy_request_id} found for DRP status.")
+    return PrivacyRequestDRPStatusResponse(
+        request_id=request.id,
+        received_at=request.requested_at,
+        status=DrpFidesopsMapper.map_status(request.status),
+    )
