@@ -27,7 +27,7 @@ The types of changes are:
 * Add first_name and last_name fields. Also add them along with created_at to FidesopsUser response [#465](https://github.com/ethyca/fidesops/pull/465)
 * Denial reasons for DSR and user `AuditLog` [#463](https://github.com/ethyca/fidesops/pull/463)
 * DRP action to Policy [#453](https://github.com/ethyca/fidesops/pull/453)
-* `Changelog.md` file
+* `CHANGELOG.md` file [#484](https://github.com/ethyca/fidesops/pull/484)
 
 
 ### Changed 
