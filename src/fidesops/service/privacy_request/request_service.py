@@ -16,15 +16,6 @@ from fidesops.service.masking.strategy.masking_strategy_factory import get_strat
 logger = logging.getLogger(__name__)
 
 
-def retrieve_policy(db: Session, field: str, value: Any) -> Optional[Policy]:
-    """Retrieve policy by any field/value"""
-    return Policy.get_by(
-        db=db,
-        field=field,
-        value=value,
-    )
-
-
 def build_required_privacy_request_kwargs(
     requested_at: Optional[datetime], policy_id: str
 ) -> Dict[str, Any]:
@@ -34,11 +25,6 @@ def build_required_privacy_request_kwargs(
         "policy_id": policy_id,
         "status": "pending",
     }
-
-
-def privacy_request_create(db: Session, kwargs: Dict[str, Any]) -> PrivacyRequest:
-    """Creates privacy request in db, given kwargs"""
-    return PrivacyRequest.create(db=db, data=kwargs)
 
 
 def cache_data(

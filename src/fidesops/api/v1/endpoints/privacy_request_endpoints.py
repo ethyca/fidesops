@@ -59,10 +59,8 @@ from fidesops.schemas.privacy_request import (
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.service.privacy_request.request_service import (
-    retrieve_policy,
     build_required_privacy_request_kwargs,
     cache_data,
-    privacy_request_create,
 )
 from fidesops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fidesops.task.task_resources import TaskResources
@@ -129,8 +127,10 @@ def create_privacy_request(
             continue
 
         logger.info(f"Finding policy with key '{privacy_request_data.policy_key}'")
-        policy: Optional[Policy] = retrieve_policy(
-            db, "key", privacy_request_data.policy_key
+        policy: Optional[Policy] = Policy.get_by(
+            db=db,
+            field="key",
+            value=privacy_request_data.policy_key,
         )
         if policy is None:
             logger.warning(
@@ -153,7 +153,7 @@ def create_privacy_request(
                 kwargs[field] = attr
 
         try:
-            privacy_request: PrivacyRequest = privacy_request_create(db, kwargs)
+            privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
 
             cache_data(
                 privacy_request,
