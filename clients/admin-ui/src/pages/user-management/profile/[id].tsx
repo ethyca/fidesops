@@ -10,7 +10,7 @@ import {
 } from '@fidesui/react';
 import { useRouter } from 'next/router';
 import NavBar from '../../../features/common/NavBar';
-import UserForm from '../../../features/user-management/UserForm';
+import EditUserForm from '../../../features/user-management/EditUserForm';
 import {
   useGetUserByIdQuery,
   userApi,
@@ -41,7 +41,7 @@ const Profile: NextPage = () => {
               </BreadcrumbItem>
             </Breadcrumb>
           </Heading>
-          <UserForm />
+          <EditUserForm />
         </Box>
       </main>
     </div>

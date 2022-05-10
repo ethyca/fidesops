@@ -31,7 +31,7 @@ export interface UserPermissions {
   data?: {
     id?: string;
   };
-  scope?: string;
+  scopes?: string;
 }
 
 export const userPrivilegesArray: UserPrivileges[] = [

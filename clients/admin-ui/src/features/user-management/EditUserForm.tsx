@@ -22,8 +22,6 @@ import {
   selectManagedUser,
   useEditUserMutation,
   useUpdateUserPermissionsMutation,
-  useCreateUserMutation,
-  useCreateUserPermissionsMutation,
   useGetUserByIdQuery,
   useGetUserPermissionsQuery,
 } from '../user/user.slice';
@@ -32,9 +30,6 @@ import { useRouter } from 'next/router';
 
 const useUserForm = () => {
   const token = useSelector(selectUserToken);
-  const [createUser, createUserResult] = useCreateUserMutation();
-  const [createUserPermissions, createUserPermissionsResult] =
-    useCreateUserPermissionsMutation();
   // const [editUser, editUserResult] = useEditUserMutation();
   const router = useRouter();
   const { id } = router.query;
@@ -42,13 +37,15 @@ const useUserForm = () => {
   const { data: existingScopes, isLoading: scopesLoading } =
     useGetUserPermissionsQuery(id);
 
+  console.log(existingScopes);
+
   const formik = useFormik({
     initialValues: {
-      username: existingUser ? existingUser?.username : '',
-      first_name: existingUser ? existingUser?.first_name : '',
-      last_name: existingUser ? existingUser?.last_name : '',
-      password: existingUser ? '********' : '',
-      scopes: {},
+      username: existingUser?.username,
+      first_name: existingUser?.first_name,
+      last_name: existingUser?.last_name,
+      password: '********',
+      scopes: existingScopes?.scopes | [],
     },
     onSubmit: async (values) => {
       const host =
@@ -63,26 +60,7 @@ const useUserForm = () => {
         password: values.password,
       };
 
-      const permissionsBody = () => {
-        // const allScopes = [...values.scopes];
-        const allScopes = [];
-        return allScopes;
-      };
-
-      if (!existingUser) {
-        createUser(userBody)
-          .then((result) => {
-            result = { ...result, scopes: permissionsBody() };
-            console.log('result', result);
-            createUserPermissions(result);
-          })
-          .then((result) => router.replace('/user-management'));
-      } else {
-        console.log('on edit page');
-        console.log('permissionsBody', permissionsBody());
-        // editUser({existingId, ...body})
-        // router.push('/user-management');
-      }
+      // edit user / user permissions
     },
     validate: (values) => {
       const errors: {
@@ -91,10 +69,6 @@ const useUserForm = () => {
         last_name?: string;
         password?: string;
       } = {};
-
-      if (!values.username && !existingUser?.username) {
-        errors.username = 'Username is required';
-      }
 
       if (!values.first_name && !existingUser?.first_name) {
         errors.first_name = 'First name is required';
@@ -175,19 +149,12 @@ const UserForm: NextPage<{
                 maxWidth={'40%'}
                 name="username"
                 focusBorderColor="primary.500"
-                placeholder={
-                  existingUser ? existingUser?.username : 'Enter new username'
-                }
+                placeholder={existingUser?.username}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.username}
-                isInvalid={
-                  !existingUser?.username &&
-                  touched.username &&
-                  Boolean(errors.username)
-                }
-                isReadOnly={existingUser ? true : false}
-                isDisabled={existingUser ? true : false}
+                isReadOnly={true}
+                isDisabled={true}
               />
               <FormErrorMessage>{errors.username}</FormErrorMessage>
             </FormControl>
@@ -204,11 +171,7 @@ const UserForm: NextPage<{
                 maxWidth={'40%'}
                 name="first_name"
                 focusBorderColor="primary.500"
-                placeholder={
-                  existingUser
-                    ? existingUser?.first_name
-                    : 'Enter first name of user'
-                }
+                placeholder={existingUser?.first_name}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.first_name}
@@ -236,11 +199,7 @@ const UserForm: NextPage<{
                 maxWidth={'40%'}
                 name="last_name"
                 focusBorderColor="primary.500"
-                placeholder={
-                  existingUser
-                    ? existingUser?.last_name
-                    : 'Enter last name of user'
-                }
+                placeholder={existingUser?.last_name}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.last_name}

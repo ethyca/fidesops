@@ -117,25 +117,25 @@ export const userApi = createApi({
       UserPermissions,
       Partial<UserPermissions> & Pick<UserPermissions, 'id'>
     >({
-      query: ({ id, ...put }) => ({
+      query: ({ id, scopes }) => ({
         url: `user/${id}/permission`,
         method: 'PUT',
-        body: put,
+        body: { id, scopes },
       }),
       invalidatesTags: ['User'],
       // For optimistic updates
-      async onQueryStarted({ id, ...put }, { dispatch, queryFulfilled }) {
-        const putResult = dispatch(
-          userApi.util.updateQueryData('getUserPermissions', id, (draft) => {
-            Object.assign(draft, put);
-          })
-        );
-        try {
-          await queryFulfilled;
-        } catch {
-          putResult.undo();
-        }
-      },
+      // async onQueryStarted({ id, scopes }, { dispatch, queryFulfilled }) {
+      //   const putResult = dispatch(
+      //     userApi.util.updateQueryData('getUserPermissions', id, (draft) => {
+      //       Object.assign(draft, scopes);
+      //     })
+      //   );
+      //   try {
+      //     await queryFulfilled;
+      //   } catch {
+      //     putResult.undo();
+      //   }
+      // },
     }),
     deleteUser: build.mutation<{ success: boolean; id: string }, string>({
       query: (id) => ({

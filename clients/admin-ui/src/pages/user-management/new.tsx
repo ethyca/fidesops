@@ -12,7 +12,7 @@ import NavBar from '../../features/common/NavBar';
 
 // import UserManagementTable from '../features/user-management/UserManagementTable';
 // import UserManagementTableActions from '../../features/user-management/UserManagementTableActions';
-import UserForm from '../../features/user-management/UserForm';
+import NewUserForm from '../../features/user-management/NewUserForm';
 
 import { assignToken } from '../../features/user/user.slice';
 import { getSession } from 'next-auth/react';
@@ -39,7 +39,7 @@ const CreateNewUser: NextPage<{ session: { username: string } }> = ({
             </BreadcrumbItem>
           </Breadcrumb>
         </Heading>
-        <UserForm />
+        <NewUserForm />
       </Box>
     </main>
   </div>
