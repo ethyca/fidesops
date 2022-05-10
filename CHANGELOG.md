@@ -31,27 +31,27 @@ The types of changes are:
 
 
 ### Changed 
-* Converted HTTP Status Codes to Starlette constant values by @sanders41 in [#438](https://github.com/ethyca/fidesops/pull/438)
-* SaasConnector.send behavior on ignore_errors now returns raw response by @adamsachs in [#462](https://github.com/ethyca/fidesops/pull/462)
-* Seed user permissions in `create_superuser.py` script by @TheAndrewJackson in [#468](https://github.com/ethyca/fidesops/pull/468) 
-* User API Endpoints (update fields and reset user passwords) by @seanpreston in [#471](https://github.com/ethyca/fidesops/pull/471)
-* Format tests with `black` by @seanpreston in [#466](https://github.com/ethyca/fidesops/pull/466)
+* Converted HTTP Status Codes to Starlette constant values [#438](https://github.com/ethyca/fidesops/pull/438)
+* SaasConnector.send behavior on ignore_errors now returns raw response [#462](https://github.com/ethyca/fidesops/pull/462)
+* Seed user permissions in `create_superuser.py` script [#468](https://github.com/ethyca/fidesops/pull/468) 
+* User API Endpoints (update fields and reset user passwords) [#471](https://github.com/ethyca/fidesops/pull/471)
+* Format tests with `black` [#466](https://github.com/ethyca/fidesops/pull/466)
 
 
 ### Breaking Changes
-* Update masking API to take multiple input values by @adamssachs in [#443](https://github.com/ethyca/fidesops/pull/443
+* Update masking API to take multiple input values [#443](https://github.com/ethyca/fidesops/pull/443
 
 ### Docs
 
-* Added issue template for documentation updates by @cenceptualshark in [#442](https://github.com/ethyca/fidesops/pull/442)
-* Clarify masking updates by @adamsachs in [#464](https://github.com/ethyca/fidesops/pull/464)
-* Added dark mode by @conceptualshark in [#476](https://github.com/ethyca/fidesops/pull/476)
+* Added issue template for documentation updates [#442](https://github.com/ethyca/fidesops/pull/442)
+* Clarify masking updates [#464](https://github.com/ethyca/fidesops/pull/464)
+* Added dark mode [#476](https://github.com/ethyca/fidesops/pull/476)
 
 
 ### Fixed
 
-* Removed miradb test warning by @sanders41 in [#436](https://github.com/ethyca/fidesops/pull/436)
-* Added missing import by @galvana in [#448](https://github.com/ethyca/fidesops/pull/448)
-* Removed pypi badge pointing to wrong package by @TheAndrewJackson in [#452](https://github.com/ethyca/fidesops/pull/452)
-* Audit imports and references by @seanpreston in [#479](https://github.com/ethyca/fidesops/pull/479)
+* Removed miradb test warning [#436](https://github.com/ethyca/fidesops/pull/436)
+* Added missing import [#448](https://github.com/ethyca/fidesops/pull/448)
+* Removed pypi badge pointing to wrong package [#452](https://github.com/ethyca/fidesops/pull/452)
+* Audit imports and references [#479](https://github.com/ethyca/fidesops/pull/479)
 
