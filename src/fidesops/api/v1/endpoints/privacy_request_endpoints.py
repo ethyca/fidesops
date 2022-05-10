@@ -459,53 +459,30 @@ def get_request_status(
     response_model=PrivacyRequestDRPStatusResponse,
 )
 def get_request_status_drp(
+    privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
-    params: Params = Depends(),
-    id: str = None,
-    status: Optional[PrivacyRequestStatus] = None,
-    created_lt: Optional[datetime] = None,
-    created_gt: Optional[datetime] = None,
-    started_lt: Optional[datetime] = None,
-    started_gt: Optional[datetime] = None,
-    completed_lt: Optional[datetime] = None,
-    completed_gt: Optional[datetime] = None,
-    errored_lt: Optional[datetime] = None,
-    errored_gt: Optional[datetime] = None,
-    external_id: Optional[str] = None,
-    verbose: Optional[bool] = False,
-    include_identities: Optional[bool] = False,
-    download_csv: Optional[bool] = False,
 ) -> PrivacyRequestDRPStatusResponse:
-    """Returns PrivacyRequest information. Supports a variety of optional query params.
-
-    To fetch a single privacy request, use the id query param `?id=`.
-    To see individual execution logs, use the verbose query param `?verbose=True`.
+    """
+    Returns PrivacyRequest information where the respective privacy request is associated with
+    a policy that implements a Data Rights Protocol action.
     """
 
-    logger.info(f"Finding all request statuses with pagination params {params}")
-    request = PrivacyRequest.get(db=db, id=id)
-    if not request:
-
-    return _filter_privacy_request_queryset(
-        query,
-        db,
-        params,
-        id,
-        status,
-        created_lt,
-        created_gt,
-        started_lt,
-        started_gt,
-        completed_lt,
-        completed_gt,
-        errored_lt,
-        errored_gt,
-        external_id,
-        verbose,
-        include_identities,
-        download_csv,
+    logger.info(f"Finding request for DRP with ID: {privacy_request_id}")
+    request = PrivacyRequest.get(
+        db=db,
+        id=privacy_request_id,
     )
+    if not request or not request.policy or not request.policy.drp_action:
+        # If no request is found with this ID, or that request has no policy,
+        # or that request's policy has no associated drp_action.
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"Privacy request with ID {privacy_request_id} does not exist, or is not associated with a data rights protocol action.",
+        )
+
+    logger.info(f"Privacy request with ID: {privacy_request_id} found for DRP status.")
+    return request
 
 
 @router.get(
