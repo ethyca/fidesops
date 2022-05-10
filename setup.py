@@ -1,5 +1,6 @@
 import pathlib
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 here = pathlib.Path(__file__).parent.resolve()
 long_description = open("README.md").read()
@@ -18,6 +19,7 @@ setup(
     python_requires=">=3.7, <4",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
+    package_data={"fidesops": ["alembic.ini"]},
     include_package_data=True,
     author="Ethyca, Inc.",
     author_email="fidesteam@ethyca.com",
