@@ -24,7 +24,7 @@ export interface UsersResponse {
 
 export interface UserPrivileges {
   privilege: string;
-  scope?: string;
+  scope: string;
 }
 
 export interface UserPermissions {

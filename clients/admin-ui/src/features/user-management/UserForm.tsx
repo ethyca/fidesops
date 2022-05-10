@@ -92,19 +92,19 @@ const useUserForm = () => {
         password?: string;
       } = {};
 
-      if (!values.username) {
+      if (!values.username && !existingUser?.username) {
         errors.username = 'Username is required';
       }
 
-      if (!values.first_name) {
+      if (!values.first_name && !existingUser?.first_name) {
         errors.first_name = 'First name is required';
       }
 
-      if (!values.last_name) {
+      if (!values.last_name && !existingUser?.last_name) {
         errors.last_name = 'Last name is required';
       }
 
-      if (!values.password) {
+      if (!values.password && !existingUser) {
         errors.password = 'Password is required';
       }
 
@@ -176,12 +176,16 @@ const UserForm: NextPage<{
                 name="username"
                 focusBorderColor="primary.500"
                 placeholder={
-                  existingUser ? existingUser?.last_name : 'Enter new username'
+                  existingUser ? existingUser?.username : 'Enter new username'
                 }
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.username}
-                isInvalid={touched.username && Boolean(errors.username)}
+                isInvalid={
+                  !existingUser?.username &&
+                  touched.username &&
+                  Boolean(errors.username)
+                }
                 isReadOnly={existingUser ? true : false}
                 isDisabled={existingUser ? true : false}
               />
@@ -202,13 +206,20 @@ const UserForm: NextPage<{
                 focusBorderColor="primary.500"
                 placeholder={
                   existingUser
-                    ? existingUser?.last_name
+                    ? existingUser?.first_name
                     : 'Enter first name of user'
                 }
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.first_name}
-                isInvalid={touched.first_name && Boolean(errors.first_name)}
+                isInvalid={
+                  !existingUser?.first_name &&
+                  touched.first_name &&
+                  Boolean(errors.first_name)
+                }
+                // Only admins can edit names - need to add a check for admin role here
+                // isReadOnly={existingUser ? true : false}
+                // isDisabled={existingUser ? true : false}
               />
               <FormErrorMessage>{errors.first_name}</FormErrorMessage>
             </FormControl>
@@ -233,38 +244,53 @@ const UserForm: NextPage<{
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.last_name}
-                isInvalid={touched.last_name && Boolean(errors.last_name)}
+                isInvalid={
+                  !existingUser?.last_name &&
+                  touched.last_name &&
+                  Boolean(errors.last_name)
+                }
+                // Only admins can edit names - need to add a check for admin role here
+                // isReadOnly={existingUser ? true : false}
+                // isDisabled={existingUser ? true : false}
               />
               <FormErrorMessage>{errors.last_name}</FormErrorMessage>
             </FormControl>
 
-            {existingUser ? (
+            {/* existing use and it's that user's specific profile */}
+            {/* {existingUser ? (
               <div>Change Password</div>
-            ) : (
-              <>
-                <FormControl
+            ) : ( */}
+            <>
+              <FormControl
+                id="password"
+                isInvalid={touched.password && Boolean(errors.password)}
+              >
+                <FormLabel htmlFor="password" fontWeight="medium">
+                  Password
+                </FormLabel>
+                <Input
                   id="password"
-                  isInvalid={touched.password && Boolean(errors.password)}
-                >
-                  <FormLabel htmlFor="password" fontWeight="medium">
-                    Password
-                  </FormLabel>
-                  <Input
-                    id="password"
-                    maxWidth={'40%'}
-                    name="password"
-                    focusBorderColor="primary.500"
-                    placeholder={'Enter a password'}
-                    type="password"
-                    value={values.password}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    isInvalid={touched.password && Boolean(errors.password)}
-                  />
-                  <FormErrorMessage>{errors.password}</FormErrorMessage>
-                </FormControl>
-              </>
-            )}
+                  maxWidth={'40%'}
+                  name="password"
+                  focusBorderColor="primary.500"
+                  placeholder={'********'}
+                  type="password"
+                  value={values.password}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  isInvalid={
+                    !existingUser?.password &&
+                    touched.password &&
+                    Boolean(errors.password)
+                  }
+                  // Only the associated user can edit names - need to add a check for the user id here
+                  // isReadOnly={existingUser ? true : false}
+                  // isDisabled={existingUser ? true : false}
+                />
+                <FormErrorMessage>{errors.password}</FormErrorMessage>
+              </FormControl>
+            </>
+            {/* )} */}
 
             <Heading fontSize="xl" colorScheme="primary">
               Preferences
