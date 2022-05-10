@@ -1,6 +1,5 @@
 from datetime import datetime
 from enum import Enum as EnumType
-from optparse import Option
 from typing import List, Optional, Dict
 
 from pydantic import Field, validator
