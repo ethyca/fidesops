@@ -29,12 +29,23 @@ def get_password(prompt: str) -> str:
     return password
 
 
+def get_input(prompt: str) -> str:
+    """
+    Prompt the user for generic input.
+
+    NB. This method is important to preserve so that
+    our tests can effectively mock the `input` function
+    and data that it returns.
+    """
+    return input(prompt)
+
+
 def collect_username_and_password(db: Session) -> UserCreate:
     """Collect username and password information and validate"""
     username = get_username("Enter your username: ")
     password = get_password("Enter your password: ")
-    first_name = input("Enter your first name: ")
-    last_name = input("Enter your last name: ")
+    first_name = get_input("Enter your first name: ")
+    last_name = get_input("Enter your last name: ")
     verify_pass = get_password("Enter your password again: ")
 
     if password != verify_pass:
