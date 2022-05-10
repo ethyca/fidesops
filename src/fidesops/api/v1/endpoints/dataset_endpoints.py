@@ -202,16 +202,13 @@ async def patch_yaml_datasets(
     if request.headers.get("content-type") != X_YAML:
         raise HTTPException(
             status_code=HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail='Supported type: ' + X_YAML
+            detail="Supported type: " + X_YAML,
         )
     body = await request.body()
     try:
         yaml_request_body: dict = yaml.safe_load(body)
     except yaml.YAMLError:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail="Error in YAML"
-        )
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Error in YAML")
     datasets = yaml_request_body.get("dataset")
     created_or_updated: List[FidesopsDataset] = []
     failed: List[BulkUpdateFailed] = []
