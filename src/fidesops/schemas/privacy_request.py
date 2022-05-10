@@ -39,6 +39,12 @@ class PrivacyRequestDRPStatusResponse(BaseSchema):
     reason: Optional[str]
     user_verification_url: Optional[str]
 
+    class Config:
+        """Set orm_mode and use_enum_values"""
+
+        orm_mode = True
+        use_enum_values = True
+
 
 class PrivacyRequestCreate(BaseSchema):
     """Data required to create a PrivacyRequest"""

@@ -12,6 +12,7 @@ from unittest import mock
 from fastapi_pagination import Params
 import pytest
 from starlette.testclient import TestClient
+from sqlalchemy.orm import Session
 
 from fidesops.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
@@ -50,6 +51,7 @@ from fidesops.schemas.jwt import (
     JWE_ISSUED_AT,
 )
 from fidesops.schemas.masking.masking_secrets import SecretType
+from fidesops.schemas.privacy_request import PrivacyRequestDRPStatus
 from fidesops.util.cache import (
     get_identity_cache_key,
     get_encryption_cache_key,
@@ -440,21 +442,42 @@ class TestGetPrivacyRequestDRP:
             == f"Privacy request with ID {privacy_request_id} does not exist, or is not associated with a data rights protocol action."
         )
 
-    def test_get_privacy_request(
+    @pytest.mark.parametrize(
+        "privacy_request_status,expected_drp_status",
+        [
+            (PrivacyRequestStatus.pending, PrivacyRequestDRPStatus.open),
+            (PrivacyRequestStatus.approved, PrivacyRequestDRPStatus.in_progress),
+            (PrivacyRequestStatus.denied, PrivacyRequestDRPStatus.denied),
+            (PrivacyRequestStatus.in_processing, PrivacyRequestDRPStatus.in_progress),
+            (PrivacyRequestStatus.complete, PrivacyRequestDRPStatus.fulfilled),
+            (PrivacyRequestStatus.paused, PrivacyRequestDRPStatus.in_progress),
+            (PrivacyRequestStatus.error, PrivacyRequestDRPStatus.expired),
+        ],
+    )
+    def test_get_privacy_request_with_drp_action(
         self,
         api_client: TestClient,
+        db: Session,
         generate_auth_header: Callable,
         url_for_privacy_request_with_drp_action: str,
+        privacy_request_with_drp_action: PrivacyRequest,
+        privacy_request_status: PrivacyRequestStatus,
+        expected_drp_status: PrivacyRequestDRPStatus,
     ):
+        privacy_request_with_drp_action.status = privacy_request_status
+        privacy_request_with_drp_action.save(db=db)
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
             url_for_privacy_request_with_drp_action,
             headers=auth_header,
         )
         assert 200 == response.status_code
-        import pdb
-
-        pdb.set_trace()
+        assert expected_drp_status.value == response.json()["status"]
+        assert privacy_request_with_drp_action.id == response.json()["request_id"]
+        assert (
+            privacy_request_with_drp_action.requested_at.isoformat()
+            == response.json()["received_at"]
+        )
 
 
 class TestGetPrivacyRequests:

@@ -60,6 +60,7 @@ from fidesops.schemas.privacy_request import (
     ReviewPrivacyRequestIds,
     DenyPrivacyRequests,
     PrivacyRequestDRPStatusResponse,
+    PrivacyRequestDRPStatus,
 )
 from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
@@ -453,6 +454,26 @@ def get_request_status(
     return paginated
 
 
+def _map_fidesops_status_to_drp_status(
+    status: PrivacyRequestStatus,
+) -> PrivacyRequestDRPStatus:
+    PRIVACY_REQUEST_STATUS_TO_DRP_MAPPING: Dict[
+        PrivacyRequestStatus, PrivacyRequestDRPStatus
+    ] = {
+        PrivacyRequestStatus.pending: PrivacyRequestDRPStatus.open,
+        PrivacyRequestStatus.approved: PrivacyRequestDRPStatus.in_progress,
+        PrivacyRequestStatus.denied: PrivacyRequestDRPStatus.denied,
+        PrivacyRequestStatus.in_processing: PrivacyRequestDRPStatus.in_progress,
+        PrivacyRequestStatus.complete: PrivacyRequestDRPStatus.fulfilled,
+        PrivacyRequestStatus.paused: PrivacyRequestDRPStatus.in_progress,
+        PrivacyRequestStatus.error: PrivacyRequestDRPStatus.expired,
+    }
+    try:
+        return PRIVACY_REQUEST_STATUS_TO_DRP_MAPPING[status]
+    except KeyError:
+        raise ValueError(f"Request has invalid DRP request status: {status.value}")
+
+
 @router.get(
     urls.REQUEST_STATUS_DRP,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
@@ -482,7 +503,11 @@ def get_request_status_drp(
         )
 
     logger.info(f"Privacy request with ID: {privacy_request_id} found for DRP status.")
-    return request
+    return PrivacyRequestDRPStatusResponse(
+        request_id=request.id,
+        received_at=request.requested_at,
+        status=_map_fidesops_status_to_drp_status(request.status),
+    )
 
 
 @router.get(
