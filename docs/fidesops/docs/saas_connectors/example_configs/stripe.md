@@ -9,16 +9,15 @@ Fidesops uses the following Stripe endpoints to retrieve and delete Personally I
 |[Customers](https://stripe.com/docs/api/customers/update) | Yes | No |
 |[Charges](https://stripe.com/docs/api/charges/list) | Yes | No |
 |[Disputes](https://stripe.com/docs/api/disputes/list) | Yes | No |
-|[PaymentIntents](https://stripe.com/docs/api/payment_intents/list) | Yes | No |
-|[PaymentMethods](https://stripe.com/docs/api/payment_methods/list) | Yes | No |
-|[BankAccounts](https://stripe.com/docs/api/customer_bank_accounts/list) | Yes | No |
-|[BankAccounts](https://stripe.com/docs/api/customer_bank_accounts/list) | Yes | No |
+|[Payment Intents](https://stripe.com/docs/api/payment_intents/list) | Yes | No |
+|[Payment Methods](https://stripe.com/docs/api/payment_methods/list) | Yes | No |
+|[Bank Accounts](https://stripe.com/docs/api/customer_bank_accounts/list) | Yes | No |
 |[Cards](https://stripe.com/docs/api/cards/list) | Yes | No |
 |[Credit Notes](https://stripe.com/docs/api/credit_notes/list) | Yes | No |
-|[Customer Balance Transaction](https://stripe.com/docs/api/customer_balance_transactions/list) | Yes | No |
+|[Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list) | Yes | No |
 |[Tax IDs](https://stripe.com/docs/api/customer_tax_ids/list) | Yes | Yes |
 |[Invoices](https://stripe.com/docs/api/invoices/list) | Yes | Yes |
-|[Invoice Item](https://stripe.com/docs/api/invoiceitems/list) | Yes | Yes |
+|[Invoice Items](https://stripe.com/docs/api/invoiceitems/list) | Yes | Yes |
 |[Subscriptions](https://stripe.com/docs/api/subscriptions/list) | Yes | Yes |
 
 ## Connection Settings
