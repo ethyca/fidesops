@@ -870,6 +870,12 @@ def example_yaml_dataset() -> str:
 
 
 @pytest.fixture
+def example_invalid_yaml_dataset() -> str:
+    example_filename = "data/dataset/example_test_dataset.invalid"
+    return load_dataset_as_string(example_filename)
+
+
+@pytest.fixture
 def privacy_request_runner(
     cache: FidesopsRedis,
     privacy_request: PrivacyRequest,

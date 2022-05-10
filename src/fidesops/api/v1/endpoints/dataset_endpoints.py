@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
     HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_415_UNSUPPORTED_MEDIA_TYPE,
 )
@@ -51,6 +52,8 @@ from fidesops.schemas.dataset import (
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.oauth_util import verify_oauth_client
 from fidesops.util.saas_util import merge_datasets
+
+X_YAML = "application/x-yaml"
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Datasets"], prefix=V1_URL_PREFIX)
@@ -196,11 +199,19 @@ async def patch_yaml_datasets(
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
-    if request.headers.get("content-type") != "application/x-yaml":
+    if request.headers.get("content-type") != X_YAML:
         raise HTTPException(
             status_code=HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail='Supported type: ' + X_YAML
         )
-    yaml_request_body: dict = yaml.safe_load(await request.body())
+    body = await request.body()
+    try:
+        yaml_request_body: dict = yaml.safe_load(body)
+    except yaml.YAMLError:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Error in YAML"
+        )
     datasets = yaml_request_body.get("dataset")
     created_or_updated: List[FidesopsDataset] = []
     failed: List[BulkUpdateFailed] = []

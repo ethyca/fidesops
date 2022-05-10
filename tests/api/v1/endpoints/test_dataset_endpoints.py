@@ -873,6 +873,17 @@ class TestPutYamlDatasets:
         )
         assert response.status_code == 415
 
+    def test_patch_dataset_invalid_content(
+            self, dataset_url: str, example_invalid_yaml_dataset: str, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        headers = {"Content-type": "application/x-yaml"}
+        headers.update(auth_header)
+        response = api_client.patch(
+            dataset_url, headers=headers, data=example_invalid_yaml_dataset
+        )
+        assert response.status_code == 400
+
     @mock.patch("fidesops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_datasets_failed_response(
             self,
