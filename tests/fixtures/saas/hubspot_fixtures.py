@@ -7,6 +7,7 @@ import pydash
 import pytest
 from sqlalchemy.orm import Session
 
+from fidesops.core.config import load_toml
 from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors import SaaSConnector
 from fidesops.util import cryptographic_util
