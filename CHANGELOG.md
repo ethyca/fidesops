@@ -36,6 +36,8 @@ The types of changes are:
 * Seed user permissions in `create_superuser.py` script [#468](https://github.com/ethyca/fidesops/pull/468) 
 * User API Endpoints (update fields and reset user passwords) [#471](https://github.com/ethyca/fidesops/pull/471)
 * Format tests with `black` [#466](https://github.com/ethyca/fidesops/pull/466)
+* Extract privacy request endpoint logic into separate service for DRP [#470](https://github.com/ethyca/fidesops/pull/470)
+* Fixing inconsistent SaaS connector integration tests [#473](https://github.com/ethyca/fidesops/pull/473)
 
 
 ### Breaking Changes
