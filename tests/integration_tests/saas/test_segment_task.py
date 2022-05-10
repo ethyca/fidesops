@@ -1,20 +1,14 @@
-import time
 import random
-import requests
+
 import pytest
-from faker import Faker
 
 from fidesops.core.config import config
-from fidesops.task.filter_results import filter_data_categories
-
-
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-
 from fidesops.task import graph_task
+from fidesops.task.filter_results import filter_data_categories
 from fidesops.task.graph_task import get_cached_data_for_erasures
-from tests.fixtures.saas.segment_fixtures import segment_erasure_data
 from tests.graph.graph_test_util import assert_rows_match
 
 
