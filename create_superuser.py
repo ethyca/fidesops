@@ -17,13 +17,25 @@ from fidesops.schemas.user import UserCreate
 """One-time script to create the root user for the Admin UI"""
 
 
+def get_username(prompt: str) -> str:
+    """Prompt the user for a username"""
+    username = input(prompt)
+    return username
+
+
+def get_password(prompt: str) -> str:
+    """Prompt the user for a password"""
+    password = getpass.getpass(prompt)
+    return password
+
+
 def collect_username_and_password(db: Session) -> UserCreate:
     """Collect username and password information and validate"""
-    username = input("Enter your username: ")
+    username = get_username("Enter your username: ")
+    password = get_password("Enter your password: ")
     first_name = input("Enter your first name: ")
     last_name = input("Enter your last name: ")
-    password = getpass.getpass("Enter your password: ")
-    verify_pass = getpass.getpass("Enter your password again: ")
+    verify_pass = get_password("Enter your password again: ")
 
     if password != verify_pass:
         raise Exception("Passwords do not match.")
