@@ -53,4 +53,7 @@ jobs:
           SEGMENT_NAMESPACE_ID: ${{ secrets.SEGMENT_NAMESPACE_ID }}
           SEGMENT_ACCESS_SECRET: ${{ secrets.SEGMENT_ACCESS_SECRET }}
           SEGMENT_IDENTITY_EMAIL: ${{ secrets.SEGMENT_IDENTITY_EMAIL }}
+          SENDGRID_HOST: ${{secrets.SENDGRID_HOST}}
+          SENDGRID_API_KEY: ${{secrets.SENDGRID_API_KEY}}
+          SENDGRID_IDENTITY_EMAIL: ${{secrets.SENDGRID_IDENTITY_EMAIL}}
         run: make pytest-saas

@@ -50,18 +50,6 @@ saas_config:
               - dataset: sendgrid_connector_example
                 field: contacts.email
                 direction: from
-      delete:
-        method: DELETE
-        path: /v3/marketing/contacts
-        query_params:
-          - name: ids
-            value: <contact_id>
-        param_values:
-          - name: contact_id
-            references:
-              - dataset: sendgrid_connector_example
-                field: contacts.id
-                direction: from
   # - name: lists
   #   after: ['sendgrid_connector_example.contacts']
   #   requests:
