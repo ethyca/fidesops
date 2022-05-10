@@ -215,10 +215,8 @@ def _get_issues(
         f"https://{secrets['host']}/api/0/projects/{project['organization']['slug']}/{project['slug']}/issues/",
         headers=headers,
     )
-    if not response.ok or response.json() == []:
-        return None
-
-    return response.json()
+    json = response.json()
+    return json if response.ok and len(json) else None
 
 
 def sentry_erasure_test_prep(sentry_connection_config, db):
@@ -237,7 +235,7 @@ def sentry_erasure_test_prep(sentry_connection_config, db):
     data = {"assignedTo": f"user:{sentry_user_id}"}
     response = requests.put(issue_url, json=data, headers=headers)
     assert response.ok
-    assert response.json()["assignedTo"]["id"] == sentry_user_id
+    assert response.json().get("assignedTo", {}).get("id") == sentry_user_id
 
     # Get projects
     response = requests.get(f"https://{host}/api/0/projects/", headers=headers)
