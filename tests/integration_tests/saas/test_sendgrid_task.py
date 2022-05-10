@@ -1,14 +1,14 @@
-import pytest
-import random
 import json
+import random
 import time
+
+import pytest
 
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.service.connectors import SaaSConnector
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
-
+from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fidesops.service.connectors import SaaSConnector
 from fidesops.task import graph_task
 from fidesops.task.graph_task import get_cached_data_for_erasures
 from tests.graph.graph_test_util import assert_rows_match
@@ -139,17 +139,17 @@ def test_sendgrid_erasure_request_task(
     # retrieve updated contact record, and verify its firstname is now masked
     # update may take a while (>25s) to propagate, so retry up to 10 times
     connector = SaaSConnector(sendgrid_connection_config)
-    remaining_tries = 10
+    retries = 10
     while (
         contact_firstname := _get_contact_firstname(
             sendgrid_erasure_identity_email, connector, sendgrid_secrets
         )
     ) == "MASKED":
-        remaining_tries -= 1
-        if remaining_tries < 1:
+        if not retries:
             raise Exception(
                 f"Contact with email {sendgrid_erasure_identity_email} was not updated in Sendgrid"
             )
+        retries -= 1
         time.sleep(5)
 
 
