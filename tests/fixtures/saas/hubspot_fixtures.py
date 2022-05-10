@@ -8,6 +8,12 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fidesops.core.config import load_toml
+from fidesops.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
+from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors import SaaSConnector
 from fidesops.util import cryptographic_util
