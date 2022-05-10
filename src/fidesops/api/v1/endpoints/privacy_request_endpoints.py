@@ -272,7 +272,6 @@ def execution_logs_by_dataset_name(
 def _filter_privacy_request_queryset(
     query: Query,
     db: Session = Depends(deps.get_db),
-    params: Params = Depends(),
     id: Optional[str] = None,
     status: Optional[PrivacyRequestStatus] = None,
     created_lt: Optional[datetime] = None,
@@ -284,10 +283,10 @@ def _filter_privacy_request_queryset(
     errored_lt: Optional[datetime] = None,
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
-    verbose: Optional[bool] = False,
-    download_csv: Optional[bool] = False,
 ) -> Query:
-    """"""
+    """
+    Utility method to apply filters to our privacy request query
+    """
     if any([completed_lt, completed_gt]) and any([errored_lt, errored_gt]):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -349,20 +348,6 @@ def _filter_privacy_request_queryset(
             PrivacyRequest.finished_processing_at > errored_gt,
         )
 
-    if download_csv:
-        # Returning here if download_csv param was specified
-        logger.info("Downloading privacy requests as csv")
-        return privacy_request_csv_download(db, query)
-
-    # Conditionally embed execution log details in the response.
-    if verbose:
-        logger.info(f"Finding execution log details")
-        PrivacyRequest.execution_logs_by_dataset = property(
-            execution_logs_by_dataset_name
-        )
-    else:
-        PrivacyRequest.execution_logs_by_dataset = property(lambda self: None)
-
     return query.order_by(PrivacyRequest.created_at.desc())
 
 
@@ -406,7 +391,6 @@ def get_request_status(
     query = _filter_privacy_request_queryset(
         query,
         db,
-        params,
         id,
         status,
         created_lt,
@@ -418,9 +402,22 @@ def get_request_status(
         errored_lt,
         errored_gt,
         external_id,
-        verbose,
-        download_csv,
     )
+
+    if download_csv:
+        # Returning here if download_csv param was specified
+        logger.info("Downloading privacy requests as csv")
+        return privacy_request_csv_download(db, query)
+
+    # Conditionally embed execution log details in the response.
+    if verbose:
+        logger.info(f"Finding execution log details")
+        PrivacyRequest.execution_logs_by_dataset = property(
+            execution_logs_by_dataset_name
+        )
+    else:
+        PrivacyRequest.execution_logs_by_dataset = property(lambda self: None)
+
     paginated = paginate(query, params)
     if include_identities:
         # Conditionally include the cached identity data in the response if
