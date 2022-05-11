@@ -909,7 +909,7 @@ class TestPutYamlDatasets:
             assert "Dataset create/update failed" in failed_response["message"]
             assert set(failed_response.keys()) == {"message", "data"}
 
-    def test_patch_datasets_create(
+    def test_patch_dataset_create(
             self,
             example_yaml_dataset: List,
             dataset_url,
@@ -941,6 +941,26 @@ class TestPutYamlDatasets:
         assert len(postgres_dataset["collections"]) == 11
 
         postgres_config.delete(db)
+
+    def test_patch_datasets_create(
+            self,
+            example_yaml_datasets: List,
+            dataset_url,
+            api_client: TestClient,
+            db: Session,
+            generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        headers = {"Content-type": "application/x-yaml"}
+        headers.update(auth_header)
+        response = api_client.patch(
+            dataset_url, headers=headers, data=example_yaml_datasets
+        )
+
+        assert response.status_code == 200
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 2
+        assert len(response_body["failed"]) == 0
 
 
 class TestGetDatasets:

@@ -864,6 +864,12 @@ def example_datasets() -> List[Dict]:
 
 
 @pytest.fixture
+def example_yaml_datasets() -> str:
+    example_filename = "data/dataset/example_test_datasets.yml"
+    return load_dataset_as_string(example_filename)
+
+
+@pytest.fixture
 def example_yaml_dataset() -> str:
     example_filename = "data/dataset/postgres_example_test_dataset.yml"
     return load_dataset_as_string(example_filename)
