@@ -20,14 +20,15 @@ The types of changes are:
 
 ### Added
 
-* GET routes for users by @TheAndrewJackson in [#405](https://github.com/ethyca/fidesops/pull/405)
-* Username based search on GET route by @TheAndrewJackson in [#444](https://github.com/ethyca/fidesops/pull/444)
-* FIDESOPS__DEV_MODE for Easier SaaS Request Debugging by @pattisdr in [#363](https://github.com/ethyca/fidesops/pull/363)
-* Track user privileges across sessions by @TheAndrewJackson in [#425](https://github.com/ethyca/fidesops/pull/425)
-* Add first_name and last_name fields. Also add them along with created_at to FidesopsUser response by @seanpreston in [#465](https://github.com/ethyca/fidesops/pull/465)
-* Denial reasons for DSR and user `AuditLog` by @TheAndrewJackson in [#463](https://github.com/ethyca/fidesops/pull/463)
-* DRP action to Policy by @eastandwestwind and @conceptualshark in [#453](https://github.com/ethyca/fidesops/pull/453)
-* `CHANGELOG.md` file by @TheAndrewJackson [#484](https://github.com/ethyca/fidesops/pull/484)
+* GET routes for users [#405](https://github.com/ethyca/fidesops/pull/405)
+* Username based search on GET route [#444](https://github.com/ethyca/fidesops/pull/444)
+* FIDESOPS__DEV_MODE for Easier SaaS Request Debugging [#363](https://github.com/ethyca/fidesops/pull/363)
+* Track user privileges across sessions [#425](https://github.com/ethyca/fidesops/pull/425)
+* Add first_name and last_name fields. Also add them along with created_at to FidesopsUser response [#465](https://github.com/ethyca/fidesops/pull/465)
+* Denial reasons for DSR and user `AuditLog` [#463](https://github.com/ethyca/fidesops/pull/463)
+* DRP action to Policy [#453](https://github.com/ethyca/fidesops/pull/453)
+* `CHANGELOG.md` file[#484](https://github.com/ethyca/fidesops/pull/484)
+* DRP status endpoint [#485](https://github.com/ethyca/fidesops/pull/485)
 
 
 ### Changed 
