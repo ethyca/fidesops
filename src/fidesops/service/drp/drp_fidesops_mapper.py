@@ -18,12 +18,15 @@ class DrpFidesopsMapper:
         Fidesops identity props in PrivacyRequestIdentity. This may not always be the case.
         This class also allows us to implement custom logic to handle "verified" id props.
         """
-        identity_kwargs = {"email": drp_identity.email, "phone_number": drp_identity.phone_number}
+        identity_kwargs = {
+            "email": drp_identity.email,
+            "phone_number": drp_identity.phone_number,
+        }
         return PrivacyRequestIdentity(**identity_kwargs)
 
     @staticmethod
     def map_status(
-            status: PrivacyRequestStatus,
+        status: PrivacyRequestStatus,
     ) -> PrivacyRequestDRPStatus:
         PRIVACY_REQUEST_STATUS_TO_DRP_MAPPING: Dict[
             PrivacyRequestStatus, PrivacyRequestDRPStatus

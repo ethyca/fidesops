@@ -44,6 +44,7 @@ class DrpPrivacyRequestCreate(BaseSchema):
 
 class DrpIdentity(BaseSchema):
     """Drp identity props"""
+
     aud: Optional[str]
     sub: Optional[str]
     name: Optional[str]
