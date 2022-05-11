@@ -7,15 +7,20 @@ import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, STORAGE_CREATE_OR_UPDATE
+from fidesops.api.v1.scope_registry import (
+    PRIVACY_REQUEST_READ,
+    STORAGE_CREATE_OR_UPDATE,
+)
 from fidesops.api.v1.urn_registry import (
     V1_URL_PREFIX,
-    DRP_EXERCISE, DRP_STATUS,
+    DRP_EXERCISE,
+    DRP_STATUS,
 )
 from fidesops.core.config import config
 
 from fidesops.models.privacy_request import (
-    PrivacyRequest, PrivacyRequestStatus,
+    PrivacyRequest,
+    PrivacyRequestStatus,
 )
 from fidesops.schemas.privacy_request import PrivacyRequestDRPStatus
 from fidesops.util.cache import get_drp_request_body_cache_key, get_identity_cache_key
@@ -78,7 +83,10 @@ class TestCreateDrpPrivacyRequest:
             privacy_request_id=pr.id,
             identity_attribute="identity",
         )
-        assert cache.get(identity_key) == "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.4I8XLWnTYp8oMHjN2ypP3Hpg45DIaGNAEmj1QCYONUI"
+        assert (
+            cache.get(identity_key)
+            == "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.4I8XLWnTYp8oMHjN2ypP3Hpg45DIaGNAEmj1QCYONUI"
+        )
         fidesops_identity_key = get_identity_cache_key(
             privacy_request_id=pr.id,
             identity_attribute="email",
@@ -184,22 +192,26 @@ class TestGetPrivacyRequestDRP:
 
     @pytest.fixture(scope="function")
     def url_for_privacy_request(
-            self,
-            privacy_request: PrivacyRequest,
+        self,
+        privacy_request: PrivacyRequest,
     ) -> str:
         return V1_URL_PREFIX + DRP_STATUS + f"?request_id={privacy_request.id}"
 
     @pytest.fixture(scope="function")
     def url_for_privacy_request_with_drp_action(
-            self,
-            privacy_request_with_drp_action: PrivacyRequest,
+        self,
+        privacy_request_with_drp_action: PrivacyRequest,
     ) -> str:
-        return V1_URL_PREFIX + DRP_STATUS + f"?request_id={privacy_request_with_drp_action.id}"
+        return (
+            V1_URL_PREFIX
+            + DRP_STATUS
+            + f"?request_id={privacy_request_with_drp_action.id}"
+        )
 
     def test_get_privacy_requests_unauthenticated(
-            self,
-            api_client: TestClient,
-            url_for_privacy_request: str,
+        self,
+        api_client: TestClient,
+        url_for_privacy_request: str,
     ):
         response = api_client.get(
             url_for_privacy_request,
@@ -208,10 +220,10 @@ class TestGetPrivacyRequestDRP:
         assert 401 == response.status_code
 
     def test_get_privacy_requests_wrong_scope(
-            self,
-            api_client: TestClient,
-            generate_auth_header: Callable,
-            url_for_privacy_request: str,
+        self,
+        api_client: TestClient,
+        generate_auth_header: Callable,
+        url_for_privacy_request: str,
     ):
         auth_header = generate_auth_header(scopes=[STORAGE_CREATE_OR_UPDATE])
         response = api_client.get(
@@ -221,10 +233,10 @@ class TestGetPrivacyRequestDRP:
         assert 403 == response.status_code
 
     def test_get_non_drp_privacy_request(
-            self,
-            api_client: TestClient,
-            generate_auth_header: Callable,
-            url_for_privacy_request: str,
+        self,
+        api_client: TestClient,
+        generate_auth_header: Callable,
+        url_for_privacy_request: str,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
@@ -234,8 +246,8 @@ class TestGetPrivacyRequestDRP:
         assert 404 == response.status_code
         privacy_request_id = url_for_privacy_request.split("=")[-1]
         assert (
-                response.json()["detail"]
-                == f"Privacy request with ID {privacy_request_id} does not exist, or is not associated with a data rights protocol action."
+            response.json()["detail"]
+            == f"Privacy request with ID {privacy_request_id} does not exist, or is not associated with a data rights protocol action."
         )
 
     @pytest.mark.parametrize(
@@ -251,14 +263,14 @@ class TestGetPrivacyRequestDRP:
         ],
     )
     def test_get_privacy_request_with_drp_action(
-            self,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header: Callable,
-            url_for_privacy_request_with_drp_action: str,
-            privacy_request_with_drp_action: PrivacyRequest,
-            privacy_request_status: PrivacyRequestStatus,
-            expected_drp_status: PrivacyRequestDRPStatus,
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header: Callable,
+        url_for_privacy_request_with_drp_action: str,
+        privacy_request_with_drp_action: PrivacyRequest,
+        privacy_request_status: PrivacyRequestStatus,
+        expected_drp_status: PrivacyRequestDRPStatus,
     ):
         privacy_request_with_drp_action.status = privacy_request_status
         privacy_request_with_drp_action.save(db=db)
@@ -271,6 +283,6 @@ class TestGetPrivacyRequestDRP:
         assert expected_drp_status.value == response.json()["status"]
         assert privacy_request_with_drp_action.id == response.json()["request_id"]
         assert (
-                privacy_request_with_drp_action.requested_at.isoformat()
-                == response.json()["received_at"]
+            privacy_request_with_drp_action.requested_at.isoformat()
+            == response.json()["received_at"]
         )

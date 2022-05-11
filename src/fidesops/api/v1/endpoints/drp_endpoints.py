@@ -84,9 +84,9 @@ def create_drp_privacy_request(
 
         logger.info(f"Decrypting identity for DRP privacy request {privacy_request.id}")
 
-        decrypted_identity: DrpIdentity = DrpIdentity(**jwt.decode(
-            data.identity, jwt_key, algorithms=["HS256"]
-        ))
+        decrypted_identity: DrpIdentity = DrpIdentity(
+            **jwt.decode(data.identity, jwt_key, algorithms=["HS256"])
+        )
 
         mapped_identity: PrivacyRequestIdentity = DrpFidesopsMapper.map_identity(
             drp_identity=decrypted_identity
@@ -126,9 +126,7 @@ def create_drp_privacy_request(
     response_model=PrivacyRequestDRPStatusResponse,
 )
 def get_request_status_drp(
-    *,
-    db: Session = Depends(deps.get_db),
-    request_id: str
+    *, db: Session = Depends(deps.get_db), request_id: str
 ) -> PrivacyRequestDRPStatusResponse:
     """
     Returns PrivacyRequest information where the respective privacy request is associated with

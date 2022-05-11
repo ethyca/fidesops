@@ -193,7 +193,6 @@ class PrivacyRequest(Base):
                         repr(value),
                     )
                 else:
-                    logger.info(f"caching with key {key}, value: {value}, resulting cache key: {get_drp_request_body_cache_key(self.id, key)}")
                     cache.set_with_autoexpire(
                         get_drp_request_body_cache_key(self.id, key),
                         value,
