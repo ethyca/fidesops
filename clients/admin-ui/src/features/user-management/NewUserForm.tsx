@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import type { NextPage } from 'next';
 import NextLink from 'next/link';
@@ -66,7 +66,6 @@ const useUserForm = () => {
           console.log('PERMISSIONS TO PASS', result);
           const permissionsToAddToUser = updateUserPermissions(result);
 
-          console.log(permissionsToAddToUser);
           return permissionsToAddToUser;
         })
         .then(() => {

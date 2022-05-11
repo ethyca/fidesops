@@ -69,7 +69,6 @@ export const userApi = createApi({
     }),
     getUserById: build.query<object, string>({
       query: (id) => {
-        console.log('Getting user by id', id);
         return { url: `user/${id}` };
       },
       providesTags: ['User'],
@@ -107,6 +106,7 @@ export const userApi = createApi({
       // For optimistic updates
       async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
         const patchResult = dispatch(
+          // @ts-ignore
           userApi.util.updateQueryData('getUserById', id, (draft) => {
             Object.assign(draft, patch);
           })

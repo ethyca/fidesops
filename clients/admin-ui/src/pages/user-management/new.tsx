@@ -9,9 +9,6 @@ import {
 } from '@fidesui/react';
 
 import NavBar from '../../features/common/NavBar';
-
-// import UserManagementTable from '../features/user-management/UserManagementTable';
-// import UserManagementTableActions from '../../features/user-management/UserManagementTableActions';
 import NewUserForm from '../../features/user-management/NewUserForm';
 
 import { assignToken } from '../../features/user/user.slice';

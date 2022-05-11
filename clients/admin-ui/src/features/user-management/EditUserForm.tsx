@@ -37,8 +37,6 @@ const useUserForm = () => {
   const { data: existingScopes, isLoading: scopesLoading } =
     useGetUserPermissionsQuery(id as string);
 
-  console.log(existingScopes);
-
   const formik = useFormik({
     initialValues: {
       username: existingUser?.username,

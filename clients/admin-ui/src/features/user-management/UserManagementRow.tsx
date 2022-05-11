@@ -37,14 +37,12 @@ const useUserManagementRow = () => {
 const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   const { handleMenuOpen, handleMenuClose, menuOpen } = useUserManagementRow();
   const router = useRouter();
-  const dispatch = useDispatch();
 
   const handleEditUser = () => {
     router.push(`/user-management/profile/${user.id}`);
   };
 
   const showMenu = menuOpen;
-  // console.log(user);
 
   return (
     <>

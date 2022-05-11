@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import React from 'react';
 import type { NextPage } from 'next';
 import {
   Box,
@@ -8,14 +7,9 @@ import {
   BreadcrumbLink,
   Heading,
 } from '@fidesui/react';
-import { useRouter } from 'next/router';
 import NavBar from '../../../features/common/NavBar';
 import EditUserForm from '../../../features/user-management/EditUserForm';
-import {
-  useGetUserByIdQuery,
-  userApi,
-  assignToken,
-} from '../../../features/user/user.slice';
+import { userApi, assignToken } from '../../../features/user/user.slice';
 
 import { wrapper } from '../../../app/store';
 import { getSession } from 'next-auth/react';
@@ -54,7 +48,6 @@ export const getServerSideProps = wrapper.getServerSideProps(
     const session = await getSession(context);
     if (session && typeof session.accessToken !== 'undefined') {
       await store.dispatch(assignToken(session.accessToken));
-      console.log('Found ID on this page', context.query.id);
 
       if (context.query.id) {
         store.dispatch(
