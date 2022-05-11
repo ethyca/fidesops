@@ -15,7 +15,6 @@ import {
   useGetUserByIdQuery,
   userApi,
   assignToken,
-  setManagedUser,
 } from '../../../features/user/user.slice';
 
 import { wrapper } from '../../../app/store';
@@ -59,10 +58,12 @@ export const getServerSideProps = wrapper.getServerSideProps(
 
       if (context.query.id) {
         store.dispatch(
-          userApi.endpoints.getUserById.initiate(context.query.id)
+          userApi.endpoints.getUserById.initiate(context.query.id as string)
         );
         store.dispatch(
-          userApi.endpoints.getUserPermissions.initiate(context.query.id)
+          userApi.endpoints.getUserPermissions.initiate(
+            context.query.id as string
+          )
         );
         await Promise.all(userApi.util.getRunningOperationPromises());
       }

@@ -17,7 +17,6 @@ import { MoreIcon } from '../common/Icon';
 import DeleteUserModal from './DeleteUserModal';
 import { User } from '../user/types';
 import { useRouter } from 'next/router';
-import { setManagedUser } from '../user/user.slice';
 
 interface UserManagementRowProps {
   user: User;
@@ -41,7 +40,6 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   const dispatch = useDispatch();
 
   const handleEditUser = () => {
-    dispatch(setManagedUser(user));
     router.push(`/user-management/profile/${user.id}`);
   };
 

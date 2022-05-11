@@ -19,11 +19,10 @@ import {
 import config from './config/config.json';
 import {
   selectUserToken,
-  selectManagedUser,
   useCreateUserMutation,
   useUpdateUserPermissionsMutation,
 } from '../user/user.slice';
-import { userPrivilegesArray, User } from '../user/types';
+import { userPrivilegesArray, User, UserResponse } from '../user/types';
 import { useRouter } from 'next/router';
 
 const useUserForm = () => {
@@ -56,17 +55,21 @@ const useUserForm = () => {
 
       await createUser(userBody)
         .then((result) => {
-          console.log('values.scopes', values.scopes);
-          console.log('ID?', result);
-          result = { id: result.data.id, scopes: values.scopes };
-          console.log('result', result);
-          return result;
+          const userWithPrivileges = {
+            id: 'data' in result ? result.data.id : null,
+            scopes: values.scopes,
+          };
+
+          return userWithPrivileges;
         })
         .then((result) => {
           console.log('PERMISSIONS TO PASS', result);
-          return updateUserPermissions(result);
+          const permissionsToAddToUser = updateUserPermissions(result);
+
+          console.log(permissionsToAddToUser);
+          return permissionsToAddToUser;
         })
-        .then((result) => {
+        .then(() => {
           router.replace('/user-management');
         });
     },
@@ -205,18 +208,23 @@ const UserForm: NextPage<{
             <CheckboxGroup colorScheme="secondary">
               <Stack spacing={[1, 5]} direction={'column'}>
                 {userPrivilegesArray.map((policy, idx) => (
-                  <>
-                    <Checkbox
-                      key={`${policy.privilege}-${idx}`}
-                      onChange={handleChange}
-                      id={`scopes-${policy.privilege}-${idx}`}
-                      name="scopes"
-                      isChecked={values.scopes[policy.scope]}
-                      value={policy.scope}
-                    >
-                      {policy.privilege}
-                    </Checkbox>
-                  </>
+                  <Checkbox
+                    defaultChecked={policy.scope === 'privacy-request:read'}
+                    key={`${policy.privilege}-${idx}`}
+                    onChange={handleChange}
+                    id={`scopes-${policy.privilege}-${idx}`}
+                    name="scopes"
+                    isChecked={values.scopes[idx]}
+                    value={
+                      policy.scope === 'privacy-request:read'
+                        ? undefined
+                        : policy.scope
+                    }
+                    isDisabled={policy.scope === 'privacy-request:read'}
+                    isReadOnly={policy.scope === 'privacy-request:read'}
+                  >
+                    {policy.privilege}
+                  </Checkbox>
                 ))}
               </Stack>
             </CheckboxGroup>

@@ -3,7 +3,14 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { HYDRATE } from 'next-redux-wrapper';
 import type { AppState } from '../../app/store';
 
-import { User, UsersListParams, UserPermissions, UsersResponse } from './types';
+import {
+  User,
+  UsersListParams,
+  UserPermissionsUpdate,
+  UserPermissionsResponse,
+  UserResponse,
+  UsersResponse,
+} from './types';
 
 export interface State {
   id: string;
@@ -11,16 +18,19 @@ export interface State {
   size: number;
   user: User;
   token: string | null;
-  managedUser: User | null;
 }
 
 const initialState: State = {
   id: '',
   page: 1,
   size: 25,
-  user: {},
+  user: {
+    id: '',
+    password: '',
+    username: '',
+    created_at: '',
+  },
   token: null,
-  managedUser: null,
 };
 
 // Helpers
@@ -68,7 +78,7 @@ export const userApi = createApi({
       query: (id) => ({ url: `user/${id}/permission` }),
       providesTags: ['User'],
     }),
-    createUser: build.mutation<User, Partial<User>>({
+    createUser: build.mutation<UserResponse, Partial<User>>({
       query: (user) => ({
         url: 'user',
         method: 'POST',
@@ -77,8 +87,8 @@ export const userApi = createApi({
       invalidatesTags: ['User'],
     }),
     createUserPermissions: build.mutation<
-      UserPermissions,
-      Partial<UserPermissions>
+      UserPermissionsResponse,
+      Partial<UserPermissionsResponse>
     >({
       query: (user) => ({
         url: `user/${user?.data?.id}/permission`,
@@ -114,8 +124,8 @@ export const userApi = createApi({
       },
     }),
     updateUserPermissions: build.mutation<
-      UserPermissions,
-      Partial<UserPermissions> & Pick<UserPermissions, 'id'>
+      UserPermissionsUpdate,
+      Partial<UserPermissionsUpdate> & Pick<UserPermissionsUpdate, 'id'>
     >({
       query: ({ id, scopes }) => ({
         url: `user/${id}/permission`,
@@ -181,10 +191,6 @@ export const userSlice = createSlice({
       page: initialState.page,
       size: action.payload,
     }),
-    setManagedUser: (state, action: PayloadAction<object>) => ({
-      ...state,
-      managedUser: action.payload,
-    }),
   },
   extraReducers: {
     [HYDRATE]: (state, action) => ({
@@ -194,8 +200,7 @@ export const userSlice = createSlice({
   },
 });
 
-export const { assignToken, setManagedUser, setUser, setPage } =
-  userSlice.actions;
+export const { assignToken, setUser, setPage } = userSlice.actions;
 
 export const selectUserToken = (state: AppState) => state.user.token;
 
@@ -204,7 +209,5 @@ export const selectUserFilters = (state: AppState): UsersListParams => ({
   size: state.user.size,
   user: state.user.user,
 });
-
-export const selectManagedUser = (state: AppState) => state.user.managedUser;
 
 export const { reducer } = userSlice;

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { NextPage } from 'next';
@@ -19,7 +20,6 @@ import {
 import config from './config/config.json';
 import {
   selectUserToken,
-  selectManagedUser,
   useEditUserMutation,
   useUpdateUserPermissionsMutation,
   useGetUserByIdQuery,
@@ -33,9 +33,9 @@ const useUserForm = () => {
   // const [editUser, editUserResult] = useEditUserMutation();
   const router = useRouter();
   const { id } = router.query;
-  const { data: existingUser } = useGetUserByIdQuery(id);
+  const { data: existingUser } = useGetUserByIdQuery(id as string);
   const { data: existingScopes, isLoading: scopesLoading } =
-    useGetUserPermissionsQuery(id);
+    useGetUserPermissionsQuery(id as string);
 
   console.log(existingScopes);
 
@@ -70,14 +70,6 @@ const useUserForm = () => {
         password?: string;
       } = {};
 
-      if (!values.first_name && !existingUser?.first_name) {
-        errors.first_name = 'First name is required';
-      }
-
-      if (!values.last_name && !existingUser?.last_name) {
-        errors.last_name = 'Last name is required';
-      }
-
       if (!values.password && !existingUser) {
         errors.password = 'Password is required';
       }
@@ -92,7 +84,7 @@ const useUserForm = () => {
       formik.setFieldValue(
         'scopes',
         existingScopes.scopes.reduce(
-          (scopes, scope) => ({
+          (scopes: string[], scope: string) => ({
             ...scopes,
             [scope]: true,
           }),
@@ -137,10 +129,7 @@ const UserForm: NextPage<{
           width="100%"
         >
           <Stack spacing={6}>
-            <FormControl
-              id="username"
-              isInvalid={touched.username && Boolean(errors.username)}
-            >
+            <FormControl id="username">
               <FormLabel htmlFor="username" fontWeight="medium">
                 Username
               </FormLabel>
@@ -156,13 +145,9 @@ const UserForm: NextPage<{
                 isReadOnly={true}
                 isDisabled={true}
               />
-              <FormErrorMessage>{errors.username}</FormErrorMessage>
             </FormControl>
 
-            <FormControl
-              id="first_name"
-              isInvalid={touched.first_name && Boolean(errors.first_name)}
-            >
+            <FormControl id="first_name">
               <FormLabel htmlFor="first_name" fontWeight="medium">
                 First Name
               </FormLabel>
@@ -175,22 +160,13 @@ const UserForm: NextPage<{
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.first_name}
-                isInvalid={
-                  !existingUser?.first_name &&
-                  touched.first_name &&
-                  Boolean(errors.first_name)
-                }
                 // Only admins can edit names - need to add a check for admin role here
-                // isReadOnly={existingUser ? true : false}
-                // isDisabled={existingUser ? true : false}
+                // isReadOnly={existingUser && !adminUser ? true : false}
+                // isDisabled={existingUser ? && !adminUser ? true : false}
               />
-              <FormErrorMessage>{errors.first_name}</FormErrorMessage>
             </FormControl>
 
-            <FormControl
-              id="last_name"
-              isInvalid={touched.last_name && Boolean(errors.last_name)}
-            >
+            <FormControl id="last_name">
               <FormLabel htmlFor="last_name" fontWeight="medium">
                 Last Name
               </FormLabel>
@@ -203,20 +179,14 @@ const UserForm: NextPage<{
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.last_name}
-                isInvalid={
-                  !existingUser?.last_name &&
-                  touched.last_name &&
-                  Boolean(errors.last_name)
-                }
                 // Only admins can edit names - need to add a check for admin role here
-                // isReadOnly={existingUser ? true : false}
-                // isDisabled={existingUser ? true : false}
+                // isReadOnly={existingUser && !adminUser ? true : false}
+                // isDisabled={existingUser && !adminUser ? true : false}
               />
-              <FormErrorMessage>{errors.last_name}</FormErrorMessage>
             </FormControl>
 
-            {/* existing use and it's that user's specific profile */}
-            {/* {existingUser ? (
+            {/* existing user and it's that user's specific profile */}
+            {/* {existingUser && !adminUser ? (
               <div>Change Password</div>
             ) : ( */}
             <>
@@ -243,8 +213,8 @@ const UserForm: NextPage<{
                     Boolean(errors.password)
                   }
                   // Only the associated user can edit names - need to add a check for the user id here
-                  // isReadOnly={existingUser ? true : false}
-                  // isDisabled={existingUser ? true : false}
+                  // isReadOnly={existingUser && adminUser ? true : false}
+                  // isDisabled={existingUser && adminUser ? true : false}
                 />
                 <FormErrorMessage>{errors.password}</FormErrorMessage>
               </FormControl>
@@ -252,7 +222,7 @@ const UserForm: NextPage<{
             {/* )} */}
 
             <Heading fontSize="xl" colorScheme="primary">
-              Preferences
+              Privileges
             </Heading>
             <Text>Select privileges to assign to this user</Text>
             <CheckboxGroup colorScheme="secondary">
@@ -266,6 +236,9 @@ const UserForm: NextPage<{
                       name="scopes"
                       isChecked={values.scopes[policy.scope]}
                     >
+                      {/* Only admins can edit privileges - need to add a check for admin role here */}
+                      {/* isReadOnly={existingUser && !adminUser ? true : false} */}
+                      {/* isDisabled={existingUser && !adminUser ? true : false} */}
                       {policy.privilege}
                     </Checkbox>
                   </>

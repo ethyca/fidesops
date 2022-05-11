@@ -15,7 +15,6 @@ const makeStore = () => {
       subjectRequests: privacyRequestsReducer,
       [userApi.reducerPath]: userApi.reducer,
       user: userReducer,
-      managedUser: userReducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(
