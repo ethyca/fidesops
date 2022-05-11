@@ -1,10 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Table, Thead, Tbody, Tr, Th } from '@fidesui/react';
+import {
+  Button,
+  Flex,
+  Table,
+  Tbody,
+  Text,
+  Thead,
+  Tr,
+  Th,
+} from '@fidesui/react';
 
 import UserManagementRow from './UserManagementRow';
 
-import { selectUserFilters, useGetAllUsersQuery } from '../user/user.slice';
+import {
+  selectUserFilters,
+  setPage,
+  useGetAllUsersQuery,
+} from '../user/user.slice';
 import { User } from '../user/types';
 
 interface UsersTableProps {
@@ -15,13 +28,13 @@ const useUsersTable = () => {
   const dispatch = useDispatch();
   const filters = useSelector(selectUserFilters);
 
-  // const handlePreviousPage = () => {
-  //   dispatch(setPage(filters.page - 1));
-  // };
+  const handlePreviousPage = () => {
+    dispatch(setPage(filters.page - 1));
+  };
 
-  // const handleNextPage = () => {
-  //   dispatch(setPage(filters.page + 1));
-  // };
+  const handleNextPage = () => {
+    dispatch(setPage(filters.page + 1));
+  };
 
   const { data, isLoading } = useGetAllUsersQuery(filters);
   const { items: users, total } = data || { users: [], total: 0 };
@@ -31,19 +44,16 @@ const useUsersTable = () => {
     isLoading,
     users,
     total,
-    // handleNextPage,
-    // handlePreviousPage,
+    handleNextPage,
+    handlePreviousPage,
   };
 };
 
 const UserManagementTable: React.FC<UsersTableProps> = () => {
-  const {
-    users,
-    total,
-    // page, size, handleNextPage, handlePreviousPage
-  } = useUsersTable();
-  // const startingItem = (page - 1) * size + 1;
-  // const endingItem = Math.min(total, page * size);
+  const { users, total, page, size, handleNextPage, handlePreviousPage } =
+    useUsersTable();
+  const startingItem = (page - 1) * size + 1;
+  const endingItem = Math.min(total, page * size);
 
   return (
     <>
@@ -62,6 +72,36 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
           ))}
         </Tbody>
       </Table>
+      <Flex justifyContent="space-between" mt={6}>
+        <Text fontSize="xs" color="gray.600">
+          {total > 0 ? (
+            <>
+              Showing {Number.isNaN(startingItem) ? 0 : startingItem} to{' '}
+              {Number.isNaN(endingItem) ? 0 : endingItem} of{' '}
+              {Number.isNaN(total) ? 0 : total} results
+            </>
+          ) : (
+            '0 results'
+          )}
+        </Text>
+        <div>
+          <Button
+            disabled={page <= 1}
+            onClick={handlePreviousPage}
+            mr={2}
+            size="sm"
+          >
+            Previous
+          </Button>
+          <Button
+            disabled={page * size >= total}
+            onClick={handleNextPage}
+            size="sm"
+          >
+            Next
+          </Button>
+        </div>
+      </Flex>
     </>
   );
 };
