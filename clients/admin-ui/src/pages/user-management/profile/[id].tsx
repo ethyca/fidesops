@@ -20,19 +20,21 @@ const Profile: NextPage = () => {
       <NavBar />
       <main>
         <Box px={9} py={10}>
-          <Heading mb={8} fontSize="2xl" fontWeight="semibold">
+          <Heading fontSize="2xl" fontWeight="semibold">
             User Management
-            <Breadcrumb fontWeight="medium" fontSize="sm">
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/user-management">
-                  User Management
-                </BreadcrumbLink>
-              </BreadcrumbItem>
+            <Box mt={2} mb={7}>
+              <Breadcrumb fontWeight="medium" fontSize="sm">
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/user-management">
+                    User Management
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
 
-              <BreadcrumbItem>
-                <BreadcrumbLink href="#">Edit User</BreadcrumbLink>
-              </BreadcrumbItem>
-            </Breadcrumb>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="#">Edit User</BreadcrumbLink>
+                </BreadcrumbItem>
+              </Breadcrumb>
+            </Box>
           </Heading>
           <EditUserForm />
         </Box>

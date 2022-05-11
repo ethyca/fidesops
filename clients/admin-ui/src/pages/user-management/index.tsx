@@ -26,7 +26,7 @@ const UserManagement: NextPage<{ session: { username: string } }> = ({
 
       <main>
         <Box px={9} py={10}>
-          <Heading mb={8} fontSize="2xl" fontWeight="semibold">
+          <Heading fontSize="2xl" fontWeight="semibold">
             User Management
           </Heading>
           <UserManagementTableActions />

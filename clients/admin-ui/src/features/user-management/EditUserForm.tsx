@@ -9,6 +9,7 @@ import {
   chakra,
   CheckboxGroup,
   Checkbox,
+  Divider,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -118,15 +119,16 @@ const UserForm: NextPage<{
   return (
     <div>
       <main>
-        <Heading fontSize="xl" colorScheme="primary">
+        <Heading mb={4} fontSize="xl" colorScheme="primary">
           Profile
         </Heading>
+        <Divider mb={7} />
         <chakra.form
           onSubmit={handleSubmit}
           maxW={['xs', 'xs', '100%']}
           width="100%"
         >
-          <Stack spacing={6}>
+          <Stack mb={8} spacing={6}>
             <FormControl id="username">
               <FormLabel htmlFor="username" fontWeight="medium">
                 Username
@@ -218,11 +220,13 @@ const UserForm: NextPage<{
               </FormControl>
             </>
             {/* )} */}
+            <Divider mb={7} mt={7} />
 
             <Heading fontSize="xl" colorScheme="primary">
               Privileges
             </Heading>
-            <Text>Select privileges to assign to this user</Text>
+            <Text>Edit privileges assigned to this user</Text>
+            <Divider mb={2} mt={2} />
             <CheckboxGroup colorScheme="secondary">
               <Stack spacing={[1, 5]} direction={'column'}>
                 {userPrivilegesArray.map((policy, idx) => (
@@ -246,7 +250,7 @@ const UserForm: NextPage<{
           </Stack>
 
           <NextLink href="/user-management" passHref>
-            <Button variant="outline" size="sm">
+            <Button mr={3} variant="outline" size="sm">
               Cancel
             </Button>
           </NextLink>
