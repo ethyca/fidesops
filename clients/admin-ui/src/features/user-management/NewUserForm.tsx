@@ -207,7 +207,7 @@ const UserForm: NextPage<{
             </Heading>
             <Text>Select privileges to assign to this user</Text>
             <Divider mb={2} mt={2} />
-            <CheckboxGroup colorScheme="secondary">
+            <CheckboxGroup colorScheme="purple">
               <Stack spacing={[1, 5]} direction={'column'}>
                 {userPrivilegesArray.map((policy, idx) => (
                   <Checkbox
