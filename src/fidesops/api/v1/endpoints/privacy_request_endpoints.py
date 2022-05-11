@@ -385,7 +385,7 @@ def get_request_status(
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
     """Returns PrivacyRequest information. Supports a variety of optional query params.
 
-    To fetch a single privacy request, use the id query param `?id=`.
+    To fetch a single privacy request, use the request_id query param `?request_id=`.
     To see individual execution logs, use the verbose query param `?verbose=True`.
     """
 

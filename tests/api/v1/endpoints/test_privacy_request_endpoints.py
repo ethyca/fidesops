@@ -521,7 +521,7 @@ class TestGetPrivacyRequests:
         privacy_request.save(db=db)
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?id={privacy_request.id}", headers=auth_header
+            url + f"?request_id={privacy_request.id}", headers=auth_header
         )
         assert 200 == response.status_code
 
@@ -564,7 +564,7 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?id={privacy_request.id}", headers=auth_header
+            url + f"?request_id={privacy_request.id}", headers=auth_header
         )
         assert 200 == response.status_code
 
@@ -609,7 +609,7 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?id={privacy_request.id[:5]}", headers=auth_header
+            url + f"?request_id={privacy_request.id[:5]}", headers=auth_header
         )
         assert 200 == response.status_code
 
