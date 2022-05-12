@@ -707,6 +707,98 @@
         ]
       }
     },
+    "/api/v1/drp/exercise": {
+      "post": {
+        "tags": [
+          "DRP"
+        ],
+        "summary": "Create Drp Privacy Request",
+        "description": "Given a drp privacy request body, create and execute\na corresponding Fidesops PrivacyRequest",
+        "operationId": "create_drp_privacy_request_api_v1_drp_exercise_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DrpPrivacyRequestCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestDRPStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drp/status": {
+      "get": {
+        "tags": [
+          "DRP"
+        ],
+        "summary": "Get Request Status Drp",
+        "description": "Returns PrivacyRequest information where the respective privacy request is associated with\na policy that implements a Data Rights Protocol action.",
+        "operationId": "get_request_status_drp_api_v1_drp_status_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Request Id",
+              "type": "string"
+            },
+            "name": "request_id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestDRPStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/cryptography/encryption/key": {
       "get": {
         "tags": [
@@ -3553,6 +3645,64 @@
           }
         ]
       },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update User",
+        "description": "Update a user given a `user_id`. By default this is limited to users\nupdating their own data.",
+        "operationId": "update_user_api_v1_user__user_id__put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:update"
+            ]
+          }
+        ]
+      },
       "delete": {
         "tags": [
           "Users"
@@ -3590,6 +3740,66 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "user:delete"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/user/{user_id}/reset-password": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update User Password",
+        "description": "Update a user's password given a `user_id`. By default this is limited to users\nupdating their own data.",
+        "operationId": "update_user_password_api_v1_user__user_id__reset_password_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPasswordReset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:reset-password"
             ]
           }
         ]
@@ -4469,6 +4679,66 @@
           "access:specific"
         ],
         "description": "Enum to hold valid DRP actions. For more details, see:\nhttps://github.com/consumer-reports-digital-lab/data-rights-protocol#301-supported-rights-actions"
+      },
+      "DrpMeta": {
+        "title": "DrpMeta",
+        "required": [
+          "version"
+        ],
+        "type": "object",
+        "properties": {
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "description": "Enum to hold Drp metadata. Only version is supported at this time"
+      },
+      "DrpPrivacyRequestCreate": {
+        "title": "DrpPrivacyRequestCreate",
+        "required": [
+          "meta",
+          "exercise",
+          "identity"
+        ],
+        "type": "object",
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/DrpMeta"
+          },
+          "regime": {
+            "$ref": "#/components/schemas/DrpRegime"
+          },
+          "exercise": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DrpAction"
+            }
+          },
+          "relationships": {
+            "title": "Relationships",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "identity": {
+            "title": "Identity",
+            "type": "string"
+          },
+          "status_callback": {
+            "title": "Status Callback",
+            "type": "string"
+          }
+        },
+        "description": "Data required to create a DRP PrivacyRequest"
+      },
+      "DrpRegime": {
+        "title": "DrpRegime",
+        "enum": [
+          "ccpa"
+        ],
+        "description": "Enum to hold Drp Regime. Only ccpa supported at this time"
       },
       "DryRunDatasetResponse": {
         "title": "DryRunDatasetResponse",
@@ -5894,6 +6164,59 @@
         },
         "description": "Data required to create a PrivacyRequest"
       },
+      "PrivacyRequestDRPStatus": {
+        "title": "PrivacyRequestDRPStatus",
+        "enum": [
+          "open",
+          "in_progress",
+          "fulfilled",
+          "revoked",
+          "denied",
+          "expired"
+        ],
+        "description": "A list of privacy request statuses specified by the Data Rights Protocol."
+      },
+      "PrivacyRequestDRPStatusResponse": {
+        "title": "PrivacyRequestDRPStatusResponse",
+        "required": [
+          "request_id",
+          "received_at",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "title": "Request Id",
+            "type": "string"
+          },
+          "received_at": {
+            "title": "Received At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "expected_by": {
+            "title": "Expected By",
+            "type": "string",
+            "format": "date-time"
+          },
+          "processing_details": {
+            "title": "Processing Details",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PrivacyRequestDRPStatus"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "user_verification_url": {
+            "title": "User Verification Url",
+            "type": "string"
+          }
+        },
+        "description": "A Fidesops PrivacyRequest updated to fit the Data Rights Protocol specification."
+      },
       "PrivacyRequestIdentity": {
         "title": "PrivacyRequestIdentity",
         "type": "object",
@@ -6701,20 +7024,20 @@
         ],
         "type": "object",
         "properties": {
-          "username": {
-            "title": "Username",
-            "type": "string"
-          },
-          "password": {
-            "title": "Password",
-            "type": "string"
-          },
           "first_name": {
             "title": "First Name",
             "type": "string"
           },
           "last_name": {
             "title": "Last Name",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
             "type": "string"
           }
         },
@@ -6752,6 +7075,25 @@
           }
         },
         "description": "Similar to UserCreate except we do not need the extra validation on username and password"
+      },
+      "UserPasswordReset": {
+        "title": "UserPasswordReset",
+        "required": [
+          "old_password",
+          "new_password"
+        ],
+        "type": "object",
+        "properties": {
+          "old_password": {
+            "title": "Old Password",
+            "type": "string"
+          },
+          "new_password": {
+            "title": "New Password",
+            "type": "string"
+          }
+        },
+        "description": "Contains both old and new passwords when resetting a password"
       },
       "UserPermissionsCreate": {
         "title": "UserPermissionsCreate",
@@ -6851,6 +7193,21 @@
           }
         },
         "description": "Response after requesting a User"
+      },
+      "UserUpdate": {
+        "title": "UserUpdate",
+        "type": "object",
+        "properties": {
+          "first_name": {
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "title": "Last Name",
+            "type": "string"
+          }
+        },
+        "description": "Data required to update a FidesopsUser"
       },
       "ValidateDatasetResponse": {
         "title": "ValidateDatasetResponse",
