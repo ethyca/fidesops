@@ -99,13 +99,6 @@ const useUserForm = () => {
     },
   });
 
-  // useEffect(() => {
-  //   // TODO: write in some error handling
-  //   if (existingScopes) {
-  //     formik.setFieldValue('scopes', existingScopes.scopes);
-  //   }
-  // }, [scopesLoading]);
-
   return {
     ...formik,
     existingScopes,
