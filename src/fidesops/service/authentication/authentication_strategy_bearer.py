@@ -15,6 +15,10 @@ STRATEGY_NAME = "bearer"
 
 
 class BearerAuthenticationStrategy(AuthenticationStrategy):
+    """
+    Replaces the token placeholder with the actual credentials
+    and uses it to add a bearer authentication header to the incoming request.
+    """
     def __init__(self, configuration: BearerAuthenticationConfiguration):
         self.token = configuration.token
 

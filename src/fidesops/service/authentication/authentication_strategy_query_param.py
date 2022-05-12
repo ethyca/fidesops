@@ -16,6 +16,10 @@ STRATEGY_NAME = "query_param"
 
 
 class QueryParamAuthenticationStrategy(AuthenticationStrategy):
+    """
+    Replaces the value placeholder with the actual credentials
+    and adds it as a query param to the incoming request.
+    """
     def __init__(self, configuration: QueryParamAuthenticationConfiguration):
         self.name = configuration.name
         self.value = configuration.value

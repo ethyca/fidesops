@@ -15,6 +15,11 @@ STRATEGY_NAME = "basic"
 
 
 class BasicAuthenticationStrategy(AuthenticationStrategy):
+    """
+    Replaces the username and password placeholders with the actual credentials
+    and uses them to add a basic authentication header to the incoming request.
+    """
+
     def __init__(self, configuration: BasicAuthenticationConfiguration):
         self.username = configuration.username
         self.password = configuration.password
