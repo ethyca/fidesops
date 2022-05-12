@@ -8,6 +8,9 @@ on:
       - "clients"
       - ".github/workflows/frontend_pr_checks.yml"
 
+env:
+  CI: true
+
 jobs:
   Admin-UI-Unit:
     runs-on: ubuntu-latest
