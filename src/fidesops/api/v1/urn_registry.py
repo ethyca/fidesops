@@ -89,6 +89,5 @@ LOGOUT = "/logout"
 HEALTH = "/health"
 
 # DRP
-DRP = "/drp"
-DRP_EXERCISE = DRP + "/exercise"
-DRP_STATUS = DRP + "/status"
+DRP_EXERCISE = "/drp/exercise"
+DRP_STATUS = "/drp/status"

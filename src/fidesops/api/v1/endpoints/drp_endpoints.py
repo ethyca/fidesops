@@ -1,4 +1,3 @@
-import json
 import logging
 from typing import Dict, Any, Optional
 
@@ -10,7 +9,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_424_FAILED_DEPENDENCY,
     HTTP_200_OK,
-    HTTP_400_BAD_REQUEST,
+    HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
 from fidesops import common_exceptions
@@ -56,7 +55,7 @@ def create_drp_privacy_request(
     jwt_key: str = config.security.DRP_JWT_SECRET
     if jwt_key is None:
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail="JWT key must be provided",
         )
 

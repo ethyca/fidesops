@@ -1,4 +1,3 @@
-import json
 from typing import Callable
 from unittest import mock
 
@@ -44,7 +43,6 @@ class TestCreateDrpPrivacyRequest:
         cache,
     ):
 
-        config.security.DRP_JWT_SECRET = "secret"
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
             identity, config.security.DRP_JWT_SECRET, algorithm="HS256"
@@ -94,7 +92,74 @@ class TestCreateDrpPrivacyRequest:
         assert cache.get(fidesops_identity_key) == identity["email"]
         pr.delete(db=db)
         assert run_access_request_mock.called
-        config.security.DRP_JWT_SECRET = None
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
+    def test_create_drp_privacy_request_unsupported_identity_props(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy_drp_action,
+        cache,
+    ):
+
+        identity = {"email": "test@example.com", "address": "something"}
+        encoded_identity: str = jwt.encode(
+            identity, config.security.DRP_JWT_SECRET, algorithm="HS256"
+        )
+        data = {
+            "meta": {"version": "0.5"},
+            "regime": "ccpa",
+            "exercise": ["access"],
+            "identity": encoded_identity,
+        }
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()
+        assert response_data["status"] == "open"
+        assert response_data["received_at"]
+        assert response_data["request_id"]
+        pr = PrivacyRequest.get(db=db, id=response_data["request_id"])
+
+        # test appropriate data is cached
+        meta_key = get_drp_request_body_cache_key(
+            privacy_request_id=pr.id,
+            identity_attribute="meta",
+        )
+        assert cache.get(meta_key) == "DrpMeta(version='0.5')"
+        regime_key = get_drp_request_body_cache_key(
+            privacy_request_id=pr.id,
+            identity_attribute="regime",
+        )
+        assert cache.get(regime_key) == "ccpa"
+        exercise_key = get_drp_request_body_cache_key(
+            privacy_request_id=pr.id,
+            identity_attribute="exercise",
+        )
+        assert cache.get(exercise_key) == "['access']"
+        identity_key = get_drp_request_body_cache_key(
+            privacy_request_id=pr.id,
+            identity_attribute="identity",
+        )
+        assert (
+            cache.get(identity_key)
+            == "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.4I8XLWnTYp8oMHjN2ypP3Hpg45DIaGNAEmj1QCYONUI"
+        )
+        fidesops_identity_key = get_identity_cache_key(
+            privacy_request_id=pr.id,
+            identity_attribute="email",
+        )
+        assert cache.get(fidesops_identity_key) == identity["email"]
+        fidesops_identity_key_address = get_identity_cache_key(
+            privacy_request_id=pr.id,
+            identity_attribute="address",
+        )
+        assert cache.get(fidesops_identity_key_address) is None
+        pr.delete(db=db)
+        assert run_access_request_mock.called
 
     def test_create_drp_privacy_request_no_jwt(
         self,
@@ -104,6 +169,8 @@ class TestCreateDrpPrivacyRequest:
         policy_drp_action,
     ):
 
+        original_secret = config.security.DRP_JWT_SECRET
+        config.security.DRP_JWT_SECRET = None
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(identity, "secret", algorithm="HS256")
         data = {
@@ -113,7 +180,8 @@ class TestCreateDrpPrivacyRequest:
             "identity": encoded_identity,
         }
         resp = api_client.post(url, json=data)
-        assert resp.status_code == 400
+        assert resp.status_code == 500
+        config.security.DRP_JWT_SECRET = original_secret
 
     def test_create_drp_privacy_request_no_exercise(
         self,
@@ -123,7 +191,6 @@ class TestCreateDrpPrivacyRequest:
         policy_drp_action,
     ):
 
-        config.security.DRP_JWT_SECRET = "secret"
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
             identity, config.security.DRP_JWT_SECRET, algorithm="HS256"
@@ -136,7 +203,6 @@ class TestCreateDrpPrivacyRequest:
         }
         resp = api_client.post(url, json=data)
         assert resp.status_code == 422
-        config.security.DRP_JWT_SECRET = None
 
     def test_create_drp_privacy_request_invalid_exercise(
         self,
@@ -146,7 +212,6 @@ class TestCreateDrpPrivacyRequest:
         policy_drp_action,
     ):
 
-        config.security.DRP_JWT_SECRET = "secret"
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
             identity, config.security.DRP_JWT_SECRET, algorithm="HS256"
@@ -159,7 +224,6 @@ class TestCreateDrpPrivacyRequest:
         }
         resp = api_client.post(url, json=data)
         assert resp.status_code == 422
-        config.security.DRP_JWT_SECRET = None
 
     def test_create_drp_privacy_request_no_associated_policy(
         self,
@@ -169,7 +233,6 @@ class TestCreateDrpPrivacyRequest:
         policy,
     ):
 
-        config.security.DRP_JWT_SECRET = "secret"
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
             identity, config.security.DRP_JWT_SECRET, algorithm="HS256"
@@ -182,7 +245,6 @@ class TestCreateDrpPrivacyRequest:
         }
         resp = api_client.post(url, json=data)
         assert resp.status_code == 404
-        config.security.DRP_JWT_SECRET = None
 
 
 class TestGetPrivacyRequestDRP:
