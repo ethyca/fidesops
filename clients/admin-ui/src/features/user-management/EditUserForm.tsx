@@ -7,7 +7,6 @@ import { useFormik } from 'formik';
 import {
   Button,
   chakra,
-  CheckboxGroup,
   Checkbox,
   Divider,
   FormControl,
@@ -31,9 +30,11 @@ import { useRouter } from 'next/router';
 
 const useUserForm = () => {
   const token = useSelector(selectUserToken);
-  // const [editUser, editUserResult] = useEditUserMutation();
   const router = useRouter();
   const { id } = router.query;
+  const [updateUserPermissions, updateUserPermissionsResult] =
+    useUpdateUserPermissionsMutation();
+  const [editUser, editUserResult] = useEditUserMutation(id as string);
   const { data: existingUser } = useGetUserByIdQuery(id as string);
   const { data: existingScopes, isLoading: scopesLoading } =
     useGetUserPermissionsQuery(id as string);
@@ -44,7 +45,8 @@ const useUserForm = () => {
       first_name: existingUser?.first_name,
       last_name: existingUser?.last_name,
       password: '********',
-      scopes: existingScopes?.scopes | [],
+      scopes: existingScopes?.scopes,
+      id: existingUser?.id,
     },
     onSubmit: async (values) => {
       const host =
@@ -53,13 +55,34 @@ const useUserForm = () => {
           : config.fidesops_host_production;
 
       const userBody = {
-        username: values.username,
-        first_name: values.first_name,
-        last_name: values.last_name,
-        password: values.password,
+        username: values.username ? values.username : existingUser?.username,
+        first_name: values.first_name
+          ? values.first_name
+          : existingUser?.first_name,
+        last_name: values.last_name
+          ? values.last_name
+          : existingUser?.last_name,
+        password: values.password ? values.password : existingUser?.password,
+        id: existingUser?.id,
       };
 
-      // edit user / user permissions
+      console.log(values.scopes);
+
+      await editUser(userBody)
+        .then((result) => {
+          const userWithPrivileges = {
+            id: 'data' in result ? result.data.id : null,
+            scopes: [...Object.keys(values.scopes), 'privacy-request:read'],
+          };
+          return userWithPrivileges;
+        })
+        .then((result) => {
+          updateUserPermissions(result);
+          return result;
+        })
+        .then(() => {
+          router.replace('/user-management');
+        });
     },
     validate: (values) => {
       const errors: {
@@ -77,26 +100,16 @@ const useUserForm = () => {
     },
   });
 
-  useEffect(() => {
-    // TODO: write in some error handling
-    if (existingScopes) {
-      formik.setFieldValue(
-        'scopes',
-        existingScopes.scopes.reduce(
-          (scopes: string[], scope: string) => ({
-            ...scopes,
-            [scope]: true,
-          }),
-          {} as {
-            [key: string]: boolean;
-          }
-        )
-      );
-    }
-  }, [scopesLoading]);
+  // useEffect(() => {
+  //   // TODO: write in some error handling
+  //   if (existingScopes) {
+  //     formik.setFieldValue('scopes', existingScopes.scopes);
+  //   }
+  // }, [scopesLoading]);
 
   return {
     ...formik,
+    existingScopes,
     existingUser,
   };
 };
@@ -107,6 +120,7 @@ const UserForm: NextPage<{
   const {
     dirty,
     errors,
+    existingScopes,
     existingUser,
     handleBlur,
     handleChange,
@@ -115,6 +129,9 @@ const UserForm: NextPage<{
     touched,
     values,
   } = useUserForm();
+
+  console.log(values.scopes);
+  console.log(existingScopes?.scopes);
 
   return (
     <div>
@@ -227,27 +244,27 @@ const UserForm: NextPage<{
             </Heading>
             <Text>Edit privileges assigned to this user</Text>
             <Divider mb={2} mt={2} />
-            <CheckboxGroup colorScheme="purple">
-              <Stack spacing={[1, 5]} direction={'column'}>
-                {userPrivilegesArray.map((policy, idx) => (
-                  <>
-                    <Checkbox
-                      defaultChecked={policy.scope === 'privacy-request:read'}
-                      key={`${policy.privilege}-${idx}`}
-                      onChange={handleChange}
-                      id={`scopes-${policy.privilege}-${idx}`}
-                      name="scopes"
-                      isChecked={values.scopes[policy.scope]}
-                    >
-                      {/* Only admins can edit privileges - need to add a check for admin role here */}
-                      {/* isReadOnly={existingUser && !adminUser ? true : false} */}
-                      {/* isDisabled={existingUser && !adminUser ? true : false} */}
-                      {policy.privilege}
-                    </Checkbox>
-                  </>
-                ))}
-              </Stack>
-            </CheckboxGroup>
+
+            <Stack spacing={[1, 5]} direction={'column'}>
+              {userPrivilegesArray.map((policy, idx) => (
+                <Checkbox
+                  colorScheme="purple"
+                  colorScheme="purple"
+                  // isChecked={existingScopes?.scopes[idx] ? true : false}
+                  isChecked={values.scopes[idx] ? true : false}
+                  // isChecked={values.scopes[policy.scope]}
+                  key={`${policy.privilege}-${idx}`}
+                  onChange={handleChange}
+                  id={`scopes-${policy.privilege}-${idx}`}
+                  name="scopes"
+                  value={policy.scope}
+                  isDisabled={policy.scope === 'privacy-request:read'}
+                  isReadOnly={policy.scope === 'privacy-request:read'}
+                >
+                  {policy.privilege}
+                </Checkbox>
+              ))}
+            </Stack>
           </Stack>
 
           <NextLink href="/user-management" passHref>

@@ -6,7 +6,6 @@ import { useFormik } from 'formik';
 import {
   Button,
   chakra,
-  CheckboxGroup,
   Checkbox,
   Divider,
   FormControl,
@@ -58,14 +57,15 @@ const useUserForm = () => {
         .then((result) => {
           const userWithPrivileges = {
             id: 'data' in result ? result.data.id : null,
-            scopes: values.scopes,
+            scopes: [...values.scopes, 'privacy-request:read'],
           };
 
           return userWithPrivileges;
         })
         .then((result) => {
-          console.log('PERMISSIONS TO PASS', result);
-          const permissionsToAddToUser = updateUserPermissions(result);
+          const permissionsToAddToUser = updateUserPermissions(
+            result as { id: string }
+          );
 
           return permissionsToAddToUser;
         })
@@ -207,29 +207,29 @@ const UserForm: NextPage<{
             </Heading>
             <Text>Select privileges to assign to this user</Text>
             <Divider mb={2} mt={2} />
-            <CheckboxGroup colorScheme="purple">
-              <Stack spacing={[1, 5]} direction={'column'}>
-                {userPrivilegesArray.map((policy, idx) => (
-                  <Checkbox
-                    defaultChecked={policy.scope === 'privacy-request:read'}
-                    key={`${policy.privilege}-${idx}`}
-                    onChange={handleChange}
-                    id={`scopes-${policy.privilege}-${idx}`}
-                    name="scopes"
-                    isChecked={values.scopes[idx]}
-                    value={
-                      policy.scope === 'privacy-request:read'
-                        ? undefined
-                        : policy.scope
-                    }
-                    isDisabled={policy.scope === 'privacy-request:read'}
-                    isReadOnly={policy.scope === 'privacy-request:read'}
-                  >
-                    {policy.privilege}
-                  </Checkbox>
-                ))}
-              </Stack>
-            </CheckboxGroup>
+
+            <Stack spacing={[1, 5]} direction={'column'}>
+              {userPrivilegesArray.map((policy, idx) => (
+                <Checkbox
+                  colorScheme="purple"
+                  defaultChecked={policy.scope === 'privacy-request:read'}
+                  key={`${policy.privilege}-${idx}`}
+                  onChange={handleChange}
+                  id={`scopes-${policy.privilege}-${idx}`}
+                  name="scopes"
+                  isChecked={values.scopes[idx]}
+                  value={
+                    policy.scope === 'privacy-request:read'
+                      ? undefined
+                      : policy.scope
+                  }
+                  isDisabled={policy.scope === 'privacy-request:read'}
+                  isReadOnly={policy.scope === 'privacy-request:read'}
+                >
+                  {policy.privilege}
+                </Checkbox>
+              ))}
+            </Stack>
           </Stack>
 
           <NextLink href="/user-management" passHref>

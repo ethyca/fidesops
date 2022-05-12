@@ -99,7 +99,7 @@ export const userApi = createApi({
     editUser: build.mutation<User, Partial<User> & Pick<User, 'id'>>({
       query: ({ id, ...patch }) => ({
         url: `user/${id}`,
-        method: 'PATCH',
+        method: 'PUT',
         body: patch,
       }),
       invalidatesTags: ['User'],
