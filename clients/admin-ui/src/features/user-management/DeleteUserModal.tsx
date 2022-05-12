@@ -46,9 +46,6 @@ function DeleteUserModal(user: User) {
     if (deletionValidation && user.id) {
       deleteUser(user.id);
       onClose();
-    } else {
-      console.log('Cant delete');
-      // throw error/alert ?
     }
   };
 

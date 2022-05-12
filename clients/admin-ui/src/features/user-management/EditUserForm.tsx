@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useEffect } from 'react';
+import React, { ChangeEvent, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { NextPage } from 'next';
 import NextLink from 'next/link';
@@ -48,6 +48,7 @@ const useUserForm = () => {
       scopes: existingScopes?.scopes,
       id: existingUser?.id,
     },
+    enableReinitialize: true,
     onSubmit: async (values) => {
       const host =
         process.env.NODE_ENV === 'development'
@@ -66,13 +67,11 @@ const useUserForm = () => {
         id: existingUser?.id,
       };
 
-      console.log(values.scopes);
-
       await editUser(userBody)
         .then((result) => {
           const userWithPrivileges = {
             id: 'data' in result ? result.data.id : null,
-            scopes: [...Object.keys(values.scopes), 'privacy-request:read'],
+            scopes: [...values.scopes, 'privacy-request:read'],
           };
           return userWithPrivileges;
         })
@@ -128,10 +127,8 @@ const UserForm: NextPage<{
     isValid,
     touched,
     values,
+    setFieldValue,
   } = useUserForm();
-
-  console.log(values.scopes);
-  console.log(existingScopes?.scopes);
 
   return (
     <div>
@@ -246,24 +243,40 @@ const UserForm: NextPage<{
             <Divider mb={2} mt={2} />
 
             <Stack spacing={[1, 5]} direction={'column'}>
-              {userPrivilegesArray.map((policy, idx) => (
-                <Checkbox
-                  colorScheme="purple"
-                  colorScheme="purple"
-                  // isChecked={existingScopes?.scopes[idx] ? true : false}
-                  isChecked={values.scopes[idx] ? true : false}
-                  // isChecked={values.scopes[policy.scope]}
-                  key={`${policy.privilege}-${idx}`}
-                  onChange={handleChange}
-                  id={`scopes-${policy.privilege}-${idx}`}
-                  name="scopes"
-                  value={policy.scope}
-                  isDisabled={policy.scope === 'privacy-request:read'}
-                  isReadOnly={policy.scope === 'privacy-request:read'}
-                >
-                  {policy.privilege}
-                </Checkbox>
-              ))}
+              {userPrivilegesArray.map((policy, idx) => {
+                const isChecked = values.scopes
+                  ? values.scopes.indexOf(policy.scope) >= 0
+                  : false;
+                return (
+                  <Checkbox
+                    colorScheme="purple"
+                    isChecked={isChecked}
+                    key={`${policy.privilege}-${idx}`}
+                    onChange={(e) => {
+                      if (!isChecked) {
+                        setFieldValue(`scopes`, [
+                          ...values.scopes,
+                          policy.scope,
+                        ]);
+                      } else {
+                        setFieldValue(
+                          'scopes',
+                          values.scopes.filter(
+                            (scope) => scope !== policy.scope
+                          )
+                        );
+                      }
+                    }}
+                    id={`scopes-${policy.privilege}-${idx}`}
+                    name="scopes"
+                    value={policy.scope}
+                    isDisabled={policy.scope === 'privacy-request:read'}
+                    isReadOnly={policy.scope === 'privacy-request:read'}
+                  >
+                    {policy.privilege}
+                  </Checkbox>
+                );
+              })}
             </Stack>
           </Stack>
 
