@@ -146,7 +146,7 @@ class TestCreateDrpPrivacyRequest:
         )
         assert (
             cache.get(identity_key)
-            == "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.4I8XLWnTYp8oMHjN2ypP3Hpg45DIaGNAEmj1QCYONUI"
+            == "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJhZGRyZXNzIjoic29tZXRoaW5nIn0.VhHzwTNoTjuny7lSebD6_hc0SU8kEZDr3YegONMMfmY"
         )
         fidesops_identity_key = get_identity_cache_key(
             privacy_request_id=pr.id,
