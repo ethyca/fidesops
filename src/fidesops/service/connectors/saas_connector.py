@@ -16,7 +16,7 @@ from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.schemas.saas.saas_config import ClientConfig, SaaSRequest, Strategy
+from fidesops.schemas.saas.saas_config import ClientConfig, SaaSRequest
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.service.authentication.authentication_strategy_factory import (
     get_strategy as get_authentication_strategy,
@@ -34,7 +34,6 @@ from fidesops.service.processors.post_processor_strategy.post_processor_strategy
     get_strategy as get_postprocessor_strategy,
 )
 from fidesops.util.saas_util import assign_placeholders
-from fidesops.util.url_util import set_query_parameter
 
 logger = logging.getLogger(__name__)
 

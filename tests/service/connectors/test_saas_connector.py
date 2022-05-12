@@ -125,9 +125,7 @@ class TestSaaSConnectorMethods:
     ):
         connector: SaaSConnector = get_connector(segment_connection_config)
         # Base ClientConfig uses bearer auth
-        assert (
-            connector.client_config.authentication.strategy == "bearer"
-        )
+        assert connector.client_config.authentication.strategy == "bearer"
 
         segment_user_endpoint = next(
             end for end in connector.saas_config.endpoints if end.name == "segment_user"
@@ -142,7 +140,5 @@ class TestSaaSConnectorMethods:
         # Test request users bearer auth - creating the client from the request also updates the connector's auth.
         test_request: SaaSRequest = connector.saas_config.test_request
         client = connector.create_client_from_request(test_request)
-        assert (
-            connector.client_config.authentication.strategy == "bearer"
-        )
+        assert connector.client_config.authentication.strategy == "bearer"
         assert client.client_config.authentication.strategy == "bearer"
