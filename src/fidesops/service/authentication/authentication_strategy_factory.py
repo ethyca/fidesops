@@ -32,6 +32,15 @@ class SupportedAuthenticationStrategies(Enum):
     bearer = BearerAuthenticationStrategy
     query_param = QueryParamAuthenticationStrategy
 
+    @classmethod
+    def __contains__(cls, item: str) -> bool:
+        try:
+            cls[item]
+        except KeyError:
+            return False
+
+        return True
+
 
 def get_strategy(
     strategy_name: str,
@@ -41,7 +50,7 @@ def get_strategy(
     Returns the strategy given the name and configuration.
     Raises NoSuchStrategyException if the strategy does not exist
     """
-    if strategy_name not in SupportedAuthenticationStrategies.__members__:
+    if not SupportedAuthenticationStrategies.__contains__(strategy_name):
         valid_strategies = ", ".join(
             [s.name for s in SupportedAuthenticationStrategies]
         )
