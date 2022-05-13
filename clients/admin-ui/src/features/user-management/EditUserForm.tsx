@@ -112,7 +112,6 @@ const UserForm: NextPage<{
   const {
     dirty,
     errors,
-    existingScopes,
     existingUser,
     handleBlur,
     handleChange,

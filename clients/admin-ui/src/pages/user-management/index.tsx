@@ -11,7 +11,9 @@ import NavBar from '../../features/common/NavBar';
 import UserManagementTable from '../../features/user-management/UserManagementTable';
 import UserManagementTableActions from '../../features/user-management/UserManagementTableActions';
 
-const UserManagement: NextPage<{ session: { user: User } }> = ({ session }) => {
+const UserManagement: NextPage<{ session: { username: string } }> = ({
+  session,
+}) => {
   return (
     <div>
       <Head>
@@ -43,7 +45,7 @@ export const getServerSideProps = wrapper.getServerSideProps(
 
     if (session && typeof session.accessToken !== 'undefined') {
       await store.dispatch(assignToken(session.accessToken));
-      await store.dispatch(setUser(session.user));
+      // await store.dispatch(setUser(session.user));
       return { props: { session } };
     }
 

@@ -12,7 +12,6 @@ import {
 } from '@fidesui/react';
 
 import UserManagementRow from './UserManagementRow';
-
 import {
   selectUserFilters,
   setPage,

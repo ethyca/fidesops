@@ -22,7 +22,7 @@ import {
   useCreateUserMutation,
   useUpdateUserPermissionsMutation,
 } from '../user/user.slice';
-import { userPrivilegesArray, User, UserResponse } from '../user/types';
+import { userPrivilegesArray } from '../user/types';
 import { useRouter } from 'next/router';
 
 const useUserForm = () => {
@@ -98,9 +98,7 @@ const useUserForm = () => {
   };
 };
 
-const UserForm: NextPage<{
-  existingUser?: User;
-}> = () => {
+const UserForm: NextPage = () => {
   const {
     dirty,
     errors,
