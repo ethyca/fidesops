@@ -7,14 +7,19 @@ import {
   BreadcrumbLink,
   Heading,
 } from '@fidesui/react';
+
 import NavBar from '../../../features/common/NavBar';
 import EditUserForm from '../../../features/user-management/EditUserForm';
-import { userApi, assignToken } from '../../../features/user/user.slice';
-
+import {
+  assignToken,
+  setUser,
+  userApi,
+} from '../../../features/user/user.slice';
+import { User } from '../../../features/user/types';
 import { wrapper } from '../../../app/store';
 import { getSession } from 'next-auth/react';
 
-const Profile: NextPage = () => {
+const Profile: NextPage<{ session: { user: User } }> = ({ session }) => {
   return (
     <div>
       <NavBar />
@@ -50,6 +55,7 @@ export const getServerSideProps = wrapper.getServerSideProps(
     const session = await getSession(context);
     if (session && typeof session.accessToken !== 'undefined') {
       await store.dispatch(assignToken(session.accessToken));
+      await store.dispatch(setUser(session.user));
 
       if (context.query.id) {
         store.dispatch(

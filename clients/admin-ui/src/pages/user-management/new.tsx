@@ -10,14 +10,12 @@ import {
 
 import NavBar from '../../features/common/NavBar';
 import NewUserForm from '../../features/user-management/NewUserForm';
-
-import { assignToken } from '../../features/user/user.slice';
+import { assignToken, setUser } from '../../features/user/user.slice';
+import { User } from '../../features/user/types';
 import { getSession } from 'next-auth/react';
 import { wrapper } from '../../app/store';
 
-const CreateNewUser: NextPage<{ session: { username: string } }> = ({
-  session,
-}) => (
+const CreateNewUser: NextPage<{ session: { user: User } }> = ({ session }) => (
   <div>
     <NavBar />
     <main>
@@ -49,8 +47,10 @@ export default CreateNewUser;
 export const getServerSideProps = wrapper.getServerSideProps(
   (store) => async (context) => {
     const session = await getSession(context);
+
     if (session && typeof session.accessToken !== 'undefined') {
       await store.dispatch(assignToken(session.accessToken));
+      await store.dispatch(setUser(session.user));
       return { props: { session } };
     }
 
