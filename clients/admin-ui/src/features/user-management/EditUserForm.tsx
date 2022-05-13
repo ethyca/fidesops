@@ -103,16 +103,18 @@ const useUserForm = () => {
     ...formik,
     existingScopes,
     existingUser,
+    id,
   };
 };
 
-const UserForm: NextPage<{
+const EditUserForm: NextPage<{
   existingUser?: User;
-}> = () => {
+}> = (user) => {
   const {
     dirty,
     errors,
     existingUser,
+    id,
     handleBlur,
     handleChange,
     handleSubmit,
@@ -121,6 +123,11 @@ const UserForm: NextPage<{
     values,
     setFieldValue,
   } = useUserForm();
+
+  const { data: loggedInUser, isLoading: loggedInUserLoading } =
+    useGetUserPermissionsQuery(user.user.id as string);
+
+  const hasAdminPermission = loggedInUser?.scopes?.includes('user:update');
 
   return (
     <div>
@@ -166,9 +173,8 @@ const UserForm: NextPage<{
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.first_name}
-                // Only admins can edit names - need to add a check for admin role here
-                // isReadOnly={existingUser && !adminUser ? true : false}
-                // isDisabled={existingUser ? && !adminUser ? true : false}
+                isReadOnly={!hasAdminPermission}
+                isDisabled={!hasAdminPermission}
               />
             </FormControl>
 
@@ -185,47 +191,42 @@ const UserForm: NextPage<{
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.last_name}
-                // Only admins can edit names - need to add a check for admin role here
-                // isReadOnly={existingUser && !adminUser ? true : false}
-                // isDisabled={existingUser && !adminUser ? true : false}
+                isReadOnly={!hasAdminPermission}
+                isDisabled={!hasAdminPermission}
               />
             </FormControl>
 
-            {/* existing user and it's that user's specific profile */}
-            {/* {existingUser && !adminUser ? (
-              <div>Change Password</div>
-            ) : ( */}
-            <>
-              <FormControl
-                id="password"
-                isInvalid={touched.password && Boolean(errors.password)}
-              >
-                <FormLabel htmlFor="password" fontWeight="medium">
-                  Password
-                </FormLabel>
-                <Input
+            {/* Only the associated user can change their own password */}
+            {id === user.user.id && (
+              <>
+                <FormControl
                   id="password"
-                  maxWidth={'40%'}
-                  name="password"
-                  focusBorderColor="primary.500"
-                  placeholder={'********'}
-                  type="password"
-                  value={values.password}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  isInvalid={
-                    !existingUser?.password &&
-                    touched.password &&
-                    Boolean(errors.password)
-                  }
-                  // Only the associated user can edit names - need to add a check for the user id here
-                  // isReadOnly={existingUser && adminUser ? true : false}
-                  // isDisabled={existingUser && adminUser ? true : false}
-                />
-                <FormErrorMessage>{errors.password}</FormErrorMessage>
-              </FormControl>
-            </>
-            {/* )} */}
+                  isInvalid={touched.password && Boolean(errors.password)}
+                >
+                  <FormLabel htmlFor="password" fontWeight="medium">
+                    Password
+                  </FormLabel>
+                  <Input
+                    id="password"
+                    maxWidth={'40%'}
+                    name="password"
+                    focusBorderColor="primary.500"
+                    placeholder={'********'}
+                    type="password"
+                    value={values.password}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    isInvalid={
+                      !existingUser?.password &&
+                      touched.password &&
+                      Boolean(errors.password)
+                    }
+                  />
+                  <FormErrorMessage>{errors.password}</FormErrorMessage>
+                </FormControl>
+              </>
+            )}
+
             <Divider mb={7} mt={7} />
 
             <Heading fontSize="xl" colorScheme="primary">
@@ -294,4 +295,4 @@ const UserForm: NextPage<{
   );
 };
 
-export default UserForm;
+export default EditUserForm;
