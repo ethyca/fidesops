@@ -3,7 +3,7 @@ import io
 import logging
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Union
+from typing import Any, Callable, DefaultDict, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
@@ -39,7 +39,7 @@ from fidesops.models.audit_log import AuditLog, AuditLogAction
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import ActionType, Policy, PolicyPreWebhook
+from fidesops.models.policy import Policy, PolicyPreWebhook
 from fidesops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
@@ -47,9 +47,6 @@ from fidesops.models.privacy_request import (
 )
 from fidesops.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fidesops.schemas.external_https import PrivacyRequestResumeFormat
-from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
-from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
-from fidesops.schemas.policy import Rule
 from fidesops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
@@ -60,8 +57,11 @@ from fidesops.schemas.privacy_request import (
     ReviewPrivacyRequestIds,
     DenyPrivacyRequests,
 )
-from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
+from fidesops.service.privacy_request.request_service import (
+    build_required_privacy_request_kwargs,
+    cache_data,
+)
 from fidesops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.cache import FidesopsRedis
@@ -127,7 +127,7 @@ def create_privacy_request(
             continue
 
         logger.info(f"Finding policy with key '{privacy_request_data.policy_key}'")
-        policy = Policy.get_by(
+        policy: Optional[Policy] = Policy.get_by(
             db=db,
             field="key",
             value=privacy_request_data.policy_key,
@@ -144,47 +144,24 @@ def create_privacy_request(
             failed.append(failure)
             continue
 
-        kwargs = {
-            "requested_at": privacy_request_data.requested_at,
-            "policy_id": policy.id,
-            "status": "pending",
-        }
+        kwargs = build_required_privacy_request_kwargs(
+            privacy_request_data.requested_at, policy.id
+        )
         for field in optional_fields:
             attr = getattr(privacy_request_data, field)
             if attr is not None:
                 kwargs[field] = attr
 
         try:
-            privacy_request = PrivacyRequest.create(db=db, data=kwargs)
+            privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
 
-            # Store identity in the cache
-            logger.info(f"Caching identity for privacy request {privacy_request.id}")
-            privacy_request.cache_identity(privacy_request_data.identity)
-            privacy_request.cache_encryption(privacy_request_data.encryption_key)
-
-            # Store masking secrets in the cache
-            logger.info(
-                f"Caching masking secrets for privacy request {privacy_request.id}"
+            cache_data(
+                privacy_request,
+                policy,
+                privacy_request_data.identity,
+                privacy_request_data.encryption_key,
+                None,
             )
-            erasure_rules: List[Rule] = policy.get_rules_for_action(
-                action_type=ActionType.erasure
-            )
-            unique_masking_strategies_by_name: Set[str] = set()
-            for rule in erasure_rules:
-                strategy_name: str = rule.masking_strategy["strategy"]
-                configuration: MaskingConfiguration = rule.masking_strategy[
-                    "configuration"
-                ]
-                if strategy_name in unique_masking_strategies_by_name:
-                    continue
-                unique_masking_strategies_by_name.add(strategy_name)
-                masking_strategy = get_strategy(strategy_name, configuration)
-                if masking_strategy.secrets_required():
-                    masking_secrets: List[
-                        MaskingSecretCache
-                    ] = masking_strategy.generate_secrets_for_cache()
-                    for masking_secret in masking_secrets:
-                        privacy_request.cache_masking_secret(masking_secret)
 
             if not config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL:
                 PrivacyRequestRunner(
@@ -267,20 +244,32 @@ def privacy_request_csv_download(
     return response
 
 
-@router.get(
-    urls.PRIVACY_REQUESTS,
-    dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
-    response_model=Page[
-        Union[
-            PrivacyRequestVerboseResponse,
-            PrivacyRequestResponse,
-        ]
-    ],
-)
-def get_request_status(
-    *,
+def execution_logs_by_dataset_name(
+    self: PrivacyRequest,
+) -> DefaultDict[str, List["ExecutionLog"]]:
+    """
+    Returns a truncated list of ExecutionLogs for each dataset name associated with
+    a PrivacyRequest. Added as a conditional property to the PrivacyRequest class at runtime to
+    show optionally embedded execution logs.
+
+    An example response might include your execution logs from your mongo db in one group, and execution logs from
+    your postgres db in a different group.
+    """
+
+    execution_logs: DefaultDict[str, List["ExecutionLog"]] = defaultdict(list)
+
+    for log in self.execution_logs.order_by(
+        ExecutionLog.dataset_name, ExecutionLog.updated_at.asc()
+    ):
+        if len(execution_logs[log.dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
+            continue
+        execution_logs[log.dataset_name].append(log)
+    return execution_logs
+
+
+def _filter_privacy_request_queryset(
+    query: Query,
     db: Session = Depends(deps.get_db),
-    params: Params = Depends(),
     id: Optional[str] = None,
     status: Optional[PrivacyRequestStatus] = None,
     created_lt: Optional[datetime] = None,
@@ -292,16 +281,10 @@ def get_request_status(
     errored_lt: Optional[datetime] = None,
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
-    verbose: Optional[bool] = False,
-    include_identities: Optional[bool] = False,
-    download_csv: Optional[bool] = False,
-) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
-    """Returns PrivacyRequest information. Supports a variety of optional query params.
-
-    To fetch a single privacy request, use the id query param `?id=`.
-    To see individual execution logs, use the verbose query param `?verbose=True`.
+) -> Query:
     """
-
+    Utility method to apply filters to our privacy request query
+    """
     if any([completed_lt, completed_gt]) and any([errored_lt, errored_gt]):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -326,8 +309,6 @@ def get_request_status(
                     status_code=HTTP_400_BAD_REQUEST,
                     detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
                 )
-
-    query = db.query(PrivacyRequest)
 
     # Further restrict all PrivacyRequests by query params
     if id:
@@ -365,6 +346,62 @@ def get_request_status(
             PrivacyRequest.finished_processing_at > errored_gt,
         )
 
+    return query.order_by(PrivacyRequest.created_at.desc())
+
+
+@router.get(
+    urls.PRIVACY_REQUESTS,
+    dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
+    response_model=Page[
+        Union[
+            PrivacyRequestVerboseResponse,
+            PrivacyRequestResponse,
+        ]
+    ],
+)
+def get_request_status(
+    *,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+    id: Optional[str] = None,
+    status: Optional[PrivacyRequestStatus] = None,
+    created_lt: Optional[datetime] = None,
+    created_gt: Optional[datetime] = None,
+    started_lt: Optional[datetime] = None,
+    started_gt: Optional[datetime] = None,
+    completed_lt: Optional[datetime] = None,
+    completed_gt: Optional[datetime] = None,
+    errored_lt: Optional[datetime] = None,
+    errored_gt: Optional[datetime] = None,
+    external_id: Optional[str] = None,
+    verbose: Optional[bool] = False,
+    include_identities: Optional[bool] = False,
+    download_csv: Optional[bool] = False,
+) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
+    """Returns PrivacyRequest information. Supports a variety of optional query params.
+
+    To fetch a single privacy request, use the id query param `?id=`.
+    To see individual execution logs, use the verbose query param `?verbose=True`.
+    """
+
+    logger.info(f"Finding all request statuses with pagination params {params}")
+    query = db.query(PrivacyRequest)
+    query = _filter_privacy_request_queryset(
+        query,
+        db,
+        id,
+        status,
+        created_lt,
+        created_gt,
+        started_lt,
+        started_gt,
+        completed_lt,
+        completed_gt,
+        errored_lt,
+        errored_gt,
+        external_id,
+    )
+
     if download_csv:
         # Returning here if download_csv param was specified
         logger.info("Downloading privacy requests as csv")
@@ -379,8 +416,6 @@ def get_request_status(
     else:
         PrivacyRequest.execution_logs_by_dataset = property(lambda self: None)
 
-    query = query.order_by(PrivacyRequest.created_at.desc())
-
     paginated = paginate(query, params)
     if include_identities:
         # Conditionally include the cached identity data in the response if
@@ -388,31 +423,7 @@ def get_request_status(
         for item in paginated.items:
             item.identity = item.get_cached_identity_data()
 
-    logger.info(f"Finding all request statuses with pagination params {params}")
     return paginated
-
-
-def execution_logs_by_dataset_name(
-    self: PrivacyRequest,
-) -> DefaultDict[str, List["ExecutionLog"]]:
-    """
-    Returns a truncated list of ExecutionLogs for each dataset name associated with
-    a PrivacyRequest. Added as a conditional property to the PrivacyRequest class at runtime to
-    show optionally embedded execution logs.
-
-    An example response might include your execution logs from your mongo db in one group, and execution logs from
-    your postgres db in a different group.
-    """
-
-    execution_logs: DefaultDict[str, List["ExecutionLog"]] = defaultdict(list)
-
-    for log in self.execution_logs.order_by(
-        ExecutionLog.dataset_name, ExecutionLog.updated_at.asc()
-    ):
-        if len(execution_logs[log.dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
-            continue
-        execution_logs[log.dataset_name].append(log)
-    return execution_logs
 
 
 @router.get(

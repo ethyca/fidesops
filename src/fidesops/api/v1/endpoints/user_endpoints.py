@@ -16,6 +16,7 @@ from starlette.status import (
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
 )
@@ -30,17 +31,25 @@ from fidesops.schemas.oauth import AccessToken
 from fidesops.schemas.user import (
     UserCreate,
     UserCreateResponse,
+    UserUpdate,
     UserLogin,
+    UserPasswordReset,
     UserResponse,
+    UserLoginResponse,
 )
 
-from fidesops.util.oauth_util import verify_oauth_client
+from fidesops.util.oauth_util import (
+    get_current_user,
+    verify_oauth_client,
+)
 
 from fidesops.api.v1.scope_registry import (
     USER_CREATE,
+    USER_UPDATE,
     PRIVACY_REQUEST_READ,
     USER_READ,
     USER_DELETE,
+    USER_PASSWORD_RESET,
 )
 
 logger = logging.getLogger(__name__)
@@ -87,6 +96,77 @@ def create_user(
         db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
     )
     return user
+
+
+def _validate_current_user(user_id: str, user_from_token: FidesopsUser) -> None:
+    if not user_from_token:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"User with ID {user_id} does not exist.",
+        )
+
+    if user_id != user_from_token.id:
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED,
+            detail=f"You are only authorised to update your own user data.",
+        )
+
+
+@router.put(
+    urls.USER_DETAIL,
+    dependencies=[Security(verify_oauth_client, scopes=[USER_UPDATE])],
+    status_code=HTTP_200_OK,
+    response_model=UserResponse,
+)
+def update_user(
+    *,
+    db: Session = Depends(deps.get_db),
+    user_id: str,
+    data: UserUpdate,
+) -> FidesopsUser:
+    """
+    Update a user given a `user_id`. By default this is limited to users
+    updating their own data.
+    """
+    user = FidesopsUser.get(db=db, id=user_id)
+    if not user:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found."
+        )
+
+    user.update(db=db, data=data.dict())
+    logger.info(f"Updated user with id: '{user.id}'.")
+    return user
+
+
+@router.post(
+    urls.USER_PASSWORD_RESET,
+    dependencies=[Security(verify_oauth_client, scopes=[USER_PASSWORD_RESET])],
+    status_code=HTTP_200_OK,
+    response_model=UserResponse,
+)
+def update_user_password(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: FidesopsUser = Depends(get_current_user),
+    user_id: str,
+    data: UserPasswordReset,
+) -> FidesopsUser:
+    """
+    Update a user's password given a `user_id`. By default this is limited to users
+    updating their own data.
+    """
+    _validate_current_user(user_id, current_user)
+
+    if not current_user.credentials_valid(data.old_password):
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect password."
+        )
+
+    current_user.update_password(db=db, new_password=data.new_password)
+
+    logger.info(f"Updated user with id: '{current_user.id}'.")
+    return current_user
 
 
 @router.get(
@@ -159,11 +239,11 @@ def delete_user(
 @router.post(
     urls.LOGIN,
     status_code=HTTP_200_OK,
-    response_model=AccessToken,
+    response_model=UserLoginResponse,
 )
 def user_login(
     *, db: Session = Depends(deps.get_db), user_data: UserLogin
-) -> AccessToken:
+) -> UserLoginResponse:
     """Login the user by creating a client if it doesn't exist, and have that client generate a token"""
     user: FidesopsUser = FidesopsUser.get_by(
         db, field="username", value=user_data.username
@@ -181,7 +261,10 @@ def user_login(
 
     logger.info("Creating login access token")
     access_code = client.create_access_code_jwe()
-    return AccessToken(access_token=access_code)
+    return UserLoginResponse(
+        user_data=user,
+        token_data=AccessToken(access_token=access_code),
+    )
 
 
 @router.post(

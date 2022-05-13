@@ -25,6 +25,7 @@ from fidesops.db.base_class import (
     Base,
     FidesopsBase,
 )
+from fidesops.models.audit_log import AuditLog
 from fidesops.models.client import ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.policy import (
@@ -34,6 +35,7 @@ from fidesops.models.policy import (
     WebhookDirection,
     WebhookTypes,
 )
+from fidesops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fidesops.schemas.external_https import (
     SecondPartyRequestFormat,
     SecondPartyResponseFormat,
@@ -48,6 +50,7 @@ from fidesops.util.cache import (
     FidesopsRedis,
     get_encryption_cache_key,
     get_masking_secret_cache_key,
+    get_drp_request_body_cache_key,
 )
 from fidesops.util.oauth_util import generate_jwe
 
@@ -134,7 +137,7 @@ class PrivacyRequest(Base):
     # passive_deletes="all" prevents audit logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.
     audit_logs = relationship(
-        "AuditLog",
+        AuditLog,
         backref="privacy_request",
         lazy="dynamic",
         passive_deletes="all",
@@ -176,6 +179,24 @@ class PrivacyRequest(Base):
                     get_identity_cache_key(self.id, key),
                     value,
                 )
+
+    def cache_drp_request_body(self, drp_request_body: DrpPrivacyRequestCreate) -> None:
+        """Sets the identity's values at their specific locations in the Fidesops app cache"""
+        cache: FidesopsRedis = get_cache()
+        drp_request_body_dict: Dict[str, Any] = dict(drp_request_body)
+        for key, value in drp_request_body_dict.items():
+            if value is not None:
+                # handle nested dict/objects
+                if not isinstance(value, (bytes, str, int, float)):
+                    cache.set_with_autoexpire(
+                        get_drp_request_body_cache_key(self.id, key),
+                        repr(value),
+                    )
+                else:
+                    cache.set_with_autoexpire(
+                        get_drp_request_body_cache_key(self.id, key),
+                        value,
+                    )
 
     def cache_encryption(self, encryption_key: Optional[str] = None) -> None:
         """Sets the encryption key in the Fidesops app cache if provided"""
