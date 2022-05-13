@@ -129,7 +129,7 @@ saas_config:
           param_values:
             - name: email
               identity: email
-        update:
+        giç:
           path: /communication-preferences/v3/unsubscribe
           method: POST
           body: '{
