@@ -2,17 +2,17 @@
 # Stripe
 
 ## Implementation Summary
-Fidesops uses the following Stripe endpoints to retrieve and delete Personally Identifiable Information (PII) when processing a Data Subject Request (DSR). Right to Access and Right to Delete (Right to Forget) support for each endpoint is noted below.
+Fidesops uses the following Stripe endpoints to retrieve and delete Personally Identifiable Information (PII) when processing a Data Subject Request (DSR). Right to Access and Right to Delete (Right to Forget) support for each endpoint is noted below. 
 
 |Endpoint | Right to Access | Right to Delete |
 |----|----|----|
-|[Customers](https://stripe.com/docs/api/customers/update) | Yes | No |
+|[Customers](https://stripe.com/docs/api/customers/update) | Yes | Yes |
 |[Charges](https://stripe.com/docs/api/charges/list) | Yes | No |
 |[Disputes](https://stripe.com/docs/api/disputes/list) | Yes | No |
-|[Payment Intents](https://stripe.com/docs/api/payment_intents/list) | Yes | No |
+|[Payment Intents](https://stripe.com/docs/api/payment_intents/list) | Yes | Yes |
 |[Payment Methods](https://stripe.com/docs/api/payment_methods/list) | Yes | No |
-|[Bank Accounts](https://stripe.com/docs/api/customer_bank_accounts/list) | Yes | No |
-|[Cards](https://stripe.com/docs/api/cards/list) | Yes | No |
+|[Bank Accounts](https://stripe.com/docs/api/customer_bank_accounts/list) | Yes | Yes |
+|[Cards](https://stripe.com/docs/api/cards/list) | Yes | Yes |
 |[Credit Notes](https://stripe.com/docs/api/credit_notes/list) | Yes | No |
 |[Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list) | Yes | No |
 |[Tax IDs](https://stripe.com/docs/api/customer_tax_ids/list) | Yes | Yes |
@@ -22,6 +22,8 @@ Fidesops uses the following Stripe endpoints to retrieve and delete Personally I
 
 ## Connection Settings
 Fidesops provides as [Postman collection](../../postman/using_postman.md) for easily establishing connections to your third party applications. Additional connection instructions may be found in the [configuration guide](../saas_config.md).
+
+**Deletion requests** are fulfilled by masking PII via `UPDATE` endpoints. To [give Fidesops permission](../../guides/configuration_reference.md#configuration-variable-reference) to remove PII using `DELETE` endpoints, ensure the `MASKING_STRICT` variable in your `fidesops.toml` file is set to `FALSE`. 
 
 ## Example Stripe Configuration
 ```yaml

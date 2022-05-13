@@ -7,7 +7,7 @@ Fidesops uses the following Sentry endpoints to retrieve and delete Personally I
 |----|----|----|
 |[Organizations](https://docs.sentry.io/api/organizations/list-your-organizations/) | Yes | No |
 |[Users](https://docs.sentry.io/api/organizations/list-an-organizations-users/) | Yes | No |
-|[Projects](https://docs.sentry.io/api/organizations/list-an-organizations-projects/) | Yes | No |
+|[Projects](https://docs.sentry.io/api/organizations/list-an-organizations-projects/) | Yes | Yes |
 |[Issues](https://docs.sentry.io/api/events/list-a-projects-issues/) | Yes | No |
 |[User Feedback](https://docs.sentry.io/api/projects/list-a-projects-user-feedback/) | Yes | No |
 
@@ -15,6 +15,8 @@ Fidesops uses the following Sentry endpoints to retrieve and delete Personally I
 
 ## Connection Settings
 Fidesops provides as [Postman collection](../../postman/using_postman.md) for easily establishing connections to your third party applications. Additional connection instructions may be found in the [configuration guide](../saas_config.md).
+
+**Deletion requests** are fulfilled by masking PII via `UPDATE` endpoints. To [give Fidesops permission](../../guides/configuration_reference.md#configuration-variable-reference) to remove PII using `DELETE` endpoints, ensure the `MASKING_STRICT` variable in your `fidesops.toml` file is set to `FALSE`. 
 
 ## Example Sentry Configuration
 ```yaml

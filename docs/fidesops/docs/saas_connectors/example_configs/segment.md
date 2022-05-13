@@ -15,6 +15,8 @@ Fidesops uses the following Segment endpoints to retrieve and delete Personally 
 ## Connection Settings
 Fidesops provides as [Postman collection](../../postman/using_postman.md) for easily establishing connections to your third party applications. Additional connection instructions may be found in the [configuration guide](../saas_config.md).
 
+**Deletion requests** are fulfilled by masking PII via `UPDATE` endpoints. To [give Fidesops permission](../../guides/configuration_reference.md#configuration-variable-reference) to remove PII using `DELETE` endpoints, ensure the `MASKING_STRICT` variable in your `fidesops.toml` file is set to `FALSE`. 
+
 ## Example Segment Configuration
 ```yaml
 saas_config:
