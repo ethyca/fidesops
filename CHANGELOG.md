@@ -29,6 +29,8 @@ The types of changes are:
 * DRP action to Policy [#453](https://github.com/ethyca/fidesops/pull/453)
 * `CHANGELOG.md` file[#484](https://github.com/ethyca/fidesops/pull/484)
 * DRP status endpoint [#485](https://github.com/ethyca/fidesops/pull/485)
+* DRP exerise endpoint [#496](https://github.com/ethyca/fidesops/pull/496)
+* Frontend for privacy request denial reaons [#480](https://github.com/ethyca/fidesops/pull/480)
 
 
 ### Changed 
@@ -39,6 +41,7 @@ The types of changes are:
 * Format tests with `black` [#466](https://github.com/ethyca/fidesops/pull/466)
 * Extract privacy request endpoint logic into separate service for DRP [#470](https://github.com/ethyca/fidesops/pull/470)
 * Fixing inconsistent SaaS connector integration tests [#473](https://github.com/ethyca/fidesops/pull/473)
+* Add user data to login response [#501](https://github.com/ethyca/fidesops/pull/501)
 
 
 ### Breaking Changes
@@ -57,4 +60,9 @@ The types of changes are:
 * Added missing import [#448](https://github.com/ethyca/fidesops/pull/448)
 * Removed pypi badge pointing to wrong package [#452](https://github.com/ethyca/fidesops/pull/452)
 * Audit imports and references [#479](https://github.com/ethyca/fidesops/pull/479)
+* Switch to using update method on PUT permission endpoint [#500](https://github.com/ethyca/fidesops/pull/500)
 
+
+### Developer Experience
+* Add script to seed initial Privacy Request [#487](https://github.com/ethyca/fidesops/pull/487)
+* Add first and last name to `createsuperuser` script [#486](https://github.com/ethyca/fidesops/pull/486)
