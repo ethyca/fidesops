@@ -4,14 +4,15 @@ import Head from 'next/head';
 import { Heading, Box } from '@fidesui/react';
 import { getSession } from 'next-auth/react';
 import { wrapper } from '../app/store';
-import { assignToken } from '../features/user/user.slice';
+import { assignToken, setUser } from '../features/user/user.slice';
+import { User } from '../features/user/types';
 
 import NavBar from '../features/common/NavBar';
 
 import RequestTable from '../features/privacy-requests/RequestTable';
 import RequestFilters from '../features/privacy-requests/RequestFilters';
 
-const Home: NextPage<{ session: { username: string } }> = ({ session }) => {
+const Home: NextPage<{ session: { user: User } }> = ({ session }) => {
   return (
     <div>
       <Head>
@@ -38,8 +39,10 @@ const Home: NextPage<{ session: { username: string } }> = ({ session }) => {
 export const getServerSideProps = wrapper.getServerSideProps(
   (store) => async (context) => {
     const session = await getSession(context);
+
     if (session && typeof session.accessToken !== 'undefined') {
       await store.dispatch(assignToken(session.accessToken));
+      await store.dispatch(setUser(session.user));
       return { props: { session } };
     }
 

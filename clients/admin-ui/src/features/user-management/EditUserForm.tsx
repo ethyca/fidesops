@@ -41,12 +41,12 @@ const useUserForm = () => {
 
   const formik = useFormik({
     initialValues: {
-      username: existingUser?.username,
-      first_name: existingUser?.first_name,
-      last_name: existingUser?.last_name,
+      username: existingUser?.username ?? '',
+      first_name: existingUser?.first_name ?? '',
+      last_name: existingUser?.last_name ?? '',
       password: '********',
-      scopes: existingScopes?.scopes,
-      id: existingUser?.id,
+      scopes: existingScopes?.scopes ?? '',
+      id: existingUser?.id ?? '',
     },
     enableReinitialize: true,
     onSubmit: async (values) => {
