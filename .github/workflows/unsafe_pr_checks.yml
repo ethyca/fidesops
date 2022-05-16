@@ -53,4 +53,12 @@ jobs:
           SEGMENT_NAMESPACE_ID: ${{ secrets.SEGMENT_NAMESPACE_ID }}
           SEGMENT_ACCESS_SECRET: ${{ secrets.SEGMENT_ACCESS_SECRET }}
           SEGMENT_IDENTITY_EMAIL: ${{ secrets.SEGMENT_IDENTITY_EMAIL }}
+          MIXPANEL_DOMAIN: ${{ secrets.MIXPANEL_DOMAIN }}
+          MIXPANEL_API_DOMAIN: ${{ secrets.MIXPANEL_API_DOMAIN }}
+          MIXPANEL_PROJECT_TOKEN: ${{ secrets.MIXPANEL_PROJECT_TOKEN }}
+          MIXPANEL_GDPR_OAUTH_TOKEN: ${{ secrets.MIXPANEL_GDPR_OAUTH_TOKEN }}
+          MIXPANEL_USERNAME: ${{ secrets.MIXPANEL_USERNAME }}
+          MIXPANEL_PASSWORD: ${{ secrets.MIXPANEL_PASSWORD }}
+          MIXPANEL_PROJECT_ID: ${{ secrets.MIXPANEL_PROJECT_ID }}
+          MIXPANEL_IDENTITY_EMAIL: ${{ secrets.MIXPANEL_IDENTITY_EMAIL }}
         run: make pytest-saas

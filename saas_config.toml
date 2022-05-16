@@ -42,3 +42,13 @@ namespace_id = ""
 access_secret = ""
 user_token = ""
 identity_email = ""
+
+[mixpanel]
+project_token=""
+gdpr_oauth_token=""
+domain=""
+api_domain=""
+identity_email=""
+project_id=""
+username=""
+password=""

@@ -1,0 +1,122 @@
+saas_config:
+  fides_key: mixpanel_connector_example
+  name: Mixpanel SaaS Config
+  description: A sample schema representing the Mixpanel connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: gdpr_oauth_token
+    - name: domain
+    - name: api_domain
+    - name: username
+    - name: password
+    - name: project_id
+    - name: project_token
+
+  client_config:
+    protocol: https
+    host:
+      connector_param: domain
+    authentication:
+      strategy: basic_authentication
+      configuration:
+        username:
+          connector_param: username
+        password:
+          connector_param: password
+
+  test_request:
+    path: /api/2.0/annotations
+    method: GET
+
+  data_protection_request:
+    path: /api/app/data-deletions/v3.0/
+    method: POST
+    query_params:
+      - name: token
+        value: <token>
+    body: '{
+        "distinct_ids": ["<distinct_id>"]
+      }'
+    param_values:
+      - name: token
+        connector_param: project_token
+      - name: distinct_id
+        references:
+          - dataset: mixpanel_connector_example
+            field: user.$distinct_id
+            direction: from
+    client_config:
+      protocol: https
+      host:
+        connector_param: domain
+      authentication:
+        strategy: bearer_authentication
+        configuration:
+          token:
+            connector_param: gdpr_oauth_token
+
+  endpoints:
+  - name: user
+    requests:
+      read:
+        path: /api/2.0/engage/
+        method: GET
+        query_params: 
+          - name: project_id
+            value: <project_id>
+        body: '{
+            "where": "properties[\"$email\"] == \"<email>\""
+          }'
+        param_values:
+          - name: email
+            identity: email
+            data_type: string
+          - name: project_id
+            connector_param: project_id
+        data_path: results
+      update:
+        path: /engage#profile-set
+        method: POST
+        body: '[{
+            "$token": "<token>",
+            "$distinct_id": "<distinct_id>",
+          }]'
+        param_values:
+          - name: token
+            connector_param: project_token
+          - name: distinct_id
+            references:
+              - dataset: mixpanel_connector_example
+                field: user.$distinct_id
+                direction: from
+        client_config:
+          protocol: https
+          host:
+            connector_param: api_domain
+          authentication:
+            strategy: basic_authentication
+            configuration:
+              username:
+                connector_param: username
+              password:
+                connector_param: password
+  - name: events
+    requests:
+      read:
+        path: /api/2.0/stream/query
+        method: GET
+        query_params:
+          - name: project_id
+            value: <project_id>
+          - name: distinct_ids
+            value: '["<distinct_id>"]'
+        param_values:
+          - name: distinct_id
+            references:
+              - dataset: mixpanel_connector_example
+                field: user.$distinct_id
+                direction: from
+          - name: project_id
+            connector_param: project_id
+        data_path: results.events
