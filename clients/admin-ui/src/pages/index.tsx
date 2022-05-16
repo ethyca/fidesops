@@ -1,4 +1,4 @@
-import React from 'react';
+import { Box, Button, Flex, Heading } from '@fidesui/react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import { Heading, Box } from '@fidesui/react';
