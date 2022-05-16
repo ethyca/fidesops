@@ -499,39 +499,39 @@ def collect_queries(
     return env
 
 
-def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, Any]]]:
-    """Return a function that returns the seed value to kick off the dask function chain.
-
-    The first traversal_node in the dask function chain is just a function that when called returns
-    the graph seed value."""
-
-    def g() -> List[Dict[str, Any]]:
-        return seed
-
-    return g
-
-
-def collect_tasks_fn(resources: TaskResources) -> Callable:
-    """Run the traversal, as an action creating a GraphTask for each traversal_node."""
-
-    def g(tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]) -> None:
-        if not tn.is_root_node():
-            data[tn.address] = GraphTask(tn, resources)
-
-    return g
-
-
-def termination_fn(resources: TaskResources) -> Callable:
-    """A termination function that just returns its inputs mapped to their source addresses.
-
-    This needs to wait for all dependent keys because this is how dask is informed to wait for
-    all terminating addresses before calling this."""
-
-    def g(*dependent_values: List[Row]) -> Dict[str, List[Row]]:
-        logger.info(f"TERMINATION FUNCTION {resources.get_all_cached_objects()}")
-        return resources.get_all_cached_objects()
-
-    return g
+# def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, Any]]]:
+#     """Return a function that returns the seed value to kick off the dask function chain.
+#
+#     The first traversal_node in the dask function chain is just a function that when called returns
+#     the graph seed value."""
+#
+#     def g() -> List[Dict[str, Any]]:
+#         return seed
+#
+#     return g
+#
+#
+# def collect_tasks_fn(resources: TaskResources) -> Callable:
+#     """Run the traversal, as an action creating a GraphTask for each traversal_node."""
+#
+#     def g(tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]) -> None:
+#         if not tn.is_root_node():
+#             data[tn.address] = GraphTask(tn, resources)
+#
+#     return g
+#
+#
+# def termination_fn(resources: TaskResources) -> Callable:
+#     """A termination function that just returns its inputs mapped to their source addresses.
+#
+#     This needs to wait for all dependent keys because this is how dask is informed to wait for
+#     all terminating addresses before calling this."""
+#
+#     def g(*dependent_values: List[Row]) -> Dict[str, List[Row]]:
+#         logger.info(f"TERMINATION FUNCTION {resources.get_all_cached_objects()}")
+#         return resources.get_all_cached_objects()
+#
+#     return g
 
 
 def run_access_request(
@@ -545,23 +545,48 @@ def run_access_request(
     """Run the access request"""
     traversal: Traversal = Traversal(graph, identity)
     with TaskResources(privacy_request, policy, connection_configs) as resources:
+        def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, Any]]]:
+            """Return a function that returns the seed value to kick off the dask function chain.
+
+            The first traversal_node in the dask function chain is just a function that when called returns
+            the graph seed value."""
+
+            def g() -> List[Dict[str, Any]]:
+                return seed
+
+            return g
+
+        def collect_tasks_fn(
+            tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
+        ) -> None:
+            """Run the traversal, as an action creating a GraphTask for each traversal_node."""
+            if not tn.is_root_node():
+                data[tn.address] = GraphTask(tn, resources)
+
+        def termination_fn(*dependent_values: List[Row]) -> Dict[str, List[Row]]:
+            """A termination function that just returns its inputs mapped to their source addresses.
+            This needs to wait for all dependent keys because this is how dask is informed to wait for
+            all terminating addresses before calling this."""
+
+            return resources.get_all_cached_objects()
 
         env: Dict[CollectionAddress, Any] = {}
-        end_nodes = traversal.traverse(env, collect_tasks_fn(resources))
+        end_nodes = traversal.traverse(env, collect_tasks_fn)
 
         dsk = {k: (t.access_request, *t.input_keys) for k, t in env.items()}
         dsk[ROOT_COLLECTION_ADDRESS] = (start_function(traversal.seed_data),)
-        dsk[TERMINATOR_ADDRESS] = (termination_fn(resources), *end_nodes)
-        cached_results: Dict[str, List[Row]] = resources.get_all_cached_objects()
-
+        dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
         if from_paused:
+            cached_results: Dict[str, List[Row]] = resources.get_all_cached_objects()
             logger.info(f"CACHED RESULTS FROM PREV RUN {cached_results}")
             for node in cached_results:
                 dsk[CollectionAddress.from_string(node)] = (
                     start_function(cached_results[node]),
                 )
                 # TODO check this is still a valid dictionary
+
         v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
+
         return v.compute()
 
 
