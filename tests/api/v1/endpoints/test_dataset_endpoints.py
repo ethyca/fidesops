@@ -835,17 +835,17 @@ class TestPutYamlDatasets:
         return path.format(**path_params)
 
     def test_patch_dataset_not_authenticated(
-            self, example_yaml_dataset: str, dataset_url, api_client
+        self, example_yaml_dataset: str, dataset_url, api_client
     ) -> None:
         response = api_client.patch(dataset_url, headers={}, data=example_yaml_dataset)
         assert response.status_code == 401
 
     def test_patch_datasets_wrong_scope(
-            self,
-            example_yaml_dataset: str,
-            dataset_url,
-            api_client: TestClient,
-            generate_auth_header,
+        self,
+        example_yaml_dataset: str,
+        dataset_url,
+        api_client: TestClient,
+        generate_auth_header,
     ) -> None:
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.patch(
@@ -854,7 +854,7 @@ class TestPutYamlDatasets:
         assert response.status_code == 403
 
     def test_patch_dataset_invalid_connection_key(
-            self, example_yaml_dataset: str, api_client: TestClient, generate_auth_header
+        self, example_yaml_dataset: str, api_client: TestClient, generate_auth_header
     ) -> None:
         path = V1_URL_PREFIX + YAML_DATASETS
         path_params = {"connection_key": "nonexistent_key"}
@@ -867,7 +867,11 @@ class TestPutYamlDatasets:
         assert response.status_code == 404
 
     def test_patch_dataset_invalid_content_type(
-            self, dataset_url: str, example_datasets: str, api_client: TestClient, generate_auth_header
+        self,
+        dataset_url: str,
+        example_datasets: str,
+        api_client: TestClient,
+        generate_auth_header,
     ) -> None:
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
@@ -876,7 +880,11 @@ class TestPutYamlDatasets:
         assert response.status_code == 415
 
     def test_patch_dataset_invalid_content(
-            self, dataset_url: str, example_invalid_yaml_dataset: str, api_client: TestClient, generate_auth_header
+        self,
+        dataset_url: str,
+        example_invalid_yaml_dataset: str,
+        api_client: TestClient,
+        generate_auth_header,
     ) -> None:
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         headers = {"Content-type": "application/x-yaml"}
@@ -888,12 +896,12 @@ class TestPutYamlDatasets:
 
     @mock.patch("fidesops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_datasets_failed_response(
-            self,
-            mock_create: Mock,
-            example_yaml_dataset: str,
-            dataset_url,
-            api_client: TestClient,
-            generate_auth_header,
+        self,
+        mock_create: Mock,
+        example_yaml_dataset: str,
+        dataset_url,
+        api_client: TestClient,
+        generate_auth_header,
     ) -> None:
         mock_create.side_effect = HTTPException(mock.Mock(status=400), "Test error")
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
@@ -912,12 +920,12 @@ class TestPutYamlDatasets:
             assert set(failed_response.keys()) == {"message", "data"}
 
     def test_patch_dataset_create(
-            self,
-            example_yaml_dataset: List,
-            dataset_url,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
+        self,
+        example_yaml_dataset: List,
+        dataset_url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
     ) -> None:
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         headers = {"Content-type": "application/x-yaml"}
@@ -945,12 +953,12 @@ class TestPutYamlDatasets:
         postgres_config.delete(db)
 
     def test_patch_datasets_create(
-            self,
-            example_yaml_datasets: List,
-            dataset_url,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
+        self,
+        example_yaml_datasets: List,
+        dataset_url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
     ) -> None:
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         headers = {"Content-type": "application/x-yaml"}
