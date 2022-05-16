@@ -59,6 +59,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
         <Td pl={0} py={1}>
           {user.created_at ? new Date(user.created_at).toUTCString() : null}
         </Td>
+        {/* hide this from users that don't have the edit and/or delete actions */}
         <Td pr={0} py={1} textAlign="end" position="relative">
           <ButtonGroup>
             <Menu onOpen={handleMenuOpen} onClose={handleMenuClose}>

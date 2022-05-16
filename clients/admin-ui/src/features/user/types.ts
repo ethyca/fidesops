@@ -70,11 +70,19 @@ export const userPrivilegesArray: UserPrivileges[] = [
     scope: 'policy:create_or_update',
   },
   {
+    privilege: 'View users',
+    scope: 'user:read',
+  },
+  {
     privilege: 'Create users',
     scope: 'user:create',
   },
   {
     privilege: 'Create roles',
     scope: 'user-permission:create',
+  },
+  {
+    privilege: 'View roles',
+    scope: 'user-permission:read',
   },
 ];
