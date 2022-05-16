@@ -207,9 +207,9 @@ async def patch_yaml_datasets(
     body = await request.body()
     try:
         yaml_request_body: dict = yaml.safe_load(body)
-    except yaml.YAMLError:
-        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Error in YAML")
-    datasets = yaml_request_body.get("dataset")
+    except yaml.MarkedYAMLError as e:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Error in YAML: " + str(e))
+    datasets = yaml_request_body.get("dataset") if type(yaml_request_body) is dict else []
     created_or_updated: List[FidesopsDataset] = []
     failed: List[BulkUpdateFailed] = []
     if type(datasets) == list:
