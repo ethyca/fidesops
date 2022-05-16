@@ -11,6 +11,7 @@ from typing import List, Dict, Any, Tuple, Callable, Optional, Set
 import dask
 from dask.threaded import get
 
+from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.core.config import config
 from fidesops.graph.config import (
     CollectionAddress,
@@ -62,9 +63,9 @@ def retry(
             self = args[0]
 
             raised_ex = None
-            if config.dev_mode:
-                # If dev mode, return here so exception isn't caught
-                return func(*args, **kwargs)
+            # if config.dev_mode:
+            #     # If dev mode, return here so exception isn't caught
+            #     return func(*args, **kwargs)
             for attempt in range(config.execution.TASK_RETRY_COUNT + 1):
                 try:
                     # Create ExecutionLog with status in_processing or retrying
@@ -74,6 +75,16 @@ def retry(
                         self.log_start(action_type)
                     # Run access or erasure request
                     return func(*args, **kwargs)
+                except PrivacyRequestPaused as ex:
+                    logger.warning(
+                        f"Privacy request {method_name} paused {self.traversal_node.address}"
+                    )
+                    raised_ex = ex
+                    # TODO Log paused instead at particular node
+                    self.log_end(action_type, raised_ex)
+                    # Re-raise
+                    raise PrivacyRequestPaused(ex)
+
                 except BaseException as ex:  # pylint: disable=W0703
                     func_delay *= config.execution.TASK_RETRY_BACKOFF
                     logger.warning(
@@ -517,6 +528,7 @@ def termination_fn(resources: TaskResources) -> Callable:
     all terminating addresses before calling this."""
 
     def g(*dependent_values: List[Row]) -> Dict[str, List[Row]]:
+        logger.info(f"TERMINATION FUNCTION {resources.get_all_cached_objects()}")
         return resources.get_all_cached_objects()
 
     return g
@@ -543,6 +555,7 @@ def run_access_request(
         cached_results: Dict[str, List[Row]] = resources.get_all_cached_objects()
 
         if from_paused:
+            logger.info(f"CACHED RESULTS FROM PREV RUN {cached_results}")
             for node in cached_results:
                 dsk[CollectionAddress.from_string(node)] = (
                     start_function(cached_results[node]),

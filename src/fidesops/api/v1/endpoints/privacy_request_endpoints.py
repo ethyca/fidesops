@@ -23,7 +23,7 @@ from fidesops import common_exceptions
 from fidesops.api import deps
 from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
-from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, PRIVACY_REQUEST_REVIEW
+from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, PRIVACY_REQUEST_REVIEW, PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
@@ -66,6 +66,7 @@ from fidesops.service.privacy_request.request_service import (
 from fidesops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.cache import FidesopsRedis
+from fidesops.util.collection_util import Row
 from fidesops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 
 logger = logging.getLogger(__name__)
@@ -537,18 +538,16 @@ def resume_privacy_request(
     PRIVACY_REQUEST_MANUAL_INPUT,
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestResponse,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])],
 )
 def resume_with_manual_input(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
     cache: FidesopsRedis = Depends(deps.get_cache),
-    manual_results: PolicyPreWebhook = Security(
-        verify_callback_oauth, scopes=[scopes.PRIVACY_REQUEST_CALLBACK_RESUME]
-    ),
-    webhook_callback: PrivacyRequestResumeFormat,
+    manual_results: Row,  # TODO add better validation of manual results
 ) -> PrivacyRequestResponse:
-    """Resume running a privacy request after it was paused by a Pre-Execution webhook"""
+    """Resume request with manual input"""
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
     keys = cache.keys(f"PAUSED_LOCATION__{privacy_request.id}__access_request")
     if privacy_request.status != PrivacyRequestStatus.paused:
@@ -556,9 +555,9 @@ def resume_with_manual_input(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Invalid resume request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
         )
-    paused_loc = keys[list[keys][0]] if keys else None
+    paused_loc = privacy_request.get_cached_paused_node()
     if not paused_loc:
-        raise Exception("Node isn't paused.")
+        raise Exception("There is no paused node for this privacy request.")
 
     # Add manual results to the cache
     cache.set_encoded_object(
@@ -576,7 +575,7 @@ def resume_with_manual_input(
     PrivacyRequestRunner(
         cache=cache,
         privacy_request=privacy_request,
-    ).submit_from_resume(from_node=paused_loc)
+    ).submit(resume=True)
 
     return privacy_request
 

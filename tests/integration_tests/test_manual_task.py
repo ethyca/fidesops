@@ -10,7 +10,7 @@ from ..graph.graph_test_util import (
     assert_rows_match,
     records_matching_fields
 )
-from ..task.traversal_data import integration_db_graph, postgres_and_manual_graph
+from ..task.traversal_data import postgres_and_manual_graph
 
 
 @pytest.mark.integration_postgres
@@ -37,10 +37,9 @@ def test_postgres_with_manual_input_access_request_task(
             {"email": "customer-1@example.com"},
         )
 
-    cached_paused_node = cache.get_encoded_objects_by_prefix(f"PAUSED_LOCATION__{privacy_request.id}__access_request")
-    assert len(cached_paused_node.keys()) == 1
     # Graph is paused at filing cabinet.
-    assert list(cached_paused_node.values())[0] == "manual_example:filing_cabinet"
+    paused_node = privacy_request.get_cached_paused_node()
+    assert paused_node == "manual_example:filing_cabinet"
 
     # Act like the user has added the manual data
     cache.set_encoded_object(

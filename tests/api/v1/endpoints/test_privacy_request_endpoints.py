@@ -1583,3 +1583,9 @@ class TestResumePrivacyRequest:
                 "name": privacy_request.policy.name,
             },
         }
+
+
+class TestResumeWithManualInput:
+
+    def test_manual_resume(self):
+        pass

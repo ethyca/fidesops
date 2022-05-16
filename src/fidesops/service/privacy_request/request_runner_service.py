@@ -93,130 +93,14 @@ class PrivacyRequestRunner:
         return True
 
     def submit(
-        self, from_webhook: Optional[PolicyPreWebhook] = None
+        self, from_webhook: Optional[PolicyPreWebhook] = None, resume: Optional[bool] = False
     ) -> Awaitable[None]:
         """Run this privacy request in a separate thread."""
         from_webhook_id = from_webhook.id if from_webhook else None
-        return run_async(self.run, self.privacy_request.id, from_webhook_id)
-
-    def submit_from_resume(self, from_node: str):
-        return run_async(self.run_from_paused, self.privacy_request.id, from_node)
-
-    def run_from_paused(self, privacy_request_id: str, paused_loc: str = None) -> None:
-        # pylint: disable=too-many-locals
-        """
-        Dispatch a privacy_request into the execution layer by:
-            1. Generate a graph from all the currently configured datasets
-            2. Take the provided identity data
-            3. Start the access request / erasure request execution
-            4. When finished, upload the results to the configured storage destination if applicable
-        """
-        SessionLocal = get_db_session()
-        with SessionLocal() as session:
-
-            privacy_request = PrivacyRequest.get(db=session, id=privacy_request_id)
-            logging.info(f"Resuming privacy request {privacy_request.id}")
-
-            policy = privacy_request.policy
-            try:
-                policy.rules[0]
-            except IndexError:
-                raise common_exceptions.MisconfiguredPolicyException(
-                    f"Policy with key {policy.key} must contain at least one Rule."
-                )
-
-            try:
-                datasets = DatasetConfig.all(db=session)
-                dataset_graphs = [
-                    dataset_config.get_graph() for dataset_config in datasets
-                ]
-                dataset_graph = DatasetGraph(*dataset_graphs)
-                identity_data = privacy_request.get_cached_identity_data()
-                connection_configs = ConnectionConfig.all(db=session)
-
-                access_result = run_access_request(
-                    privacy_request=privacy_request,
-                    policy=policy,
-                    graph=dataset_graph,
-                    connection_configs=connection_configs,
-                    identity=identity_data,
-                    from_paused=True,
-                )
-                if not access_result:
-                    logging.info(
-                        f"No results returned for access request {privacy_request.id}"
-                    )
-
-                # Once the access request is complete, process the data uploads
-                for rule in policy.get_rules_for_action(action_type=ActionType.access):
-                    if not rule.storage_destination:
-                        raise common_exceptions.RuleValidationError(
-                            f"No storage destination configured on rule {rule.key}"
-                        )
-                    target_categories: Set[str] = {
-                        target.data_category for target in rule.targets
-                    }
-                    filtered_results = filter_data_categories(
-                        access_result,
-                        target_categories,
-                        dataset_graph.data_category_field_mapping,
-                    )
-                    logging.info(
-                        f"Starting access request upload for rule {rule.key} for privacy request {privacy_request.id}"
-                    )
-                    try:
-                        upload(
-                            db=session,
-                            request_id=privacy_request.id,
-                            data=filtered_results,
-                            storage_key=rule.storage_destination.key,
-                        )
-                    except common_exceptions.StorageUploadError as exc:
-                        logging.error(
-                            f"Error uploading subject access data for rule {rule.key} on policy {policy.key} and privacy request {privacy_request.id} : {exc}"
-                        )
-                        privacy_request.status = PrivacyRequestStatus.error
-
-                if policy.get_rules_for_action(action_type=ActionType.erasure):
-                    # We only need to run the erasure once until masking strategies are handled
-                    run_erasure(
-                        privacy_request=privacy_request,
-                        policy=policy,
-                        graph=dataset_graph,
-                        connection_configs=connection_configs,
-                        identity=identity_data,
-                        access_request_data=get_cached_data_for_erasures(
-                            privacy_request.id
-                        ),
-                    )
-
-            except BaseException as exc:  # pylint: disable=broad-except
-                privacy_request.status = PrivacyRequestStatus.error
-                # If dev mode, log traceback
-                if config.dev_mode:
-                    logging.error(exc, exc_info=True)
-                else:
-                    logging.error(exc)
-
-            # Run post-execution webhooks
-            proceed = self.run_webhooks_and_report_status(
-                db=session,
-                privacy_request=privacy_request,
-                webhook_cls=PolicyPostWebhook,
-            )
-            if not proceed:
-                session.close()
-                return
-
-            privacy_request.finished_processing_at = datetime.utcnow()
-            if privacy_request.status != PrivacyRequestStatus.error:
-                privacy_request.status = PrivacyRequestStatus.complete
-            privacy_request.save(db=session)
-            logging.info(f"Privacy request {privacy_request.id} run completed.")
-            session.close()
+        return run_async(self.run, self.privacy_request.id, from_webhook_id, resume)
 
     def run(
-        self, privacy_request_id: str, from_webhook_id: Optional[str] = None
+        self, privacy_request_id: str, from_webhook_id: Optional[str] = None, from_paused: Optional[bool] = False
     ) -> None:
         # pylint: disable=too-many-locals
         """
@@ -267,6 +151,7 @@ class PrivacyRequestRunner:
                     graph=dataset_graph,
                     connection_configs=connection_configs,
                     identity=identity_data,
+                    from_paused=from_paused
                 )
                 if not access_result:
                     logging.info(
@@ -318,11 +203,14 @@ class PrivacyRequestRunner:
 
             except PrivacyRequestPaused as exc:
                 privacy_request.status = PrivacyRequestStatus.paused
+                privacy_request.save(db=session)
                 # If dev mode, log traceback
                 if config.dev_mode:
                     logging.error(exc, exc_info=True)
                 else:
                     logging.error(exc)
+                session.close()
+                return
 
             except BaseException as exc:  # pylint: disable=broad-except
                 privacy_request.status = PrivacyRequestStatus.error
