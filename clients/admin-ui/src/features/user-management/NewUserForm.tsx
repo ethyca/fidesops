@@ -211,11 +211,11 @@ const UserForm: NextPage = () => {
                 <Checkbox
                   colorScheme="purple"
                   defaultChecked={policy.scope === 'privacy-request:read'}
-                  key={`${policy.privilege}-${idx}`}
+                  key={`${policy.privilege}`}
                   onChange={handleChange}
-                  id={`scopes-${policy.privilege}-${idx}`}
+                  id={`scopes-${policy.privilege}`}
                   name="scopes"
-                  isChecked={values.scopes[idx]}
+                  isChecked={values.scopes[policy.privilege]}
                   value={
                     policy.scope === 'privacy-request:read'
                       ? undefined

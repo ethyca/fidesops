@@ -71,7 +71,7 @@ const useUserForm = () => {
         .then((result) => {
           const userWithPrivileges = {
             id: 'data' in result ? result.data.id : null,
-            scopes: [...values.scopes, 'privacy-request:read'],
+            scopes: [...new Set(values.scopes, 'privacy-request:read')],
           };
           return userWithPrivileges;
         })
@@ -244,7 +244,7 @@ const EditUserForm: NextPage<{
                   <Checkbox
                     colorScheme="purple"
                     isChecked={isChecked}
-                    key={`${policy.privilege}-${idx}`}
+                    key={`${policy.privilege}`}
                     onChange={(e) => {
                       if (!isChecked) {
                         setFieldValue(`scopes`, [
@@ -260,7 +260,7 @@ const EditUserForm: NextPage<{
                         );
                       }
                     }}
-                    id={`scopes-${policy.privilege}-${idx}`}
+                    id={`scopes-${policy.privilege}`}
                     name="scopes"
                     value={policy.scope}
                     isDisabled={policy.scope === 'privacy-request:read'}

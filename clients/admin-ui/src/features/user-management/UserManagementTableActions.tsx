@@ -46,7 +46,6 @@ const UserManagementTableActions: React.FC = () => {
           onChange={handleSearchChange}
         />
       </InputGroup>
-      {/* hide this from users that can't create new users */}
       <NextLink href="/user-management/new" passHref>
         <Button
           variant="solid"
