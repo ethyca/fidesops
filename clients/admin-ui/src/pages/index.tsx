@@ -1,7 +1,6 @@
-import { Box, Button, Flex, Heading } from '@fidesui/react';
+import { Box, Heading } from '@fidesui/react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { Heading, Box } from '@fidesui/react';
 import { getSession } from 'next-auth/react';
 import { wrapper } from '../app/store';
 import { assignToken, setUser } from '../features/user/user.slice';
