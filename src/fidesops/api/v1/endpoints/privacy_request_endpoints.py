@@ -28,7 +28,8 @@ from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_RESUME,
-    REQUEST_PREVIEW, PRIVACY_REQUEST_MANUAL_INPUT,
+    REQUEST_PREVIEW,
+    PRIVACY_REQUEST_MANUAL_INPUT,
 )
 from fidesops.common_exceptions import TraversalError, ValidationError
 from fidesops.core.config import config
@@ -557,10 +558,12 @@ def resume_with_manual_input(
         )
     paused_loc = keys[list[keys][0]] if keys else None
     if not paused_loc:
-        raise Exception()
+        raise Exception("Node isn't paused.")
 
+    # Add manual results to the cache
     cache.set_encoded_object(
-        f"MANUAL_INPUT__{privacy_request.id}__access_request__{paused_loc}", manual_results
+        f"MANUAL_INPUT__{privacy_request.id}__access_request__{paused_loc}",
+        manual_results,
     )
 
     logger.info(

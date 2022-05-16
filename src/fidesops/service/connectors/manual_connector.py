@@ -13,7 +13,6 @@ from fidesops.util.collection_util import Row
 
 
 class ManualConnector(BaseConnector[None]):
-
     def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
         return None
 
@@ -26,10 +25,14 @@ class ManualConnector(BaseConnector[None]):
     def test_connection(self) -> None:
         return None
 
-    def manual_access_results(self, privacy_request, node: TraversalNode) -> Optional[List[Row]]:
+    def manual_access_results(
+        self, privacy_request: PrivacyRequest, node: TraversalNode
+    ) -> Optional[List[Row]]:
         """Retrieves any identity data pertaining to this request from the cache"""
         # See if manual key added to cache for node
-        prefix = f"MANUAL_INPUT__{privacy_request.id}__access_request__{node.address.value}"
+        prefix = (
+            f"MANUAL_INPUT__{privacy_request.id}__access_request__{node.address.value}"
+        )
         cache: FidesopsRedis = get_cache()
         value_dict = cache.get_encoded_objects_by_prefix(prefix)
         return value_dict
@@ -41,24 +44,24 @@ class ManualConnector(BaseConnector[None]):
         privacy_request: PrivacyRequest,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
-        import pdb; pdb.set_trace()
         results = self.manual_access_results(privacy_request, node)
 
         if not results:
             cache: FidesopsRedis = get_cache()
-            # Save where node is paused in cache
+            # Save the node that we're paused on
             cache.set_encoded_object(
-                f"PAUSED_LOCATION__{privacy_request.id}__access_request", node.address.value
+                f"PAUSED_LOCATION__{privacy_request.id}__access_request",
+                node.address.value,
             )
             raise PrivacyRequestPaused()
         else:
             return list(results.values())[0]
 
     def mask_data(
-            self,
-            node: TraversalNode,
-            policy: Policy,
-            privacy_request: PrivacyRequest,
-            rows: List[Row],
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        rows: List[Row],
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated"""

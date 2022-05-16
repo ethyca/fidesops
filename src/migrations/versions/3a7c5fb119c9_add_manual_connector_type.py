@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '3a7c5fb119c9'
-down_revision = '5078badb90b9'
+revision = "3a7c5fb119c9"
+down_revision = "5078badb90b9"
 branch_labels = None
 depends_on = None
 
@@ -33,4 +33,3 @@ def downgrade():
         )
     )
     op.execute("drop type connectiontype_old")
-

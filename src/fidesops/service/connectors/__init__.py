@@ -27,7 +27,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.mssql.value: MicrosoftSQLServerConnector,
     ConnectionType.mariadb.value: MariaDBConnector,
     ConnectionType.bigquery.value: BigQueryConnector,
-    ConnectionType.manual.value: ManualConnector
+    ConnectionType.manual.value: ManualConnector,
 }
 
 

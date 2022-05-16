@@ -22,7 +22,8 @@ from fidesops.service.connectors import (
     MicrosoftSQLServerConnector,
     MariaDBConnector,
     BigQueryConnector,
-    SaaSConnector, ManualConnector,
+    SaaSConnector,
+    ManualConnector,
 )
 from fidesops.util.cache import get_cache
 
@@ -117,54 +118,6 @@ class TaskResources:
         self.cache.set_encoded_object(
             f"PLACEHOLDER_RESULTS__{self.request.id}__{key}", value
         )
-
-    def cache_dag_dict(
-        self,
-        request_type: str,
-        dag: Dict[CollectionAddress, Tuple[Callable, CollectionAddress]],
-    ) -> Dict[str, List[str]]:
-        """Caches a simplified dictionary of each node in the privacy request mapped to a list of its upstream dependencies
-        Example:
-
-        {
-           "postgres_example:customer":[
-              "__ROOT__:__ROOT__"
-           ],
-           "postgres_example:orders":[
-              "postgres_example:customer"
-           ],
-           "postgres_example:address":[
-              "postgres_example:customer",
-              "postgres_example:orders",
-              "postgres_example:payment_card"
-           ],
-           "postgres_example:payment_card":[
-              "postgres_example:customer",
-              "postgres_example:orders"
-           ],
-           "__ROOT__:__ROOT__":[
-
-           ],
-           "__TERMINATE__:__TERMINATE__":[
-              "postgres_example:address"
-           ]
-        }
-        """
-        cached_graph: Dict[str, List[str]] = {}
-        for collection_addr in dag:
-            cached_graph[collection_addr.value] = [
-                dep.value for dep in dag[collection_addr][1:]
-            ]
-        self.cache.set_encoded_object(
-            f"DAG_DICT__{self.request.id}__{request_type}", cached_graph
-        )
-        return cached_graph
-
-    def get_cached_dag(self, request_type: str) -> Dict[str, List[str]]:
-        """Retrieve a cached dag"""
-        value_dict = self.cache.get_encoded_objects_by_prefix(f"DAG_DICT__{self.request.id}__{request_type}")
-        # extract request id to return a map of address:value
-        return value_dict[list(value_dict)[0]]
 
     def cache_object(self, key: str, value: Any) -> None:
         """Store in cache. Object will be stored in redis under 'REQUEST_ID__TYPE__ADDRESS'"""

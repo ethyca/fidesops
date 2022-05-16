@@ -24,7 +24,7 @@ from fidesops.task.filter_results import filter_data_categories
 from fidesops.task.graph_task import (
     run_access_request,
     run_erasure,
-    get_cached_data_for_erasures, run_access_request_from_paused,
+    get_cached_data_for_erasures,
 )
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.util.async_util import run_async
@@ -100,11 +100,9 @@ class PrivacyRequestRunner:
         return run_async(self.run, self.privacy_request.id, from_webhook_id)
 
     def submit_from_resume(self, from_node: str):
-        return run_async(self.run_from_paused, self. privacy_request.id, from_node)
+        return run_async(self.run_from_paused, self.privacy_request.id, from_node)
 
-    def run_from_paused(
-            self, privacy_request_id: str, paused_loc: str = None
-    ) -> None:
+    def run_from_paused(self, privacy_request_id: str, paused_loc: str = None) -> None:
         # pylint: disable=too-many-locals
         """
         Dispatch a privacy_request into the execution layer by:
@@ -136,13 +134,13 @@ class PrivacyRequestRunner:
                 identity_data = privacy_request.get_cached_identity_data()
                 connection_configs = ConnectionConfig.all(db=session)
 
-                access_result = run_access_request_from_paused(
+                access_result = run_access_request(
                     privacy_request=privacy_request,
                     policy=policy,
                     graph=dataset_graph,
                     connection_configs=connection_configs,
                     identity=identity_data,
-                    paused_loc=paused_loc
+                    from_paused=True,
                 )
                 if not access_result:
                     logging.info(
@@ -216,7 +214,6 @@ class PrivacyRequestRunner:
             privacy_request.save(db=session)
             logging.info(f"Privacy request {privacy_request.id} run completed.")
             session.close()
-
 
     def run(
         self, privacy_request_id: str, from_webhook_id: Optional[str] = None
@@ -326,7 +323,6 @@ class PrivacyRequestRunner:
                     logging.error(exc, exc_info=True)
                 else:
                     logging.error(exc)
-
 
             except BaseException as exc:  # pylint: disable=broad-except
                 privacy_request.status = PrivacyRequestStatus.error
