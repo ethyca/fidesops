@@ -1,6 +1,6 @@
 import logging
-import yaml
 from typing import List
+import yaml
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.params import Security
@@ -212,11 +212,11 @@ async def patch_yaml_datasets(
             status_code=HTTP_400_BAD_REQUEST, detail="Error in YAML: " + str(e)
         )
     datasets = (
-        yaml_request_body.get("dataset") if type(yaml_request_body) is dict else []
+        yaml_request_body.get("dataset") if isinstance(yaml_request_body, dict) else []
     )
     created_or_updated: List[FidesopsDataset] = []
     failed: List[BulkUpdateFailed] = []
-    if type(datasets) == list:
+    if isinstance(datasets, list):
         for dataset in datasets:  # type: ignore
             data: dict = {
                 "connection_config_id": connection_config.id,
