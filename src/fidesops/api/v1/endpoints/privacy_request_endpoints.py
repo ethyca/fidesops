@@ -545,11 +545,10 @@ def resume_with_manual_input(
     *,
     db: Session = Depends(deps.get_db),
     cache: FidesopsRedis = Depends(deps.get_cache),
-    manual_results: Row,  # TODO add better validation of manual results
+    manual_results: List[Row],  # TODO add better validation of manual results
 ) -> PrivacyRequestResponse:
     """Resume request with manual input"""
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
-    keys = cache.keys(f"PAUSED_LOCATION__{privacy_request.id}__access_request")
     if privacy_request.status != PrivacyRequestStatus.paused:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
