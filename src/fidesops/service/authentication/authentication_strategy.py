@@ -10,10 +10,6 @@ class AuthenticationStrategy(ABC):
     """Abstract base class for SaaS authentication strategies"""
 
     @abstractmethod
-    def get_strategy_name(self) -> str:
-        """Returns strategy name"""
-
-    @abstractmethod
     def add_authentication(
         self, request: PreparedRequest, secrets: Dict[str, Any]
     ) -> PreparedRequest:
@@ -21,5 +17,5 @@ class AuthenticationStrategy(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_configuration_model() -> StrategyConfiguration:
+    def configuration_model() -> StrategyConfiguration:
         """Used to get the configuration model to configure the strategy"""

@@ -11,6 +11,7 @@ from fidesops.graph.config import (
     FieldAddress,
     ScalarField,
     CollectionAddress,
+    Field,
 )
 from fidesops.schemas.saas.strategy_configuration import ConnectorParamRef
 from fidesops.schemas.shared_schemas import FidesOpsKey

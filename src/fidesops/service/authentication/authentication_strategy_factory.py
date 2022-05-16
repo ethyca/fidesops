@@ -51,15 +51,13 @@ def get_strategy(
     Raises NoSuchStrategyException if the strategy does not exist
     """
     if not SupportedAuthenticationStrategies.__contains__(strategy_name):
-        valid_strategies = ", ".join(
-            [s.name for s in SupportedAuthenticationStrategies]
-        )
+        valid_strategies = ", ".join(get_strategy_names())
         raise NoSuchStrategyException(
             f"Strategy '{strategy_name}' does not exist. Valid strategies are [{valid_strategies}]"
         )
     strategy = SupportedAuthenticationStrategies[strategy_name].value
     try:
-        strategy_config: StrategyConfiguration = strategy.get_configuration_model()(
+        strategy_config: StrategyConfiguration = strategy.configuration_model()(
             **configuration
         )
         return strategy(configuration=strategy_config)
@@ -67,6 +65,6 @@ def get_strategy(
         raise FidesopsValidationError(message=str(e))
 
 
-def get_strategies() -> List[AuthenticationStrategy]:
+def get_strategy_names() -> List[str]:
     """Returns all supported authentication strategies"""
-    return [e.value for e in SupportedAuthenticationStrategies]
+    return [s.name for s in SupportedAuthenticationStrategies]

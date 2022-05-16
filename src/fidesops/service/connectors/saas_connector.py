@@ -66,10 +66,12 @@ class AuthenticatedClient:
             data=request_params.body,
         ).prepare()
 
-        authentication = self.client_config.authentication
-        return get_authentication_strategy(
-            authentication.strategy, authentication.configuration
-        ).add_authentication(req, self.secrets)
+        auth_strategy = get_authentication_strategy(
+            self.client_config.authentication.strategy,
+            self.client_config.authentication.configuration,
+        )
+
+        return auth_strategy.add_authentication(req, self.secrets)
 
     def send(
         self, request_params: SaaSRequestParams, ignore_errors: Optional[bool] = False

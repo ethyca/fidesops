@@ -11,8 +11,6 @@ from fidesops.service.authentication.authentication_strategy import (
 )
 from fidesops.util.saas_util import assign_placeholders
 
-STRATEGY_NAME = "basic"
-
 
 class BasicAuthenticationStrategy(AuthenticationStrategy):
     """
@@ -20,12 +18,12 @@ class BasicAuthenticationStrategy(AuthenticationStrategy):
     and uses them to add a basic authentication header to the incoming request.
     """
 
+    strategy_name = "basic"
+
     def __init__(self, configuration: BasicAuthenticationConfiguration):
+        self.config = configuration
         self.username = configuration.username
         self.password = configuration.password
-
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
 
     def add_authentication(
         self, request: PreparedRequest, secrets: Dict[str, Any]
@@ -40,5 +38,5 @@ class BasicAuthenticationStrategy(AuthenticationStrategy):
         return request
 
     @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
+    def configuration_model() -> StrategyConfiguration:
         return BasicAuthenticationConfiguration

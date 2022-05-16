@@ -176,7 +176,7 @@ def assign_placeholders(value: str, param_values: Dict[str, Any]) -> Optional[st
 
     Returns None if any of the placeholders cannot be found in the param_values
     """
-    if value and isinstance(value, str):
+    if value:
         placeholders = re.findall("<(.+?)>", value)
         for placeholder in placeholders:
             placeholder_value = param_values.get(placeholder)

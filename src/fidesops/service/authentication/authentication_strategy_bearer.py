@@ -11,8 +11,6 @@ from fidesops.service.authentication.authentication_strategy import (
 )
 from fidesops.util.saas_util import assign_placeholders
 
-STRATEGY_NAME = "bearer"
-
 
 class BearerAuthenticationStrategy(AuthenticationStrategy):
     """
@@ -20,11 +18,11 @@ class BearerAuthenticationStrategy(AuthenticationStrategy):
     and uses it to add a bearer authentication header to the incoming request.
     """
 
-    def __init__(self, configuration: BearerAuthenticationConfiguration):
-        self.token = configuration.token
+    strategy_name = "bearer"
 
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
+    def __init__(self, configuration: BearerAuthenticationConfiguration):
+        self.config = configuration
+        self.token = configuration.token
 
     def add_authentication(
         self, request: PreparedRequest, secrets: Dict[str, Any]
@@ -36,5 +34,5 @@ class BearerAuthenticationStrategy(AuthenticationStrategy):
         return request
 
     @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
+    def configuration_model() -> StrategyConfiguration:
         return BearerAuthenticationConfiguration

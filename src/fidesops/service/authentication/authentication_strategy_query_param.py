@@ -12,8 +12,6 @@ from fidesops.service.authentication.authentication_strategy import (
 from fidesops.util.saas_util import assign_placeholders
 from fidesops.util.url_util import set_query_parameter
 
-STRATEGY_NAME = "query_param"
-
 
 class QueryParamAuthenticationStrategy(AuthenticationStrategy):
     """
@@ -21,12 +19,12 @@ class QueryParamAuthenticationStrategy(AuthenticationStrategy):
     and adds it as a query param to the incoming request.
     """
 
+    strategy_name = "query_param"
+
     def __init__(self, configuration: QueryParamAuthenticationConfiguration):
+        super().__init__(configuration)
         self.name = configuration.name
         self.value = configuration.value
-
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
 
     def add_authentication(
         self, request: PreparedRequest, secrets: Dict[str, Any]
@@ -38,5 +36,5 @@ class QueryParamAuthenticationStrategy(AuthenticationStrategy):
         return request
 
     @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
+    def configuration_model() -> StrategyConfiguration:
         return QueryParamAuthenticationConfiguration
