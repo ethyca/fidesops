@@ -2401,16 +2401,16 @@
           "Privacy Requests"
         ],
         "summary": "Get Request Status",
-        "description": "Returns PrivacyRequest information. Supports a variety of optional query params.\n\nTo fetch a single privacy request, use the id query param `?id=`.\nTo see individual execution logs, use the verbose query param `?verbose=True`.",
+        "description": "Returns PrivacyRequest information. Supports a variety of optional query params.\n\nTo fetch a single privacy request, use the request_id query param `?request_id=`.\nTo see individual execution logs, use the verbose query param `?verbose=True`.",
         "operationId": "get_request_status_api_v1_privacy_request_get",
         "parameters": [
           {
             "required": false,
             "schema": {
-              "title": "Id",
+              "title": "Request Id",
               "type": "string"
             },
-            "name": "id",
+            "name": "request_id",
             "in": "query"
           },
           {
@@ -3829,7 +3829,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AccessToken"
+                  "$ref": "#/components/schemas/UserLoginResponse"
                 }
               }
             }
@@ -4063,6 +4063,7 @@
           "erasure",
           "update"
         ],
+        "type": "string",
         "description": "The purpose of a particular privacy request"
       },
       "AesDecryptionRequest": {
@@ -6339,6 +6340,7 @@
           "paused",
           "error"
         ],
+        "type": "string",
         "description": "Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"
       },
       "PrivacyRequestVerboseResponse": {
@@ -7075,6 +7077,23 @@
           }
         },
         "description": "Similar to UserCreate except we do not need the extra validation on username and password"
+      },
+      "UserLoginResponse": {
+        "title": "UserLoginResponse",
+        "required": [
+          "user_data",
+          "token_data"
+        ],
+        "type": "object",
+        "properties": {
+          "user_data": {
+            "$ref": "#/components/schemas/UserResponse"
+          },
+          "token_data": {
+            "$ref": "#/components/schemas/AccessToken"
+          }
+        },
+        "description": "Similar to UserResponse except with an access token"
       },
       "UserPasswordReset": {
         "title": "UserPasswordReset",
