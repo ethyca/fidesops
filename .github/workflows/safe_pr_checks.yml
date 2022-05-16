@@ -37,12 +37,3 @@ jobs:
       - name: Integration Tests
         run: make pytest-integration
         timeout-minutes: 20
-
-      - name: PyPI Upload
-        run: |
-          pip install twine
-          python setup.py sdist
-          twine upload --repository testpypi dist/*
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.TESTPYPI_TOKEN }}
