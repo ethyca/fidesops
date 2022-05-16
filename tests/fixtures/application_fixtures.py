@@ -514,6 +514,56 @@ def policy(
 
 
 @pytest.fixture(scope="function")
+def policy_drp_action(
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config: StorageConfig,
+) -> Generator:
+    access_request_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example access request policy drp",
+            "key": "example_access_request_policy_drp",
+            "drp_action": "access",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    access_request_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.access.value,
+            "client_id": oauth_client.id,
+            "name": "Access Request Rule DRP",
+            "policy_id": access_request_policy.id,
+            "storage_destination_id": storage_config.id,
+        },
+    )
+
+    rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.provided.identifiable").value,
+            "rule_id": access_request_rule.id,
+        },
+    )
+    yield access_request_policy
+    try:
+        rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        access_request_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        access_request_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def erasure_policy_string_rewrite(
     db: Session,
     oauth_client: ClientDetail,
@@ -642,9 +692,11 @@ def privacy_requests(db: Session, policy: Policy) -> Generator:
         pr.delete(db)
 
 
-@pytest.fixture(scope="function")
-def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
-    privacy_request = PrivacyRequest.create(
+def _create_privacy_request_for_policy(
+    db: Session,
+    policy: Policy,
+) -> PrivacyRequest:
+    return PrivacyRequest.create(
         db=db,
         data={
             "external_id": f"ext-{str(uuid4())}",
@@ -673,6 +725,23 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
             "policy_id": policy.id,
             "client_id": policy.client_id,
         },
+    )
+
+
+@pytest.fixture(scope="function")
+def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(db, policy)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_with_drp_action(
+    db: Session, policy_drp_action: Policy
+) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy_drp_action,
     )
     yield privacy_request
     privacy_request.delete(db)
@@ -956,7 +1025,10 @@ def sample_data():
 
 
 @pytest.fixture(scope="function")
-def application_user(db) -> FidesopsUser:
+def application_user(
+    db,
+    oauth_client,
+) -> FidesopsUser:
     unique_username = f"user-{uuid4()}"
     user = FidesopsUser.create(
         db=db,
@@ -967,5 +1039,7 @@ def application_user(db) -> FidesopsUser:
             "last_name": "User",
         },
     )
+    oauth_client.user_id = user.id
+    oauth_client.save(db=db)
     yield user
     user.delete(db=db)

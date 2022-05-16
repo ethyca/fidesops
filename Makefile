@@ -101,7 +101,7 @@ pylint: compose-build
 mypy: compose-build
 	@echo "Running mypy checks..."
 	@docker-compose run $(IMAGE_NAME) \
-		mypy --ignore-missing-imports src/
+		mypy src/
 
 pytest: compose-build
 	@echo "Running pytest unit tests..."
@@ -139,9 +139,9 @@ pytest-saas: compose-build
 
 .PHONY: black
 black: compose-build
-	@echo "Running black formatting against the src/ directory..."
-	@docker-compose run $(IMAGE_NAME) \
-	black src/
+	@echo "Running black formatting against the src/ and tests/ directories..."
+	@docker-compose run $(IMAGE_NAME) black tests/ && black src/
+	@echo "Fin"
 
 .PHONY: clean
 clean:
@@ -173,10 +173,15 @@ docs-serve: docs-build
 
 
 ####################
-# User Creation
+# Test Data Creation
 ####################
 
 user:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --datastores postgres --run_create_superuser
+
+test-data:
+	@virtualenv -p python3 fidesops_test_dispatch; \
+		source fidesops_test_dispatch/bin/activate; \
+		python run_infrastructure.py --datastores postgres --run_create_test_data

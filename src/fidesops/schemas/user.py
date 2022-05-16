@@ -4,15 +4,21 @@ from typing import Optional
 
 from pydantic import validator
 from fidesops.schemas.base_class import BaseSchema
+from fidesops.schemas.oauth import AccessToken
 
 
-class UserCreate(BaseSchema):
+class UserUpdate(BaseSchema):
+    """Data required to update a FidesopsUser"""
+
+    first_name: Optional[str]
+    last_name: Optional[str]
+
+
+class UserCreate(UserUpdate):
     """Data required to create a FidesopsUser"""
 
     username: str
     password: str
-    first_name: Optional[str]
-    last_name: Optional[str]
 
     @validator("username")
     def validate_username(cls, username: str) -> str:
@@ -47,6 +53,13 @@ class UserLogin(BaseSchema):
     password: str
 
 
+class UserPasswordReset(BaseSchema):
+    """Contains both old and new passwords when resetting a password"""
+
+    old_password: str
+    new_password: str
+
+
 class UserResponse(BaseSchema):
     """Response after requesting a User"""
 
@@ -55,6 +68,13 @@ class UserResponse(BaseSchema):
     created_at: datetime
     first_name: Optional[str]
     last_name: Optional[str]
+
+
+class UserLoginResponse(BaseSchema):
+    """Similar to UserResponse except with an access token"""
+
+    user_data: UserResponse
+    token_data: AccessToken
 
 
 class UserCreateResponse(BaseSchema):
