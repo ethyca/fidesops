@@ -516,6 +516,33 @@ def combined_mongo_postgresql_graph(
     return mongo_dataset, postgres_dataset
 
 
+def manual_dataset(db_name: str, postgres_db_name) -> Dataset:
+    """Manual dataset depending on upstream postgres collection"""
+    filing_cabinet = Collection(
+        name="filing_cabinet",
+        fields=[
+            ScalarField(name="id", primary_key=True, data_type_converter=int_converter),
+            ScalarField(name="ccn", data_type_converter=str_converter),
+            ScalarField(
+                name="customer_id",
+                references=[(FieldAddress(postgres_db_name, "customer", "id"), "from")],
+            ),
+
+        ]
+    )
+    return Dataset(
+        name=db_name,
+        collections=[filing_cabinet],
+        connection_key=db_name,
+    )
+
+
+def postgres_and_manual_graph(postgres_db_name: str, manual_db_name: str):
+    postgres_db = integration_db_dataset(postgres_db_name, postgres_db_name)
+    manual_db = manual_dataset(manual_db_name, postgres_db_name)
+    return DatasetGraph(postgres_db, manual_db)
+
+
 def integration_db_dataset(db_name: str, connection_key: FidesOpsKey) -> Dataset:
     """A traversal that maps tables in the postgresql test database"""
     customers = Collection(

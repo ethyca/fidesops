@@ -271,12 +271,13 @@ def test_postgres_access_request_task(
         id=f"test_postgres_access_request_task_{random.randint(0, 1000)}"
     )
 
-    v = graph_task.run_access_request(
+    v = graph_task.run_access_request_from_paused(
         privacy_request,
         policy,
         integration_db_graph("postgres_example"),
         [integration_postgres_config],
         {"email": "customer-1@example.com"},
+        "postgres_example:customer"
     )
 
     assert_rows_match(
@@ -359,12 +360,13 @@ def test_mssql_access_request_task(
         id=f"test_mssql_access_request_task_{random.randint(0, 1000)}"
     )
 
-    v = graph_task.run_access_request(
+    v = graph_task.run_access_request_from_paused(
         privacy_request,
         policy,
         integration_db_graph("my_mssql_db_1"),
         [connection_config_mssql],
         {"email": "customer-1@example.com"},
+        "my_mssql_db_1:orders"
     )
 
     assert_rows_match(

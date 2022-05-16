@@ -28,7 +28,7 @@ from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_RESUME,
-    REQUEST_PREVIEW,
+    REQUEST_PREVIEW, PRIVACY_REQUEST_MANUAL_INPUT,
 )
 from fidesops.common_exceptions import TraversalError, ValidationError
 from fidesops.core.config import config
@@ -528,6 +528,52 @@ def resume_privacy_request(
         cache=cache,
         privacy_request=privacy_request,
     ).submit(from_webhook=webhook)
+
+    return privacy_request
+
+
+@router.post(
+    PRIVACY_REQUEST_MANUAL_INPUT,
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestResponse,
+)
+def resume_with_manual_input(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    cache: FidesopsRedis = Depends(deps.get_cache),
+    manual_results: PolicyPreWebhook = Security(
+        verify_callback_oauth, scopes=[scopes.PRIVACY_REQUEST_CALLBACK_RESUME]
+    ),
+    webhook_callback: PrivacyRequestResumeFormat,
+) -> PrivacyRequestResponse:
+    """Resume running a privacy request after it was paused by a Pre-Execution webhook"""
+    privacy_request = get_privacy_request_or_error(db, privacy_request_id)
+    keys = cache.keys(f"PAUSED_LOCATION__{privacy_request.id}__access_request")
+    if privacy_request.status != PrivacyRequestStatus.paused:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid resume request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+        )
+    paused_loc = keys[list[keys][0]] if keys else None
+    if not paused_loc:
+        raise Exception()
+
+    cache.set_encoded_object(
+        f"MANUAL_INPUT__{privacy_request.id}__access_request__{paused_loc}", manual_results
+    )
+
+    logger.info(
+        f"Resuming privacy request '{privacy_request_id}' from node '{paused_loc}'"
+    )
+
+    privacy_request.status = PrivacyRequestStatus.in_processing
+    privacy_request.save(db=db)
+
+    PrivacyRequestRunner(
+        cache=cache,
+        privacy_request=privacy_request,
+    ).submit_from_resume(from_node=paused_loc)
 
     return privacy_request
 

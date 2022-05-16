@@ -531,8 +531,108 @@ def run_access_request(
         dsk = {k: (t.access_request, *t.input_keys) for k, t in env.items()}
         dsk[ROOT_COLLECTION_ADDRESS] = (start_function(traversal.seed_data),)
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
+        resources.cache_dag_dict("access_request", dsk)
         v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
+        return v.compute()
 
+
+def test_paused(
+    privacy_request: PrivacyRequest,
+    policy: Policy,
+    graph: DatasetGraph,
+    connection_configs: List[ConnectionConfig],
+    identity: Dict[str, Any],
+    paused_loc: str):
+    traversal: Traversal = Traversal(graph, identity)
+    with TaskResources(privacy_request, policy, connection_configs) as resources:
+
+        def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, Any]]]:
+            """Return a function that returns the seed value to kick off the dask function chain.
+
+            The first traversal_node in the dask function chain is just a function that when called returns
+            the graph seed value."""
+
+            def g() -> List[Dict[str, Any]]:
+                return seed
+
+            return g
+
+        def collect_tasks_fn(
+            tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
+        ) -> None:
+            """Run the traversal, as an action creating a GraphTask for each traversal_node."""
+            if not tn.is_root_node():
+                data[tn.address] = GraphTask(tn, resources)
+
+        def termination_fn(*dependent_values: List[Row]) -> Dict[str, List[Row]]:
+            """A termination function that just returns its inputs mapped to their source addresses.
+
+            This needs to wait for all dependent keys because this is how dask is informed to wait for
+            all terminating addresses before calling this."""
+
+            return resources.get_all_cached_objects()
+
+        env: Dict[CollectionAddress, Any] = {}
+        end_nodes = traversal.traverse(env, collect_tasks_fn)
+
+        dsk = {k: (t.access_request, *t.input_keys) for k, t in env.items()}
+        dsk[ROOT_COLLECTION_ADDRESS] = (start_function([traversal.seed_data]),)
+        dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
+        cached_results: Dict[str, List[Row]] = resources.get_all_cached_objects()
+        for node in cached_results:
+            dsk[CollectionAddress.from_string(node)] = (start_function(cached_results[node]),)
+            # TODO check this is still a valid dictionary
+        resources.cache_dag_dict("access_request", dsk)
+        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
+        return v.compute()
+
+
+def run_access_request_from_paused(
+    privacy_request: PrivacyRequest,
+    policy: Policy,
+    graph: DatasetGraph,
+    connection_configs: List[ConnectionConfig],
+    identity: Dict[str, Any],
+    paused_loc: str
+) -> Dict[str, List[Row]]:
+    with TaskResources(privacy_request, policy, connection_configs) as resources:
+        def mock_fn(rows: List[Row]) -> Callable[[], List[Dict[str, Any]]]:
+            """Return a function that returns previously accessed data, and doesn't rerun node"""
+
+            def g() -> List[Dict[str, Any]]:
+                return rows
+
+            return g
+
+        def termination_fn(*dependent_values: int) -> Tuple[int, ...]:
+            """The dependent_values here is an int output from each task feeding in, where
+            each task reports the output of 'task.rtf(access_request_data)', which is the number of
+            records updated.
+
+            The termination function just returns this tuple of ints."""
+            return dependent_values
+
+        cached_results: Dict[str, List[Row]] = resources.get_all_cached_objects()
+        import pdb; pdb.set_trace()
+        cached_dag = resources.get_cached_dag("access_request")
+
+        dsk: Dict[CollectionAddress, Tuple[Callable, CollectionAddress]] = {}
+
+        for node, dependencies in cached_dag.items():
+            addr = CollectionAddress.from_string(node)
+            dep_addr = [CollectionAddress.from_string(dep) for dep in dependencies]
+
+            if addr == ROOT_COLLECTION_ADDRESS:
+                dsk[addr] = (mock_fn([identity]),)
+            elif addr == TERMINATOR_ADDRESS:
+                dsk[addr] = (termination_fn, *dep_addr)
+            elif node in cached_results:
+                dsk[addr] = (mock_fn(cached_results[node]),)
+            else:
+                dsk[addr] = (GraphTask.access_request, *dep_addr)
+
+        import pdb; pdb.set_trace()
+        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
         return v.compute()
 
 
