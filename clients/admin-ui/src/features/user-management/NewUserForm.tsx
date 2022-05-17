@@ -15,6 +15,7 @@ import {
   Input,
   Stack,
   Text,
+  useToast,
 } from '@fidesui/react';
 import config from './config/config.json';
 import {
@@ -31,6 +32,7 @@ const useUserForm = () => {
   const [updateUserPermissions, updateUserPermissionsResult] =
     useUpdateUserPermissionsMutation();
   const router = useRouter();
+  const toast = useToast();
 
   const formik = useFormik({
     initialValues: {
@@ -53,27 +55,39 @@ const useUserForm = () => {
         password: values.password,
       };
 
-      await createUser(userBody)
-        .then((result) => {
-          const userWithPrivileges = {
-            id: 'data' in result ? result.data.id : null,
-            scopes: [...values.scopes, 'privacy-request:read'],
-          };
+      const { error: createUserError, data } = await createUser(userBody);
 
-          return userWithPrivileges;
-        })
-        .then((result) => {
-          const permissionsToAddToUser = updateUserPermissions(
-            result as { id: string }
-          );
+      if (createUserError) {
+        toast({
+          status: 'error',
+          description: createUserError.data.detail.length
+            ? `${createUserError.data.detail[0].msg}`
+            : 'An unexpected error occurred. Please try again.',
+        });
+        return;
+      }
 
-          return permissionsToAddToUser;
-        })
-        .then((result) => {
-          router.replace('/user-management');
-          return result;
-        })
-        .catch((error) => console.log('ERROR', error));
+      if (createUserError && createUserError.status == 422) {
+        toast({
+          status: 'error',
+          description: createUserError.data.detail.length
+            ? `${createUserError.data.detail[0].msg}`
+            : 'An unexpected error occurred. Please try again.',
+        });
+      }
+
+      const userWithPrivileges = {
+        id: data ? data.id : null,
+        scopes: [...values.scopes, 'privacy-request:read'],
+      };
+
+      const { error: updatePermissionsError } = await updateUserPermissions(
+        userWithPrivileges as { id: string }
+      );
+
+      if (!updatePermissionsError) {
+        router.push('/user-management');
+      }
     },
     validate: (values) => {
       const errors: {
@@ -91,7 +105,25 @@ const useUserForm = () => {
         errors.password = 'Password is required';
       }
 
-      // 422 password validation
+      if (values.password.length < 8) {
+        errors.password = 'Password must have at least eight characters.';
+      }
+
+      if (!/[0-9]/.test(values.password)) {
+        errors.password = 'Password must have at least one number.';
+      }
+
+      if (!/[A-Z]/.test(values.password)) {
+        errors.password = 'Password must have at least one capital letter.';
+      }
+
+      if (!/[a-z]/.test(values.password)) {
+        errors.password = 'Password must have at least one lowercase letter.';
+      }
+
+      if (!/[\W]/.test(values.password)) {
+        errors.password = 'Password must have at least one symbol.';
+      }
 
       return errors;
     },
@@ -246,7 +278,7 @@ const UserForm: NextPage = () => {
             _hover={{ bg: 'primary.400' }}
             _active={{ bg: 'primary.500' }}
             colorScheme="primary"
-            disabled={!(isValid && dirty)}
+            // disabled={!(isValid && dirty)}
             size="sm"
           >
             Save
