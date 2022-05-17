@@ -1,7 +1,6 @@
 from typing import Any, Dict, List, Literal, Optional, Union, Set
 
-from fidesops.schemas.saas.shared_schemas import HTTPMethod
-from fidesops.service.pagination.pagination_strategy_factory import get_strategy
+from fidesops.schemas.saas.shared_schemas import ConnectorParamRef, HTTPMethod
 from pydantic import BaseModel, validator, root_validator, Extra
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.dataset import FidesopsDatasetReference, FidesCollectionKey
@@ -11,9 +10,7 @@ from fidesops.graph.config import (
     FieldAddress,
     ScalarField,
     CollectionAddress,
-    Field,
 )
-from fidesops.schemas.saas.strategy_configuration import ConnectorParamRef
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
@@ -116,6 +113,10 @@ class SaaSRequest(BaseModel):
         the specified pagination strategy. Passes in the raw value dict
         before any field validation.
         """
+
+        # delay import to avoid cyclic-dependency error
+        from fidesops.service.pagination.pagination_strategy_factory import get_strategy
+
         pagination = values.get("pagination")
         if pagination is not None:
             pagination_strategy = get_strategy(

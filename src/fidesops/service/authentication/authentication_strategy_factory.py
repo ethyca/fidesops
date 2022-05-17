@@ -1,6 +1,7 @@
 import logging
 from enum import Enum
 from typing import Any, Dict, List
+from fidesops.service.authentication.authentication_strategy_oauth2 import OAuth2AuthenticationStrategy
 
 from pydantic import ValidationError
 
@@ -31,6 +32,7 @@ class SupportedAuthenticationStrategies(Enum):
     basic = BasicAuthenticationStrategy
     bearer = BearerAuthenticationStrategy
     query_param = QueryParamAuthenticationStrategy
+    oauth2 = OAuth2AuthenticationStrategy
 
     @classmethod
     def __contains__(cls, item: str) -> bool:

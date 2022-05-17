@@ -1,7 +1,10 @@
 from enum import Enum
 from typing import Any, Dict, Optional, Union
+from fidesops.schemas.saas.shared_schemas import ConnectorParamRef, IdentityParamRef
 
 from pydantic import BaseModel, root_validator, validator
+
+from fidesops.schemas.saas.saas_config import SaaSRequest
 
 
 class StrategyConfiguration(BaseModel):
@@ -12,18 +15,6 @@ class UnwrapPostProcessorConfiguration(StrategyConfiguration):
     """Dynamic JSON path access"""
 
     data_path: str
-
-
-class IdentityParamRef(BaseModel):
-    """A reference to the identity type in the filter Post Processor Config"""
-
-    identity: str
-
-
-class ConnectorParamRef(BaseModel):
-    """A reference to a value in the connector params (by name)"""
-
-    connector_param: Any
 
 
 class FilterPostProcessorConfiguration(StrategyConfiguration):
@@ -118,3 +109,13 @@ class QueryParamAuthenticationConfiguration(StrategyConfiguration):
 
     name: str
     value: str
+
+
+class OAuth2AuthenticationConfiguration(StrategyConfiguration):
+    """
+    OAuth2 endpoints for authentication, token retrieval, and token refresh
+    """
+
+    authorization_request: SaaSRequest
+    token_request: SaaSRequest
+    refresh_request: SaaSRequest

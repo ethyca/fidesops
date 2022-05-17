@@ -1,11 +1,10 @@
 import logging
-from typing import Any, List, Optional, Dict, Union
-from fidesops.common_exceptions import FidesopsException
+from typing import Any, List, Dict, Union
+from fidesops.schemas.saas.shared_schemas import IdentityParamRef
 
 from fidesops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
     StrategyConfiguration,
-    IdentityParamRef,
 )
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
