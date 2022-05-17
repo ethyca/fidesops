@@ -28,7 +28,7 @@ from fidesops.task.refine_target_path import (
 )
 from fidesops.util.collection_util import append, filter_nonempty_values
 from fidesops.util.querytoken import QueryToken
-from src.fidesops.service.masking.strategy.masking_strategy_factory import (
+from fidesops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
 

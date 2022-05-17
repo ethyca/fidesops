@@ -4,7 +4,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
 
-from src.fidesops.service.masking.strategy.masking_strategy_factory import (
+from fidesops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
 from fidesops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX

@@ -1,5 +1,5 @@
 import json
-from src.fidesops.service.masking.strategy.masking_strategy_factory import (
+from fidesops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
 

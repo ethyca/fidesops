@@ -9,7 +9,7 @@ from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.policy import Rule
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from src.fidesops.service.masking.strategy.masking_strategy_factory import (
+from fidesops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
 
