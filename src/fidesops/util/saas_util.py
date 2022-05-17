@@ -171,7 +171,7 @@ def format_body(
 
 def assign_placeholders(
     value: Union[str, int], param_values: Dict[str, Any]
-) -> Optional[str]:
+) -> Optional[Union[str, int]]:
     """
     Finds all the placeholders (indicated by <>) in the passed in value
     and replaces them with the actual param values
