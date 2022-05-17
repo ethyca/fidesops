@@ -17,5 +17,5 @@ class AuthenticationStrategy(ABC):
 
     @staticmethod
     @abstractmethod
-    def configuration_model() -> StrategyConfiguration:
+    def get_configuration_model() -> StrategyConfiguration:
         """Used to get the configuration model to configure the strategy"""

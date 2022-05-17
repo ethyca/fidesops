@@ -35,5 +35,5 @@ class QueryParamAuthenticationStrategy(AuthenticationStrategy):
         return request
 
     @staticmethod
-    def configuration_model() -> StrategyConfiguration:
+    def get_configuration_model() -> StrategyConfiguration:
         return QueryParamAuthenticationConfiguration
