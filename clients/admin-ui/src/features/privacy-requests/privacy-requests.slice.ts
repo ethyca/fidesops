@@ -1,13 +1,14 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { HYDRATE } from 'next-redux-wrapper';
-import type { AppState } from '../../app/store';
 
+import type { AppState } from '../../app/store';
 import {
   PrivacyRequest,
   PrivacyRequestParams,
   PrivacyRequestResponse,
   PrivacyRequestStatus,
+  DenyPrivacyRequest,
 } from './types';
 
 // Helpers
@@ -81,15 +82,13 @@ export const privacyRequestApi = createApi({
       }),
       invalidatesTags: ['Request'],
     }),
-    denyRequest: build.mutation<
-      PrivacyRequest,
-      Partial<PrivacyRequest> & Pick<PrivacyRequest, 'id'>
-    >({
-      query: ({ id }) => ({
+    denyRequest: build.mutation<PrivacyRequest, DenyPrivacyRequest>({
+      query: ({ id, reason }) => ({
         url: 'privacy-request/administrate/deny',
         method: 'PATCH',
         body: {
           request_ids: [id],
+          reason,
         },
       }),
       invalidatesTags: ['Request'],

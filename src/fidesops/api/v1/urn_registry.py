@@ -88,3 +88,7 @@ LOGOUT = "/logout"
 
 # Health URL
 HEALTH = "/health"
+
+# DRP
+DRP_EXERCISE = "/drp/exercise"
+DRP_STATUS = "/drp/status"
