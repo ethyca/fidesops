@@ -21,7 +21,6 @@ class BasicAuthenticationStrategy(AuthenticationStrategy):
     strategy_name = "basic"
 
     def __init__(self, configuration: BasicAuthenticationConfiguration):
-        self.config = configuration
         self.username = configuration.username
         self.password = configuration.password
 

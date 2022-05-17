@@ -22,7 +22,6 @@ class QueryParamAuthenticationStrategy(AuthenticationStrategy):
     strategy_name = "query_param"
 
     def __init__(self, configuration: QueryParamAuthenticationConfiguration):
-        super().__init__(configuration)
         self.name = configuration.name
         self.value = configuration.value
 

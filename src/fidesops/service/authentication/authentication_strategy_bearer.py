@@ -21,7 +21,6 @@ class BearerAuthenticationStrategy(AuthenticationStrategy):
     strategy_name = "bearer"
 
     def __init__(self, configuration: BearerAuthenticationConfiguration):
-        self.config = configuration
         self.token = configuration.token
 
     def add_authentication(

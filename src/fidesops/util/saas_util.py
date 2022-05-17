@@ -3,7 +3,7 @@ import logging
 import re
 from collections import defaultdict
 from functools import reduce
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
@@ -169,14 +169,16 @@ def format_body(
     return headers, output
 
 
-def assign_placeholders(value: str, param_values: Dict[str, Any]) -> Optional[str]:
+def assign_placeholders(
+    value: Union[str, int], param_values: Dict[str, Any]
+) -> Optional[str]:
     """
     Finds all the placeholders (indicated by <>) in the passed in value
     and replaces them with the actual param values
 
     Returns None if any of the placeholders cannot be found in the param_values
     """
-    if value:
+    if value and isinstance(value, str):
         placeholders = re.findall("<(.+?)>", value)
         for placeholder in placeholders:
             placeholder_value = param_values.get(placeholder)
