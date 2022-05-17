@@ -543,13 +543,11 @@ def run_access_request(
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
         if from_paused:
             cached_results: Dict[str, List[Row]] = resources.get_all_cached_objects()
-            logger.info(f"CACHED RESULTS FROM PREV RUN {cached_results}")
+            # Have already-visited nodes just return their cached data.
             for node in cached_results:
                 dsk[CollectionAddress.from_string(node)] = (
                     start_function(cached_results[node]),
                 )
-                # TODO check this is still a valid dictionary
-
         v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
 
         return v.compute()

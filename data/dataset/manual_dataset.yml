@@ -10,7 +10,7 @@ dataset:
             fidesops_meta:
               primary_key: True
           - name: beneficiary
-            data_categories: [ system.operations ]
+            data_categories: [ user.derived.identifiable ]
             fidesops_meta:
               data_type: string
           - name: customer_id
