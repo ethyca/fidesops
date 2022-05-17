@@ -42,8 +42,6 @@ function UpdatePasswordModal(id: string) {
         new_password: newPasswordValue,
       };
 
-      console.log('body', changePasswordBody);
-
       changePassword(changePasswordBody);
 
       onClose();

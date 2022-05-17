@@ -96,11 +96,11 @@ const useUserForm = () => {
 
       const userWithPrivileges = {
         id: data ? data.id : null,
-        scopes: [new Set(...values.scopes, 'privacy-request:read')],
+        scopes: [...new Set(values.scopes, 'privacy-request:read')],
       };
 
       const { error: updatePermissionsError } = await updateUserPermissions(
-        userWithPrivileges as { id: string }
+        userWithPrivileges
       );
 
       if (!updatePermissionsError) {
@@ -114,12 +114,6 @@ const useUserForm = () => {
         last_name?: string;
         password?: string;
       } = {};
-
-      if (!values.password && !existingUser) {
-        errors.password = 'Password is required';
-      }
-
-      // 422 password validation
 
       return errors;
     },
