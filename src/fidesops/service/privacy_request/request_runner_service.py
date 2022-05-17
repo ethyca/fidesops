@@ -209,8 +209,6 @@ class PrivacyRequestRunner:
                     logging.error(exc, exc_info=True)
                 else:
                     logging.error(exc)
-                session.close()
-                return
 
             except BaseException as exc:  # pylint: disable=broad-except
                 privacy_request.status = PrivacyRequestStatus.error
@@ -219,6 +217,10 @@ class PrivacyRequestRunner:
                     logging.error(exc, exc_info=True)
                 else:
                     logging.error(exc)
+
+            if privacy_request.status == PrivacyRequestStatus.paused:
+                session.close()
+                return
 
             # Run post-execution webhooks
             proceed = self.run_webhooks_and_report_status(

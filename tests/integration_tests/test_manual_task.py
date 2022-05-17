@@ -65,3 +65,7 @@ def test_postgres_with_manual_input_access_request_task(
         min_size=1,
         keys=["id", "name", "email", "address_id"],
     )
+
+    # Paused node removed from cache
+    paused_node = privacy_request.get_cached_paused_node()
+    assert paused_node is None

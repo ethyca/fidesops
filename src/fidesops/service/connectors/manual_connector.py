@@ -44,17 +44,22 @@ class ManualConnector(BaseConnector[None]):
         privacy_request: PrivacyRequest,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
+        """
+        Returns manual data cached for the given privacy request on the given node
+        if it exists, otherwise, pauses the privacy request.
+        """
         results = self.manual_access_results(privacy_request, node)
-
+        cache: FidesopsRedis = get_cache()
+        prefix = f"PAUSED_LOCATION__{privacy_request.id}__access_request"
         if not results:
-            cache: FidesopsRedis = get_cache()
             # Save the node that we're paused on
             cache.set_encoded_object(
-                f"PAUSED_LOCATION__{privacy_request.id}__access_request",
+                prefix,
                 node.address.value,
             )
-            raise PrivacyRequestPaused()
+            raise PrivacyRequestPaused(f"Node {node.address.value} waiting on manual data for privacy request {privacy_request.id}")
         else:
+            cache.set_encoded_object(prefix, None)
             return list(results.values())[0]
 
     def mask_data(
