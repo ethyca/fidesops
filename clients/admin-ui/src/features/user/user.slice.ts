@@ -7,6 +7,7 @@ import type { AppState } from '../../app/store';
 import {
   User,
   UsersListParams,
+  UserPasswordUpdate,
   UserPermissionsUpdate,
   UserPermissionsResponse,
   UserResponse,
@@ -124,6 +125,17 @@ export const userApi = createApi({
         }
       },
     }),
+    updateUserPassword: build.mutation<
+      UserPasswordUpdate,
+      Partial<UserPasswordUpdate> & Pick<UserPasswordUpdate, 'id'>
+    >({
+      query: ({ id, old_password, new_password }) => ({
+        url: `/api/v1/user/${id}/reset-password`,
+        method: 'POST',
+        body: { old_password, new_password },
+      }),
+      invalidatesTags: ['User'],
+    }),
     updateUserPermissions: build.mutation<
       UserPermissionsUpdate,
       Partial<UserPermissionsUpdate> & Pick<UserPermissionsUpdate, 'id'>
@@ -134,19 +146,6 @@ export const userApi = createApi({
         body: { id, scopes },
       }),
       invalidatesTags: ['User'],
-      // For optimistic updates
-      // async onQueryStarted({ id, scopes }, { dispatch, queryFulfilled }) {
-      //   const putResult = dispatch(
-      //     userApi.util.updateQueryData('getUserPermissions', id, (draft) => {
-      //       Object.assign(draft, scopes);
-      //     })
-      //   );
-      //   try {
-      //     await queryFulfilled;
-      //   } catch {
-      //     putResult.undo();
-      //   }
-      // },
     }),
     deleteUser: build.mutation<{ success: boolean; id: string }, string>({
       query: (id) => ({
@@ -165,6 +164,7 @@ export const {
   useCreateUserMutation,
   useEditUserMutation,
   useDeleteUserMutation,
+  useUpdateUserPasswordMutation,
   useUpdateUserPermissionsMutation,
   useCreateUserPermissionsMutation,
   useGetUserPermissionsQuery,

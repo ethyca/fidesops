@@ -69,9 +69,11 @@ const useUserForm = () => {
 
           return permissionsToAddToUser;
         })
-        .then(() => {
+        .then((result) => {
           router.replace('/user-management');
-        });
+          return result;
+        })
+        .catch((error) => console.log('ERROR', error));
     },
     validate: (values) => {
       const errors: {
@@ -88,6 +90,8 @@ const useUserForm = () => {
       if (!values.password) {
         errors.password = 'Password is required';
       }
+
+      // 422 password validation
 
       return errors;
     },
@@ -215,6 +219,7 @@ const UserForm: NextPage = () => {
                   onChange={handleChange}
                   id={`scopes-${policy.privilege}`}
                   name="scopes"
+                  // @ts-ignore
                   isChecked={values.scopes[policy.privilege]}
                   value={
                     policy.scope === 'privacy-request:read'

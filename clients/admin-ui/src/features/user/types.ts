@@ -23,6 +23,12 @@ export interface UsersListParams {
   user: User;
 }
 
+export interface UserPasswordUpdate {
+  id: string | null;
+  old_password: string;
+  new_password: string;
+}
+
 export interface UserPermissionsUpdate {
   id: string | null;
   scopes: never[];

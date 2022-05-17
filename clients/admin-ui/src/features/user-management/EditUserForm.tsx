@@ -21,6 +21,7 @@ import config from './config/config.json';
 import {
   selectUserToken,
   useEditUserMutation,
+  useUpdateUserPasswordMutation,
   useUpdateUserPermissionsMutation,
   useGetUserByIdQuery,
   useGetUserPermissionsQuery,
@@ -34,6 +35,8 @@ const useUserForm = () => {
   const { id } = router.query;
   const [updateUserPermissions, updateUserPermissionsResult] =
     useUpdateUserPermissionsMutation();
+  const [updateUserPassword, updateUserPasswordResult] =
+    useUpdateUserPasswordMutation();
   const [editUser, editUserResult] = useEditUserMutation(id as string);
   const { data: existingUser } = useGetUserByIdQuery(id as string);
   const { data: existingScopes, isLoading: scopesLoading } =
@@ -44,7 +47,7 @@ const useUserForm = () => {
       username: existingUser?.username ?? '',
       first_name: existingUser?.first_name ?? '',
       last_name: existingUser?.last_name ?? '',
-      password: '********',
+      password: existingUser?.password ?? '',
       scopes: existingScopes?.scopes ?? '',
       id: existingUser?.id ?? '',
     },
@@ -79,6 +82,17 @@ const useUserForm = () => {
           updateUserPermissions(result);
           return result;
         })
+        .then((result) => {
+          console.log('result', result);
+          const updatePasswordbody = {
+            id: result.id,
+            old_password: existingUser?.password,
+            new_password: values.password,
+          };
+          console.log(updatePasswordbody);
+          updateUserPassword(updatePasswordbody);
+          return result;
+        })
         .then(() => {
           router.replace('/user-management');
         });
@@ -94,6 +108,8 @@ const useUserForm = () => {
       if (!values.password && !existingUser) {
         errors.password = 'Password is required';
       }
+
+      // 422 password validation
 
       return errors;
     },
