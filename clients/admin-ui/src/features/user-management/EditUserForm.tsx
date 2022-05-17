@@ -1,8 +1,9 @@
 // @ts-nocheck
-import React, { ChangeEvent, useEffect } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import type { NextPage } from 'next';
 import NextLink from 'next/link';
+import { useRouter } from 'next/router';
 import { useFormik } from 'formik';
 import {
   Button,
@@ -16,6 +17,7 @@ import {
   Input,
   Stack,
   Text,
+  useToast,
 } from '@fidesui/react';
 import config from './config/config.json';
 import {
@@ -27,7 +29,7 @@ import {
   useGetUserPermissionsQuery,
 } from '../user/user.slice';
 import { userPrivilegesArray, User } from '../user/types';
-import { useRouter } from 'next/router';
+import UpdatePasswordModal from './UpdatePasswordModal';
 
 const useUserForm = () => {
   const token = useSelector(selectUserToken);
@@ -41,6 +43,7 @@ const useUserForm = () => {
   const { data: existingUser } = useGetUserByIdQuery(id as string);
   const { data: existingScopes, isLoading: scopesLoading } =
     useGetUserPermissionsQuery(id as string);
+  const toast = useToast();
 
   const formik = useFormik({
     initialValues: {
@@ -70,32 +73,39 @@ const useUserForm = () => {
         id: existingUser?.id,
       };
 
-      await editUser(userBody)
-        .then((result) => {
-          const userWithPrivileges = {
-            id: 'data' in result ? result.data.id : null,
-            scopes: [...new Set(values.scopes, 'privacy-request:read')],
-          };
-          return userWithPrivileges;
-        })
-        .then((result) => {
-          updateUserPermissions(result);
-          return result;
-        })
-        .then((result) => {
-          console.log('result', result);
-          const updatePasswordbody = {
-            id: result.id,
-            old_password: existingUser?.password,
-            new_password: values.password,
-          };
-          console.log(updatePasswordbody);
-          updateUserPassword(updatePasswordbody);
-          return result;
-        })
-        .then(() => {
-          router.replace('/user-management');
+      const { error: editUserError, data } = await editUser(userBody);
+
+      if (editUserError) {
+        toast({
+          status: 'error',
+          description: editUserError.data.detail.length
+            ? `${editUserError.data.detail[0].msg}`
+            : 'An unexpected error occurred. Please try again.',
         });
+        return;
+      }
+
+      if (editUserError && editUserError.status == 422) {
+        toast({
+          status: 'error',
+          description: editUserError.data.detail.length
+            ? `${editUserError.data.detail[0].msg}`
+            : 'An unexpected error occurred. Please try again.',
+        });
+      }
+
+      const userWithPrivileges = {
+        id: data ? data.id : null,
+        scopes: [new Set(...values.scopes, 'privacy-request:read')],
+      };
+
+      const { error: updatePermissionsError } = await updateUserPermissions(
+        userWithPrivileges as { id: string }
+      );
+
+      if (!updatePermissionsError) {
+        router.push('/user-management');
+      }
     },
     validate: (values) => {
       const errors: {
@@ -162,6 +172,7 @@ const EditUserForm: NextPage<{
               <FormLabel htmlFor="username" fontWeight="medium">
                 Username
               </FormLabel>
+              <button href="#" />
               <Input
                 id="username"
                 maxWidth={'40%'}
@@ -213,35 +224,7 @@ const EditUserForm: NextPage<{
             </FormControl>
 
             {/* Only the associated user can change their own password */}
-            {id === user.user.id && (
-              <>
-                <FormControl
-                  id="password"
-                  isInvalid={touched.password && Boolean(errors.password)}
-                >
-                  <FormLabel htmlFor="password" fontWeight="medium">
-                    Password
-                  </FormLabel>
-                  <Input
-                    id="password"
-                    maxWidth={'40%'}
-                    name="password"
-                    focusBorderColor="primary.500"
-                    placeholder={'********'}
-                    type="password"
-                    value={values.password}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    isInvalid={
-                      !existingUser?.password &&
-                      touched.password &&
-                      Boolean(errors.password)
-                    }
-                  />
-                  <FormErrorMessage>{errors.password}</FormErrorMessage>
-                </FormControl>
-              </>
-            )}
+            {id === user.user.id && <UpdatePasswordModal id={id} />}
 
             <Divider mb={7} mt={7} />
 

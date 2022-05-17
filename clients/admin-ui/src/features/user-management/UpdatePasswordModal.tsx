@@ -3,7 +3,6 @@ import {
   Button,
   FormControl,
   Input,
-  MenuItem,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -12,51 +11,58 @@ import {
   ModalHeader,
   ModalOverlay,
   Stack,
-  Text,
   useDisclosure,
 } from '@fidesui/react';
 
-import { User } from '../user/types';
-import { useUpdatePasswordMutation } from '../user/user.slice';
+import { useUpdateUserPasswordMutation } from '../user/user.slice';
 
-function UpdatePasswordModal(user: User) {
+function UpdatePasswordModal(id: string) {
   const [oldPasswordValue, setOldPasswordValue] = useState('');
   const [newPasswordValue, setNewPasswordValue] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [changePassword, changePasswordResult] = useUpdatePasswordMutation();
+  const [changePassword, changePasswordResult] =
+    useUpdateUserPasswordMutation();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.name === 'username') {
-      setUsernameValue(event.target.value);
+    if (event.target.name === 'oldPassword') {
+      setOldPasswordValue(event.target.value);
     } else {
-      setConfirmValue(event.target.value);
+      setNewPasswordValue(event.target.value);
     }
   };
 
-  const deletionValidation =
-    user.id &&
-    confirmValue &&
-    usernameValue &&
-    user.username === usernameValue &&
-    user.username === confirmValue
-      ? true
-      : false;
+  const changePasswordValidation =
+    id && newPasswordValue && oldPasswordValue ? true : false;
 
-  const handleDeleteUser = () => {
-    if (deletionValidation && user.id) {
-      deleteUser(user.id);
+  const handleChangePassword = () => {
+    if (changePasswordValidation) {
+      const changePasswordBody = {
+        id,
+        old_password: oldPasswordValue,
+        new_password: newPasswordValue,
+      };
+
+      console.log('body', changePasswordBody);
+
+      changePassword(changePasswordBody);
+
       onClose();
     }
   };
 
   return (
     <>
-      <MenuItem
-        _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
+      <Button
+        bg="primary.800"
+        _hover={{ bg: 'primary.400' }}
+        _active={{ bg: 'primary.500' }}
+        colorScheme="primary"
+        maxWidth="40%"
+        size="sm"
         onClick={onOpen}
       >
-        <Text fontSize="sm">Update Password</Text>
-      </MenuItem>
+        Update Password
+      </Button>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -70,7 +76,8 @@ function UpdatePasswordModal(user: User) {
                   name="oldPassword"
                   onChange={handleChange}
                   placeholder="Old Password"
-                  value={usernameValue}
+                  type="password"
+                  value={oldPasswordValue}
                 />
               </FormControl>
               <FormControl>
@@ -79,7 +86,8 @@ function UpdatePasswordModal(user: User) {
                   name="newPassword"
                   onChange={handleChange}
                   placeholder="New Password"
-                  value={confirmValue}
+                  type="password"
+                  value={newPasswordValue}
                 />
               </FormControl>
             </Stack>
@@ -97,7 +105,7 @@ function UpdatePasswordModal(user: User) {
               Cancel
             </Button>
             <Button
-              disabled={!passwordValidation}
+              disabled={!changePasswordValidation}
               onClick={handleChangePassword}
               mr={3}
               size={'sm'}
