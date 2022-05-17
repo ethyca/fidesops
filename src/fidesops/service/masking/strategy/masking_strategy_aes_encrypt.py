@@ -28,6 +28,10 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         self.mode = configuration.mode
         self.format_preservation = configuration.format_preservation
 
+    @staticmethod
+    def strategy_name() -> str:
+        return AES_ENCRYPT
+
     def mask(
         self, values: Optional[List[str]], request_id: Optional[str]
     ) -> Optional[List[str]]:

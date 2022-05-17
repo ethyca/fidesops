@@ -24,6 +24,10 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
         self.rewrite_value = configuration.rewrite_value
         self.format_preservation = configuration.format_preservation
 
+    @staticmethod
+    def strategy_name() -> str:
+        return STRING_REWRITE
+
     def mask(
         self, values: Optional[List[str]], request_id: Optional[str]
     ) -> Optional[List[str]]:

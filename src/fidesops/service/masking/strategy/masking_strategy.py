@@ -12,6 +12,11 @@ from fidesops.schemas.masking.masking_strategy_description import (
 class MaskingStrategy(ABC):
     """Abstract base class for masking strategies"""
 
+    @staticmethod
+    @abstractmethod
+    def strategy_name() -> str:
+        "Return masking strategy name"
+
     @abstractmethod
     def mask(
         self, values: Optional[List[str]], request_id: Optional[str]

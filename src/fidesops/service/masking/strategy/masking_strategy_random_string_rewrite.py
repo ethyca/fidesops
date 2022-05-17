@@ -26,6 +26,10 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
         self.length = configuration.length
         self.format_preservation = configuration.format_preservation
 
+    @staticmethod
+    def strategy_name() -> str:
+        return RANDOM_STRING_REWRITE
+
     def mask(
         self, values: Optional[List[str]], request_id: Optional[str]
     ) -> Optional[List[str]]:

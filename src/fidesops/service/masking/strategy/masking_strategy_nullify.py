@@ -21,6 +21,10 @@ class NullMaskingStrategy(MaskingStrategy):
     ):
         """For parity with other MaskingStrategies, but for NullMaskingStrategy, nothing is pulled from the config"""
 
+    @staticmethod
+    def strategy_name() -> str:
+        return NULL_REWRITE
+
     def mask(
         self, values: Optional[List[str]], request_id: Optional[str]
     ) -> Optional[List[None]]:

@@ -33,6 +33,10 @@ class HmacMaskingStrategy(MaskingStrategy):
         self.algorithm = configuration.algorithm
         self.format_preservation = configuration.format_preservation
 
+    @staticmethod
+    def strategy_name() -> str:
+        return HMAC
+
     def mask(
         self, values: Optional[List[str]], request_id: Optional[str]
     ) -> Optional[List[str]]:

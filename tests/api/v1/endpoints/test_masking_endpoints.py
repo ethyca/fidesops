@@ -1,4 +1,7 @@
 import json
+from src.fidesops.service.masking.strategy.masking_strategy_factory import (
+    MaskingStrategyFactory,
+)
 
 from starlette.testclient import TestClient
 
@@ -10,6 +13,7 @@ from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import AES_E
 from fidesops.service.masking.strategy.masking_strategy_hash import HASH
 from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
+from fidesops.service.masking.strategy.masking_strategy_nlp import NLP
 from fidesops.service.masking.strategy.masking_strategy_random_string_rewrite import (
     RANDOM_STRING_REWRITE,
 )
@@ -17,13 +21,12 @@ from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE,
 )
 from fidesops.schemas.masking.masking_api import MaskingAPIResponse
-from fidesops.service.masking.strategy.masking_strategy_factory import get_strategies
 
 
 class TestGetMaskingStrategies:
     def test_read_strategies(self, api_client: TestClient):
         expected_response = []
-        for strategy in get_strategies():
+        for strategy in MaskingStrategyFactory.strategies():
             expected_response.append(strategy.get_description())
 
         response = api_client.get(V1_URL_PREFIX + MASKING_STRATEGY)
@@ -201,3 +204,18 @@ class TestMaskValues:
         json_response = json.loads(response.text)
         assert value == json_response["plain"][0]
         assert json_response["masked_values"][0] is None
+
+    def test_masking_value_nlp_no_config(self, api_client: TestClient):
+        value1 = "test@ethyca.com"
+        value2 = "my name is Foo"
+        request = {
+            "values": [value1, value2],
+            "masking_strategy": {"strategy": NLP, "configuration": {}},
+        }
+
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
+        assert 200 == response.status_code
+        json_response = json.loads(response.text)
+        assert value1 == json_response["plain"][0]
+        assert "[EMAIL_ADDRESS_1]" == json_response["masked_values"][0]
+        assert "my name is [NAME_1]" == json_response["masked_values"][1]

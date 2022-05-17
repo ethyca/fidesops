@@ -36,6 +36,10 @@ class HashMaskingStrategy(MaskingStrategy):
             self.algorithm_function = self._hash_sha512
         self.format_preservation = configuration.format_preservation
 
+    @staticmethod
+    def strategy_name() -> str:
+        return HASH
+
     def mask(
         self, values: Optional[List[str]], request_id: Optional[str]
     ) -> Optional[List[str]]:
