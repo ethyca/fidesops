@@ -1,7 +1,6 @@
 import logging
 from enum import Enum
 from typing import Any, Dict, List
-from fidesops.service.authentication.authentication_strategy_oauth2 import OAuth2AuthenticationStrategy
 
 from pydantic import ValidationError
 
@@ -16,6 +15,9 @@ from fidesops.service.authentication.authentication_strategy_basic import (
 )
 from fidesops.service.authentication.authentication_strategy_bearer import (
     BearerAuthenticationStrategy,
+)
+from fidesops.service.authentication.authentication_strategy_oauth2 import (
+    OAuth2AuthenticationStrategy,
 )
 from fidesops.service.authentication.authentication_strategy_query_param import (
     QueryParamAuthenticationStrategy,
@@ -59,7 +61,7 @@ def get_strategy(
         )
     strategy = SupportedAuthenticationStrategies[strategy_name].value
     try:
-        strategy_config: StrategyConfiguration = strategy.configuration_model()(
+        strategy_config: StrategyConfiguration = strategy.get_configuration_model()(
             **configuration
         )
         return strategy(configuration=strategy_config)

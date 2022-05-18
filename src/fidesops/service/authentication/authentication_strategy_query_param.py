@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 from requests import PreparedRequest
+from fidesops.models.connectionconfig import ConnectionConfig
 
 from fidesops.schemas.saas.strategy_configuration import (
     QueryParamAuthenticationConfiguration,
@@ -26,14 +27,14 @@ class QueryParamAuthenticationStrategy(AuthenticationStrategy):
         self.value = configuration.value
 
     def add_authentication(
-        self, request: PreparedRequest, secrets: Dict[str, Any]
+        self, request: PreparedRequest, connection_config: ConnectionConfig
     ) -> PreparedRequest:
         """Add token to the request as a query param"""
         request.url = set_query_parameter(
-            request.url, self.name, assign_placeholders(self.value, secrets)
+            request.url, self.name, assign_placeholders(self.value, connection_config)
         )
         return request
 
     @staticmethod
-    def configuration_model() -> StrategyConfiguration:
+    def get_configuration_model() -> StrategyConfiguration:
         return QueryParamAuthenticationConfiguration

@@ -123,18 +123,25 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         return request_params
 
+    @classmethod
     def map_param_values(
-        self, current_request: SaaSRequest, param_values: Dict[str, Any]
+        cls, action: str, context: str, current_request: SaaSRequest, param_values: Dict[str, Any]
     ) -> SaaSRequestParams:
         """
         Visits path, headers, query, and body params in the current request and replaces
         the placeholders with the request param values.
+
+        The action and context parameters provide more information for the logs
+
+        For example:
+            - action: 'read', context: 'transactions collection'
+            - action: 'refresh', context: 'Outreach Connector OAuth2'
         """
 
         path: Optional[str] = assign_placeholders(current_request.path, param_values)
         if path is None:
             raise ValueError(
-                f"At least one param_values references an invalid field for the '{self.action}' request of the '{self.collection_name}' collection."
+                f"At least one param_value references an invalid field for the '{action}' request of {context}."
             )
 
         headers: Dict[str, Any] = {}
@@ -155,7 +162,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         # if we declared a body and it's None after assigning placeholders we should error the request
         if current_request.body and body is None:
             raise ValueError(
-                f"Unable to replace placeholders in body for the '{self.action}' request of the '{self.collection_name}' collection."
+                f"Unable to replace placeholders in body for the '{action}' request of {context}"
             )
 
         # format the body based on the content type
@@ -201,8 +208,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 )
 
         # map param values to placeholders in path, headers, and query params
-        saas_request_params: SaaSRequestParams = self.map_param_values(
-            current_request, param_values
+        saas_request_params: SaaSRequestParams = map_param_values(
+            self.action, current_request, param_values
         )
 
         logger.info(f"Populated request params for {current_request.path}")
