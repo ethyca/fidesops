@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "4cf21904-951b-45f2-9e0a-bab994b5d534",
+		"_postman_id": "d844ce1b-d545-41dd-b2f6-d33801ab8fbb",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -3376,6 +3376,34 @@
 									"key": "request_id",
 									"value": "{{privacy_request_id}}"
 								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Data Rights",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/drp/data-rights",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"drp",
+								"data-rights"
 							]
 						}
 					},

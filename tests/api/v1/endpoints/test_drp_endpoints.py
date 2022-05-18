@@ -9,11 +9,13 @@ from starlette.testclient import TestClient
 from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     STORAGE_CREATE_OR_UPDATE,
+    POLICY_READ,
 )
 from fidesops.api.v1.urn_registry import (
     V1_URL_PREFIX,
     DRP_EXERCISE,
     DRP_STATUS,
+    DRP_DATA_RIGHTS,
 )
 from fidesops.core.config import config
 
@@ -348,3 +350,80 @@ class TestGetPrivacyRequestDRP:
             privacy_request_with_drp_action.requested_at.isoformat()
             == response.json()["received_at"]
         )
+
+
+class TestGetDrpDataRights:
+    """
+    Tests for the endpoint to retrieve DRP data rights.
+    """
+
+    @pytest.fixture(scope="function")
+    def url_for_data_rights(self) -> str:
+        return V1_URL_PREFIX + DRP_DATA_RIGHTS
+
+    def test_get_drp_data_rights_no_drp_policy(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header: Callable,
+        url_for_data_rights: str,
+        policy,
+    ):
+        expected_response = {
+            "version": "0.5",
+            "api_base": None,
+            "actions": [],
+            "user_relationships": None,
+        }
+        auth_header = generate_auth_header(scopes=[POLICY_READ])
+        response = api_client.get(
+            url_for_data_rights,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        assert response.json() == expected_response
+
+    def test_get_drp_data_rights_one_drp_policy(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header: Callable,
+        url_for_data_rights: str,
+        policy_drp_action,
+    ):
+        expected_response = {
+            "version": "0.5",
+            "api_base": None,
+            "actions": ["access"],
+            "user_relationships": None,
+        }
+        auth_header = generate_auth_header(scopes=[POLICY_READ])
+        response = api_client.get(
+            url_for_data_rights,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        assert response.json() == expected_response
+
+    def test_get_drp_data_rights_multiple_drp_policies(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header: Callable,
+        url_for_data_rights: str,
+        policy_drp_action,
+        policy_drp_action_erasure,
+    ):
+        expected_response = {
+            "version": "0.5",
+            "api_base": None,
+            "actions": ["access", "deletion"],
+            "user_relationships": None,
+        }
+        auth_header = generate_auth_header(scopes=[POLICY_READ])
+        response = api_client.get(
+            url_for_data_rights,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        assert response.json() == expected_response
