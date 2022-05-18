@@ -16,21 +16,19 @@ import {
   useToast,
 } from '@fidesui/react';
 import { format } from 'date-fns-tz';
+import { useRouter } from 'next/router'
 import React, { useRef, useState } from 'react';
 
 import { MoreIcon } from '../common/Icon';
+import PII from '../common/PII'
+import RequestStatusBadge from '../common/RequestStatusBadge';
 import DenyPrivacyRequestModal from './DenyPrivacyRequestModal';
-import { useObscuredPII } from './helpers';
 import {
   useApproveRequestMutation,
   useDenyRequestMutation,
 } from './privacy-requests.slice';
-import RequestBadge from './RequestBadge';
 import { PrivacyRequest } from './types';
 
-const PII: React.FC<{ data: string }> = ({ data }) => (
-  <>{useObscuredPII(data)}</>
-);
 
 const useRequestRow = (request: PrivacyRequest) => {
   const toast = useToast();
@@ -84,6 +82,11 @@ const useRequestRow = (request: PrivacyRequest) => {
       });
     }
   };
+
+  const router = useRouter();
+  const handleViewDetails = ()=>{
+    router.push(`/subject-request/${request.id}`)
+  }
   return {
     approveRequestResult,
     denyRequestResult,
@@ -106,6 +109,7 @@ const useRequestRow = (request: PrivacyRequest) => {
     shiftFocusToHoverMenu,
     denialReason,
     setDenialReason,
+    handleViewDetails
   };
 };
 
@@ -132,6 +136,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
     focused,
     denialReason,
     setDenialReason,
+    handleViewDetails
   } = useRequestRow(request);
   const showMenu = hovered || menuOpen || focused;
 
@@ -145,7 +150,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
       height="36px"
     >
       <Td pl={0} py={1}>
-        <RequestBadge status={request.status} />
+        <RequestStatusBadge status={request.status} />
       </Td>
       <Td py={1}>
         <Tag
@@ -164,7 +169,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
           <PII
             data={
               request.identity
-                ? request.identity.email || request.identity.phone || ''
+                ? request.identity.email || request.identity.phone_number || ''
                 : ''
             }
           />
@@ -272,6 +277,12 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
                   onClick={handleIdCopy}
                 >
                   <Text fontSize="sm">Copy Request ID</Text>
+                </MenuItem>
+                <MenuItem
+                    _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
+                    onClick={handleViewDetails}
+                >
+                  <Text fontSize="sm">View Details</Text>
                 </MenuItem>
               </MenuList>
             </Portal>

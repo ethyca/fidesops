@@ -4,11 +4,11 @@ import { HYDRATE } from 'next-redux-wrapper';
 
 import type { AppState } from '../../app/store';
 import {
+  DenyPrivacyRequest,
   PrivacyRequest,
   PrivacyRequestParams,
   PrivacyRequestResponse,
   PrivacyRequestStatus,
-  DenyPrivacyRequest,
 } from './types';
 
 // Helpers
@@ -35,7 +35,7 @@ export const mapFiltersToSearchParams = ({
   return {
     include_identities: 'true',
     ...(status ? { status } : {}),
-    ...(id ? { id } : {}),
+    ...(id ? { request_id: id } : {}),
     ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
     ...(toISO ? { created_lt: toISO.toISOString() } : {}),
     ...(page ? { page: `${page}` } : {}),
@@ -94,6 +94,12 @@ export const privacyRequestApi = createApi({
       invalidatesTags: ['Request'],
     }),
   }),
+  // eslint-disable-next-line consistent-return
+  extractRehydrationInfo(action, { reducerPath }) {
+    if (action.type === HYDRATE) {
+      return action.payload[reducerPath];
+    }
+  },
 });
 
 export const {

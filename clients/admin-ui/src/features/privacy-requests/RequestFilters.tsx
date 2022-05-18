@@ -19,7 +19,7 @@ import {
   SearchLineIcon,
 } from '../common/Icon';
 import { selectUserToken } from '../user/user.slice';
-import PIIToggle from './PIIToggle';
+import PIIToggle from '../common/PIIToggle';
 import {
   clearAllFilters,
   requestCSVDownload,
@@ -29,7 +29,7 @@ import {
   setRequestStatus,
   setRequestTo,
 } from './privacy-requests.slice';
-import { statusPropMap } from './RequestBadge';
+import { statusPropMap } from '../common/RequestStatusBadge';
 import { PrivacyRequestStatus } from './types';
 
 const useRequestFilters = () => {

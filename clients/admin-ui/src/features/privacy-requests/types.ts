@@ -19,7 +19,7 @@ export interface PrivacyRequest {
   status: PrivacyRequestStatus;
   identity: {
     email?: string;
-    phone?: string;
+    phone_number?: string;
   };
   policy: {
     name: string;

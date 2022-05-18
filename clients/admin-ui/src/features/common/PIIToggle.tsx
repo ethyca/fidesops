@@ -2,7 +2,7 @@ import { Switch } from '@fidesui/react';
 import React, { ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { setRevealPII } from './privacy-requests.slice';
+import { setRevealPII } from '../privacy-requests/privacy-requests.slice';
 
 const PIIToggle: React.FC = () => {
   const dispatch = useDispatch();

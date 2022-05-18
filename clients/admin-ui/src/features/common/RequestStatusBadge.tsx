@@ -1,7 +1,7 @@
 import { Badge } from '@fidesui/react';
 import { ComponentProps } from 'react';
 
-import { PrivacyRequestStatus } from './types';
+import { PrivacyRequestStatus } from '../privacy-requests/types';
 
 export const statusPropMap: {
   [key in PrivacyRequestStatus]: ComponentProps<typeof Badge>;
@@ -40,7 +40,7 @@ interface RequestBadgeProps {
   status: keyof typeof statusPropMap;
 }
 
-const RequestBadge: React.FC<RequestBadgeProps> = ({ status }) => (
+const RequestStatusBadge: React.FC<RequestBadgeProps> = ({ status }) => (
   <Badge
     color="white"
     bg={statusPropMap[status].bg}
@@ -52,4 +52,4 @@ const RequestBadge: React.FC<RequestBadgeProps> = ({ status }) => (
   </Badge>
 );
 
-export default RequestBadge;
+export default RequestStatusBadge;
