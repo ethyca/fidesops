@@ -22,6 +22,7 @@ The types of changes are:
 
 * ESLint configuration changes [#514](https://github.com/ethyca/fidesops/pull/514)
 * User creation, update and permissions in the Admin UI [#511](https://github.com/ethyca/fidesops/pull/511)
+* Yaml support for dataset upload [#284](https://github.com/ethyca/fidesops/pull/284)
 
 
 ### Changed 
