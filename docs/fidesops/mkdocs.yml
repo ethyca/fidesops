@@ -2,42 +2,46 @@ site_name: Fidesops
 site_url: https://ethyca.github.io/fidesops/
 nav:
   - What is Fidesops?: index.md
-  - Use Cases: use_cases.md
-  - Getting Started: getting_started.md
-  - Tutorial:
-    - Zero to Privacy Request: tutorial/index.md
-    - Installing Fidesops: tutorial/installation.md
-    - Outlining our Python Script: tutorial/outline.md
-    - Creating an Oauth Client: tutorial/oauth_client.md
-    - Connecting to Postgres: tutorial/postgres_connection.md
-    - Annotating our Database: tutorial/annotate_datasets.md
-    - Configuring our Storage Destination: tutorial/storage_config.md
-    - Defining a Policy: tutorial/define_policy.md
-    - Executing a Privacy Request: tutorial/execute_privacy_request.md
-  - How-To Guides:
+  - Getting Started:
       - Authenticate with OAuth: guides/oauth.md  
       - Connect SQL and NoSQL Databases: guides/database_connectors.md
       - Configure Datasets: guides/datasets.md
-      - Connect to SaaS Applications: guides/saas_connectors.md
-      - SaaS Configuration: guides/saas_config.md
-      - SaaS Post-Processors: guides/saas_postprocessors.md
-      - SaaS Pagination: guides/saas_pagination.md
       - Annotate Complex Fields: guides/complex_fields.md
+  - Configuring Fidesops:
       - Preview Query Execution: guides/query_execution.md  
       - Create Request Policies: guides/policies.md  
       - Configure Data Masking Strategies: guides/masking_strategies.md  
       - Configure Storage Destinations: guides/storage.md
       - Configure Policy Webhooks: guides/policy_webhooks.md
+      - Configuration Reference: guides/configuration_reference.md
+  - Managing Privacy Requests:
       - Execute Privacy Requests: guides/privacy_requests.md
       - Report on Privacy Requests: guides/reporting.md
-      - Configure OneTrust Integration: guides/onetrust.md  
-      - Configuration Reference: guides/configuration_reference.md
+  - The Fidesops UI:
+      - Privacy Center: guides/privacy_center.md
       - Admin UI: guides/admin_ui.md
-      - Postman Collection: postman/using_postman.md
-      - Data Rights Protocol: guides/data_rights_protocol.md
+      - User Management UI: guides/user_management.md
+  - Configure OneTrust Integration: guides/onetrust.md
+  - Data Rights Protocol: guides/data_rights_protocol.md
+  - SaaS Connectors: 
+      - Connect to SaaS Applications: guides/saas_connectors.md
+      - SaaS Configuration: guides/saas_config.md
+      - SaaS Post-Processors: guides/saas_postprocessors.md
+      - SaaS Pagination: guides/saas_pagination.md
+  - Postman Collection: postman/using_postman.md
   - Deployment Guide: deployment.md
   - Glossary: glossary.md
   - API: api/index.md
+  - Tutorial:
+      - Zero to Privacy Request: tutorial/index.md
+      - Installing Fidesops: tutorial/installation.md
+      - Outlining our Python Script: tutorial/outline.md
+      - Creating an Oauth Client: tutorial/oauth_client.md
+      - Connecting to Postgres: tutorial/postgres_connection.md
+      - Annotating our Database: tutorial/annotate_datasets.md
+      - Configuring our Storage Destination: tutorial/storage_config.md
+      - Defining a Policy: tutorial/define_policy.md
+      - Executing a Privacy Request: tutorial/execute_privacy_request.md
   - Development:
       - Overview: development/overview.md
       - Contributing Details: development/contributing_details.md
