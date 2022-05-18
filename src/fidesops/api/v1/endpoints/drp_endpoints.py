@@ -170,9 +170,8 @@ def get_drp_data_rights(*, db: Session = Depends(deps.get_db)) -> DrpDataRightsR
 
     logger.info("Fetching available DRP data rights")
     actions: List[DrpAction] = [
-        item.drp_action for item in db.query(Policy.drp_action).filter(
-            Policy.drp_action.isnot(None)
-        )
+        item.drp_action
+        for item in db.query(Policy.drp_action).filter(Policy.drp_action.isnot(None))
     ]
 
     return DrpDataRightsResponse(
