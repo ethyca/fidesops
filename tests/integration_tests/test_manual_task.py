@@ -8,7 +8,7 @@ from fidesops.task import graph_task
 from ..graph.graph_test_util import (
     assert_rows_match,
 )
-from ..task.traversal_data import postgres_and_manual_graph
+from ..task.traversal_data import postgres_with_manual_node
 
 
 @pytest.mark.integration_postgres
@@ -30,7 +30,7 @@ def test_postgres_with_manual_input_access_request_task(
         graph_task.run_access_request(
             privacy_request,
             policy,
-            postgres_and_manual_graph("postgres_example", "manual_example"),
+            postgres_with_manual_node("postgres_example", "manual_example"),
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
         )
@@ -42,14 +42,14 @@ def test_postgres_with_manual_input_access_request_task(
 
     # Act like the user has added the manual data
     cache.set_encoded_object(
-        f"MANUAL_INPUT__{privacy_request.id}__access_request__manual_example:filing_cabinet", [{"id": 1, "beneficiary": "Jane Doe"}]
+        f"MANUAL_INPUT__{privacy_request.id}__access_request__manual_example:filing_cabinet", [{"id": 1, "authorized_user": "Jane Doe", "payment_card_id": "pay_bbb-bbb" }]
     )
 
     # Restart the same privacy request from the paused node
     v = graph_task.run_access_request(
         privacy_request,
         policy,
-        postgres_and_manual_graph("postgres_example", "manual_example"),
+        postgres_with_manual_node("postgres_example", "manual_example"),
         [integration_postgres_config, integration_manual_config],
         {"email": "customer-1@example.com"},
         from_paused=True
@@ -57,7 +57,7 @@ def test_postgres_with_manual_input_access_request_task(
     assert_rows_match(
         v["manual_example:filing_cabinet"],
         min_size=1,
-        keys=["id", "beneficiary"],
+        keys=["id", "authorized_user", "payment_card_id"],
     )
 
     assert_rows_match(
@@ -65,6 +65,10 @@ def test_postgres_with_manual_input_access_request_task(
         min_size=1,
         keys=["id", "name", "email", "address_id"],
     )
+
+    # Two payment card rows returned, one from customer_id input, other retrieved from a separate manual input
+    assert_rows_match(v["postgres_example:payment_card"], min_size=2,
+                      keys=["id", "name", "ccn", "customer_id", "billing_address_id"])
 
     # Paused node removed from cache
     paused_node = privacy_request.get_cached_paused_node()

@@ -25,7 +25,11 @@ from fidesops import common_exceptions
 from fidesops.api import deps
 from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
-from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, PRIVACY_REQUEST_REVIEW, PRIVACY_REQUEST_CALLBACK_RESUME
+from fidesops.api.v1.scope_registry import (
+    PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_REVIEW,
+    PRIVACY_REQUEST_CALLBACK_RESUME,
+)
 from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
@@ -575,7 +579,9 @@ def resume_privacy_request(
     PRIVACY_REQUEST_MANUAL_INPUT,
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestResponse,
-    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])],
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+    ],
 )
 def resume_with_manual_input(
     privacy_request_id: str,

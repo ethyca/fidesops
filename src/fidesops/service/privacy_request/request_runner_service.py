@@ -93,14 +93,19 @@ class PrivacyRequestRunner:
         return True
 
     def submit(
-        self, from_webhook: Optional[PolicyPreWebhook] = None, resume: Optional[bool] = False
+        self,
+        from_webhook: Optional[PolicyPreWebhook] = None,
+        resume: Optional[bool] = False,
     ) -> Awaitable[None]:
         """Run this privacy request in a separate thread."""
         from_webhook_id = from_webhook.id if from_webhook else None
         return run_async(self.run, self.privacy_request.id, from_webhook_id, resume)
 
     def run(
-        self, privacy_request_id: str, from_webhook_id: Optional[str] = None, from_paused: Optional[bool] = False
+        self,
+        privacy_request_id: str,
+        from_webhook_id: Optional[str] = None,
+        from_paused: Optional[bool] = False,
     ) -> None:
         # pylint: disable=too-many-locals
         """
@@ -151,7 +156,7 @@ class PrivacyRequestRunner:
                     graph=dataset_graph,
                     connection_configs=connection_configs,
                     identity=identity_data,
-                    from_paused=from_paused
+                    from_paused=from_paused,
                 )
                 if not access_result:
                     logging.info(

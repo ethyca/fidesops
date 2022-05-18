@@ -9,7 +9,7 @@ dataset:
             data_categories: [ system.operations ]
             fidesops_meta:
               primary_key: True
-          - name: beneficiary
+          - name: authorized_user
             data_categories: [ user.derived.identifiable ]
             fidesops_meta:
               data_type: string
@@ -20,3 +20,10 @@ dataset:
                 - dataset: postgres_example_test_dataset
                   field: customer.id
                   direction: from
+          - name: payment_card_id
+              data_categories: [ system.operations ]
+              fidesops_meta:
+                references:
+                  - dataset: postgres_example_test_dataset
+                    field: payment_card.id
+                    direction: to

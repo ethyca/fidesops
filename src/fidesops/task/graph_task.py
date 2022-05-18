@@ -510,7 +510,10 @@ def run_access_request(
     """Run the access request"""
     traversal: Traversal = Traversal(graph, identity)
     with TaskResources(privacy_request, policy, connection_configs) as resources:
-        def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, Any]]]:
+
+        def start_function(
+            seed: List[Dict[str, Any]]
+        ) -> Callable[[], List[Dict[str, Any]]]:
             """Return a function that returns the seed value to kick off the dask function chain.
 
             The first traversal_node in the dask function chain is just a function that when called returns

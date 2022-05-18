@@ -239,8 +239,14 @@ class PrivacyRequest(Base):
     def get_cached_paused_node(self) -> str:
         """Get paused cached node"""
         cache: FidesopsRedis = get_cache()
-        cached_paused_node = cache.get_encoded_objects_by_prefix(f"PAUSED_LOCATION__{self.id}__access_request")
-        return list(cached_paused_node.values())[0] if len(cached_paused_node.keys()) == 1 else None
+        cached_paused_node = cache.get_encoded_objects_by_prefix(
+            f"PAUSED_LOCATION__{self.id}__access_request"
+        )
+        return (
+            list(cached_paused_node.values())[0]
+            if len(cached_paused_node.keys()) == 1
+            else None
+        )
 
     def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
         """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response

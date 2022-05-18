@@ -57,7 +57,9 @@ class ManualConnector(BaseConnector[None]):
                 prefix,
                 node.address.value,
             )
-            raise PrivacyRequestPaused(f"Node {node.address.value} waiting on manual data for privacy request {privacy_request.id}")
+            raise PrivacyRequestPaused(
+                f"Node {node.address.value} waiting on manual data for privacy request {privacy_request.id}"
+            )
         else:
             cache.set_encoded_object(prefix, None)
             return list(results.values())[0]
