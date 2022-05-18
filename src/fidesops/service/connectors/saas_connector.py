@@ -1,33 +1,34 @@
-from json import JSONDecodeError
 import logging
+from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union
+
 import pydash
-from requests import Session, Request, PreparedRequest, Response
-from fidesops.common_exceptions import FidesopsException
-from fidesops.core.config import config
-from fidesops.service.pagination.pagination_strategy import PaginationStrategy
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
-from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
-from fidesops.service.connectors.base_connector import BaseConnector
-from fidesops.graph.traversal import Row, TraversalNode
-from fidesops.models.connectionconfig import ConnectionTestStatus
-from fidesops.models.policy import Policy
-from fidesops.models.privacy_request import PrivacyRequest
+from requests import PreparedRequest, Request, Response, Session
+
 from fidesops.common_exceptions import (
-    ConnectionException,
     ClientUnsuccessfulException,
+    ConnectionException,
+    FidesopsException,
     PostProcessingException,
 )
-from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.saas_config import Strategy, SaaSRequest, ClientConfig
-from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
-    get_strategy as get_postprocessor_strategy,
-)
+from fidesops.core.config import config
+from fidesops.graph.traversal import Row, TraversalNode
+from fidesops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
+from fidesops.models.policy import Policy
+from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.schemas.saas.saas_config import ClientConfig, SaaSRequest, Strategy
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
+from fidesops.service.connectors.base_connector import BaseConnector
+from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
+from fidesops.service.pagination.pagination_strategy import PaginationStrategy
 from fidesops.service.pagination.pagination_strategy_factory import (
     get_strategy as get_pagination_strategy,
 )
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
+)
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
+    get_strategy as get_postprocessor_strategy,
 )
 from fidesops.util.url_util import set_query_parameter
 

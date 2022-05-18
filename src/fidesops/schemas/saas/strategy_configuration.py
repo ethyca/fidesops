@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, Optional, Union
-from pydantic import BaseModel, validator, root_validator
+
+from pydantic import BaseModel, root_validator, validator
 
 
 class StrategyConfiguration(BaseModel):

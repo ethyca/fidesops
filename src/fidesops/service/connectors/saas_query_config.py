@@ -1,20 +1,21 @@
-import logging
 import json
+import logging
 import re
 from typing import Any, Dict, List, Optional, TypeVar
 
 import pydash
+
 from fidesops.common_exceptions import FidesopsException
-from fidesops.graph.config import ScalarField
 from fidesops.core.config import config
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
+from fidesops.graph.config import ScalarField
 from fidesops.graph.traversal import TraversalNode
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.saas.saas_config import Endpoint, SaaSRequest
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.service.connectors.query_config import QueryConfig
 from fidesops.util.collection_util import Row, merge_dicts
-from fidesops.util.saas_util import unflatten_dict, FIDESOPS_GROUPED_INPUTS, format_body
+from fidesops.util.saas_util import FIDESOPS_GROUPED_INPUTS, format_body, unflatten_dict
 
 logger = logging.getLogger(__name__)
 
