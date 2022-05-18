@@ -327,6 +327,7 @@ class ExecutionLogStatus(EnumType):
     pending = "pending"
     complete = "complete"
     error = "error"
+    paused = "paused"
     retrying = "retrying"
 
 

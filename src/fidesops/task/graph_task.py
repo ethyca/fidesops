@@ -79,9 +79,7 @@ def retry(
                     logger.warning(
                         f"Privacy request {method_name} paused {self.traversal_node.address}"
                     )
-                    raised_ex = ex
-                    # TODO Log paused instead at particular node
-                    self.log_end(action_type, raised_ex)
+                    self.log_paused(action_type, ex)
                     # Re-raise
                     raise PrivacyRequestPaused(ex)
 
@@ -326,6 +324,12 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         logger.info(f"Retrying {self.resources.request.id}, node {self.key}")
 
         self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
+
+    def log_paused(self, action_type: ActionType, ex: Optional[BaseException]) -> None:
+        """On paused activities"""
+        logger.info(f"Pausing {self.resources.request.id}, node {self.key}")
+
+        self.update_status(str(ex), [], action_type, ExecutionLogStatus.paused)
 
     def log_end(
         self, action_type: ActionType, ex: Optional[BaseException] = None

@@ -1,4 +1,4 @@
-"""add manual connector type
+"""add manual connector type, and add "paused" status to execution logs
 
 Revision ID: 3a7c5fb119c9
 Revises: 5078badb90b9
@@ -18,9 +18,11 @@ depends_on = None
 
 def upgrade():
     op.execute("alter type connectiontype add value 'manual'")
+    op.execute("alter type executionlogstatus add value 'paused'")
 
 
 def downgrade():
+    # Downgrade connection_type
     op.execute("delete from connectionconfig where connection_type in ('manual')")
     op.execute("alter type connectiontype rename to connectiontype_old")
     op.execute(
@@ -33,3 +35,16 @@ def downgrade():
         )
     )
     op.execute("drop type connectiontype_old")
+
+    # Downgrade executionlogstatus
+    op.execute("alter type executionlogstatus rename to executionlogstatus_old")
+    op.execute(
+        "create type executionlogstatus as enum('in_processing', 'pending', 'complete', 'error', 'retrying')"
+    )
+    op.execute(
+        (
+            "alter table executionlog alter column status type executionlogstatus using "
+            "status::text::executionlogstatus"
+        )
+    )
+    op.execute("drop type executionlogstatus_old")
