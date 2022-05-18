@@ -71,3 +71,18 @@ The current status of an existing privacy request may be returned via the `/stat
     "status": "open",
 }
 ```
+
+### Data Rights
+
+All data rights associated with existing policies may be returned via the `/data-rights` endpoint.
+
+```json title="<code>GET /api/v1/drp/data-rights}</code>"
+{
+    "version": "0.5",
+    "api_base": null,
+    "actions": [
+        "access"
+    ],
+    "user_relationships": null
+}
+```
