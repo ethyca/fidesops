@@ -179,7 +179,7 @@ def assign_placeholders(
     Returns None if any of the placeholders cannot be found in the param_values
     """
     if value and isinstance(value, str):
-        placeholders = re.findall("<(.+?)>", value)
+        placeholders = re.findall("<([^<>]+)>", value)
         for placeholder in placeholders:
             placeholder_value = param_values.get(placeholder)
             if placeholder_value:
