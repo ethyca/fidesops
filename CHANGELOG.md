@@ -21,7 +21,11 @@ The types of changes are:
 
 ### Developer Experience
 
-* Import ordering is now enforced using [isort](https://pycqa.github.io/isort/) in CI
+* Import ordering is now enforced using [isort](https://pycqa.github.io/isort/) in CI [#533](https://github.com/ethyca/fidesops/pull/533)
+
+### Docs
+
+* Updated documentation for the user management ui [#530](https://github.com/ethyca/fidesops/pull/530)
 
 ## [1.5.0](https://github.com/ethyca/fidesops/compare/1.4.2...1.5.0) - 2022-05-18
 
