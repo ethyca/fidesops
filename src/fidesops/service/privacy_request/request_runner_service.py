@@ -95,17 +95,19 @@ class PrivacyRequestRunner:
     def submit(
         self,
         from_webhook: Optional[PolicyPreWebhook] = None,
-        resume: Optional[bool] = False,
+        from_graph_resume: Optional[bool] = False,
     ) -> Awaitable[None]:
         """Run this privacy request in a separate thread."""
         from_webhook_id = from_webhook.id if from_webhook else None
-        return run_async(self.run, self.privacy_request.id, from_webhook_id, resume)
+        return run_async(
+            self.run, self.privacy_request.id, from_webhook_id, from_graph_resume
+        )
 
     def run(
         self,
         privacy_request_id: str,
         from_webhook_id: Optional[str] = None,
-        resume: Optional[bool] = False,
+        from_graph_resume: Optional[bool] = False,
     ) -> None:
         # pylint: disable=too-many-locals
         """
@@ -122,16 +124,17 @@ class PrivacyRequestRunner:
             logging.info(f"Dispatching privacy request {privacy_request.id}")
             privacy_request.start_processing(session)
 
-            # Run pre-execution webhooks
-            proceed = self.run_webhooks_and_report_status(
-                session,
-                privacy_request=privacy_request,
-                webhook_cls=PolicyPreWebhook,
-                after_webhook_id=from_webhook_id,
-            )
-            if not proceed:
-                session.close()
-                return
+            if not from_graph_resume:
+                # Run pre-execution webhooks
+                proceed = self.run_webhooks_and_report_status(
+                    session,
+                    privacy_request=privacy_request,
+                    webhook_cls=PolicyPreWebhook,
+                    after_webhook_id=from_webhook_id,
+                )
+                if not proceed:
+                    session.close()
+                    return
 
             policy = privacy_request.policy
             try:
@@ -156,7 +159,7 @@ class PrivacyRequestRunner:
                     graph=dataset_graph,
                     connection_configs=connection_configs,
                     identity=identity_data,
-                    restart=resume,
+                    restart=from_graph_resume,
                 )
                 if not access_result:
                     logging.info(

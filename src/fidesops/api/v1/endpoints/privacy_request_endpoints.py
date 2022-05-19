@@ -643,7 +643,7 @@ def resume_with_manual_input(
     PrivacyRequestRunner(
         cache=cache,
         privacy_request=privacy_request,
-    ).submit(resume=True)
+    ).submit(from_graph_resume=True)
 
     return privacy_request
 
