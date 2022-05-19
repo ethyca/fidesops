@@ -18,7 +18,7 @@ The types of changes are:
 
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.0...main)
-* 
+* Updated documentation for the user management ui [#469](https://github.com/ethyca/fidesops/issues/469)
 
 ## [1.5.0](https://github.com/ethyca/fidesops/compare/1.4.2...1.5.0) - 2022-05-18
 
