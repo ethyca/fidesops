@@ -62,6 +62,7 @@ The types of changes are:
 * Removed pypi badge pointing to wrong package [#452](https://github.com/ethyca/fidesops/pull/452)
 * Audit imports and references [#479](https://github.com/ethyca/fidesops/pull/479)
 * Switch to using update method on PUT permission endpoint [#500](https://github.com/ethyca/fidesops/pull/500)
+* Fixed type errors for privacy center build [#540](https://github.com/ethyca/fidesops/pull/540)
 
 
 ### Developer Experience
