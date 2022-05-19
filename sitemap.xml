@@ -31,11 +31,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://ethyca.github.io/fidesops/sass_connectors/</loc>
-         <lastmod>2022-05-19</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://ethyca.github.io/fidesops/use_cases/</loc>
          <lastmod>2022-05-19</lastmod>
          <changefreq>daily</changefreq>
@@ -181,26 +176,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://ethyca.github.io/fidesops/guides/saas_config/</loc>
-         <lastmod>2022-05-19</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://ethyca.github.io/fidesops/guides/saas_connectors/</loc>
-         <lastmod>2022-05-19</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://ethyca.github.io/fidesops/guides/saas_pagination/</loc>
-         <lastmod>2022-05-19</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://ethyca.github.io/fidesops/guides/saas_postprocessors/</loc>
-         <lastmod>2022-05-19</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://ethyca.github.io/fidesops/guides/storage/</loc>
          <lastmod>2022-05-19</lastmod>
          <changefreq>daily</changefreq>
@@ -212,6 +187,51 @@
     </url>
     <url>
          <loc>https://ethyca.github.io/fidesops/postman/using_postman/</loc>
+         <lastmod>2022-05-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fidesops/saas_connectors/saas_config/</loc>
+         <lastmod>2022-05-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fidesops/saas_connectors/saas_connectors/</loc>
+         <lastmod>2022-05-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fidesops/saas_connectors/saas_pagination/</loc>
+         <lastmod>2022-05-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fidesops/saas_connectors/saas_postprocessors/</loc>
+         <lastmod>2022-05-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fidesops/saas_connectors/example_configs/hubspot/</loc>
+         <lastmod>2022-05-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fidesops/saas_connectors/example_configs/mailchimp/</loc>
+         <lastmod>2022-05-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fidesops/saas_connectors/example_configs/segment/</loc>
+         <lastmod>2022-05-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fidesops/saas_connectors/example_configs/sentry/</loc>
+         <lastmod>2022-05-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fidesops/saas_connectors/example_configs/stripe/</loc>
          <lastmod>2022-05-19</lastmod>
          <changefreq>daily</changefreq>
     </url>
