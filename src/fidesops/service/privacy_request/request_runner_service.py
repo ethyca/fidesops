@@ -105,7 +105,7 @@ class PrivacyRequestRunner:
         self,
         privacy_request_id: str,
         from_webhook_id: Optional[str] = None,
-        from_paused: Optional[bool] = False,
+        resume: Optional[bool] = False,
     ) -> None:
         # pylint: disable=too-many-locals
         """
@@ -156,7 +156,7 @@ class PrivacyRequestRunner:
                     graph=dataset_graph,
                     connection_configs=connection_configs,
                     identity=identity_data,
-                    restart=from_paused,
+                    restart=resume,
                 )
                 if not access_result:
                     logging.info(

@@ -25,18 +25,6 @@ class ManualConnector(BaseConnector[None]):
     def test_connection(self) -> None:
         return None
 
-    def manual_access_results(
-        self, privacy_request: PrivacyRequest, node: TraversalNode
-    ) -> Optional[List[Row]]:
-        """Retrieves any identity data pertaining to this request from the cache"""
-        # See if manual key added to cache for node
-        prefix = (
-            f"MANUAL_INPUT__{privacy_request.id}__access_request__{node.address.value}"
-        )
-        cache: FidesopsRedis = get_cache()
-        value_dict = cache.get_encoded_objects_by_prefix(prefix)
-        return value_dict
-
     def retrieve_data(
         self,
         node: TraversalNode,
@@ -48,19 +36,13 @@ class ManualConnector(BaseConnector[None]):
         Returns manual data cached for the given privacy request on the given node
         if it exists, otherwise, pauses the privacy request.
         """
-        results = self.manual_access_results(privacy_request, node)
-        cache: FidesopsRedis = get_cache()
-        prefix = f"PAUSED_LOCATION__{privacy_request.id}__access_request"
-
+        results = privacy_request.get_manual_input(node.address)
         if results:
-            cache.set_encoded_object(prefix, None)
+            privacy_request.cache_paused_location("access", None)
             return list(results.values())[0]
         else:
             # Save the node that we're paused on
-            cache.set_encoded_object(
-                prefix,
-                node.address.value,
-            )
+            privacy_request.cache_paused_location("access", node.address.value)
             raise PrivacyRequestPaused(
                 f"Node {node.address.value} waiting on manual data for privacy request {privacy_request.id}"
             )

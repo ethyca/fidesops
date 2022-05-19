@@ -4,7 +4,7 @@ from datetime import datetime
 
 import json
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from enum import Enum as EnumType
 from sqlalchemy.dialects.postgresql import JSONB
@@ -19,12 +19,13 @@ from sqlalchemy import (
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import relationship, Session, backref
 
-from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
+from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_RESUME_SCOPE
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.db.base_class import (
     Base,
     FidesopsBase,
 )
+from fidesops.graph.config import CollectionAddress
 from fidesops.models.audit_log import AuditLog
 from fidesops.models.client import ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
@@ -52,6 +53,7 @@ from fidesops.util.cache import (
     get_masking_secret_cache_key,
     get_drp_request_body_cache_key,
 )
+from fidesops.util.collection_util import Row
 from fidesops.util.oauth_util import generate_jwe
 
 logger = logging.getLogger(__name__)
@@ -73,7 +75,7 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
     """Generate a JWE to be used to resume privacy request execution."""
     jwe = WebhookJWE(
         webhook_id=webhook.id,
-        scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
+        scopes=[PRIVACY_REQUEST_RESUME_SCOPE],
         iat=datetime.now().isoformat(),
     )
     return generate_jwe(json.dumps(jwe.dict()))
@@ -236,17 +238,47 @@ class PrivacyRequest(Base):
         result_prefix = f"{self.id}__*"
         return cache.get_encoded_objects_by_prefix(result_prefix)
 
-    def get_cached_paused_node(self) -> str:
-        """Get paused cached node"""
+    def cache_paused_location(
+        self, request_type: str, paused_node: Optional[str]
+    ) -> None:
+        """Cache the address of the node where the privacy request is waiting on manual input"""
+        cache: FidesopsRedis = get_cache()
+        paused_key = f"PAUSED_LOCATION__{self.id}__{request_type}_request"
+
+        cache.set_encoded_object(
+            paused_key,
+            paused_node,
+        )
+
+    def get_paused_location(self, request_type: str) -> Optional[CollectionAddress]:
+        """Get the CollectionAddress of the node that is paused and waiting on manual input"""
         cache: FidesopsRedis = get_cache()
         cached_paused_node = cache.get_encoded_objects_by_prefix(
-            f"PAUSED_LOCATION__{self.id}__access_request"
+            f"PAUSED_LOCATION__{self.id}__{request_type}_request"
         )
-        return (
+        node_addr = (
             list(cached_paused_node.values())[0]
             if len(cached_paused_node.keys()) == 1
             else None
         )
+        return CollectionAddress.from_string(node_addr) if node_addr else node_addr
+
+    def cache_manual_input(
+        self, location: CollectionAddress, manual_rows: Optional[List[Row]]
+    ):
+        """Cache manually added rows for the given CollectionAddress"""
+        cache: FidesopsRedis = get_cache()
+        cache.set_encoded_object(
+            f"MANUAL_INPUT__{self.id}__{location.value}",
+            manual_rows,
+        )
+
+    def get_manual_input(self, location: CollectionAddress) -> Optional[List[Row]]:
+        """Retrieve manually added rows for the given CollectionAddress"""
+        cache: FidesopsRedis = get_cache()
+        prefix = f"MANUAL_INPUT__{self.id}__{location.value}"
+        value_dict = cache.get_encoded_objects_by_prefix(prefix)
+        return value_dict
 
     def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
         """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response

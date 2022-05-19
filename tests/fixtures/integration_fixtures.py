@@ -116,17 +116,6 @@ def integration_postgres_config(postgres_inserts) -> ConnectionConfig:
     )
 
 
-@pytest.fixture(scope="function")
-def integration_manual_config() -> ConnectionConfig:
-    return ConnectionConfig(
-        name="manual_test",
-        key="manual_example",
-        connection_type=ConnectionType.manual,
-        access=AccessLevel.read,
-        secrets={},
-    )
-
-
 def sql_insert(engine: Engine, table_name: str, record: Dict[str, Any]) -> None:
     fields = record.keys()
     value_keys = [f":{k}" for k in fields]

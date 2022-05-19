@@ -5,6 +5,7 @@ import pytest
 
 import logging
 from fidesops.common_exceptions import PrivacyRequestPaused
+from fidesops.graph.config import CollectionAddress
 from fidesops.models.privacy_request import (
     PrivacyRequest,
     ExecutionLog,
@@ -37,7 +38,7 @@ def test_postgres_with_manual_input_access_request_task(
 
     # ATTEMPT 1 - storage unit node will throw an exception. Waiting on manual input.
     with pytest.raises(PrivacyRequestPaused):
-        v = graph_task.run_access_request(
+        graph_task.run_access_request(
             privacy_request,
             policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
@@ -45,18 +46,18 @@ def test_postgres_with_manual_input_access_request_task(
             {"email": "customer-1@example.com"},
         )
 
-    paused_node = privacy_request.get_cached_paused_node()
-    assert paused_node == "manual_example:storage_unit"
+    paused_node = privacy_request.get_paused_location("access")
+    assert paused_node.value == "manual_example:storage_unit"
 
     # Mock user retrieving storage unit data by adding manual data to cache
-    cache.set_encoded_object(
-        f"MANUAL_INPUT__{privacy_request.id}__access_request__manual_example:storage_unit",
+    privacy_request.cache_manual_input(
+        CollectionAddress.from_string("manual_example:storage_unit"),
         [{"box_id": 5, "email": "customer-1@example.com"}],
     )
 
     # Attempt 2 - Filing cabinet node will throw an exception. Waiting on manual input.
     with pytest.raises(PrivacyRequestPaused):
-        v = graph_task.run_access_request(
+        graph_task.run_access_request(
             privacy_request,
             policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
@@ -65,9 +66,8 @@ def test_postgres_with_manual_input_access_request_task(
             restart=True,
         )
 
-    # Mock user adding data from filing cabinet by adding manual data to cache
-    cache.set_encoded_object(
-        f"MANUAL_INPUT__{privacy_request.id}__access_request__manual_example:filing_cabinet",
+    privacy_request.cache_manual_input(
+        CollectionAddress.from_string("manual_example:filing_cabinet"),
         [{"id": 1, "authorized_user": "Jane Doe", "payment_card_id": "pay_bbb-bbb"}],
     )
 
@@ -121,7 +121,7 @@ def test_postgres_with_manual_input_access_request_task(
     )
 
     # Paused node removed from cache
-    paused_node = privacy_request.get_cached_paused_node()
+    paused_node = privacy_request.get_paused_location("access")
     assert paused_node is None
 
     execution_logs = db.query(ExecutionLog).filter_by(
@@ -191,5 +191,5 @@ def test_postgres_with_manual_input_access_request_task(
     ]
 
     # Paused node removed from cache
-    paused_node = privacy_request.get_cached_paused_node()
+    paused_node = privacy_request.get_paused_location("access")
     assert paused_node is None

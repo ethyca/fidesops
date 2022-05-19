@@ -15,7 +15,7 @@ CONNECTION_DELETE = "connection:delete"
 
 PRIVACY_REQUEST_READ = "privacy-request:read"
 PRIVACY_REQUEST_DELETE = "privacy-request:delete"
-PRIVACY_REQUEST_CALLBACK_RESUME = (
+PRIVACY_REQUEST_RESUME_SCOPE = (
     "privacy-request:resume"  # User has permission to restart a paused privacy request
 )
 PRIVACY_REQUEST_REVIEW = "privacy-request:review"
@@ -73,7 +73,7 @@ SCOPE_REGISTRY = [
     PRIVACY_REQUEST_REVIEW,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_DELETE,
-    PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_RESUME_SCOPE,
     RULE_CREATE_OR_UPDATE,
     RULE_READ,
     RULE_DELETE,

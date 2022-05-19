@@ -19,6 +19,7 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_424_FAILED_DEPENDENCY,
+    HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
 from fidesops import common_exceptions
@@ -28,7 +29,7 @@ from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
-    PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_RESUME_SCOPE,
 )
 from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
@@ -40,7 +41,7 @@ from fidesops.api.v1.urn_registry import (
 from fidesops.common_exceptions import TraversalError, ValidationError
 from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
-from fidesops.graph.graph import DatasetGraph
+from fidesops.graph.graph import DatasetGraph, Node
 from fidesops.graph.traversal import Traversal
 from fidesops.models.audit_log import AuditLog, AuditLogAction
 from fidesops.models.client import ClientDetail
@@ -546,7 +547,7 @@ def resume_privacy_request(
     db: Session = Depends(deps.get_db),
     cache: FidesopsRedis = Depends(deps.get_cache),
     webhook: PolicyPreWebhook = Security(
-        verify_callback_oauth, scopes=[scopes.PRIVACY_REQUEST_CALLBACK_RESUME]
+        verify_callback_oauth, scopes=[scopes.PRIVACY_REQUEST_RESUME_SCOPE]
     ),
     webhook_callback: PrivacyRequestResumeFormat,
 ) -> PrivacyRequestResponse:
@@ -575,40 +576,65 @@ def resume_privacy_request(
     return privacy_request
 
 
+def validate_manual_input(
+    manual_rows: List[Row], paused_loc: CollectionAddress, db: Session
+) -> None:
+    """Validate manually added rows against the collection that has been cached as the paused location"""
+    datasets = DatasetConfig.all(db=db)
+    dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+    dataset_graph = DatasetGraph(*dataset_graphs)
+
+    node: Node = dataset_graph.nodes.get(paused_loc)
+    if not node:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Cannot save manual rows. No collection in graph with name: '{paused_loc.value}'.",
+        )
+
+    for row in manual_rows:
+        for field_name in row:
+            if not dataset_graph.nodes[paused_loc].contains_field(
+                lambda f: f.name == field_name
+            ):
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"Cannot save manual rows. No '{field_name}' field defined on the '{paused_loc.value}' collection.",
+                )
+
+
 @router.post(
     PRIVACY_REQUEST_MANUAL_INPUT,
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestResponse,
-    dependencies=[
-        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-    ],
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_RESUME_SCOPE])],
 )
 def resume_with_manual_input(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
     cache: FidesopsRedis = Depends(deps.get_cache),
-    manual_results: List[Row],  # TODO add better validation of manual results
+    manual_rows: List[Row],
 ) -> PrivacyRequestResponse:
-    """Resume request with manual input"""
+    """Resume a privacy request by passing in manual input"""
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
     if privacy_request.status != PrivacyRequestStatus.paused:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Invalid resume request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
         )
-    paused_loc = privacy_request.get_cached_paused_node()
-    if not paused_loc:
-        raise Exception("There is no paused node for this privacy request.")
-
-    # Add manual results to the cache
-    cache.set_encoded_object(
-        f"MANUAL_INPUT__{privacy_request.id}__access_request__{paused_loc}",
-        manual_results,
+    paused_loc: Optional[CollectionAddress] = privacy_request.get_paused_location(
+        "access"
     )
+    if not paused_loc:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot resume privacy request '{privacy_request.id}'; no paused location.",
+        )
+    validate_manual_input(manual_rows, paused_loc, db)
 
+    privacy_request.cache_manual_input(paused_loc, manual_rows)
     logger.info(
-        f"Resuming privacy request '{privacy_request_id}' from node '{paused_loc}'"
+        f"Resuming privacy request '{privacy_request_id}' from node '{paused_loc.value}'"
     )
 
     privacy_request.status = PrivacyRequestStatus.in_processing
