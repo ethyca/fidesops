@@ -92,3 +92,29 @@ class CursorPaginationConfiguration(StrategyConfiguration):
 
     cursor_param: str
     field: str
+
+
+class BasicAuthenticationConfiguration(StrategyConfiguration):
+    """
+    Username and password to add basic authentication to HTTP requests
+    """
+
+    username: str
+    password: Optional[str]
+
+
+class BearerAuthenticationConfiguration(StrategyConfiguration):
+    """
+    Token to add as bearer authentication for HTTP requests
+    """
+
+    token: str
+
+
+class QueryParamAuthenticationConfiguration(StrategyConfiguration):
+    """
+    Value to add as query param for HTTP requests
+    """
+
+    name: str
+    value: str

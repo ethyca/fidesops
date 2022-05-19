@@ -1,6 +1,5 @@
 import json
 import logging
-import re
 from typing import Any, Dict, List, Optional, TypeVar
 
 import pydash
@@ -15,7 +14,12 @@ from fidesops.schemas.saas.saas_config import Endpoint, SaaSRequest
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.service.connectors.query_config import QueryConfig
 from fidesops.util.collection_util import Row, merge_dicts
-from fidesops.util.saas_util import FIDESOPS_GROUPED_INPUTS, format_body, unflatten_dict
+from fidesops.util.saas_util import (
+    FIDESOPS_GROUPED_INPUTS,
+    assign_placeholders,
+    format_body,
+    unflatten_dict,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -119,24 +123,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         return request_params
 
-    @staticmethod
-    def assign_placeholders(value: str, param_values: Dict[str, Any]) -> Optional[str]:
-        """
-        Finds all the placeholders (indicated by <>) in the passed in value
-        and replaces them with the actual param values
-
-        Returns None if any of the placeholders cannot be found in the param_values
-        """
-        if value and isinstance(value, str):
-            placeholders = re.findall("<(.+?)>", value)
-            for placeholder in placeholders:
-                placeholder_value = param_values.get(placeholder)
-                if placeholder_value:
-                    value = value.replace(f"<{placeholder}>", str(placeholder_value))
-                else:
-                    return None
-        return value
-
     def map_param_values(
         self, current_request: SaaSRequest, param_values: Dict[str, Any]
     ) -> SaaSRequestParams:
@@ -145,9 +131,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         the placeholders with the request param values.
         """
 
-        path: Optional[str] = self.assign_placeholders(
-            current_request.path, param_values
-        )
+        path: Optional[str] = assign_placeholders(current_request.path, param_values)
         if path is None:
             raise ValueError(
                 f"At least one param_values references an invalid field for the '{self.action}' request of the '{self.collection_name}' collection."
@@ -155,25 +139,19 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         headers: Dict[str, Any] = {}
         for header in current_request.headers or []:
-            header_value = self.assign_placeholders(header.value, param_values)
+            header_value = assign_placeholders(header.value, param_values)
             # only create header if placeholders were replaced with actual values
             if header_value is not None:
-                headers[header.name] = self.assign_placeholders(
-                    header.value, param_values
-                )
+                headers[header.name] = assign_placeholders(header.value, param_values)
 
         query_params: Dict[str, Any] = {}
         for query_param in current_request.query_params or []:
-            query_param_value = self.assign_placeholders(
-                query_param.value, param_values
-            )
+            query_param_value = assign_placeholders(query_param.value, param_values)
             # only create query param if placeholders were replaced with actual values
             if query_param_value is not None:
                 query_params[query_param.name] = query_param_value
 
-        body: Optional[str] = self.assign_placeholders(
-            current_request.body, param_values
-        )
+        body: Optional[str] = assign_placeholders(current_request.body, param_values)
         # if we declared a body and it's None after assigning placeholders we should error the request
         if current_request.body and body is None:
             raise ValueError(
