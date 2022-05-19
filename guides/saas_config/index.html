@@ -1532,10 +1532,7 @@
 <span class="normal">86</span>
 <span class="normal">87</span>
 <span class="normal">88</span>
-<span class="normal">89</span>
-<span class="normal">90</span>
-<span class="normal">91</span>
-<span class="normal">92</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">saas_config</span><span class="p">:</span><span class="w"></span>
+<span class="normal">89</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">saas_config</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mailchimp_connector_example</span><span class="w"></span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Mailchimp SaaS Config</span><span class="w"></span>
 <span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A sample schema representing the Mailchimp connector for Fidesops</span><span class="w"></span>
@@ -1548,15 +1545,12 @@
 
 <span class="w">  </span><span class="nt">client_config</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">connector_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">domain</span><span class="w"></span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;domain&gt;</span><span class="w"></span>
 <span class="w">    </span><span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">basic_authentication</span><span class="w"></span>
+<span class="w">      </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">basic</span><span class="w"></span>
 <span class="w">      </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">username</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">connector_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">username</span><span class="w"></span>
-<span class="w">        </span><span class="nt">password</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">connector_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api_key</span><span class="w"></span>
+<span class="w">        </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;username&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;api_key&gt;</span><span class="w"></span>
 
 <span class="w">  </span><span class="nt">test_request</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
@@ -1655,38 +1649,30 @@
 </code></pre></div></td></tr></table></div>
 <h4 id="client-config">Client config</h4>
 <p>The <code>client_config</code> describes the necessary information to be able to create a base HTTP client. Notice that the values for host, username, and password are not defined here, only references in the form of a <code>connector_param</code> which Fidesops uses to insert the actual value from the stored secrets.</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">client_config</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https</span><span class="w"></span>
-<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">connector_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">host</span><span class="w"></span>
-<span class="w">  </span><span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">basic_authentication</span><span class="w"></span>
-<span class="w">    </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">username</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">connector_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">username</span><span class="w"></span>
-<span class="w">      </span><span class="nt">password</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">connector_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">password</span><span class="w"></span>
-</code></pre></div></td></tr></table></div>
-<p>The authentication strategies are swappable. In this example we used the <code>basic_authentication</code> strategy which uses a <code>username</code> and <code>password</code> in the configuration. An alternative to this is to use <code>bearer_authentication</code> which looks like this:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bearer_authentication</span><span class="w"></span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">client_config</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https</span><span class="w"></span>
+<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;host&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">basic</span><span class="w"></span>
+<span class="w">    </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;username&gt;</span><span class="w"></span>
+<span class="w">      </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;password&gt;</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
+<p>The authentication strategies are swappable. In this example we used the <code>basic</code> authentication strategy which uses a <code>username</code> and <code>password</code> in the configuration. An alternative to this is to use <code>bearer</code> authentication which looks like this:
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bearer</span><span class="w"></span>
 <span class="w">  </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">token</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">connector_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api_key</span><span class="w"></span>
+<span class="w">    </span><span class="nt">token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;api_key&gt;</span><span class="w"></span>
 </code></pre></div></td></tr></table></div></p>
 <h4 id="test-request">Test request</h4>
 <p>Once the base client is defined we can use a <code>test_request</code> to verify our hostname and credentials. This is in the form of an idempotent request (usually a read). The testing approach is the same for any <a href="../database_connectors/#testing-your-connection">ConnectionConfig test</a>.
@@ -1713,9 +1699,7 @@
 <span class="normal">13</span>
 <span class="normal">14</span>
 <span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">  </span><span class="nt">data_protection_request</span><span class="p">:</span><span class="w"></span>
+<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">  </span><span class="nt">data_protection_request</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POST</span><span class="w"></span>
 <span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/v1beta/workspaces/&lt;workspace_name&gt;/regulations</span><span class="w"></span>
 <span class="w">    </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
@@ -1726,13 +1710,11 @@
 <span class="w">    </span><span class="nt">body</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{&quot;regulation_type&quot;:</span><span class="nv"> </span><span class="s">&quot;Suppress_With_Delete&quot;,</span><span class="nv"> </span><span class="s">&quot;attributes&quot;:</span><span class="nv"> </span><span class="s">{&quot;name&quot;:</span><span class="nv"> </span><span class="s">&quot;userId&quot;,</span><span class="nv"> </span><span class="s">&quot;values&quot;:</span><span class="nv"> </span><span class="s">[&quot;&lt;user_id&gt;&quot;,]}}&#39;</span><span class="w"></span>
 <span class="w">    </span><span class="nt">client_config</span><span class="p">:</span><span class="w"></span>
 <span class="w">      </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https</span><span class="w"></span>
-<span class="w">      </span><span class="nt">host</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">connector_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">config_domain</span><span class="w"></span>
+<span class="w">      </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;config_domain&gt;</span><span class="w"></span>
 <span class="w">      </span><span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bearer_authentication</span><span class="w"></span>
+<span class="w">        </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bearer</span><span class="w"></span>
 <span class="w">        </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">username</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="nt">connector_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">access_token</span><span class="w"></span>
+<span class="w">          </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;access_token&gt;</span><span class="w"></span>
 </code></pre></div></td></tr></table></div></p>
 <h4 id="endpoints">Endpoints</h4>
 <p>This is where we define how we are going to access and update each collection in the corresponding Dataset. The endpoint section contains the following members:</p>
@@ -1744,13 +1726,13 @@
 <li><code>path</code> A static or dynamic resource path. The dynamic portions of the path are enclosed within angle brackets <code>&lt;dynamic_value&gt;</code> and are replaced with values from <code>param_values</code>.</li>
 <li><code>headers</code> and <code>query_params</code> The HTTP headers and query parameters to include in the request.<ul>
 <li><code>name</code> the value to use for the header or query param name.</li>
-<li><code>value</code> can be a static value, one or more of <code>&lt;dynamic_value&gt;</code>, or a mix of static and dynamic values (prefix <code>&lt;value&gt;</code>) which will be replaced with the value sourced from the <code>request_param</code> with a matching name.</li>
+<li><code>value</code> can be a static value, one or more of <code>&lt;dynamic_value&gt;</code>, or a mix of static and dynamic values (prefix <code>&lt;value&gt;</code>) which will be replaced with the value sourced from the <code>param_value</code> with a matching name.</li>
 </ul>
 </li>
 <li><code>body</code> (optional) static or dynamic request body, with dynamic portions enclosed in brackets, just like <code>path</code>. These dynamic values will be replaced with values from <code>param_values</code>.</li>
 <li><code>param_values</code><ul>
 <li><code>name</code> Used as the key to reference this value from dynamic values in the path, headers, query, or body params.</li>
-<li><code>references</code> These are the same as <code>references</code> in the Dataset schema. It is used to define the source of the value for the given request_param.</li>
+<li><code>references</code> These are the same as <code>references</code> in the Dataset schema. It is used to define the source of the value for the given param_value.</li>
 <li><code>identity</code> Used to access the identity values passed into the privacy request such as email or phone number.</li>
 <li><code>connector_param</code> Used to access the user-configured secrets for the connection.</li>
 </ul>
@@ -2064,7 +2046,7 @@ In this example, we define <code>/3.0/conversations/&lt;conversation_id&gt;/mess
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
 <span class="w">            </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
-In this example, the placeholder in the <code>query</code> query param would be replaced with the value of the <code>request_param</code> with a name of <code>email</code>, which is the <code>email</code> identity. The result would look like this:
+In this example, the placeholder in the <code>query</code> query param would be replaced with the value of the <code>param_value</code> with a name of <code>email</code>, which is the <code>email</code> identity. The result would look like this:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>GET /3.0/search-members?query=name@email.com
 </code></pre></div></td></tr></table></div></p>
 <h4 id="data-update-with-a-dynamic-path">Data update with a dynamic path</h4>
@@ -2355,7 +2337,7 @@ Notice how the <code>conversation_id</code> field is updated with a reference fr
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">placeholder</span><span class="w"></span>
 <span class="w">            </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
-Some endpoints might not have any external dependencies on <code>identity</code> or Dataset <code>reference</code> values. The way the Fidesops <a href="../query_execution/">graph traversal</a> interprets this is as an unreachable collection. At this time, the way to mark this as reachable is to include a <code>request_param</code> with an identity or a reference. In the future we plan on having collections like these still be considered reachable even without this placeholder (the request_param name is not relevant, we just chose placeholder for this example).</p>
+Some endpoints might not have any external dependencies on <code>identity</code> or Dataset <code>reference</code> values. The way the Fidesops <a href="../query_execution/">graph traversal</a> interprets this is as an unreachable collection. At this time, the way to mark this as reachable is to include a <code>param_value</code> with an identity or a reference. In the future we plan on having collections like these still be considered reachable even without this placeholder (the param_value name is not relevant, we just chose placeholder for this example).</p>
 
               
             </article>
