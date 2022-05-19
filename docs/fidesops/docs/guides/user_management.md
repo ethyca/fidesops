@@ -1,7 +1,7 @@
 # User Management
-
+Fidesops users can be easily managed from both the built-in control panel, and a series of [API endpoints](#managing-users-from-the-api).
 ## Managing Users from the UI
-Fidesops users can be easily managed from the built-in control panel. The User Management panel displays a view of all users within the system, and provides a search bar for retrieving users by username. 
+The User Management panel displays a view of all users within the system, and provides a search bar for retrieving users by username. 
 
 ![user panel](../img/admin_ui/user_management.png)
 
@@ -11,16 +11,28 @@ The `Add New User` button can create a new user:
 
 ![new user](../img/admin_ui/add_new_user.png)
 
-### Managing User Scopes
-New users can be created with a series of permissions, or scopes, to allow or restrict their access to individual parts of your fidesops configuration. 
+### Managing User Privileges
+New users can be created with a series of privileges, or permissions, to allow or restrict their access to individual parts of your fidesops configuration. 
 
-![user scopes](../img/admin_ui/user_scopes.png)
+#### Privileges
+Privileges represent individual user permissions. Ensure each user is created with the permissions applicable for their role.
 
-#### Scopes
-
+| Privilege | Description |
+|----|----|
+| View subject requests | All users are able to view subject requests by default. |
+| Approve subject requests | Allows the user to process/approve submitted DSRs. | 
+| View datastore connections | Allows the user to view, but not edit, any existing connections to your datastores. |
+| Create or Update datastore connections | Allows the user to create new datastore connections, and update existing connections. |
+| Delete datastore connections | Allows the user to delete existing datastore connections, removing them entirely from fidesops. |
+| View policies | Allows the user to view existing fidesops policies. | 
+| Create policies | Allows the user to create new fidesops policies. |
+| View users | Allows the user to view the User Management panel. |
+| Create users | Allows the user to create new users from the User Management panel. ||
+| View roles | Allows the user to view, but not edit, existing roles. |
+| Create roles | Allows the user to create new roles. |
 
 ### Editing Existing Users
-Existing users can be managed and edited by selecting the "Edit" button from the side of the user row. Users may also be deleted from this drop-down.
+Existing users can be edited by selecting the "Edit" button from the side of the user row. Users may also be deleted from this drop-down menu. Note that an individual's username may not be changed.
 
 ![edit user](../img/admin_ui/edit_user.png)
 
