@@ -34,3 +34,4 @@ starlette~=0.14.2
 Unidecode==1.2.0
 uvicorn~=0.13.4
 versioneer==0.19
+fideslog==1.1.5

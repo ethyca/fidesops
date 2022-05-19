@@ -1,8 +1,10 @@
 import logging
+
 import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
+from fidesops.analytics import Analytics
 from fidesops.api.v1.api import api_router
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
 from fidesops.db.database import init_db
@@ -28,6 +30,9 @@ if config.security.CORS_ORIGINS:
     )
 
 app.include_router(api_router)
+
+# fideslog
+Analytics()
 
 
 def start_webserver() -> None:

@@ -170,6 +170,12 @@ class SecuritySettings(FidesSettings):
         env_prefix = "FIDESOPS__SECURITY__"
 
 
+class UserSettings(FidesSettings):
+    """Configuration settings for Analytics variables."""
+
+    ANALYTICS_OPT_OUT: bool = True
+
+
 class FidesopsConfig(FidesSettings):
     """Configuration variables for the FastAPI project"""
 
@@ -177,6 +183,7 @@ class FidesopsConfig(FidesSettings):
     redis: RedisSettings
     security: SecuritySettings
     execution: ExecutionSettings
+    user: UserSettings
 
     is_test_mode: bool = os.getenv("TESTING") == "True"
     hot_reloading: bool = os.getenv("FIDESOPS__HOT_RELOAD") == "True"
