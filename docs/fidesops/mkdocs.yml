@@ -30,6 +30,7 @@ nav:
       - Configuration Reference: guides/configuration_reference.md
       - Admin UI: guides/admin_ui.md
       - Postman Collection: postman/using_postman.md
+      - Data Rights Protocol: guides/data_rights_protocol.md
   - SaaS Connectors:
       - Connect to SaaS Applications: saas_connectors/saas_connectors.md
       - SaaS Configuration: saas_connectors/saas_config.md
