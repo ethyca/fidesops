@@ -1,6 +1,9 @@
-import random
+import uuid
+
+import dask
 import pytest
 
+import logging
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.models.privacy_request import (
     PrivacyRequest,
@@ -12,7 +15,9 @@ from fidesops.task import graph_task
 from ..graph.graph_test_util import (
     assert_rows_match,
 )
-from ..task.traversal_data import postgres_with_manual_node
+from ..task.traversal_data import postgres_and_manual_nodes
+
+dask.config.set(scheduler="synchronous")  # Runs a single-threaded scheduler for testing
 
 
 @pytest.mark.integration_postgres
@@ -25,88 +30,71 @@ def test_postgres_with_manual_input_access_request_task(
     postgres_integration_db,
     cache,
 ) -> None:
-    ExecutionLog
+    """Run a privacy request with two manual nodes"""
     privacy_request = PrivacyRequest(
-        id=f"test_postgres_access_request_task_{random.randint(0, 1000)}"
+        id=f"test_postgres_access_request_task_{uuid.uuid4()}"
     )
 
+    # ATTEMPT 1 - storage unit node will throw an exception. Waiting on manual input.
     with pytest.raises(PrivacyRequestPaused):
-        graph_task.run_access_request(
+        v = graph_task.run_access_request(
             privacy_request,
             policy,
-            postgres_with_manual_node("postgres_example", "manual_example"),
+            postgres_and_manual_nodes("postgres_example", "manual_example"),
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
         )
 
-    # Graph is paused at the filing cabinet - user needs to manually retrieve some
-    # info and add to the graph
     paused_node = privacy_request.get_cached_paused_node()
-    assert paused_node == "manual_example:filing_cabinet"
+    assert paused_node == "manual_example:storage_unit"
 
-    execution_logs = db.query(ExecutionLog).filter_by(
-        privacy_request_id=privacy_request.id
+    # Mock user retrieving storage unit data by adding manual data to cache
+    cache.set_encoded_object(
+        f"MANUAL_INPUT__{privacy_request.id}__access_request__manual_example:storage_unit",
+        [{"box_id": 5, "email": "customer-1@example.com"}],
     )
-    assert execution_logs.count() == 6
 
-    # Node upstream of manual node
-    customer_logs = execution_logs.filter_by(collection_name="customer").order_by(
-        "created_at"
-    )
-    assert customer_logs.count() == 2
-    assert [log.status for log in customer_logs] == [
-        ExecutionLogStatus.in_processing,
-        ExecutionLogStatus.complete,
-    ]
+    # Attempt 2 - Filing cabinet node will throw an exception. Waiting on manual input.
+    with pytest.raises(PrivacyRequestPaused):
+        v = graph_task.run_access_request(
+            privacy_request,
+            policy,
+            postgres_and_manual_nodes("postgres_example", "manual_example"),
+            [integration_postgres_config, integration_manual_config],
+            {"email": "customer-1@example.com"},
+            restart=True,
+        )
 
-    # Node independent of manual node
-    order_logs = execution_logs.filter_by(collection_name="orders").order_by(
-        "created_at"
-    )
-    assert order_logs.count() == 2
-    assert [log.status for log in order_logs] == [
-        ExecutionLogStatus.in_processing,
-        ExecutionLogStatus.complete,
-    ]
-
-    # Manual node is paused
-    manual_logs = execution_logs.filter_by(collection_name="filing_cabinet").order_by(
-        "created_at"
-    )
-    assert manual_logs.count() == 2
-    assert [log.status for log in manual_logs] == [
-        ExecutionLogStatus.in_processing,
-        ExecutionLogStatus.paused,
-    ]
-
-    # Node is downstream of manual node - we never made it there
-    payment_logs = execution_logs.filter_by(collection_name="payment_card").all()
-    assert not len(payment_logs)
-
-    # Node is downstream of manual node
-    address_logs = execution_logs.filter_by(collection_name="address").all()
-    assert not len(address_logs)
-
-    # Act like the user has added the manual data
+    # Mock user adding data from filing cabinet by adding manual data to cache
     cache.set_encoded_object(
         f"MANUAL_INPUT__{privacy_request.id}__access_request__manual_example:filing_cabinet",
         [{"id": 1, "authorized_user": "Jane Doe", "payment_card_id": "pay_bbb-bbb"}],
     )
-    # Restart the same privacy request from the paused node
+
+    # Attempt 3 - All manual data has been retrieved.
     v = graph_task.run_access_request(
         privacy_request,
         policy,
-        postgres_with_manual_node("postgres_example", "manual_example"),
+        postgres_and_manual_nodes("postgres_example", "manual_example"),
         [integration_postgres_config, integration_manual_config],
         {"email": "customer-1@example.com"},
-        from_paused=True,
+        restart=True,
     )
+    # Manual filing cabinet data returned
     assert_rows_match(
         v["manual_example:filing_cabinet"],
         min_size=1,
         keys=["id", "authorized_user", "payment_card_id"],
     )
 
+    # Manual storage unit data returned
+    assert_rows_match(
+        v["manual_example:storage_unit"],
+        min_size=1,
+        keys=["box_id", "email"],
+    )
+
+    # One customer row returned
     assert_rows_match(
         v["postgres_example:customer"],
         min_size=1,
@@ -120,25 +108,71 @@ def test_postgres_with_manual_input_access_request_task(
         keys=["id", "name", "ccn", "customer_id", "billing_address_id"],
     )
 
-    # Assert customer node not re-run
-    assert execution_logs.filter_by(collection_name="customer").count() == 2
+    assert_rows_match(
+        v["postgres_example:orders"],
+        min_size=3,
+        keys=["id", "customer_id", "shipping_address_id", "payment_card_id"],
+    )
 
-    # Assert order node not re-run
-    assert execution_logs.filter_by(collection_name="orders").count() == 2
+    assert_rows_match(
+        v["postgres_example:address"],
+        min_size=2,
+        keys=["city", "id", "state", "street", "zip"],
+    )
 
-    # Assert manual node rerun
-    manual_logs = execution_logs.filter_by(collection_name="filing_cabinet").order_by(
+    # Paused node removed from cache
+    paused_node = privacy_request.get_cached_paused_node()
+    assert paused_node is None
+
+    execution_logs = db.query(ExecutionLog).filter_by(
+        privacy_request_id=privacy_request.id
+    )
+
+    # Customer node run once.
+    customer_logs = execution_logs.filter_by(collection_name="customer").order_by(
         "created_at"
     )
-    assert manual_logs.count() == 4
-    assert [log.status for log in manual_logs] == [
+    assert [log.status for log in customer_logs] == [
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.complete,
+    ]
+    assert customer_logs.count() == 2
+
+    # Storage unit node run twice.
+    storage_unit_logs = execution_logs.filter_by(
+        collection_name="storage_unit"
+    ).order_by("created_at")
+    assert storage_unit_logs.count() == 4
+    assert [log.status for log in storage_unit_logs] == [
         ExecutionLogStatus.in_processing,
         ExecutionLogStatus.paused,
         ExecutionLogStatus.in_processing,
         ExecutionLogStatus.complete,
     ]
 
-    # Payment card node can now run because we have manual input from upstream
+    # Order node run once
+    order_logs = execution_logs.filter_by(collection_name="orders").order_by(
+        "created_at"
+    )
+    assert [log.status for log in order_logs] == [
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.complete,
+    ]
+    assert order_logs.count() == 2
+
+    # Filing cabinet node run twice
+    filing_cabinet_logs = execution_logs.filter_by(
+        collection_name="filing_cabinet"
+    ).order_by("created_at")
+    assert filing_cabinet_logs.count() == 4
+    assert [log.status for log in filing_cabinet_logs] == [
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.paused,
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.complete,
+    ]
+
+    # Payment card node run once
     payment_logs = execution_logs.filter_by(collection_name="payment_card").order_by(
         "created_at"
     )
@@ -147,7 +181,7 @@ def test_postgres_with_manual_input_access_request_task(
         ExecutionLogStatus.complete,
     ]
 
-    # Address log can now run because we have manual input from upstream
+    # Address logs run once
     address_logs = execution_logs.filter_by(collection_name="address").order_by(
         "created_at"
     )

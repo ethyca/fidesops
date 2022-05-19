@@ -21,9 +21,20 @@ dataset:
                   field: customer.id
                   direction: from
           - name: payment_card_id
-              data_categories: [ system.operations ]
-              fidesops_meta:
-                references:
-                  - dataset: postgres_example_test_dataset
-                    field: payment_card.id
-                    direction: to
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              references:
+                - dataset: postgres_example_test_dataset
+                  field: payment_card.id
+                  direction: to
+      - name: storage_unit
+        fields:
+          - name: box_id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+          - name: email
+            data_categories: [ user.provided.identifiable.contact.email ]
+            fidesops_meta:
+              identity: email
+              data_type: string

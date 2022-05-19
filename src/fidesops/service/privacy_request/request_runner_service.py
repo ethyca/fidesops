@@ -156,7 +156,7 @@ class PrivacyRequestRunner:
                     graph=dataset_graph,
                     connection_configs=connection_configs,
                     identity=identity_data,
-                    from_paused=from_paused,
+                    restart=from_paused,
                 )
                 if not access_result:
                     logging.info(

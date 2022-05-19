@@ -51,7 +51,11 @@ class ManualConnector(BaseConnector[None]):
         results = self.manual_access_results(privacy_request, node)
         cache: FidesopsRedis = get_cache()
         prefix = f"PAUSED_LOCATION__{privacy_request.id}__access_request"
-        if not results:
+
+        if results:
+            cache.set_encoded_object(prefix, None)
+            return list(results.values())[0]
+        else:
             # Save the node that we're paused on
             cache.set_encoded_object(
                 prefix,
@@ -60,9 +64,6 @@ class ManualConnector(BaseConnector[None]):
             raise PrivacyRequestPaused(
                 f"Node {node.address.value} waiting on manual data for privacy request {privacy_request.id}"
             )
-        else:
-            cache.set_encoded_object(prefix, None)
-            return list(results.values())[0]
 
     def mask_data(
         self,

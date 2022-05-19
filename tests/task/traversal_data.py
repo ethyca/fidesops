@@ -534,14 +534,23 @@ def manual_dataset(db_name: str, postgres_db_name) -> Dataset:
             ),
         ]
     )
+    storage_unit = Collection(
+        name="storage_unit",
+        fields=[
+            ScalarField(name="box_id", primary_key=True, data_type_converter=int_converter),
+            ScalarField(
+                name="email", identity="email", data_type_converter=str_converter
+            ),
+        ]
+    )
     return Dataset(
         name=db_name,
-        collections=[filing_cabinet],
+        collections=[filing_cabinet, storage_unit],
         connection_key=db_name,
     )
 
 
-def postgres_with_manual_node(postgres_db_name: str, manual_db_name: str):
+def postgres_and_manual_nodes(postgres_db_name: str, manual_db_name: str):
     postgres_db = integration_db_dataset(postgres_db_name, postgres_db_name)
     manual_db = manual_dataset(manual_db_name, postgres_db_name)
     return DatasetGraph(postgres_db, manual_db)

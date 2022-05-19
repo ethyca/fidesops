@@ -4,7 +4,6 @@ import logging
 import traceback
 from abc import ABC
 from functools import wraps
-
 from time import sleep
 from typing import List, Dict, Any, Tuple, Callable, Optional, Set
 
@@ -38,7 +37,7 @@ from fidesops.util.saas_util import FIDESOPS_GROUPED_INPUTS
 
 logger = logging.getLogger(__name__)
 
-dask.config.set(scheduler="processes")
+dask.config.set(scheduler="threads")
 
 EMPTY_REQUEST = PrivacyRequest()
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
@@ -509,7 +508,7 @@ def run_access_request(
     graph: DatasetGraph,
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
-    from_paused: bool = False,
+    restart: bool = False,
 ) -> Dict[str, List[Row]]:
     """Run the access request"""
     traversal: Traversal = Traversal(graph, identity)
@@ -548,15 +547,15 @@ def run_access_request(
         dsk = {k: (t.access_request, *t.input_keys) for k, t in env.items()}
         dsk[ROOT_COLLECTION_ADDRESS] = (start_function([traversal.seed_data]),)
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
-        if from_paused:
+        if restart:
             cached_results: Dict[str, List[Row]] = resources.get_all_cached_objects()
             # Have already-visited nodes just return their cached data.
             for node in cached_results:
                 dsk[CollectionAddress.from_string(node)] = (
                     start_function(cached_results[node]),
                 )
-        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
 
+        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
         return v.compute()
 
 
