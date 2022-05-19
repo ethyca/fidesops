@@ -125,7 +125,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
     @classmethod
     def map_param_values(
-        cls, action: str, context: str, current_request: SaaSRequest, param_values: Dict[str, Any]
+        cls,
+        action: str,
+        context: str,
+        current_request: SaaSRequest,
+        param_values: Dict[str, Any],
     ) -> SaaSRequestParams:
         """
         Visits path, headers, query, and body params in the current request and replaces
@@ -208,8 +212,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 )
 
         # map param values to placeholders in path, headers, and query params
-        saas_request_params: SaaSRequestParams = map_param_values(
-            self.action, current_request, param_values
+        saas_request_params: SaaSRequestParams = self.map_param_values(
+            self.action, self.collection_name, current_request, param_values
         )
 
         logger.info(f"Populated request params for {current_request.path}")

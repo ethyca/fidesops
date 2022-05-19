@@ -1,16 +1,16 @@
 from datetime import datetime, timedelta
-from fidesops.schemas.saas.saas_config import ClientConfig, SaaSConfig, SaaSRequest
-from fidesops.service import authentication
+from unittest import mock
+from unittest.mock import Mock
 
 import pytest
 from requests import PreparedRequest, Request
 
+from fidesops.common_exceptions import SaaSTokenRefreshException
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
 )
 from fidesops.service.authentication.authentication_strategy_factory import get_strategy
-from tests.service.masking import strategy
 
 
 @pytest.fixture(scope="session")
@@ -103,7 +103,9 @@ def connection_config(oauth2_configuration) -> ConnectionConfig:
 def test_oauth2_authentication(connection_config, oauth2_configuration):
 
     # set a future expiration date for the access token
-    connection_config.secrets["expires_at"] = datetime.utcnow() + timedelta(days=1)
+    connection_config.secrets["expires_at"] = (
+        datetime.utcnow() + timedelta(days=1)
+    ).timestamp()
 
     req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
@@ -116,28 +118,51 @@ def test_oauth2_authentication(connection_config, oauth2_configuration):
 
 
 # access token expired call refresh request
+@mock.patch("fidesops.models.connectionconfig.ConnectionConfig.update")
+@mock.patch("fidesops.service.connectors.saas_connector.AuthenticatedClient.send")
 def test_oauth2_authentication_successful_refresh(
-    connection_config, oauth2_configuration
+    mock_send: Mock,
+    mock_connection_config_update: Mock,
+    connection_config,
+    oauth2_configuration,
 ):
+    # mock the json response from calling the token refresh request
+    mock_send().json.return_value = {"access_token": "new_access"}
 
     # expire the access token
-    connection_config.secrets["expires_at"] = datetime.utcnow() - timedelta(days=1)
+    connection_config.secrets["expires_at"] = 0
 
+    # the request we want to authenticate
     req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
     auth_strategy = get_strategy("oauth2", oauth2_configuration)
     authenticated_request = auth_strategy.add_authentication(req, connection_config)
     assert authenticated_request.headers["Authorization"] == "Bearer new_access"
 
+    # verify correct values from connection_config update
+    mock_connection_config_update.assert_called_with(
+        mock.ANY, data={"access_token": "new_access"}
+    )
 
-# access token expired unable to refresh
-# def test_oauth2_authentication_failed_refresh(connection_config, oauth2_configuration):
 
-#     # expire the access token
-#     connection_config.secrets["expires_at"] = datetime.utcnow() - timedelta(days=1)
+# access token expired, unable to refresh
+@mock.patch("fidesops.service.connectors.saas_connector.AuthenticatedClient.send")
+def test_oauth2_authentication_failed_refresh(
+    mock_send: Mock, connection_config, oauth2_configuration
+):
+    # mock the json response from calling the token refresh request
+    mock_send().json.return_value = {"error": "invalid_request"}
 
-#     req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
+    # expire the access token
+    connection_config.secrets["expires_at"] = 0
 
-#     auth_strategy = get_strategy("oauth2", oauth2_configuration)
-#     authenticated_request = auth_strategy.add_authentication(req, connection_config)
-#     assert authenticated_request.headers["Authorization"] == f"Bearer new_access"
+    # the request we want to authenticate
+    req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
+
+    auth_strategy = get_strategy("oauth2", oauth2_configuration)
+    with pytest.raises(SaaSTokenRefreshException) as exc:
+        auth_strategy.add_authentication(req, connection_config)
+    assert (
+        str(exc.value)
+        == f"The token refresh response for {connection_config.key} is missing an access_token"
+    )

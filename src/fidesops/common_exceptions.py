@@ -114,6 +114,8 @@ class PrivacyRequestPaused(BaseException):
 class SaaSConfigNotFoundException(FidesopsException):
     """Custom Exception - SaaS Config Not Found"""
 
+class SaaSTokenRefreshException(FidesopsException):
+    """Custom Exception - Unable to refresh OAuth2 token for SaaS connector"""
 
 class AuthenticationFailure(HTTPException):
     """Wrapper for authentication failure exception"""
