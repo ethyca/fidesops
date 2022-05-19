@@ -18,6 +18,7 @@ This will create an Admin UI Root User that can be used to access additional [us
 From the root `fidesops` directory, run the following:
 ``` sh
     cd clients/admin-ui
+    npm install
     npm run dev
 ```
 
