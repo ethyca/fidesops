@@ -1,37 +1,36 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import type { NextPage } from 'next';
-import Head from 'next/head';
 import {
   Box,
-  Heading,
-  Text,
-  Divider,
-  Flex,
-  Stack,
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
+  Divider,
+  Flex,
+  Heading,
+  Stack,
+  Text,
 } from '@fidesui/react';
+import type { NextPage } from 'next';
+import Head from 'next/head';
 import { getSession } from 'next-auth/react';
+import React from 'react';
 
+import { useAppSelector } from '../../app/hooks';
 import { wrapper } from '../../app/store';
-import { assignToken, setUser } from '../../features/user/user.slice';
+import ClipboardButton from '../../features/common/ClipboardButton';
+import NavBar from '../../features/common/NavBar';
+import PII from '../../features/common/PII';
+import PIIToggle from '../../features/common/PIIToggle';
+import RequestStatusBadge from '../../features/common/RequestStatusBadge';
 import {
-  selectPrivacyRequestFilters,
   privacyRequestApi,
+  selectPrivacyRequestFilters,
   setRequestId,
   useGetAllPrivacyRequestsQuery,
 } from '../../features/privacy-requests/privacy-requests.slice';
-import NavBar from '../../features/common/NavBar';
-import RequestStatusBadge from '../../features/common/RequestStatusBadge';
-import PIIToggle from '../../features/common/PIIToggle';
-import PII from '../../features/common/PII';
-import Clipboard from '../../features/common/Icon/Clipboard';
-import ClipboardButton from '../../features/common/ClipboardButton';
+import { assignToken, setUser } from '../../features/user/user.slice';
 
 const SubjectRequestDetails: NextPage<{}> = () => {
-  const filters = useSelector(selectPrivacyRequestFilters);
+  const filters = useAppSelector(selectPrivacyRequestFilters);
   const { data } = useGetAllPrivacyRequestsQuery(filters);
 
   if (data?.items.length === 0) {
@@ -99,11 +98,10 @@ const SubjectRequestDetails: NextPage<{}> = () => {
             >
               Request ID:
             </Text>
-            <Text color='gray.600' fontWeight='500' fontSize='sm'>
+            <Text color='gray.600' fontWeight='500' fontSize='sm' mr={1}>
               {subjectRequest.id}
             </Text>
-            <Clipboard ml={1} />
-            <ClipboardButton />
+            <ClipboardButton requestId={subjectRequest.id} />
           </Flex>
           <Flex alignItems='flex-start'>
             <Text mb={4} mr={2} fontSize='sm' color='gray.900' fontWeight='500'>
