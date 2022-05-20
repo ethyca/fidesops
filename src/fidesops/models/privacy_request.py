@@ -4,7 +4,7 @@ from datetime import datetime
 
 import json
 
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, Optional, List, Tuple
 
 from enum import Enum as EnumType
 from sqlalchemy.dialects.postgresql import JSONB
@@ -239,29 +239,35 @@ class PrivacyRequest(Base):
         return cache.get_encoded_objects_by_prefix(result_prefix)
 
     def cache_paused_location(
-        self, request_type: str, paused_node: Optional[str]
+        self, request_type: Optional[str] = None, paused_node: Optional[str] = None
     ) -> None:
-        """Cache the address of the node where the privacy request is waiting on manual input"""
+        """Cache the request type and the address of the node where the privacy request is waiting on manual input"""
         cache: FidesopsRedis = get_cache()
-        paused_key = f"PAUSED_LOCATION__{self.id}__{request_type}_request"
+        paused_key = f"PAUSED_LOCATION__{self.id}"
 
         cache.set_encoded_object(
             paused_key,
-            paused_node,
+            f"{request_type}__{paused_node}" if request_type and paused_node else None,
         )
 
-    def get_paused_location(self, request_type: str) -> Optional[CollectionAddress]:
+    def get_paused_request_and_location(
+        self,
+    ) -> Optional[Tuple[Optional[str], Optional[CollectionAddress]]]:
         """Get the CollectionAddress of the node that is paused and waiting on manual input"""
         cache: FidesopsRedis = get_cache()
         cached_paused_node = cache.get_encoded_objects_by_prefix(
-            f"PAUSED_LOCATION__{self.id}__{request_type}_request"
+            f"PAUSED_LOCATION__{self.id}"
         )
         node_addr = (
             list(cached_paused_node.values())[0]
             if len(cached_paused_node.keys()) == 1
             else None
         )
-        return CollectionAddress.from_string(node_addr) if node_addr else node_addr
+
+        if node_addr:
+            split_addr = node_addr.split("__")
+            return split_addr[0], CollectionAddress.from_string(split_addr[1])
+        return None, None
 
     def cache_manual_input(
         self, location: CollectionAddress, manual_rows: Optional[List[Row]]

@@ -39,10 +39,10 @@ class ManualConnector(BaseConnector[None]):
         results = privacy_request.get_manual_input(node.address)
         if results:
             # Results were added to the cache. If no results were found, an empty list is expected.
-            privacy_request.cache_paused_location("access", None)
+            privacy_request.cache_paused_location()
             return list(results.values())[0]
         else:
-            # Save the node that we're paused on
+            # Save the node and the request type that we're paused on
             privacy_request.cache_paused_location("access", node.address.value)
             raise PrivacyRequestPaused(
                 f"Node {node.address.value} waiting on manual data for privacy request {privacy_request.id}"

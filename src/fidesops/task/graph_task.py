@@ -508,7 +508,7 @@ def run_access_request(
     graph: DatasetGraph,
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
-    restart: bool = False,
+    restart_from: str = None,
 ) -> Dict[str, List[Row]]:
     """Run the access request"""
     traversal: Traversal = Traversal(graph, identity)
@@ -547,7 +547,7 @@ def run_access_request(
         dsk = {k: (t.access_request, *t.input_keys) for k, t in env.items()}
         dsk[ROOT_COLLECTION_ADDRESS] = (start_function([traversal.seed_data]),)
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
-        if restart:
+        if restart_from:
             cached_results: Dict[str, List[Row]] = resources.get_all_cached_objects()
             # Have already-visited nodes just return their cached data.
             for node in cached_results:

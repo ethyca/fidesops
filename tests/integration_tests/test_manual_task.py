@@ -45,7 +45,7 @@ def test_postgres_with_manual_input_access_request_task(
             {"email": "customer-1@example.com"},
         )
 
-    paused_node = privacy_request.get_paused_location("access")
+    request_type, paused_node = privacy_request.get_paused_request_and_location()
     assert paused_node.value == "manual_example:storage_unit"
 
     # Mock user retrieving storage unit data by adding manual data to cache
@@ -62,7 +62,7 @@ def test_postgres_with_manual_input_access_request_task(
             postgres_and_manual_nodes("postgres_example", "manual_example"),
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
-            restart=True,
+            restart_from="access",
         )
 
     privacy_request.cache_manual_input(
@@ -77,7 +77,7 @@ def test_postgres_with_manual_input_access_request_task(
         postgres_and_manual_nodes("postgres_example", "manual_example"),
         [integration_postgres_config, integration_manual_config],
         {"email": "customer-1@example.com"},
-        restart=True,
+        restart_from="access",
     )
     # Manual filing cabinet data returned
     assert_rows_match(
@@ -120,7 +120,7 @@ def test_postgres_with_manual_input_access_request_task(
     )
 
     # Paused node removed from cache
-    paused_node = privacy_request.get_paused_location("access")
+    request_type, paused_node = privacy_request.get_paused_request_and_location()
     assert paused_node is None
 
     execution_logs = db.query(ExecutionLog).filter_by(
@@ -215,7 +215,7 @@ def test_no_manual_input_found(
             {"email": "customer-1@example.com"},
         )
 
-    paused_node = privacy_request.get_paused_location("access")
+    request_type, paused_node = privacy_request.get_paused_request_and_location()
     assert paused_node.value == "manual_example:storage_unit"
 
     # Mock user retrieving storage unit data by adding manual data to cache,
@@ -233,7 +233,7 @@ def test_no_manual_input_found(
             postgres_and_manual_nodes("postgres_example", "manual_example"),
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
-            restart=True,
+            restart_from="access",
         )
 
     # No filing cabinet input found
@@ -249,7 +249,7 @@ def test_no_manual_input_found(
         postgres_and_manual_nodes("postgres_example", "manual_example"),
         [integration_postgres_config, integration_manual_config],
         {"email": "customer-1@example.com"},
-        restart=True,
+        restart_from="access",
     )
 
     # No filing cabinet data or storage unit data found
@@ -271,5 +271,5 @@ def test_no_manual_input_found(
     )
 
     # Paused node removed from cache
-    paused_node = privacy_request.get_paused_location("access")
+    request_type, paused_node = privacy_request.get_paused_request_and_location()
     assert paused_node is None

@@ -622,9 +622,7 @@ def resume_with_manual_input(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Invalid resume request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
         )
-    paused_loc: Optional[CollectionAddress] = privacy_request.get_paused_location(
-        "access"
-    )
+    request_type, paused_loc = privacy_request.get_paused_request_and_location()
     if not paused_loc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -643,7 +641,7 @@ def resume_with_manual_input(
     PrivacyRequestRunner(
         cache=cache,
         privacy_request=privacy_request,
-    ).submit(from_graph_resume=True)
+    ).submit(from_request_type=request_type)
 
     return privacy_request
 

@@ -84,7 +84,7 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     privacy_request_runner: PrivacyRequestRunner,
 ) -> None:
     privacy_request.started_processing_at = None
-    wait_for(privacy_request_runner.submit(from_graph_resume=True))
+    wait_for(privacy_request_runner.submit(from_request_type=True))
 
     _sessionmaker = get_db_session()
     db = _sessionmaker()
