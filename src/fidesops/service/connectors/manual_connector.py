@@ -38,6 +38,7 @@ class ManualConnector(BaseConnector[None]):
         """
         results = privacy_request.get_manual_input(node.address)
         if results:
+            # Results were added to the cache. If no results were found, an empty list is expected.
             privacy_request.cache_paused_location("access", None)
             return list(results.values())[0]
         else:

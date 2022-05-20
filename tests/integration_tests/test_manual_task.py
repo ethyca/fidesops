@@ -3,7 +3,6 @@ import uuid
 import dask
 import pytest
 
-import logging
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.graph.config import CollectionAddress
 from fidesops.models.privacy_request import (
@@ -189,6 +188,87 @@ def test_postgres_with_manual_input_access_request_task(
         ExecutionLogStatus.in_processing,
         ExecutionLogStatus.complete,
     ]
+
+
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+def test_no_manual_input_found(
+    db,
+    policy,
+    integration_postgres_config,
+    integration_manual_config,
+    postgres_integration_db,
+    cache,
+) -> None:
+    """Assert manual node can be restarted with an empty list. There isn't necessarily manual data found."""
+    privacy_request = PrivacyRequest(
+        id=f"test_postgres_access_request_task_{uuid.uuid4()}"
+    )
+
+    # ATTEMPT 1 - storage unit node will throw an exception. Waiting on manual input.
+    with pytest.raises(PrivacyRequestPaused):
+        graph_task.run_access_request(
+            privacy_request,
+            policy,
+            postgres_and_manual_nodes("postgres_example", "manual_example"),
+            [integration_postgres_config, integration_manual_config],
+            {"email": "customer-1@example.com"},
+        )
+
+    paused_node = privacy_request.get_paused_location("access")
+    assert paused_node.value == "manual_example:storage_unit"
+
+    # Mock user retrieving storage unit data by adding manual data to cache,
+    # In this case, no data was found in the storage unit, so we pass in an empty list.
+    privacy_request.cache_manual_input(
+        CollectionAddress.from_string("manual_example:storage_unit"),
+        [],
+    )
+
+    # Attempt 2 - Filing cabinet node will throw an exception. Waiting on manual input.
+    with pytest.raises(PrivacyRequestPaused):
+        graph_task.run_access_request(
+            privacy_request,
+            policy,
+            postgres_and_manual_nodes("postgres_example", "manual_example"),
+            [integration_postgres_config, integration_manual_config],
+            {"email": "customer-1@example.com"},
+            restart=True,
+        )
+
+    # No filing cabinet input found
+    privacy_request.cache_manual_input(
+        CollectionAddress.from_string("manual_example:filing_cabinet"),
+        [],
+    )
+
+    # Attempt 3 - All manual data has been retrieved/attempted to be retrieved
+    v = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        postgres_and_manual_nodes("postgres_example", "manual_example"),
+        [integration_postgres_config, integration_manual_config],
+        {"email": "customer-1@example.com"},
+        restart=True,
+    )
+
+    # No filing cabinet data or storage unit data found
+    assert v["manual_example:filing_cabinet"] == []
+    assert v["manual_example:storage_unit"] == []
+
+    # One customer row returned
+    assert_rows_match(
+        v["postgres_example:customer"],
+        min_size=1,
+        keys=["id", "name", "email", "address_id"],
+    )
+
+    # One payment card row returned
+    assert_rows_match(
+        v["postgres_example:payment_card"],
+        min_size=1,
+        keys=["id", "name", "ccn", "customer_id", "billing_address_id"],
+    )
 
     # Paused node removed from cache
     paused_node = privacy_request.get_paused_location("access")
