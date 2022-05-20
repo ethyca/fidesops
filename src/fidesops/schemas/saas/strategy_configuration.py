@@ -1,10 +1,10 @@
 from enum import Enum
 from typing import Any, Dict, Optional, Union
-from fidesops.schemas.saas.shared_schemas import ConnectorParamRef, IdentityParamRef
 
 from pydantic import BaseModel, root_validator, validator
 
 from fidesops.schemas.saas.saas_config import SaaSRequest
+from fidesops.schemas.saas.shared_schemas import ConnectorParamRef, IdentityParamRef
 
 
 class StrategyConfiguration(BaseModel):
@@ -114,7 +114,7 @@ class QueryParamAuthenticationConfiguration(StrategyConfiguration):
 class OAuth2AuthenticationConfiguration(StrategyConfiguration):
     """
     OAuth2 endpoints for authentication, token retrieval, and token refresh.
-    Inclues an optional expires_in parameter (in seconds) for OAuth2 integrations that
+    Includes an optional expires_in parameter (in seconds) for OAuth2 integrations that
     do not specify a TTL for the access tokens.
     """
 

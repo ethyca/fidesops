@@ -1,16 +1,17 @@
-from typing import Any, Dict, List, Literal, Optional, Union, Set
+from typing import Any, Dict, List, Literal, Optional, Set, Union
 
-from fidesops.schemas.saas.shared_schemas import ConnectorParamRef, HTTPMethod
-from pydantic import BaseModel, validator, root_validator, Extra
-from fidesops.schemas.base_class import BaseSchema
-from fidesops.schemas.dataset import FidesopsDatasetReference, FidesCollectionKey
+from pydantic import BaseModel, Extra, root_validator, validator
+
 from fidesops.graph.config import (
     Collection,
+    CollectionAddress,
     Dataset,
     FieldAddress,
     ScalarField,
-    CollectionAddress,
 )
+from fidesops.schemas.base_class import BaseSchema
+from fidesops.schemas.dataset import FidesCollectionKey, FidesopsDatasetReference
+from fidesops.schemas.saas.shared_schemas import ConnectorParamRef, HTTPMethod
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
@@ -62,10 +63,8 @@ class ClientConfig(BaseModel):
     """Definition for an authenticated base HTTP client"""
 
     protocol: str
-    host: Union[
-        str, ConnectorParamRef
-    ]  # can be defined inline or be a connector_param reference
-    authentication: Strategy
+    host: str
+    authentication: Optional[Strategy]
 
 
 class Header(BaseModel):

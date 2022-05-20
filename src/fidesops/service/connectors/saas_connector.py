@@ -45,6 +45,7 @@ class AuthenticatedClient:
     """
 
     def __init__(self, uri: str, configuration: ConnectionConfig):
+        self.configuration = configuration
         self.session = Session()
         self.uri = uri
         self.key = configuration.key
@@ -66,12 +67,16 @@ class AuthenticatedClient:
             data=request_params.body,
         ).prepare()
 
-        auth_strategy = get_authentication_strategy(
-            self.client_config.authentication.strategy,
-            self.client_config.authentication.configuration,
-        )
+        # add authentication if provided
+        if self.client_config.authentication:
+            auth_strategy = get_authentication_strategy(
+                self.client_config.authentication.strategy,
+                self.client_config.authentication.configuration,
+            )
+            return auth_strategy.add_authentication(req, self.configuration)
 
-        return auth_strategy.add_authentication(req, self.secrets)
+        # otherwise just return the prepared request
+        return req
 
     def send(
         self, request_params: SaaSRequestParams, ignore_errors: Optional[bool] = False

@@ -13,6 +13,7 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.saas.saas_config import Endpoint, SaaSRequest
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.service.connectors.query_config import QueryConfig
+from fidesops.util import saas_util
 from fidesops.util.collection_util import Row, merge_dicts
 from fidesops.util.saas_util import (
     FIDESOPS_GROUPED_INPUTS,
@@ -123,63 +124,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         return request_params
 
-    @classmethod
-    def map_param_values(
-        cls,
-        action: str,
-        context: str,
-        current_request: SaaSRequest,
-        param_values: Dict[str, Any],
-    ) -> SaaSRequestParams:
-        """
-        Visits path, headers, query, and body params in the current request and replaces
-        the placeholders with the request param values.
-
-        The action and context parameters provide more information for the logs
-
-        For example:
-            - action: 'read', context: 'transactions collection'
-            - action: 'refresh', context: 'Outreach Connector OAuth2'
-        """
-
-        path: Optional[str] = assign_placeholders(current_request.path, param_values)
-        if path is None:
-            raise ValueError(
-                f"At least one param_value references an invalid field for the '{action}' request of {context}."
-            )
-
-        headers: Dict[str, Any] = {}
-        for header in current_request.headers or []:
-            header_value = assign_placeholders(header.value, param_values)
-            # only create header if placeholders were replaced with actual values
-            if header_value is not None:
-                headers[header.name] = assign_placeholders(header.value, param_values)
-
-        query_params: Dict[str, Any] = {}
-        for query_param in current_request.query_params or []:
-            query_param_value = assign_placeholders(query_param.value, param_values)
-            # only create query param if placeholders were replaced with actual values
-            if query_param_value is not None:
-                query_params[query_param.name] = query_param_value
-
-        body: Optional[str] = assign_placeholders(current_request.body, param_values)
-        # if we declared a body and it's None after assigning placeholders we should error the request
-        if current_request.body and body is None:
-            raise ValueError(
-                f"Unable to replace placeholders in body for the '{action}' request of {context}"
-            )
-
-        # format the body based on the content type
-        updated_headers, formatted_body = format_body(headers, body)
-
-        return SaaSRequestParams(
-            method=current_request.method,
-            path=path,
-            headers=updated_headers,
-            query_params=query_params,
-            body=formatted_body,
-        )
-
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
     ) -> SaaSRequestParams:
@@ -212,7 +156,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 )
 
         # map param values to placeholders in path, headers, and query params
-        saas_request_params: SaaSRequestParams = self.map_param_values(
+        saas_request_params: SaaSRequestParams = saas_util.map_param_values(
             self.action, self.collection_name, current_request, param_values
         )
 
@@ -268,8 +212,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         param_values["all_object_fields"] = json.dumps(complete_object)[1:-1]
 
         # map param values to placeholders in path, headers, and query params
-        saas_request_params: SaaSRequestParams = self.map_param_values(
-            current_request, param_values
+        saas_request_params: SaaSRequestParams = saas_util.map_param_values(
+            self.action, self.collection_name, current_request, param_values
         )
 
         logger.info(f"Populated request params for {current_request.path}")
