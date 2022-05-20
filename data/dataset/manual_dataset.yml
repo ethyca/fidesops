@@ -30,7 +30,7 @@ dataset:
       - name: storage_unit
         fields:
           - name: box_id
-            data_categories: [ system.operations ]
+            data_categories: [ user.provided ]
             fidesops_meta:
               primary_key: True
           - name: email
