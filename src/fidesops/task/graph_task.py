@@ -555,7 +555,7 @@ def run_access_request(
                     start_function(cached_results[node]),
                 )
 
-        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
+        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
         return v.compute()
 
 
