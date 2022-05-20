@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "clients"
+      - ".github/workflows/frontend_pr_checks.yml"
   pull_request:
 
 env:
