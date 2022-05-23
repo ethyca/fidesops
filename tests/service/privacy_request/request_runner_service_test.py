@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.core.config import config
 from fidesops.db.session import get_db_session
+from fidesops.models.policy import PolicyPostWebhook
 from fidesops.models.privacy_request import (
     ActionType,
     ExecutionLog,
@@ -84,7 +85,7 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     privacy_request_runner: PrivacyRequestRunner,
 ) -> None:
     privacy_request.started_processing_at = None
-    wait_for(privacy_request_runner.submit(from_request_type=True))
+    wait_for(privacy_request_runner.submit(from_step=ActionType.access))
 
     _sessionmaker = get_db_session()
     db = _sessionmaker()

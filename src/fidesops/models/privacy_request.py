@@ -280,7 +280,7 @@ class PrivacyRequest(Base):
 
     def cache_manual_input(
         self, location: CollectionAddress, manual_rows: Optional[List[Row]]
-    ):
+    ) -> None:
         """Cache manually added rows for the given CollectionAddress"""
         cache: FidesopsRedis = get_cache()
         cache.set_encoded_object(

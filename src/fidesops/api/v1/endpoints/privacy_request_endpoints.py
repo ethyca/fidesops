@@ -40,7 +40,7 @@ from fidesops.api.v1.urn_registry import (
 )
 from fidesops.common_exceptions import TraversalError, ValidationError
 from fidesops.core.config import config
-from fidesops.graph.config import CollectionAddress
+from fidesops.graph.config import CollectionAddress, Field
 from fidesops.graph.graph import DatasetGraph, Node
 from fidesops.graph.traversal import Traversal
 from fidesops.models.audit_log import AuditLog, AuditLogAction
@@ -593,9 +593,11 @@ def validate_manual_input(
 
     for row in manual_rows:
         for field_name in row:
-            if not dataset_graph.nodes[paused_loc].contains_field(
-                lambda f: f.name == field_name
-            ):
+
+            def field_defined(field: Field) -> bool:
+                return field_name == field.name  # pylint: disable=W0640
+
+            if not dataset_graph.nodes[paused_loc].contains_field(field_defined):
                 raise HTTPException(
                     status_code=HTTP_422_UNPROCESSABLE_ENTITY,
                     detail=f"Cannot save manual rows. No '{field_name}' field defined on the '{paused_loc.value}' collection.",
@@ -641,7 +643,7 @@ def resume_with_manual_input(
     PrivacyRequestRunner(
         cache=cache,
         privacy_request=privacy_request,
-    ).submit(from_request_type=paused_step)
+    ).submit(from_step=paused_step)
 
     return privacy_request
 

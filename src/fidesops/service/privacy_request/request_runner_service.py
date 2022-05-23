@@ -16,7 +16,6 @@ from fidesops.models.policy import (
     ActionType,
     PolicyPostWebhook,
     PolicyPreWebhook,
-    PolicyPostWebhook,
     Policy,
     WebhookTypes,
 )
@@ -98,23 +97,21 @@ class PrivacyRequestRunner:
     def submit(
         self,
         from_webhook: Optional[PolicyPreWebhook] = None,
-        from_request_type: Optional[ActionType] = None,
+        from_step: Optional[ActionType] = None,
     ) -> Awaitable[None]:
         """Run this privacy request in a separate thread."""
         from_webhook_id = from_webhook.id if from_webhook else None
-        return run_async(
-            self.run, self.privacy_request.id, from_webhook_id, from_request_type
-        )
+        return run_async(self.run, self.privacy_request.id, from_webhook_id, from_step)
 
     @staticmethod
     def upload_access_results(
         session: Session,
         policy: Policy,
-        access_result,
+        access_result: Dict[str, List[Row]],
         dataset_graph: DatasetGraph,
         privacy_request: PrivacyRequest,
-    ):
-        """Process the data uploads after the access request has completed"""
+    ) -> None:
+        """Process the data uploads after the access portion of the privacy request has completed"""
         if not access_result:
             logging.info(f"No results returned for access request {privacy_request.id}")
 
@@ -168,7 +165,7 @@ class PrivacyRequestRunner:
             logging.info(f"Dispatching privacy request {privacy_request.id}")
             privacy_request.start_processing(session)
 
-            if not from_step:
+            if not from_step:  # Skip if we're resuming from the access or erasure step.
                 # Run pre-execution webhooks
                 proceed = self.run_webhooks_and_report_status(
                     session,
@@ -197,14 +194,13 @@ class PrivacyRequestRunner:
                 identity_data = privacy_request.get_cached_identity_data()
                 connection_configs = ConnectionConfig.all(db=session)
 
-                if from_step == ActionType.access:
+                if not from_step == ActionType.erasure:
                     access_result: Dict[str, List[Row]] = run_access_request(
                         privacy_request=privacy_request,
                         policy=policy,
                         graph=dataset_graph,
                         connection_configs=connection_configs,
                         identity=identity_data,
-                        restart_from=from_step,
                     )
 
                     self.upload_access_results(
@@ -227,23 +223,14 @@ class PrivacyRequestRunner:
             except PrivacyRequestPaused as exc:
                 privacy_request.status = PrivacyRequestStatus.paused
                 privacy_request.save(db=session)
-                # If dev mode, log traceback
-                if config.dev_mode:
-                    logging.error(exc, exc_info=True)
-                else:
-                    logging.error(exc)
+                _log_exception(exc)
+                session.close()
+                return
 
             except BaseException as exc:  # pylint: disable=broad-except
                 privacy_request.status = PrivacyRequestStatus.error
                 # If dev mode, log traceback
-                if config.dev_mode:
-                    logging.error(exc, exc_info=True)
-                else:
-                    logging.error(exc)
-
-            if privacy_request.status == PrivacyRequestStatus.paused:
-                session.close()
-                return
+                _log_exception(exc)
 
             # Run post-execution webhooks
             proceed = self.run_webhooks_and_report_status(
@@ -264,6 +251,14 @@ class PrivacyRequestRunner:
 
     def dry_run(self, privacy_request: PrivacyRequest) -> None:
         """Pretend to dispatch privacy_request into the execution layer, return the query plan"""
+
+
+def _log_exception(exc: BaseException) -> None:
+    """If dev mode, log the entire traceback"""
+    if config.dev_mode:
+        logging.error(exc, exc_info=True)
+    else:
+        logging.error(exc)
 
 
 def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) -> None:

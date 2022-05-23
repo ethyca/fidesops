@@ -62,7 +62,6 @@ def test_postgres_with_manual_input_access_request_task(
             postgres_and_manual_nodes("postgres_example", "manual_example"),
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
-            restart_from="access",
         )
 
     privacy_request.cache_manual_input(
@@ -77,7 +76,6 @@ def test_postgres_with_manual_input_access_request_task(
         postgres_and_manual_nodes("postgres_example", "manual_example"),
         [integration_postgres_config, integration_manual_config],
         {"email": "customer-1@example.com"},
-        restart_from="access",
     )
     # Manual filing cabinet data returned
     assert_rows_match(
@@ -235,7 +233,6 @@ def test_no_manual_input_found(
             postgres_and_manual_nodes("postgres_example", "manual_example"),
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
-            restart_from="access",
         )
 
     # No filing cabinet input found
@@ -251,7 +248,6 @@ def test_no_manual_input_found(
         postgres_and_manual_nodes("postgres_example", "manual_example"),
         [integration_postgres_config, integration_manual_config],
         {"email": "customer-1@example.com"},
-        restart_from="access",
     )
 
     # No filing cabinet data or storage unit data found

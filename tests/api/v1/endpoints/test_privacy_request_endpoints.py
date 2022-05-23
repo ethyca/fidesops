@@ -8,12 +8,13 @@ from unittest import mock
 
 import pytest
 from dateutil.parser import parse
-from fastapi import status
+from fastapi import HTTPException, status
 from fastapi_pagination import Params
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
+    validate_manual_input,
 )
 from fidesops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
@@ -26,11 +27,11 @@ from fidesops.api.v1.urn_registry import (
     DATASETS,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
+    PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
-    PRIVACY_REQUEST_MANUAL_INPUT,
 )
 from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
@@ -1664,7 +1665,9 @@ class TestResumeWithManualInput:
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
-        privacy_request.cache_paused_location(ActionType.access, CollectionAddress("manual_example", "filing_cabinet"))
+        privacy_request.cache_paused_location(
+            ActionType.access, CollectionAddress("manual_example", "filing_cabinet")
+        )
         response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
         assert response.status_code == 422
         assert (
@@ -1687,7 +1690,9 @@ class TestResumeWithManualInput:
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
-        privacy_request.cache_paused_location(ActionType.access, CollectionAddress("manual_input", "filing_cabinet"))
+        privacy_request.cache_paused_location(
+            ActionType.access, CollectionAddress("manual_input", "filing_cabinet")
+        )
         response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
         assert response.status_code == 422
         assert (
@@ -1709,7 +1714,9 @@ class TestResumeWithManualInput:
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
-        privacy_request.cache_paused_location(ActionType.access, CollectionAddress("manual_input", "filing_cabinet"))
+        privacy_request.cache_paused_location(
+            ActionType.access, CollectionAddress("manual_input", "filing_cabinet")
+        )
         response = api_client.post(
             url,
             headers=auth_header,
@@ -1726,3 +1733,52 @@ class TestResumeWithManualInput:
 
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+
+class TestValidateManualInput:
+    """Verify pytest cell-var-from-loop warning is a false positive"""
+    def test_all_fields_match(self, db, postgres_example_test_dataset_config):
+        paused_location = CollectionAddress("postgres_example_test_dataset", "address")
+
+        manual_rows = [{"city": "Nashville", "state": "TN"}]
+        validate_manual_input(manual_rows, paused_location, db)
+
+    def test_one_field_does_not_match(self, db, postgres_example_test_dataset_config):
+        paused_location = CollectionAddress("postgres_example_test_dataset", "address")
+
+        manual_rows = [{"city": "Nashville", "state": "TN", "ccn": "aaa-aaa"}]
+        with pytest.raises(HTTPException) as exc:
+            validate_manual_input(manual_rows, paused_location, db)
+        assert (
+            exc.value.detail
+            == "Cannot save manual rows. No 'ccn' field defined on the 'postgres_example_test_dataset:address' collection."
+        )
+
+    def test_field_on_second_row_does_not_match(
+        self, db, postgres_example_test_dataset_config
+    ):
+        paused_location = CollectionAddress("postgres_example_test_dataset", "address")
+
+        manual_rows = [
+            {"city": "Nashville", "state": "TN"},
+            {"city": "Austin", "misspelled_state": "TX"},
+        ]
+        with pytest.raises(HTTPException) as exc:
+            validate_manual_input(manual_rows, paused_location, db)
+        assert (
+            exc.value.detail
+            == "Cannot save manual rows. No 'misspelled_state' field defined on the 'postgres_example_test_dataset:address' collection."
+        )
+
+    def test_collection_does_not_exist(self, db, postgres_example_test_dataset_config):
+        paused_location = CollectionAddress(
+            "postgres_example_test_dataset", "drivers_license"
+        )
+
+        manual_rows = [{"city": "Nashville", "state": "TN"}]
+        with pytest.raises(HTTPException) as exc:
+            validate_manual_input(manual_rows, paused_location, db)
+        assert (
+            exc.value.detail
+            == "Cannot save manual rows. No collection in graph with name: 'postgres_example_test_dataset:drivers_license'."
+        )

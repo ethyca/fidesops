@@ -501,13 +501,34 @@ def collect_queries(
     return env
 
 
+def update_mapping_from_cache(
+    dsk: Dict[CollectionAddress, Tuple[Any, ...]],
+    resources: TaskResources,
+    start_fn: Callable,
+) -> None:
+    """Use results from the cache if we've already visited a node.
+
+    The dsk dictionary maps each node to a tuple of the function we should run followed by any upstream dependent nodes.
+    {CollectionAddress("postgres:address": (GraphTask function, CollectionAddress("postgres:employee"), CollectionAddress("postgres:customer"))}
+    If we have existing data in the cache for a node, we just return that data instead of running a function,
+    and remove any upstream dependencies.
+
+    If we haven't visited any nodes, the `dsk` dictionary will not change. This is only relevant for when we're
+    resuming a graph from a paused or failed state and don't want to revisit nodes.
+    """
+
+    cached_results: Dict[str, List[Row]] = resources.get_all_cached_objects()
+
+    for node in cached_results:
+        dsk[CollectionAddress.from_string(node)] = start_fn(cached_results[node])
+
+
 def run_access_request(
     privacy_request: PrivacyRequest,
     policy: Policy,
     graph: DatasetGraph,
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
-    restart_from: str = None,
 ) -> Dict[str, List[Row]]:
     """Run the access request"""
     traversal: Traversal = Traversal(graph, identity)
@@ -543,16 +564,12 @@ def run_access_request(
         env: Dict[CollectionAddress, Any] = {}
         end_nodes = traversal.traverse(env, collect_tasks_fn)
 
-        dsk = {k: (t.access_request, *t.input_keys) for k, t in env.items()}
+        dsk: Dict[CollectionAddress, Tuple[Any, ...]] = {
+            k: (t.access_request, *t.input_keys) for k, t in env.items()
+        }
         dsk[ROOT_COLLECTION_ADDRESS] = (start_function([traversal.seed_data]),)
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
-        if restart_from:
-            cached_results: Dict[str, List[Row]] = resources.get_all_cached_objects()
-            # Have already-visited nodes just return their cached data.
-            for node in cached_results:
-                dsk[CollectionAddress.from_string(node)] = (
-                    start_function(cached_results[node]),
-                )
+        update_mapping_from_cache(dsk, resources, start_function)
 
         v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
         return v.compute()

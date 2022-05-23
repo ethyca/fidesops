@@ -1,10 +1,10 @@
+from typing import Dict, Callable, Tuple
 import graphviz
-from typing import Dict, Tuple, Callable
 
 from fidesops.graph.config import (
     CollectionAddress,
-    TERMINATOR_ADDRESS,
     ROOT_COLLECTION_ADDRESS,
+    TERMINATOR_ADDRESS,
 )
 
 
@@ -14,8 +14,7 @@ def reformat_node_name(node: CollectionAddress) -> str:
         return "ROOT"
     if node == TERMINATOR_ADDRESS:
         return "TERMINATOR"
-    else:
-        return node.value.replace(":", "\n\n")
+    return node.value.replace(":", "\n\n")
 
 
 def render(
