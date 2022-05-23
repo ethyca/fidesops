@@ -239,21 +239,38 @@ class PrivacyRequest(Base):
         return cache.get_encoded_objects_by_prefix(result_prefix)
 
     def cache_paused_location(
-        self, request_type: Optional[str] = None, paused_node: Optional[str] = None
+        self,
+        paused_step: Optional[ActionType] = None,
+        paused_node: Optional[CollectionAddress] = None,
     ) -> None:
-        """Cache the request type and the address of the node where the privacy request is waiting on manual input"""
+        """Cache both the paused step (here, access or erasure) and the node where the privacy request is
+        waiting for manual input. For example, we might pause a privacy request at the erasure step of the
+        postgres_example:address collection.
+
+        The paused_step is needed because we may build and execute multiple graphs as part of running a privacy request,
+        An erasure request will run an access request first.  We need to know if we should resume execution from the
+        access or the erasure portion of the request.
+        """
         cache: FidesopsRedis = get_cache()
         paused_key = f"PAUSED_LOCATION__{self.id}"
 
         cache.set_encoded_object(
             paused_key,
-            f"{request_type}__{paused_node}" if request_type and paused_node else None,
+            f"{paused_step.value}__{paused_node.value}"
+            if paused_step and paused_node
+            else None,
         )
 
-    def get_paused_request_and_location(
+    def get_paused_step_and_location(
         self,
-    ) -> Optional[Tuple[Optional[str], Optional[CollectionAddress]]]:
-        """Get the CollectionAddress of the node that is paused and waiting on manual input"""
+    ) -> Tuple[Optional[ActionType], Optional[CollectionAddress]]:
+        """Get both the paused step (access or erasure) and the specific node where we've paused privacy request
+        execution.  A tuple of None's will be returned if not applicable.
+
+        The paused step lets us know if we should resume privacy request execution from the "access" or the "erasure"
+        portion of the privacy request flow, and the node tells us where we should cache manual input data for later use.
+        In other words, this manual data belongs to this node.
+        """
         cache: FidesopsRedis = get_cache()
         cached_paused_node = cache.get_encoded_objects_by_prefix(
             f"PAUSED_LOCATION__{self.id}"
@@ -266,7 +283,9 @@ class PrivacyRequest(Base):
 
         if node_addr:
             split_addr = node_addr.split("__")
-            return split_addr[0], CollectionAddress.from_string(split_addr[1])
+            return ActionType(split_addr[0]), CollectionAddress.from_string(
+                split_addr[1]
+            )
         return None, None
 
     def cache_manual_input(
@@ -279,8 +298,14 @@ class PrivacyRequest(Base):
             manual_rows,
         )
 
-    def get_manual_input(self, location: CollectionAddress) -> Optional[List[Row]]:
-        """Retrieve manually added rows for the given CollectionAddress"""
+    def get_manual_input(
+        self, location: CollectionAddress
+    ) -> Dict[str, Optional[List[Row]]]:
+        """Retrieve manually added rows for the given CollectionAddress.  They are only cached for the
+        access portion of a request for a given node.
+
+        Returns the manual key mapped to the manual data.
+        """
         cache: FidesopsRedis = get_cache()
         prefix = f"MANUAL_INPUT__{self.id}__{location.value}"
         value_dict = cache.get_encoded_objects_by_prefix(prefix)

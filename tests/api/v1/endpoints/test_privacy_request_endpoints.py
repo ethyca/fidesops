@@ -33,6 +33,7 @@ from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_INPUT,
 )
 from fidesops.core.config import config
+from fidesops.graph.config import CollectionAddress
 from fidesops.models.audit_log import AuditLog
 from fidesops.models.client import ClientDetail
 from fidesops.models.policy import ActionType
@@ -1663,7 +1664,7 @@ class TestResumeWithManualInput:
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
-        privacy_request.cache_paused_location("access", "manual_example:filing_cabinet")
+        privacy_request.cache_paused_location(ActionType.access, CollectionAddress("manual_example", "filing_cabinet"))
         response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
         assert response.status_code == 422
         assert (
@@ -1686,7 +1687,7 @@ class TestResumeWithManualInput:
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
-        privacy_request.cache_paused_location("access", "manual_input:filing_cabinet")
+        privacy_request.cache_paused_location(ActionType.access, CollectionAddress("manual_input", "filing_cabinet"))
         response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
         assert response.status_code == 422
         assert (
@@ -1708,7 +1709,7 @@ class TestResumeWithManualInput:
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
-        privacy_request.cache_paused_location("access", "manual_input:filing_cabinet")
+        privacy_request.cache_paused_location(ActionType.access, CollectionAddress("manual_input", "filing_cabinet"))
         response = api_client.post(
             url,
             headers=auth_header,

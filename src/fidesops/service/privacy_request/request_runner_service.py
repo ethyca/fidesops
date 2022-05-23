@@ -97,7 +97,7 @@ class PrivacyRequestRunner:
     def submit(
         self,
         from_webhook: Optional[PolicyPreWebhook] = None,
-        from_request_type: Optional[str] = None,
+        from_request_type: Optional[ActionType] = None,
     ) -> Awaitable[None]:
         """Run this privacy request in a separate thread."""
         from_webhook_id = from_webhook.id if from_webhook else None
@@ -105,8 +105,8 @@ class PrivacyRequestRunner:
             self.run, self.privacy_request.id, from_webhook_id, from_request_type
         )
 
+    @staticmethod
     def upload_access_results(
-        self,
         session: Session,
         policy: Policy,
         access_result,
@@ -150,7 +150,7 @@ class PrivacyRequestRunner:
         self,
         privacy_request_id: str,
         from_webhook_id: Optional[str] = None,
-        from_request_type: Optional[str] = None,  # Resume
+        from_step: Optional[ActionType] = None,
     ) -> None:
         # pylint: disable=too-many-locals
         """
@@ -167,7 +167,7 @@ class PrivacyRequestRunner:
             logging.info(f"Dispatching privacy request {privacy_request.id}")
             privacy_request.start_processing(session)
 
-            if not from_request_type:
+            if not from_step:
                 # Run pre-execution webhooks
                 proceed = self.run_webhooks_and_report_status(
                     session,
@@ -196,14 +196,14 @@ class PrivacyRequestRunner:
                 identity_data = privacy_request.get_cached_identity_data()
                 connection_configs = ConnectionConfig.all(db=session)
 
-                if not from_request_type == "erasure":
+                if from_step == ActionType.access:
                     access_result: Dict[str, List[Row]] = run_access_request(
                         privacy_request=privacy_request,
                         policy=policy,
                         graph=dataset_graph,
                         connection_configs=connection_configs,
                         identity=identity_data,
-                        restart_from=from_request_type,
+                        restart_from=from_step,
                     )
 
                     self.upload_access_results(

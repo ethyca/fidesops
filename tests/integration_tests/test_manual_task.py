@@ -5,6 +5,7 @@ import pytest
 
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.graph.config import CollectionAddress
+from fidesops.models.policy import ActionType
 from fidesops.models.privacy_request import (
     PrivacyRequest,
     ExecutionLog,
@@ -45,8 +46,9 @@ def test_postgres_with_manual_input_access_request_task(
             {"email": "customer-1@example.com"},
         )
 
-    request_type, paused_node = privacy_request.get_paused_request_and_location()
+    request_type, paused_node = privacy_request.get_paused_step_and_location()
     assert paused_node.value == "manual_example:storage_unit"
+    assert request_type == ActionType.access
 
     # Mock user retrieving storage unit data by adding manual data to cache
     privacy_request.cache_manual_input(
@@ -120,7 +122,8 @@ def test_postgres_with_manual_input_access_request_task(
     )
 
     # Paused node removed from cache
-    request_type, paused_node = privacy_request.get_paused_request_and_location()
+    request_type, paused_node = privacy_request.get_paused_step_and_location()
+    assert request_type is None
     assert paused_node is None
 
     execution_logs = db.query(ExecutionLog).filter_by(
@@ -215,7 +218,8 @@ def test_no_manual_input_found(
             {"email": "customer-1@example.com"},
         )
 
-    request_type, paused_node = privacy_request.get_paused_request_and_location()
+    request_type, paused_node = privacy_request.get_paused_step_and_location()
+    assert request_type == ActionType.access
     assert paused_node.value == "manual_example:storage_unit"
 
     # Mock user retrieving storage unit data by adding manual data to cache,
@@ -271,5 +275,6 @@ def test_no_manual_input_found(
     )
 
     # Paused node removed from cache
-    request_type, paused_node = privacy_request.get_paused_request_and_location()
+    request_type, paused_node = privacy_request.get_paused_step_and_location()
+    assert request_type is None
     assert paused_node is None

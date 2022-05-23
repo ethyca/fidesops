@@ -12,7 +12,8 @@ from uuid import uuid4
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
-from fidesops.models.policy import Policy
+from fidesops.graph.config import CollectionAddress
+from fidesops.models.policy import Policy, ActionType
 from fidesops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
@@ -364,3 +365,55 @@ class TestPrivacyRequestTriggerWebhooks:
             )
             with pytest.raises(ValidationError):
                 privacy_request.trigger_policy_webhook(webhook)
+
+
+class TestCachePausedLocation:
+    def test_privacy_request_cache_paused_location(self, privacy_request):
+        paused_step = ActionType.erasure
+        paused_location = CollectionAddress("test_dataset", "test_collection")
+        privacy_request.cache_paused_location(paused_step, paused_location)
+
+        assert privacy_request.get_paused_step_and_location() == (
+            paused_step,
+            paused_location,
+        )
+
+    def test_privacy_request_unpause(self, privacy_request):
+        privacy_request.cache_paused_location()
+
+        assert privacy_request.get_paused_step_and_location() == (None, None)
+
+
+class TestCacheManualInput:
+    def test_cache_manual_input(self, privacy_request):
+        paused_location = CollectionAddress("test_dataset", "test_collection")
+        manual_data = [{"id": 1, "name": "Jane"}, {"id": 2, "name": "Hank"}]
+
+        privacy_request.cache_manual_input(paused_location, manual_data)
+
+        assert privacy_request.get_manual_input(paused_location,) == {
+            f"EN_MANUAL_INPUT__{privacy_request.id}__{paused_location.value}": manual_data
+        }
+
+    def test_cache_empty_manual_input(self, privacy_request):
+        paused_location = CollectionAddress("test_dataset", "test_collection")
+        manual_data = []
+
+        privacy_request.cache_manual_input(paused_location, manual_data)
+
+        assert (
+            privacy_request.get_manual_input(
+                paused_location,
+            )
+            == {f"EN_MANUAL_INPUT__{privacy_request.id}__{paused_location.value}": []}
+        )
+
+    def test_no_manual_data_in_cache(self, privacy_request):
+        paused_location = CollectionAddress("test_dataset", "test_collection")
+
+        assert (
+            privacy_request.get_manual_input(
+                paused_location,
+            )
+            == {}
+        )

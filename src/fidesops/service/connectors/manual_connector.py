@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.graph.traversal import TraversalNode
-from fidesops.models.policy import Policy
+from fidesops.models.policy import Policy, ActionType
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.connectors.base_connector import BaseConnector, DB_CONNECTOR_TYPE
 from fidesops.service.connectors.query_config import QueryConfig
@@ -38,12 +38,12 @@ class ManualConnector(BaseConnector[None]):
         """
         results = privacy_request.get_manual_input(node.address)
         if results:
-            # Results were added to the cache. If no results were found, an empty list is expected.
+            # We just care that results were added - it is okay if they are an empty list.
             privacy_request.cache_paused_location()
             return list(results.values())[0]
         else:
             # Save the node and the request type that we're paused on
-            privacy_request.cache_paused_location("access", node.address.value)
+            privacy_request.cache_paused_location(ActionType.access, node.address)
             raise PrivacyRequestPaused(
                 f"Node {node.address.value} waiting on manual data for privacy request {privacy_request.id}"
             )
