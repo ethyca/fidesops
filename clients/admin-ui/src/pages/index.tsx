@@ -11,7 +11,7 @@ import NavBar from '../features/common/NavBar';
 import RequestTable from '../features/privacy-requests/RequestTable';
 import RequestFilters from '../features/privacy-requests/RequestFilters';
 
-const Home: NextPage<{ session: { user: User } }> = ({ session }) => {
+const Home: NextPage = () => {
   return (
     <div>
       <Head>
@@ -42,7 +42,7 @@ export const getServerSideProps = wrapper.getServerSideProps(
     if (session && typeof session.accessToken !== 'undefined') {
       await store.dispatch(assignToken(session.accessToken));
       await store.dispatch(setUser(session.user));
-      return { props: { session } };
+      return {};
     }
 
     return {
