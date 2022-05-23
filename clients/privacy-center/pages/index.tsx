@@ -26,8 +26,9 @@ const Home: NextPage = () => {
   useEffect(() => {
     if(alert?.status) {
       const closeAlertTimer = setTimeout(() => setAlert(null), 8000);
-      return () => clearTimeout(closeAlertTimer)
+      return () => clearTimeout(closeAlertTimer)  
     }
+    return undefined;
   }, [alert])
   
   return (
