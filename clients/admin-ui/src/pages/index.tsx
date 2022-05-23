@@ -7,7 +7,6 @@ import { wrapper } from '../app/store';
 import NavBar from '../features/common/NavBar';
 import RequestFilters from '../features/privacy-requests/RequestFilters';
 import RequestTable from '../features/privacy-requests/RequestTable';
-import { User } from '../features/user/types';
 import { assignToken, setUser } from '../features/user/user.slice';
 
 const Home: NextPage = () => (

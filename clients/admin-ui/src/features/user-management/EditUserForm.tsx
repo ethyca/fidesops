@@ -5,7 +5,6 @@ import {
   Checkbox,
   Divider,
   FormControl,
-  FormErrorMessage,
   FormLabel,
   Heading,
   Input,
@@ -18,31 +17,24 @@ import type { NextPage } from 'next';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import React from 'react';
-import { useSelector } from 'react-redux';
 
 import { User,userPrivilegesArray } from '../user/types';
 import {
-  selectUserToken,
   useEditUserMutation,
   useGetUserByIdQuery,
   useGetUserPermissionsQuery,
-  useUpdateUserPasswordMutation,
   useUpdateUserPermissionsMutation,
 } from '../user/user.slice';
-import config from './config/config.json';
 import UpdatePasswordModal from './UpdatePasswordModal';
 
 const useUserForm = () => {
-  const token = useSelector(selectUserToken);
   const router = useRouter();
   const { id } = router.query;
-  const [updateUserPermissions, updateUserPermissionsResult] =
+  const [updateUserPermissions, ] =
     useUpdateUserPermissionsMutation();
-  const [updateUserPassword, updateUserPasswordResult] =
-    useUpdateUserPasswordMutation();
-  const [editUser, editUserResult] = useEditUserMutation(id as string);
+  const [editUser, ] = useEditUserMutation(id as string);
   const { data: existingUser } = useGetUserByIdQuery(id as string);
-  const { data: existingScopes, isLoading: scopesLoading } =
+  const { data: existingScopes } =
     useGetUserPermissionsQuery(id as string);
   const toast = useToast();
 
@@ -57,10 +49,6 @@ const useUserForm = () => {
     },
     enableReinitialize: true,
     onSubmit: async (values) => {
-      const host =
-        process.env.NODE_ENV === 'development'
-          ? config.fidesops_host_development
-          : config.fidesops_host_production;
 
       const userBody = {
         username: values.username ? values.username : existingUser?.username,
@@ -86,7 +74,7 @@ const useUserForm = () => {
         return;
       }
 
-      if (editUserError && editUserError.status == 422) {
+      if (editUserError && editUserError.status === 422) {
         toast({
           status: 'error',
           description: editUserError.data.detail.length
@@ -108,7 +96,7 @@ const useUserForm = () => {
         router.push('/user-management');
       }
     },
-    validate: (values) => {
+    validate: () => {
       const errors: {
         username?: string;
         first_name?: string;
@@ -133,19 +121,19 @@ const EditUserForm: NextPage<{
 }> = (user) => {
   const {
     dirty,
-    errors,
     existingUser,
     id,
     handleBlur,
     handleChange,
     handleSubmit,
     isValid,
-    touched,
     values,
     setFieldValue,
   } = useUserForm();
 
-  const { data: loggedInUser, isLoading: loggedInUserLoading } =
+  console.log({user})  
+
+  const { data: loggedInUser } =
     useGetUserPermissionsQuery(user.user.id as string);
 
   const hasAdminPermission = loggedInUser?.scopes?.includes('user:update');
@@ -230,7 +218,7 @@ const EditUserForm: NextPage<{
             <Divider mb={2} mt={2} />
 
             <Stack spacing={[1, 5]} direction="column">
-              {userPrivilegesArray.map((policy, idx) => {
+              {userPrivilegesArray.map(policy => {
                 const isChecked = values.scopes
                   ? values.scopes.indexOf(policy.scope) >= 0
                   : false;
@@ -239,7 +227,7 @@ const EditUserForm: NextPage<{
                     colorScheme="purple"
                     isChecked={isChecked}
                     key={`${policy.privilege}`}
-                    onChange={(e) => {
+                    onChange={() => {
                       if (!isChecked) {
                         setFieldValue(`scopes`, [
                           ...values.scopes,

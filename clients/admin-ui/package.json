@@ -6,7 +6,7 @@
     "dev:mock": "echo '🚨 Running with mock API'; NEXT_PUBLIC_MOCK_API=true next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --ext .ts,.tsx --fix",
+    "lint": "eslint . --ext .ts,.tsx",
     "test": "jest --watch",
     "test:ci": "jest",
     "analyze": "cross-env ANALYZE=true next build",

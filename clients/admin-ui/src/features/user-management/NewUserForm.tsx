@@ -17,20 +17,16 @@ import type { NextPage } from 'next';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import React from 'react';
-import { useSelector } from 'react-redux';
 
 import { userPrivilegesArray } from '../user/types';
 import {
-  selectUserToken,
   useCreateUserMutation,
   useUpdateUserPermissionsMutation,
 } from '../user/user.slice';
-import config from './config/config.json';
 
 const useUserForm = () => {
-  const token = useSelector(selectUserToken);
-  const [createUser, createUserResult] = useCreateUserMutation();
-  const [updateUserPermissions, updateUserPermissionsResult] =
+  const [createUser, ] = useCreateUserMutation();
+  const [updateUserPermissions, ] =
     useUpdateUserPermissionsMutation();
   const router = useRouter();
   const toast = useToast();
@@ -44,10 +40,6 @@ const useUserForm = () => {
       scopes: [],
     },
     onSubmit: async (values) => {
-      const host =
-        process.env.NODE_ENV === 'development'
-          ? config.fidesops_host_development
-          : config.fidesops_host_production;
 
       const userBody = {
         username: values.username,
@@ -68,7 +60,7 @@ const useUserForm = () => {
         return;
       }
 
-      if (createUserError && createUserError.status == 422) {
+      if (createUserError && createUserError.status === 422) {
         toast({
           status: 'error',
           description: createUserError.data.detail.length
@@ -137,12 +129,10 @@ const useUserForm = () => {
 
 const UserForm: NextPage = () => {
   const {
-    dirty,
     errors,
     handleBlur,
     handleChange,
     handleSubmit,
-    isValid,
     touched,
     values,
   } = useUserForm();
@@ -212,8 +202,6 @@ const UserForm: NextPage = () => {
                 value={values.last_name}
               />
             </FormControl>
-
-            <>
               <FormControl
                 id="password"
                 isInvalid={touched.password && Boolean(errors.password)}
@@ -235,7 +223,6 @@ const UserForm: NextPage = () => {
                 />
                 <FormErrorMessage>{errors.password}</FormErrorMessage>
               </FormControl>
-            </>
             <Divider mb={7} mt={7} />
             <Heading fontSize="xl" colorScheme="primary">
               Privileges
@@ -244,7 +231,7 @@ const UserForm: NextPage = () => {
             <Divider mb={2} mt={2} />
 
             <Stack spacing={[1, 5]} direction="column">
-              {userPrivilegesArray.map((policy, idx) => (
+              {userPrivilegesArray.map(policy => (
                 <Checkbox
                   colorScheme="purple"
                   defaultChecked={policy.scope === 'privacy-request:read'}

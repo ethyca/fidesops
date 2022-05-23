@@ -12,7 +12,6 @@ import {
 } from '@fidesui/react';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
 
 import { MoreIcon } from '../common/Icon';
 import { User } from '../user/types';
@@ -35,14 +34,12 @@ const useUserManagementRow = () => {
 };
 
 const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
-  const { handleMenuOpen, handleMenuClose, menuOpen } = useUserManagementRow();
+  const { handleMenuOpen, handleMenuClose } = useUserManagementRow();
   const router = useRouter();
 
   const handleEditUser = () => {
     router.push(`/user-management/profile/${user.id}`);
   };
-
-  const showMenu = menuOpen;
 
   return (
     <Tr key={user.id} _hover={{ bg: 'gray.50' }} height="36px">

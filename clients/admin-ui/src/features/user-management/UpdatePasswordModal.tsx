@@ -20,7 +20,7 @@ const UpdatePasswordModal = (id: string) => {
   const [oldPasswordValue, setOldPasswordValue] = useState('');
   const [newPasswordValue, setNewPasswordValue] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [changePassword, changePasswordResult] =
+  const [changePassword, ] =
     useUpdateUserPasswordMutation();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {

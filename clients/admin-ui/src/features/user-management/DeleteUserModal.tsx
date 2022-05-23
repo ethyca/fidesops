@@ -23,7 +23,7 @@ const DeleteUserModal = (user: User) => {
   const [usernameValue, setUsernameValue] = useState('');
   const [confirmValue, setConfirmValue] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [deleteUser, deleteUserResult] = useDeleteUserMutation();
+  const [deleteUser,] = useDeleteUserMutation();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.name === 'username') {
@@ -32,17 +32,18 @@ const DeleteUserModal = (user: User) => {
       setConfirmValue(event.target.value);
     }
   };
+  const {id: userId, username} = user;
 
   const deletionValidation =
-    !!(user.id &&
+    !!(userId &&
     confirmValue &&
     usernameValue &&
-    user.username === usernameValue &&
-    user.username === confirmValue);
+    username === usernameValue &&
+    username === confirmValue);
 
   const handleDeleteUser = () => {
-    if (deletionValidation && user.id) {
-      deleteUser(user.id);
+    if (deletionValidation && userId) {
+      deleteUser(userId);
       onClose();
     }
   };

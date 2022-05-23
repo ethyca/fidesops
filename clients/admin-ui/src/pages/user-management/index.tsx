@@ -6,12 +6,11 @@ import React from 'react';
 
 import { wrapper } from '../../app/store';
 import NavBar from '../../features/common/NavBar';
-import { User } from '../../features/user/types';
-import { assignToken, setUser } from '../../features/user/user.slice';
+import { assignToken } from '../../features/user/user.slice';
 import UserManagementTable from '../../features/user-management/UserManagementTable';
 import UserManagementTableActions from '../../features/user-management/UserManagementTableActions';
 
-const UserManagement: NextPage<{ session: { user: User } }> = ({ session }) => (
+const UserManagement: NextPage = () => (
     <div>
       <Head>
         <title>Fides Admin UI - User Management</title>
