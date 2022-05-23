@@ -32,7 +32,7 @@ class ManualConnector(BaseConnector[None]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         input_data: Dict[str, List[Any]],
-    ) -> List[Row]:
+    ) -> Optional[List[Row]]:
         """
         Returns manual data cached for the given privacy request on the given node
         if it exists, otherwise, pauses the privacy request.
