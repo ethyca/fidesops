@@ -117,8 +117,8 @@ const useUserForm = () => {
 };
 
 const EditUserForm: NextPage<{
-  existingUser?: User;
-}> = (user) => {
+  user?: User;
+}> = ({user}) => {
   const {
     dirty,
     existingUser,
@@ -131,10 +131,8 @@ const EditUserForm: NextPage<{
     setFieldValue,
   } = useUserForm();
 
-  console.log({user})  
-
   const { data: loggedInUser } =
-    useGetUserPermissionsQuery(user.user.id as string);
+    useGetUserPermissionsQuery(user.id as string);
 
   const hasAdminPermission = loggedInUser?.scopes?.includes('user:update');
 
@@ -155,7 +153,6 @@ const EditUserForm: NextPage<{
               <FormLabel htmlFor="username" fontWeight="medium">
                 Username
               </FormLabel>
-              <button href="#" />
               <Input
                 id="username"
                 maxWidth="40%"
@@ -207,7 +204,7 @@ const EditUserForm: NextPage<{
             </FormControl>
 
             {/* Only the associated user can change their own password */}
-            {id === user.user.id && <UpdatePasswordModal id={id} />}
+            {id === user.id && <UpdatePasswordModal id={id} />}
 
             <Divider mb={7} mt={7} />
 
