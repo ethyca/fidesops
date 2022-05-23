@@ -18,8 +18,6 @@ from ..graph.graph_test_util import (
 )
 from ..task.traversal_data import postgres_and_manual_nodes
 
-dask.config.set(scheduler="synchronous")  # Runs a single-threaded scheduler for testing
-
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration

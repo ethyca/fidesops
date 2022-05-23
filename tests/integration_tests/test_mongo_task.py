@@ -42,7 +42,6 @@ from ..task.traversal_data import (
     combined_mongo_postgresql_graph,
 )
 
-dask.config.set(scheduler="processes")
 empty_policy = Policy()
 
 

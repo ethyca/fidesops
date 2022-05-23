@@ -29,8 +29,6 @@ from ..graph.graph_test_util import (
     erasure_policy,
 )
 
-dask.config.set(scheduler="processes")
-
 connection_configs = [
     ConnectionConfig(key="mysql", connection_type=ConnectionType.postgres),
     ConnectionConfig(key="postgres", connection_type=ConnectionType.postgres),
