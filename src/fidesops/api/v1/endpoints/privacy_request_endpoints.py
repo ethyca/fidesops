@@ -18,8 +18,8 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
-    HTTP_424_FAILED_DEPENDENCY,
     HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_424_FAILED_DEPENDENCY,
 )
 
 from fidesops import common_exceptions
@@ -28,15 +28,15 @@ from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_REVIEW,
     PRIVACY_REQUEST_RESUME_SCOPE,
+    PRIVACY_REQUEST_REVIEW,
 )
 from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
+    PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_RESUME,
     REQUEST_PREVIEW,
-    PRIVACY_REQUEST_MANUAL_INPUT,
 )
 from fidesops.common_exceptions import TraversalError, ValidationError
 from fidesops.core.config import config

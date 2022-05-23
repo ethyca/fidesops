@@ -18,8 +18,8 @@ from fidesops.api.v1.endpoints.privacy_request_endpoints import (
 )
 from fidesops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
-    PRIVACY_REQUEST_RESUME_SCOPE,
     PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_RESUME_SCOPE,
     PRIVACY_REQUEST_REVIEW,
     STORAGE_CREATE_OR_UPDATE,
 )

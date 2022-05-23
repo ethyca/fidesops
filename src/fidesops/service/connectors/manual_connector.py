@@ -2,9 +2,9 @@ from typing import Any, Dict, List, Optional
 
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.graph.traversal import TraversalNode
-from fidesops.models.policy import Policy, ActionType
+from fidesops.models.policy import ActionType, Policy
 from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.service.connectors.base_connector import BaseConnector, DB_CONNECTOR_TYPE
+from fidesops.service.connectors.base_connector import DB_CONNECTOR_TYPE, BaseConnector
 from fidesops.service.connectors.query_config import QueryConfig
 from fidesops.util.collection_util import Row
 

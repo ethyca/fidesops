@@ -7,15 +7,13 @@ from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.graph.config import CollectionAddress
 from fidesops.models.policy import ActionType
 from fidesops.models.privacy_request import (
-    PrivacyRequest,
     ExecutionLog,
     ExecutionLogStatus,
+    PrivacyRequest,
 )
 from fidesops.task import graph_task
 
-from ..graph.graph_test_util import (
-    assert_rows_match,
-)
+from ..graph.graph_test_util import assert_rows_match
 from ..task.traversal_data import postgres_and_manual_nodes
 
 

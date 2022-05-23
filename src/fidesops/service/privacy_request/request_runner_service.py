@@ -14,9 +14,9 @@ from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import (
     ActionType,
+    Policy,
     PolicyPostWebhook,
     PolicyPreWebhook,
-    Policy,
     WebhookTypes,
 )
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus

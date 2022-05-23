@@ -1,10 +1,11 @@
-from typing import Dict, Callable, Tuple
+from typing import Callable, Dict, Tuple
+
 import graphviz
 
 from fidesops.graph.config import (
-    CollectionAddress,
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
+    CollectionAddress,
 )
 
 

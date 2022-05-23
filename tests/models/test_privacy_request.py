@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.graph.config import CollectionAddress
-from fidesops.models.policy import Policy, ActionType
+from fidesops.models.policy import ActionType, Policy
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.util.cache import FidesopsRedis, get_identity_cache_key
