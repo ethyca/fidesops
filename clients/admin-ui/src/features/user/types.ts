@@ -10,7 +10,6 @@ export interface User {
 export interface UserResponse {
   data: {};
   id: string;
-  error?: Error;
 }
 
 export interface UsersResponse {
