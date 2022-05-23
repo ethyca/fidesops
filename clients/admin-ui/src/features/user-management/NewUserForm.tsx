@@ -1,8 +1,3 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import type { NextPage } from 'next';
-import NextLink from 'next/link';
-import { useFormik } from 'formik';
 import {
   Button,
   chakra,
@@ -17,14 +12,20 @@ import {
   Text,
   useToast,
 } from '@fidesui/react';
-import config from './config/config.json';
+import { useFormik } from 'formik';
+import type { NextPage } from 'next';
+import NextLink from 'next/link';
+import { useRouter } from 'next/router';
+import React from 'react';
+import { useSelector } from 'react-redux';
+
+import { userPrivilegesArray } from '../user/types';
 import {
   selectUserToken,
   useCreateUserMutation,
   useUpdateUserPermissionsMutation,
 } from '../user/user.slice';
-import { userPrivilegesArray } from '../user/types';
-import { useRouter } from 'next/router';
+import config from './config/config.json';
 
 const useUserForm = () => {
   const token = useSelector(selectUserToken);
@@ -168,10 +169,10 @@ const UserForm: NextPage = () => {
               </FormLabel>
               <Input
                 id="username"
-                maxWidth={'40%'}
+                maxWidth="40%"
                 name="username"
                 focusBorderColor="primary.500"
-                placeholder={'Enter new username'}
+                placeholder="Enter new username"
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.username}
@@ -186,10 +187,10 @@ const UserForm: NextPage = () => {
               </FormLabel>
               <Input
                 id="first_name"
-                maxWidth={'40%'}
+                maxWidth="40%"
                 name="first_name"
                 focusBorderColor="primary.500"
-                placeholder={'Enter first name of user'}
+                placeholder="Enter first name of user"
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.first_name}
@@ -202,10 +203,10 @@ const UserForm: NextPage = () => {
               </FormLabel>
               <Input
                 id="last_name"
-                maxWidth={'40%'}
+                maxWidth="40%"
                 name="last_name"
                 focusBorderColor="primary.500"
-                placeholder={'Enter last name of user'}
+                placeholder="Enter last name of user"
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.last_name}
@@ -222,10 +223,10 @@ const UserForm: NextPage = () => {
                 </FormLabel>
                 <Input
                   id="password"
-                  maxWidth={'40%'}
+                  maxWidth="40%"
                   name="password"
                   focusBorderColor="primary.500"
-                  placeholder={'********'}
+                  placeholder="********"
                   type="password"
                   value={values.password}
                   onChange={handleChange}
@@ -242,7 +243,7 @@ const UserForm: NextPage = () => {
             <Text>Select privileges to assign to this user</Text>
             <Divider mb={2} mt={2} />
 
-            <Stack spacing={[1, 5]} direction={'column'}>
+            <Stack spacing={[1, 5]} direction="column">
               {userPrivilegesArray.map((policy, idx) => (
                 <Checkbox
                   colorScheme="purple"

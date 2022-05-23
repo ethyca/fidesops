@@ -1,5 +1,3 @@
-import React from 'react';
-import type { NextPage } from 'next';
 import {
   Box,
   Breadcrumb,
@@ -7,13 +5,15 @@ import {
   BreadcrumbLink,
   Heading,
 } from '@fidesui/react';
-
-import NavBar from '../../features/common/NavBar';
-import NewUserForm from '../../features/user-management/NewUserForm';
-import { assignToken, setUser } from '../../features/user/user.slice';
-import { User } from '../../features/user/types';
+import type { NextPage } from 'next';
 import { getSession } from 'next-auth/react';
+import React from 'react';
+
 import { wrapper } from '../../app/store';
+import NavBar from '../../features/common/NavBar';
+import { User } from '../../features/user/types';
+import { assignToken, setUser } from '../../features/user/user.slice';
+import NewUserForm from '../../features/user-management/NewUserForm';
 
 const CreateNewUser: NextPage<{ session: { user: User } }> = ({ session }) => (
   <div>

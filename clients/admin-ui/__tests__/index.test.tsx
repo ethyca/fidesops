@@ -1,7 +1,8 @@
 // __tests__/index.test.tsx
-import { render, screen } from './test-utils';
 import { SessionProvider } from 'next-auth/react';
+
 import Home from '../src/pages/index';
+import { render, screen } from './test-utils';
 
 describe('Home', () => {
   it('renders the Subject Requests page by default', () => {

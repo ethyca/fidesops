@@ -1,10 +1,4 @@
 // @ts-nocheck
-import React from 'react';
-import { useSelector } from 'react-redux';
-import type { NextPage } from 'next';
-import NextLink from 'next/link';
-import { useRouter } from 'next/router';
-import { useFormik } from 'formik';
 import {
   Button,
   chakra,
@@ -19,16 +13,23 @@ import {
   Text,
   useToast,
 } from '@fidesui/react';
-import config from './config/config.json';
+import { useFormik } from 'formik';
+import type { NextPage } from 'next';
+import NextLink from 'next/link';
+import { useRouter } from 'next/router';
+import React from 'react';
+import { useSelector } from 'react-redux';
+
+import { User,userPrivilegesArray } from '../user/types';
 import {
   selectUserToken,
   useEditUserMutation,
-  useUpdateUserPasswordMutation,
-  useUpdateUserPermissionsMutation,
   useGetUserByIdQuery,
   useGetUserPermissionsQuery,
+  useUpdateUserPasswordMutation,
+  useUpdateUserPermissionsMutation,
 } from '../user/user.slice';
-import { userPrivilegesArray, User } from '../user/types';
+import config from './config/config.json';
 import UpdatePasswordModal from './UpdatePasswordModal';
 
 const useUserForm = () => {
@@ -169,15 +170,15 @@ const EditUserForm: NextPage<{
               <button href="#" />
               <Input
                 id="username"
-                maxWidth={'40%'}
+                maxWidth="40%"
                 name="username"
                 focusBorderColor="primary.500"
                 placeholder={existingUser?.username}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.username}
-                isReadOnly={true}
-                isDisabled={true}
+                isReadOnly
+                isDisabled
               />
             </FormControl>
 
@@ -187,7 +188,7 @@ const EditUserForm: NextPage<{
               </FormLabel>
               <Input
                 id="first_name"
-                maxWidth={'40%'}
+                maxWidth="40%"
                 name="first_name"
                 focusBorderColor="primary.500"
                 placeholder={existingUser?.first_name}
@@ -205,7 +206,7 @@ const EditUserForm: NextPage<{
               </FormLabel>
               <Input
                 id="last_name"
-                maxWidth={'40%'}
+                maxWidth="40%"
                 name="last_name"
                 focusBorderColor="primary.500"
                 placeholder={existingUser?.last_name}
@@ -228,7 +229,7 @@ const EditUserForm: NextPage<{
             <Text>Edit privileges assigned to this user</Text>
             <Divider mb={2} mt={2} />
 
-            <Stack spacing={[1, 5]} direction={'column'}>
+            <Stack spacing={[1, 5]} direction="column">
               {userPrivilegesArray.map((policy, idx) => {
                 const isChecked = values.scopes
                   ? values.scopes.indexOf(policy.scope) >= 0

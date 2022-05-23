@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
 import {
-  Text,
-  Tr,
-  Td,
   Button,
   ButtonGroup,
   Menu,
   MenuButton,
-  MenuList,
   MenuItem,
+  MenuList,
   Portal,
+  Td,
+  Text,
+  Tr,
 } from '@fidesui/react';
+import { useRouter } from 'next/router';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { MoreIcon } from '../common/Icon';
-import DeleteUserModal from './DeleteUserModal';
 import { User } from '../user/types';
-import { useRouter } from 'next/router';
+import DeleteUserModal from './DeleteUserModal';
 
 interface UserManagementRowProps {
   user: User;
@@ -45,8 +45,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   const showMenu = menuOpen;
 
   return (
-    <>
-      <Tr key={user.id} _hover={{ bg: 'gray.50' }} height="36px">
+    <Tr key={user.id} _hover={{ bg: 'gray.50' }} height="36px">
         <Td pl={0} py={1}>
           {user.username}
         </Td>
@@ -80,7 +79,6 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
           </ButtonGroup>
         </Td>
       </Tr>
-    </>
   );
 };
 

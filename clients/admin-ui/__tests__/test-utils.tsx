@@ -1,7 +1,8 @@
 // test-utils.jsx
-import React from 'react';
 import { render as rtlRender, RenderOptions } from '@testing-library/react';
+import React from 'react';
 import { Provider } from 'react-redux';
+
 import { AppState, AppStore, makeStore } from '../src/app/store';
 
 type CustomRenderOptions = {
@@ -17,9 +18,7 @@ function render(
     ...renderOptions
   }: CustomRenderOptions = {}
 ) {
-  const Wrapper: React.FC = ({ children }) => {
-    return <Provider store={store}>{children}</Provider>;
-  };
+  const Wrapper: React.FC = ({ children }) => <Provider store={store}>{children}</Provider>;
   return rtlRender(ui, { wrapper: Wrapper, ...renderOptions });
 }
 

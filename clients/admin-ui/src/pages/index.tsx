@@ -2,17 +2,15 @@ import { Box, Heading } from '@fidesui/react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import { getSession } from 'next-auth/react';
+
 import { wrapper } from '../app/store';
-import { assignToken, setUser } from '../features/user/user.slice';
-import { User } from '../features/user/types';
-
 import NavBar from '../features/common/NavBar';
-
-import RequestTable from '../features/privacy-requests/RequestTable';
 import RequestFilters from '../features/privacy-requests/RequestFilters';
+import RequestTable from '../features/privacy-requests/RequestTable';
+import { User } from '../features/user/types';
+import { assignToken, setUser } from '../features/user/user.slice';
 
-const Home: NextPage = () => {
-  return (
+const Home: NextPage = () => (
     <div>
       <Head>
         <title>Fides Admin UI</title>
@@ -33,7 +31,6 @@ const Home: NextPage = () => {
       </main>
     </div>
   );
-};
 
 export const getServerSideProps = wrapper.getServerSideProps(
   (store) => async (context) => {
