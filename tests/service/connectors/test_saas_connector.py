@@ -1,14 +1,14 @@
-from requests import Response
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_200_OK
-from sqlalchemy.orm import Session
-import pytest
 import json
 
+import pytest
+from requests import Response
+from sqlalchemy.orm import Session
+from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 
-from fidesops.service.connectors.saas_connector import SaaSConnector
-from fidesops.service.connectors import get_connector
 from fidesops.schemas.saas.saas_config import SaaSRequest
 from fidesops.schemas.saas.shared_schemas import HTTPMethod
+from fidesops.service.connectors import get_connector
+from fidesops.service.connectors.saas_connector import SaaSConnector
 
 
 @pytest.mark.unit_saas
@@ -125,9 +125,7 @@ class TestSaaSConnectorMethods:
     ):
         connector: SaaSConnector = get_connector(segment_connection_config)
         # Base ClientConfig uses bearer auth
-        assert (
-            connector.client_config.authentication.strategy == "bearer_authentication"
-        )
+        assert connector.client_config.authentication.strategy == "bearer"
 
         segment_user_endpoint = next(
             end for end in connector.saas_config.endpoints if end.name == "segment_user"
@@ -136,13 +134,11 @@ class TestSaaSConnectorMethods:
 
         client = connector.create_client_from_request(saas_request)
         # ClientConfig on read segment user request uses basic auth, and we've overridden client config to match
-        assert connector.client_config.authentication.strategy == "basic_authentication"
-        assert client.client_config.authentication.strategy == "basic_authentication"
+        assert connector.client_config.authentication.strategy == "basic"
+        assert client.client_config.authentication.strategy == "basic"
 
         # Test request users bearer auth - creating the client from the request also updates the connector's auth.
         test_request: SaaSRequest = connector.saas_config.test_request
         client = connector.create_client_from_request(test_request)
-        assert (
-            connector.client_config.authentication.strategy == "bearer_authentication"
-        )
-        assert client.client_config.authentication.strategy == "bearer_authentication"
+        assert connector.client_config.authentication.strategy == "bearer"
+        assert client.client_config.authentication.strategy == "bearer"

@@ -4,11 +4,6 @@ from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
 
-from fidesops.api.v1.scope_registry import SCOPE_REGISTRY, PRIVACY_REQUEST_READ
-from fidesops.models.fidesops_user import FidesopsUser
-from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
-from fidesops.util.data_category import DataCategory
-
 import pydash
 import pytest
 import yaml
@@ -16,41 +11,41 @@ from faker import Faker
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
+from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
 from fidesops.core.config import load_file, load_toml
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import (
-    ConnectionConfig,
     AccessLevel,
+    ConnectionConfig,
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.models.fidesops_user import FidesopsUser
+from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.models.policy import (
     ActionType,
     Policy,
+    PolicyPostWebhook,
+    PolicyPreWebhook,
     Rule,
     RuleTarget,
-    PolicyPreWebhook,
-    PolicyPostWebhook,
 )
-
-from fidesops.models.privacy_request import (
-    PrivacyRequest,
-    PrivacyRequestStatus,
-)
-from fidesops.models.storage import StorageConfig, ResponseFormat
-from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
+from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesops.models.storage import ResponseFormat, StorageConfig
 from fidesops.schemas.storage.storage import (
     FileNaming,
     StorageDetails,
     StorageSecrets,
     StorageType,
 )
+from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.util.cache import FidesopsRedis
+from fidesops.util.data_category import DataCategory
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -908,6 +903,12 @@ def load_dataset(filename: str) -> Dict:
         return yaml.safe_load(file).get("dataset", [])
 
 
+def load_dataset_as_string(filename: str) -> str:
+    yaml_file = load_file(filename)
+    with open(yaml_file, "r") as file:
+        return file.read()
+
+
 @pytest.fixture
 def example_datasets() -> List[Dict]:
     example_datasets = []
@@ -925,6 +926,24 @@ def example_datasets() -> List[Dict]:
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
     return example_datasets
+
+
+@pytest.fixture
+def example_yaml_datasets() -> str:
+    example_filename = "data/dataset/example_test_datasets.yml"
+    return load_dataset_as_string(example_filename)
+
+
+@pytest.fixture
+def example_yaml_dataset() -> str:
+    example_filename = "data/dataset/postgres_example_test_dataset.yml"
+    return load_dataset_as_string(example_filename)
+
+
+@pytest.fixture
+def example_invalid_yaml_dataset() -> str:
+    example_filename = "data/dataset/example_test_dataset.invalid"
+    return load_dataset_as_string(example_filename)
 
 
 @pytest.fixture

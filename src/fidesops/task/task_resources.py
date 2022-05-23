@@ -1,29 +1,29 @@
 import logging
-from typing import Dict, Any, Optional, List, Tuple, Callable
-
-from fidesops.schemas.shared_schemas import FidesOpsKey
+from typing import Any, Dict, List, Optional
 
 from fidesops.common_exceptions import ConnectorNotFoundException
 from fidesops.db.session import get_db_session
-from fidesops.graph.config import (
-    CollectionAddress,
-)
+from fidesops.graph.config import CollectionAddress
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.models.policy import ActionType, Policy
-from fidesops.models.privacy_request import ExecutionLog, ExecutionLogStatus
-from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.models.privacy_request import (
+    ExecutionLog,
+    ExecutionLogStatus,
+    PrivacyRequest,
+)
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.connectors import (
     BaseConnector,
+    BigQueryConnector,
+    ManualConnector,
+    MariaDBConnector,
+    MicrosoftSQLServerConnector,
     MongoDBConnector,
     MySQLConnector,
     PostgreSQLConnector,
-    SnowflakeConnector,
     RedshiftConnector,
-    MicrosoftSQLServerConnector,
-    MariaDBConnector,
-    BigQueryConnector,
     SaaSConnector,
-    ManualConnector,
+    SnowflakeConnector,
 )
 from fidesops.util.cache import get_cache
 
