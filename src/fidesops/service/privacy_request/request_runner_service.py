@@ -223,7 +223,7 @@ class PrivacyRequestRunner:
             except PrivacyRequestPaused as exc:
                 privacy_request.status = PrivacyRequestStatus.paused
                 privacy_request.save(db=session)
-                _log_exception(exc)
+                _log_warning(exc)
                 session.close()
                 return
 
@@ -259,6 +259,14 @@ def _log_exception(exc: BaseException) -> None:
         logging.error(exc, exc_info=True)
     else:
         logging.error(exc)
+
+
+def _log_warning(exc: BaseException) -> None:
+    """If dev mode, log the entire traceback"""
+    if config.dev_mode:
+        logging.warning(exc, exc_info=True)
+    else:
+        logging.warning(exc)
 
 
 def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) -> None:

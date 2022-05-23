@@ -40,7 +40,7 @@ from fidesops.api.v1.urn_registry import (
 )
 from fidesops.common_exceptions import TraversalError, ValidationError
 from fidesops.core.config import config
-from fidesops.graph.config import CollectionAddress, Field
+from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph, Node
 from fidesops.graph.traversal import Traversal
 from fidesops.models.audit_log import AuditLog, AuditLogAction
@@ -579,7 +579,9 @@ def resume_privacy_request(
 def validate_manual_input(
     manual_rows: List[Row], paused_loc: CollectionAddress, db: Session
 ) -> None:
-    """Validate manually added rows against the collection that has been cached as the paused location"""
+    """Validate manually added rows against the collection that has been cached as the paused location
+    Manually-added fields should match fields defined on the collection.
+    """
     datasets = DatasetConfig.all(db=db)
     dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
     dataset_graph = DatasetGraph(*dataset_graphs)
@@ -593,11 +595,9 @@ def validate_manual_input(
 
     for row in manual_rows:
         for field_name in row:
-
-            def field_defined(field: Field) -> bool:
-                return field_name == field.name  # pylint: disable=W0640
-
-            if not dataset_graph.nodes[paused_loc].contains_field(field_defined):
+            if not dataset_graph.nodes[paused_loc].contains_field(
+                lambda f: f.name == field_name  # pylint: disable=W0640
+            ):
                 raise HTTPException(
                     status_code=HTTP_422_UNPROCESSABLE_ENTITY,
                     detail=f"Cannot save manual rows. No '{field_name}' field defined on the '{paused_loc.value}' collection.",
@@ -615,9 +615,11 @@ def resume_with_manual_input(
     *,
     db: Session = Depends(deps.get_db),
     cache: FidesopsRedis = Depends(deps.get_cache),
-    manual_rows: List[Row],
+    manual_rows: List[Optional[Row]],
 ) -> PrivacyRequestResponse:
-    """Resume a privacy request by passing in manual input"""
+    """Resume a privacy request by passing in manual input from the given paused node.
+    If no manual data found, pass in an empty list.
+    """
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
     if privacy_request.status != PrivacyRequestStatus.paused:
         raise HTTPException(

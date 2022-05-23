@@ -510,7 +510,7 @@ def update_mapping_from_cache(
 
     The dsk dictionary maps each node to a tuple of the function we should run followed by any upstream dependent nodes.
     {CollectionAddress("postgres:address": (GraphTask function, CollectionAddress("postgres:employee"), CollectionAddress("postgres:customer"))}
-    If we have existing data in the cache for a node, we just return that data instead of running a function,
+    If we have existing data in the cache for a node from a previous run, we just return that data
     and remove any upstream dependencies.
 
     If we haven't visited any nodes, the `dsk` dictionary will not change. This is only relevant for when we're
@@ -520,7 +520,7 @@ def update_mapping_from_cache(
     cached_results: Dict[str, List[Row]] = resources.get_all_cached_objects()
 
     for node in cached_results:
-        dsk[CollectionAddress.from_string(node)] = start_fn(cached_results[node])
+        dsk[CollectionAddress.from_string(node)] = (start_fn(cached_results[node]),)
 
 
 def run_access_request(

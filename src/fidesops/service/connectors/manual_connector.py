@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.graph.traversal import TraversalNode
@@ -11,15 +11,19 @@ from fidesops.util.collection_util import Row
 
 class ManualConnector(BaseConnector[None]):
     def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
+        """No query_config for the Manual Connector"""
         return None
 
     def create_client(self) -> DB_CONNECTOR_TYPE:
+        """Not needed because this connector involves a human performing some lookup step"""
         return None
 
     def close(self) -> None:
+        """No session to close for the Manual Connector"""
         return None
 
     def test_connection(self) -> None:
+        """No automated test_connection available for the Manual Connector"""
         return None
 
     def retrieve_data(
@@ -33,10 +37,11 @@ class ManualConnector(BaseConnector[None]):
         Returns manual data cached for the given privacy request on the given node
         if it exists, otherwise, pauses the privacy request.
         """
-        results = privacy_request.get_manual_input(node.address)
+        results: Dict[
+            Optional[str], Optional[List[Row]]
+        ] = privacy_request.get_manual_input(node.address)
         if results:
-            # We just care that results were added - it is okay if they are an empty list.
-            privacy_request.cache_paused_location()
+            privacy_request.cache_paused_location()  # Caches paused location as None
             return list(results.values())[0]
         # Save the node and the request type that we're paused on
         privacy_request.cache_paused_location(ActionType.access, node.address)
@@ -51,4 +56,5 @@ class ManualConnector(BaseConnector[None]):
         privacy_request: PrivacyRequest,
         rows: List[Row],
     ) -> int:
-        """Execute a masking request. Return the number of rows that have been updated"""
+        """Pause to have the user manually perform an erasure of data at the given node."""
+        # TODO implement in follow-up ticket
