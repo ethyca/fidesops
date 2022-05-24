@@ -20,7 +20,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.0...main)
 
 ### Added
-
+* Added `FIDESOPS__DATABASE__ENABLED` and `FIDESOPS__REDIS__ENABLED` configuration variables to allow `fidesops` to run cleanly in a "stateless" mode without any database or redis cache integration
 * Pause Access Request Execution / Resume on Manual Input in [#554](https://github.com/ethyca/fidesops/pull/554)
 
 
