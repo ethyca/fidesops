@@ -19,6 +19,11 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.0...main)
 
+### Added
+
+* Pause Access Request Execution / Resume on Manual Input in [#554](https://github.com/ethyca/fidesops/pull/554)
+
+
 ### Developer Experience
 
 * Import ordering is now enforced using [isort](https://pycqa.github.io/isort/) in CI [#533](https://github.com/ethyca/fidesops/pull/533)

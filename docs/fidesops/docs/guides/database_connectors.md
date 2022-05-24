@@ -121,6 +121,19 @@ PATCH api/v1/connection
 ]
 ``` 
 
+#### Example 6: Manual ConnectionConfig
+
+```
+PATCH api/v1/connection 
+[
+  {
+    "name": "Manual connector",
+    "key": "manual_connector",
+    "connection_type": "manual",
+    "access": "read"
+  }
+]
+``` 
 
 ### Set the ConnectionConfig's Secrets
 
