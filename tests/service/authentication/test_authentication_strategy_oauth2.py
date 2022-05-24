@@ -4,13 +4,21 @@ from unittest.mock import Mock
 
 import pytest
 from requests import PreparedRequest, Request
+from sqlalchemy.orm import Session
 
-from fidesops.common_exceptions import SaaSTokenRefreshException
-from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.common_exceptions import OAuth2TokenException
+from fidesops.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fidesops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
 )
 from fidesops.service.authentication.authentication_strategy_factory import get_strategy
+from fidesops.service.authentication.authentication_strategy_oauth2 import (
+    OAuth2AuthenticationStrategy,
+)
 
 
 @pytest.fixture(scope="session")
@@ -25,7 +33,7 @@ def oauth2_configuration() -> OAuth2AuthenticationConfiguration:
                 {"name": "response_type", "value": "code"},
                 {
                     "name": "scope",
-                    "value": "full_access",
+                    "value": "admin.read admin.write",
                 },
             ],
         },
@@ -67,14 +75,14 @@ def oauth2_configuration() -> OAuth2AuthenticationConfiguration:
 
 
 @pytest.fixture(scope="function")
-def connection_config(oauth2_configuration) -> ConnectionConfig:
+def connection_config(db: Session, oauth2_configuration) -> ConnectionConfig:
     secrets = {
         "domain": "localhost",
         "client_id": "client",
         "client_secret": "secret",
         "redirect_uri": "https://localhost/callback",
         "access_token": "access",
-        "refersh_token": "refresh",
+        "refresh_token": "refresh",
     }
     saas_config = {
         "fides_key": "oauth2_connector",
@@ -94,75 +102,158 @@ def connection_config(oauth2_configuration) -> ConnectionConfig:
         "test_request": {"method": "GET", "path": "/test"},
     }
 
-    return ConnectionConfig(
-        key="oauth2_connector_example", secrets=secrets, saas_config=saas_config
+    fides_key = saas_config["fides_key"]
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": fides_key,
+            "name": fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": secrets,
+            "saas_config": saas_config,
+        },
     )
+    yield connection_config
+    connection_config.delete(db)
 
 
-# happy path, being able to use the existing access token
-def test_oauth2_authentication(connection_config, oauth2_configuration):
+class TestAddAuthentication:
+    # happy path, being able to use the existing access token
+    def test_oauth2_authentication(self, connection_config, oauth2_configuration):
 
-    # set a future expiration date for the access token
-    connection_config.secrets["expires_at"] = (
-        datetime.utcnow() + timedelta(days=1)
-    ).timestamp()
+        # set a future expiration date for the access token
+        connection_config.secrets["expires_at"] = (
+            datetime.utcnow() + timedelta(days=1)
+        ).timestamp()
 
-    req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
+        req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-    auth_strategy = get_strategy("oauth2", oauth2_configuration)
-    authenticated_request = auth_strategy.add_authentication(req, connection_config)
-    assert (
-        authenticated_request.headers["Authorization"]
-        == f"Bearer {connection_config.secrets['access_token']}"
-    )
+        auth_strategy = get_strategy("oauth2", oauth2_configuration)
+        authenticated_request = auth_strategy.add_authentication(req, connection_config)
+        assert (
+            authenticated_request.headers["Authorization"]
+            == f"Bearer {connection_config.secrets['access_token']}"
+        )
+
+    # access token expired, call refresh request
+    @mock.patch("fidesops.models.connectionconfig.ConnectionConfig.update")
+    @mock.patch("fidesops.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_oauth2_authentication_successful_refresh(
+        self,
+        mock_send: Mock,
+        mock_connection_config_update: Mock,
+        connection_config,
+        oauth2_configuration,
+    ):
+        # mock the json response from calling the token refresh request
+        mock_send().json.return_value = {"access_token": "new_access"}
+
+        # expire the access token
+        connection_config.secrets["expires_at"] = 0
+
+        # the request we want to authenticate
+        req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
+
+        auth_strategy = get_strategy("oauth2", oauth2_configuration)
+        authenticated_request = auth_strategy.add_authentication(req, connection_config)
+        assert authenticated_request.headers["Authorization"] == "Bearer new_access"
+
+        # verify correct values for connection_config update
+        mock_connection_config_update.assert_called_once_with(
+            mock.ANY,
+            data={
+                "secrets": {
+                    "domain": "localhost",
+                    "client_id": "client",
+                    "client_secret": "secret",
+                    "redirect_uri": "https://localhost/callback",
+                    "access_token": "new_access",
+                    "refresh_token": "refresh",
+                    "expires_at": 0,
+                }
+            },
+        )
+
+    # access token expired, unable to refresh
+    @mock.patch("fidesops.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_oauth2_authentication_failed_refresh(
+        self, mock_send: Mock, connection_config, oauth2_configuration
+    ):
+        # mock the json response from calling the token refresh request
+        mock_send().json.return_value = {"error": "invalid_request"}
+
+        # expire the access token
+        connection_config.secrets["expires_at"] = 0
+
+        # the request we want to authenticate
+        req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
+
+        auth_strategy = get_strategy("oauth2", oauth2_configuration)
+        with pytest.raises(OAuth2TokenException) as exc:
+            auth_strategy.add_authentication(req, connection_config)
+        assert (
+            str(exc.value)
+            == f"Unable to retrieve token for {connection_config.key} (invalid_request)."
+        )
 
 
-# access token expired call refresh request
-@mock.patch("fidesops.models.connectionconfig.ConnectionConfig.update")
-@mock.patch("fidesops.service.connectors.saas_connector.AuthenticatedClient.send")
-def test_oauth2_authentication_successful_refresh(
-    mock_send: Mock,
-    mock_connection_config_update: Mock,
-    connection_config,
-    oauth2_configuration,
-):
-    # mock the json response from calling the token refresh request
-    mock_send().json.return_value = {"access_token": "new_access"}
-
-    # expire the access token
-    connection_config.secrets["expires_at"] = 0
-
-    # the request we want to authenticate
-    req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
-
-    auth_strategy = get_strategy("oauth2", oauth2_configuration)
-    authenticated_request = auth_strategy.add_authentication(req, connection_config)
-    assert authenticated_request.headers["Authorization"] == "Bearer new_access"
-
-    # verify correct values from connection_config update
-    mock_connection_config_update.assert_called_with(
-        mock.ANY, data={"access_token": "new_access"}
-    )
+class TestAuthorizationUrl:
+    @mock.patch("fidesops.service.authentication.authentication_strategy_oauth2.uuid4")
+    def test_get_authorization_url(
+        self, mock_uuid: Mock, connection_config, oauth2_configuration
+    ):
+        mock_uuid.return_value = "unique_value"
+        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
+            "oauth2", oauth2_configuration
+        )
+        assert (
+            auth_strategy.get_authorization_url(connection_config)
+            == "https://localhost/auth/authorize?client_id=client&redirect_uri=https%3A%2F%2Flocalhost%2Fcallback&response_type=code&scope=admin.read+admin.write&state=unique_value"
+        )
 
 
-# access token expired, unable to refresh
-@mock.patch("fidesops.service.connectors.saas_connector.AuthenticatedClient.send")
-def test_oauth2_authentication_failed_refresh(
-    mock_send: Mock, connection_config, oauth2_configuration
-):
-    # mock the json response from calling the token refresh request
-    mock_send().json.return_value = {"error": "invalid_request"}
+class TestAccessTokenRequest:
+    @mock.patch("datetime.datetime")
+    @mock.patch("fidesops.models.connectionconfig.ConnectionConfig.update")
+    @mock.patch("fidesops.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_get_access_token(
+        self,
+        mock_send: Mock,
+        mock_connection_config_update: Mock,
+        mock_time: Mock,
+        connection_config,
+        oauth2_configuration,
+    ):
+        # cast some time magic
+        mock_time.utcnow.return_value = datetime(2022, 5, 22)
 
-    # expire the access token
-    connection_config.secrets["expires_at"] = 0
+        # mock the json response from calling the access token request
+        expires_in = 7200
+        mock_send().json.return_value = {
+            "access_token": "new_access",
+            "refresh_token": "new_refresh",
+            "expires_in": expires_in,
+        }
 
-    # the request we want to authenticate
-    req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
+        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
+            "oauth2", oauth2_configuration
+        )
+        auth_strategy.get_access_token("auth_code", connection_config)
 
-    auth_strategy = get_strategy("oauth2", oauth2_configuration)
-    with pytest.raises(SaaSTokenRefreshException) as exc:
-        auth_strategy.add_authentication(req, connection_config)
-    assert (
-        str(exc.value)
-        == f"The token refresh response for {connection_config.key} is missing an access_token"
-    )
+        # verify correct values for connection_config update
+        mock_connection_config_update.assert_called_once_with(
+            mock.ANY,
+            data={
+                "secrets": {
+                    "domain": "localhost",
+                    "client_id": "client",
+                    "client_secret": "secret",
+                    "redirect_uri": "https://localhost/callback",
+                    "access_token": "new_access",
+                    "refresh_token": "new_refresh",
+                    "code": "auth_code",
+                    "expires_at": int(datetime.utcnow().timestamp()) + expires_in,
+                }
+            },
+        )

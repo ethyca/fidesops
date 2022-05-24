@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.params import Security
@@ -12,11 +13,13 @@ from starlette.status import (
 
 from fidesops.api import deps
 from fidesops.api.v1.scope_registry import (
+    CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
 )
 from fidesops.api.v1.urn_registry import (
+    AUTHORIZE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     V1_URL_PREFIX,
@@ -29,6 +32,10 @@ from fidesops.schemas.saas.saas_config import (
     ValidateSaaSConfigResponse,
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.service.authentication.authentication_strategy_factory import get_strategy
+from fidesops.service.authentication.authentication_strategy_oauth2 import (
+    OAuth2AuthenticationStrategy,
+)
 from fidesops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
@@ -173,3 +180,31 @@ def delete_saas_config(
 
     logger.info(f"Deleting SaaS config for connection '{connection_config.key}'")
     connection_config.update(db, data={"saas_config": None})
+
+
+@router.get(
+    AUTHORIZE,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_AUTHORIZE])],
+    response_model=Optional[str],
+)
+def authorize_connection(
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_saas_connection_config),
+) -> Optional[str]:
+    """Returns the authorization URL for the SaaS Connector (if available)"""
+
+    saas_config = connection_config.get_saas_config()
+    if saas_config is None:
+        return None
+
+    authentication = saas_config.client_config.authentication
+    if authentication is None:
+        return None
+
+    if authentication.strategy != OAuth2AuthenticationStrategy.strategy_name:
+        return None
+
+    auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
+        authentication.strategy, authentication.configuration
+    )
+    return auth_strategy.get_authorization_url(connection_config)
