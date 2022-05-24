@@ -1,5 +1,3 @@
-import {string} from "prop-types";
-
 export type PrivacyRequestStatus =
   | 'approved'
   | 'complete'
@@ -15,8 +13,25 @@ export interface DenyPrivacyRequest{
   reason: string
 }
 
+
+interface FieldsAffected{
+  path: string;
+  field_name: string;
+  data_categories: string[];
+}
+
+export interface ExecutionLog{
+  collection_name: string;
+  fields_affected: FieldsAffected[];
+  message: string;
+  action_type: string;
+  status: string;
+  updated_at: string;
+
+}
 export interface PrivacyRequest {
   status: PrivacyRequestStatus;
+  results?: Record<string, ExecutionLog[]>;
   identity: {
     email?: string;
     phone_number?: string;
@@ -46,4 +61,5 @@ export interface PrivacyRequestParams {
   to: string;
   page: number;
   size: number;
+  verbose?: boolean;
 }

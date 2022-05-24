@@ -19,6 +19,7 @@ export const mapFiltersToSearchParams = ({
   to,
   page,
   size,
+  verbose
 }: Partial<PrivacyRequestParams>) => {
   let fromISO;
   if (from) {
@@ -40,6 +41,7 @@ export const mapFiltersToSearchParams = ({
     ...(toISO ? { created_lt: toISO.toISOString() } : {}),
     ...(page ? { page: `${page}` } : {}),
     ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
+    ...(verbose ? { verbose } : {}),
   };
 };
 
@@ -162,6 +164,7 @@ interface SubjectRequestsState {
   to: string;
   page: number;
   size: number;
+  verbose?: boolean;
 }
 
 const initialState: SubjectRequestsState = {
@@ -214,6 +217,10 @@ export const subjectRequestsSlice = createSlice({
       page: initialState.page,
       size: action.payload,
     }),
+    setVerbose: (state, action: PayloadAction<boolean>) => ({
+      ...state,
+      verbose: action.payload,
+    }),
   },
   extraReducers: {
     [HYDRATE]: (state, action) => ({
@@ -230,6 +237,7 @@ export const {
   setRequestFrom,
   setRequestTo,
   setPage,
+  setVerbose,
   clearAllFilters,
 } = subjectRequestsSlice.actions;
 
@@ -247,6 +255,7 @@ export const selectPrivacyRequestFilters = (
   to: state.subjectRequests.to,
   page: state.subjectRequests.page,
   size: state.subjectRequests.size,
+  verbose: state.subjectRequests.verbose
 });
 
 export const { reducer } = subjectRequestsSlice;

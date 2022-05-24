@@ -1,202 +1,99 @@
 import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Divider,
-  Flex,
-  Heading,
-  Stack,
-  Text,
+    Box,
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    Heading,
+    Text,
 } from '@fidesui/react';
-import type { NextPage } from 'next';
+import type {NextPage} from 'next';
 import Head from 'next/head';
-import { getSession } from 'next-auth/react';
+import {getSession} from 'next-auth/react';
 import React from 'react';
 
-import { useAppSelector } from '../../app/hooks';
-import { wrapper } from '../../app/store';
-import ClipboardButton from '../../features/common/ClipboardButton';
+import {useAppSelector} from '../../app/hooks';
+import {wrapper} from '../../app/store';
 import NavBar from '../../features/common/NavBar';
-import PII from '../../features/common/PII';
-import PIIToggle from '../../features/common/PIIToggle';
-import RequestStatusBadge from '../../features/common/RequestStatusBadge';
 import {
-  privacyRequestApi,
-  selectPrivacyRequestFilters,
-  setRequestId,
-  useGetAllPrivacyRequestsQuery,
-} from '../../features/privacy-requests/privacy-requests.slice';
-import { assignToken, setUser } from '../../features/user/user.slice';
+    privacyRequestApi,
+    selectPrivacyRequestFilters,
+    setRequestId,
+    useGetAllPrivacyRequestsQuery,
+    setVerbose
+} from '../../features/privacy-requests';
+import {assignToken, setUser} from '../../features/user';
+import SubjectRequest from "../../features/subject-request/subject-request";
+
 
 const SubjectRequestDetails: NextPage<{}> = () => {
-  const filters = useAppSelector(selectPrivacyRequestFilters);
-  const { data } = useGetAllPrivacyRequestsQuery(filters);
+    const filters = useAppSelector(selectPrivacyRequestFilters);
+    const {data} = useGetAllPrivacyRequestsQuery(filters);
+    const body = data?.items.length === 0 ? <Text>404 no subject request found</Text> :
+        <SubjectRequest subjectRequest={data?.items[0]!}/>
 
-  if (data?.items.length === 0) {
+
     return (
-      <div>
-        <Head>
-          <title>Fides Admin UI - Subject Request Details</title>
-          <meta name='description' content='Subject Request Details' />
-          <link rel='icon' href='/favicon.ico' />
-        </Head>
+        <div>
+            <Head>
+                <title>Fides Admin UI - Subject Request Details</title>
+                <meta name='description' content='Subject Request Details'/>
+                <link rel='icon' href='/favicon.ico'/>
+            </Head>
 
-        <NavBar />
+            <NavBar/>
 
-        <main>
-          <Box px={9} py={10}>
-            <Heading fontSize='2xl' fontWeight='semibold'>
-              Subject Request Details
-            </Heading>
-            <Text>404 no subject request found</Text>
-          </Box>
-        </main>
-      </div>
+            <main>
+                <Box px={9} py={10}>
+                    <Heading fontSize='2xl' fontWeight='semibold'>
+                        Subject Request
+                        <Box mt={2} mb={9}>
+                            <Breadcrumb fontWeight='medium' fontSize='sm'>
+                                <BreadcrumbItem>
+                                    <BreadcrumbLink href='/'>Subject Request</BreadcrumbLink>
+                                </BreadcrumbItem>
+
+                                <BreadcrumbItem>
+                                    <BreadcrumbLink href='#'>View Details</BreadcrumbLink>
+                                </BreadcrumbItem>
+                            </Breadcrumb>
+                        </Box>
+                    </Heading>
+                    {body}
+                </Box>
+            </main>
+        </div>
     );
-  }
-
-  const subjectRequest = data?.items[0]!;
-  return (
-    <div>
-      <Head>
-        <title>Fides Admin UI - Subject Request Details</title>
-        <meta name='description' content='Subject Request Details' />
-        <link rel='icon' href='/favicon.ico' />
-      </Head>
-
-      <NavBar />
-
-      <main>
-        <Box px={9} py={10}>
-          <Heading fontSize='2xl' fontWeight='semibold'>
-            Subject Request
-            <Box mt={2} mb={9}>
-              <Breadcrumb fontWeight='medium' fontSize='sm'>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href='/'>Subject Request</BreadcrumbLink>
-                </BreadcrumbItem>
-
-                <BreadcrumbItem>
-                  <BreadcrumbLink href='#'>View Details</BreadcrumbLink>
-                </BreadcrumbItem>
-              </Breadcrumb>
-            </Box>
-          </Heading>
-          <Heading fontSize='lg' fontWeight='semibold' mb={4}>
-            Request Details
-          </Heading>
-          <Divider />
-          <Flex alignItems='center'>
-            <Text
-              mt={4}
-              mb={4}
-              mr={2}
-              fontSize='sm'
-              color='gray.900'
-              fontWeight='500'
-            >
-              Request ID:
-            </Text>
-            <Text color='gray.600' fontWeight='500' fontSize='sm' mr={1}>
-              {subjectRequest.id}
-            </Text>
-            <ClipboardButton requestId={subjectRequest.id} />
-          </Flex>
-          <Flex alignItems='flex-start'>
-            <Text mb={4} mr={2} fontSize='sm' color='gray.900' fontWeight='500'>
-              Status:
-            </Text>
-            <RequestStatusBadge status={subjectRequest.status} />
-          </Flex>
-          {/* <Text>Request Type: {subjectRequest.type}</Text> the type field doesn't exist yet */}
-
-          <Stack direction='row'>
-            <Heading fontSize='lg' fontWeight='semibold' mb={4}>
-              Subject indentities
-            </Heading>
-            <Flex flexShrink={0} alignItems='flex-start'>
-              <PIIToggle />
-              <Text fontSize='xs' ml={2} size='sm'>
-                Reveal PII
-              </Text>
-            </Flex>
-          </Stack>
-          <Divider />
-
-          <Flex alignItems='center'>
-            <Text
-              mt={4}
-              mb={4}
-              mr={2}
-              fontSize='sm'
-              color='gray.900'
-              fontWeight='500'
-            >
-              Email:
-            </Text>
-            <Text color='gray.600' fontWeight='500' fontSize='sm'>
-              <PII
-                data={
-                  subjectRequest.identity.email
-                    ? subjectRequest.identity.email
-                    : ''
-                }
-              />
-            </Text>
-          </Flex>
-          <Flex alignItems='flex-start'>
-            <Text mb={4} mr={2} fontSize='sm' color='gray.900' fontWeight='500'>
-              Mobile:
-            </Text>
-            <Text color='gray.600' fontWeight='500' fontSize='sm'>
-              <PII
-                data={
-                  subjectRequest.identity.phone_number
-                    ? subjectRequest.identity.phone_number
-                    : ''
-                }
-              />
-            </Text>
-          </Flex>
-          <Heading fontSize='lg' fontWeight='semibold' mb={4}>
-            Events and logs
-          </Heading>
-          <Divider />
-        </Box>
-      </main>
-    </div>
-  );
 };
 
 export default SubjectRequestDetails;
 
 export const getServerSideProps = wrapper.getServerSideProps(
-  (store) => async (context) => {
-    const session = await getSession(context);
-    if (session && typeof session.accessToken !== 'undefined') {
-      await store.dispatch(assignToken(session.accessToken));
-      await store.dispatch(setUser(session.user));
-      await store.dispatch(setRequestId(context.query.id as string));
-      const state = store.getState();
+    (store) => async (context) => {
+        const session = await getSession(context);
+        if (session && typeof session.accessToken !== 'undefined') {
+            await store.dispatch(assignToken(session.accessToken));
+            await store.dispatch(setUser(session.user));
+            await store.dispatch(setRequestId(context.query.id as string));
+            await store.dispatch(setVerbose(true));
+            const state = store.getState();
 
-      if (context.query.id) {
-        const filters = selectPrivacyRequestFilters(state);
-        delete filters.status;
-        store.dispatch(
-          privacyRequestApi.endpoints.getAllPrivacyRequests.initiate(filters)
-        );
-        await Promise.all(privacyRequestApi.util.getRunningOperationPromises());
-      }
+            if (context.query.id) {
+                const filters = selectPrivacyRequestFilters(state);
+                delete filters.status;
+                store.dispatch(
+                    privacyRequestApi.endpoints.getAllPrivacyRequests.initiate(filters)
+                );
+                await Promise.all(privacyRequestApi.util.getRunningOperationPromises());
+            }
 
-      return { props: {} };
+            return {props: {}};
+        }
+
+        return {
+            redirect: {
+                destination: '/login',
+                permanent: false,
+            },
+        };
     }
-
-    return {
-      redirect: {
-        destination: '/login',
-        permanent: false,
-      },
-    };
-  }
 );
