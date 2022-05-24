@@ -1,5 +1,3 @@
-from typing import Any, Dict
-
 from requests import PreparedRequest
 
 from fidesops.models.connectionconfig import ConnectionConfig

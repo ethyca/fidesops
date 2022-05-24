@@ -171,7 +171,7 @@ def read_scopes() -> List[str]:
 
 
 @router.post(OAUTH_CALLBACK, response_model=None)
-def oauth_callback(code: str, state: str, db: Session = Depends(get_db)):
+def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None:
     """
     Uses the passed in code to generate the token access request
     for the connection associated with the given state.
@@ -184,7 +184,7 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)):
     if not authentication_request:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No connection associated with the given state.",
+            detail="No connection associated with the given state.",
         )
 
     # trigger the access token request

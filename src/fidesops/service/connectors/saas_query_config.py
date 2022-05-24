@@ -15,12 +15,7 @@ from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.service.connectors.query_config import QueryConfig
 from fidesops.util import saas_util
 from fidesops.util.collection_util import Row, merge_dicts
-from fidesops.util.saas_util import (
-    FIDESOPS_GROUPED_INPUTS,
-    assign_placeholders,
-    format_body,
-    unflatten_dict,
-)
+from fidesops.util.saas_util import FIDESOPS_GROUPED_INPUTS, unflatten_dict
 
 logger = logging.getLogger(__name__)
 

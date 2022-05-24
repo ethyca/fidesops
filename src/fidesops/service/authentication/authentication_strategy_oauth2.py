@@ -229,7 +229,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
             f"?{urlencode(prepared_authorization_request.query_params)}"
         )
 
-    def get_access_token(self, code: str, connection_config: ConnectionConfig):
+    def get_access_token(self, code: str, connection_config: ConnectionConfig) -> None:
         """
         Generates and executes the access token request based on the OAuth2 config
         and connection config secrets.
