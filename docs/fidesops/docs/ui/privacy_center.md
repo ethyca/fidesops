@@ -53,7 +53,7 @@ The fidesops Privacy Center's text and actions are managed by a `config.json` fi
 | `identity_inputs` | The list of personally identifiable information required by an action. |
 
 ### Actions
-Actions represent available privacy rights executable from the Privacy Center. The provided `config.json` includes Download and Delete default, representing common requests to access or remove data under most privacy regulations. 
+Actions represent available privacy rights executable from the Privacy Center. The provided `config.json` includes Download and Delete default, representing common requests to access or remove data under most privacy regulations. Each action is associated with a fidesops [policy key](../guides/policy_webhooks.md), which defines the policy executed when the DSR is approved.
 
 Additional actions can be added to this list, and removed at any time.
 
