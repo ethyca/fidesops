@@ -18,11 +18,11 @@ import {
   privacyRequestApi,
   selectPrivacyRequestFilters,
   setRequestId,
-  useGetAllPrivacyRequestsQuery,
   setVerbose,
+  useGetAllPrivacyRequestsQuery,
 } from '../../features/privacy-requests';
+import SubjectRequest from '../../features/subject-request/SubjectRequest';
 import { assignToken, setUser } from '../../features/user';
-import SubjectRequest from '../../features/subject-request/subject-request';
 
 const SubjectRequestDetails: NextPage<{}> = () => {
   const filters = useAppSelector(selectPrivacyRequestFilters);

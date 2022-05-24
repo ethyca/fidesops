@@ -18,8 +18,9 @@ import {
   DownloadSolidIcon,
   SearchLineIcon,
 } from '../common/Icon';
-import { selectUserToken } from '../user/user.slice';
 import PIIToggle from '../common/PIIToggle';
+import { statusPropMap } from '../common/RequestStatusBadge';
+import { selectUserToken } from '../user/user.slice';
 import {
   clearAllFilters,
   requestCSVDownload,
@@ -29,7 +30,6 @@ import {
   setRequestStatus,
   setRequestTo,
 } from './privacy-requests.slice';
-import { statusPropMap } from '../common/RequestStatusBadge';
 import { PrivacyRequestStatus } from './types';
 
 const useRequestFilters = () => {
