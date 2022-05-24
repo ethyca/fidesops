@@ -10,7 +10,7 @@ from fidesops.common_exceptions import FidesopsException, OAuth2TokenException
 from fidesops.db.session import get_db_session
 from fidesops.models.authentication_request import AuthenticationRequest
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.saas_config import QueryParam, SaaSRequest
+from fidesops.schemas.saas.saas_config import ClientConfig, QueryParam, SaaSRequest
 from fidesops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
     StrategyConfiguration,
@@ -87,20 +87,24 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
 
         logger.info(f"Attempting {action} token request for {connection_config.key}")
 
-        # get the client config from the refresh request or default
-        # to the base client config if one isn't provided
-        client_config = (
+        # get the client config from the token request or default to the
+        # protocol and host specified by the root client config (no auth)
+        root_client_config = connection_config.get_saas_config().client_config
+        oauth_client_config = (
             token_request.client_config
             if token_request.client_config
-            else connection_config.get_saas_config().client_config
+            else ClientConfig(
+                protocol=root_client_config.protocol, host=root_client_config.host
+            )
         )
 
         client = AuthenticatedClient(
             (
-                f"{client_config.protocol}://"
-                f"{assign_placeholders(client_config.host, connection_config.secrets)}"
+                f"{oauth_client_config.protocol}://"
+                f"{assign_placeholders(oauth_client_config.host, connection_config.secrets)}"
             ),
             connection_config,
+            oauth_client_config,
         )
 
         try:
@@ -195,7 +199,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         SessionLocal = get_db_session()
         db = SessionLocal()
         AuthenticationRequest.create_or_update(
-            db=db, data={"connection_key": connection_config.key, "state": state}
+            db, data={"connection_key": connection_config.key, "state": state}
         )
         # add state as a query param
         self.authorization_request.query_params.append(

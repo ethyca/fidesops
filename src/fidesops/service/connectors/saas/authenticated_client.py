@@ -6,6 +6,7 @@ from requests import PreparedRequest, Request, Response, Session
 from fidesops.common_exceptions import ClientUnsuccessfulException, ConnectionException
 from fidesops.core.config import config
 from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.schemas.saas.saas_config import ClientConfig
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 
 logger = logging.getLogger(__name__)
@@ -14,15 +15,25 @@ logger = logging.getLogger(__name__)
 class AuthenticatedClient:
     """
     A helper class to build authenticated HTTP requests based on
-    authentication and parameter configurations
+    authentication and parameter configurations. Optionally allows
+    a request client config to override the root client config.
     """
 
-    def __init__(self, uri: str, configuration: ConnectionConfig):
+    def __init__(
+        self,
+        uri: str,
+        configuration: ConnectionConfig,
+        request_client_config: ClientConfig = None,
+    ):
         self.configuration = configuration
         self.session = Session()
         self.uri = uri
         self.key = configuration.key
-        self.client_config = configuration.get_saas_config().client_config
+        self.client_config = (
+            request_client_config
+            if request_client_config
+            else configuration.get_saas_config().client_config
+        )
         self.secrets = configuration.secrets
 
     def get_authenticated_request(

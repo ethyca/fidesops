@@ -32,10 +32,12 @@ class SaaSRequestParams(BaseModel):
 
         use_enum_values = True
 
+
 class ConnectorParamRef(BaseModel):
     """A reference to a value in the connector params (by name)"""
 
     connector_param: Any
+
 
 class IdentityParamRef(BaseModel):
     """A reference to the identity type in the filter Post Processor Config"""

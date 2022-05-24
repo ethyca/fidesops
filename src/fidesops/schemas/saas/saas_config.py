@@ -11,9 +11,8 @@ from fidesops.graph.config import (
 )
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.dataset import FidesCollectionKey, FidesopsDatasetReference
-from fidesops.schemas.saas.shared_schemas import ConnectorParamRef, HTTPMethod
+from fidesops.schemas.saas.shared_schemas import HTTPMethod
 from fidesops.schemas.shared_schemas import FidesOpsKey
-from fidesops.service.pagination.pagination_strategy_factory import get_strategy
 
 
 class ParamValue(BaseModel):
