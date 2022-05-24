@@ -78,9 +78,8 @@ def retry(
                         f"Privacy request {method_name} paused {self.traversal_node.address}"
                     )
                     self.log_paused(action_type, ex)
-                    # Re-raise
+                    # Re-raise to stop privacy request execution.
                     raise PrivacyRequestPaused(ex)
-
                 except BaseException as ex:  # pylint: disable=W0703
                     func_delay *= config.execution.TASK_RETRY_BACKOFF
                     logger.warning(
@@ -506,21 +505,19 @@ def update_mapping_from_cache(
     resources: TaskResources,
     start_fn: Callable,
 ) -> None:
-    """Use results from the cache if we've already visited a node.
+    """When resuming a privacy request from a paused or failed state, update the `dsk` dictionary with results we've
+    already obtained from a previous run. Remove upstream dependencies for these nodes, and just return the data we've
+    already retrieved, rather than visiting them again.
 
-    The dsk dictionary maps each node to a tuple of the function we should run followed by any upstream dependent nodes.
-    {CollectionAddress("postgres:address": (GraphTask function, CollectionAddress("postgres:employee"), CollectionAddress("postgres:customer"))}
-    If we have existing data in the cache for a node from a previous run, we just return that data
-    and remove any upstream dependencies.
-
-    If we haven't visited any nodes, the `dsk` dictionary will not change. This is only relevant for when we're
-    resuming a graph from a paused or failed state and don't want to revisit nodes.
+    If there's no cached data, the dsk dictionary won't change.
     """
 
     cached_results: Dict[str, List[Row]] = resources.get_all_cached_objects()
 
-    for node in cached_results:
-        dsk[CollectionAddress.from_string(node)] = (start_fn(cached_results[node]),)
+    for collection_name in cached_results:
+        dsk[CollectionAddress.from_string(collection_name)] = (
+            start_fn(cached_results[collection_name]),
+        )
 
 
 def run_access_request(

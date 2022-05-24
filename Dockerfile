@@ -12,8 +12,7 @@ RUN apt-get update && \
     curl \
     g++ \
     gnupg \
-    gcc \
-    graphviz
+    gcc
 
 
 RUN echo "ENVIRONMENT VAR:  $MSSQL_REQUIRED"

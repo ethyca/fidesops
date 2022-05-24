@@ -364,17 +364,17 @@ class TestCachePausedLocation:
     def test_privacy_request_cache_paused_location(self, privacy_request):
         paused_step = ActionType.erasure
         paused_location = CollectionAddress("test_dataset", "test_collection")
-        privacy_request.cache_paused_location(paused_step, paused_location)
+        privacy_request.cache_paused_step_and_collection(paused_step, paused_location)
 
-        assert privacy_request.get_paused_step_and_location() == (
+        assert privacy_request.get_paused_step_and_collection() == (
             paused_step,
             paused_location,
         )
 
     def test_privacy_request_unpause(self, privacy_request):
-        privacy_request.cache_paused_location()
+        privacy_request.cache_paused_step_and_collection()
 
-        assert privacy_request.get_paused_step_and_location() == (None, None)
+        assert privacy_request.get_paused_step_and_collection() == (None, None)
 
 
 class TestCacheManualInput:

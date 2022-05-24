@@ -5,12 +5,11 @@ from fidesops.graph.traversal import TraversalNode
 from fidesops.models.policy import ActionType, Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.connectors.base_connector import DB_CONNECTOR_TYPE, BaseConnector
-from fidesops.service.connectors.query_config import QueryConfig
 from fidesops.util.collection_util import Row
 
 
 class ManualConnector(BaseConnector[None]):
-    def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
+    def query_config(self, node: TraversalNode) -> None:
         """No query_config for the Manual Connector"""
         return None
 
@@ -34,19 +33,22 @@ class ManualConnector(BaseConnector[None]):
         input_data: Dict[str, List[Any]],
     ) -> Optional[List[Row]]:
         """
-        Returns manual data cached for the given privacy request on the given node
-        if it exists, otherwise, pauses the privacy request.
+        Returns manually added data for the given collection if it exists, otherwise pauses the Privacy Request.
         """
-        results: Dict[
+        cached_results: Dict[
             Optional[str], Optional[List[Row]]
         ] = privacy_request.get_manual_input(node.address)
-        if results:
-            privacy_request.cache_paused_location()  # Caches paused location as None
-            return list(results.values())[0]
-        # Save the node and the request type that we're paused on
-        privacy_request.cache_paused_location(ActionType.access, node.address)
+
+        if cached_results:
+            privacy_request.cache_paused_step_and_collection()  # Caches paused location as None
+            return list(cached_results.values())[0]
+
+        # Save the step (access) and collection where we're paused.
+        privacy_request.cache_paused_step_and_collection(
+            ActionType.access, node.address
+        )
         raise PrivacyRequestPaused(
-            f"Node {node.address.value} waiting on manual data for privacy request {privacy_request.id}"
+            f"Collection '{node.address.value}' waiting on manual data for privacy request '{privacy_request.id}'"
         )
 
     def mask_data(

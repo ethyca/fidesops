@@ -42,7 +42,7 @@ def test_postgres_with_manual_input_access_request_task(
             {"email": "customer-1@example.com"},
         )
 
-    request_type, paused_node = privacy_request.get_paused_step_and_location()
+    request_type, paused_node = privacy_request.get_paused_step_and_collection()
     assert paused_node.value == "manual_example:storage_unit"
     assert request_type == ActionType.access
 
@@ -116,7 +116,7 @@ def test_postgres_with_manual_input_access_request_task(
     )
 
     # Paused node removed from cache
-    request_type, paused_node = privacy_request.get_paused_step_and_location()
+    request_type, paused_node = privacy_request.get_paused_step_and_collection()
     assert request_type is None
     assert paused_node is None
 
@@ -212,7 +212,7 @@ def test_no_manual_input_found(
             {"email": "customer-1@example.com"},
         )
 
-    request_type, paused_node = privacy_request.get_paused_step_and_location()
+    request_type, paused_node = privacy_request.get_paused_step_and_collection()
     assert request_type == ActionType.access
     assert paused_node.value == "manual_example:storage_unit"
 
@@ -267,6 +267,6 @@ def test_no_manual_input_found(
     )
 
     # Paused node removed from cache
-    request_type, paused_node = privacy_request.get_paused_step_and_location()
+    request_type, paused_node = privacy_request.get_paused_step_and_collection()
     assert request_type is None
     assert paused_node is None

@@ -18,8 +18,8 @@ from fidesops.api.v1.endpoints.privacy_request_endpoints import (
 )
 from fidesops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_RESUME_SCOPE,
     PRIVACY_REQUEST_REVIEW,
     STORAGE_CREATE_OR_UPDATE,
 )
@@ -1544,7 +1544,7 @@ class TestResumePrivacyRequest:
                 json.dumps(
                     {
                         "webhook_id": policy_post_execution_webhooks[0].id,
-                        "scopes": [PRIVACY_REQUEST_RESUME_SCOPE],
+                        "scopes": [PRIVACY_REQUEST_CALLBACK_RESUME],
                         "iat": datetime.now().isoformat(),
                     }
                 )
@@ -1635,7 +1635,7 @@ class TestResumeWithManualInput:
     def test_manual_resume_privacy_request_not_paused(
         self, api_client, url, generate_auth_header, privacy_request
     ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_RESUME_SCOPE])
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
         response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
         assert response.status_code == 400
         assert (
@@ -1646,7 +1646,7 @@ class TestResumeWithManualInput:
     def test_manual_resume_privacy_request_no_paused_location(
         self, db, api_client, url, generate_auth_header, privacy_request
     ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_RESUME_SCOPE])
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
@@ -1654,18 +1654,18 @@ class TestResumeWithManualInput:
         assert response.status_code == 400
         assert (
             response.json()["detail"]
-            == f"Cannot resume privacy request '{privacy_request.id}'; no paused location."
+            == f"Cannot resume privacy request '{privacy_request.id}'; no paused collection."
         )
 
     def test_resume_with_manual_input_collection_has_changed(
         self, db, api_client, url, generate_auth_header, privacy_request
     ):
         """Fail if user has changed graph so that the paused node doesn't exist"""
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_RESUME_SCOPE])
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
-        privacy_request.cache_paused_location(
+        privacy_request.cache_paused_step_and_collection(
             ActionType.access, CollectionAddress("manual_example", "filing_cabinet")
         )
         response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
@@ -1686,11 +1686,11 @@ class TestResumeWithManualInput:
         manual_dataset_config,
     ):
         """Fail if the manual data entered does not match fields on the dataset"""
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_RESUME_SCOPE])
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
-        privacy_request.cache_paused_location(
+        privacy_request.cache_paused_step_and_collection(
             ActionType.access, CollectionAddress("manual_input", "filing_cabinet")
         )
         response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
@@ -1710,11 +1710,11 @@ class TestResumeWithManualInput:
         postgres_example_test_dataset_config,
         manual_dataset_config,
     ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_RESUME_SCOPE])
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
-        privacy_request.cache_paused_location(
+        privacy_request.cache_paused_step_and_collection(
             ActionType.access, CollectionAddress("manual_input", "filing_cabinet")
         )
         response = api_client.post(
@@ -1737,6 +1737,7 @@ class TestResumeWithManualInput:
 
 class TestValidateManualInput:
     """Verify pytest cell-var-from-loop warning is a false positive"""
+
     def test_all_fields_match(self, db, postgres_example_test_dataset_config):
         paused_location = CollectionAddress("postgres_example_test_dataset", "address")
 
