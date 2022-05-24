@@ -3697,6 +3697,44 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Resume Erasure Request with Confirmed Masked Row Count",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"row_count\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/erasure_confirm",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"erasure_confirm"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}

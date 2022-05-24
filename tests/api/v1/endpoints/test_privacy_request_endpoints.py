@@ -27,6 +27,7 @@ from fidesops.api.v1.urn_registry import (
     DATASETS,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
+    PRIVACY_REQUEST_MANUAL_ERASURE,
     PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUESTS,
@@ -1615,7 +1616,7 @@ class TestResumePrivacyRequest:
         }
 
 
-class TestResumeWithManualInput:
+class TestResumeAccessRequestWithManualInput:
     @pytest.fixture(scope="function")
     def url(self, privacy_request):
         return V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_INPUT.format(
@@ -1787,3 +1788,112 @@ class TestValidateManualInput:
             exc.value.detail
             == "Cannot save manual rows. No collection in graph with name: 'postgres_example_test_dataset:drivers_license'."
         )
+
+
+class TestResumeErasureRequestWithManualConfirmation:
+    @pytest.fixture(scope="function")
+    def url(self, db, privacy_request):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_ERASURE.format(
+            privacy_request_id=privacy_request.id
+        )
+
+    def test_manual_resume_not_authenticated(self, api_client, url):
+        response = api_client.post(url, headers={}, json={})
+        assert response.status_code == 401
+
+    def test_manual_resume_wrong_scope(self, api_client, url, generate_auth_header):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 403
+
+    def test_manual_resume_privacy_request_not_paused(
+        self, api_client, url, generate_auth_header, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header, json={"row_count": 0})
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == f"Invalid resume request: privacy request '{privacy_request.id}' status = in_processing."
+        )
+
+    def test_manual_resume_privacy_request_no_paused_location(
+        self, db, api_client, url, generate_auth_header, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db)
+
+        response = api_client.post(url, headers=auth_header, json={"row_count": 0})
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == f"Cannot resume privacy request '{privacy_request.id}'; no paused collection."
+        )
+
+    def test_resume_with_manual_erasure_confirmation_collection_has_changed(
+        self, db, api_client, url, generate_auth_header, privacy_request
+    ):
+        """Fail if user has changed graph so that the paused node doesn't exist"""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db)
+
+        privacy_request.cache_paused_step_and_collection(
+            ActionType.erasure, CollectionAddress("manual_example", "filing_cabinet")
+        )
+        response = api_client.post(url, headers=auth_header, json={"row_count": 0})
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == "Cannot save manual rows. No collection in graph with name: 'manual_example:filing_cabinet'."
+        )
+
+    def test_resume_still_paused_at_access_request(
+        self, db, api_client, url, generate_auth_header, privacy_request
+    ):
+        """Fail if user hitting wrong endpoint to resume."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db)
+
+        privacy_request.cache_paused_step_and_collection(
+            ActionType.access, CollectionAddress("manual_example", "filing_cabinet")
+        )
+        response = api_client.post(url, headers=auth_header, json={"row_count": 0})
+        assert response.status_code == 400
+        import pdb
+
+        pdb.set_trace()
+        assert (
+            response.json()["detail"]
+            == "Collection 'manual_example:filing_cabinet' is paused at the access step. Pass in manual data to /privacy-request/{privacy_request_id}/manual_input to resume."
+        )
+
+    def test_resume_with_manual_input(
+        self,
+        db,
+        api_client,
+        url,
+        generate_auth_header,
+        privacy_request,
+        postgres_example_test_dataset_config,
+        manual_dataset_config,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db)
+
+        privacy_request.cache_paused_step_and_collection(
+            ActionType.erasure, CollectionAddress("manual_input", "filing_cabinet")
+        )
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={"row_count": 5},
+        )
+        assert response.status_code == 200
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.in_processing

@@ -59,4 +59,18 @@ class ManualConnector(BaseConnector[None]):
         rows: List[Row],
     ) -> int:
         """Pause to have the user manually perform an erasure of data at the given node."""
-        # TODO implement in follow-up ticket
+        cached_count: Dict[
+            Optional[str], Optional[int]
+        ] = privacy_request.get_manual_erasure_count(node.address)
+
+        if cached_count:
+            privacy_request.cache_paused_step_and_collection()  # Caches paused location as None
+            return list(cached_count.values())[0]
+
+        # Save the step (erasure) and collection where we're paused.
+        privacy_request.cache_paused_step_and_collection(
+            ActionType.erasure, node.address
+        )
+        raise PrivacyRequestPaused(
+            f"Collection '{node.address.value}' waiting on manual erasure confirmation for privacy request '{privacy_request.id}'"
+        )

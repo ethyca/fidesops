@@ -1,5 +1,4 @@
 import uuid
-
 import pytest
 
 from fidesops.common_exceptions import PrivacyRequestPaused
@@ -11,6 +10,7 @@ from fidesops.models.privacy_request import (
     PrivacyRequest,
 )
 from fidesops.task import graph_task
+from fidesops.task.graph_task import get_cached_data_for_erasures
 
 from ..graph.graph_test_util import assert_rows_match
 from ..task.traversal_data import postgres_and_manual_nodes
@@ -266,3 +266,148 @@ def test_no_manual_input_found(
     request_type, paused_node = privacy_request.get_paused_step_and_collection()
     assert request_type is None
     assert paused_node is None
+
+
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+def test_collections_with_manual_erasure_confirmation(
+    db,
+    policy,
+    integration_postgres_config,
+    integration_manual_config,
+    postgres_integration_db,
+    cache,
+) -> None:
+    """Run an erasure privacy request with two manual nodes"""
+    privacy_request = PrivacyRequest(
+        id=f"test_postgres_access_request_task_{uuid.uuid4()}"
+    )
+
+    cached_data_for_erasures = {
+        "postgres_example:payment_card": [
+            {
+                "id": "pay_aaa-aaa",
+                "name": "Example Card 1",
+                "ccn": 123456789,
+                "customer_id": 1,
+                "billing_address_id": 1,
+            },
+            {
+                "id": "pay_bbb-bbb",
+                "name": "Example Card 2",
+                "ccn": 987654321,
+                "customer_id": 2,
+                "billing_address_id": 1,
+            },
+        ],
+        "postgres_example:address": [
+            {
+                "id": 1,
+                "street": "Example Street",
+                "city": "Exampletown",
+                "state": "NY",
+                "zip": "12345",
+            },
+            {
+                "id": 2,
+                "street": "Example Lane",
+                "city": "Exampletown",
+                "state": "NY",
+                "zip": "12321",
+            },
+        ],
+        "postgres_example:customer": [
+            {
+                "id": 1,
+                "name": "John Customer",
+                "email": "customer-1@example.com",
+                "address_id": 1,
+            }
+        ],
+        "manual_example:filing_cabinet": [
+            {"id": 1, "authorized_user": "Jane Doe", "payment_card_id": "pay_bbb-bbb"}
+        ],
+        "manual_example:storage_unit": [
+            {"box_id": 5, "email": "customer-1@example.com"}
+        ],
+        "postgres_example:orders": [
+            {
+                "id": "ord_aaa-aaa",
+                "customer_id": 1,
+                "shipping_address_id": 2,
+                "payment_card_id": "pay_aaa-aaa",
+            },
+            {
+                "id": "ord_ccc-ccc",
+                "customer_id": 1,
+                "shipping_address_id": 1,
+                "payment_card_id": "pay_aaa-aaa",
+            },
+            {
+                "id": "ord_ddd-ddd",
+                "customer_id": 1,
+                "shipping_address_id": 1,
+                "payment_card_id": "pay_bbb-bbb",
+            },
+        ],
+    }
+
+    # ATTEMPT 1 - erasure request will pause to wait for confirmation that data has been destroyed from the filing cabinet
+    with pytest.raises(PrivacyRequestPaused):
+        graph_task.run_erasure(
+            privacy_request,
+            policy,
+            postgres_and_manual_nodes("postgres_example", "manual_example"),
+            [integration_postgres_config, integration_manual_config],
+            {"email": "customer-1@example.com"},
+            cached_data_for_erasures,
+        )
+
+    request_type, paused_node = privacy_request.get_paused_step_and_collection()
+    assert paused_node.value == "manual_example:filing_cabinet"
+    assert request_type == ActionType.erasure
+
+    # Mock confirming from user that there was no data in the filing cabinet
+    privacy_request.cache_manual_erasure_result(
+        CollectionAddress.from_string("manual_example:filing_cabinet"),
+        0,
+    )
+
+    # Attempt 2 - erasure request will pause, waiting for confirmation that the box in the storage unit is destroyed.
+    with pytest.raises(PrivacyRequestPaused):
+        graph_task.run_erasure(
+            privacy_request,
+            policy,
+            postgres_and_manual_nodes("postgres_example", "manual_example"),
+            [integration_postgres_config, integration_manual_config],
+            {"email": "customer-1@example.com"},
+            cached_data_for_erasures,
+        )
+
+    request_type, paused_node = privacy_request.get_paused_step_and_collection()
+    assert paused_node.value == "manual_example:storage_unit"
+    assert request_type == ActionType.erasure
+
+    # Mock confirming from user that storage unit erasure is complete
+    privacy_request.cache_manual_erasure_result(
+        CollectionAddress.from_string("manual_example:storage_unit"), 1
+    )
+
+    # Attempt 3 - We've confirmed data has been removed for manual nodes so we can proceed with the rest of the erasure
+    v = graph_task.run_erasure(
+        privacy_request,
+        policy,
+        postgres_and_manual_nodes("postgres_example", "manual_example"),
+        [integration_postgres_config, integration_manual_config],
+        {"email": "customer-1@example.com"},
+        cached_data_for_erasures,
+    )
+
+    assert v == {
+        "postgres_example:customer": 0,
+        "manual_example:storage_unit": 1,
+        "postgres_example:payment_card": 0,
+        "postgres_example:orders": 0,
+        "postgres_example:address": 0,
+        "manual_example:filing_cabinet": 0,
+    }

@@ -103,6 +103,10 @@ class ExecutionLogDetailResponse(ExecutionLogResponse):
     dataset_name: Optional[str]
 
 
+class RowCountRequest(BaseSchema):
+    row_count: int
+
+
 class PrivacyRequestResponse(BaseSchema):
     """Schema to check the status of a PrivacyRequest"""
 

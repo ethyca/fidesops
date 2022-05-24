@@ -295,6 +295,23 @@ class PrivacyRequest(Base):
             f"MANUAL_INPUT__{self.id}__{collection.value}"
         )
 
+    def cache_manual_erasure_result(
+        self, collection: CollectionAddress, count: int
+    ) -> None:
+        """Cache the number of rows updated for a given collection"""
+        cache: FidesopsRedis = get_cache()
+        cache.set_encoded_object(
+            f"MANUAL_MASK__{self.id}__{collection.value}",
+            count,
+        )
+
+    def get_manual_erasure_count(self, collection: CollectionAddress) -> Dict[str, int]:
+        """Retrieve number of rows manually masked for this collection."""
+        cache: FidesopsRedis = get_cache()
+        prefix = f"MANUAL_MASK__{self.id}__{collection.value}"
+        value_dict = cache.get_encoded_objects_by_prefix(prefix)
+        return value_dict
+
     def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
         """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response
         should cause privacy request execution to stop.
