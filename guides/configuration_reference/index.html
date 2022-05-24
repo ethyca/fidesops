@@ -1433,7 +1433,7 @@
 </tr>
 <tr>
 <td><code>USER</code></td>
-<td><code>FIDESOPS__DATABASE_USER</code></td>
+<td><code>FIDESOPS__DATABASE__USER</code></td>
 <td>string</td>
 <td>postgres</td>
 <td>N/A</td>
@@ -1441,7 +1441,7 @@
 </tr>
 <tr>
 <td><code>PASSWORD</code></td>
-<td><code>FIDESOPS__DATABASE_PASSWORD</code></td>
+<td><code>FIDESOPS__DATABASE__PASSWORD</code></td>
 <td>string</td>
 <td>apassword</td>
 <td>N/A</td>
@@ -1457,11 +1457,19 @@
 </tr>
 <tr>
 <td><code>DB</code></td>
-<td><code>FIDESOPS__DATABASE_DB</code></td>
+<td><code>FIDESOPS__DATABASE__DB</code></td>
 <td>string</td>
 <td>db</td>
 <td>N/A</td>
 <td>The name of the database to use in the Fidesops application database</td>
+</tr>
+<tr>
+<td><code>ENABLED</code></td>
+<td><code>FIDESOPS__DATABASE__ENABLED</code></td>
+<td>bool</td>
+<td>True</td>
+<td>True</td>
+<td>Whether the application database should be enabled. Only set to false for certain narrow uses of the application that do not require a backing application database.</td>
 </tr>
 <tr>
 <td>---</td>
@@ -1510,6 +1518,14 @@
 <td>3600</td>
 <td>604800</td>
 <td>The number of seconds for which data will live in Redis before automatically expiring</td>
+</tr>
+<tr>
+<td><code>ENABLED</code></td>
+<td><code>FIDESOPS__REDIS__ENABLED</code></td>
+<td>bool</td>
+<td>True</td>
+<td>True</td>
+<td>Whether the application's redis cache should be enabled. Only set to false for certain narrow uses of the application that do not require a backing redis cache.</td>
 </tr>
 <tr>
 <td>---</td>
@@ -1645,12 +1661,15 @@
 <span class="normal">25</span>
 <span class="normal">26</span>
 <span class="normal">27</span>
-<span class="normal">28</span></pre></div></td><td class="code"><div><pre><span></span><code>[database]
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code>[database]
 SERVER=&quot;db&quot;
 USER=&quot;postgres&quot;
 PASSWORD=&quot;a-password&quot;
 DB=&quot;app&quot;
 TEST_DB=&quot;test&quot;
+ENABLED=true
 
 [redis]
 HOST=&quot;redis&quot;
@@ -1659,6 +1678,7 @@ PORT=6379
 CHARSET=&quot;utf8&quot;
 DEFAULT_TTL_SECONDS=3600
 DB_INDEX=0
+ENABLED=true
 
 [security]
 APP_ENCRYPTION_KEY=&quot;OLMkv91j8DHiDAULnK5Lxx3kSCov30b3&quot;
@@ -1671,8 +1691,8 @@ OAUTH_ROOT_CLIENT_SECRET=&quot;fidesopsadminsecret&quot;
 TASK_RETRY_COUNT=3
 TASK_RETRY_DELAY=20
 TASK_RETRY_BACKOFF=2
-REQUIRE_MANUAL_REQUEST_APPROVAL=True
-MASKING_STRICT=True
+REQUIRE_MANUAL_REQUEST_APPROVAL=true
+MASKING_STRICT=true
 </code></pre></div></td></tr></table></div>
 <p>Please note: The configuration is case-sensitive, so the variables must be specified in UPPERCASE.</p>
 <h2 id="additional-environment-variables">Additional environment variables</h2>
