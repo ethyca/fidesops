@@ -8,6 +8,7 @@ from fidesops.common_exceptions import FunctionalityNotConfigured
 
 
 class ExceptionHandlers:
+    @staticmethod
     def functionality_not_configured_handler(
         request: Request, exc: FunctionalityNotConfigured
     ) -> JSONResponse:
