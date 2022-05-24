@@ -1,10 +1,13 @@
 from enum import Enum as EnumType
-from sqlalchemy import Column, String, Enum as EnumColumn
+
+from sqlalchemy import Column
+from sqlalchemy import Enum as EnumColumn
+from sqlalchemy import String
 
 from fidesops.db.base_class import Base
 
 
-class AuditLogAction(EnumType):
+class AuditLogAction(str, EnumType):
     """Enum for audit log actions, reflecting what a  user did"""
 
     approved = "approved"

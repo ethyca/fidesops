@@ -13,6 +13,7 @@ from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.dataset import FidesCollectionKey, FidesopsDatasetReference
 from fidesops.schemas.saas.shared_schemas import ConnectorParamRef, HTTPMethod
 from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.service.pagination.pagination_strategy_factory import get_strategy
 
 
 class ParamValue(BaseModel):
@@ -149,7 +150,7 @@ class SaaSRequest(BaseModel):
                         collect = param.references[0].field.split(".")[0]
                         referenced_collections.append(collect)
 
-            if not len(set(referenced_collections)) == 1:
+            if len(set(referenced_collections)) != 1:
                 raise ValueError(
                     "Grouped input fields must all reference the same collection."
                 )
