@@ -127,7 +127,7 @@ export const userApi = createApi({
       Partial<UserPasswordUpdate> & Pick<UserPasswordUpdate, 'id'>
     >({
       query: ({ id, old_password, new_password }) => ({
-        url: `user/${id?.id}/reset-password`,
+        url: `user/${id}/reset-password`,
         method: 'POST',
         body: { old_password, new_password },
       }),

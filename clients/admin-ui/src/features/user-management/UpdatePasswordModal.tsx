@@ -16,7 +16,7 @@ import React, { useState } from 'react';
 
 import { useUpdateUserPasswordMutation } from '../user/user.slice';
 
-const UpdatePasswordModal = (id: string) => {
+const UpdatePasswordModal = ({ id } : { id: string }) => {
   const [oldPasswordValue, setOldPasswordValue] = useState('');
   const [newPasswordValue, setNewPasswordValue] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
