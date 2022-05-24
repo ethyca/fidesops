@@ -34,6 +34,17 @@ interface ResponseError {
   };
 }
 
+interface ErrorDetail {
+  loc: string[];
+  msg: string;
+  type: string;
+}
+interface ValidationError {
+  data: {
+    detail: ErrorDetail[];
+  };
+}
+
 /**
  * Custom type predicate to see if the error has details as returned by the Fidesops API
  * @param error
@@ -45,5 +56,16 @@ export function isErrorWithDetail(error: unknown): error is ResponseError {
     error != null &&
     "data" in error &&
     typeof (error as any).data.detail === "string"
+  );
+}
+
+export function isErrorWithDetailArray(
+  error: unknown
+): error is ValidationError {
+  return (
+    typeof error === "object" &&
+    error != null &&
+    "data" in error &&
+    Array.isArray((error as any).data.detail)
   );
 }

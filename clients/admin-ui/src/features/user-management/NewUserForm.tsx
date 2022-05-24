@@ -18,7 +18,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 
-import { isErrorWithDetail } from "../common/helpers";
+import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import { userPrivilegesArray } from "../user/types";
 import {
   useCreateUserMutation,
@@ -53,6 +53,9 @@ const useUserForm = () => {
         let errorMsg = "An unexpected error occurred. Please try again.";
         if (isErrorWithDetail(createUserResult.error)) {
           errorMsg = createUserResult.error.data.detail;
+        } else if (isErrorWithDetailArray(createUserResult.error)) {
+          const { error } = createUserResult;
+          errorMsg = error.data.detail[0].msg;
         }
         toast({
           status: "error",
