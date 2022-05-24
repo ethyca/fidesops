@@ -42,11 +42,11 @@ interface RequestBadgeProps {
 
 const RequestStatusBadge: React.FC<RequestBadgeProps> = ({ status }) => (
   <Badge
-    color="white"
+    color='white'
     bg={statusPropMap[status].bg}
     width={107}
-    lineHeight="18px"
-    textAlign="center"
+    lineHeight='18px'
+    textAlign='center'
   >
     {statusPropMap[status].label}
   </Badge>

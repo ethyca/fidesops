@@ -16,15 +16,15 @@ const UserManagement: NextPage<{ session: { user: User } }> = ({ session }) => {
     <div>
       <Head>
         <title>Fides Admin UI - User Management</title>
-        <meta name="description" content="Generated from FidesUI template" />
-        <link rel="icon" href="/favicon.ico" />
+        <meta name='description' content='Generated from FidesUI template' />
+        <link rel='icon' href='/favicon.ico' />
       </Head>
 
       <NavBar />
 
       <main>
         <Box px={9} py={10}>
-          <Heading fontSize="2xl" fontWeight="semibold">
+          <Heading fontSize='2xl' fontWeight='semibold'>
             User Management
           </Heading>
           <UserManagementTableActions />

@@ -1,10 +1,9 @@
-import React from "react";
+import React from 'react';
 
-import {useObscuredPII} from "../privacy-requests/helpers";
-
+import { useObscuredPII } from '../privacy-requests/helpers';
 
 const PII: React.FC<{ data: string }> = ({ data }) => (
-    <>{useObscuredPII(data)}</>
+  <>{useObscuredPII(data)}</>
 );
 
 export default PII;

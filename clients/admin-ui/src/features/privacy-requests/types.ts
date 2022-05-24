@@ -7,27 +7,24 @@ export type PrivacyRequestStatus =
   | 'paused'
   | 'pending';
 
-
-export interface DenyPrivacyRequest{
-  id:string,
-  reason: string
+export interface DenyPrivacyRequest {
+  id: string;
+  reason: string;
 }
 
-
-interface FieldsAffected{
+interface FieldsAffected {
   path: string;
   field_name: string;
   data_categories: string[];
 }
 
-export interface ExecutionLog{
+export interface ExecutionLog {
   collection_name: string;
   fields_affected: FieldsAffected[];
   message: string;
   action_type: string;
   status: string;
   updated_at: string;
-
 }
 export interface PrivacyRequest {
   status: PrivacyRequestStatus;

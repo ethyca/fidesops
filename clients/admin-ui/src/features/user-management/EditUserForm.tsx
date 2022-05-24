@@ -152,26 +152,26 @@ const EditUserForm: NextPage<{
   return (
     <div>
       <main>
-        <Heading mb={4} fontSize="xl" colorScheme="primary">
+        <Heading mb={4} fontSize='xl' colorScheme='primary'>
           Profile
         </Heading>
         <Divider mb={7} />
         <chakra.form
           onSubmit={handleSubmit}
           maxW={['xs', 'xs', '100%']}
-          width="100%"
+          width='100%'
         >
           <Stack mb={8} spacing={6}>
-            <FormControl id="username">
-              <FormLabel htmlFor="username" fontWeight="medium">
+            <FormControl id='username'>
+              <FormLabel htmlFor='username' fontWeight='medium'>
                 Username
               </FormLabel>
-              <button href="#" />
+              <button href='#' />
               <Input
-                id="username"
+                id='username'
                 maxWidth={'40%'}
-                name="username"
-                focusBorderColor="primary.500"
+                name='username'
+                focusBorderColor='primary.500'
                 placeholder={existingUser?.username}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -181,15 +181,15 @@ const EditUserForm: NextPage<{
               />
             </FormControl>
 
-            <FormControl id="first_name">
-              <FormLabel htmlFor="first_name" fontWeight="medium">
+            <FormControl id='first_name'>
+              <FormLabel htmlFor='first_name' fontWeight='medium'>
                 First Name
               </FormLabel>
               <Input
-                id="first_name"
+                id='first_name'
                 maxWidth={'40%'}
-                name="first_name"
-                focusBorderColor="primary.500"
+                name='first_name'
+                focusBorderColor='primary.500'
                 placeholder={existingUser?.first_name}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -199,15 +199,15 @@ const EditUserForm: NextPage<{
               />
             </FormControl>
 
-            <FormControl id="last_name">
-              <FormLabel htmlFor="last_name" fontWeight="medium">
+            <FormControl id='last_name'>
+              <FormLabel htmlFor='last_name' fontWeight='medium'>
                 Last Name
               </FormLabel>
               <Input
-                id="last_name"
+                id='last_name'
                 maxWidth={'40%'}
-                name="last_name"
-                focusBorderColor="primary.500"
+                name='last_name'
+                focusBorderColor='primary.500'
                 placeholder={existingUser?.last_name}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -222,7 +222,7 @@ const EditUserForm: NextPage<{
 
             <Divider mb={7} mt={7} />
 
-            <Heading fontSize="xl" colorScheme="primary">
+            <Heading fontSize='xl' colorScheme='primary'>
               Privileges
             </Heading>
             <Text>Edit privileges assigned to this user</Text>
@@ -235,7 +235,7 @@ const EditUserForm: NextPage<{
                   : false;
                 return (
                   <Checkbox
-                    colorScheme="purple"
+                    colorScheme='purple'
                     isChecked={isChecked}
                     key={`${policy.privilege}`}
                     onChange={(e) => {
@@ -254,7 +254,7 @@ const EditUserForm: NextPage<{
                       }
                     }}
                     id={`scopes-${policy.privilege}`}
-                    name="scopes"
+                    name='scopes'
                     value={policy.scope}
                     isDisabled={policy.scope === 'privacy-request:read'}
                     isReadOnly={policy.scope === 'privacy-request:read'}
@@ -266,19 +266,19 @@ const EditUserForm: NextPage<{
             </Stack>
           </Stack>
 
-          <NextLink href="/user-management" passHref>
-            <Button mr={3} variant="outline" size="sm">
+          <NextLink href='/user-management' passHref>
+            <Button mr={3} variant='outline' size='sm'>
               Cancel
             </Button>
           </NextLink>
           <Button
-            type="submit"
-            bg="primary.800"
+            type='submit'
+            bg='primary.800'
             _hover={{ bg: 'primary.400' }}
             _active={{ bg: 'primary.500' }}
-            colorScheme="primary"
+            colorScheme='primary'
             disabled={!existingUser && !(isValid && dirty)}
-            size="sm"
+            size='sm'
           >
             Save
           </Button>

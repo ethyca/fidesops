@@ -19,7 +19,7 @@ export const mapFiltersToSearchParams = ({
   to,
   page,
   size,
-  verbose
+  verbose,
 }: Partial<PrivacyRequestParams>) => {
   let fromISO;
   if (from) {
@@ -255,7 +255,7 @@ export const selectPrivacyRequestFilters = (
   to: state.subjectRequests.to,
   page: state.subjectRequests.page,
   size: state.subjectRequests.size,
-  verbose: state.subjectRequests.verbose
+  verbose: state.subjectRequests.verbose,
 });
 
 export const { reducer } = subjectRequestsSlice;
