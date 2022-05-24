@@ -1,6 +1,7 @@
 import { Box, Divider, Flex, Heading, Text } from '@fidesui/react';
 import React, { useState } from 'react';
 
+import { GreenCheckCircle } from '../common/Icon';
 import { ExecutionLog, PrivacyRequest } from '../privacy-requests/types';
 
 type EventsAndLogsProps = {
@@ -11,20 +12,44 @@ const EventsAndLogs = ({ subjectRequest }: EventsAndLogsProps) => {
   const { results } = subjectRequest;
 
   const [eventDetails, setEventDetails] = useState<null | ExecutionLog[]>(null);
-  const resultKeys = Object.keys(results!);
+  // const resultKeys = Object.keys(results!);
+  const resultKeys = [
+    'postgres_example',
+    'postgres_example',
+    'postgres_example',
+  ];
 
-  const timelineEntries = resultKeys.map((key) => (
+  const timelineEntries = resultKeys.map((key, index) => (
     <Box key={key}>
-      <Text color='gray.600' fontWeight='500' fontSize='sm'>
-        {key}
-      </Text>
+      <Flex alignItems='center' height={23} position='relative'>
+        <Box zIndex={1}>
+          <GreenCheckCircle />
+        </Box>
+        {index === resultKeys.length - 1 ? null : (
+          <Box
+            width='2px'
+            height='63px'
+            backgroundColor='gray.700'
+            position='absolute'
+            top='16px'
+            left='6px'
+            zIndex={0}
+          />
+        )}
+
+        <Text color='gray.600' fontWeight='500' fontSize='sm' ml={2}>
+          {key}
+        </Text>
+      </Flex>
       <Text
         cursor='pointer'
         color='complimentary.500'
         fontWeight='500'
         fontSize='sm'
+        ml={6}
+        mb={7}
         onClick={() => {
-          setEventDetails(subjectRequest.results![key]);
+          setEventDetails(results![key]);
         }}
       >
         View Details
