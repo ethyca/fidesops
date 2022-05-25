@@ -190,7 +190,7 @@ strategies available, along with their configuration options.
 ## Extensibility
 
 In fidesops, masking strategies are all built on top of an abstract base class - `MaskingStrategy`. 
-`MaskingStrategy` has five methods - `mask`, `secrets_required`,  `get_configuration_model`, `get_description`, and `data_type_supported`. For more detail on these 
+`MaskingStrategy` has five methods - `mask`, `secrets_required`, `get_configuration_model`, `get_description`, and `data_type_supported`. For more detail on these 
 methods, visit the class in the fidesops repository. For now, we will focus on the implementation of
 `RandomStringRewriteMaskingStrategy` below:
 
