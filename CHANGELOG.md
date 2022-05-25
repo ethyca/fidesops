@@ -23,7 +23,7 @@ The types of changes are:
 * Added `FIDESOPS__DATABASE__ENABLED` and `FIDESOPS__REDIS__ENABLED` configuration variables to allow `fidesops` to run cleanly in a "stateless" mode without any database or redis cache integration
 
 ### Changed
-* Changed `MaskingStrategyFactory` and associated `MaskingStrategy` implementations to use a decorator-based registration system, so as to improve `MaskingStrategy` extensibility. No change in public-facing APIs, only in backend implementation.
+* `MaskingStrategyFactory` and associated `MaskingStrategy` implementations now use a decorator-based registration system, to improve extensibility
 
 ### Developer Experience
 
