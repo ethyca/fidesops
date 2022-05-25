@@ -16,12 +16,11 @@ import React, { useState } from 'react';
 
 import { useUpdateUserPasswordMutation } from '../user/user.slice';
 
-const UpdatePasswordModal = ({ id } : { id: string }) => {
+const UpdatePasswordModal = ({ id }: { id: string }) => {
   const [oldPasswordValue, setOldPasswordValue] = useState('');
   const [newPasswordValue, setNewPasswordValue] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [changePassword, ] =
-    useUpdateUserPasswordMutation();
+  const [changePassword] = useUpdateUserPasswordMutation();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.name === 'oldPassword') {
@@ -31,8 +30,11 @@ const UpdatePasswordModal = ({ id } : { id: string }) => {
     }
   };
 
-  const changePasswordValidation =
-    !!(id && newPasswordValue && oldPasswordValue);
+  const changePasswordValidation = !!(
+    id &&
+    newPasswordValue &&
+    oldPasswordValue
+  );
 
   const handleChangePassword = () => {
     if (changePasswordValidation) {
@@ -67,7 +69,7 @@ const UpdatePasswordModal = ({ id } : { id: string }) => {
           <ModalHeader>Update Password</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <Stack direction="column" spacing="15px">
+            <Stack direction='column' spacing='15px'>
               <FormControl>
                 <Input
                   isRequired
@@ -94,11 +96,11 @@ const UpdatePasswordModal = ({ id } : { id: string }) => {
           <ModalFooter>
             <Button
               onClick={onClose}
-              marginRight="10px"
-              size="sm"
-              variant="solid"
-              bg="white"
-              width="50%"
+              marginRight='10px'
+              size='sm'
+              variant='solid'
+              bg='white'
+              width='50%'
             >
               Cancel
             </Button>
@@ -106,11 +108,11 @@ const UpdatePasswordModal = ({ id } : { id: string }) => {
               disabled={!changePasswordValidation}
               onClick={handleChangePassword}
               mr={3}
-              size="sm"
-              variant="solid"
-              bg="primary.800"
-              color="white"
-              width="50%"
+              size='sm'
+              variant='solid'
+              bg='primary.800'
+              color='white'
+              width='50%'
             >
               Change Password
             </Button>
@@ -119,6 +121,6 @@ const UpdatePasswordModal = ({ id } : { id: string }) => {
       </Modal>
     </>
   );
-}
+};
 
 export default UpdatePasswordModal;

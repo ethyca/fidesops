@@ -23,7 +23,7 @@ const DeleteUserModal = (user: User) => {
   const [usernameValue, setUsernameValue] = useState('');
   const [confirmValue, setConfirmValue] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [deleteUser,] = useDeleteUserMutation();
+  const [deleteUser] = useDeleteUserMutation();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.name === 'username') {
@@ -32,14 +32,15 @@ const DeleteUserModal = (user: User) => {
       setConfirmValue(event.target.value);
     }
   };
-  const {id: userId, username} = user;
+  const { id: userId, username } = user;
 
-  const deletionValidation =
-    !!(userId &&
+  const deletionValidation = !!(
+    userId &&
     confirmValue &&
     usernameValue &&
     username === usernameValue &&
-    username === confirmValue);
+    username === confirmValue
+  );
 
   const handleDeleteUser = () => {
     if (deletionValidation && userId) {
@@ -62,7 +63,7 @@ const DeleteUserModal = (user: User) => {
           <ModalHeader>Delete User</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <Stack direction="column" spacing="15px">
+            <Stack direction='column' spacing='15px'>
               <FormControl>
                 <Input
                   isRequired
@@ -87,11 +88,11 @@ const DeleteUserModal = (user: User) => {
           <ModalFooter>
             <Button
               onClick={onClose}
-              marginRight="10px"
-              size="sm"
-              variant="solid"
-              bg="white"
-              width="50%"
+              marginRight='10px'
+              size='sm'
+              variant='solid'
+              bg='white'
+              width='50%'
             >
               Cancel
             </Button>
@@ -99,11 +100,11 @@ const DeleteUserModal = (user: User) => {
               disabled={!deletionValidation}
               onClick={handleDeleteUser}
               mr={3}
-              size="sm"
-              variant="solid"
-              bg="primary.800"
-              color="white"
-              width="50%"
+              size='sm'
+              variant='solid'
+              bg='primary.800'
+              color='white'
+              width='50%'
             >
               Delete User
             </Button>
@@ -112,6 +113,6 @@ const DeleteUserModal = (user: User) => {
       </Modal>
     </>
   );
-}
+};
 
 export default DeleteUserModal;

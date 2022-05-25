@@ -3,7 +3,7 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
-  Heading
+  Heading,
 } from '@fidesui/react';
 import type { NextPage } from 'next';
 import { getSession } from 'next-auth/react';

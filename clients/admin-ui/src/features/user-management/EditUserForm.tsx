@@ -18,7 +18,7 @@ import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import React from 'react';
 
-import { User,userPrivilegesArray } from '../user/types';
+import { User, userPrivilegesArray } from '../user/types';
 import {
   useEditUserMutation,
   useGetUserByIdQuery,
@@ -30,12 +30,10 @@ import UpdatePasswordModal from './UpdatePasswordModal';
 const useUserForm = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [updateUserPermissions, ] =
-    useUpdateUserPermissionsMutation();
-  const [editUser, ] = useEditUserMutation(id as string);
+  const [updateUserPermissions] = useUpdateUserPermissionsMutation();
+  const [editUser] = useEditUserMutation(id as string);
   const { data: existingUser } = useGetUserByIdQuery(id as string);
-  const { data: existingScopes } =
-    useGetUserPermissionsQuery(id as string);
+  const { data: existingScopes } = useGetUserPermissionsQuery(id as string);
   const toast = useToast();
 
   const formik = useFormik({
@@ -49,7 +47,6 @@ const useUserForm = () => {
     },
     enableReinitialize: true,
     onSubmit: async (values) => {
-
       const userBody = {
         username: values.username ? values.username : existingUser?.username,
         first_name: values.first_name
@@ -118,7 +115,7 @@ const useUserForm = () => {
 
 const EditUserForm: NextPage<{
   user?: User;
-}> = ({user}) => {
+}> = ({ user }) => {
   const {
     dirty,
     existingUser,
@@ -131,8 +128,7 @@ const EditUserForm: NextPage<{
     setFieldValue,
   } = useUserForm();
 
-  const { data: loggedInUser } =
-    useGetUserPermissionsQuery(user.id as string);
+  const { data: loggedInUser } = useGetUserPermissionsQuery(user.id as string);
 
   const hasAdminPermission = loggedInUser?.scopes?.includes('user:update');
 
@@ -154,10 +150,10 @@ const EditUserForm: NextPage<{
                 Username
               </FormLabel>
               <Input
-                id="username"
-                maxWidth="40%"
-                name="username"
-                focusBorderColor="primary.500"
+                id='username'
+                maxWidth='40%'
+                name='username'
+                focusBorderColor='primary.500'
                 placeholder={existingUser?.username}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -172,10 +168,10 @@ const EditUserForm: NextPage<{
                 First Name
               </FormLabel>
               <Input
-                id="first_name"
-                maxWidth="40%"
-                name="first_name"
-                focusBorderColor="primary.500"
+                id='first_name'
+                maxWidth='40%'
+                name='first_name'
+                focusBorderColor='primary.500'
                 placeholder={existingUser?.first_name}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -190,10 +186,10 @@ const EditUserForm: NextPage<{
                 Last Name
               </FormLabel>
               <Input
-                id="last_name"
-                maxWidth="40%"
-                name="last_name"
-                focusBorderColor="primary.500"
+                id='last_name'
+                maxWidth='40%'
+                name='last_name'
+                focusBorderColor='primary.500'
                 placeholder={existingUser?.last_name}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -214,8 +210,8 @@ const EditUserForm: NextPage<{
             <Text>Edit privileges assigned to this user</Text>
             <Divider mb={2} mt={2} />
 
-            <Stack spacing={[1, 5]} direction="column">
-              {userPrivilegesArray.map(policy => {
+            <Stack spacing={[1, 5]} direction='column'>
+              {userPrivilegesArray.map((policy) => {
                 const isChecked = values.scopes
                   ? values.scopes.indexOf(policy.scope) >= 0
                   : false;
