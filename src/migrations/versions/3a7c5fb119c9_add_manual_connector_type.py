@@ -23,6 +23,8 @@ def upgrade():
 def downgrade():
     # Downgrade connection_type
     op.execute("delete from connectionconfig where connection_type in ('manual')")
+    op.execute("delete from executionlog where status = 'paused'")
+
     op.execute("alter type connectiontype rename to connectiontype_old")
     op.execute(
         "create type connectiontype as enum('postgres', 'mongodb', 'mysql', 'https', 'snowflake', 'redshift', 'mssql', 'mariadb', 'bigquery', 'saas')"
