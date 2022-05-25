@@ -264,6 +264,6 @@ any defaults that should be applied in their absence. All configuration classes 
 
 ### Integrating with the Masking Strategy Factory
 
-In order to be able to leverage a masking strategy that's been implemented, the `MaskingStrategy` subclass needs to be registered with the `MaskingStrategyFactory`. Doing this is as simple as putting the `@MaskingStrategyFactory.register(<strategy_name>)` decorator on the `MaskingStrategy` subclass, as shown in the example the section above.
+In order to leverage an implemented masking strategy, the `MaskingStrategy` subclass must be registered with the `MaskingStrategyFactory`. To register a new `MaskingStrategy`, use the `register` decorator on the `MaskingStrategy` subclass definition, as shown in the above example.
 
 Make sure to pass in the registered name of the `MaskingStrategy` subclass as the argument to the decorator. This is the value that will need to be passed by callers in the `"masking_strategy"."strategy"` field in order to invoke this masking strategy, either as part of an erasure request or with a standalone call against the `/masking/mask` endpoint).
