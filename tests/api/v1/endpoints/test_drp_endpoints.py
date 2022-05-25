@@ -426,4 +426,4 @@ class TestGetDrpDataRights:
             headers=auth_header,
         )
         assert 200 == response.status_code
-        assert response.json() == expected_response
+        assert response.json()["actions"] == expected_response["actions"]
