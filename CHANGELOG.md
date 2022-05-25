@@ -20,12 +20,13 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.0...main)
 
 ### Added
-* Added `FIDESOPS__DATABASE__ENABLED` and `FIDESOPS__REDIS__ENABLED` configuration variables to allow `fidesops` to run cleanly in a "stateless" mode without any database or redis cache integration
+* Added `FIDESOPS__DATABASE__ENABLED` and `FIDESOPS__REDIS__ENABLED` configuration variables to allow `fidesops` to run cleanly in a "stateless" mode without any database or redis cache integration [#550](https://github.com/ethyca/fidesops/pull/550)
 
 ### Developer Experience
 
 * Import ordering is now enforced using [isort](https://pycqa.github.io/isort/) in CI [#533](https://github.com/ethyca/fidesops/pull/533)
 * [Teardown all Docker infra once it's finished with](https://github.com/ethyca/fidesops/pull/498/)
+* Update PR checklist for [`CHANGELOG.md`](https://github.com/ethyca/fidesops/blob/main/CHANGELOG.md) file [#558](https://github.com/ethyca/fidesops/pull/558)
 
 ### Docs
 
