@@ -16,7 +16,7 @@ When a manual dataset is defined, an in-progress access request will pause until
 In the following example, the Manual Dataset contains one `storage_unit` collection.  `email` is 
 defined as the unit's [identity](datasets.md#field-members), which will then be used to retrieve the `box_id` in the storage unit.
 
-To add a Manual Dataset, first create a [Manual ConnectionConfig](database_connectors.md#example-6-manual-connectionconfig). The following Manual Dataset can then be added to the new ConnectionConfig:
+To add a Manual Dataset, first create a [Manual ConnectionConfig](database_connectors.md#example-6-manual-connectionconfig). The following Manual Dataset can then be added to the new ConnectionConfig, with a PATCH to `{{host}}/connection/<manual_key>/dataset`:
 
 ```yaml
 dataset:
