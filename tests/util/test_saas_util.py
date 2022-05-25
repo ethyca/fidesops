@@ -254,7 +254,7 @@ class TestAssignPlaceholders:
         assert assign_placeholders("domain", {}) == "domain"
 
     def test_int_value(self):
-        assert assign_placeholders(100, {}) == 100
+        assert assign_placeholders(100, {}) == "100"
 
     def test_none_value(self):
         assert assign_placeholders(None, {}) == None

@@ -1,15 +1,15 @@
-"""adding authorization request table
+"""add authorization request
 
-Revision ID: f142e9a107c4
+Revision ID: 1ff88b7bd579
 Revises: 5078badb90b9
-Create Date: 2022-05-23 17:35:29.976562
+Create Date: 2022-05-25 04:09:22.149110
 
 """
 import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "f142e9a107c4"
+revision = "1ff88b7bd579"
 down_revision = "5078badb90b9"
 branch_labels = None
 depends_on = None
@@ -40,7 +40,7 @@ def upgrade():
         op.f("ix_authenticationrequest_id"),
         "authenticationrequest",
         ["id"],
-        unique=True,
+        unique=False,
     )
     op.create_index(
         op.f("ix_authenticationrequest_state"),
@@ -48,19 +48,9 @@ def upgrade():
         ["state"],
         unique=True,
     )
-    op.create_index(
-        op.f("ix_authenticationrequest_connection_key"),
-        "authenticationrequest",
-        ["connection_key"],
-        unique=True,
-    )
 
 
 def downgrade():
-    op.drop_index(
-        op.f("ix_authenticationrequest_connection_key"),
-        table_name="authenticationrequest",
-    )
     op.drop_index(
         op.f("ix_authenticationrequest_state"), table_name="authenticationrequest"
     )

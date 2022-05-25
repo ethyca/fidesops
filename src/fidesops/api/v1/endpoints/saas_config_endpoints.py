@@ -185,7 +185,7 @@ def delete_saas_config(
 @router.get(
     AUTHORIZE,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_AUTHORIZE])],
-    response_model=Optional[str],
+    response_model=str,
 )
 def authorize_connection(
     db: Session = Depends(deps.get_db),
