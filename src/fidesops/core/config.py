@@ -170,10 +170,11 @@ class SecuritySettings(FidesSettings):
         env_prefix = "FIDESOPS__SECURITY__"
 
 
-class UserSettings(FidesSettings):
+class RootUserSettings(FidesSettings):
     """Configuration settings for Analytics variables."""
 
-    ANALYTICS_OPT_OUT: bool = True
+    ANALYTICS_OPT_OUT: Optional[bool]
+    ANALYTICS_ID: Optional[str]
 
 
 class FidesopsConfig(FidesSettings):
@@ -183,7 +184,7 @@ class FidesopsConfig(FidesSettings):
     redis: RedisSettings
     security: SecuritySettings
     execution: ExecutionSettings
-    user: UserSettings
+    root_user: RootUserSettings
 
     is_test_mode: bool = os.getenv("TESTING") == "True"
     hot_reloading: bool = os.getenv("FIDESOPS__HOT_RELOAD") == "True"
@@ -310,6 +311,34 @@ def get_censored_config(the_config: FidesopsConfig) -> Dict[str, Any]:
             filtered[key][field] = data[field]
 
     return filtered
+
+
+def update_config_file(
+        updates: Dict[str, Dict[str, Any]]
+) -> None:
+    """
+    Overwrite the existing config file with a new version that includes the desired `updates`.
+    :param updates: A nested `dict`, where top-level keys correspond to configuration sections and top-level values contain `dict`s whose key/value pairs correspond to the desired option/value updates.
+    """
+    try:
+        config_path: str = load_file("fidesops.toml")
+    except FileNotFoundError as e:
+        logger.warning("fidesops.toml could not be loaded: %s", NotPii(e))
+
+    for key, value in updates.items():
+        if key in config:
+            config[key].update(value)
+        else:
+            config.update({key: value})
+
+    with open(config_path, "w") as config_file:
+        toml.dump(config, config_file)
+
+    logger.info(f"Updated {config_path}:")
+
+    for key, value in updates.items():
+        for subkey, val in value.items():
+            logger.info("\tSet %s.%s = %s", NotPii(key), NotPii(subkey), NotPii(val))
 
 
 config = get_config()
