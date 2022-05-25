@@ -30,7 +30,7 @@ dataset:
           - name: box_id
             data_categories: [ user.provided ]
             fidesops_meta:
-              primary_key: True
+              primary_key: true
           - name: email
             data_categories: [ user.provided.identifiable.contact.email ]
             fidesops_meta:

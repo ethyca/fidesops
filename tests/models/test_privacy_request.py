@@ -362,6 +362,8 @@ class TestPrivacyRequestTriggerWebhooks:
 
 class TestCachePausedLocation:
     def test_privacy_request_cache_paused_location(self, privacy_request):
+        assert privacy_request.get_paused_step_and_collection() == (None, None)
+
         paused_step = ActionType.erasure
         paused_location = CollectionAddress("test_dataset", "test_collection")
         privacy_request.cache_paused_step_and_collection(paused_step, paused_location)

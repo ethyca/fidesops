@@ -530,18 +530,22 @@ def manual_dataset(db_name: str, postgres_db_name) -> Dataset:
             ),
             ScalarField(
                 name="payment_card_id",
-                references=[(FieldAddress(postgres_db_name, "payment_card", "id"), "to")],
+                references=[
+                    (FieldAddress(postgres_db_name, "payment_card", "id"), "to")
+                ],
             ),
-        ]
+        ],
     )
     storage_unit = Collection(
         name="storage_unit",
         fields=[
-            ScalarField(name="box_id", primary_key=True, data_type_converter=int_converter),
+            ScalarField(
+                name="box_id", primary_key=True, data_type_converter=int_converter
+            ),
             ScalarField(
                 name="email", identity="email", data_type_converter=str_converter
             ),
-        ]
+        ],
     )
     return Dataset(
         name=db_name,

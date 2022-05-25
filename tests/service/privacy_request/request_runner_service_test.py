@@ -77,7 +77,9 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
     assert privacy_request.started_processing_at == before
 
 
-@mock.patch("fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.run_webhooks_and_report_status")
+@mock.patch(
+    "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.run_webhooks_and_report_status"
+)
 def test_from_graph_resume_does_not_run_pre_webhooks(
     run_webhooks,
     db: Session,

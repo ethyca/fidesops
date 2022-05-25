@@ -79,7 +79,7 @@ def retry(
                     )
                     self.log_paused(action_type, ex)
                     # Re-raise to stop privacy request execution.
-                    raise PrivacyRequestPaused(ex)
+                    raise
                 except BaseException as ex:  # pylint: disable=W0703
                     func_delay *= config.execution.TASK_RETRY_BACKOFF
                     logger.warning(
@@ -512,7 +512,7 @@ def update_mapping_from_cache(
     If there's no cached data, the dsk dictionary won't change.
     """
 
-    cached_results: Dict[str, List[Row]] = resources.get_all_cached_objects()
+    cached_results: Dict[str, Optional[List[Row]]] = resources.get_all_cached_objects()
 
     for collection_name in cached_results:
         dsk[CollectionAddress.from_string(collection_name)] = (
@@ -551,7 +551,9 @@ def run_access_request(
             if not tn.is_root_node():
                 data[tn.address] = GraphTask(tn, resources)
 
-        def termination_fn(*dependent_values: List[Row]) -> Dict[str, List[Row]]:
+        def termination_fn(
+            *dependent_values: List[Row],
+        ) -> Dict[str, Optional[List[Row]]]:
             """A termination function that just returns its inputs mapped to their source addresses.
             This needs to wait for all dependent keys because this is how dask is informed to wait for
             all terminating addresses before calling this."""

@@ -31,6 +31,7 @@ from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.util.async_util import run_async
 from fidesops.util.cache import FidesopsRedis
 from fidesops.util.collection_util import Row
+from fidesops.util.logger import _log_exception, _log_warning
 
 logger = logging.getLogger(__name__)
 
@@ -184,14 +185,14 @@ class PrivacyRequestRunner:
             except PrivacyRequestPaused as exc:
                 privacy_request.status = PrivacyRequestStatus.paused
                 privacy_request.save(db=session)
-                _log_warning(exc)
+                _log_warning(exc, config.dev_mode)
                 session.close()
                 return
 
             except BaseException as exc:  # pylint: disable=broad-except
                 privacy_request.status = PrivacyRequestStatus.error
                 # If dev mode, log traceback
-                _log_exception(exc)
+                _log_exception(exc, config.dev_mode)
 
             # Run post-execution webhooks
             proceed = self.run_webhooks_and_report_status(
@@ -253,22 +254,6 @@ class PrivacyRequestRunner:
 
     def dry_run(self, privacy_request: PrivacyRequest) -> None:
         """Pretend to dispatch privacy_request into the execution layer, return the query plan"""
-
-
-def _log_exception(exc: BaseException) -> None:
-    """If dev mode, log the entire traceback"""
-    if config.dev_mode:
-        logging.error(exc, exc_info=True)
-    else:
-        logging.error(exc)
-
-
-def _log_warning(exc: BaseException) -> None:
-    """If dev mode, log the entire traceback"""
-    if config.dev_mode:
-        logging.warning(exc, exc_info=True)
-    else:
-        logging.warning(exc)
 
 
 def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) -> None:

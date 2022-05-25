@@ -1617,7 +1617,7 @@ class TestResumePrivacyRequest:
 
 class TestResumeWithManualInput:
     @pytest.fixture(scope="function")
-    def url(self, db, privacy_request):
+    def url(self, privacy_request):
         return V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_INPUT.format(
             privacy_request_id=privacy_request.id
         )
@@ -1675,6 +1675,9 @@ class TestResumeWithManualInput:
             == "Cannot save manual rows. No collection in graph with name: 'manual_example:filing_cabinet'."
         )
 
+    @pytest.mark.usefixtures(
+        "postgres_example_test_dataset_config", "manual_dataset_config"
+    )
     def test_resume_with_manual_input_invalid_data(
         self,
         db,
@@ -1682,8 +1685,6 @@ class TestResumeWithManualInput:
         url,
         generate_auth_header,
         privacy_request,
-        postgres_example_test_dataset_config,
-        manual_dataset_config,
     ):
         """Fail if the manual data entered does not match fields on the dataset"""
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
@@ -1700,6 +1701,9 @@ class TestResumeWithManualInput:
             == "Cannot save manual rows. No 'mock' field defined on the 'manual_input:filing_cabinet' collection."
         )
 
+    @pytest.mark.usefixtures(
+        "postgres_example_test_dataset_config", "manual_dataset_config"
+    )
     def test_resume_with_manual_input(
         self,
         db,
@@ -1707,8 +1711,6 @@ class TestResumeWithManualInput:
         url,
         generate_auth_header,
         privacy_request,
-        postgres_example_test_dataset_config,
-        manual_dataset_config,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
         privacy_request.status = PrivacyRequestStatus.paused
@@ -1738,13 +1740,15 @@ class TestResumeWithManualInput:
 class TestValidateManualInput:
     """Verify pytest cell-var-from-loop warning is a false positive"""
 
-    def test_all_fields_match(self, db, postgres_example_test_dataset_config):
+    @pytest.mark.usefixtures("postgres_example_test_dataset_config")
+    def test_all_fields_match(self, db):
         paused_location = CollectionAddress("postgres_example_test_dataset", "address")
 
         manual_rows = [{"city": "Nashville", "state": "TN"}]
         validate_manual_input(manual_rows, paused_location, db)
 
-    def test_one_field_does_not_match(self, db, postgres_example_test_dataset_config):
+    @pytest.mark.usefixtures("postgres_example_test_dataset_config")
+    def test_one_field_does_not_match(self, db):
         paused_location = CollectionAddress("postgres_example_test_dataset", "address")
 
         manual_rows = [{"city": "Nashville", "state": "TN", "ccn": "aaa-aaa"}]
@@ -1755,6 +1759,7 @@ class TestValidateManualInput:
             == "Cannot save manual rows. No 'ccn' field defined on the 'postgres_example_test_dataset:address' collection."
         )
 
+    @pytest.mark.usefixtures("postgres_example_test_dataset_config")
     def test_field_on_second_row_does_not_match(
         self, db, postgres_example_test_dataset_config
     ):
@@ -1771,7 +1776,8 @@ class TestValidateManualInput:
             == "Cannot save manual rows. No 'misspelled_state' field defined on the 'postgres_example_test_dataset:address' collection."
         )
 
-    def test_collection_does_not_exist(self, db, postgres_example_test_dataset_config):
+    @pytest.mark.usefixtures("postgres_example_test_dataset_config")
+    def test_collection_does_not_exist(self, db):
         paused_location = CollectionAddress(
             "postgres_example_test_dataset", "drivers_license"
         )

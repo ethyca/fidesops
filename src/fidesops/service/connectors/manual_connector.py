@@ -35,8 +35,8 @@ class ManualConnector(BaseConnector[None]):
         """
         Returns manually added data for the given collection if it exists, otherwise pauses the Privacy Request.
         """
-        cached_results: Dict[
-            Optional[str], Optional[List[Row]]
+        cached_results: Optional[
+            Dict[str, Optional[List[Row]]]
         ] = privacy_request.get_manual_input(node.address)
 
         if cached_results:

@@ -587,7 +587,7 @@ def validate_manual_input(
     dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
     dataset_graph = DatasetGraph(*dataset_graphs)
 
-    node: Node = dataset_graph.nodes.get(collection)
+    node: Optional[Node] = dataset_graph.nodes.get(collection)
     if not node:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,

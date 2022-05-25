@@ -228,6 +228,8 @@ class PrivacyRequest(Base):
         result_prefix = f"{self.id}__*"
         return cache.get_encoded_objects_by_prefix(result_prefix)
 
+    PAUSED_SEPARATOR = "__fidesops_paused_sep__"
+
     def cache_paused_step_and_collection(
         self,
         paused_step: Optional[ActionType] = None,
@@ -245,9 +247,10 @@ class PrivacyRequest(Base):
         cache: FidesopsRedis = get_cache()
         paused_key = f"PAUSED_LOCATION__{self.id}"
 
+        # Store both the paused separator and paused collection in one value
         cache.set_encoded_object(
             paused_key,
-            f"{paused_step.value}__{paused_collection.value}"
+            f"{paused_step.value}{self.PAUSED_SEPARATOR}{paused_collection.value}"
             if paused_step and paused_collection
             else None,
         )
@@ -262,17 +265,10 @@ class PrivacyRequest(Base):
         In other words, this manual data belongs to this collection.
         """
         cache: FidesopsRedis = get_cache()
-        cached_paused_node = cache.get_encoded_objects_by_prefix(
-            f"PAUSED_LOCATION__{self.id}"
-        )
-        node_addr = (
-            list(cached_paused_node.values())[0]
-            if len(cached_paused_node.keys()) == 1
-            else None
-        )
+        node_addr: str = cache.get_encoded_by_key(f"EN_PAUSED_LOCATION__{self.id}")
 
         if node_addr:
-            split_addr = node_addr.split("__")
+            split_addr = node_addr.split(self.PAUSED_SEPARATOR)
             return ActionType(split_addr[0]), CollectionAddress.from_string(
                 split_addr[1]
             )
@@ -290,14 +286,14 @@ class PrivacyRequest(Base):
 
     def get_manual_input(
         self, collection: CollectionAddress
-    ) -> Dict[str, Optional[List[Row]]]:
+    ) -> Optional[Dict[str, Optional[List[Row]]]]:
         """Retrieve manually added rows from the cache for the given CollectionAddress.
         Returns the manual key mapped to the manual data.
         """
         cache: FidesopsRedis = get_cache()
-        prefix = f"MANUAL_INPUT__{self.id}__{collection.value}"
-        value_dict = cache.get_encoded_objects_by_prefix(prefix)
-        return value_dict
+        return cache.get_encoded_objects_by_prefix(
+            f"MANUAL_INPUT__{self.id}__{collection.value}"
+        )
 
     def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
         """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response

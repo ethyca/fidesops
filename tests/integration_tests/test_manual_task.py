@@ -19,13 +19,13 @@ from ..task.traversal_data import postgres_and_manual_nodes
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
+@pytest.mark.usefixtures("postgres_integration_db")
 def test_postgres_with_manual_input_access_request_task(
     db,
     policy,
     integration_postgres_config,
     integration_manual_config,
     postgres_integration_db,
-    cache,
 ) -> None:
     """Run a privacy request with two manual nodes"""
     privacy_request = PrivacyRequest(
@@ -189,13 +189,12 @@ def test_postgres_with_manual_input_access_request_task(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
+@pytest.mark.usefixtures("postgres_integration_db")
 def test_no_manual_input_found(
-    db,
     policy,
     integration_postgres_config,
     integration_manual_config,
     postgres_integration_db,
-    cache,
 ) -> None:
     """Assert manual node can be restarted with an empty list. There isn't necessarily manual data found."""
     privacy_request = PrivacyRequest(
