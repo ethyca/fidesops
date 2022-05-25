@@ -799,6 +799,35 @@
         ]
       }
     },
+    "/api/v1/drp/data-rights": {
+      "get": {
+        "tags": [
+          "DRP"
+        ],
+        "summary": "Get Drp Data Rights",
+        "description": "Query all policies and determine the list of DRP actions that are attached to existing policies.",
+        "operationId": "get_drp_data_rights_api_v1_drp_data_rights_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DrpDataRightsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "policy:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/cryptography/encryption/key": {
       "get": {
         "tags": [
@@ -4680,6 +4709,38 @@
           "access:specific"
         ],
         "description": "Enum to hold valid DRP actions. For more details, see:\nhttps://github.com/consumer-reports-digital-lab/data-rights-protocol#301-supported-rights-actions"
+      },
+      "DrpDataRightsResponse": {
+        "title": "DrpDataRightsResponse",
+        "required": [
+          "version",
+          "actions"
+        ],
+        "type": "object",
+        "properties": {
+          "version": {
+            "title": "Version",
+            "type": "string"
+          },
+          "api_base": {
+            "title": "Api Base",
+            "type": "string"
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DrpAction"
+            }
+          },
+          "user_relationships": {
+            "title": "User Relationships",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "Drp data rights response"
       },
       "DrpMeta": {
         "title": "DrpMeta",
