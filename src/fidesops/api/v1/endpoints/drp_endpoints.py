@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, List, Optional
 
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Security
@@ -17,13 +17,13 @@ from fidesops.api import deps
 from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.core.config import config
-from fidesops.models.policy import Policy, DrpAction
+from fidesops.models.policy import DrpAction, Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.drp_privacy_request import (
-    DrpPrivacyRequestCreate,
-    DrpIdentity,
-    DrpDataRightsResponse,
     DRP_VERSION,
+    DrpDataRightsResponse,
+    DrpIdentity,
+    DrpPrivacyRequestCreate,
 )
 from fidesops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity

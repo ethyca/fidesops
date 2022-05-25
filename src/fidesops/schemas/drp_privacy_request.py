@@ -6,7 +6,6 @@ from pydantic import validator
 from fidesops.models.policy import DrpAction
 from fidesops.schemas.base_class import BaseSchema
 
-
 DRP_VERSION = "0.5"
 
 

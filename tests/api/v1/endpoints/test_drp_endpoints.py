@@ -7,15 +7,15 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.scope_registry import (
+    POLICY_READ,
     PRIVACY_REQUEST_READ,
     STORAGE_CREATE_OR_UPDATE,
-    POLICY_READ,
 )
 from fidesops.api.v1.urn_registry import (
-    V1_URL_PREFIX,
+    DRP_DATA_RIGHTS,
     DRP_EXERCISE,
     DRP_STATUS,
-    DRP_DATA_RIGHTS,
+    V1_URL_PREFIX,
 )
 from fidesops.core.config import config
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
