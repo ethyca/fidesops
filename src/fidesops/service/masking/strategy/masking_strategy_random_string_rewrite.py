@@ -12,10 +12,13 @@ from fidesops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.service.masking.strategy.masking_strategy_factory import (
+    MaskingStrategyFactory,
+)
 
 RANDOM_STRING_REWRITE = "random_string_rewrite"
 
-
+@MaskingStrategyFactory.register(RANDOM_STRING_REWRITE)
 class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     """Masks each provied value with a random string of the length specified in the configuration."""
 

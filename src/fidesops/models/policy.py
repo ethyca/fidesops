@@ -23,7 +23,7 @@ from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.masking.strategy.masking_strategy_factory import (
-    SupportedMaskingStrategies,
+    MaskingStrategyFactory,
 )
 from fidesops.util.data_category import _validate_data_category
 
@@ -52,7 +52,7 @@ class DrpAction(EnumType):
     access_specific = "access:specific"
 
 
-PseudonymizationPolicy = SupportedMaskingStrategies
+PseudonymizationPolicy = MaskingStrategyFactory.get_strategies()
 """
 *Deprecated*: The method by which to pseudonymize data.
 

@@ -8,10 +8,13 @@ from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.service.masking.strategy.masking_strategy_factory import (
+    MaskingStrategyFactory,
+)
 
 NULL_REWRITE = "null_rewrite"
 
-
+@MaskingStrategyFactory.register(NULL_REWRITE)
 class NullMaskingStrategy(MaskingStrategy):
     """Masks provided values each with a null value."""
 

@@ -15,12 +15,16 @@ from fidesops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.service.masking.strategy.masking_strategy_factory import (
+    MaskingStrategyFactory,
+)
 from fidesops.util.encryption.hmac_encryption_scheme import hmac_encrypt_return_str
 from fidesops.util.encryption.secrets_util import SecretsUtil
 
 HMAC = "hmac"
 
 
+@MaskingStrategyFactory.register(HMAC)
 class HmacMaskingStrategy(MaskingStrategy):
     """
     Masks a value by generating a hash using a hash algorithm and a required secret key.  One of the differences
