@@ -1,11 +1,11 @@
 export type PrivacyRequestStatus =
-  | 'approved'
-  | 'complete'
-  | 'denied'
-  | 'error'
-  | 'in_processing'
-  | 'paused'
-  | 'pending';
+  | "approved"
+  | "complete"
+  | "denied"
+  | "error"
+  | "in_processing"
+  | "paused"
+  | "pending";
 
 export interface DenyPrivacyRequest {
   id: string;
