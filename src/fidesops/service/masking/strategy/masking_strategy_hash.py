@@ -22,10 +22,10 @@ from fidesops.service.masking.strategy.masking_strategy_factory import (
 )
 from fidesops.util.encryption.secrets_util import SecretsUtil
 
-HASH = "hash"
+HASH_STRATEGY_NAME = "hash"
 
 
-@MaskingStrategyFactory.register(HASH)
+@MaskingStrategyFactory.register(HASH_STRATEGY_NAME)
 class HashMaskingStrategy(MaskingStrategy):
     """Masks a value by hashing it"""
 
@@ -82,7 +82,7 @@ class HashMaskingStrategy(MaskingStrategy):
     @staticmethod
     def get_description() -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=HASH,
+            name=HASH_STRATEGY_NAME,
             description="Masks the input value by returning a hashed version of the input value",
             configurations=[
                 MaskingStrategyConfigurationDescription(
@@ -121,7 +121,7 @@ class HashMaskingStrategy(MaskingStrategy):
     def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
         return {
             SecretType.salt: MaskingSecretMeta[str](
-                masking_strategy=HASH,
+                masking_strategy=HASH_STRATEGY_NAME,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             )
         }

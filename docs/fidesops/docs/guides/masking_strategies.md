@@ -208,7 +208,7 @@ from fidesops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
 
-RANDOM_STRING_REWRITE = "random_string_rewrite"
+RANDOM_STRING_REWRITE_STRATEGY_NAME = "random_string_rewrite"
 
 @MaskingStrategyFactory.register(RANDOM_STRING_REWRITE)
 class RandomStringRewriteMaskingStrategy(MaskingStrategy):
