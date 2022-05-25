@@ -25,6 +25,7 @@ from fidesops.util.encryption.secrets_util import SecretsUtil
 
 AES_ENCRYPT = "aes_encrypt"
 
+
 @MaskingStrategyFactory.register(AES_ENCRYPT)
 class AesEncryptionMaskingStrategy(MaskingStrategy):
     def __init__(self, configuration: AesEncryptionMaskingConfiguration):

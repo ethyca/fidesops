@@ -30,7 +30,7 @@ class TestGetMaskingStrategies:
 
         response = api_client.get(V1_URL_PREFIX + MASKING_STRATEGY)
         response_body = json.loads(response.text)
-        
+
         assert 200 == response.status_code
         assert expected_response == response_body
 

@@ -113,7 +113,9 @@ def get_privacy_request_results(
         if strategy_name in unique_masking_strategies_by_name:
             continue
         unique_masking_strategies_by_name.add(strategy_name)
-        masking_strategy = MaskingStrategyFactory.get_strategy(strategy_name, configuration)
+        masking_strategy = MaskingStrategyFactory.get_strategy(
+            strategy_name, configuration
+        )
         if masking_strategy.secrets_required():
             masking_secrets: List[
                 MaskingSecretCache

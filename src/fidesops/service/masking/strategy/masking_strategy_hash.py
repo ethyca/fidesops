@@ -24,6 +24,7 @@ from fidesops.util.encryption.secrets_util import SecretsUtil
 
 HASH = "hash"
 
+
 @MaskingStrategyFactory.register(HASH)
 class HashMaskingStrategy(MaskingStrategy):
     """Masks a value by hashing it"""

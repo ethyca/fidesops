@@ -44,4 +44,7 @@ def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
 def list_masking_strategies() -> List[MaskingStrategyDescription]:
     """Lists available masking strategies with instructions on how to use them"""
     logger.info("Getting available masking strategies")
-    return [strategy.get_description() for strategy in MaskingStrategyFactory.get_strategies()]
+    return [
+        strategy.get_description()
+        for strategy in MaskingStrategyFactory.get_strategies()
+    ]

@@ -16,6 +16,7 @@ from fidesops.service.masking.strategy.masking_strategy_factory import (
 
 STRING_REWRITE = "string_rewrite"
 
+
 @MaskingStrategyFactory.register(STRING_REWRITE)
 class StringRewriteMaskingStrategy(MaskingStrategy):
     """Masks the values with a pre-determined value"""

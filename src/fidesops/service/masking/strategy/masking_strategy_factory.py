@@ -1,6 +1,5 @@
 import logging
-from enum import Enum
-from typing import Callable, Dict, List, Union
+from typing import Callable, Dict, Union, ValuesView
 
 from pydantic import ValidationError
 
@@ -14,19 +13,25 @@ from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 
 logger = logging.getLogger(__name__)
 
+
 class MaskingStrategyFactory:
     registry: Dict[str, MaskingStrategy] = {}
     valid_strategies = ""
 
     @classmethod
-    def register(cls, name:str) -> Callable[[MaskingStrategy], MaskingStrategy]:
+    def register(cls, name: str) -> Callable[[MaskingStrategy], MaskingStrategy]:
         def wrapper(strategy_class: MaskingStrategy) -> MaskingStrategy:
             if name in cls.registry:
-                logger.warning(f"Strategy with name {name} already exists in MaskingStrategy registry. It referred to class {cls.registry[name]}, but will now refer to {strategy_class}")
-            logger.info(f"Registering MaskingStrategy class {strategy_class} under name {name}")
+                logger.warning(
+                    f"Strategy with name {name} already exists in MaskingStrategy registry. It referred to class {cls.registry[name]}, but will now refer to {strategy_class}"
+                )
+            logger.info(
+                f"Registering MaskingStrategy class {strategy_class} under name {name}"
+            )
             cls.registry[name] = strategy_class
             cls.valid_strategies = ", ".join(cls.registry.keys())
             return strategy_class
+
         return wrapper
 
     @classmethod
@@ -56,7 +61,6 @@ class MaskingStrategyFactory:
             raise FidesopsValidationError(message=str(e))
 
     @classmethod
-    def get_strategies(cls) -> List[MaskingStrategy]:
+    def get_strategies(cls) -> ValuesView[MaskingStrategy]:
         """Returns all supported masking strategies"""
-        
         return cls.registry.values()

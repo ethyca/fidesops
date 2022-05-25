@@ -18,6 +18,7 @@ from fidesops.service.masking.strategy.masking_strategy_factory import (
 
 RANDOM_STRING_REWRITE = "random_string_rewrite"
 
+
 @MaskingStrategyFactory.register(RANDOM_STRING_REWRITE)
 class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     """Masks each provied value with a random string of the length specified in the configuration."""
