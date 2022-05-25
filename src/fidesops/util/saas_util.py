@@ -188,7 +188,7 @@ def assign_placeholders(
                 value = value.replace(f"<{placeholder}>", str(placeholder_value))
             else:
                 return None
-    return str(value) if value else None
+    return str(value) if value is not None else None
 
 
 def map_param_values(
