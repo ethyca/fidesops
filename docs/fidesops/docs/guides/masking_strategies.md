@@ -210,7 +210,7 @@ from fidesops.service.masking.strategy.masking_strategy_factory import (
 
 RANDOM_STRING_REWRITE_STRATEGY_NAME = "random_string_rewrite"
 
-@MaskingStrategyFactory.register(RANDOM_STRING_REWRITE)
+@MaskingStrategyFactory.register(RANDOM_STRING_REWRITE_STRATEGY_NAME)
 class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     """Masks a value with a random string of the length specified in the configuration."""
 

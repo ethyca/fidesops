@@ -586,7 +586,7 @@ def policy_drp_action_erasure(
             "name": "Erasure Request Rule DRP",
             "policy_id": erasure_request_policy.id,
             "masking_strategy": {
-                "strategy": STRING_REWRITE,
+                "strategy": STRING_REWRITE_STRATEGY_NAME,
                 "configuration": {"rewrite_value": "MASKED"},
             },
         },
