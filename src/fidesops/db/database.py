@@ -13,16 +13,14 @@ from fidesops.db.session import get_db_engine
 from .base import Base
 
 
-def get_alembic_config(database_url: str) -> Config:
+def get_alembic_config(database_url: str, package_source_dir: str) -> Config:
     """
     Do lots of magic to make alembic work programmatically.
     """
 
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    package_dir = os.path.normpath(os.path.join(current_dir, "../../"))
-    directory = os.path.join(package_dir, "migrations/")
-    config = Config(os.path.join(package_dir, "alembic.ini"))
-    config.set_main_option("script_location", directory.replace("%", "%%"))
+    migrations_dir = os.path.join(package_source_dir, "migrations/")
+    config = Config(os.path.join(package_source_dir, "alembic.ini"))
+    config.set_main_option("script_location", migrations_dir.replace("%", "%%"))
     config.set_main_option("sqlalchemy.url", database_url)
     return config
 
@@ -33,11 +31,11 @@ def upgrade_db(alembic_config: Config, revision: str = "head") -> None:
     command.upgrade(alembic_config, revision)
 
 
-def init_db(database_url: PostgresDsn) -> None:
+def init_db(database_url: PostgresDsn, package_source_dir: str) -> None:
     """
     Runs the migrations and creates all of the database objects.
     """
-    alembic_config = get_alembic_config(database_url)
+    alembic_config = get_alembic_config(database_url, package_source_dir)
     upgrade_db(alembic_config)
 
 
