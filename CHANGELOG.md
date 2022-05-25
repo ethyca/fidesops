@@ -16,7 +16,39 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.4.1...main)
+
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.0...main)
+
+### Added
+* Added `FIDESOPS__DATABASE__ENABLED` and `FIDESOPS__REDIS__ENABLED` configuration variables to allow `fidesops` to run cleanly in a "stateless" mode without any database or redis cache integration
+
+### Developer Experience
+
+* Import ordering is now enforced using [isort](https://pycqa.github.io/isort/) in CI [#533](https://github.com/ethyca/fidesops/pull/533)
+
+### Docs
+
+* Updated documentation for the user management ui [#530](https://github.com/ethyca/fidesops/pull/530)
+
+## [1.5.0](https://github.com/ethyca/fidesops/compare/1.4.2...1.5.0) - 2022-05-18
+
+### Added
+
+* ESLint configuration changes [#514](https://github.com/ethyca/fidesops/pull/514)
+* User creation, update and permissions in the Admin UI [#511](https://github.com/ethyca/fidesops/pull/511)
+* Yaml support for dataset upload [#284](https://github.com/ethyca/fidesops/pull/284)
+
+
+### Breaking Changes
+* Update masking API to take multiple input values [#443](https://github.com/ethyca/fidesops/pull/443
+
+
+### Docs
+
+* DRP feature documentation [#520](https://github.com/ethyca/fidesops/pull/520)
+
+
+## [1.4.2](https://github.com/ethyca/fidesops/compare/1.4.1...1.4.2) - 2022-05-12
 
 ### Added
 
@@ -34,10 +66,10 @@ The types of changes are:
 * Publish Fidesops to Pypi [#491](https://github.com/ethyca/fidesops/pull/491)
 
 
-### Changed 
+### Changed
 * Converted HTTP Status Codes to Starlette constant values [#438](https://github.com/ethyca/fidesops/pull/438)
 * SaasConnector.send behavior on ignore_errors now returns raw response [#462](https://github.com/ethyca/fidesops/pull/462)
-* Seed user permissions in `create_superuser.py` script [#468](https://github.com/ethyca/fidesops/pull/468) 
+* Seed user permissions in `create_superuser.py` script [#468](https://github.com/ethyca/fidesops/pull/468)
 * User API Endpoints (update fields and reset user passwords) [#471](https://github.com/ethyca/fidesops/pull/471)
 * Format tests with `black` [#466](https://github.com/ethyca/fidesops/pull/466)
 * Extract privacy request endpoint logic into separate service for DRP [#470](https://github.com/ethyca/fidesops/pull/470)
