@@ -1,14 +1,11 @@
 import logging
+from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Security
-from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
-
-
-from datetime import datetime
-
+from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
 from starlette.status import (
@@ -23,6 +20,14 @@ from starlette.status import (
 
 from fidesops.api import deps
 from fidesops.api.v1 import urn_registry as urls
+from fidesops.api.v1.scope_registry import (
+    PRIVACY_REQUEST_READ,
+    USER_CREATE,
+    USER_DELETE,
+    USER_PASSWORD_RESET,
+    USER_READ,
+    USER_UPDATE,
+)
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
 from fidesops.models.client import ADMIN_UI_ROOT, ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
@@ -31,25 +36,13 @@ from fidesops.schemas.oauth import AccessToken
 from fidesops.schemas.user import (
     UserCreate,
     UserCreateResponse,
-    UserUpdate,
     UserLogin,
+    UserLoginResponse,
     UserPasswordReset,
     UserResponse,
+    UserUpdate,
 )
-
-from fidesops.util.oauth_util import (
-    get_current_user,
-    verify_oauth_client,
-)
-
-from fidesops.api.v1.scope_registry import (
-    USER_CREATE,
-    USER_UPDATE,
-    PRIVACY_REQUEST_READ,
-    USER_READ,
-    USER_DELETE,
-    USER_PASSWORD_RESET,
-)
+from fidesops.util.oauth_util import get_current_user, verify_oauth_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
@@ -107,7 +100,7 @@ def _validate_current_user(user_id: str, user_from_token: FidesopsUser) -> None:
     if user_id != user_from_token.id:
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED,
-            detail=f"You are only authorised to update your own user data.",
+            detail="You are only authorised to update your own user data.",
         )
 
 
@@ -180,7 +173,7 @@ def get_users(
     username: Optional[str] = None,
 ) -> AbstractPage[FidesopsUser]:
     """Returns a paginated list of all users"""
-    logger.info(f"Returned a paginated list of all users.")
+    logger.info("Returned a paginated list of all users.")
     query = FidesopsUser.query(db)
     if username:
         query = query.filter(FidesopsUser.username.ilike(f"%{escape_like(username)}%"))
@@ -195,7 +188,7 @@ def get_users(
 )
 def get_user(*, db: Session = Depends(deps.get_db), user_id: str) -> FidesopsUser:
     """Returns a User based on an Id"""
-    logger.info(f"Returned a User based on Id")
+    logger.info("Returned a User based on Id")
     user = FidesopsUser.get_by(db, field="id", value=user_id)
     if user is None:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
@@ -227,7 +220,7 @@ def delete_user(
     if not (client.fides_key == ADMIN_UI_ROOT or client.user_id == user.id):
         raise HTTPException(
             status_code=HTTP_403_FORBIDDEN,
-            detail=f"Users can only remove themselves, or be the Admin UI Root User.",
+            detail="Users can only remove themselves, or be the Admin UI Root User.",
         )
 
     logger.info(f"Deleting user with id: '{user_id}'.")
@@ -238,11 +231,11 @@ def delete_user(
 @router.post(
     urls.LOGIN,
     status_code=HTTP_200_OK,
-    response_model=AccessToken,
+    response_model=UserLoginResponse,
 )
 def user_login(
     *, db: Session = Depends(deps.get_db), user_data: UserLogin
-) -> AccessToken:
+) -> UserLoginResponse:
     """Login the user by creating a client if it doesn't exist, and have that client generate a token"""
     user: FidesopsUser = FidesopsUser.get_by(
         db, field="username", value=user_data.username
@@ -260,7 +253,10 @@ def user_login(
 
     logger.info("Creating login access token")
     access_code = client.create_access_code_jwe()
-    return AccessToken(access_token=access_code)
+    return UserLoginResponse(
+        user_data=user,
+        token_data=AccessToken(access_token=access_code),
+    )
 
 
 @router.post(

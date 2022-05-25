@@ -1,19 +1,19 @@
-import React from 'react';
 import {
+  Button,
   Flex,
   Link,
-  Button,
   Menu,
   MenuButton,
-  MenuList,
-  MenuItem,
-  Text,
   MenuDivider,
+  MenuItem,
+  MenuList,
   Stack,
+  Text,
 } from '@fidesui/react';
-import { signOut } from 'next-auth/react';
-import NextLink from 'next/link';
 import Image from 'next/image';
+import NextLink from 'next/link';
+import { signOut } from 'next-auth/react';
+import React from 'react';
 
 import { UserIcon } from './Icon';
 
@@ -45,9 +45,10 @@ const Header: React.FC<HeaderProps> = ({ username }) => (
           <MenuList shadow="xl">
             <Stack px={3} py={2} spacing={0}>
               <Text fontWeight="medium">{username}</Text>
-              <Text fontSize="sm" color="gray.600">
+              {/* This text should only show if actually an admin */}
+              {/* <Text fontSize="sm" color="gray.600">
                 Administrator
-              </Text>
+              </Text> */}
             </Stack>
             <MenuDivider />
             <MenuItem

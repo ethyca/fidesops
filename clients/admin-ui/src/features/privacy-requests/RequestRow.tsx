@@ -1,32 +1,32 @@
-import React, { useRef, useState } from 'react';
 import {
-  Tag,
-  Text,
-  Tr,
-  Td,
+  Alert,
+  AlertTitle,
   Button,
   ButtonGroup,
   Menu,
   MenuButton,
-  MenuList,
   MenuItem,
+  MenuList,
   Portal,
-  Alert,
-  AlertTitle,
+  Tag,
+  Td,
+  Text,
+  Tr,
   useClipboard,
   useToast,
 } from '@fidesui/react';
 import { format } from 'date-fns-tz';
+import React, { useRef, useState } from 'react';
 
 import { MoreIcon } from '../common/Icon';
-import RequestBadge from './RequestBadge';
-
-import { PrivacyRequest } from './types';
+import DenyPrivacyRequestModal from './DenyPrivacyRequestModal';
 import { useObscuredPII } from './helpers';
 import {
   useApproveRequestMutation,
   useDenyRequestMutation,
 } from './privacy-requests.slice';
+import RequestBadge from './RequestBadge';
+import { PrivacyRequest } from './types';
 
 const PII: React.FC<{ data: string }> = ({ data }) => (
   <>{useObscuredPII(data)}</>
@@ -38,6 +38,8 @@ const useRequestRow = (request: PrivacyRequest) => {
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [denialReason, setDenialReason] = useState('');
   const [approveRequest, approveRequestResult] = useApproveRequestMutation();
   const [denyRequest, denyRequestResult] = useDenyRequestMutation();
   const handleMenuOpen = () => setMenuOpen(true);
@@ -52,8 +54,19 @@ const useRequestRow = (request: PrivacyRequest) => {
   const handleFocus = () => setFocused(true);
   const handleBlur = () => setFocused(false);
   const handleApproveRequest = () => approveRequest(request);
-  const handleDenyRequest = () => denyRequest(request);
+  const handleDenyRequest = (reason: string) =>
+    denyRequest({ id: request.id, reason });
   const { onCopy } = useClipboard(request.id);
+  const handleModalOpen = () => setModalOpen(true);
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setFocused(false);
+    setHovered(false);
+    setMenuOpen(false);
+    if (!denyRequestResult.isLoading) {
+      setDenialReason('');
+    }
+  };
   const handleIdCopy = () => {
     onCopy();
     if (typeof window !== 'undefined') {
@@ -77,6 +90,9 @@ const useRequestRow = (request: PrivacyRequest) => {
     hovered,
     focused,
     menuOpen,
+    modalOpen,
+    handleModalOpen,
+    handleModalClose,
     handleMenuClose,
     handleMenuOpen,
     handleMouseEnter,
@@ -88,6 +104,8 @@ const useRequestRow = (request: PrivacyRequest) => {
     handleDenyRequest,
     hoverButtonRef,
     shiftFocusToHoverMenu,
+    denialReason,
+    setDenialReason,
   };
 };
 
@@ -105,10 +123,15 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
     approveRequestResult,
     denyRequestResult,
     hoverButtonRef,
+    modalOpen,
+    handleModalClose,
+    handleModalOpen,
     shiftFocusToHoverMenu,
     handleFocus,
     handleBlur,
     focused,
+    denialReason,
+    setDenialReason,
   } = useRequestRow(request);
   const showMenu = hovered || menuOpen || focused;
 
@@ -209,8 +232,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
                 size="xs"
                 mr="-px"
                 bg="white"
-                onClick={handleDenyRequest}
-                isLoading={denyRequestResult.isLoading}
+                onClick={handleModalOpen}
                 _loading={{
                   opacity: 1,
                   div: { opacity: 0.4 },
@@ -221,8 +243,19 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
               >
                 Deny
               </Button>
+              <DenyPrivacyRequestModal
+                isOpen={modalOpen}
+                isLoading={denyRequestResult.isLoading}
+                handleMenuClose={handleModalClose}
+                handleDenyRequest={handleDenyRequest}
+                denialReason={denialReason}
+                onChange={(e) => {
+                  setDenialReason(e.target.value);
+                }}
+              />
             </>
           ) : null}
+
           <Menu onOpen={handleMenuOpen} onClose={handleMenuClose}>
             <MenuButton
               as={Button}

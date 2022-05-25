@@ -1,5 +1,6 @@
 # Prefixes
 V1_URL_PREFIX = "/api/v1"
+YAML = "/yml"
 
 # Config URLs
 CONFIG = "/config"
@@ -37,7 +38,6 @@ PRIVACY_REQUEST_DENY = "/privacy-request/administrate/deny"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
 REQUEST_PREVIEW = "/privacy-request/preview"
-REQUEST_STATUS_DRP = "/privacy-request/{privacy_request_id}/drp"
 
 # Rule URLs
 RULE_LIST = "/policy/{policy_key}/rule"
@@ -69,6 +69,9 @@ DATASET_VALIDATE = CONNECTION_BY_KEY + "/validate_dataset"
 DATASETS = CONNECTION_BY_KEY + "/dataset"
 DATASET_BY_KEY = CONNECTION_BY_KEY + "/dataset/{fides_key}"
 
+# YAML Collection URLs
+YAML_DATASETS = YAML + DATASETS
+
 # SaaS Config URLs
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
@@ -88,3 +91,8 @@ LOGOUT = "/logout"
 
 # Health URL
 HEALTH = "/health"
+
+# DRP
+DRP_EXERCISE = "/drp/exercise"
+DRP_STATUS = "/drp/status"
+DRP_DATA_RIGHTS = "/drp/data-rights"

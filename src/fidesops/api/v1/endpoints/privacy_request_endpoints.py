@@ -1,9 +1,11 @@
+# pylint: disable=too-many-branches,too-many-locals
+
 import csv
 import io
 import logging
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Union
+from typing import Any, Callable, DefaultDict, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
@@ -50,14 +52,12 @@ from fidesops.schemas.external_https import PrivacyRequestResumeFormat
 from fidesops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
+    DenyPrivacyRequests,
     ExecutionLogDetailResponse,
     PrivacyRequestCreate,
     PrivacyRequestResponse,
     PrivacyRequestVerboseResponse,
     ReviewPrivacyRequestIds,
-    DenyPrivacyRequests,
-    PrivacyRequestDRPStatusResponse,
-    PrivacyRequestDRPStatus,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.service.privacy_request.request_service import (
@@ -214,7 +214,7 @@ def privacy_request_csv_download(
     )
     privacy_request_ids: List[str] = [r.id for r in privacy_request_query]
     denial_audit_log_query: Query = db.query(AuditLog).filter(
-        AuditLog.action == AuditLogAction.denied.value,
+        AuditLog.action == AuditLogAction.denied,
         AuditLog.privacy_request_id.in_(privacy_request_ids),
     )
     denial_audit_logs: Dict[str, str] = {
@@ -272,7 +272,7 @@ def execution_logs_by_dataset_name(
 def _filter_privacy_request_queryset(
     query: Query,
     db: Session = Depends(deps.get_db),
-    id: Optional[str] = None,
+    request_id: Optional[str] = None,
     status: Optional[PrivacyRequestStatus] = None,
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
@@ -301,20 +301,21 @@ def _filter_privacy_request_queryset(
     ]:
         if end is None or start is None:
             continue
+
         if not (isinstance(end, datetime) and isinstance(start, datetime)):
             continue
-        else:
-            if end < start:
-                # With date fields, if the start date is after the end date, return a 400
-                # because no records will lie within this range.
-                raise HTTPException(
-                    status_code=HTTP_400_BAD_REQUEST,
-                    detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
-                )
+
+        if end < start:
+            # With date fields, if the start date is after the end date, return a 400
+            # because no records will lie within this range.
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
+            )
 
     # Further restrict all PrivacyRequests by query params
-    if id:
-        query = query.filter(PrivacyRequest.id.ilike(f"{id}%"))
+    if request_id:
+        query = query.filter(PrivacyRequest.id.ilike(f"{request_id}%"))
     if external_id:
         query = query.filter(PrivacyRequest.external_id.ilike(f"{external_id}%"))
     if status:
@@ -329,22 +330,22 @@ def _filter_privacy_request_queryset(
         query = query.filter(PrivacyRequest.started_processing_at > started_gt)
     if completed_lt:
         query = query.filter(
-            PrivacyRequest.status == PrivacyRequestStatus.complete.value,
+            PrivacyRequest.status == PrivacyRequestStatus.complete,
             PrivacyRequest.finished_processing_at < completed_lt,
         )
     if completed_gt:
         query = query.filter(
-            PrivacyRequest.status == PrivacyRequestStatus.complete.value,
+            PrivacyRequest.status == PrivacyRequestStatus.complete,
             PrivacyRequest.finished_processing_at > completed_gt,
         )
     if errored_lt:
         query = query.filter(
-            PrivacyRequest.status == PrivacyRequestStatus.error.value,
+            PrivacyRequest.status == PrivacyRequestStatus.error,
             PrivacyRequest.finished_processing_at < errored_lt,
         )
     if errored_gt:
         query = query.filter(
-            PrivacyRequest.status == PrivacyRequestStatus.error.value,
+            PrivacyRequest.status == PrivacyRequestStatus.error,
             PrivacyRequest.finished_processing_at > errored_gt,
         )
 
@@ -365,7 +366,7 @@ def get_request_status(
     *,
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
-    id: Optional[str] = None,
+    request_id: Optional[str] = None,
     status: Optional[PrivacyRequestStatus] = None,
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
@@ -382,7 +383,7 @@ def get_request_status(
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
     """Returns PrivacyRequest information. Supports a variety of optional query params.
 
-    To fetch a single privacy request, use the id query param `?id=`.
+    To fetch a single privacy request, use the request_id query param `?request_id=`.
     To see individual execution logs, use the verbose query param `?verbose=True`.
     """
 
@@ -391,7 +392,7 @@ def get_request_status(
     query = _filter_privacy_request_queryset(
         query,
         db,
-        id,
+        request_id,
         status,
         created_lt,
         created_gt,
@@ -411,7 +412,7 @@ def get_request_status(
 
     # Conditionally embed execution log details in the response.
     if verbose:
-        logger.info(f"Finding execution log details")
+        logger.info("Finding execution log details")
         PrivacyRequest.execution_logs_by_dataset = property(
             execution_logs_by_dataset_name
         )
@@ -426,62 +427,6 @@ def get_request_status(
             item.identity = item.get_cached_identity_data()
 
     return paginated
-
-
-def _map_fidesops_status_to_drp_status(
-    status: PrivacyRequestStatus,
-) -> PrivacyRequestDRPStatus:
-    PRIVACY_REQUEST_STATUS_TO_DRP_MAPPING: Dict[
-        PrivacyRequestStatus, PrivacyRequestDRPStatus
-    ] = {
-        PrivacyRequestStatus.pending: PrivacyRequestDRPStatus.open,
-        PrivacyRequestStatus.approved: PrivacyRequestDRPStatus.in_progress,
-        PrivacyRequestStatus.denied: PrivacyRequestDRPStatus.denied,
-        PrivacyRequestStatus.in_processing: PrivacyRequestDRPStatus.in_progress,
-        PrivacyRequestStatus.complete: PrivacyRequestDRPStatus.fulfilled,
-        PrivacyRequestStatus.paused: PrivacyRequestDRPStatus.in_progress,
-        PrivacyRequestStatus.error: PrivacyRequestDRPStatus.expired,
-    }
-    try:
-        return PRIVACY_REQUEST_STATUS_TO_DRP_MAPPING[status]
-    except KeyError:
-        raise ValueError(f"Request has invalid DRP request status: {status.value}")
-
-
-@router.get(
-    urls.REQUEST_STATUS_DRP,
-    dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
-    response_model=PrivacyRequestDRPStatusResponse,
-)
-def get_request_status_drp(
-    privacy_request_id: str,
-    *,
-    db: Session = Depends(deps.get_db),
-) -> PrivacyRequestDRPStatusResponse:
-    """
-    Returns PrivacyRequest information where the respective privacy request is associated with
-    a policy that implements a Data Rights Protocol action.
-    """
-
-    logger.info(f"Finding request for DRP with ID: {privacy_request_id}")
-    request = PrivacyRequest.get(
-        db=db,
-        id=privacy_request_id,
-    )
-    if not request or not request.policy or not request.policy.drp_action:
-        # If no request is found with this ID, or that request has no policy,
-        # or that request's policy has no associated drp_action.
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"Privacy request with ID {privacy_request_id} does not exist, or is not associated with a data rights protocol action.",
-        )
-
-    logger.info(f"Privacy request with ID: {privacy_request_id} found for DRP status.")
-    return PrivacyRequestDRPStatusResponse(
-        request_id=request.id,
-        received_at=request.requested_at,
-        status=_map_fidesops_status_to_drp_status(request.status),
-    )
 
 
 @router.get(
@@ -530,7 +475,7 @@ def get_request_preview_queries(
         if not dataset_configs:
             raise HTTPException(
                 status_code=HTTP_404_NOT_FOUND,
-                detail=f"No datasets could be found",
+                detail="No datasets could be found",
             )
     else:
         for dataset_key in dataset_keys:
@@ -580,7 +525,7 @@ def get_request_preview_queries(
         logger.info(f"Dry run failed: {err}")
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Dry run failed",
+            detail="Dry run failed",
         )
 
 
@@ -645,7 +590,7 @@ def review_privacy_request(
         if privacy_request.status != PrivacyRequestStatus.pending:
             failed.append(
                 {
-                    "message": f"Cannot transition status",
+                    "message": "Cannot transition status",
                     "data": PrivacyRequestResponse.from_orm(privacy_request),
                 }
             )

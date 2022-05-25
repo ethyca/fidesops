@@ -43,6 +43,9 @@ reset-db:
 server: compose-build
 	@docker-compose up
 
+server-no-db: compose-build
+	@docker-compose -f docker-compose.no-db.yml up
+
 server-shell: compose-build
 	@docker-compose run $(IMAGE_NAME) /bin/bash
 
@@ -77,7 +80,7 @@ docker-push:
 # CI
 ####################
 
-check-all: black-ci pylint mypy check-migrations pytest pytest-integration
+check-all: isort-ci black-ci pylint mypy check-migrations pytest pytest-integration
 
 black-ci: compose-build
 	@echo "Running black checks..."
@@ -95,6 +98,11 @@ check-migrations: compose-build
 	check_missing_migrations(config.database.SQLALCHEMY_DATABASE_URI);"
 	@make teardown
 
+isort-ci:
+	@echo "Running isort checks..."
+	@docker-compose run $(IMAGE_NAME) \
+		isort src tests --check-only
+
 pylint: compose-build
 	@echo "Running pylint checks..."
 	@docker-compose run $(IMAGE_NAME) \
@@ -104,7 +112,7 @@ pylint: compose-build
 mypy: compose-build
 	@echo "Running mypy checks..."
 	@docker-compose run $(IMAGE_NAME) \
-		mypy --ignore-missing-imports src/
+		mypy src/
 	@make teardown
 
 pytest: compose-build
@@ -164,6 +172,12 @@ compose-build:
 	@docker-compose down --remove-orphans
 	@docker-compose build --build-arg REQUIRE_MSSQL="true"
 
+.PHONY: isort
+isort:
+	@echo "Running isort checks..."
+	@docker-compose run $(IMAGE_NAME) \
+		isort src tests
+
 .PHONY: teardown
 teardown:
 	@echo "Tearing down the dev environment..."
@@ -182,10 +196,15 @@ docs-serve: docs-build
 
 
 ####################
-# User Creation
+# Test Data Creation
 ####################
 
 user:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --datastores postgres --run_create_superuser
+
+test-data:
+	@virtualenv -p python3 fidesops_test_dispatch; \
+		source fidesops_test_dispatch/bin/activate; \
+		python run_infrastructure.py --datastores postgres --run_create_test_data
