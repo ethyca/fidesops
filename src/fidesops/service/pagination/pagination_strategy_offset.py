@@ -41,11 +41,12 @@ class OffsetPaginationStrategy(PaginationStrategy):
             return None
 
         # find query param value from deconstructed request_params, throw exception if query param not found
-        param_value = int(request_params.query_params.get(self.incremental_param))
-        if param_value is None:
+        param_value = request_params.query_params.get(self.incremental_param)
+        if param_value is None or not param_value.isdigit():
             raise FidesopsException(
-                f"Unable to find query param named '{self.incremental_param}' in request"
+                f"Unable to find query param named '{self.incremental_param}' with an int value in request"
             )
+        param_value = int(param_value)
 
         # increment param value and return None if limit has been reached to indicate there are no more pages
         limit = self.limit
@@ -60,7 +61,7 @@ class OffsetPaginationStrategy(PaginationStrategy):
             return None
 
         # update query param and return updated request_param tuple
-        request_params.query_params[self.incremental_param] = param_value
+        request_params.query_params[self.incremental_param] = str(param_value)
         return SaaSRequestParams(
             method=request_params.method,
             path=request_params.path,

@@ -76,7 +76,7 @@ def test_offset_with_connector_param_reference_not_found(response_with_body):
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/conversations",
-        query_params={"page": 1},
+        query_params={"page": "1"},
     )
 
     paginator = OffsetPaginationStrategy(config)
@@ -97,7 +97,7 @@ def test_offset_limit(response_with_body):
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/conversations",
-        query_params={"page": 10},
+        query_params={"page": "10"},
     )
 
     paginator = OffsetPaginationStrategy(config)
@@ -130,7 +130,7 @@ def test_offset_missing_start_value(response_with_body):
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/conversations",
-        query_params={"row": 1},
+        query_params={"row": "1"},
     )
 
     paginator = OffsetPaginationStrategy(config)
@@ -139,7 +139,7 @@ def test_offset_missing_start_value(response_with_body):
             request_params, {}, response_with_body, "conversations"
         )
     assert (
-        f"Unable to find query param named '{config.incremental_param}' in request"
+        f"Unable to find query param named '{config.incremental_param}' with an int value in request"
         == str(exc.value)
     )
 
