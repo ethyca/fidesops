@@ -18,11 +18,7 @@ from fidesops.api.v1.urn_registry import (
     DRP_DATA_RIGHTS,
 )
 from fidesops.core.config import config
-
-from fidesops.models.privacy_request import (
-    PrivacyRequest,
-    PrivacyRequestStatus,
-)
+from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.schemas.privacy_request import PrivacyRequestDRPStatus
 from fidesops.util.cache import get_drp_request_body_cache_key, get_identity_cache_key
 

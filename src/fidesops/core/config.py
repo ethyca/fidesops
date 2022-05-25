@@ -3,17 +3,11 @@
 import hashlib
 import logging
 import os
-from typing import Dict, List, Optional, Union, Tuple, Any, MutableMapping
+from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
 
 import bcrypt
 import toml
-from pydantic import (
-    AnyHttpUrl,
-    BaseSettings,
-    PostgresDsn,
-    ValidationError,
-    validator,
-)
+from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, ValidationError, validator
 from pydantic.env_settings import SettingsSourceCallable
 
 from fidesops.common_exceptions import MissingConfig
@@ -47,6 +41,7 @@ class DatabaseSettings(FidesSettings):
     DB: str
     PORT: str = "5432"
     TEST_DB: str = "test"
+    ENABLED: bool = True
 
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
     SQLALCHEMY_TEST_DATABASE_URI: Optional[PostgresDsn] = None
@@ -109,6 +104,7 @@ class RedisSettings(FidesSettings):
     DECODE_RESPONSES: bool = True
     DEFAULT_TTL_SECONDS: int = 604800
     DB_INDEX: int
+    ENABLED: bool = True
 
     class Config:
         env_prefix = "FIDESOPS__REDIS__"
