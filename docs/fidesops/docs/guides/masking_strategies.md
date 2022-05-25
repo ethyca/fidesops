@@ -266,4 +266,4 @@ any defaults that should be applied in their absence. All configuration classes 
 
 In order to leverage an implemented masking strategy, the `MaskingStrategy` subclass must be registered with the `MaskingStrategyFactory`. To register a new `MaskingStrategy`, use the `register` decorator on the `MaskingStrategy` subclass definition, as shown in the above example.
 
-The value passed as the argument to the decorator must be the registered name of the `MaskingStrategy` subclass. This is the value that should be passed by callers in the `"masking_strategy"."strategy"` field, in order to invoke this masking strategy.
+The value passed as the argument to the decorator must be the registered name of the `MaskingStrategy` subclass. This is the same value defined by [callers](#using-fidesops-as-a-masking-service) in the `"masking_strategy"."strategy"` field.
