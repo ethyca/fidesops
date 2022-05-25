@@ -5,10 +5,7 @@ from pydantic import ValidationError
 
 from fidesops.common_exceptions import NoSuchStrategyException
 from fidesops.common_exceptions import ValidationError as FidesopsValidationError
-from fidesops.schemas.masking.masking_configuration import (
-    FormatPreservationConfig,
-    MaskingConfiguration,
-)
+from fidesops.schemas.masking.masking_configuration import FormatPreservationConfig
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 
 logger = logging.getLogger(__name__)
@@ -16,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class MaskingStrategyFactory:
     registry: Dict[str, Type[MaskingStrategy]] = {}
-    valid_strategies_string: str = ""
+    valid_strategies: str = ""
 
     @classmethod
     def register(
@@ -33,7 +30,7 @@ class MaskingStrategyFactory:
                 )
 
             cls.registry[name] = strategy_class
-            cls.valid_strategies_string = ", ".join(cls.registry.keys())
+            cls.valid_strategies = ", ".join(cls.registry.keys())
             return cls.registry[name]
 
         return wrapper
@@ -48,18 +45,17 @@ class MaskingStrategyFactory:
         Returns the strategy given the name and configuration.
         Raises NoSuchStrategyException if the strategy does not exist
         """
-        if strategy_name not in cls.registry:
-            raise NoSuchStrategyException(
-                f"Strategy '{strategy_name}' does not exist. Valid strategies are [{cls.valid_strategies_string}]"
-            )
-        strategy: MaskingStrategy = cls.registry[strategy_name]
         try:
-            strategy_config: MaskingConfiguration = strategy.get_configuration_model()(
-                **configuration
+            strategy = cls.registry[strategy_name]
+        except KeyError:
+            raise NoSuchStrategyException(
+                f"Strategy '{strategy_name}' does not exist. Valid strategies are [{cls.valid_strategies}]"
             )
-            return strategy(configuration=strategy_config)
+        try:
+            strategy_config = strategy.get_configuration_model()(**configuration)
         except ValidationError as e:
             raise FidesopsValidationError(message=str(e))
+        return strategy(configuration=strategy_config)
 
     @classmethod
     def get_strategies(cls) -> ValuesView[MaskingStrategy]:
