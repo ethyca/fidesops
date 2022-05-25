@@ -1,12 +1,11 @@
-import React from 'react';
-import { Flex, Button } from '@fidesui/react';
-import { useSession } from 'next-auth/react';
+import { Button,Flex } from '@fidesui/react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
-
-import { ArrowDownLineIcon } from '../../features/common/Icon';
+import { useSession } from 'next-auth/react';
+import React from 'react';
 
 import Header from './Header';
+import { ArrowDownLineIcon } from "./Icon";
 
 const NavBar = () => {
   const { data: session } = useSession();
