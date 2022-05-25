@@ -3475,6 +3475,34 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Data Rights",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/drp/data-rights",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"drp",
+								"data-rights"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
