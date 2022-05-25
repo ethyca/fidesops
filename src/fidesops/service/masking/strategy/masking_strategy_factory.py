@@ -21,16 +21,18 @@ class MaskingStrategyFactory:
     @classmethod
     def register(cls, name: str) -> Callable[[MaskingStrategy], MaskingStrategy]:
         def wrapper(strategy_class: MaskingStrategy) -> MaskingStrategy:
+            logger.debug(
+                f"Registering new masking strategy '{strategy_class}' under name '{name}'"
+            )
+
             if name in cls.registry:
                 logger.warning(
-                    f"Strategy with name {name} already exists in MaskingStrategy registry. It referred to class {cls.registry[name]}, but will now refer to {strategy_class}"
+                    f"Masking strategy with name '{name}' already exists. It previously referred to class '{cls.registry[name]}', but will now refer to '{strategy_class}'"
                 )
-            logger.info(
-                f"Registering MaskingStrategy class {strategy_class} under name {name}"
-            )
+
             cls.registry[name] = strategy_class
             cls.valid_strategies = ", ".join(cls.registry.keys())
-            return strategy_class
+            return cls.registry[name]
 
         return wrapper
 
