@@ -1760,9 +1760,7 @@ class TestValidateManualInput:
         )
 
     @pytest.mark.usefixtures("postgres_example_test_dataset_config")
-    def test_field_on_second_row_does_not_match(
-        self, db, postgres_example_test_dataset_config
-    ):
+    def test_field_on_second_row_does_not_match(self, db):
         paused_location = CollectionAddress("postgres_example_test_dataset", "address")
 
         manual_rows = [
