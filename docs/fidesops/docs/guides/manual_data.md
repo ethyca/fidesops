@@ -52,7 +52,7 @@ should match the fields on the paused collection.
 }]
 ```
 
-If no manual data can be found on the user's in, simply pass in an empty list to resume the privacy request.
+If no manual data can be found, simply pass in an empty list to resume the privacy request.
 
 ```json
 []
