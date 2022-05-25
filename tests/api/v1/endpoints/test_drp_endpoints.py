@@ -18,6 +18,7 @@ from fidesops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.core.config import config
+from fidesops.models.policy import DrpAction
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.schemas.privacy_request import PrivacyRequestDRPStatus
 from fidesops.util.cache import get_drp_request_body_cache_key, get_identity_cache_key
@@ -48,7 +49,7 @@ class TestCreateDrpPrivacyRequest:
         data = {
             "meta": {"version": "0.5"},
             "regime": "ccpa",
-            "exercise": ["access"],
+            "exercise": [DrpAction.access.value],
             "identity": encoded_identity,
         }
         resp = api_client.post(url, json=data)
@@ -111,7 +112,7 @@ class TestCreateDrpPrivacyRequest:
         data = {
             "meta": {"version": "0.5"},
             "regime": "ccpa",
-            "exercise": ["access"],
+            "exercise": [DrpAction.access.value],
             "identity": encoded_identity,
         }
         resp = api_client.post(url, json=data)
@@ -174,7 +175,7 @@ class TestCreateDrpPrivacyRequest:
         data = {
             "meta": {"version": "0.5"},
             "regime": "ccpa",
-            "exercise": ["access"],
+            "exercise": [DrpAction.access.value],
             "identity": encoded_identity,
         }
         resp = api_client.post(url, json=data)
@@ -217,7 +218,7 @@ class TestCreateDrpPrivacyRequest:
         data = {
             "meta": {"version": "0.5"},
             "regime": "ccpa",
-            "exercise": ["access", "deletion"],
+            "exercise": [DrpAction.access.value, DrpAction.deletion.value],
             "identity": encoded_identity,
         }
         resp = api_client.post(url, json=data)
@@ -238,7 +239,7 @@ class TestCreateDrpPrivacyRequest:
         data = {
             "meta": {"version": "0.5"},
             "regime": "ccpa",
-            "exercise": ["access"],
+            "exercise": [DrpAction.access.value],
             "identity": encoded_identity,
         }
         resp = api_client.post(url, json=data)
@@ -390,7 +391,7 @@ class TestGetDrpDataRights:
         expected_response = {
             "version": "0.5",
             "api_base": None,
-            "actions": ["access"],
+            "actions": [DrpAction.access.value],
             "user_relationships": None,
         }
         auth_header = generate_auth_header(scopes=[POLICY_READ])
@@ -413,7 +414,7 @@ class TestGetDrpDataRights:
         expected_response = {
             "version": "0.5",
             "api_base": None,
-            "actions": ["access", "deletion"],
+            "actions": [DrpAction.access.value, DrpAction.deletion.value],
             "user_relationships": None,
         }
         auth_header = generate_auth_header(scopes=[POLICY_READ])
@@ -422,4 +423,4 @@ class TestGetDrpDataRights:
             headers=auth_header,
         )
         assert 200 == response.status_code
-        assert response.json()["actions"] == expected_response["actions"]
+        assert response.json() == expected_response
