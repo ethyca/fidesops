@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, Dict, Union, ValuesView
+from typing import Callable, Dict, Type, Union, ValuesView
 
 from pydantic import ValidationError
 
@@ -15,12 +15,14 @@ logger = logging.getLogger(__name__)
 
 
 class MaskingStrategyFactory:
-    registry: Dict[str, MaskingStrategy] = {}
-    valid_strategies = ""
+    registry: Dict[str, Type[MaskingStrategy]] = {}
+    valid_strategies_string: str = ""
 
     @classmethod
-    def register(cls, name: str) -> Callable[[MaskingStrategy], MaskingStrategy]:
-        def wrapper(strategy_class: MaskingStrategy) -> MaskingStrategy:
+    def register(
+        cls, name: str
+    ) -> Callable[[Type[MaskingStrategy]], Type[MaskingStrategy]]:
+        def wrapper(strategy_class: Type[MaskingStrategy]) -> Type[MaskingStrategy]:
             logger.debug(
                 f"Registering new masking strategy '{strategy_class}' under name '{name}'"
             )
@@ -31,7 +33,7 @@ class MaskingStrategyFactory:
                 )
 
             cls.registry[name] = strategy_class
-            cls.valid_strategies = ", ".join(cls.registry.keys())
+            cls.valid_strategies_string = ", ".join(cls.registry.keys())
             return cls.registry[name]
 
         return wrapper
@@ -48,7 +50,7 @@ class MaskingStrategyFactory:
         """
         if strategy_name not in cls.registry:
             raise NoSuchStrategyException(
-                f"Strategy '{strategy_name}' does not exist. Valid strategies are [{cls.valid_strategies}]"
+                f"Strategy '{strategy_name}' does not exist. Valid strategies are [{cls.valid_strategies_string}]"
             )
         strategy: MaskingStrategy = cls.registry[strategy_name]
         try:
