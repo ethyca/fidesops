@@ -34,6 +34,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
     strategy_name = "oauth2"
 
     def __init__(self, configuration: OAuth2AuthenticationConfiguration):
+        self.expires_in = configuration.expires_in
         self.authorization_request = configuration.authorization_request
         self.token_request = configuration.token_request
         self.refresh_request = configuration.refresh_request
@@ -53,17 +54,19 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
                 f"authenticate connection via /api/v1/connection/{connection_config.key}/authorize"
             )
 
-        # automatically expire if expires_at is missing
-        expires_at = connection_config.secrets.get("expires_at")
-        if expires_at is None:
-            expires_at = 0
-        expires_at = int(expires_at)
-
-        if self._close_to_expiration(expires_at):
-            refresh_response = self._call_token_request(
-                "refresh", self.refresh_request, connection_config
-            )
-            access_token = self._process_response(refresh_response, connection_config)
+        # The refresh request is optional since the OAuth2 spec does not require
+        # a refresh token to be returned as part of an access token request
+        #
+        # https://datatracker.ietf.org/doc/html/rfc6749#section-5.1
+        if self.refresh_request:
+            expires_at = int(connection_config.secrets.get("expires_at"))
+            if self._close_to_expiration(expires_at):
+                refresh_response = self._call_token_request(
+                    "refresh", self.refresh_request, connection_config
+                )
+                access_token = self._process_response(
+                    refresh_response, connection_config
+                )
 
         # add access_token to request
         request.headers["Authorization"] = "Bearer " + access_token
@@ -116,7 +119,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
                 connection_config.secrets,
             )
             # ignore errors so we can return the error message in the response
-            response = client.send(prepared_request, True)
+            response = client.send(prepared_request, ignore_errors=True)
             json_response = response.json()
         except Exception as exc:
             logger.error(
@@ -131,9 +134,8 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
 
         return json_response
 
-    @staticmethod
     def _process_response(
-        response: Dict[str, Any], connection_config: ConnectionConfig
+        self, response: Dict[str, Any], connection_config: ConnectionConfig
     ) -> str:
         """
         Persists and returns the new access token.
@@ -169,7 +171,15 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         if refresh_token is not None:
             data["refresh_token"] = refresh_token
 
-        expires_in = response.get("expires_in")
+        # If omitted, the authorization server SHOULD provide the
+        # expiration time via other means or document the default value.
+        #
+        # https://datatracker.ietf.org/doc/html/rfc6749#section-5.1
+        #
+        # This alternate way of specifying the expiration is handled
+        # by the optional expires_in field of the OAuth2AuthenticationConfiguration
+
+        expires_in = response.get("expires_in") or self.expires_in
         if expires_in is not None:
             data["expires_at"] = int(datetime.utcnow().timestamp()) + expires_in
 

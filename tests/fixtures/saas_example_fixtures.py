@@ -133,7 +133,7 @@ def saas_example_connection_config_with_invalid_saas_config(
     connection_config.delete(db)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def oauth2_configuration() -> OAuth2AuthenticationConfiguration:
     return {
         "authorization_request": {

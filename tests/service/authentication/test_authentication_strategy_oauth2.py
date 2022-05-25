@@ -75,6 +75,24 @@ class TestAddAuthentication:
             },
         )
 
+    # no refresh request defined, should still add access token
+    def test_oauth2_authentication_no_refresh(
+        self, oauth2_connection_config, oauth2_configuration
+    ):
+        oauth2_configuration["refresh_request"] = None
+
+        # the request we want to authenticate
+        req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
+
+        auth_strategy = get_strategy("oauth2", oauth2_configuration)
+        authenticated_request = auth_strategy.add_authentication(
+            req, oauth2_connection_config
+        )
+        assert (
+            authenticated_request.headers["Authorization"]
+            == f"Bearer {oauth2_connection_config.secrets['access_token']}"
+        )
+
     # access token expired, unable to refresh
     @mock.patch("fidesops.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_oauth2_authentication_failed_refresh(
@@ -166,6 +184,52 @@ class TestAccessTokenRequest:
                     "refresh_token": "new_refresh",
                     "code": "auth_code",
                     "expires_at": int(datetime.utcnow().timestamp()) + expires_in,
+                }
+            },
+        )
+
+    # make sure we can use the expires_in value in the config if no expires_in is provided
+    # in the access token response
+    @mock.patch("datetime.datetime")
+    @mock.patch("fidesops.models.connectionconfig.ConnectionConfig.update")
+    @mock.patch("fidesops.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_get_access_token_no_expires_in(
+        self,
+        mock_send: Mock,
+        mock_connection_config_update: Mock,
+        mock_time: Mock,
+        oauth2_connection_config,
+        oauth2_configuration,
+    ):
+        # set a fixed time
+        mock_time.utcnow.return_value = datetime(2022, 5, 22)
+
+        # mock the json response from calling the access token request
+        mock_send().json.return_value = {
+            "access_token": "new_access",
+            "refresh_token": "new_refresh",
+        }
+
+        oauth2_configuration["expires_in"] = 3600
+        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
+            "oauth2", oauth2_configuration
+        )
+        auth_strategy.get_access_token("auth_code", oauth2_connection_config)
+
+        # verify correct values for connection_config update
+        mock_connection_config_update.assert_called_once_with(
+            mock.ANY,
+            data={
+                "secrets": {
+                    "domain": "localhost",
+                    "client_id": "client",
+                    "client_secret": "secret",
+                    "redirect_uri": "https://localhost/callback",
+                    "access_token": "new_access",
+                    "refresh_token": "new_refresh",
+                    "code": "auth_code",
+                    "expires_at": int(datetime.utcnow().timestamp())
+                    + oauth2_configuration["expires_in"],
                 }
             },
         )

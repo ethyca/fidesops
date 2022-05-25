@@ -121,4 +121,4 @@ class OAuth2AuthenticationConfiguration(StrategyConfiguration):
     expires_in: Optional[int]
     authorization_request: SaaSRequest
     token_request: SaaSRequest
-    refresh_request: SaaSRequest
+    refresh_request: Optional[SaaSRequest]
