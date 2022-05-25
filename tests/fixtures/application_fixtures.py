@@ -426,7 +426,10 @@ def erasure_policy_two_rules(
             "client_id": oauth_client.id,
             "name": "Second Erasure Rule",
             "policy_id": erasure_policy.id,
-            "masking_strategy": {"strategy": NULL_REWRITE_STRATEGY_NAME, "configuration": {}},
+            "masking_strategy": {
+                "strategy": NULL_REWRITE_STRATEGY_NAME,
+                "configuration": {},
+            },
         },
     )
 

@@ -30,7 +30,9 @@ def test_get_secret_from_cache_str() -> None:
 
     # cache secrets for HMAC
     secret_key = MaskingSecretCache[str](
-        secret="test_key", masking_strategy=HMAC_STRATEGY_NAME, secret_type=SecretType.key
+        secret="test_key",
+        masking_strategy=HMAC_STRATEGY_NAME,
+        secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
 
@@ -52,7 +54,9 @@ def test_get_secret_from_cache_bytes() -> None:
 
     # cache secret AES key
     secret_key = MaskingSecretCache[str](
-        secret=b"\x94Y\xa8Z", masking_strategy=AES_ENCRYPT_STRATEGY_NAME, secret_type=SecretType.key
+        secret=b"\x94Y\xa8Z",
+        masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
+        secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
 

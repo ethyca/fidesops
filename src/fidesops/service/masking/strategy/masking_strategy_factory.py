@@ -40,10 +40,7 @@ class MaskingStrategyFactory:
     def get_strategy(
         cls,
         strategy_name: str,
-        configuration: Dict[
-            str,
-            Union[str, FormatPreservationConfig],
-        ],
+        configuration: Dict[str, Union[str, FormatPreservationConfig]],
     ) -> MaskingStrategy:
         """
         Returns the strategy given the name and configuration.

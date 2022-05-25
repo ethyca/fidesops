@@ -305,7 +305,9 @@ class TestSQLQueryConfig:
         }
         # cache secrets for hash strategy
         secret = MaskingSecretCache[str](
-            secret="adobo", masking_strategy=HASH_STRATEGY_NAME, secret_type=SecretType.salt
+            secret="adobo",
+            masking_strategy=HASH_STRATEGY_NAME,
+            secret_type=SecretType.salt,
         )
         cache_secret(secret, privacy_request.id)
 
@@ -598,7 +600,9 @@ class TestMongoQueryConfig:
         target.data_category = DataCategory("user.provided.identifiable.gender").value
         # cache secrets for hash strategy
         secret = MaskingSecretCache[str](
-            secret="adobo", masking_strategy=HASH_STRATEGY_NAME, secret_type=SecretType.salt
+            secret="adobo",
+            masking_strategy=HASH_STRATEGY_NAME,
+            secret_type=SecretType.salt,
         )
         cache_secret(secret, privacy_request.id)
 
