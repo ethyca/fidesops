@@ -593,7 +593,9 @@ def validate_collection(collection: CollectionAddress, db: Session) -> DatasetGr
 
 
 def validate_manual_input(
-    manual_rows: List[Optional[Row]], collection: CollectionAddress, dataset_graph: DatasetGraph
+    manual_rows: List[Optional[Row]],
+    collection: CollectionAddress,
+    dataset_graph: DatasetGraph,
 ) -> None:
     """Validate manually-added data for a collection.
 
@@ -616,7 +618,7 @@ def resume_privacy_request_with_manual_input(
     cache: FidesopsRedis,
     expected_paused_step: ActionType,
     manual_rows: Optional[List[Row]] = None,
-    manual_count: Optional[int] = None
+    manual_count: Optional[int] = None,
 ) -> PrivacyRequest:
     """Resume privacy request after validating and caching manual data for an access or an erasure request."""
     privacy_request: PrivacyRequest = get_privacy_request_or_error(
@@ -667,9 +669,7 @@ def resume_privacy_request_with_manual_input(
         logger.info(
             f"Caching manually erased row count for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
         )
-        privacy_request.cache_manual_erasure_result(
-            paused_collection, manual_count
-        )
+        privacy_request.cache_manual_erasure_result(paused_collection, manual_count)
 
     logger.info(
         f"Resuming privacy request '{privacy_request_id}', {paused_step.value} step, from collection "

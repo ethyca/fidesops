@@ -1811,7 +1811,7 @@ class TestResumeErasureRequestWithManualConfirmation:
         assert response.status_code == 400
         assert (
             response.json()["detail"]
-            == f"Invalid resume request: privacy request '{privacy_request.id}' status = in_processing."
+            == f"Invalid resume request: privacy request '{privacy_request.id}' status = in_processing. Privacy request is not paused."
         )
 
     def test_manual_resume_privacy_request_no_paused_location(
@@ -1859,15 +1859,13 @@ class TestResumeErasureRequestWithManualConfirmation:
         )
         response = api_client.post(url, headers=auth_header, json={"row_count": 0})
         assert response.status_code == 400
-        import pdb
 
-        pdb.set_trace()
         assert (
             response.json()["detail"]
             == "Collection 'manual_example:filing_cabinet' is paused at the access step. Pass in manual data instead to '/privacy-request/{privacy_request_id}/manual_input' to resume."
         )
 
-    def test_resume_with_manual_input(
+    def test_resume_with_manual_count(
         self,
         db,
         api_client,
