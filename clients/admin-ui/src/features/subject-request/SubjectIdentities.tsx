@@ -14,17 +14,23 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
 
   return (
     <>
-      <Stack direction='row'>
+      <Flex direction='row' justifyContent='space-between'>
         <Heading fontSize='lg' fontWeight='semibold' mb={4}>
           Subject indentities
         </Heading>
         <Flex flexShrink={0} alignItems='flex-start'>
           <PIIToggle />
-          <Text fontSize='xs' ml={2} size='sm'>
+          <Text
+            fontSize='xs'
+            ml={2}
+            size='sm'
+            color='gray.600'
+            fontWeight='500'
+          >
             Reveal PII
           </Text>
         </Flex>
-      </Stack>
+      </Flex>
       <Divider />
 
       <Flex alignItems='center'>

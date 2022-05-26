@@ -1,4 +1,4 @@
-import { Divider, Flex, Heading, Text } from '@fidesui/react';
+import { Box, Divider, Flex, Heading, Tag, Text } from '@fidesui/react';
 import React from 'react';
 
 import ClipboardButton from '../common/ClipboardButton';
@@ -15,7 +15,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
   return (
     <>
       <Heading fontSize='lg' fontWeight='semibold' mb={4}>
-        Request Details
+        Request details
       </Heading>
       <Divider />
       <Flex alignItems='center'>
@@ -34,13 +34,30 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         </Text>
         <ClipboardButton requestId={id} />
       </Flex>
+
+      <Flex alignItems='center'>
+        <Text mb={4} mr={2} fontSize='sm' color='gray.900' fontWeight='500'>
+          Request Type:
+        </Text>
+        <Tag
+          color='white'
+          bg='primary.400'
+          fontWeight='medium'
+          fontSize='sm'
+          mr={1}
+          mb={4}
+        >
+          {subjectRequest.policy.name}
+        </Tag>
+      </Flex>
       <Flex alignItems='flex-start'>
         <Text mb={4} mr={2} fontSize='sm' color='gray.900' fontWeight='500'>
           Status:
         </Text>
-        <RequestStatusBadge status={status} />
+        <Box>
+          <RequestStatusBadge status={status} />
+        </Box>
       </Flex>
-      {/* <Text>Request Type: {subjectRequest.type}</Text> the type field doesn't exist yet */}
     </>
   );
 };
