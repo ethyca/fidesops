@@ -254,6 +254,17 @@ you should adjust the ConnectionConfig Secrets properties through additional cal
 }
 ```
 
+## Associate a Dataset
+Once you have a working ConnectionConfig, it can be associated to an existing [dataset](datasets.md) by calling the `/dataset` endpoint, with a JSON version of your dataset as the request body:
+
+```json title="<code>PATCH /api/v1/connection/my_connection_key/dataset</code>"
+[{
+    "fides_key": "example_test_dataset",
+    "name": "Example Test Dataset",
+    "description": "Example of a dataset containing a variety of related tables like customers, products, addresses, etc.",
+    "collections": [...]
+}]
+```
 
 ## How do ConnectionConfigs differ from Datasets?
 

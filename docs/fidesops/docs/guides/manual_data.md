@@ -16,7 +16,7 @@ When a manual dataset is defined, an in-progress access request will pause until
 In the following example, the Manual Dataset contains one `storage_unit` collection.  `email` is 
 defined as the unit's [identity](datasets.md#field-members), which will then be used to retrieve the `box_id` in the storage unit.
 
-To add a Manual Dataset, first create a [Manual ConnectionConfig](database_connectors.md#example-6-manual-connectionconfig). The following Manual Dataset can then be added to the new ConnectionConfig, with a PATCH to `{{host}}/connection/<manual_key>/dataset`:
+To add a Manual Dataset, first create a [Manual ConnectionConfig](database_connectors.md#example-6-manual-connectionconfig). The following Manual Dataset can then be added to the new ConnectionConfig, with a [PATCH](database_connectors.md#associate-a-dataset) to `{{host}}/connection/<manual_key>/dataset`:
 
 ```yaml
 dataset:
@@ -43,16 +43,14 @@ A privacy request will pause execution when it reaches a manual collection.  An 
 should manually retrieve the data and send it in a POST request.  The fields 
 should match the fields on the paused collection.  
 
-`POST {{host}}/privacy-request/{{privacy_request_id}}/manual_input`
-
-```json
+```json title="<code>POST {{host}}/privacy-request/{{privacy_request_id}}/manual_input</code>"
 [{
     "box_id": 5,
     "email": "customer-1@example.com"
 }]
 ```
 
-If no manual data can be found, simply pass in an empty list to resume the privacy request.
+If no manual data can be found, simply pass in an empty list to resume the privacy request:
 
 ```json
 []
