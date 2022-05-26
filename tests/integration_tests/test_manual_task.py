@@ -1,4 +1,5 @@
 import uuid
+
 import pytest
 
 from fidesops.common_exceptions import PrivacyRequestPaused

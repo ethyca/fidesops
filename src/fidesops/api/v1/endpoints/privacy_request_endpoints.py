@@ -593,16 +593,14 @@ def validate_collection(collection: CollectionAddress, db: Session) -> DatasetGr
 
 
 def validate_manual_input(
-    manual_rows: List[Row], collection: CollectionAddress, db: Session
+    manual_rows: List[Optional[Row]], collection: CollectionAddress, dataset_graph: DatasetGraph
 ) -> None:
     """Validate manually-added data for a collection.
 
     The specified collection must exist and all fields must be previously defined.
     """
-    dataset_graph = validate_collection(collection, db)
-
     for row in manual_rows:
-        for field_name in row:
+        for field_name in row or {}:
             if not dataset_graph.nodes[collection].contains_field(
                 lambda f: f.name == field_name  # pylint: disable=W0640
             ):
@@ -612,8 +610,81 @@ def validate_manual_input(
                 )
 
 
-def validate_resume_from_graph(privacy_request_id: PrivacyRequest):
-    pass
+def resume_privacy_request_with_manual_input(
+    privacy_request_id: str,
+    db: Session,
+    cache: FidesopsRedis,
+    expected_paused_step: ActionType,
+    manual_rows: Optional[List[Row]] = None,
+    manual_count: Optional[int] = None
+) -> PrivacyRequest:
+    """Resume privacy request after validating and caching manual data for an access or an erasure request."""
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+    if privacy_request.status != PrivacyRequestStatus.paused:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid resume request: privacy request '{privacy_request.id}' "
+            f"status = {privacy_request.status.value}. Privacy request is not paused.",
+        )
+
+    paused_step: Optional[ActionType]
+    paused_collection: Optional[CollectionAddress]
+    paused_step, paused_collection = privacy_request.get_paused_step_and_collection()
+    if not paused_collection:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot resume privacy request '{privacy_request.id}'; no paused collection.",
+        )
+
+    if paused_step != expected_paused_step:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Collection '{paused_collection}' is paused at the {paused_step} step. Pass in manual data instead to "
+            f"'{PRIVACY_REQUEST_MANUAL_ERASURE if paused_step == ActionType.erasure else PRIVACY_REQUEST_MANUAL_INPUT}' to resume.",
+        )
+
+    datasets = DatasetConfig.all(db=db)
+    dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+    dataset_graph = DatasetGraph(*dataset_graphs)
+
+    node: Optional[Node] = dataset_graph.nodes.get(paused_collection)
+    if not node:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Cannot save manual data. No collection in graph with name: '{paused_collection.value}'.",
+        )
+
+    if paused_step == ActionType.access:
+        validate_manual_input(manual_rows or [], paused_collection, dataset_graph)
+        logger.info(
+            f"Caching manual input for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
+        )
+        privacy_request.cache_manual_input(paused_collection, manual_rows)
+
+    elif paused_step == ActionType.erasure:
+        logger.info(
+            f"Caching manually erased row count for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
+        )
+        privacy_request.cache_manual_erasure_result(
+            paused_collection, manual_count
+        )
+
+    logger.info(
+        f"Resuming privacy request '{privacy_request_id}', {paused_step.value} step, from collection "
+        f"'{paused_collection.value}'"
+    )
+
+    privacy_request.status = PrivacyRequestStatus.in_processing
+    privacy_request.save(db=db)
+
+    PrivacyRequestRunner(
+        cache=cache,
+        privacy_request=privacy_request,
+    ).submit(from_step=paused_step)
+
+    return privacy_request
 
 
 @router.post(
@@ -635,52 +706,13 @@ def resume_with_manual_input(
 
     If there's no manual data to submit, pass in an empty list to resume the privacy request.
     """
-    privacy_request: PrivacyRequest = get_privacy_request_or_error(
-        db, privacy_request_id
-    )
-    if privacy_request.status != PrivacyRequestStatus.paused:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid resume request: privacy request '{privacy_request.id}' "
-            f"status = {privacy_request.status.value}. Privacy request is not paused.",
-        )
-
-    paused_step: Optional[ActionType]
-    paused_collection: Optional[CollectionAddress]
-    paused_step, paused_collection = privacy_request.get_paused_step_and_collection()
-    if not paused_collection:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Cannot resume privacy request '{privacy_request.id}'; no paused collection.",
-        )
-
-    if paused_step == ActionType.erasure:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Collection '{paused_collection}' is paused at the erasure step. Pass in manual data to "
-                   f"{PRIVACY_REQUEST_MANUAL_ERASURE} to resume.",
-        )
-
-    validate_manual_input(manual_rows, paused_collection, db)
-    logger.info(
-        f"Caching manual input for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
-    )
-    privacy_request.cache_manual_input(paused_collection, manual_rows)
-
-    logger.info(
-        f"Resuming privacy request '{privacy_request_id}', {paused_step.value} step, from collection "
-        f"'{paused_collection.value}'"
-    )
-
-    privacy_request.status = PrivacyRequestStatus.in_processing
-    privacy_request.save(db=db)
-
-    PrivacyRequestRunner(
+    return resume_privacy_request_with_manual_input(
+        privacy_request_id=privacy_request_id,
+        db=db,
         cache=cache,
-        privacy_request=privacy_request,
-    ).submit(from_step=paused_step)
-
-    return privacy_request
+        expected_paused_step=ActionType.access,
+        manual_rows=manual_rows,
+    )
 
 
 @router.post(
@@ -696,57 +728,19 @@ def resume_with_erasure_confirmation(
     *,
     db: Session = Depends(deps.get_db),
     cache: FidesopsRedis = Depends(deps.get_cache),
-    row_count: RowCountRequest,
+    manual_count: RowCountRequest,
 ) -> PrivacyRequestResponse:
     """Resume the erasure portion of privacy request by passing in the number of rows that were manually masked.
 
     If no rows were masked, pass in a 0 to resume the privacy request.
     """
-    privacy_request: PrivacyRequest = get_privacy_request_or_error(
-        db, privacy_request_id
-    )
-    if privacy_request.status != PrivacyRequestStatus.paused:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid resume request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
-        )
-
-    paused_step: Optional[ActionType]
-    paused_collection: Optional[CollectionAddress]
-    paused_step, paused_collection = privacy_request.get_paused_step_and_collection()
-    if not paused_collection:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Cannot resume privacy request '{privacy_request.id}'; no paused collection.",
-        )
-
-    if paused_step == ActionType.access:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Collection '{paused_collection}' is paused at the access step. "
-                   f"Pass in manual data to {PRIVACY_REQUEST_MANUAL_INPUT} to resume.",
-        )
-
-    validate_collection(paused_collection, db)
-
-    logger.info(
-        f"Caching manually erased row count for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
-    )
-    privacy_request.cache_manual_erasure_result(paused_collection, row_count)
-
-    logger.info(
-        f"Resuming privacy request '{privacy_request_id}', {paused_step.value} step, from collection '{paused_collection.value}'"
-    )
-
-    privacy_request.status = PrivacyRequestStatus.in_processing
-    privacy_request.save(db=db)
-
-    PrivacyRequestRunner(
+    return resume_privacy_request_with_manual_input(
+        privacy_request_id=privacy_request_id,
+        db=db,
         cache=cache,
-        privacy_request=privacy_request,
-    ).submit(from_step=paused_step)
-
-    return privacy_request
+        expected_paused_step=ActionType.erasure,
+        manual_count=manual_count.row_count,
+    )
 
 
 def review_privacy_request(

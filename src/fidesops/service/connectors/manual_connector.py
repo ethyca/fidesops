@@ -57,7 +57,7 @@ class ManualConnector(BaseConnector[None]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
-    ) -> int:
+    ) -> Optional[int]:
         """Pause to have the user manually perform an erasure of data at the given node."""
         cached_count: Dict[
             Optional[str], Optional[int]
