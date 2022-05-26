@@ -2858,6 +2858,70 @@
         ]
       }
     },
+    "/api/v1/privacy-request/{privacy_request_id}/manual_input": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Resume With Manual Input",
+        "description": "Resume a privacy request by passing in manual input for the paused collection.\n\nIf there's no manual data to submit, pass in an empty list to resume the privacy request.",
+        "operationId": "resume_with_manual_input_api_v1_privacy_request__privacy_request_id__manual_input_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Privacy Request Id",
+              "type": "string"
+            },
+            "name": "privacy_request_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Manual Rows",
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:resume"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/privacy-request/administrate/approve": {
       "patch": {
         "tags": [
@@ -4588,7 +4652,8 @@
           "snowflake",
           "mssql",
           "mariadb",
-          "bigquery"
+          "bigquery",
+          "manual"
         ],
         "description": "Supported types to which we can connect fidesops."
       },
@@ -4934,6 +4999,7 @@
           "pending",
           "complete",
           "error",
+          "paused",
           "retrying"
         ],
         "description": "Enum for execution log statuses, reflecting where they are in their workflow"

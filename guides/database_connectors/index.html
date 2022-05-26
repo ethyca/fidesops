@@ -550,6 +550,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#example-6-manual-connectionconfig" class="md-nav__link">
+    Example 6: Manual ConnectionConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#set-the-connectionconfigs-secrets" class="md-nav__link">
     Set the ConnectionConfig's Secrets
   </a>
@@ -623,6 +630,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#associate-a-dataset" class="md-nav__link">
+    Associate a Dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-do-connectionconfigs-differ-from-datasets" class="md-nav__link">
     How do ConnectionConfigs differ from Datasets?
   </a>
@@ -646,6 +660,20 @@
     <li class="md-nav__item">
       <a href="../datasets/" class="md-nav__link">
         Configure Datasets
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manual_data/" class="md-nav__link">
+        Define Manual Datasets
       </a>
     </li>
   
@@ -1481,6 +1509,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#example-6-manual-connectionconfig" class="md-nav__link">
+    Example 6: Manual ConnectionConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#set-the-connectionconfigs-secrets" class="md-nav__link">
     Set the ConnectionConfig's Secrets
   </a>
@@ -1550,6 +1585,13 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#associate-a-dataset" class="md-nav__link">
+    Associate a Dataset
+  </a>
   
 </li>
       
@@ -1717,6 +1759,25 @@ categories.</p>
   }
 ]
 </code></pre></div></td></tr></table></div>
+<h4 id="example-6-manual-connectionconfig">Example 6: Manual ConnectionConfig</h4>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection 
+[
+  {
+    &quot;name&quot;: &quot;Manual connector&quot;,
+    &quot;key&quot;: &quot;manual_connector&quot;,
+    &quot;connection_type&quot;: &quot;manual&quot;,
+    &quot;access&quot;: &quot;read&quot;
+  }
+]
+</code></pre></div></td></tr></table></div>
 <h3 id="set-the-connectionconfigs-secrets">Set the ConnectionConfig's Secrets</h3>
 <p>After you create a ConnectionConfig, you explain how to connect to it by setting its "secrets": host, port, user, and password (note that the secrets used are specific to the DB connector). You do this by creating a ConnectionConfig Secrets object by calling the <a href="/fidesops/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put">Set a ConnectionConfig's Secrets</a> operation. You can set the object's attributes separately, or supply a single <code>url</code> string that encodes them all.</p>
 <p>If you set the <code>verify</code> query parameter to <code>true</code>, the operation  will  test the connection by issuing a trivial request to the database. The <code>test_status</code> response property announces the success of the connection attempt as <code>succeeded</code> or <code>failed</code>. If the attempt has failed, the <code>failure_reason</code> property gives further details about the failure.</p>
@@ -1836,6 +1897,20 @@ you should adjust the ConnectionConfig Secrets properties through additional cal
 <span class="w">    </span><span class="nt">&quot;test_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;failed&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;failure_reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Operation Failure connecting to MongoDB.&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
+<h2 id="associate-a-dataset">Associate a Dataset</h2>
+<p>Once you have a working ConnectionConfig, it can be associated to an existing <a href="../datasets/">dataset</a> by calling the <code>/dataset</code> endpoint, with a JSON version of your dataset as the request body:</p>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>PATCH /api/v1/connection/my_connection_key/dataset</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;fides_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;example_test_dataset&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Example Test Dataset&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Example of a dataset containing a variety of related tables like customers, products, addresses, etc.&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;collections&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]</span><span class="w"></span>
+<span class="p">}]</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 <h2 id="how-do-connectionconfigs-differ-from-datasets">How do ConnectionConfigs differ from Datasets?</h2>
 <p>A Dataset is an annotation of your database schema; it describes the PII category (or Data Categories) for each field that the database contains. A ConnectionConfig holds the secrets to connect to the database. Each Dataset has a foreign key to a ConnectionConfig.</p>

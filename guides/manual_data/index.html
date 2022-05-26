@@ -8,14 +8,14 @@
       
       
       
-        <link rel="canonical" href="https://ethyca.github.io/fidesops/development/documentation/">
+        <link rel="canonical" href="https://ethyca.github.io/fidesops/guides/manual_data/">
       
       <link rel="icon" href="../../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.7">
     
     
       
-        <title>Documentation - Fidesops</title>
+        <title>Define Manual Datasets - Fidesops</title>
       
     
     
@@ -73,7 +73,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#documentation" class="md-skip">
+        <a href="#retrieve-manual-data-for-a-privacy-request" class="md-skip">
           Skip to content
         </a>
       
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Documentation
+              Define Manual Datasets
             
           </span>
         </div>
@@ -415,12 +415,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
       
       
       
@@ -443,7 +445,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/oauth/" class="md-nav__link">
+      <a href="../oauth/" class="md-nav__link">
         Authenticate with OAuth
       </a>
     </li>
@@ -457,7 +459,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/database_connectors/" class="md-nav__link">
+      <a href="../database_connectors/" class="md-nav__link">
         Connect SQL and NoSQL Databases
       </a>
     </li>
@@ -471,7 +473,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/datasets/" class="md-nav__link">
+      <a href="../datasets/" class="md-nav__link">
         Configure Datasets
       </a>
     </li>
@@ -483,11 +485,66 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../../guides/manual_data/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Define Manual Datasets
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Define Manual Datasets
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#describing-a-manual-dataset" class="md-nav__link">
+    Describing a manual dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resuming-a-paused-privacy-request" class="md-nav__link">
+    Resuming a paused privacy request
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -499,7 +556,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/complex_fields/" class="md-nav__link">
+      <a href="../complex_fields/" class="md-nav__link">
         Annotate Complex Fields
       </a>
     </li>
@@ -513,7 +570,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/query_execution/" class="md-nav__link">
+      <a href="../query_execution/" class="md-nav__link">
         Preview Query Execution
       </a>
     </li>
@@ -527,7 +584,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/policies/" class="md-nav__link">
+      <a href="../policies/" class="md-nav__link">
         Create Request Policies
       </a>
     </li>
@@ -541,7 +598,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/masking_strategies/" class="md-nav__link">
+      <a href="../masking_strategies/" class="md-nav__link">
         Configure Data Masking Strategies
       </a>
     </li>
@@ -555,7 +612,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/storage/" class="md-nav__link">
+      <a href="../storage/" class="md-nav__link">
         Configure Storage Destinations
       </a>
     </li>
@@ -569,7 +626,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/policy_webhooks/" class="md-nav__link">
+      <a href="../policy_webhooks/" class="md-nav__link">
         Configure Policy Webhooks
       </a>
     </li>
@@ -583,7 +640,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/privacy_requests/" class="md-nav__link">
+      <a href="../privacy_requests/" class="md-nav__link">
         Execute Privacy Requests
       </a>
     </li>
@@ -597,7 +654,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/reporting/" class="md-nav__link">
+      <a href="../reporting/" class="md-nav__link">
         Report on Privacy Requests
       </a>
     </li>
@@ -611,7 +668,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/onetrust/" class="md-nav__link">
+      <a href="../onetrust/" class="md-nav__link">
         Configure OneTrust Integration
       </a>
     </li>
@@ -625,7 +682,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/configuration_reference/" class="md-nav__link">
+      <a href="../configuration_reference/" class="md-nav__link">
         Configuration Reference
       </a>
     </li>
@@ -639,7 +696,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/data_rights_protocol/" class="md-nav__link">
+      <a href="../data_rights_protocol/" class="md-nav__link">
         Data Rights Protocol
       </a>
     </li>
@@ -1006,14 +1063,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11" type="checkbox" id="__nav_11" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11" type="checkbox" id="__nav_11" >
       
       
       
@@ -1036,7 +1091,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
+      <a href="../../development/overview/" class="md-nav__link">
         Overview
       </a>
     </li>
@@ -1050,7 +1105,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing_details/" class="md-nav__link">
+      <a href="../../development/contributing_details/" class="md-nav__link">
         Contributing Details
       </a>
     </li>
@@ -1064,7 +1119,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../code_style/" class="md-nav__link">
+      <a href="../../development/code_style/" class="md-nav__link">
         Code Style
       </a>
     </li>
@@ -1076,79 +1131,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Documentation
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../development/documentation/" class="md-nav__link">
         Documentation
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#concepts" class="md-nav__link">
-    Concepts
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#semantics" class="md-nav__link">
-    Semantics
-  </a>
-  
-    <nav class="md-nav" aria-label="Semantics">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#capitalization" class="md-nav__link">
-    Capitalization
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#previewing-docs-locally" class="md-nav__link">
-    Previewing docs locally
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1160,7 +1147,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../testing/" class="md-nav__link">
+      <a href="../../development/testing/" class="md-nav__link">
         Testing
       </a>
     </li>
@@ -1174,7 +1161,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../pull_requests/" class="md-nav__link">
+      <a href="../../development/pull_requests/" class="md-nav__link">
         Pull Requests
       </a>
     </li>
@@ -1188,7 +1175,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../releases/" class="md-nav__link">
+      <a href="../../development/releases/" class="md-nav__link">
         Releases
       </a>
     </li>
@@ -1335,35 +1322,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#concepts" class="md-nav__link">
-    Concepts
+  <a href="#overview" class="md-nav__link">
+    Overview
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#semantics" class="md-nav__link">
-    Semantics
+  <a href="#describing-a-manual-dataset" class="md-nav__link">
+    Describing a manual dataset
   </a>
-  
-    <nav class="md-nav" aria-label="Semantics">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#capitalization" class="md-nav__link">
-    Capitalization
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#previewing-docs-locally" class="md-nav__link">
-    Previewing docs locally
+  <a href="#resuming-a-paused-privacy-request" class="md-nav__link">
+    Resuming a paused privacy request
   </a>
   
 </li>
@@ -1382,26 +1356,66 @@
                 
 
 
-<h1 id="documentation">Documentation</h1>
-<hr />
-<p>Documentation is incredibly important to Fides, both for explaining its concepts to general audiences and describing its usage to developers.</p>
-<h2 id="concepts">Concepts</h2>
-<p>Fides includes a great deal of "concept" documentation, which covers features, tutorials, guides, and examples separately from the auto-generated API reference. This page is part of the concept documentation for development!</p>
-<p>To write concept docs, add Markdown files to the <code>docs/fidesops/docs/</code> directory (or one of its subdirectories). To ensure that your page is displayed in the navigation, edit <code>mkdocs.yml</code> to include a reference to it.</p>
-<h2 id="semantics">Semantics</h2>
-<h3 id="capitalization">Capitalization</h3>
-<p>Concepts that refer to proper nouns or are trademarked should always be capitalized, including "Fides" and "Fidesops".</p>
-<p>Other Fides terms, like "Data Category" or "System", should also be capitalized to be clear about the fact that a Fides resource is being referenced.</p>
-<blockquote>
-<p>When a System is applied, it is either created or updated through the FidesAPI.</p>
-<p>The System model requires a field called <code>fides_key</code>.</p>
-</blockquote>
-<h2 id="previewing-docs-locally">Previewing docs locally</h2>
-<p>Documentation (including both concepts and API references) is built and deployed with every merge to Fides's master branch.</p>
-<p>If you're using VS Code Dev Containers, the docs will automatically be available at <code>localhost:8000</code>, otherwise you'll need to run the following command:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>make docs-serve
+<h1 id="retrieve-manual-data-for-a-privacy-request">Retrieve Manual Data for a Privacy Request</h1>
+<p>In this section we'll cover:</p>
+<ul>
+<li>How to describe a manual dataset</li>
+<li>How to send manual data to resume a privacy request</li>
+</ul>
+<h2 id="overview">Overview</h2>
+<p>Not all data can be automatically retrieved. When services have no external API, or when user data is held in a physical location, you can define a <a href="../datasets/">dataset</a> to describe the types of manual fields you plan to upload, as well as any dependencies between these manual collections and other collections. </p>
+<p>When a manual dataset is defined, an in-progress access request will pause until the data is added manually, and then resume execution.</p>
+<h2 id="describing-a-manual-dataset">Describing a manual dataset</h2>
+<p>In the following example, the Manual Dataset contains one <code>storage_unit</code> collection.  <code>email</code> is 
+defined as the unit's <a href="../datasets/#field-members">identity</a>, which will then be used to retrieve the <code>box_id</code> in the storage unit.</p>
+<p>To add a Manual Dataset, first create a <a href="../database_connectors/#example-6-manual-connectionconfig">Manual ConnectionConfig</a>. The following Manual Dataset can then be added to the new ConnectionConfig, with a <a href="../database_connectors/#associate-a-dataset">PATCH</a> to <code>{{host}}/connection/&lt;manual_key&gt;/dataset</code>:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">manual_input</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Manual Dataset</span><span class="w"></span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example of a dataset whose data must be manually retrieved</span><span class="w"></span>
+<span class="w">    </span><span class="nt">collections</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">storage_unit</span><span class="w"></span>
+<span class="w">        </span><span class="nt">fields</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">box_id</span><span class="w"></span>
+<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">user.provided</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
+<span class="w">              </span><span class="nt">primary_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">user.provided.identifiable.contact.email</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
+<span class="w">              </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
-<p>You'll see a status update as the docs build, and then an announcement that they are available on <code>http://127.0.0.1:8000</code>.</p>
+<h2 id="resuming-a-paused-privacy-request">Resuming a paused privacy request</h2>
+<p>A privacy request will pause execution when it reaches a manual collection.  An administrator
+should manually retrieve the data and send it in a POST request.  The fields 
+should match the fields on the paused collection.  </p>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>POST {{host}}/privacy-request/{{privacy_request_id}}/manual_input</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;box_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer-1@example.com&quot;</span><span class="w"></span>
+<span class="p">}]</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
+<p>If no manual data can be found, simply pass in an empty list to resume the privacy request:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[]</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
 
               
             </article>
@@ -1453,9 +1467,9 @@
       
         
         <a
-          href="../code_style/"
+          href="../datasets/"
           class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Code Style"
+          aria-label="Previous: Configure Datasets"
           rel="prev"
         >
           <div class="md-footer__button md-icon">
@@ -1466,7 +1480,7 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Code Style
+              Configure Datasets
             </div>
           </div>
         </a>
@@ -1476,9 +1490,9 @@
       
         
         <a
-          href="../testing/"
+          href="../complex_fields/"
           class="md-footer__link md-footer__link--next"
-          aria-label="Next: Testing"
+          aria-label="Next: Annotate Complex Fields"
           rel="next"
         >
           <div class="md-footer__title">
@@ -1486,7 +1500,7 @@
               <span class="md-footer__direction">
                 Next
               </span>
-              Testing
+              Annotate Complex Fields
             </div>
           </div>
           <div class="md-footer__button md-icon">
