@@ -118,7 +118,7 @@ mypy: compose-build
 pytest: compose-build
 	@echo "Running pytest unit tests..."
 	@docker-compose run $(IMAGE_NAME) \
-		pytest $(pytestpath) -m "not integration and not integration_external and not integration_saas"
+		pytest --log-level=ERROR $(pytestpath) -m "not integration and not integration_external and not integration_saas"
 	@make teardown
 
 pytest-integration:
@@ -134,7 +134,7 @@ pytest-integration-external: compose-build
 		-e REDSHIFT_TEST_URI \
 		-e SNOWFLAKE_TEST_URI -e REDSHIFT_TEST_DB_SCHEMA \
 		-e BIGQUERY_KEYFILE_CREDS -e BIGQUERY_DATASET \
-		$(IMAGE_NAME) pytest $(pytestpath) -m "integration_external"
+		$(IMAGE_NAME) pytest --log-level=ERROR $(pytestpath) -m "integration_external"
 	@make teardown
 
 pytest-saas: compose-build
@@ -145,7 +145,7 @@ pytest-saas: compose-build
 		-e HUBSPOT_DOMAIN -e HUBSPOT_HAPIKEY -e HUBSPOT_IDENTITY_EMAIL \
 		-e SEGMENT_DOMAIN -e SEGMENT_PERSONAS_DOMAIN -e SEGMENT_WORKSPACE -e SEGMENT_ACCESS_TOKEN -e SEGMENT_API_DOMAIN -e SEGMENT_NAMESPACE_ID -e SEGMENT_ACCESS_SECRET -e SEGMENT_USER_TOKEN -e SEGMENT_IDENTITY_EMAIL \
 		-e STRIPE_HOST -e STRIPE_API_KEY -e STRIPE_PAYMENT_TYPES -e STRIPE_ITEMS_PER_PAGE -e STRIPE_IDENTITY_EMAIL \
-		$(IMAGE_NAME) pytest $(pytestpath) -m "integration_saas"
+		$(IMAGE_NAME) pytest --log-level=ERROR $(pytestpath) -m "integration_saas"
 	@make teardown
 
 

@@ -239,7 +239,7 @@ def _run_tests(
         f'echo "running pytest for conditions: {pytest_path} with environment variables: {environment_variables}"'
     )
     _run_cmd_or_err(
-        f"docker-compose {docker_compose_path} run {environment_variables} {IMAGE_NAME} pytest {pytest_path}"
+        f"docker-compose {docker_compose_path} run {environment_variables} {IMAGE_NAME} pytest --log-level=ERROR {pytest_path}"
     )
 
     # Now tear down the infrastructure
