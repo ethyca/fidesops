@@ -14,7 +14,6 @@ from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.util.cache import FidesopsRedis, get_identity_cache_key
 
-
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
 
@@ -386,30 +385,25 @@ class TestCacheManualInput:
         manual_data = [{"id": 1, "name": "Jane"}, {"id": 2, "name": "Hank"}]
 
         privacy_request.cache_manual_input(paused_location, manual_data)
-
-        assert privacy_request.get_manual_input(paused_location,) == {
-            f"EN_MANUAL_INPUT__{privacy_request.id}__{paused_location.value}": manual_data
-        }
+        assert privacy_request.get_manual_input(paused_location,) == manual_data
 
     def test_cache_empty_manual_input(self, privacy_request):
         manual_data = []
-
         privacy_request.cache_manual_input(paused_location, manual_data)
 
         assert (
             privacy_request.get_manual_input(
                 paused_location,
             )
-            == {f"EN_MANUAL_INPUT__{privacy_request.id}__{paused_location.value}": []}
+            == []
         )
 
     def test_no_manual_data_in_cache(self, privacy_request):
-
         assert (
             privacy_request.get_manual_input(
                 paused_location,
             )
-            == {}
+            is None
         )
 
 
@@ -419,9 +413,13 @@ class TestCacheManualErasureCount:
         privacy_request.cache_manual_erasure_count(paused_location, 5)
 
         cached_data = privacy_request.get_manual_erasure_count(paused_location)
-        assert len(cached_data.keys()) == 1
-        assert list(cached_data.values())[0] == 5
+        assert cached_data == 5
 
     def test_no_erasure_data_cached(self, privacy_request):
         cached_data = privacy_request.get_manual_erasure_count(paused_location)
-        assert cached_data == {}
+        assert cached_data is None
+
+    def test_zero_cached(self, privacy_request):
+        privacy_request.cache_manual_erasure_count(paused_location, 0)
+        cached_data = privacy_request.get_manual_erasure_count(paused_location)
+        assert cached_data == 0

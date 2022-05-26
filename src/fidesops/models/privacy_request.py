@@ -284,36 +284,38 @@ class PrivacyRequest(Base):
             manual_rows,
         )
 
-    def get_manual_input(
-        self, collection: CollectionAddress
-    ) -> Optional[Dict[str, Optional[List[Row]]]]:
+    def get_manual_input(self, collection: CollectionAddress) -> Optional[List[Row]]:
         """Retrieve manually added rows from the cache for the given CollectionAddress.
-        Returns the manual key mapped to the manual data.
+        Returns the manual data if it exists, otherwise None
         """
         cache: FidesopsRedis = get_cache()
-        return cache.get_encoded_objects_by_prefix(
+        cached_results: Optional[
+            Dict[str, Optional[List[Row]]]
+        ] = cache.get_encoded_objects_by_prefix(
             f"MANUAL_INPUT__{self.id}__{collection.value}"
         )
+        return list(cached_results.values())[0] if cached_results else None
 
     def cache_manual_erasure_count(
         self, collection: CollectionAddress, count: int
     ) -> None:
-        """Cache the number of rows manually updated for a given collection.
-        """
+        """Cache the number of rows manually updated for a given collection."""
         cache: FidesopsRedis = get_cache()
         cache.set_encoded_object(
             f"MANUAL_MASK__{self.id}__{collection.value}",
             count,
         )
 
-    def get_manual_erasure_count(self, collection: CollectionAddress) -> Dict[str, int]:
+    def get_manual_erasure_count(self, collection: CollectionAddress) -> Optional[int]:
         """Retrieve number of rows manually masked for this collection.
-        The count isn't as important as whether or not the collection has been cached.
+
+        The count isn't actually used, we mainly care that data exists for this
+        collection at all. If there's no data, we return None.
         """
         cache: FidesopsRedis = get_cache()
         prefix = f"MANUAL_MASK__{self.id}__{collection.value}"
         value_dict = cache.get_encoded_objects_by_prefix(prefix)
-        return value_dict
+        return list(value_dict.values())[0] if value_dict else None
 
     def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
         """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response

@@ -35,13 +35,13 @@ class ManualConnector(BaseConnector[None]):
         """
         Returns manually added data for the given collection if it exists, otherwise pauses the Privacy Request.
         """
-        cached_results: Optional[
-            Dict[str, Optional[List[Row]]]
-        ] = privacy_request.get_manual_input(node.address)
+        cached_results: Optional[List[Row]] = privacy_request.get_manual_input(
+            node.address
+        )
 
-        if cached_results:
+        if cached_results is not None:  # None check intentional
             privacy_request.cache_paused_step_and_collection()  # Caches paused location as None
-            return list(cached_results.values())[0]
+            return cached_results
 
         # Save the step (access) and collection where we're paused.
         privacy_request.cache_paused_step_and_collection(
@@ -58,16 +58,18 @@ class ManualConnector(BaseConnector[None]):
         privacy_request: PrivacyRequest,
         rows: List[Row],
     ) -> Optional[int]:
-        """Pause to have the user manually perform an erasure of data at the given node."""
-        cached_count: Dict[
-            Optional[str], Optional[int]
-        ] = privacy_request.get_manual_erasure_count(node.address)
+        """If erasure confirmation has been added to the manual cache, continue, otherwise,
+        pause and wait for manual input."""
+        manual_cached_count: Optional[int] = privacy_request.get_manual_erasure_count(
+            node.address
+        )
 
-        if cached_count:
+        if (
+            manual_cached_count is not None
+        ):  # Checking for None because it is possible the count is 0
             privacy_request.cache_paused_step_and_collection()  # Caches paused location as None
-            return list(cached_count.values())[0]
+            return manual_cached_count
 
-        # Save the step (erasure) and collection where we're paused.
         privacy_request.cache_paused_step_and_collection(
             ActionType.erasure, node.address
         )
