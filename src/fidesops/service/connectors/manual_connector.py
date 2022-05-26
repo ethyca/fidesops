@@ -4,7 +4,7 @@ from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.graph.traversal import TraversalNode
 from fidesops.models.policy import ActionType, Policy
 from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.service.connectors.base_connector import DB_CONNECTOR_TYPE, BaseConnector
+from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.util.collection_util import Row
 
 
@@ -13,7 +13,7 @@ class ManualConnector(BaseConnector[None]):
         """No query_config for the Manual Connector"""
         return None
 
-    def create_client(self) -> DB_CONNECTOR_TYPE:
+    def create_client(self) -> None:
         """Not needed because this connector involves a human performing some lookup step"""
         return None
 

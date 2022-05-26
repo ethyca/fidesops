@@ -630,7 +630,7 @@ def resume_with_manual_input(
     if privacy_request.status != PrivacyRequestStatus.paused:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid resume request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+            detail=f"Invalid resume request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}. Privacy request is not paused.",
         )
 
     paused_step: Optional[ActionType]
