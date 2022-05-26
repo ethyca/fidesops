@@ -295,10 +295,11 @@ class PrivacyRequest(Base):
             f"MANUAL_INPUT__{self.id}__{collection.value}"
         )
 
-    def cache_manual_erasure_result(
+    def cache_manual_erasure_count(
         self, collection: CollectionAddress, count: int
     ) -> None:
-        """Cache the number of rows updated for a given collection"""
+        """Cache the number of rows manually updated for a given collection.
+        """
         cache: FidesopsRedis = get_cache()
         cache.set_encoded_object(
             f"MANUAL_MASK__{self.id}__{collection.value}",
@@ -306,7 +307,9 @@ class PrivacyRequest(Base):
         )
 
     def get_manual_erasure_count(self, collection: CollectionAddress) -> Dict[str, int]:
-        """Retrieve number of rows manually masked for this collection."""
+        """Retrieve number of rows manually masked for this collection.
+        The count isn't as important as whether or not the collection has been cached.
+        """
         cache: FidesopsRedis = get_cache()
         prefix = f"MANUAL_MASK__{self.id}__{collection.value}"
         value_dict = cache.get_encoded_objects_by_prefix(prefix)

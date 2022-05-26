@@ -15,6 +15,9 @@ from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.util.cache import FidesopsRedis, get_identity_cache_key
 
 
+paused_location = CollectionAddress("test_dataset", "test_collection")
+
+
 def test_privacy_request(
     db: Session, policy: Policy, privacy_request: PrivacyRequest
 ) -> None:
@@ -365,7 +368,6 @@ class TestCachePausedLocation:
         assert privacy_request.get_paused_step_and_collection() == (None, None)
 
         paused_step = ActionType.erasure
-        paused_location = CollectionAddress("test_dataset", "test_collection")
         privacy_request.cache_paused_step_and_collection(paused_step, paused_location)
 
         assert privacy_request.get_paused_step_and_collection() == (
@@ -381,7 +383,6 @@ class TestCachePausedLocation:
 
 class TestCacheManualInput:
     def test_cache_manual_input(self, privacy_request):
-        paused_location = CollectionAddress("test_dataset", "test_collection")
         manual_data = [{"id": 1, "name": "Jane"}, {"id": 2, "name": "Hank"}]
 
         privacy_request.cache_manual_input(paused_location, manual_data)
@@ -391,7 +392,6 @@ class TestCacheManualInput:
         }
 
     def test_cache_empty_manual_input(self, privacy_request):
-        paused_location = CollectionAddress("test_dataset", "test_collection")
         manual_data = []
 
         privacy_request.cache_manual_input(paused_location, manual_data)
@@ -404,7 +404,6 @@ class TestCacheManualInput:
         )
 
     def test_no_manual_data_in_cache(self, privacy_request):
-        paused_location = CollectionAddress("test_dataset", "test_collection")
 
         assert (
             privacy_request.get_manual_input(
@@ -412,3 +411,17 @@ class TestCacheManualInput:
             )
             == {}
         )
+
+
+class TestCacheManualErasureCount:
+
+    def test_cache_manual_erasure_count(self, privacy_request):
+        privacy_request.cache_manual_erasure_count(paused_location, 5)
+
+        cached_data = privacy_request.get_manual_erasure_count(paused_location)
+        assert len(cached_data.keys()) == 1
+        assert list(cached_data.values())[0] == 5
+
+    def test_no_erasure_data_cached(self, privacy_request):
+        cached_data = privacy_request.get_manual_erasure_count(paused_location)
+        assert cached_data == {}

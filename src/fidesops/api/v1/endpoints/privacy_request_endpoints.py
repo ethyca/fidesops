@@ -578,20 +578,6 @@ def resume_privacy_request(
     return privacy_request
 
 
-def validate_collection(collection: CollectionAddress, db: Session) -> DatasetGraph:
-    datasets = DatasetConfig.all(db=db)
-    dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
-    dataset_graph = DatasetGraph(*dataset_graphs)
-
-    node: Optional[Node] = dataset_graph.nodes.get(collection)
-    if not node:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Cannot save manual rows. No collection in graph with name: '{collection.value}'.",
-        )
-    return dataset_graph
-
-
 def validate_manual_input(
     manual_rows: List[Optional[Row]],
     collection: CollectionAddress,
@@ -669,7 +655,7 @@ def resume_privacy_request_with_manual_input(
         logger.info(
             f"Caching manually erased row count for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
         )
-        privacy_request.cache_manual_erasure_result(paused_collection, manual_count)
+        privacy_request.cache_manual_erasure_count(paused_collection, manual_count)
 
     logger.info(
         f"Resuming privacy request '{privacy_request_id}', {paused_step.value} step, from collection "

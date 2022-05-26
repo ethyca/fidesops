@@ -11,7 +11,6 @@ from fidesops.models.privacy_request import (
     PrivacyRequest,
 )
 from fidesops.task import graph_task
-from fidesops.task.graph_task import get_cached_data_for_erasures
 
 from ..graph.graph_test_util import assert_rows_match
 from ..task.traversal_data import postgres_and_manual_nodes
@@ -369,7 +368,7 @@ def test_collections_with_manual_erasure_confirmation(
     assert request_type == ActionType.erasure
 
     # Mock confirming from user that there was no data in the filing cabinet
-    privacy_request.cache_manual_erasure_result(
+    privacy_request.cache_manual_erasure_count(
         CollectionAddress.from_string("manual_example:filing_cabinet"),
         0,
     )
@@ -390,7 +389,7 @@ def test_collections_with_manual_erasure_confirmation(
     assert request_type == ActionType.erasure
 
     # Mock confirming from user that storage unit erasure is complete
-    privacy_request.cache_manual_erasure_result(
+    privacy_request.cache_manual_erasure_count(
         CollectionAddress.from_string("manual_example:storage_unit"), 1
     )
 

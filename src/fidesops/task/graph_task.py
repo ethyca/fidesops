@@ -36,7 +36,7 @@ from fidesops.util.saas_util import FIDESOPS_GROUPED_INPUTS
 
 logger = logging.getLogger(__name__)
 
-dask.config.set(scheduler="synchronous")
+dask.config.set(scheduler="threads")
 
 EMPTY_REQUEST = PrivacyRequest()
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
@@ -599,8 +599,7 @@ def update_erasure_mapping_from_cache(
 
     If there's no cached data, the dsk dictionary won't change.
     """
-
-    cached_erasures: Dict[str, List[Row]] = resources.get_all_cached_erasures()
+    cached_erasures: Dict[str, int] = resources.get_all_cached_erasures()
 
     for collection_name in cached_erasures:
         dsk[CollectionAddress.from_string(collection_name)] = (
