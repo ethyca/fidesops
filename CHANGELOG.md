@@ -24,6 +24,7 @@ The types of changes are:
 
 ### Changed
 * `MaskingStrategyFactory` and associated `MaskingStrategy` implementations now use a decorator-based registration system, to improve extensibility
+* Changed `tuple` type hint reference to `typing.Tuple` to maintain backward compatibility with Python < 3.9
 
 ### Developer Experience
 
