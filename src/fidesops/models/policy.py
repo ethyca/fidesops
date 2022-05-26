@@ -6,7 +6,7 @@ from fideslang import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint, Boolean
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, backref, declared_attr, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -65,9 +65,9 @@ def _validate_drp_action(drp_action: Optional[str]) -> None:
 
 
 def _validate_rule(
-    action_type: Optional[str],
-    storage_destination_id: Optional[str],
-    masking_strategy: Optional[Dict[str, Union[str, Dict[str, str]]]],
+        action_type: Optional[str],
+        storage_destination_id: Optional[str],
+        masking_strategy: Optional[Dict[str, Union[str, Dict[str, str]]]],
 ) -> None:
     """Check that the rule's action_type and storage_destination are valid."""
     if not action_type:
@@ -103,6 +103,7 @@ class Policy(Base):
         ForeignKey(ClientDetail.id_field_path),
         nullable=False,
     )
+    is_single_action_type = Column(Boolean, nullable=True, default=True)
     client = relationship(
         ClientDetail,
         backref="policies",
@@ -152,8 +153,8 @@ def _get_ref_from_taxonomy(fides_key: FidesOpsKey) -> FideslangDataCategory:
 
 
 def _is_ancestor_of_contained_categories(
-    fides_key: FidesOpsKey,
-    data_categories: List[str],
+        fides_key: FidesOpsKey,
+        data_categories: List[str],
 ) -> Tuple[bool, Optional[str]]:
     """
     Returns True if `fides_key` is an ancestor of any item in `data_categories`.
@@ -192,6 +193,15 @@ def _validate_rule_target_collection(target_categories: List[str]) -> None:
             raise common_exceptions.PolicyValidationError(
                 f"Policy rules are invalid, action conflict in erasure rules detected for categories {cat} and {ancestor_fides_key}"
             )
+
+
+def _validate_is_single_action_type(db: Session, policy_id: str, action_type: ActionType):
+    policy: Policy = Policy.get_by(db=db, field="id", value=policy_id)
+    if policy.is_single_action_type:
+        rule: Rule = policy.rules[0] if len(policy.rules) > 0 else None
+        if rule is not None and action_type != rule.action_type:
+            raise common_exceptions.RuleValidationError(
+                f'Single action_type is toggled on. All rules must be "{rule.action_type}" on this policy. "{action_type}" was provided')
 
 
 class Rule(Base):
@@ -263,6 +273,9 @@ class Rule(Base):
             storage_destination_id=data.get("storage_destination_id"),
             masking_strategy=data.get("masking_strategy"),
         )
+
+        _validate_is_single_action_type(db=db, policy_id=data.get("policy_id"), action_type=data.get('action_type'))
+
         return super().create(db=db, data=data)
 
     def delete(self, db: Session) -> Optional[FidesopsBase]:
@@ -304,6 +317,12 @@ class Rule(Base):
             db_obj = cls.create(db=db, data=data)
 
         return db_obj
+
+
+    def update(self, db: Session, *, data: Dict[str, Any]):
+        """Update specific row with supplied values"""
+        # _validate_is_single_action_type(db=db, policy_id=data.get("policy_id"), action_type=data.get('action_type'))
+        return super().create(db=db, data=data)
 
 
 def _validate_rule_target_name(name: str) -> None:
@@ -430,8 +449,8 @@ class RuleTarget(Base):
             del data["name"]
 
         if (
-            updated_data_category is not None
-            and updated_data_category != self.data_category
+                updated_data_category is not None
+                and updated_data_category != self.data_category
         ):
             _validate_data_category(data_category=updated_data_category)
         return super().update(db=db, data=data)
@@ -517,7 +536,7 @@ class PolicyPreWebhook(WebhookBase, Base):
 
     @classmethod
     def persist_obj(
-        cls, db: Session, resource: "PolicyPreWebhook"
+            cls, db: Session, resource: "PolicyPreWebhook"
     ) -> "PolicyPreWebhook":
         """Override to have PolicyPreWebhooks not be committed to the database automatically."""
         db.add(resource)
@@ -540,7 +559,7 @@ class PolicyPostWebhook(WebhookBase, Base):
 
     @classmethod
     def persist_obj(
-        cls, db: Session, resource: "PolicyPostWebhook"
+            cls, db: Session, resource: "PolicyPostWebhook"
     ) -> "PolicyPostWebhook":
         """Override to have PolicyPostWebhooks not be committed to the database automatically."""
         db.add(resource)
