@@ -1702,7 +1702,7 @@ that captures that strategy for the Policy.</p>
 strategies available, along with their configuration options. </p>
 <h2 id="extensibility">Extensibility</h2>
 <p>In fidesops, masking strategies are all built on top of an abstract base class - <code>MaskingStrategy</code>. 
-MaskingStrategy has five methods - <code>mask</code>, <code>secrets_required</code>,  <code>get_configuration_model</code>, <code>get_description</code>, and <code>data_type_supported</code>. For more detail on these 
+<code>MaskingStrategy</code> has five methods - <code>mask</code>, <code>secrets_required</code>, <code>get_configuration_model</code>, <code>get_description</code>, and <code>data_type_supported</code>. For more detail on these 
 methods, visit the class in the fidesops repository. For now, we will focus on the implementation of
 <code>RandomStringRewriteMaskingStrategy</code> below:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -1753,7 +1753,12 @@ methods, visit the class in the fidesops repository. For now, we will focus on t
 <span class="normal">46</span>
 <span class="normal">47</span>
 <span class="normal">48</span>
-<span class="normal">49</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">string</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">string</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">secrets</span> <span class="kn">import</span> <span class="n">choice</span>
 
@@ -1761,8 +1766,13 @@ methods, visit the class in the fidesops repository. For now, we will focus on t
 <span class="kn">from</span> <span class="nn">fidesops.schemas.masking.masking_strategy_description</span> <span class="kn">import</span> <span class="n">MaskingStrategyDescription</span>
 <span class="kn">from</span> <span class="nn">fidesops.service.masking.strategy.format_preservation</span> <span class="kn">import</span> <span class="n">FormatPreservation</span>
 <span class="kn">from</span> <span class="nn">fidesops.service.masking.strategy.masking_strategy</span> <span class="kn">import</span> <span class="n">MaskingStrategy</span>
+<span class="kn">from</span> <span class="nn">fidesops.service.masking.strategy.masking_strategy_factory</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MaskingStrategyFactory</span><span class="p">,</span>
+<span class="p">)</span>
 
+<span class="n">RANDOM_STRING_REWRITE_STRATEGY_NAME</span> <span class="o">=</span> <span class="s2">&quot;random_string_rewrite&quot;</span>
 
+<span class="nd">@MaskingStrategyFactory</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">RANDOM_STRING_REWRITE_STRATEGY_NAME</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">RandomStringRewriteMaskingStrategy</span><span class="p">(</span><span class="n">MaskingStrategy</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Masks a value with a random string of the length specified in the configuration.&quot;&quot;&quot;</span>
 
@@ -1811,115 +1821,8 @@ This is the configuration for the masking strategy. It is used to house the opti
 any defaults that should be applied in their absence. All configuration classes extend from the 
 <code>MaskingConfiguration</code> class.</p>
 <h3 id="integrating-with-the-masking-strategy-factory">Integrating with the Masking Strategy Factory</h3>
-<p>Now that we know how a masking strategy is built in the system and how a masking strategy is configured, we will cover 
-how to enable the linkage between the two. In other words, how do we run the masking strategy that we have configured? 
-The answer to that is the Masking Strategy Factory.</p>
-<p>The masking strategy factory is defined in the <code>masking_strategy_factory.py</code> file. The pertinent sections have been 
-pasted below:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span>
-
-<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">ValidationError</span>
-
-<span class="kn">from</span> <span class="nn">fidesops.service.masking.strategy.masking_strategy_hmac</span> <span class="kn">import</span> <span class="n">HmacMaskingStrategy</span>
-<span class="kn">from</span> <span class="nn">fidesops.service.masking.strategy.masking_strategy_random_string_rewrite</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">RandomStringRewriteMaskingStrategy</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">fidesops.service.masking.strategy.masking_strategy</span> <span class="kn">import</span> <span class="n">MaskingStrategy</span>
-<span class="kn">from</span> <span class="nn">fidesops.service.masking.strategy.masking_strategy_aes_encrypt</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AesEncryptionMaskingStrategy</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">fidesops.service.masking.strategy.masking_strategy_hash</span> <span class="kn">import</span> <span class="n">HashMaskingStrategy</span>
-<span class="kn">from</span> <span class="nn">fidesops.service.masking.strategy.masking_strategy_string_rewrite</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">StringRewriteMaskingStrategy</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">fidesops.common_exceptions</span> <span class="kn">import</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">FidesopsValidationError</span>
-
-<span class="kn">from</span> <span class="nn">fidesops.schemas.masking.masking_configuration</span> <span class="kn">import</span> <span class="n">FormatPreservationConfig</span>
-
-<span class="k">class</span> <span class="nc">SupportedMaskingStrategies</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="n">string_rewrite</span> <span class="o">=</span> <span class="n">StringRewriteMaskingStrategy</span>
-    <span class="nb">hash</span> <span class="o">=</span> <span class="n">HashMaskingStrategy</span>
-    <span class="n">random_string_rewrite</span> <span class="o">=</span> <span class="n">RandomStringRewriteMaskingStrategy</span>
-    <span class="n">aes_encrypt</span> <span class="o">=</span> <span class="n">AesEncryptionMaskingStrategy</span>
-    <span class="n">hmac</span> <span class="o">=</span> <span class="n">HmacMaskingStrategy</span>
-
-
-<span class="k">def</span> <span class="nf">get_strategy</span><span class="p">(</span>
-    <span class="n">strategy_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">configuration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span>
-        <span class="nb">str</span><span class="p">,</span>
-        <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">FormatPreservationConfig</span><span class="p">],</span>
-    <span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MaskingStrategy</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Returns the strategy given the name and configuration.</span>
-<span class="sd">    Raises NoSuchStrategyException if the strategy does not exist</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">strategy_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SupportedMaskingStrategies</span><span class="o">.</span><span class="n">__members__</span><span class="p">:</span>
-        <span class="n">valid_strategies</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">SupportedMaskingStrategies</span><span class="p">])</span>
-        <span class="k">raise</span> <span class="n">NoSuchStrategyException</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Strategy &#39;</span><span class="si">{</span><span class="n">strategy_name</span><span class="si">}</span><span class="s2">&#39; does not exist. Valid strategies are [</span><span class="si">{</span><span class="n">valid_strategies</span><span class="si">}</span><span class="s2">]&quot;</span>
-        <span class="p">)</span>
-    <span class="n">strategy</span> <span class="o">=</span> <span class="n">SupportedMaskingStrategies</span><span class="p">[</span><span class="n">strategy_name</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">strategy_config</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">get_configuration_model</span><span class="p">()(</span><span class="o">**</span><span class="n">configuration</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">strategy</span><span class="p">(</span><span class="n">configuration</span><span class="o">=</span><span class="n">strategy_config</span><span class="p">)</span>
-    <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">FidesopsValidationError</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-</code></pre></div></td></tr></table></div>
-<p>The <code>SupportedMaskingStrategy</code> enum maps the strategy name to the masking strategy implementation class. </p>
-<p>After creating a new masking strategy and configuration, just register it in this enum, and it will be ready for use by the system.</p>
+<p>In order to leverage an implemented masking strategy, the <code>MaskingStrategy</code> subclass must be registered with the <code>MaskingStrategyFactory</code>. To register a new <code>MaskingStrategy</code>, use the <code>register</code> decorator on the <code>MaskingStrategy</code> subclass definition, as shown in the above example.</p>
+<p>The value passed as the argument to the decorator must be the registered name of the <code>MaskingStrategy</code> subclass. This is the same value defined by <a href="#using-fidesops-as-a-masking-service">callers</a> in the <code>"masking_strategy"."strategy"</code> field.</p>
 
               
             </article>
