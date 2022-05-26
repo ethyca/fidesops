@@ -52,16 +52,6 @@ class DrpAction(EnumType):
     access_specific = "access:specific"
 
 
-PseudonymizationPolicy = MaskingStrategyFactory.get_strategies()
-"""
-*Deprecated*: The method by which to pseudonymize data.
-
-As of 10/20/2021 this class is deprecated. We cannot remove this currently as the
-class is referenced in multiple database migrations. This class is to be removed
-when project migrations are consolidated.
-"""
-
-
 def _validate_drp_action(drp_action: Optional[str]) -> None:
     """Check that DRP action is supported"""
     if not drp_action:
