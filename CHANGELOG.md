@@ -21,10 +21,12 @@ The types of changes are:
 
 ### Added
 * Added `FIDESOPS__DATABASE__ENABLED` and `FIDESOPS__REDIS__ENABLED` configuration variables to allow `fidesops` to run cleanly in a "stateless" mode without any database or redis cache integration
+* A `[package]` section of the `fidesops.toml` configuration file may specify the path to the `fidesops` package itself
 
 ### Developer Experience
 
 * Import ordering is now enforced using [isort](https://pycqa.github.io/isort/) in CI [#533](https://github.com/ethyca/fidesops/pull/533)
+* Database migrations are included in the published PyPI package
 
 ### Docs
 
