@@ -48,7 +48,7 @@ def migrate_test_db() -> None:
     logger.debug("Applying migrations...")
     assert config.is_test_mode
     if config.database.ENABLED:
-        init_db(config.database.SQLALCHEMY_TEST_DATABASE_URI, config.package.PATH)
+        init_db(config.database.SQLALCHEMY_TEST_DATABASE_URI)
     logger.debug("Migrations successfully applied")
 
 

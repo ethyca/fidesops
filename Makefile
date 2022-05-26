@@ -32,7 +32,7 @@ init-db: compose-build
 	python -c "\
 	from fidesops.db.database import init_db; \
 	from fidesops.core.config import config; \
-	init_db(config.database.SQLALCHEMY_DATABASE_URI, config.package.PATH);"
+	init_db(config.database.SQLALCHEMY_DATABASE_URI);"
 
 reset-db:
 	@echo "Resetting and re-initializing the application db..."

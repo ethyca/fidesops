@@ -88,7 +88,7 @@ def create_user_and_client(db: Session) -> FidesopsUser:
 
 
 if __name__ == "__main__":
-    init_db(config.database.SQLALCHEMY_DATABASE_URI, config.package.PATH)
+    init_db(config.database.SQLALCHEMY_DATABASE_URI)
     session_local = get_db_session()
     with session_local() as session:
         create_user_and_client(session)
