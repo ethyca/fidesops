@@ -1640,7 +1640,7 @@ class TestResumeWithManualInput:
         assert response.status_code == 400
         assert (
             response.json()["detail"]
-            == f"Invalid resume request: privacy request '{privacy_request.id}' status = in_processing."
+            == f"Invalid resume request: privacy request '{privacy_request.id}' status = in_processing. Privacy request is not paused."
         )
 
     def test_manual_resume_privacy_request_no_paused_location(
