@@ -1,14 +1,15 @@
 import json
-from typing import Dict, Any, Set, Optional
+from typing import Any, Dict, Optional, Set
 
 import pytest
 
+from fidesops.core.config import config
 from fidesops.graph.config import (
     CollectionAddress,
+    FieldAddress,
     FieldPath,
     ObjectField,
     ScalarField,
-    FieldAddress,
 )
 from fidesops.graph.graph import DatasetGraph, Edge
 from fidesops.graph.traversal import Traversal, TraversalNode
@@ -17,22 +18,18 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fidesops.schemas.saas.saas_config import SaaSConfig, ParamValue
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
+from fidesops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
+from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fidesops.service.connectors.query_config import MongoQueryConfig, SQLQueryConfig
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
-from fidesops.service.connectors.query_config import SQLQueryConfig, MongoQueryConfig
-
 from fidesops.service.masking.strategy.masking_strategy_hash import (
-    HashMaskingStrategy,
     HASH,
+    HashMaskingStrategy,
 )
 from fidesops.util.data_category import DataCategory
 
-from ...task.traversal_data import (
-    integration_db_graph,
-    combined_mongo_postgresql_graph,
-)
-from ...test_helpers.cache_secrets_helper import clear_cache_secrets, cache_secret
+from ...task.traversal_data import combined_mongo_postgresql_graph, integration_db_graph
+from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
 
 # customers -> address, order
 # orders -> address, payment card
@@ -322,12 +319,15 @@ class TestSQLQueryConfig:
         assert (
             text_clause._bindparams["name"].value
             == HashMaskingStrategy(HashMaskingConfiguration(algorithm="SHA-512")).mask(
-                "John Customer", privacy_request_id=privacy_request.id
-            )[0:40]
+                ["John Customer"], request_id=privacy_request.id
+            )[0][0:40]
         )
-        assert text_clause._bindparams["email"].value == HashMaskingStrategy(
-            HashMaskingConfiguration(algorithm="SHA-512")
-        ).mask("customer-1@example.com", privacy_request_id=privacy_request.id)
+        assert (
+            text_clause._bindparams["email"].value
+            == HashMaskingStrategy(HashMaskingConfiguration(algorithm="SHA-512")).mask(
+                ["customer-1@example.com"], request_id=privacy_request.id
+            )[0]
+        )
         clear_cache_secrets(privacy_request.id)
 
     def test_generate_update_stmts_from_multiple_rules(
@@ -607,9 +607,12 @@ class TestMongoQueryConfig:
         )
         assert mongo_statement[0] == {"_id": 1}
         assert len(mongo_statement[1]["$set"]["gender"]) == 30
-        assert mongo_statement[1]["$set"]["birthday"] == HashMaskingStrategy(
-            HashMaskingConfiguration(algorithm="SHA-512")
-        ).mask("1988-01-10", privacy_request_id=privacy_request.id)
+        assert (
+            mongo_statement[1]["$set"]["birthday"]
+            == HashMaskingStrategy(HashMaskingConfiguration(algorithm="SHA-512")).mask(
+                ["1988-01-10"], request_id=privacy_request.id
+            )[0]
+        )
 
 
 @pytest.mark.unit_saas
@@ -649,7 +652,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/search-members"
         assert prepared_request.query_params == {"query": "customer-1@example.com"}
-        assert prepared_request.json_body is None
+        assert prepared_request.body is None
 
         # static path with multiple query params with default values
         config = SaaSQueryConfig(conversations, endpoints, {})
@@ -659,7 +662,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations"
         assert prepared_request.query_params == {"count": 1000, "offset": 0}
-        assert prepared_request.json_body is None
+        assert prepared_request.body is None
 
         # dynamic path with no query params
         config = SaaSQueryConfig(messages, endpoints, {})
@@ -667,7 +670,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations/abc/messages"
         assert prepared_request.query_params == {}
-        assert prepared_request.json_body is None
+        assert prepared_request.body is None
 
         # header, query, and path params with connector param references
         config = SaaSQueryConfig(
@@ -689,7 +692,7 @@ class TestSaaSQueryConfig:
             "limit": "10",
             "query": "customer-1@example.com",
         }
-        assert prepared_request.json_body is None
+        assert prepared_request.body is None
 
         # query and path params with connector param references
         config = SaaSQueryConfig(
@@ -733,10 +736,13 @@ class TestSaaSQueryConfig:
         )
         assert prepared_request.method == HTTPMethod.PUT.value
         assert prepared_request.path == "/3.0/lists/abc/members/123"
+        assert prepared_request.headers == {"Content-Type": "application/json"}
         assert prepared_request.query_params == {}
-        assert prepared_request.json_body == {
+        assert prepared_request.body == json.dumps(
+            {
                 "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-        }
+            }
+        )
 
     def test_generate_update_stmt_custom_http_method(
         self,
@@ -769,10 +775,13 @@ class TestSaaSQueryConfig:
         )
         assert prepared_request.method == HTTPMethod.POST.value
         assert prepared_request.path == "/3.0/lists/abc/members/123"
+        assert prepared_request.headers == {"Content-Type": "application/json"}
         assert prepared_request.query_params == {}
-        assert prepared_request.json_body == {
+        assert prepared_request.body == json.dumps(
+            {
                 "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-        }
+            }
+        )
 
     def test_generate_update_stmt_with_request_body(
         self,
@@ -808,6 +817,7 @@ class TestSaaSQueryConfig:
         payment_methods = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "payment_methods")
         ]
+
         config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
             "id": "123",
@@ -822,14 +832,16 @@ class TestSaaSQueryConfig:
         assert prepared_request == SaaSRequestParams(
             method=HTTPMethod.PUT,
             path="/3.0/lists/abc/members/123",
-            headers={},
+            headers={"Content-Type": "application/json"},
             query_params={},
-            json_body={
-                "properties": {
-                    "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-                    "list_id": "abc",
+            body=json.dumps(
+                {
+                    "properties": {
+                        "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
+                        "list_id": "abc",
+                    }
                 }
-            }
+            ),
         )
 
         # update with connector_param reference
@@ -843,5 +855,110 @@ class TestSaaSQueryConfig:
         )
         assert prepared_request.method == HTTPMethod.PUT.value
         assert prepared_request.path == "/2.0/payment_methods"
+        assert prepared_request.headers == {"Content-Type": "application/json"}
         assert prepared_request.query_params == {}
-        assert prepared_request.json_body == {"customer_name": "MASKED"}
+        assert prepared_request.body == json.dumps({"customer_name": "MASKED"})
+
+    def test_generate_update_stmt_with_url_encoded_body(
+        self,
+        erasure_policy_string_rewrite,
+        combined_traversal,
+        saas_example_connection_config,
+    ):
+        saas_config: Optional[
+            SaaSConfig
+        ] = saas_example_connection_config.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+        customer = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "customer")
+        ]
+
+        # update with multidimensional urlcoding
+        # omit read-only fields and fields not defined in the dataset
+        # 'created' and 'id' are flagged as read-only and 'livemode' is not in the dataset
+        update_request = endpoints["customer"].requests.get("update")
+        config = SaaSQueryConfig(customer, endpoints, {}, update_request)
+        row = {
+            "id": 1,
+            "name": {"first": "A", "last": "B"},
+            "created": 1649198338,
+            "livemode": False,
+        }
+        prepared_request = config.generate_update_stmt(
+            row, erasure_policy_string_rewrite, privacy_request
+        )
+        assert prepared_request.method == HTTPMethod.POST.value
+        assert prepared_request.path == "/v1/customers/1"
+        assert prepared_request.headers == {
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+        assert prepared_request.query_params == {}
+        assert prepared_request.body == "name%5Bfirst%5D=MASKED&name%5Blast%5D=MASKED"
+
+    def test_get_masking_request(
+        self, combined_traversal, saas_example_connection_config
+    ):
+        saas_config: Optional[
+            SaaSConfig
+        ] = saas_example_connection_config.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+
+        member = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "member")
+        ]
+        conversations = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "conversations")
+        ]
+        messages = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "messages")
+        ]
+
+        query_config = SaaSQueryConfig(member, endpoints, {})
+        saas_request = query_config.get_masking_request()
+
+        # Assert we pulled the update method off of the member collection
+        assert saas_request.method == "PUT"
+        assert saas_request.path == "/3.0/lists/<list_id>/members/<subscriber_hash>"
+
+        # No update methods defined on other collections
+        query_config = SaaSQueryConfig(conversations, endpoints, {})
+        saas_request = query_config.get_masking_request()
+        assert saas_request is None
+
+        query_config = SaaSQueryConfig(messages, endpoints, {})
+        saas_request = query_config.get_masking_request()
+        assert saas_request is None
+
+        # Define delete request on conversations endpoint
+        endpoints["conversations"].requests["delete"] = SaaSRequest(
+            method="DELETE", path="/api/0/<conversation>/<conversation_id>/"
+        )
+        # Delete endpoint not used because MASKING_STRICT is True
+        assert config.execution.MASKING_STRICT is True
+
+        query_config = SaaSQueryConfig(conversations, endpoints, {})
+        saas_request = query_config.get_masking_request()
+        assert saas_request is None
+
+        # Override MASKING_STRICT to False
+        config.execution.MASKING_STRICT = False
+
+        # Now delete endpoint is selected as conversations masking request
+        saas_request: SaaSRequest = query_config.get_masking_request()
+        assert saas_request.path == "/api/0/<conversation>/<conversation_id>/"
+        assert saas_request.method == "DELETE"
+
+        # Define GDPR Delete
+        data_protection_request = SaaSRequest(method="PUT", path="/api/0/gdpr_delete")
+        query_config = SaaSQueryConfig(
+            conversations, endpoints, {}, data_protection_request
+        )
+
+        # Assert GDPR Delete takes priority over Delete
+        saas_request: SaaSRequest = query_config.get_masking_request()
+        assert saas_request.path == "/api/0/gdpr_delete"
+        assert saas_request.method == "PUT"
+
+        # Reset
+        config.execution.MASKING_STRICT = True
+        del endpoints["conversations"].requests["delete"]

@@ -3,12 +3,11 @@ from typing import Optional
 
 import pytest
 from requests import Response
-from fidesops.schemas.saas.saas_config import SaaSRequest
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
+
 from fidesops.common_exceptions import FidesopsException
-from fidesops.schemas.saas.strategy_configuration import (
-    OffsetPaginationConfiguration,
-)
+from fidesops.schemas.saas.saas_config import SaaSRequest
+from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fidesops.schemas.saas.strategy_configuration import OffsetPaginationConfiguration
 from fidesops.service.pagination.pagination_strategy_offset import (
     OffsetPaginationStrategy,
 )
@@ -155,7 +154,9 @@ def test_validate_request():
             "limit": 10,
         },
     }
-    SaaSRequest(method="GET", path="/test", query_params=query_params, pagination=pagination)
+    SaaSRequest(
+        method="GET", path="/test", query_params=query_params, pagination=pagination
+    )
 
 
 def test_validate_request_missing_param():
@@ -169,5 +170,7 @@ def test_validate_request_missing_param():
         },
     }
     with pytest.raises(ValueError) as exc:
-        SaaSRequest(method="GET", path="/test", query_params=query_params, pagination=pagination)
+        SaaSRequest(
+            method="GET", path="/test", query_params=query_params, pagination=pagination
+        )
     assert "Query param 'page' not found." in str(exc.value)

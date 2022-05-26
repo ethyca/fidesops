@@ -1,14 +1,7 @@
 import base64
 import logging
 import pickle
-from typing import (
-    Any,
-    List,
-    Optional,
-    Set,
-    Union,
-    Dict,
-)
+from typing import Any, Dict, List, Optional, Set, Union
 
 from redis import Redis
 from redis.client import Script
@@ -123,6 +116,13 @@ def get_identity_cache_key(privacy_request_id: str, identity_attribute: str) -> 
     """Return the key at which to save this PrivacyRequest's identity for the passed in attribute"""
     # TODO: Remove this prefix
     return f"id-{privacy_request_id}-identity-{identity_attribute}"
+
+
+def get_drp_request_body_cache_key(
+    privacy_request_id: str, identity_attribute: str
+) -> str:
+    """Return the key at which to save this PrivacyRequest's drp request body for the passed in attribute"""
+    return f"id-{privacy_request_id}-drp-{identity_attribute}"
 
 
 def get_encryption_cache_key(privacy_request_id: str, encryption_attr: str) -> str:

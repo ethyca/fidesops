@@ -1,28 +1,29 @@
 import json
 from datetime import datetime
 from typing import Optional
-from starlette.status import HTTP_404_NOT_FOUND
-from pydantic import ValidationError
 
-from fastapi import Depends, Security, HTTPException
+from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
 from jose import jwe
 from jose.constants import ALGORITHMS
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_404_NOT_FOUND
 
 from fidesops.api import deps
-from fidesops.api.v1.urn_registry import V1_URL_PREFIX, TOKEN
-from fidesops.common_exceptions import AuthorizationError, AuthenticationFailure
+from fidesops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
+from fidesops.common_exceptions import AuthenticationFailure, AuthorizationError
 from fidesops.core.config import config
 from fidesops.models.client import ClientDetail
+from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.policy import PolicyPreWebhook
 from fidesops.schemas.external_https import WebhookJWE
-from fidesops.schemas.oauth import OAuth2ClientCredentialsBearer
 from fidesops.schemas.jwt import (
+    JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
-    JWE_ISSUED_AT,
 )
+from fidesops.schemas.oauth import OAuth2ClientCredentialsBearer
 
 __JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 
@@ -44,7 +45,6 @@ async def verify_oauth_client(
     the necessary scopes specified by the caller. Yields a 403 forbidden error
     if not
     """
-
     if authorization is None:
         raise AuthenticationFailure(detail="Authentication Failure")
 
@@ -74,6 +74,20 @@ async def verify_oauth_client(
         # to the associated oauth client, this token is not valid
         raise AuthorizationError(detail="Not Authorized for this action")
     return client
+
+
+async def get_current_user(
+    security_scopes: SecurityScopes,
+    authorization: str = Security(oauth2_scheme),
+    db: Session = Depends(deps.get_db),
+) -> FidesopsUser:
+    """A wrapper around verify_oauth_client that returns that client's user if one exsits."""
+    client = await verify_oauth_client(
+        security_scopes=security_scopes,
+        authorization=authorization,
+        db=db,
+    )
+    return client.user
 
 
 def is_token_expired(issued_at: Optional[datetime]) -> bool:

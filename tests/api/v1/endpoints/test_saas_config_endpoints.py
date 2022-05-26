@@ -1,6 +1,10 @@
 import json
-import pytest
 from typing import Optional
+
+import pytest
+from sqlalchemy.orm import Session
+from starlette.testclient import TestClient
+
 from fidesops.api.v1.scope_registry import (
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
@@ -16,8 +20,6 @@ from fidesops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from starlette.testclient import TestClient
-from sqlalchemy.orm import Session
 from tests.api.v1.endpoints.test_dataset_endpoints import _reject_key
 
 
@@ -95,9 +97,9 @@ class TestValidateSaaSConfig:
     ) -> None:
         auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
         saas_config = saas_example_config
-        param_values = saas_config["endpoints"][0]["requests"]["read"][
-            "param_values"
-        ][0]
+        param_values = saas_config["endpoints"][0]["requests"]["read"]["param_values"][
+            0
+        ]
         param_values["identity"] = "email"
         param_values["references"] = [
             {
@@ -111,7 +113,10 @@ class TestValidateSaaSConfig:
         )
         assert response.status_code == 422
         details = json.loads(response.text)["detail"]
-        assert details[0]["msg"] == "Must have exactly one of 'identity', 'references', or 'connector_param'"
+        assert (
+            details[0]["msg"]
+            == "Must have exactly one of 'identity', 'references', or 'connector_param'"
+        )
 
     def test_put_validate_saas_config_wrong_reference_direction(
         self,
@@ -122,9 +127,9 @@ class TestValidateSaaSConfig:
     ) -> None:
         auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
         saas_config = saas_example_config
-        param_values = saas_config["endpoints"][0]["requests"]["read"][
-            "param_values"
-        ][0]
+        param_values = saas_config["endpoints"][0]["requests"]["read"]["param_values"][
+            0
+        ]
         param_values["references"] = [
             {
                 "dataset": "postgres_example_test_dataset",
@@ -137,7 +142,11 @@ class TestValidateSaaSConfig:
         )
         assert response.status_code == 422
         details = json.loads(response.text)["detail"]
-        assert details[0]["msg"] == "References can only have a direction of 'from', found 'to'"
+        assert (
+            details[0]["msg"]
+            == "References can only have a direction of 'from', found 'to'"
+        )
+
 
 @pytest.mark.unit_saas
 class TestPutSaaSConfig:
@@ -190,7 +199,9 @@ class TestPutSaaSConfig:
         generate_auth_header,
     ) -> None:
         path = V1_URL_PREFIX + SAAS_CONFIG
-        path_params = {"connection_key": saas_example_connection_config_without_saas_config.key}
+        path_params = {
+            "connection_key": saas_example_connection_config_without_saas_config.key
+        }
         saas_config_url = path.format(**path_params)
 
         auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
@@ -200,7 +211,9 @@ class TestPutSaaSConfig:
         assert response.status_code == 200
 
         updated_config = ConnectionConfig.get_by(
-            db=db, field="key", value=saas_example_connection_config_without_saas_config.key
+            db=db,
+            field="key",
+            value=saas_example_connection_config_without_saas_config.key,
         )
         db.expire(updated_config)
         saas_config = updated_config.saas_config
@@ -226,7 +239,7 @@ class TestPutSaaSConfig:
         )
         saas_config = connection_config.saas_config
         assert saas_config is not None
-        assert len(saas_config["endpoints"]) == 5
+        assert len(saas_config["endpoints"]) == 6
 
 
 def get_saas_config_url(connection_config: Optional[ConnectionConfig] = None) -> str:
@@ -300,7 +313,7 @@ class TestGetSaaSConfig:
             response_body["fides_key"]
             == saas_example_connection_config.get_saas_config().fides_key
         )
-        assert len(response_body["endpoints"]) == 6
+        assert len(response_body["endpoints"]) == 7
 
 
 @pytest.mark.unit_saas

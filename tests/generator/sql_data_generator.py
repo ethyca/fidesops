@@ -1,8 +1,9 @@
 import random
-from typing import Dict, List, Any
+from string import ascii_letters, digits
+from typing import Any, Dict, List
 
 from faker import Faker
-from sqlalchemy import Column, String, Integer, Float, Boolean
+from sqlalchemy import Boolean, Column, Float, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
 from fidesops.db.session import ENGINE
@@ -14,17 +15,16 @@ from fidesops.graph.config import (
     ScalarField,
 )
 from fidesops.graph.data_type import DataType
-from fidesops.graph.graph import Edge, BidirectionalEdge, DatasetGraph
-from fidesops.graph.traversal import Traversal, TraversalNode, Row
-from tests.graph.graph_test_util import generate_graph_resources, field
-from string import ascii_letters, digits
+from fidesops.graph.graph import BidirectionalEdge, DatasetGraph, Edge
+from fidesops.graph.traversal import Row, Traversal, TraversalNode
+from tests.graph.graph_test_util import field, generate_graph_resources
 
 Base = declarative_base()
 
 faker = Faker(use_weighting=False)
 
-from faker.providers.lorem.en_US import Provider as lorem
 from faker.providers import address
+from faker.providers.lorem.en_US import Provider as lorem
 
 faker.add_provider(address)
 faker.add_provider(lorem)
@@ -96,9 +96,9 @@ def generate_data_for_traversal(
             if edge.f1.collection_address() in data:
                 collection_data = data[edge.f1.collection_address()]
                 incoming_values[edge.f2.field_path] = (
-                        edge.f1.field_path in collection_data
-                        and collection_data[edge.f1.field_path]
-                        or []
+                    edge.f1.field_path in collection_data
+                    and collection_data[edge.f1.field_path]
+                    or []
                 )  # for row in collection_data]
 
         for fk, f in tn.node.collection.field_dict.items():

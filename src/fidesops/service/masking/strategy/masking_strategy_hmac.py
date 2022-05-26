@@ -1,17 +1,17 @@
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 
 from fidesops.schemas.masking.masking_configuration import (
-    MaskingConfiguration,
     HmacMaskingConfiguration,
+    MaskingConfiguration,
 )
 from fidesops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
-    SecretType,
     MaskingSecretMeta,
+    SecretType,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
-    MaskingStrategyDescription,
     MaskingStrategyConfigurationDescription,
+    MaskingStrategyDescription,
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
@@ -34,28 +34,31 @@ class HmacMaskingStrategy(MaskingStrategy):
         self.format_preservation = configuration.format_preservation
 
     def mask(
-        self, value: Optional[str], privacy_request_id: Optional[str]
-    ) -> Optional[str]:
+        self, values: Optional[List[str]], request_id: Optional[str]
+    ) -> Optional[List[str]]:
         """
-        Returns a hash using the hmac algorithm, generating a hash of the supplied value and the secret hmac_key.
+        Returns a hash using the hmac algorithm, generating a hash of each of the supplied value and the secret hmac_key.
         Returns None if the provided value is None.
         """
-        if value is None:
+        if values is None:
             return None
         masking_meta: Dict[
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
         key: str = SecretsUtil.get_or_generate_secret(
-            privacy_request_id, SecretType.key, masking_meta[SecretType.key]
+            request_id, SecretType.key, masking_meta[SecretType.key]
         )
         salt: str = SecretsUtil.get_or_generate_secret(
-            privacy_request_id, SecretType.salt, masking_meta[SecretType.salt]
+            request_id, SecretType.salt, masking_meta[SecretType.salt]
         )
-        masked: str = hmac_encrypt_return_str(value, key, salt, self.algorithm)
-        if self.format_preservation is not None:
-            formatter = FormatPreservation(self.format_preservation)
-            return formatter.format(masked)
-        return masked
+        masked_values: List[str] = []
+        for value in values:
+            masked: str = hmac_encrypt_return_str(value, key, salt, self.algorithm)
+            if self.format_preservation is not None:
+                formatter = FormatPreservation(self.format_preservation)
+                masked = formatter.format(masked)
+            masked_values.append(masked)
+        return masked_values
 
     def secrets_required(self) -> bool:
         return True

@@ -1,28 +1,23 @@
 import logging
-from typing import Dict, Any, Set, Optional
+from typing import Any, Dict, Optional, Set
 
 from boto3 import Session
-from sqlalchemy import (
-    Column,
-    ForeignKey,
-    String,
-)
+from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
-from fidesops.models.connectionconfig import ConnectionType
 
 from fidesops.db.base_class import Base
 from fidesops.graph.config import (
     Collection,
+    CollectionAddress,
+    Dataset,
     Field,
     FieldAddress,
-    Dataset,
-    CollectionAddress,
     generate_field,
 )
 from fidesops.graph.data_type import parse_data_type_string
-from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.logger import NotPii
@@ -117,6 +112,7 @@ def to_graph_field(
     sub_fields = []
     length = None
     data_type_name = None
+    read_only = None
     if meta_section:
         identity = meta_section.identity
         if meta_section.primary_key:
@@ -159,6 +155,9 @@ def to_graph_field(
             # arrays of objects
             return_all_elements = True
 
+        if meta_section.read_only:
+            read_only = True
+
     if field.fields:
         sub_fields = [to_graph_field(fld, return_all_elements) for fld in field.fields]
     return generate_field(
@@ -172,6 +171,7 @@ def to_graph_field(
         is_array=is_array,
         sub_fields=sub_fields,
         return_all_elements=return_all_elements,
+        read_only=read_only,
     )
 
 

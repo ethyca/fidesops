@@ -1,9 +1,10 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { HYDRATE } from 'next-redux-wrapper';
-import type { AppState } from '../../app/store';
 
+import type { AppState } from '../../app/store';
 import {
+  DenyPrivacyRequest,
   PrivacyRequest,
   PrivacyRequestParams,
   PrivacyRequestResponse,
@@ -18,15 +19,29 @@ export const mapFiltersToSearchParams = ({
   to,
   page,
   size,
-}: Partial<PrivacyRequestParams>) => ({
-  include_identities: 'true',
-  ...(status ? { status } : {}),
-  ...(id ? { id } : {}),
-  ...(from ? { created_gt: from } : {}),
-  ...(to ? { created_lt: to } : {}),
-  ...(page ? { page: `${page}` } : {}),
-  ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
-});
+}: Partial<PrivacyRequestParams>) => {
+  let fromISO;
+  if (from) {
+    fromISO = new Date(from);
+    fromISO.setUTCHours(0, 0, 0);
+  }
+
+  let toISO;
+  if (to) {
+    toISO = new Date(to);
+    toISO.setUTCHours(23, 59, 59);
+  }
+
+  return {
+    include_identities: 'true',
+    ...(status ? { status } : {}),
+    ...(id ? { id } : {}),
+    ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
+    ...(toISO ? { created_lt: toISO.toISOString() } : {}),
+    ...(page ? { page: `${page}` } : {}),
+    ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
+  };
+};
 
 // Subject requests API
 export const privacyRequestApi = createApi({
@@ -67,15 +82,13 @@ export const privacyRequestApi = createApi({
       }),
       invalidatesTags: ['Request'],
     }),
-    denyRequest: build.mutation<
-      PrivacyRequest,
-      Partial<PrivacyRequest> & Pick<PrivacyRequest, 'id'>
-    >({
-      query: ({ id }) => ({
+    denyRequest: build.mutation<PrivacyRequest, DenyPrivacyRequest>({
+      query: ({ id, reason }) => ({
         url: 'privacy-request/administrate/deny',
         method: 'PATCH',
         body: {
           request_ids: [id],
+          reason,
         },
       }),
       invalidatesTags: ['Request'],

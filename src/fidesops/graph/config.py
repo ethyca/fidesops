@@ -80,14 +80,15 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Literal, Optional, Tuple, Set, Dict, Any, Callable
+from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple
+
 from pydantic import BaseModel, validator
 
 from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.data_type import (
+    DataType,
     DataTypeConverter,
     get_data_type_converter,
-    DataType,
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.collection_util import merge_dicts
@@ -249,6 +250,9 @@ class Field(BaseModel, ABC):
 
     is_array: bool = False
 
+    read_only: Optional[bool] = None
+    """Optionally specify if a field is read-only, meaning it can't be updated or deleted. """
+
     class Config:
         """for pydantic incorporation of custom non-pydantic types"""
 
@@ -354,6 +358,7 @@ def generate_field(
     is_array: bool,
     sub_fields: List[Field],
     return_all_elements: Optional[bool],
+    read_only: Optional[bool],
 ) -> Field:
     """Generate a graph field."""
 
@@ -376,6 +381,7 @@ def generate_field(
         length=length,
         is_array=is_array,
         return_all_elements=return_all_elements,
+        read_only=read_only,
     )
 
 

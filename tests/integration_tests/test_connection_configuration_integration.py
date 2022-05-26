@@ -1,33 +1,32 @@
-from fidesops.core.config import config
-from fidesops.schemas.saas.saas_config import SaaSRequest
-from fidesops.service.connectors.saas_connector import AuthenticatedClient
-import pytest
 import json
 
+import pytest
 from pymongo import MongoClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fidesops.models.client import ClientDetail
-from fidesops.models.connectionconfig import ConnectionTestStatus
-from fidesops.service.connectors import MongoDBConnector
-from fidesops.service.connectors.sql_connector import (
-    MySQLConnector,
-    MicrosoftSQLServerConnector,
-    MariaDBConnector,
-)
-from fidesops.common_exceptions import ConnectionException
-from fidesops.service.connectors import PostgreSQLConnector
-from fidesops.service.connectors import SaaSConnector
-from fidesops.service.connectors import get_connector
 from fidesops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
     STORAGE_READ,
 )
-
 from fidesops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
+from fidesops.common_exceptions import ConnectionException
+from fidesops.models.client import ClientDetail
+from fidesops.models.connectionconfig import ConnectionTestStatus
+from fidesops.service.connectors import (
+    MongoDBConnector,
+    PostgreSQLConnector,
+    SaaSConnector,
+    get_connector,
+)
+from fidesops.service.connectors.saas_connector import AuthenticatedClient
+from fidesops.service.connectors.sql_connector import (
+    MariaDBConnector,
+    MicrosoftSQLServerConnector,
+    MySQLConnector,
+)
 
 
 @pytest.mark.integration_postgres
@@ -1425,7 +1424,7 @@ class TestSaaSConnectionTestSecretsAPI:
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
-class TestSaasConnector:
+class TestSaasConnectorIntegration:
     def test_saas_connector(
         self, db: Session, mailchimp_connection_config, mailchimp_dataset_config
     ):
@@ -1441,78 +1440,3 @@ class TestSaasConnector:
         connector = get_connector(mailchimp_connection_config)
         with pytest.raises(ConnectionException):
             connector.test_connection()
-
-    def test_get_masking_request_from_config(self, mailchimp_connection_config):
-        connector: SaaSConnector = get_connector(mailchimp_connection_config)
-        saas_request: SaaSRequest = connector.get_masking_request_from_config("member")
-
-        # Assert we pulled the update method off of the member collection
-        assert saas_request.method == "PUT"
-        assert saas_request.path == "/3.0/lists/<list_id>/members/<subscriber_hash>"
-
-        # No update methods defined on other collections
-        assert connector.get_masking_request_from_config("conversations") is None
-        assert connector.get_masking_request_from_config("messages") is None
-
-        # Define delete request on conversations endpoint
-        conversation_endpoint = next(endpoint for endpoint in connector.saas_config.endpoints if endpoint.name =="conversations")
-        conversation_endpoint.requests["delete"] = SaaSRequest(
-            method="DELETE",
-            path="/api/0/<conversation>/<conversation_id>/"
-        )
-        # Delete endpoint not used because MASKING_STRICT is True
-        assert config.execution.MASKING_STRICT is True
-        assert connector.get_masking_request_from_config("conversations") is None
-
-        # Override MASKING_STRICT to False
-        config.execution.MASKING_STRICT = False
-
-        # Now delete endpoint is selected as conversations masking request
-        saas_request: SaaSRequest = connector.get_masking_request_from_config("conversations")
-        assert saas_request.path == "/api/0/<conversation>/<conversation_id>/"
-        assert saas_request.method == "DELETE"
-
-        # Define GDPR Delete
-        connector.saas_config.data_protection_request = SaaSRequest(
-            method="PUT",
-            path="/api/0/gdpr_delete"
-        )
-
-        # Assert GDPR Delete takes priority over Delete
-        saas_request: SaaSRequest = connector.get_masking_request_from_config("conversations")
-        assert saas_request.path == "/api/0/gdpr_delete"
-        assert saas_request.method == "PUT"
-
-        # Reset
-        config.execution.MASKING_STRICT = True
-        del conversation_endpoint.requests["delete"]
-        connector.saas_config.data_protection_request = None
-
-
-class TestSaaSConnectorMethods:
-    def test_create_client_from_request(
-        self, db: Session, segment_connection_config, segment_dataset_config
-    ):
-        connector: SaaSConnector = get_connector(segment_connection_config)
-        # Base ClientConfig uses bearer auth
-        assert (
-            connector.client_config.authentication.strategy == "bearer_authentication"
-        )
-
-        segment_user_endpoint = next(
-            end for end in connector.saas_config.endpoints if end.name == "segment_user"
-        )
-        saas_request: SaaSRequest = segment_user_endpoint.requests["read"]
-
-        client = connector.create_client_from_request(saas_request)
-        # ClientConfig on read segment user request uses basic auth, and we've overridden client config to match
-        assert connector.client_config.authentication.strategy == "basic_authentication"
-        assert client.client_config.authentication.strategy == "basic_authentication"
-
-        # Test request users bearer auth - creating the client from the request also updates the connector's auth.
-        test_request: SaaSRequest = connector.saas_config.test_request
-        client = connector.create_client_from_request(test_request)
-        assert (
-            connector.client_config.authentication.strategy == "bearer_authentication"
-        )
-        assert client.client_config.authentication.strategy == "bearer_authentication"

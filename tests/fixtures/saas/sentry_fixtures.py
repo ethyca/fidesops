@@ -1,3 +1,10 @@
+import os
+from typing import Any, Dict, Generator
+
+import pydash
+import pytest
+from sqlalchemy.orm import Session
+
 from fidesops.core.config import load_toml
 from fidesops.db import session
 from fidesops.models.connectionconfig import (
@@ -6,13 +13,8 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-import pytest
-import pydash
-import os
-from typing import Any, Dict, Generator
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
-from sqlalchemy.orm import Session
 
 saas_config = load_toml("saas_config.toml")
 
@@ -23,11 +25,16 @@ def sentry_secrets():
         "host": pydash.get(saas_config, "sentry.host") or os.environ.get("SENTRY_HOST"),
         "access_token": pydash.get(saas_config, "sentry.access_token")
         or os.environ.get("SENTRY_ACCESS_TOKEN"),
-        "erasure_access_token": pydash.get(saas_config, "sentry.erasure_access_token") or os.environ.get("SENTRY_ERASURE_TOKEN"),
-        "erasure_identity_email": pydash.get(saas_config, "sentry.erasure_identity_email") or os.environ.get("SENTRY_ERASURE_IDENTITY"),
-        "user_id_erasure": pydash.get(saas_config, "sentry.user_id_erasure") or os.environ.get("SENTRY_USER_ID"),
-        "issue_url": pydash.get(saas_config, "sentry.issue_url") or os.environ.get("SENTRY_ISSUE_URL"),
-
+        "erasure_access_token": pydash.get(saas_config, "sentry.erasure_access_token")
+        or os.environ.get("SENTRY_ERASURE_TOKEN"),
+        "erasure_identity_email": pydash.get(
+            saas_config, "sentry.erasure_identity_email"
+        )
+        or os.environ.get("SENTRY_ERASURE_IDENTITY"),
+        "user_id_erasure": pydash.get(saas_config, "sentry.user_id_erasure")
+        or os.environ.get("SENTRY_USER_ID"),
+        "issue_url": pydash.get(saas_config, "sentry.issue_url")
+        or os.environ.get("SENTRY_ISSUE_URL"),
     }
 
 
@@ -49,9 +56,7 @@ def sentry_dataset() -> Dict[str, Any]:
 
 
 @pytest.fixture(scope="function")
-def sentry_connection_config(
-    db: session, sentry_config, sentry_secrets
-) -> Generator:
+def sentry_connection_config(db: session, sentry_config, sentry_secrets) -> Generator:
     fides_key = sentry_config["fides_key"]
     connection_config = ConnectionConfig.create(
         db=db,

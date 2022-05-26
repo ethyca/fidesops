@@ -1,10 +1,9 @@
 from typing import List
 
 from fastapi import HTTPException
-
 from starlette.status import (
-    HTTP_401_UNAUTHORIZED,
     HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
 )
@@ -83,6 +82,10 @@ class KeyOrNameAlreadyExists(Exception):
     """A resource already exists with this key or name."""
 
 
+class DrpActionValidationError(Exception):
+    """A resource already exists with this DRP Action."""
+
+
 class KeyValidationError(Exception):
     """The resource you're trying to create has a key specified but not a name specified."""
 
@@ -153,3 +156,7 @@ class NoSuchStrategyException(ValueError):
 
 class MissingConfig(Exception):
     """Custom exception for when no valid configuration file is provided."""
+
+
+class FunctionalityNotConfigured(Exception):
+    """Custom exception for when invoked functionality is unavailable due to configuration."""

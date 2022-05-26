@@ -3,7 +3,8 @@ from typing import Optional
 
 import pytest
 from requests import Response
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
+
+from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.schemas.saas.strategy_configuration import CursorPaginationConfiguration
 from fidesops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
@@ -31,12 +32,9 @@ def response_with_empty_list():
 
 
 def test_cursor(response_with_body):
-    config = CursorPaginationConfiguration(
-        cursor_param="after", field="id"
-    )
+    config = CursorPaginationConfiguration(cursor_param="after", field="id")
     request_params: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.GET,
-        path="/conversations"
+        method=HTTPMethod.GET, path="/conversations"
     )
     paginator = CursorPaginationStrategy(config)
     next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
@@ -50,9 +48,7 @@ def test_cursor(response_with_body):
 
 
 def test_missing_cursor_value(response_with_body):
-    config = CursorPaginationConfiguration(
-        cursor_param="after", field="hash"
-    )
+    config = CursorPaginationConfiguration(cursor_param="after", field="hash")
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/conversations",
@@ -66,9 +62,7 @@ def test_missing_cursor_value(response_with_body):
 
 
 def test_cursor_with_empty_list(response_with_empty_list):
-    config = CursorPaginationConfiguration(
-        cursor_param="after", field="id"
-    )
+    config = CursorPaginationConfiguration(cursor_param="after", field="id")
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/conversations",
@@ -79,4 +73,3 @@ def test_cursor_with_empty_list(response_with_empty_list):
         request_params, {}, response_with_empty_list, "conversations"
     )
     assert next_request is None
-

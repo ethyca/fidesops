@@ -1,4 +1,3 @@
-import pytest
 import time
 from typing import Any, Dict, List, Set
 from unittest import mock
@@ -6,32 +5,32 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import pydash
-from sqlalchemy import (
-    column,
-    table,
-    select,
-)
-from sqlalchemy.orm import Session
+import pytest
 from pydantic import ValidationError
+from sqlalchemy import column, select, table
+from sqlalchemy.orm import Session
 
-from fidesops.common_exceptions import PrivacyRequestPaused, ClientUnsuccessfulException
+from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.core.config import config
-from fidesops.models.policy import PolicyPreWebhook, ActionType
-from fidesops.models.privacy_request import PrivacyRequestStatus
-from fidesops.schemas.external_https import SecondPartyResponseFormat
 from fidesops.db.session import get_db_session
-from fidesops.models.privacy_request import PrivacyRequest, ExecutionLog
+from fidesops.models.policy import ActionType, PolicyPreWebhook
+from fidesops.models.privacy_request import (
+    ExecutionLog,
+    PrivacyRequest,
+    PrivacyRequestStatus,
+)
+from fidesops.schemas.external_https import SecondPartyResponseFormat
 from fidesops.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
     MaskingConfiguration,
 )
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.policy import Rule
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
+from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors.saas_connector import SaaSConnector
 from fidesops.service.connectors.sql_connector import (
-    SnowflakeConnector,
     RedshiftConnector,
+    SnowflakeConnector,
 )
 from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
@@ -367,7 +366,9 @@ def test_create_and_process_erasure_request_saas(
 
     connector = SaaSConnector(mailchimp_connection_config)
     request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.GET, path="/3.0/search-members", query_params={"query": mailchimp_identity_email}
+        method=HTTPMethod.GET,
+        path="/3.0/search-members",
+        query_params={"query": mailchimp_identity_email},
     )
     resp = connector.create_client().send(request)
     body = resp.json()
@@ -376,11 +377,17 @@ def test_create_and_process_erasure_request_saas(
     masking_configuration = HmacMaskingConfiguration()
     masking_strategy = HmacMaskingStrategy(masking_configuration)
 
-    assert merge_fields["FNAME"] == masking_strategy.mask(
-        reset_mailchimp_data["merge_fields"]["FNAME"], pr.id
+    assert (
+        merge_fields["FNAME"]
+        == masking_strategy.mask(
+            [reset_mailchimp_data["merge_fields"]["FNAME"]], pr.id
+        )[0]
     )
-    assert merge_fields["LNAME"] == masking_strategy.mask(
-        reset_mailchimp_data["merge_fields"]["LNAME"], pr.id
+    assert (
+        merge_fields["LNAME"]
+        == masking_strategy.mask(
+            [reset_mailchimp_data["merge_fields"]["LNAME"]], pr.id
+        )[0]
     )
 
     pr.delete(db=db)
@@ -390,15 +397,15 @@ def test_create_and_process_erasure_request_saas(
 @pytest.mark.integration_hubspot
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_saas_hubspot(
-        trigger_webhook_mock,
-        connection_config_hubspot,
-        dataset_config_hubspot,
-        db,
-        cache,
-        policy,
-        policy_pre_execution_webhooks,
-        policy_post_execution_webhooks,
-        hubspot_identity_email,
+    trigger_webhook_mock,
+    connection_config_hubspot,
+    dataset_config_hubspot,
+    db,
+    cache,
+    policy,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
+    hubspot_identity_email,
 ):
     customer_email = hubspot_identity_email
     data = {

@@ -1,5 +1,7 @@
+from typing import Any, Dict
+
 import pytest
-from typing import Dict, Any
+
 from fidesops.common_exceptions import FidesopsException
 from fidesops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
@@ -152,6 +154,7 @@ def test_filter_by_nonexistent_identity_reference():
     processor = FilterPostProcessorStrategy(configuration=config)
     result = processor.process(data)
     assert result == []
+
 
 def test_filter_by_identity_reference_with_no_identity_data():
     identity_data = None
