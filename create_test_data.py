@@ -146,7 +146,7 @@ def create_test_data(db: orm.Session) -> FidesopsUser:
 
 
 if __name__ == "__main__":
-    init_db(config.database.SQLALCHEMY_DATABASE_URI)
+    init_db(config.database.SQLALCHEMY_DATABASE_URI, config.package.PATH)
     session_local = get_db_session()
     with session_local() as session:
         create_test_data(session)
