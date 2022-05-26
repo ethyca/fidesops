@@ -56,7 +56,7 @@ def _validate_drp_action(drp_action: Optional[str]) -> None:
     if drp_action in [
         DrpAction.sale_opt_in.value,
         DrpAction.sale_opt_out.value,
-        DrpAction.access_categories.qvalue,
+        DrpAction.access_categories.value,
         DrpAction.access_specific.value,
     ]:
         raise common_exceptions.DrpActionValidationError(
