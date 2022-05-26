@@ -22,16 +22,19 @@ The types of changes are:
 ### Added
 * Added `FIDESOPS__DATABASE__ENABLED` and `FIDESOPS__REDIS__ENABLED` configuration variables to allow `fidesops` to run cleanly in a "stateless" mode without any database or redis cache integration [#550](https://github.com/ethyca/fidesops/pull/550)
 * Pause Access Request Execution / Resume on Manual Input in [#554](https://github.com/ethyca/fidesops/pull/554)
+* A `[package]` section of the `fidesops.toml` configuration file may specify the path to the `fidesops` package itself [#566](https://github.com/ethyca/fidesops/pull/566)
 * Pause Erasure Request Execution / Resume on Manual Input in [#571](https://github.com/ethyca/fidesops/pull/571/)
 
 ### Changed
-* `MaskingStrategyFactory` and associated `MaskingStrategy` implementations now use a decorator-based registration system, to improve extensibility
+* `MaskingStrategyFactory` and associated `MaskingStrategy` implementations now use a decorator-based registration system, to improve extensibility [#560](https://github.com/ethyca/fidesops/pull/560)
+* Added `from __future__ import annotations` to `src/fidesops/util/logger.py` to maintain backward compatibility with Python < 3.9 [#569](https://github.com/ethyca/fidesops/pull/569)
 
 ### Developer Experience
 
 * Import ordering is now enforced using [isort](https://pycqa.github.io/isort/) in CI [#533](https://github.com/ethyca/fidesops/pull/533)
-* [Teardown all Docker infra once it's finished with](https://github.com/ethyca/fidesops/pull/498/)
+* Teardown all Docker infra once it's finished with [#498](https://github.com/ethyca/fidesops/pull/498/)
 * Update PR checklist for [`CHANGELOG.md`](https://github.com/ethyca/fidesops/blob/main/CHANGELOG.md) file [#558](https://github.com/ethyca/fidesops/pull/558)
+* Database migrations are included in the published PyPI package [#566](https://github.com/ethyca/fidesops/pull/566)
 
 ### Docs
 
