@@ -3,17 +3,11 @@
 import hashlib
 import logging
 import os
-from typing import Dict, List, Optional, Union, Tuple, Any, MutableMapping
+from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
 
 import bcrypt
 import toml
-from pydantic import (
-    AnyHttpUrl,
-    BaseSettings,
-    PostgresDsn,
-    ValidationError,
-    validator,
-)
+from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, ValidationError, validator
 from pydantic.env_settings import SettingsSourceCallable
 
 from fidesops.common_exceptions import MissingConfig
@@ -47,6 +41,7 @@ class DatabaseSettings(FidesSettings):
     DB: str
     PORT: str = "5432"
     TEST_DB: str = "test"
+    ENABLED: bool = True
 
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
     SQLALCHEMY_TEST_DATABASE_URI: Optional[PostgresDsn] = None
@@ -109,6 +104,7 @@ class RedisSettings(FidesSettings):
     DECODE_RESPONSES: bool = True
     DEFAULT_TTL_SECONDS: int = 604800
     DB_INDEX: int
+    ENABLED: bool = True
 
     class Config:
         env_prefix = "FIDESOPS__REDIS__"
@@ -120,6 +116,7 @@ class SecuritySettings(FidesSettings):
     AES_ENCRYPTION_KEY_LENGTH: int = 16
     AES_GCM_NONCE_LENGTH: int = 12
     APP_ENCRYPTION_KEY: str
+    DRP_JWT_SECRET: str
 
     @validator("APP_ENCRYPTION_KEY")
     def validate_encryption_key_length(
@@ -178,14 +175,17 @@ class FidesopsConfig(FidesSettings):
     execution: ExecutionSettings
 
     is_test_mode: bool = os.getenv("TESTING") == "True"
-    hot_reloading: bool = os.getenv("DEV_MODE") == "True"
+    hot_reloading: bool = os.getenv("FIDESOPS__HOT_RELOAD") == "True"
+    dev_mode: bool = os.getenv("FIDESOPS__DEV_MODE") == "True"
 
     class Config:  # pylint: disable=C0115
         case_sensitive = True
 
-    logger.warning(f"Startup configuration: reloading = {hot_reloading}")
     logger.warning(
-        f'Startup configuration: pii logging = {os.getenv("LOG_PII") == "True"}'
+        f"Startup configuration: reloading = {hot_reloading}, dev_mode = {dev_mode}"
+    )
+    logger.warning(
+        f'Startup configuration: pii logging = {os.getenv("FIDESOPS__LOG_PII") == "True"}'
     )
 
 
@@ -193,7 +193,7 @@ def load_file(file_name: str) -> str:
     """Load a file and from the first matching location.
 
     In order, will check:
-    - A path set at ENV variable FIDESOPS_CONFIG_PATH
+    - A path set at ENV variable FIDESOPS__CONFIG_PATH
     - The current directory
     - The parent directory
     - users home (~) directory
@@ -202,7 +202,7 @@ def load_file(file_name: str) -> str:
     """
 
     possible_directories = [
-        os.getenv("FIDESOPS_CONFIG_PATH"),
+        os.getenv("FIDESOPS__CONFIG_PATH"),
         os.curdir,
         os.pardir,
         os.path.expanduser("~"),
@@ -232,7 +232,7 @@ def load_toml(file_name: str) -> MutableMapping[str, Any]:
 def get_config() -> FidesopsConfig:
     """
     Attempt to read config file from:
-    a) env var FIDESOPS_CONFIG_PATH
+    a) env var FIDESOPS__CONFIG_PATH
     b) local directory
     c) parent directory
     d) home directory

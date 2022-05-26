@@ -9,29 +9,27 @@ import dask
 import pytest
 
 from fidesops.core.config import config
-from fidesops.graph.config import FieldAddress, Collection, ScalarField, Dataset
+from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
 from fidesops.graph.data_type import DataType, StringTypeConverter
 from fidesops.graph.graph import DatasetGraph, Edge, Node
 from fidesops.graph.traversal import TraversalNode
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.models.policy import Policy
-from fidesops.models.policy import Rule, RuleTarget, ActionType
+from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.service.connectors import get_connector
 from fidesops.task import graph_task
 from fidesops.task.filter_results import filter_data_categories
-from fidesops.task.graph_task import (
-    get_cached_data_for_erasures,
-)
+from fidesops.task.graph_task import get_cached_data_for_erasures
+
 from ..graph.graph_test_util import (
     assert_rows_match,
-    records_matching_fields,
-    field,
     erasure_policy,
+    field,
+    records_matching_fields,
 )
-from ..task.traversal_data import integration_db_graph, integration_db_dataset
+from ..task.traversal_data import integration_db_dataset, integration_db_graph
 
 dask.config.set(scheduler="processes")
 logger = logging.getLogger(__name__)
@@ -860,7 +858,10 @@ class TestRetrievingData:
         }
 
         results = connector.retrieve_data(
-            traversal_node, Policy(), privacy_request, {"email": ["customer-1@example.com"]}
+            traversal_node,
+            Policy(),
+            privacy_request,
+            {"email": ["customer-1@example.com"]},
         )
         assert len(results) is 1
         assert results == [
@@ -889,9 +890,13 @@ class TestRetrievingData:
             )
         }
 
-        assert [] == connector.retrieve_data(traversal_node, Policy(), privacy_request, {"email": []})
+        assert [] == connector.retrieve_data(
+            traversal_node, Policy(), privacy_request, {"email": []}
+        )
 
-        assert [] == connector.retrieve_data(traversal_node, Policy(), privacy_request, {})
+        assert [] == connector.retrieve_data(
+            traversal_node, Policy(), privacy_request, {}
+        )
 
         assert [] == connector.retrieve_data(
             traversal_node, Policy(), privacy_request, {"bad_key": ["test"]}
@@ -901,7 +906,9 @@ class TestRetrievingData:
             traversal_node, Policy(), privacy_request, {"email": [None]}
         )
 
-        assert [] == connector.retrieve_data(traversal_node, Policy(), privacy_request, {"email": None})
+        assert [] == connector.retrieve_data(
+            traversal_node, Policy(), privacy_request, {"email": None}
+        )
 
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
@@ -922,7 +929,10 @@ class TestRetrievingData:
             )
         }
         results = connector.retrieve_data(
-            traversal_node, Policy(), privacy_request, {"email": ["customer_not_in_dataset@example.com"]}
+            traversal_node,
+            Policy(),
+            privacy_request,
+            {"email": ["customer_not_in_dataset@example.com"]},
         )
         assert results == []
 

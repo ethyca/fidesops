@@ -1,24 +1,23 @@
 import string
-from typing import Optional
 from secrets import choice
+from typing import List, Optional
 
 from fidesops.schemas.masking.masking_configuration import (
-    RandomStringMaskingConfiguration,
     MaskingConfiguration,
+    RandomStringMaskingConfiguration,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
-    MaskingStrategyDescription,
     MaskingStrategyConfigurationDescription,
+    MaskingStrategyDescription,
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-
 
 RANDOM_STRING_REWRITE = "random_string_rewrite"
 
 
 class RandomStringRewriteMaskingStrategy(MaskingStrategy):
-    """Masks a value with a random string of the length specified in the configuration."""
+    """Masks each provied value with a random string of the length specified in the configuration."""
 
     def __init__(
         self,
@@ -28,18 +27,24 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
         self.format_preservation = configuration.format_preservation
 
     def mask(
-        self, value: Optional[str], privacy_request_id: Optional[str]
-    ) -> Optional[str]:
+        self, values: Optional[List[str]], request_id: Optional[str]
+    ) -> Optional[List[str]]:
         """Replaces the value with a random lowercase string of the configured length"""
-        if value is None:
+        if values is None:
             return None
-        masked: str = "".join(
-            [choice(string.ascii_lowercase + string.digits) for _ in range(self.length)]
-        )
-        if self.format_preservation is not None:
-            formatter = FormatPreservation(self.format_preservation)
-            return formatter.format(masked)
-        return masked
+        masked_values: List[str] = []
+        for _ in range(len(values)):
+            masked: str = "".join(
+                [
+                    choice(string.ascii_lowercase + string.digits)
+                    for _ in range(self.length)
+                ]
+            )
+            if self.format_preservation is not None:
+                formatter = FormatPreservation(self.format_preservation)
+                masked = formatter.format(masked)
+            masked_values.append(masked)
+        return masked_values
 
     def secrets_required(self) -> bool:
         return False

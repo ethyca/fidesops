@@ -1,18 +1,48 @@
 from datetime import datetime
-from typing import List, Optional, Dict
+from enum import Enum as EnumType
+from typing import Dict, List, Optional
 
 from pydantic import Field, validator
 
 from fidesops.core.config import config
 from fidesops.models.policy import ActionType
+from fidesops.models.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
+from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.policy import Policy as PolicySchema
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.schemas.user import PrivacyRequestReviewer
-from fidesops.models.privacy_request import PrivacyRequestStatus, ExecutionLogStatus
 from fidesops.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
+
+
+class PrivacyRequestDRPStatus(EnumType):
+    """A list of privacy request statuses specified by the Data Rights Protocol."""
+
+    open = "open"
+    in_progress = "in_progress"
+    fulfilled = "fulfilled"
+    revoked = "revoked"
+    denied = "denied"
+    expired = "expired"
+
+
+class PrivacyRequestDRPStatusResponse(BaseSchema):
+    """A Fidesops PrivacyRequest updated to fit the Data Rights Protocol specification."""
+
+    request_id: str
+    received_at: datetime
+    expected_by: Optional[datetime]
+    processing_details: Optional[str]
+    status: PrivacyRequestDRPStatus
+    reason: Optional[str]
+    user_verification_url: Optional[str]
+
+    class Config:
+        """Set orm_mode and use_enum_values"""
+
+        orm_mode = True
+        use_enum_values = True
 
 
 class PrivacyRequestCreate(BaseSchema):
@@ -116,6 +146,12 @@ class ReviewPrivacyRequestIds(BaseSchema):
     """Pass in a list of privacy request ids"""
 
     request_ids: List[str] = Field(..., max_items=50)
+
+
+class DenyPrivacyRequests(ReviewPrivacyRequestIds):
+    """Pass in a list of privacy request ids and rejection reason"""
+
+    reason: Optional[str]
 
 
 class BulkPostPrivacyRequests(BulkResponse):

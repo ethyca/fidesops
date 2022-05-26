@@ -1,14 +1,14 @@
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, validator, ConstrainedStr
+from typing import Any, Dict, List, Optional
 
 from fideslang.models import Dataset, DatasetCollection, DatasetField
-from fidesops.graph.config import EdgeDirection
+from pydantic import BaseModel, ConstrainedStr, validator
 
 from fidesops.common_exceptions import (
     InvalidDataLengthValidationError,
+    InvalidDataTypeValidationError,
 )
-from fidesops.common_exceptions import InvalidDataTypeValidationError
-from fidesops.graph.data_type import parse_data_type_string, is_valid_data_type
+from fidesops.graph.config import EdgeDirection
+from fidesops.graph.data_type import is_valid_data_type, parse_data_type_string
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.shared_schemas import FidesOpsKey
@@ -107,6 +107,8 @@ class FidesopsMeta(BaseModel):
     """Optionally specify the allowable field length. Fidesops will not generate values that exceed this size."""
     return_all_elements: Optional[bool]
     """Optionally specify to query for the entire array if the array is an entrypoint into the node. Default is False."""
+    read_only: Optional[bool]
+    """Optionally specify if a field is read-only, meaning it can't be updated or deleted."""
 
     @validator("data_type")
     def valid_data_type(cls, v: Optional[str]) -> Optional[str]:

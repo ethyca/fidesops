@@ -1,27 +1,24 @@
 import json
+from uuid import uuid4
 
 import pytest
 from starlette.testclient import TestClient
 
 from fidesops.api.v1 import scope_registry as scopes
+from fidesops.api.v1.urn_registry import POLICY_DETAIL as POLICY_DETAIL_URI
+from fidesops.api.v1.urn_registry import POLICY_LIST as POLICY_CREATE_URI
+from fidesops.api.v1.urn_registry import RULE_DETAIL as RULE_DETAIL_URI
+from fidesops.api.v1.urn_registry import RULE_LIST as RULE_CREATE_URI
 from fidesops.api.v1.urn_registry import (
-    POLICY_LIST as POLICY_CREATE_URI,
-    POLICY_DETAIL as POLICY_DETAIL_URI,
-    RULE_LIST as RULE_CREATE_URI,
-    RULE_DETAIL as RULE_DETAIL_URI,
-    RULE_TARGET_LIST,
     RULE_TARGET_DETAIL,
+    RULE_TARGET_LIST,
     V1_URL_PREFIX,
 )
 from fidesops.models.client import ClientDetail
-from fidesops.models.policy import (
-    ActionType,
-    Policy,
-    Rule,
-    RuleTarget,
-)
+from fidesops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.util.data_category import DataCategory, generate_fides_data_categories
+
 
 class TestGetPolicies:
     @pytest.fixture(scope="function")
@@ -66,6 +63,48 @@ class TestGetPolicies:
         assert rule["action_type"] == "access"
         assert rule["storage_destination"]["type"] == "s3"
 
+    def test_pagination_ordering(
+        self,
+        db,
+        oauth_client,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_READ])
+        policies = []
+        POLICY_COUNT = 50
+        for _ in range(POLICY_COUNT):
+            key = str(uuid4()).replace("-", "")
+            policies.append(
+                Policy.create(
+                    db=db,
+                    data={
+                        "name": key,
+                        "key": key,
+                        "client_id": oauth_client.id,
+                    },
+                )
+            )
+
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert "items" in data
+        assert data["total"] == POLICY_COUNT
+
+        for policy in data["items"]:
+            # The most recent policy will be that which was last added to `policies`
+            most_recent = policies.pop()
+            assert policy["key"] == most_recent.key
+            # Once we're finished we need to delete the policies, since `oauth_client` will be
+            # subsequently deleted and will cause validation errors
+            most_recent.delete(db=db)
+
 
 class TestGetPolicyDetail:
     @pytest.fixture(scope="function")
@@ -97,6 +136,27 @@ class TestGetPolicyDetail:
             headers=auth_header,
         )
         assert resp.status_code == 404
+
+    def test_get_policy_returns_drp_action(
+        self, api_client: TestClient, generate_auth_header, policy_drp_action, url
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_READ])
+        resp = api_client.get(
+            V1_URL_PREFIX + POLICY_DETAIL_URI.format(policy_key=policy_drp_action.key),
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        print(json.dumps(resp.json(), indent=2))
+        assert data["key"] == policy_drp_action.key
+        assert data["drp_action"] == DrpAction.access.value
+        assert "rules" in data
+        assert len(data["rules"]) == 1
+
+        rule = data["rules"][0]
+        assert rule["key"] == "access_request_rule_drp"
+        assert rule["action_type"] == "access"
+        assert rule["storage_destination"]["type"] == "s3"
 
     def test_get_policy_returns_rules(
         self, api_client: TestClient, generate_auth_header, policy, url
@@ -259,6 +319,145 @@ class TestCreatePolicies:
         data = resp.json()
         assert len(data["failed"]) == 2
 
+    def test_create_policy_with_duplicate_drp_action(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        policy_drp_action,
+        storage_config,
+    ):
+        data = [
+            {
+                "name": "policy with pre-existing drp action",
+                "action_type": ActionType.access.value,
+                "drp_action": DrpAction.access.value,
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
+        resp = api_client.patch(url, json=data, headers=auth_header)
+        assert resp.status_code == 200
+
+        data = resp.json()
+        assert len(data["failed"]) == 1
+
+    def test_update_policy_with_duplicate_drp_action(
+        self,
+        db,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        policy_drp_action,
+        storage_config,
+    ):
+        # creates a new drp policy
+        data = [
+            {
+                "key": "erasure_drp_policy",
+                "name": "erasure drp policy",
+                "action_type": ActionType.erasure.value,
+                "drp_action": DrpAction.deletion.value,
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
+        valid_drp_resp = api_client.patch(url, json=data, headers=auth_header)
+        valid_response_data = valid_drp_resp.json()["succeeded"]
+        assert valid_drp_resp.status_code == 200
+
+        # try to update the above policy with a pre-existing drp action
+        data = [
+            {
+                "key": "erasure_drp_policy",
+                "name": "policy with pre-existing drp action",
+                "action_type": ActionType.access.value,
+                "drp_action": DrpAction.access.value,
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
+        resp = api_client.patch(url, json=data, headers=auth_header)
+        assert resp.status_code == 200
+
+        data = resp.json()
+        assert len(data["failed"]) == 1
+
+        pol = Policy.filter(
+            db=db, conditions=(Policy.key == valid_response_data[0]["key"])
+        ).first()
+        pol.delete(db=db)
+
+    def test_update_policy_with_drp_action(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        policy,
+        storage_config,
+    ):
+        data = [
+            {
+                "key": policy.key,
+                "name": "updated name",
+                "action_type": ActionType.access.value,
+                "drp_action": DrpAction.access.value,
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
+        resp = api_client.patch(url, json=data, headers=auth_header)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+
+    def test_create_policy_invalid_drp_action(
+        self, url, api_client: TestClient, payload, generate_auth_header, storage_config
+    ):
+        payload = [
+            {
+                "name": "policy 1",
+                "action_type": "erasure",
+                "drp_action": "invalid",
+                "data_category": DataCategory("user.provided.identifiable").value,
+                "storage_destination_key": storage_config.key,
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
+        resp = api_client.patch(url, json=payload, headers=auth_header)
+        assert resp.status_code == 422
+
+        response_body = json.loads(resp.text)
+        assert (
+            "value is not a valid enumeration member; permitted: 'access', 'deletion', 'sale:opt_out', 'sale:opt_in', 'access:categories', 'access:specific'"
+            == response_body["detail"][0]["msg"]
+        )
+
+    def test_create_policy_with_drp_action(
+        self,
+        db,
+        url,
+        api_client: TestClient,
+        payload,
+        generate_auth_header,
+        storage_config,
+    ):
+        payload = [
+            {
+                "name": "policy 1",
+                "action_type": "erasure",
+                "drp_action": "deletion",
+                "data_category": DataCategory("user.provided.identifiable").value,
+                "storage_destination_key": storage_config.key,
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
+        resp = api_client.patch(url, json=payload, headers=auth_header)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+
+        pol = Policy.filter(
+            db=db, conditions=(Policy.key == response_data[0]["key"])
+        ).first()
+        pol.delete(db=db)
+
     def test_create_policy_creates_key(
         self, db, api_client: TestClient, generate_auth_header, storage_config, url
     ):
@@ -391,6 +590,32 @@ class TestCreateRules:
 
         resp = api_client.patch(url, headers=auth_header, json=data)
         assert resp.status_code == 404
+
+    def test_create_rules_mismatching_drp_policy(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        policy_drp_action,
+        storage_config,
+    ):
+        data = [
+            {
+                "name": "test access rule",
+                "action_type": ActionType.erasure.value,
+                "storage_destination_key": storage_config.key,
+            }
+        ]
+        url = V1_URL_PREFIX + RULE_CREATE_URI.format(policy_key=policy_drp_action.key)
+        auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
+        resp = api_client.patch(
+            url,
+            json=data,
+            headers=auth_header,
+        )
+
+        assert resp.status_code == 200
+        response_data = resp.json()["failed"]
+        assert len(response_data) == 1
 
     def test_create_rules_limit_exceeded(
         self, api_client: TestClient, generate_auth_header, url, storage_config

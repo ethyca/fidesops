@@ -1,15 +1,16 @@
-import pydash
 from typing import Any, Dict, Optional
+
+import pydash
 from requests import Response
+
 from fidesops.common_exceptions import FidesopsException
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.schemas.saas.strategy_configuration import (
     ConnectorParamRef,
     OffsetPaginationConfiguration,
     StrategyConfiguration,
 )
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
-from fidesops.util.collection_util import Row
 
 STRATEGY_NAME = "offset"
 
@@ -64,7 +65,7 @@ class OffsetPaginationStrategy(PaginationStrategy):
             method=request_params.method,
             path=request_params.path,
             query_params=request_params.query_params,
-            json_body=request_params.json_body,
+            body=request_params.body,
         )
 
     @staticmethod

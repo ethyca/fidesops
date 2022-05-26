@@ -1,8 +1,16 @@
+import json
+import logging
+import re
 from collections import defaultdict
 from functools import reduce
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
+
+from multidimensional_urlencode import urlencode as multidimensional_urlencode
+
 from fidesops.common_exceptions import FidesopsException
-from fidesops.graph.config import Collection, Dataset, Field, CollectionAddress
+from fidesops.graph.config import Collection, CollectionAddress, Dataset, Field
+
+logger = logging.getLogger(__name__)
 
 FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
 
@@ -104,7 +112,7 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
     """
     output: Dict[Any, Any] = {}
     for path, value in flat_dict.items():
-        if isinstance(value, dict):
+        if isinstance(value, dict) and len(value) > 0:
             raise FidesopsException(
                 "'unflatten_dict' expects a flattened dictionary as input."
             )
@@ -121,3 +129,61 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
                 f"Error unflattening dictionary, conflicting levels detected: {exc}"
             )
     return output
+
+
+def format_body(
+    headers: Dict[str, Any],
+    body: Optional[str],
+) -> Tuple[Dict[str, Any], Optional[str]]:
+    """
+    Builds the appropriately formatted body based on the content type,
+    adding application/json to the headers if a content type is not provided.
+    """
+
+    if body is None:
+        return headers, None
+
+    content_type = next(
+        (
+            value
+            for header, value in headers.items()
+            if header.lower() == "content-type"
+        ),
+        None,
+    )
+
+    # add Content-Type: application/json if a content type is not provided
+    if content_type is None:
+        content_type = "application/json"
+        headers["Content-Type"] = content_type
+
+    if content_type == "application/json":
+        output = body
+    elif content_type == "application/x-www-form-urlencoded":
+        output = multidimensional_urlencode(json.loads(body))
+    elif content_type == "text/plain":
+        output = body
+    else:
+        raise FidesopsException(f"Unsupported Content-Type: {content_type}")
+
+    return headers, output
+
+
+def assign_placeholders(
+    value: Union[str, int], param_values: Dict[str, Any]
+) -> Optional[Union[str, int]]:
+    """
+    Finds all the placeholders (indicated by <>) in the passed in value
+    and replaces them with the actual param values
+
+    Returns None if any of the placeholders cannot be found in the param_values
+    """
+    if value and isinstance(value, str):
+        placeholders = re.findall("<([^<>]+)>", value)
+        for placeholder in placeholders:
+            placeholder_value = param_values.get(placeholder)
+            if placeholder_value:
+                value = value.replace(f"<{placeholder}>", str(placeholder_value))
+            else:
+                return None
+    return value

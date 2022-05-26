@@ -1,4 +1,5 @@
 import pytest
+
 from fidesops.common_exceptions import NoSuchStrategyException, ValidationError
 from fidesops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
@@ -8,6 +9,7 @@ from fidesops.service.pagination.pagination_strategy_link import LinkPaginationS
 from fidesops.service.pagination.pagination_strategy_offset import (
     OffsetPaginationStrategy,
 )
+
 
 def test_get_strategy_offset():
     config = {

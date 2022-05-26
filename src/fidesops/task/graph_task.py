@@ -1,37 +1,35 @@
 import copy
-
 import logging
 import traceback
 from abc import ABC
 from functools import wraps
-
 from time import sleep
-from typing import List, Dict, Any, Tuple, Callable, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 import dask
 from dask.threaded import get
 
 from fidesops.core.config import config
 from fidesops.graph.config import (
-    CollectionAddress,
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
-    FieldPath,
+    CollectionAddress,
     Field,
     FieldAddress,
+    FieldPath,
 )
-from fidesops.graph.graph import Edge, DatasetGraph, Node
-from fidesops.graph.traversal import TraversalNode, Traversal
-from fidesops.models.connectionconfig import ConnectionConfig, AccessLevel
+from fidesops.graph.graph import DatasetGraph, Edge, Node
+from fidesops.graph.traversal import Traversal, TraversalNode
+from fidesops.models.connectionconfig import AccessLevel, ConnectionConfig
 from fidesops.models.policy import ActionType, Policy
-from fidesops.models.privacy_request import PrivacyRequest, ExecutionLogStatus
+from fidesops.models.privacy_request import ExecutionLogStatus, PrivacyRequest
 from fidesops.service.connectors import BaseConnector
 from fidesops.task.consolidate_query_matches import consolidate_query_matches
 from fidesops.task.filter_element_match import filter_element_match
 from fidesops.task.refine_target_path import FieldPathNodeInput
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.cache import get_cache
-from fidesops.util.collection_util import partition, append, NodeInput, Row
+from fidesops.util.collection_util import NodeInput, Row, append, partition
 from fidesops.util.logger import NotPii
 from fidesops.util.saas_util import FIDESOPS_GROUPED_INPUTS
 
@@ -62,6 +60,9 @@ def retry(
             self = args[0]
 
             raised_ex = None
+            if config.dev_mode:
+                # If dev mode, return here so exception isn't caught
+                return func(*args, **kwargs)
             for attempt in range(config.execution.TASK_RETRY_COUNT + 1):
                 try:
                     # Create ExecutionLog with status in_processing or retrying
@@ -539,7 +540,7 @@ def get_cached_data_for_erasures(
     """
     Fetches processed access request results to be used for erasures.
 
-    Processing may have have added indicators to not mask certain elements in array data.
+    Processing may have added indicators to not mask certain elements in array data.
     """
     cache = get_cache()
     value_dict = cache.get_encoded_objects_by_prefix(

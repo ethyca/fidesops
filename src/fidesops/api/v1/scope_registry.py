@@ -45,7 +45,14 @@ SAAS_CONFIG_READ = "saas_config:read"
 SAAS_CONFIG_DELETE = "saas_config:delete"
 
 USER_CREATE = "user:create"
+USER_UPDATE = "user:update"
+USER_READ = "user:read"
 USER_DELETE = "user:delete"
+USER_PASSWORD_RESET = "user:reset-password"
+
+USER_PERMISSION_CREATE = "user-permission:create"
+USER_PERMISSION_UPDATE = "user-permission:update"
+USER_PERMISSION_READ = "user-permission:read"
 
 SCOPE_REGISTRY = [
     CLIENT_CREATE,
@@ -81,5 +88,11 @@ SCOPE_REGISTRY = [
     SAAS_CONFIG_READ,
     SAAS_CONFIG_DELETE,
     USER_CREATE,
+    USER_UPDATE,
+    USER_READ,
+    USER_PASSWORD_RESET,
     USER_DELETE,
+    USER_PERMISSION_CREATE,
+    USER_PERMISSION_UPDATE,
+    USER_PERMISSION_READ,
 ]

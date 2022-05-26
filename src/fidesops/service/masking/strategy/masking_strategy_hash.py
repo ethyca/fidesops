@@ -1,5 +1,5 @@
 import hashlib
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 
 from fidesops.core.config import config
 from fidesops.schemas.masking.masking_configuration import (
@@ -8,12 +8,12 @@ from fidesops.schemas.masking.masking_configuration import (
 )
 from fidesops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
-    SecretType,
     MaskingSecretMeta,
+    SecretType,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
-    MaskingStrategyDescription,
     MaskingStrategyConfigurationDescription,
+    MaskingStrategyDescription,
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
@@ -37,25 +37,28 @@ class HashMaskingStrategy(MaskingStrategy):
         self.format_preservation = configuration.format_preservation
 
     def mask(
-        self, value: Optional[str], privacy_request_id: Optional[str]
-    ) -> Optional[str]:
-        """Returns the hashed version of the provided value. Returns None if the provided value
+        self, values: Optional[List[str]], request_id: Optional[str]
+    ) -> Optional[List[str]]:
+        """Returns the hashed version of the provided values. Returns None if the provided value
         is None"""
-        if value is None:
+        if values is None:
             return None
         masking_meta: Dict[
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
         salt: str = SecretsUtil.get_or_generate_secret(
-            privacy_request_id,
+            request_id,
             SecretType.salt,
             masking_meta[SecretType.salt],
         )
-        masked: str = self.algorithm_function(value, salt)
-        if self.format_preservation is not None:
-            formatter = FormatPreservation(self.format_preservation)
-            return formatter.format(masked)
-        return masked
+        masked_values: List[str] = []
+        for value in values:
+            masked: str = self.algorithm_function(value, salt)
+            if self.format_preservation is not None:
+                formatter = FormatPreservation(self.format_preservation)
+                masked = formatter.format(masked)
+            masked_values.append(masked)
+        return masked_values
 
     def secrets_required(self) -> bool:
         return True

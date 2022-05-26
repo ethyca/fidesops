@@ -1,10 +1,9 @@
-from collections import defaultdict
-
 import itertools
 import logging
-from typing import List, Dict, Any, Union, Set, Optional
+from collections import defaultdict
+from typing import Any, Dict, List, Optional, Set, Union
 
-from fidesops.graph.config import FieldPath, CollectionAddress
+from fidesops.graph.config import CollectionAddress, FieldPath
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.collection_util import Row
 
@@ -98,7 +97,7 @@ def select_and_save_field(saved: Any, row: Row, target_path: FieldPath) -> Dict:
 
     elif isinstance(row, dict):
         for key in row:
-            if key == target_path.levels[0]:
+            if target_path.levels and key == target_path.levels[0]:
                 if key not in saved:
                     saved[key] = _defaultdict_or_array(row[key])
                 saved[key] = select_and_save_field(

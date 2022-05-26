@@ -1,28 +1,26 @@
 import logging
 import re
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple
+from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
 
 import pydash
-from sqlalchemy import text, Table, MetaData
+from sqlalchemy import MetaData, Table, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import Executable, Update
-from sqlalchemy.sql.elements import TextClause, ColumnElement
+from sqlalchemy.sql.elements import ColumnElement, TextClause
 
 from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,
     Field,
-    MaskingOverride,
     FieldPath,
+    MaskingOverride,
 )
-from fidesops.graph.traversal import TraversalNode, Row
-from fidesops.models.policy import Policy, ActionType, Rule
+from fidesops.graph.traversal import Row, TraversalNode
+from fidesops.models.policy import ActionType, Policy, Rule
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_factory import (
-    get_strategy,
-)
+from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.task.refine_target_path import (
     build_refined_target_paths,
@@ -205,12 +203,17 @@ class QueryConfig(Generic[T], ABC):
         null_masking: bool,
         str_field_path: str,
     ) -> T:
-        masked_val = strategy.mask(val, request_id)
+        # masking API takes and returns lists, but here we are only leveraging single elements
+        masked_val = strategy.mask([val], request_id)[0]
+
         logger.debug(
             f"Generated the following masked val for field {str_field_path}: {masked_val}"
         )
+
+        # special case for null masking
         if null_masking:
             return masked_val
+
         if masking_override.length:
             logger.warning(
                 f"Because a length has been specified for field {str_field_path}, we will truncate length "

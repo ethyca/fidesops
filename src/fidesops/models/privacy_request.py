@@ -1,39 +1,31 @@
 # pylint: disable=R0401
+import json
 import logging
 from datetime import datetime
-
-import json
-
+from enum import Enum as EnumType
 from typing import Any, Dict, Optional
 
-from enum import Enum as EnumType
+from sqlalchemy import Column, DateTime
+from sqlalchemy import Enum as EnumColumn
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy import (
-    Column,
-    DateTime,
-    Enum as EnumColumn,
-    ForeignKey,
-    String,
-)
-
 from sqlalchemy.ext.mutable import MutableList
-from sqlalchemy.orm import relationship, Session, backref
+from sqlalchemy.orm import Session, backref, relationship
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.common_exceptions import PrivacyRequestPaused
-from fidesops.db.base_class import (
-    Base,
-    FidesopsBase,
-)
+from fidesops.db.base_class import Base, FidesopsBase
+from fidesops.models.audit_log import AuditLog
 from fidesops.models.client import ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.policy import (
-    Policy,
     ActionType,
+    Policy,
     PolicyPreWebhook,
     WebhookDirection,
     WebhookTypes,
 )
+from fidesops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fidesops.schemas.external_https import (
     SecondPartyRequestFormat,
     SecondPartyResponseFormat,
@@ -42,11 +34,12 @@ from fidesops.schemas.external_https import (
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.util.cache import (
+    FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
     get_cache,
-    get_identity_cache_key,
-    FidesopsRedis,
+    get_drp_request_body_cache_key,
     get_encryption_cache_key,
+    get_identity_cache_key,
     get_masking_secret_cache_key,
 )
 from fidesops.util.oauth_util import generate_jwe
@@ -54,7 +47,7 @@ from fidesops.util.oauth_util import generate_jwe
 logger = logging.getLogger(__name__)
 
 
-class PrivacyRequestStatus(EnumType):
+class PrivacyRequestStatus(str, EnumType):
     """Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"""
 
     pending = "pending"
@@ -131,6 +124,16 @@ class PrivacyRequest(Base):
         primaryjoin="foreign(ExecutionLog.privacy_request_id)==PrivacyRequest.id",
     )
 
+    # passive_deletes="all" prevents audit logs from having their privacy_request_id set to null when
+    # a privacy_request is deleted.  We want to retain for record-keeping.
+    audit_logs = relationship(
+        AuditLog,
+        backref="privacy_request",
+        lazy="dynamic",
+        passive_deletes="all",
+        primaryjoin="foreign(AuditLog.privacy_request_id)==PrivacyRequest.id",
+    )
+
     reviewer = relationship(
         "FidesopsUser", backref=backref("privacy_request", passive_deletes=True)
     )
@@ -166,6 +169,24 @@ class PrivacyRequest(Base):
                     get_identity_cache_key(self.id, key),
                     value,
                 )
+
+    def cache_drp_request_body(self, drp_request_body: DrpPrivacyRequestCreate) -> None:
+        """Sets the identity's values at their specific locations in the Fidesops app cache"""
+        cache: FidesopsRedis = get_cache()
+        drp_request_body_dict: Dict[str, Any] = dict(drp_request_body)
+        for key, value in drp_request_body_dict.items():
+            if value is not None:
+                # handle nested dict/objects
+                if not isinstance(value, (bytes, str, int, float)):
+                    cache.set_with_autoexpire(
+                        get_drp_request_body_cache_key(self.id, key),
+                        repr(value),
+                    )
+                else:
+                    cache.set_with_autoexpire(
+                        get_drp_request_body_cache_key(self.id, key),
+                        value,
+                    )
 
     def cache_encryption(self, encryption_key: Optional[str] = None) -> None:
         """Sets the encryption key in the Fidesops app cache if provided"""

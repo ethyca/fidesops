@@ -8,22 +8,15 @@ import dask
 import pytest
 from bson import ObjectId
 
-from fidesops.graph.config import (
-    FieldAddress,
-    ScalarField,
-    Collection,
-    Dataset,
-)
+from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
 from fidesops.graph.data_type import (
     IntTypeConverter,
-    StringTypeConverter,
     ObjectIdTypeConverter,
+    StringTypeConverter,
 )
-from fidesops.graph.graph import DatasetGraph, Node, Edge
+from fidesops.graph.graph import DatasetGraph, Edge, Node
 from fidesops.graph.traversal import TraversalNode
-from fidesops.models.connectionconfig import (
-    ConnectionConfig,
-)
+from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
@@ -31,15 +24,13 @@ from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.service.connectors import get_connector
 from fidesops.task import graph_task
 from fidesops.task.filter_results import filter_data_categories
-from fidesops.task.graph_task import (
-    get_cached_data_for_erasures,
-)
+from fidesops.task.graph_task import get_cached_data_for_erasures
 
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
 from ..task.traversal_data import (
+    combined_mongo_postgresql_graph,
     integration_db_graph,
     integration_db_mongo_graph,
-    combined_mongo_postgresql_graph,
 )
 
 dask.config.set(scheduler="processes")
@@ -642,7 +633,7 @@ def test_return_all_elements_config_access_request(
     policy,
     integration_mongodb_config,
     integration_postgres_config,
-    integration_mongodb_connector
+    integration_mongodb_connector,
 ):
     """Annotating array entrypoint field with return_all_elements=true means both the entire array is returned from the
     queried data and used to locate data in other collections
@@ -1073,7 +1064,9 @@ class TestRetrievingDataMongo:
                 FieldAddress("mongo_test", "customer_details", "customer_id"),
             )
         }
-        results = connector.retrieve_data(traversal_node, Policy(), privacy_request, {"customer_id": []})
+        results = connector.retrieve_data(
+            traversal_node, Policy(), privacy_request, {"customer_id": []}
+        )
         assert results == []
 
         results = connector.retrieve_data(traversal_node, Policy(), privacy_request, {})
@@ -1084,10 +1077,14 @@ class TestRetrievingDataMongo:
         )
         assert results == []
 
-        results = connector.retrieve_data(traversal_node, Policy(), privacy_request, {"email": [None]})
+        results = connector.retrieve_data(
+            traversal_node, Policy(), privacy_request, {"email": [None]}
+        )
         assert results == []
 
-        results = connector.retrieve_data(traversal_node, Policy(), privacy_request, {"email": None})
+        results = connector.retrieve_data(
+            traversal_node, Policy(), privacy_request, {"email": None}
+        )
         assert results == []
 
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")

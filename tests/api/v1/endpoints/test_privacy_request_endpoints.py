@@ -1,56 +1,56 @@
 import ast
-
 import csv
 import io
-
 import json
 from datetime import datetime
-from dateutil.parser import parse
 from typing import List
 from unittest import mock
 
-from fastapi_pagination import Params
 import pytest
+from dateutil.parser import parse
+from fastapi import status
+from fastapi_pagination import Params
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
 )
+from fidesops.api.v1.scope_registry import (
+    DATASET_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_REVIEW,
+    STORAGE_CREATE_OR_UPDATE,
+)
 from fidesops.api.v1.urn_registry import (
-    PRIVACY_REQUESTS,
-    V1_URL_PREFIX,
-    REQUEST_PREVIEW,
-    PRIVACY_REQUEST_RESUME,
     DATASETS,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
-)
-from fidesops.api.v1.scope_registry import (
-    STORAGE_CREATE_OR_UPDATE,
-    PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_CALLBACK_RESUME,
-    DATASET_CREATE_OR_UPDATE,
-    PRIVACY_REQUEST_REVIEW,
+    PRIVACY_REQUEST_RESUME,
+    PRIVACY_REQUESTS,
+    REQUEST_PREVIEW,
+    V1_URL_PREFIX,
 )
 from fidesops.core.config import config
+from fidesops.models.audit_log import AuditLog
 from fidesops.models.client import ClientDetail
+from fidesops.models.policy import ActionType
 from fidesops.models.privacy_request import (
-    PrivacyRequest,
     ExecutionLog,
     ExecutionLogStatus,
+    PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fidesops.models.policy import ActionType
 from fidesops.schemas.dataset import DryRunDatasetResponse
 from fidesops.schemas.jwt import (
-    JWE_PAYLOAD_SCOPES,
-    JWE_PAYLOAD_CLIENT_ID,
     JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
 )
 from fidesops.schemas.masking.masking_secrets import SecretType
 from fidesops.util.cache import (
-    get_identity_cache_key,
     get_encryption_cache_key,
+    get_identity_cache_key,
     get_masking_secret_cache_key,
 )
 from fidesops.util.oauth_util import generate_jwe
@@ -394,7 +394,8 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?completed_lt=2021-01-01&errored_gt=2021-01-02",
+            url
+            + f"?completed_lt=2021-01-01T00:00:00.000Z&errored_gt=2021-01-02T00:00:00.000Z",
             headers=auth_header,
         )
         assert 400 == response.status_code
@@ -414,7 +415,7 @@ class TestGetPrivacyRequests:
         privacy_request.save(db=db)
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?id={privacy_request.id}", headers=auth_header
+            url + f"?request_id={privacy_request.id}", headers=auth_header
         )
         assert 200 == response.status_code
 
@@ -434,14 +435,17 @@ class TestGetPrivacyRequests:
         mongo_execution_log,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        for date_format in ["%Y-%m-%dT00:00:00.000Z", "%Y-%m-%d"]:
+        for date_format in [
+            "%Y-%m-%dT00:00:00.000Z",
+            # "%Y-%m-%d",
+        ]:
             date_input = privacy_request.created_at.strftime(date_format)
             response = api_client.get(
                 url + f"?created_gt={date_input}",
                 headers=auth_header,
             )
 
-        assert 200 == response.status_code
+            assert 200 == response.status_code
 
     def test_get_privacy_requests_by_id(
         self,
@@ -454,7 +458,7 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?id={privacy_request.id}", headers=auth_header
+            url + f"?request_id={privacy_request.id}", headers=auth_header
         )
         assert 200 == response.status_code
 
@@ -474,6 +478,7 @@ class TestGetPrivacyRequests:
                     "reviewed_by": None,
                     "reviewer": None,
                     "policy": {
+                        "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                     },
@@ -498,7 +503,7 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?id={privacy_request.id[:5]}", headers=auth_header
+            url + f"?request_id={privacy_request.id[:5]}", headers=auth_header
         )
         assert 200 == response.status_code
 
@@ -518,6 +523,7 @@ class TestGetPrivacyRequests:
                     "reviewed_by": None,
                     "reviewer": None,
                     "policy": {
+                        "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                     },
@@ -594,6 +600,34 @@ class TestGetPrivacyRequests:
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == failed_privacy_request.id
 
+    def test_filter_privacy_requests_by_internal_id(
+        self,
+        db,
+        api_client,
+        url,
+        generate_auth_header,
+        privacy_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        new_request_id = "test_internal_id_1"
+        response = api_client.get(
+            url + f"?request_id={new_request_id}", headers=auth_header
+        )
+        assert response.status_code == status.HTTP_200_OK
+        resp = response.json()
+        assert len(resp["items"]) == 0
+
+        privacy_request.id = new_request_id
+        privacy_request.save(db)
+
+        response = api_client.get(
+            url + f"?request_id={new_request_id}", headers=auth_header
+        )
+        assert response.status_code == status.HTTP_200_OK
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == privacy_request.id
+
     def test_filter_privacy_requests_by_external_id(
         self,
         db,
@@ -633,18 +667,45 @@ class TestGetPrivacyRequests:
         url,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url + f"?created_lt=2019-01-01", headers=auth_header)
+        response = api_client.get(
+            url + f"?created_lt=2019-01-01T00:00:00.000Z", headers=auth_header
+        )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 0
 
-        response = api_client.get(url + f"?created_gt=2019-01-01", headers=auth_header)
+        response = api_client.get(
+            url + f"?created_gt=2019-01-01T00:00:00.000Z", headers=auth_header
+        )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 3
         assert resp["items"][0]["id"] == failed_privacy_request.id
         assert resp["items"][1]["id"] == succeeded_privacy_request.id
         assert resp["items"][2]["id"] == privacy_request.id
+
+    def test_filter_privacy_requests_by_conflicting_date_fields(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_request,
+        succeeded_privacy_request,
+        failed_privacy_request,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        # Search for privacy requests after 2019, but before 2018. This should return an error.
+        start = "2019-01-01"
+        end = "2018-01-01"
+        response = api_client.get(
+            url + f"?created_gt={start}T00:00:00.000Z&created_lt={end}T00:00:00.000Z",
+            headers=auth_header,
+        )
+        assert 400 == response.status_code
+        assert (
+            response.json()["detail"]
+            == f"Value specified for created_lt: {end} 00:00:00+00:00 must be after created_gt: {start} 00:00:00+00:00."
+        )
 
     def test_filter_privacy_requests_by_started(
         self,
@@ -656,14 +717,18 @@ class TestGetPrivacyRequests:
         url,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url + f"?started_lt=2021-05-01", headers=auth_header)
+        response = api_client.get(
+            url + f"?started_lt=2021-05-01T00:00:00.000Z", headers=auth_header
+        )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 2
         assert resp["items"][0]["id"] == failed_privacy_request.id
         assert resp["items"][1]["id"] == privacy_request.id
 
-        response = api_client.get(url + f"?started_gt=2021-05-01", headers=auth_header)
+        response = api_client.get(
+            url + f"?started_gt=2021-05-01T00:00:00.000Z", headers=auth_header
+        )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 1
@@ -680,14 +745,14 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?completed_lt=2021-10-01", headers=auth_header
+            url + f"?completed_lt=2021-10-01T00:00:00.000Z", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 0
 
         response = api_client.get(
-            url + f"?completed_gt=2021-10-01", headers=auth_header
+            url + f"?completed_gt=2021-10-01T00:00:00.000Z", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -704,12 +769,16 @@ class TestGetPrivacyRequests:
         url,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url + f"?errored_lt=2021-01-01", headers=auth_header)
+        response = api_client.get(
+            url + f"?errored_lt=2021-01-01T00:00:00.000Z", headers=auth_header
+        )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 0
 
-        response = api_client.get(url + f"?errored_gt=2021-01-01", headers=auth_header)
+        response = api_client.get(
+            url + f"?errored_gt=2021-01-01T00:00:00.000Z", headers=auth_header
+        )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 1
@@ -751,6 +820,7 @@ class TestGetPrivacyRequests:
                     "reviewed_by": None,
                     "reviewer": None,
                     "policy": {
+                        "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                     },
@@ -901,6 +971,7 @@ class TestGetPrivacyRequests:
         assert first_row["Request status"] == "approved"
         assert first_row["Reviewer"] == user.id
         assert parse(first_row["Time approved/denied"], ignoretz=True) == reviewed_at
+        assert first_row["Denial reason"] == ""
 
 
 class TestGetExecutionLogs:
@@ -1308,7 +1379,7 @@ class TestDenyPrivacyRequest:
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
-    def test_deny_privacy_request(
+    def test_deny_privacy_request_without_denial_reason(
         self,
         submit_mock,
         db,
@@ -1339,6 +1410,61 @@ class TestDenyPrivacyRequest:
         assert response_body["succeeded"][0]["id"] == privacy_request.id
         assert response_body["succeeded"][0]["reviewed_at"] is not None
         assert response_body["succeeded"][0]["reviewed_by"] == user.id
+        denial_audit_log: AuditLog = AuditLog.filter(
+            db=db,
+            conditions=(
+                (AuditLog.privacy_request_id == privacy_request.id)
+                & (AuditLog.user_id == user.id)
+            ),
+        ).first()
+
+        assert denial_audit_log.message is None
+
+        assert not submit_mock.called  # Shouldn't run! Privacy request was denied
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
+    def test_deny_privacy_request_with_denial_reason(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request,
+    ):
+        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.save(db=db)
+
+        payload = {
+            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        denial_reason = "Your request was denied because reasons"
+        body = {"request_ids": [privacy_request.id], "reason": denial_reason}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+        assert response_body["succeeded"][0]["status"] == "denied"
+        assert response_body["succeeded"][0]["id"] == privacy_request.id
+        assert response_body["succeeded"][0]["reviewed_at"] is not None
+        assert response_body["succeeded"][0]["reviewed_by"] == user.id
+        denial_audit_log: AuditLog = AuditLog.filter(
+            db=db,
+            conditions=(
+                (AuditLog.privacy_request_id == privacy_request.id)
+                & (AuditLog.user_id == user.id)
+            ),
+        ).first()
+
+        assert denial_audit_log.message == denial_reason
 
         assert not submit_mock.called  # Shouldn't run! Privacy request was denied
 
@@ -1479,6 +1605,7 @@ class TestResumePrivacyRequest:
             "reviewed_by": None,
             "reviewer": None,
             "policy": {
+                "drp_action": None,
                 "key": privacy_request.policy.key,
                 "name": privacy_request.policy.name,
             },

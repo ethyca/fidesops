@@ -43,6 +43,9 @@ reset-db:
 server: compose-build
 	@docker-compose up
 
+server-no-db: compose-build
+	@docker-compose -f docker-compose.no-db.yml up
+
 server-shell: compose-build
 	@docker-compose run $(IMAGE_NAME) /bin/bash
 
@@ -77,13 +80,14 @@ docker-push:
 # CI
 ####################
 
-check-all: black-ci pylint mypy check-migrations pytest pytest-integration
+check-all: isort-ci black-ci pylint mypy check-migrations pytest pytest-integration
 
 black-ci: compose-build
 	@echo "Running black checks..."
 	@docker-compose run $(IMAGE_NAME) \
 		black --check src/ \
 		|| (echo "Error running 'black --check', please run 'make black' to format your code!"; exit 1)
+	@make teardown
 
 check-migrations: compose-build
 	@echo "Check if there are unrun migrations..."
@@ -92,26 +96,36 @@ check-migrations: compose-build
 	from fidesops.db.database import check_missing_migrations; \
 	from fidesops.core.config import config; \
 	check_missing_migrations(config.database.SQLALCHEMY_DATABASE_URI);"
+	@make teardown
+
+isort-ci:
+	@echo "Running isort checks..."
+	@docker-compose run $(IMAGE_NAME) \
+		isort src tests --check-only
 
 pylint: compose-build
 	@echo "Running pylint checks..."
 	@docker-compose run $(IMAGE_NAME) \
 		pylint src/
+	@make teardown
 
 mypy: compose-build
 	@echo "Running mypy checks..."
 	@docker-compose run $(IMAGE_NAME) \
-		mypy --ignore-missing-imports src/
+		mypy src/
+	@make teardown
 
 pytest: compose-build
 	@echo "Running pytest unit tests..."
 	@docker-compose run $(IMAGE_NAME) \
 		pytest $(pytestpath) -m "not integration and not integration_external and not integration_saas"
+	@make teardown
 
 pytest-integration:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --run_tests --datastores $(datastores)
+	@make teardown
 
 # These tests connect to external third-party test databases
 pytest-integration-external: compose-build
@@ -121,6 +135,7 @@ pytest-integration-external: compose-build
 		-e SNOWFLAKE_TEST_URI -e REDSHIFT_TEST_DB_SCHEMA \
 		-e BIGQUERY_KEYFILE_CREDS -e BIGQUERY_DATASET \
 		$(IMAGE_NAME) pytest $(pytestpath) -m "integration_external"
+	@make teardown
 
 pytest-saas: compose-build
 	@echo "Running integration tests for SaaS connectors"
@@ -131,6 +146,7 @@ pytest-saas: compose-build
 		-e SEGMENT_DOMAIN -e SEGMENT_PERSONAS_DOMAIN -e SEGMENT_WORKSPACE -e SEGMENT_ACCESS_TOKEN -e SEGMENT_API_DOMAIN -e SEGMENT_NAMESPACE_ID -e SEGMENT_ACCESS_SECRET -e SEGMENT_USER_TOKEN -e SEGMENT_IDENTITY_EMAIL \
 		-e STRIPE_HOST -e STRIPE_API_KEY -e STRIPE_PAYMENT_TYPES -e STRIPE_ITEMS_PER_PAGE -e STRIPE_IDENTITY_EMAIL \
 		$(IMAGE_NAME) pytest $(pytestpath) -m "integration_saas"
+	@make teardown
 
 
 ####################
@@ -139,9 +155,10 @@ pytest-saas: compose-build
 
 .PHONY: black
 black: compose-build
-	@echo "Running black formatting against the src/ directory..."
-	@docker-compose run $(IMAGE_NAME) \
-	black src/
+	@echo "Running black formatting against the src/ and tests/ directories..."
+	@docker-compose run $(IMAGE_NAME) black tests/ && black src/
+	@make teardown
+	@echo "Fin"
 
 .PHONY: clean
 clean:
@@ -154,6 +171,12 @@ compose-build:
 	@echo "Tearing down the docker compose images, network, etc..."
 	@docker-compose down --remove-orphans
 	@docker-compose build --build-arg REQUIRE_MSSQL="true"
+
+.PHONY: isort
+isort:
+	@echo "Running isort checks..."
+	@docker-compose run $(IMAGE_NAME) \
+		isort src tests
 
 .PHONY: teardown
 teardown:
@@ -173,10 +196,15 @@ docs-serve: docs-build
 
 
 ####################
-# User Creation
+# Test Data Creation
 ####################
 
 user:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --datastores postgres --run_create_superuser
+
+test-data:
+	@virtualenv -p python3 fidesops_test_dispatch; \
+		source fidesops_test_dispatch/bin/activate; \
+		python run_infrastructure.py --datastores postgres --run_create_test_data
