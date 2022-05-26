@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import logging
 import os
 from numbers import Number
-from typing import Any, Mapping, Tuple, Union
+from typing import Any, Mapping, Union
 
 MASKED = "MASKED"
 
@@ -19,8 +21,7 @@ def get_fides_log_record_factory() -> Any:
         fn: str,
         lno: int,
         msg: str,
-        # DEFER: Update this to use tuple (lowercase "t") when Python 3.9 is required as a minimum version (see issue link: https://github.com/ethyca/fidesops/issues/568.)
-        args: Union[Tuple[Any, ...], Mapping[str, Any]],
+        args: Union[tuple[Any, ...], Mapping[str, Any]],
         exc_info: Any,
         func: str = None,
         sinfo: str = None,
