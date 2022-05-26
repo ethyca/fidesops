@@ -1,4 +1,4 @@
-import { Divider, Flex, Heading, Stack, Text } from '@fidesui/react';
+import { Divider, Flex, Heading, Text } from '@fidesui/react';
 import React from 'react';
 
 import PII from '../common/PII';
