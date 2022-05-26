@@ -108,7 +108,9 @@ class PackageSettings(FidesSettings):
         """
 
         if isinstance(v, str) and os.path.isdir(v):
-            return v if os.path.basename(v) == "src" else os.path.join(v, "src/")
+            return (
+                v if os.path.basename(v) == "fidesops" else os.path.join(v, "fidesops/")
+            )
 
         current_dir = os.path.dirname(os.path.abspath(__file__))
         return os.path.normpath(os.path.join(current_dir, "../../"))
@@ -193,7 +195,7 @@ class FidesopsConfig(FidesSettings):
     """Configuration variables for the FastAPI project"""
 
     database: DatabaseSettings
-    package: PackageSettings
+    package = PackageSettings()
     redis: RedisSettings
     security: SecuritySettings
     execution: ExecutionSettings

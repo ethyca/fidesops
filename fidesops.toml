@@ -6,8 +6,6 @@ DB="app"
 TEST_DB="test"
 ENABLED=true
 
-[package]
-
 [redis]
 HOST="redis"
 PASSWORD="testpassword"
