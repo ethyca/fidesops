@@ -299,7 +299,7 @@ class PrivacyRequest(Base):
     def cache_manual_erasure_count(
         self, collection: CollectionAddress, count: int
     ) -> None:
-        """Cache the number of rows manually updated for a given collection."""
+        """Cache the number of rows manually masked for a given collection."""
         cache: FidesopsRedis = get_cache()
         cache.set_encoded_object(
             f"MANUAL_MASK__{self.id}__{collection.value}",
@@ -307,14 +307,16 @@ class PrivacyRequest(Base):
         )
 
     def get_manual_erasure_count(self, collection: CollectionAddress) -> Optional[int]:
-        """Retrieve number of rows manually masked for this collection.
+        """Retrieve number of rows manually masked for this collection from the cache.
 
         The count isn't actually used, we mainly care that data exists for this
         collection at all. If there's no data, we return None.
         """
         cache: FidesopsRedis = get_cache()
         prefix = f"MANUAL_MASK__{self.id}__{collection.value}"
-        value_dict = cache.get_encoded_objects_by_prefix(prefix)
+        value_dict: Optional[Dict[str, int]] = cache.get_encoded_objects_by_prefix(
+            prefix
+        )
         return list(value_dict.values())[0] if value_dict else None
 
     def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:

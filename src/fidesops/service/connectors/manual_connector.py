@@ -39,7 +39,7 @@ class ManualConnector(BaseConnector[None]):
             node.address
         )
 
-        if cached_results is not None:  # None check intentional
+        if cached_results is not None:  # None comparison intentional
             privacy_request.cache_paused_step_and_collection()  # Caches paused location as None
             return cached_results
 
@@ -64,9 +64,7 @@ class ManualConnector(BaseConnector[None]):
             node.address
         )
 
-        if (
-            manual_cached_count is not None
-        ):  # Checking for None because it is possible the count is 0
+        if manual_cached_count is not None:  # None comparison intentional
             privacy_request.cache_paused_step_and_collection()  # Caches paused location as None
             return manual_cached_count
 

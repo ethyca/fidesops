@@ -12,5 +12,5 @@ class TestTaskResources:
 
         assert resources.get_all_cached_erasures() == {
             "manual_example:filing-cabinet": 2,
-            "manual_example:storage-unit": 3
+            "manual_example:storage-unit": 3,
         }

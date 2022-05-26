@@ -104,6 +104,8 @@ class ExecutionLogDetailResponse(ExecutionLogResponse):
 
 
 class RowCountRequest(BaseSchema):
+    """Schema for a user to manually confirm data erased for a collection"""
+
     row_count: int
 
 

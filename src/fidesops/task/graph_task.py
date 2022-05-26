@@ -481,7 +481,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             retrieved_data,
         )
         self.log_end(ActionType.erasure)
-        self.resources.cache_erasure(f"{self.key}", output)
+        self.resources.cache_erasure(
+            f"{self.key}", output
+        )  # Cache that the erasure was performed in case we need to restart
         return output
 
 
@@ -522,10 +524,10 @@ def update_mapping_from_cache(
 
 
 def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, Any]]]:
-    """Return a function that returns the seed value to kick off the dask function chain.
+    """Return a function for collections with no upstream dependencies, that just start
+    with seed data.
 
-    The first traversal_node in the dask function chain is just a function that when called returns
-    the graph seed value."""
+    This is used for root nodes or previously-visited nodes on restart."""
 
     def g() -> List[Dict[str, Any]]:
         return seed
@@ -594,8 +596,8 @@ def update_erasure_mapping_from_cache(
     resources: TaskResources,
     start_fn: Callable,
 ) -> None:
-    """On pause or restart from failure, update the dsk graph to not attempt erasures of collections we've already visited.
-    Instead, just return the previous count of rows affected.
+    """On pause or restart from failure, update the dsk graph to skip running erasures on collections
+    we've already visited. Instead, just return the previous count of rows affected.
 
     If there's no cached data, the dsk dictionary won't change.
     """

@@ -385,7 +385,12 @@ class TestCacheManualInput:
         manual_data = [{"id": 1, "name": "Jane"}, {"id": 2, "name": "Hank"}]
 
         privacy_request.cache_manual_input(paused_location, manual_data)
-        assert privacy_request.get_manual_input(paused_location,) == manual_data
+        assert (
+            privacy_request.get_manual_input(
+                paused_location,
+            )
+            == manual_data
+        )
 
     def test_cache_empty_manual_input(self, privacy_request):
         manual_data = []
@@ -408,7 +413,6 @@ class TestCacheManualInput:
 
 
 class TestCacheManualErasureCount:
-
     def test_cache_manual_erasure_count(self, privacy_request):
         privacy_request.cache_manual_erasure_count(paused_location, 5)
 
