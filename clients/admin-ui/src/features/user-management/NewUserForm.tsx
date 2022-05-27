@@ -138,7 +138,7 @@ const UserForm: NextPage = () => {
         <chakra.form
           onSubmit={handleSubmit}
           maxW={['xs', 'xs', '100%']}
-          width='100%'
+          width="100%"
         >
           <Stack mb={8} spacing={6}>
             <FormControl
@@ -224,7 +224,7 @@ const UserForm: NextPage = () => {
             <Stack spacing={[1, 5]} direction='column'>
               {userPrivilegesArray.map((policy) => (
                 <Checkbox
-                  colorScheme='purple'
+                  colorScheme="purple"
                   defaultChecked={policy.scope === 'privacy-request:read'}
                   key={`${policy.privilege}`}
                   onChange={handleChange}
@@ -252,11 +252,11 @@ const UserForm: NextPage = () => {
             </Button>
           </NextLink>
           <Button
-            type='submit'
-            bg='primary.800'
+            type="submit"
+            bg="primary.800"
             _hover={{ bg: 'primary.400' }}
             _active={{ bg: 'primary.500' }}
-            colorScheme='primary'
+            colorScheme="primary"
             // disabled={!(isValid && dirty)}
             size='sm'
           >

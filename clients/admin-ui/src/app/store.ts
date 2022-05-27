@@ -1,12 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query/react';
 
+import { STORED_CREDENTIALS_KEY } from '../constants';
 import {
   authApi,
   AuthState,
   credentialStorage,
   reducer as authReducer,
-  STORED_CREDENTIALS_KEY,
 } from '../features/auth';
 import {
   privacyRequestApi,
