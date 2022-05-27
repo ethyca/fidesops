@@ -7,11 +7,10 @@ import {
   FormErrorMessage,
   FormLabel,
   Heading,
+  Image,
   Input,
   Stack,
-  useToast,
-  Image
-} from '@fidesui/react';
+  useToast} from '@fidesui/react';
 import { useFormik } from 'formik';
 import type { NextPage } from 'next';
 import Head from 'next/head';

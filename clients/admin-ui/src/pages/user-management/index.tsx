@@ -1,12 +1,12 @@
 import { Box, Heading } from '@fidesui/react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { getSession } from 'next-auth/react';
+// import { getSession } from 'next-auth/react';
 import React from 'react';
 
-import { wrapper } from '../../app/store';
+// import { wrapper } from '../../app/store';
 import NavBar from '../../features/common/NavBar';
-import { assignToken } from '../../features/user/user.slice';
+// import { assignToken } from '../../features/user/user.slice';
 import UserManagementTable from '../../features/user-management/UserManagementTable';
 import UserManagementTableActions from '../../features/user-management/UserManagementTableActions';
 
@@ -34,20 +34,20 @@ const UserManagement: NextPage = () => (
 
 export default UserManagement;
 
-export const getServerSideProps = wrapper.getServerSideProps(
-  (store) => async (context) => {
-    const session = await getSession(context);
+// export const getServerSideProps = wrapper.getServerSideProps(
+//   (store) => async (context) => {
+//     const session = await getSession(context);
 
-    if (session && typeof session.accessToken !== 'undefined') {
-      await store.dispatch(assignToken(session.accessToken));
-      return { props: { session } };
-    }
+//     if (session && typeof session.accessToken !== 'undefined') {
+//       await store.dispatch(assignToken(session.accessToken));
+//       return { props: { session } };
+//     }
 
-    return {
-      redirect: {
-        destination: '/login',
-        permanent: false,
-      },
-    };
-  }
-);
+//     return {
+//       redirect: {
+//         destination: '/login',
+//         permanent: false,
+//       },
+//     };
+//   }
+// );

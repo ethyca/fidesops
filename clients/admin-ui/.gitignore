@@ -106,3 +106,6 @@ dist
 
 # msw web worker script
 public/mockServiceWorker.js
+
+
+out/

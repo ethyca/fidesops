@@ -1,6 +1,7 @@
 import {
   Button,
   Flex,
+  Image,
   Link,
   Menu,
   MenuButton,
@@ -8,9 +9,7 @@ import {
   MenuItem,
   MenuList,
   Stack,
-  Text,
-  Image
-} from '@fidesui/react';
+  Text} from '@fidesui/react';
 import NextLink from 'next/link';
 import { signOut } from 'next-auth/react';
 import React from 'react';

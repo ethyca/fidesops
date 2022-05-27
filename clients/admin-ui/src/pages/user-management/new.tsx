@@ -6,12 +6,12 @@ import {
   Heading
 } from '@fidesui/react';
 import type { NextPage } from 'next';
-import { getSession } from 'next-auth/react';
+// import { getSession } from 'next-auth/react';
 import React from 'react';
 
-import { wrapper } from '../../app/store';
+// import { wrapper } from '../../app/store';
 import NavBar from '../../features/common/NavBar';
-import { assignToken, setUser } from '../../features/user/user.slice';
+// import { assignToken, setUser } from '../../features/user/user.slice';
 import NewUserForm from '../../features/user-management/NewUserForm';
 
 const CreateNewUser: NextPage = () => (
@@ -43,21 +43,21 @@ const CreateNewUser: NextPage = () => (
 
 export default CreateNewUser;
 
-export const getServerSideProps = wrapper.getServerSideProps(
-  (store) => async (context) => {
-    const session = await getSession(context);
+// export const getServerSideProps = wrapper.getServerSideProps(
+//   (store) => async (context) => {
+//     const session = await getSession(context);
 
-    if (session && typeof session.accessToken !== 'undefined') {
-      await store.dispatch(assignToken(session.accessToken));
-      await store.dispatch(setUser(session.user));
-      return { props: { session } };
-    }
+//     if (session && typeof session.accessToken !== 'undefined') {
+//       await store.dispatch(assignToken(session.accessToken));
+//       await store.dispatch(setUser(session.user));
+//       return { props: { session } };
+//     }
 
-    return {
-      redirect: {
-        destination: '/login',
-        permanent: false,
-      },
-    };
-  }
-);
+//     return {
+//       redirect: {
+//         destination: '/login',
+//         permanent: false,
+//       },
+//     };
+//   }
+// );

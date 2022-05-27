@@ -1,13 +1,13 @@
 import { Box, Heading } from '@fidesui/react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { getSession } from 'next-auth/react';
 
-import { wrapper } from '../app/store';
+// import { getSession } from 'next-auth/react';
+// import { wrapper } from '../app/store';
 import NavBar from '../features/common/NavBar';
 import RequestFilters from '../features/privacy-requests/RequestFilters';
 import RequestTable from '../features/privacy-requests/RequestTable';
-import { assignToken, setUser } from '../features/user/user.slice';
+// import { assignToken, setUser } from '../features/user/user.slice';
 
 const Home: NextPage = () => (
   <div>
@@ -31,23 +31,25 @@ const Home: NextPage = () => (
   </div>
 );
 
-export const getServerSideProps = wrapper.getServerSideProps(
-  (store) => async (context) => {
-    const session = await getSession(context);
-
-    if (session && typeof session.accessToken !== 'undefined') {
-      await store.dispatch(assignToken(session.accessToken));
-      await store.dispatch(setUser(session.user));
-      return { props: {} };
-    }
-
-    return {
-      redirect: {
-        destination: '/login',
-        permanent: false,
-      },
-    };
-  }
-);
-
 export default Home;
+
+// export const getServerSideProps = wrapper.getServerSideProps(
+//   (store) => async (context) => {
+//     const session = await getSession(context);
+
+//     if (session && typeof session.accessToken !== 'undefined') {
+//       await store.dispatch(assignToken(session.accessToken));
+//       await store.dispatch(setUser(session.user));
+//       return { props: {} };
+//     }
+
+//     return {
+//       redirect: {
+//         destination: '/login',
+//         permanent: false,
+//       },
+//     };
+//   }
+// );
+
+// export default Home;

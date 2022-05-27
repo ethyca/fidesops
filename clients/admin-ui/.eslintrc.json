@@ -22,6 +22,7 @@
     ],
     "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
     "react/jsx-props-no-spreading": [0],
+    "no-restricted-imports": [0],
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error"
   }

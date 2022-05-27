@@ -1,3 +1,15 @@
+FROM node:16 as frontend
+
+WORKDIR /fides/clients/admin-ui
+
+# install node modules
+COPY clients/admin-ui/ .
+RUN npm install
+
+# Build the frontend static files
+RUN npm run export
+
+
 FROM --platform=linux/amd64 python:3.9.6-slim-buster
 
 ARG MSSQL_REQUIRED
@@ -38,9 +50,19 @@ RUN pip install -U pip  \
 
 RUN if [ "$MSSQL_REQUIRED" = "true" ] ; then pip install -U pip -r mssql-requirements.txt ; fi
 
+
+RUN pwd
+# Make a static files directory
+RUN mkdir -p src/fidesops/build/static
+# Copy frontend build over
+COPY --from=frontend clients/admin-ui/out/ src/fidesops/build/static/
+
 # Copy in the application files and install it locally
 COPY . /fidesops
 WORKDIR /fidesops
 RUN pip install -e .
+
+
+
 
 CMD [ "fidesops", "webserver" ]
