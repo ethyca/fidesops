@@ -174,6 +174,7 @@ class RootUserSettings(FidesSettings):
     """Configuration settings for Analytics variables."""
 
     ANALYTICS_OPT_OUT: Optional[bool]
+    # analytics id should be set to "internal" when in development / testing
     ANALYTICS_ID: Optional[str]
 
 
@@ -322,17 +323,18 @@ def update_config_file(
     """
     try:
         config_path: str = load_file("fidesops.toml")
-    except FileNotFoundError as e:
+        current_config: MutableMapping[str, Any] = load_toml("fidesops.toml")
+    except (FileNotFoundError, ValidationError) as e:
         logger.warning("fidesops.toml could not be loaded: %s", NotPii(e))
 
     for key, value in updates.items():
-        if key in config:
-            config[key].update(value)
+        if key in current_config:
+            current_config[key].update(value)
         else:
-            config.update({key: value})
+            current_config.update({key: value})
 
     with open(config_path, "w") as config_file:
-        toml.dump(config, config_file)
+        toml.dump(current_config, config_file)
 
     logger.info(f"Updated {config_path}:")
 
