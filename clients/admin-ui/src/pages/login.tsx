@@ -14,12 +14,12 @@ import {
 import { useFormik } from 'formik';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { login, selectToken, useLoginMutation } from '../features/auth';
+import Image from '../features/common/Image';
 
 const useLogin = () => {
   const [loginRequest, { isLoading }] = useLoginMutation();

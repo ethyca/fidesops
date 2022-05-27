@@ -17,7 +17,9 @@ import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import React from 'react';
 
-import { User, userPrivilegesArray } from './types';
+import { USER_PRIVILEGES } from '../../constants';
+import { selectUser } from '../auth';
+import { User } from './types';
 import UpdatePasswordModal from './UpdatePasswordModal';
 import {
   useEditUserMutation,
@@ -215,7 +217,7 @@ const EditUserForm: React.FC = () => {
             <Divider mb={2} mt={2} />
 
             <Stack spacing={[1, 5]} direction="column">
-              {userPrivilegesArray.map((policy) => {
+              {USER_PRIVILEGES.map((policy) => {
                 const isChecked = values.scopes
                   ? values.scopes.indexOf(policy.scope) >= 0
                   : false;

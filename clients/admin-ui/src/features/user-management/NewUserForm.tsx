@@ -18,8 +18,8 @@ import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import React from 'react';
 
+import { USER_PRIVILEGES } from '../../constants';
 import { isErrorWithDetail, isErrorWithDetailArray } from '../common/helpers';
-import { userPrivilegesArray } from './types';
 import {
   useCreateUserMutation,
   useUpdateUserPermissionsMutation,
@@ -221,8 +221,8 @@ const UserForm: NextPage = () => {
             <Text>Select privileges to assign to this user</Text>
             <Divider mb={2} mt={2} />
 
-            <Stack spacing={[1, 5]} direction='column'>
-              {userPrivilegesArray.map((policy) => (
+            <Stack spacing={[1, 5]} direction="column">
+              {USER_PRIVILEGES.map((policy) => (
                 <Checkbox
                   colorScheme="purple"
                   defaultChecked={policy.scope === 'privacy-request:read'}

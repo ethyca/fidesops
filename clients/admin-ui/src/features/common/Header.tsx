@@ -10,13 +10,13 @@ import {
   Stack,
   Text,
 } from '@fidesui/react';
-import Image from 'next/image';
 import NextLink from 'next/link';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { logout, selectUser } from '../auth';
 import { UserIcon } from './Icon';
+import Image from './Image';
 
 const useHeader = () => {
   const dispatch = useDispatch();
