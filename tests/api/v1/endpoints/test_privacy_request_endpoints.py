@@ -78,6 +78,7 @@ class TestCreatePrivacyRequest:
         api_client: TestClient,
         policy,
     ):
+        assert True == False
         data = [
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
