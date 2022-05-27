@@ -147,9 +147,15 @@ class SecuritySettings(FidesSettings):
     def validate_encryption_key_length(
         cls, v: Optional[str], values: Dict[str, str]
     ) -> Optional[str]:
-        """Validate the encryption key is exactly 32 bytes"""
-        if v is None or len(v.encode(values.get("ENCODING", "UTF-8"))) != 32:
-            raise ValueError("APP_ENCRYPTION_KEY value must be exactly 32 bytes long")
+        """Validate the encryption key is exactly 32 characters"""
+        if v is None:
+            raise ValueError(f"APP_ENCRYPTION_KEY value not provided!")
+        encryption_key = v.encode(values.get("ENCODING", "UTF-8"))
+        if len(encryption_key) != 32:
+            raise ValueError(
+                f"APP_ENCRYPTION_KEY value must be exactly 32 characters, "
+                f"received {len(encryption_key)} characters!"
+            )
         return v
 
     CORS_ORIGINS: List[AnyHttpUrl] = []
