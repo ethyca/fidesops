@@ -730,10 +730,10 @@ def restart_privacy_request_from_failure(
     failed_step: Optional[PausedStep]
     failed_collection: Optional[CollectionAddress]
     failed_step, failed_collection = privacy_request.get_failed_step_and_collection()
-    if not failed_collection:
+    if not failed_step or not failed_collection:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed collection.",
+            detail=f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection.",
         )
 
     logger.info(

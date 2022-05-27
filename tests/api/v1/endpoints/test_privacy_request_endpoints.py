@@ -31,6 +31,7 @@ from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUESTS,
+    PRIVACY_REQUEST_RETRY,
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
 )
@@ -1919,3 +1920,70 @@ class TestResumeErasureRequestWithManualConfirmation:
 
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+
+class TestRestartFromFailure:
+    @pytest.fixture(scope="function")
+    def url(self, db, privacy_request):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_RETRY.format(
+            privacy_request_id=privacy_request.id
+        )
+
+    def test_restart_from_failure_not_authenticated(self, api_client, url):
+        response = api_client.post(url, headers={})
+        assert response.status_code == 401
+
+    def test_restart_from_failure_wrong_scope(
+        self, api_client, url, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_restart_from_failure_not_errored(
+        self, api_client, url, generate_auth_header, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = in_processing."
+        )
+
+    def test_restart_from_failure_no_stopped_collection(
+        self, api_client, url, generate_auth_header, db, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request.status = PrivacyRequestStatus.error
+        privacy_request.save(db)
+
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection."
+        )
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
+    def test_restart_from_failure(
+        self, submit_mock, api_client, url, generate_auth_header, db, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request.status = PrivacyRequestStatus.error
+        privacy_request.save(db)
+        privacy_request.cache_failed_step_and_collection(
+            ActionType.access, CollectionAddress("test_dataset", "test_collection")
+        )
+
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 200
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+        submit_mock.assert_called_with(from_step=ActionType.access)
