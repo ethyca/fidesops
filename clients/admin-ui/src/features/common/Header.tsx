@@ -9,8 +9,8 @@ import {
   MenuList,
   Stack,
   Text,
+  Image
 } from '@fidesui/react';
-import Image from 'next/image';
 import NextLink from 'next/link';
 import { signOut } from 'next-auth/react';
 import React from 'react';
@@ -34,7 +34,7 @@ const Header: React.FC<HeaderProps> = ({ username }) => (
       <NextLink href="/" passHref>
         {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
         <Link display="flex">
-          <Image src="/logo.svg" width={83} height={26} alt="FidesOps Logo" />
+          <Image src="/logo.svg" width='83px' height='26px' alt="FidesOps Logo" />
         </Link>
       </NextLink>
       <Flex alignItems="center">

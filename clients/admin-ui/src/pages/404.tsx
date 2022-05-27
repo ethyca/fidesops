@@ -1,6 +1,5 @@
-import { Box, Button, Heading, Stack, Text } from '@fidesui/react';
+import { Box, Button, Heading, Stack, Text, Image } from '@fidesui/react';
 import Head from 'next/head';
-import Image from 'next/image';
 import NextLink from 'next/link';
 
 const Custom404 = () => (
@@ -55,7 +54,7 @@ const Custom404 = () => (
             <Box display={[null, null, 'none']}>
               <Image
                 src="/logo.svg"
-                alt="FidesUI logo"
+                alt="FidesOps logo"
                 width="124px"
                 height="38px"
               />
@@ -65,7 +64,7 @@ const Custom404 = () => (
         <Box display={['none', 'none', 'inherit']}>
           <Image
             src="/logo.svg"
-            alt="FidesUI logo"
+            alt="FidesOps logo"
             width="124px"
             height="38px"
           />

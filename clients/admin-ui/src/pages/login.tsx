@@ -10,11 +10,11 @@ import {
   Input,
   Stack,
   useToast,
+  Image
 } from '@fidesui/react';
 import { useFormik } from 'formik';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { signIn } from 'next-auth/react';
 import React, { useState } from 'react';
@@ -108,7 +108,7 @@ const Login: NextPage = () => {
           <Box display={['none', 'none', 'block']}>
             <Image
               src="/logo.svg"
-              alt="FidesUI logo"
+              alt="FidesOps logo"
               width="156px"
               height="48px"
             />
@@ -139,7 +139,7 @@ const Login: NextPage = () => {
                   <Flex justifyContent="center">
                     <Image
                       src="/logo.svg"
-                      alt="FidesUI logo"
+                      alt="FidesOps logo"
                       width="156px"
                       height="48px"
                     />
