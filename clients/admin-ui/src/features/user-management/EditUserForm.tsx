@@ -13,27 +13,27 @@ import {
   useToast,
 } from '@fidesui/react';
 import { useFormik } from 'formik';
-import type { NextPage } from 'next';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import React from 'react';
 
-import { User, userPrivilegesArray } from '../user/types';
+import { User, userPrivilegesArray } from './types';
+import UpdatePasswordModal from './UpdatePasswordModal';
 import {
   useEditUserMutation,
   useGetUserByIdQuery,
   useGetUserPermissionsQuery,
   useUpdateUserPermissionsMutation,
-} from '../user/user.slice';
-import UpdatePasswordModal from './UpdatePasswordModal';
+} from './user-management.slice';
 
 const useUserForm = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const { id: profileId } = router.query;
+  const currentUser: User = useSelector(selectUser) ?? {};
   const [updateUserPermissions] = useUpdateUserPermissionsMutation();
-  const [editUser] = useEditUserMutation(id as string);
-  const { data: existingUser } = useGetUserByIdQuery(id as string);
-  const { data: existingScopes } = useGetUserPermissionsQuery(id as string);
+  const [editUser] = useEditUserMutation(profileId);
+  const { data: existingUser } = useGetUserByIdQuery(profileId);
+  const { data: existingScopes } = useGetUserPermissionsQuery(profileId);
   const toast = useToast();
 
   const formik = useFormik({
@@ -105,32 +105,36 @@ const useUserForm = () => {
     },
   });
 
+  let canUpdateUser = false;
+  const { data: userPermissions = { scopes: [] } } = useGetUserPermissionsQuery(
+    currentUser.id
+  );
+  canUpdateUser = userPermissions.scopes.includes('user:update');
+
   return {
     ...formik,
     existingScopes,
     existingUser,
-    id,
+    profileId,
+    isOwnProfile: profileId === currentUser.id,
+    canUpdateUser,
   };
 };
 
-const EditUserForm: NextPage<{
-  user?: User;
-}> = ({ user }) => {
+const EditUserForm: React.FC = () => {
   const {
     dirty,
     existingUser,
-    id,
+    profileId,
+    isOwnProfile,
     handleBlur,
     handleChange,
     handleSubmit,
     isValid,
-    values,
     setFieldValue,
+    canUpdateUser,
+    values,
   } = useUserForm();
-
-  const { data: loggedInUser } = useGetUserPermissionsQuery(user.id as string);
-
-  const hasAdminPermission = loggedInUser?.scopes?.includes('user:update');
 
   return (
     <div>
@@ -176,8 +180,8 @@ const EditUserForm: NextPage<{
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.first_name}
-                isReadOnly={!hasAdminPermission}
-                isDisabled={!hasAdminPermission}
+                isReadOnly={!canUpdateUser}
+                isDisabled={!canUpdateUser}
               />
             </FormControl>
 
@@ -194,13 +198,13 @@ const EditUserForm: NextPage<{
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.last_name}
-                isReadOnly={!hasAdminPermission}
-                isDisabled={!hasAdminPermission}
+                isReadOnly={!canUpdateUser}
+                isDisabled={!canUpdateUser}
               />
             </FormControl>
 
-            {/* Only the associated user can change their own password */}
-            {id === user.id && <UpdatePasswordModal id={id} />}
+            {/* Only the owner of this profile can change their password */}
+            {isOwnProfile ? <UpdatePasswordModal id={profileId} /> : null}
 
             <Divider mb={7} mt={7} />
 
@@ -210,7 +214,7 @@ const EditUserForm: NextPage<{
             <Text>Edit privileges assigned to this user</Text>
             <Divider mb={2} mt={2} />
 
-            <Stack spacing={[1, 5]} direction='column'>
+            <Stack spacing={[1, 5]} direction="column">
               {userPrivilegesArray.map((policy) => {
                 const isChecked = values.scopes
                   ? values.scopes.indexOf(policy.scope) >= 0

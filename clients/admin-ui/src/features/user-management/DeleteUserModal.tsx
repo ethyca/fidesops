@@ -16,8 +16,8 @@ import {
 } from '@fidesui/react';
 import React, { useState } from 'react';
 
-import { User } from '../user/types';
-import { useDeleteUserMutation } from '../user/user.slice';
+import { User } from './types';
+import { useDeleteUserMutation } from './user-management.slice';
 
 const DeleteUserModal = (user: User) => {
   const [usernameValue, setUsernameValue] = useState('');

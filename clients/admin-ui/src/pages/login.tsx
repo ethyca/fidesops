@@ -16,30 +16,35 @@ import type { NextPage } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { signIn } from 'next-auth/react';
-import React, { useState } from 'react';
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { login, selectToken, useLoginMutation } from '../features/auth';
 
 const useLogin = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [loginRequest, { isLoading }] = useLoginMutation();
+  const token = useSelector(selectToken);
   const toast = useToast();
   const router = useRouter();
+  const dispatch = useDispatch();
   const formik = useFormik({
     initialValues: {
       email: '',
       password: '',
     },
     onSubmit: async (values) => {
-      setIsLoading(true);
-      const response = await signIn<'credentials'>('credentials', {
-        ...values,
-        callbackUrl: `${window.location.origin}`,
-        redirect: false,
-      });
-      setIsLoading(false);
-      if (response && response.ok) {
-        router.push('/');
+      const credentials = {
+        username: values.email,
+        password: values.password,
+      };
+      try {
+        const user = await loginRequest(credentials).unwrap();
+        dispatch(login(user));
         toast.closeAll();
-      } else {
+        router.push('/');
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
         toast({
           status: 'error',
           description:
@@ -72,6 +77,10 @@ const useLogin = () => {
       return errors;
     },
   });
+
+  if (token) {
+    router.push('/');
+  }
 
   return { ...formik, isLoading };
 };

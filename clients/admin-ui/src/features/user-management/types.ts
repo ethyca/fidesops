@@ -19,11 +19,11 @@ export interface UsersResponse {
 export interface UsersListParams {
   page: number;
   size: number;
-  user: User;
+  username: string;
 }
 
 export interface UserPasswordUpdate {
-  id: string | null;
+  id: string;
   old_password: string;
   new_password: string;
 }

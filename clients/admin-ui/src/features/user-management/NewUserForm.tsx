@@ -19,11 +19,11 @@ import { useRouter } from 'next/router';
 import React from 'react';
 
 import { isErrorWithDetail, isErrorWithDetailArray } from '../common/helpers';
-import { userPrivilegesArray } from '../user/types';
+import { userPrivilegesArray } from './types';
 import {
   useCreateUserMutation,
   useUpdateUserPermissionsMutation,
-} from '../user/user.slice';
+} from './user-management.slice';
 
 const useUserForm = () => {
   const [createUser] = useCreateUserMutation();
