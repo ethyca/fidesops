@@ -7,10 +7,7 @@ from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.policy import ActionType
-from fidesops.models.privacy_request import (
-    ExecutionLog,
-    PrivacyRequest,
-)
+from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.task import graph_task
 
