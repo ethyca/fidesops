@@ -43,6 +43,11 @@ class AuthenticatedClient:
         Returns an authenticated request based on the client config and
         incoming path, headers, query, and body params.
         """
+
+        from fidesops.service.authentication.authentication_strategy_factory import (
+            get_strategy,
+        )
+
         req: PreparedRequest = Request(
             method=request_params.method,
             url=f"{self.uri}{request_params.path}",
@@ -50,10 +55,6 @@ class AuthenticatedClient:
             params=request_params.query_params,
             data=request_params.body,
         ).prepare()
-
-        from fidesops.service.authentication.authentication_strategy_factory import (
-            get_strategy,
-        )
 
         # add authentication if provided
         if self.client_config.authentication:

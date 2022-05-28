@@ -661,7 +661,7 @@ class TestSaaSQueryConfig:
         )
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations"
-        assert prepared_request.query_params == {"count": "1000", "offset": "0"}
+        assert prepared_request.query_params == {"count": 1000, "offset": 0}
         assert prepared_request.body is None
 
         # dynamic path with no query params

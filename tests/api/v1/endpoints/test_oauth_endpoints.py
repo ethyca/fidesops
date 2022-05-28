@@ -404,7 +404,7 @@ class TestCallback:
         )
         assert response.status_code == 404
         assert response.json() == {
-            "detail": "No connection associated with the given state."
+            "detail": "No authentication request found for the given state."
         }
 
     @mock.patch(

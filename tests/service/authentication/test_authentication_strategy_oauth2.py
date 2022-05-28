@@ -4,8 +4,9 @@ from unittest.mock import Mock
 
 import pytest
 from requests import PreparedRequest, Request
+from sqlalchemy.orm import Session
 
-from fidesops.common_exceptions import OAuth2TokenException
+from fidesops.common_exceptions import FidesopsException, OAuth2TokenException
 from fidesops.service.authentication.authentication_strategy_factory import get_strategy
 from fidesops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
@@ -17,7 +18,6 @@ class TestAddAuthentication:
     def test_oauth2_authentication(
         self, oauth2_connection_config, oauth2_configuration
     ):
-
         # set a future expiration date for the access token
         oauth2_connection_config.secrets["expires_at"] = (
             datetime.utcnow() + timedelta(days=1)
@@ -32,6 +32,55 @@ class TestAddAuthentication:
         assert (
             authenticated_request.headers["Authorization"]
             == f"Bearer {oauth2_connection_config.secrets['access_token']}"
+        )
+
+    def test_oauth2_authentication_missing_access_token(
+        self, oauth2_connection_config, oauth2_configuration
+    ):
+        # remove the access_token
+        oauth2_connection_config.secrets["access_token"] = None
+
+        req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
+
+        auth_strategy = get_strategy("oauth2", oauth2_configuration)
+        with pytest.raises(FidesopsException) as exc:
+            auth_strategy.add_authentication(req, oauth2_connection_config)
+        assert str(exc.value) == (
+            f"OAuth2 access token not found for {oauth2_connection_config.key}, please "
+            f"authenticate connection via /api/v1/connection/{oauth2_connection_config.key}/authorize"
+        )
+
+    def test_oauth2_authentication_empty_access_token(
+        self, oauth2_connection_config, oauth2_configuration
+    ):
+        # replace the access_token with an empty string
+        oauth2_connection_config.secrets["access_token"] = ""
+
+        req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
+
+        auth_strategy = get_strategy("oauth2", oauth2_configuration)
+        with pytest.raises(FidesopsException) as exc:
+            auth_strategy.add_authentication(req, oauth2_connection_config)
+        assert str(exc.value) == (
+            f"OAuth2 access token not found for {oauth2_connection_config.key}, please "
+            f"authenticate connection via /api/v1/connection/{oauth2_connection_config.key}/authorize"
+        )
+
+    def test_oauth2_authentication_missing_secrets(
+        self, oauth2_connection_config, oauth2_configuration
+    ):
+        # mix of missing and empty secrets
+        oauth2_connection_config.secrets["client_id"] = None
+        oauth2_connection_config.secrets["client_secret"] = ""
+
+        req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
+
+        auth_strategy = get_strategy("oauth2", oauth2_configuration)
+        with pytest.raises(FidesopsException) as exc:
+            auth_strategy.add_authentication(req, oauth2_connection_config)
+        assert (
+            str(exc.value)
+            == f"Missing required secret(s) 'client_id, client_secret' for oauth2_connector"
         )
 
     # access token expired, call refresh request
@@ -125,6 +174,7 @@ class TestAuthorizationUrl:
         self,
         mock_create_or_update: Mock,
         mock_uuid: Mock,
+        db: Session,
         oauth2_connection_config,
         oauth2_configuration,
     ):
@@ -134,12 +184,33 @@ class TestAuthorizationUrl:
             "oauth2", oauth2_configuration
         )
         assert (
-            auth_strategy.get_authorization_url(oauth2_connection_config)
+            auth_strategy.get_authorization_url(db, oauth2_connection_config)
             == "https://localhost/auth/authorize?client_id=client&redirect_uri=https%3A%2F%2Flocalhost%2Fcallback&response_type=code&scope=admin.read+admin.write&state=unique_value"
         )
         mock_create_or_update.assert_called_once_with(
             mock.ANY,
             data={"connection_key": oauth2_connection_config.key, "state": state},
+        )
+
+    def test_get_authorization_url_missing_secrets(
+        self,
+        db: Session,
+        oauth2_connection_config,
+        oauth2_configuration,
+    ):
+
+        # erase some secrets
+        oauth2_connection_config.secrets["client_id"] = None
+        oauth2_connection_config.secrets["client_secret"] = ""
+
+        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
+            "oauth2", oauth2_configuration
+        )
+        with pytest.raises(FidesopsException) as exc:
+            auth_strategy.get_authorization_url(db, oauth2_connection_config)
+        assert (
+            str(exc.value)
+            == f"Missing required secret(s) 'client_id, client_secret' for oauth2_connector"
         )
 
 
@@ -232,4 +303,23 @@ class TestAccessTokenRequest:
                     + oauth2_configuration["expires_in"],
                 }
             },
+        )
+
+    def test_get_access_token_missing_secrets(
+        self,
+        oauth2_connection_config,
+        oauth2_configuration,
+    ):
+        # erase some secrets
+        oauth2_connection_config.secrets["client_id"] = None
+        oauth2_connection_config.secrets["client_secret"] = ""
+
+        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
+            "oauth2", oauth2_configuration
+        )
+        with pytest.raises(FidesopsException) as exc:
+            auth_strategy.get_access_token("auth_code", oauth2_connection_config)
+        assert (
+            str(exc.value)
+            == f"Missing required secret(s) 'client_id, client_secret' for oauth2_connector"
         )

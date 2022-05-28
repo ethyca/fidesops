@@ -11,6 +11,9 @@ from starlette.status import (
 )
 
 from fidesops.api.deps import get_db
+from fidesops.api.v1.endpoints.saas_config_endpoints import (
+    verify_oauth_connection_config,
+)
 from fidesops.api.v1.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
@@ -28,7 +31,11 @@ from fidesops.api.v1.urn_registry import (
     TOKEN,
     V1_URL_PREFIX,
 )
-from fidesops.common_exceptions import AuthenticationFailure, OAuth2TokenException
+from fidesops.common_exceptions import (
+    AuthenticationFailure,
+    FidesopsException,
+    OAuth2TokenException,
+)
 from fidesops.models.authentication_request import AuthenticationRequest
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
@@ -184,18 +191,21 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None
     if not authentication_request:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail="No connection associated with the given state.",
+            detail="No authentication request found for the given state.",
         )
 
-    # trigger the access token request
     connection_config: ConnectionConfig = ConnectionConfig.get_by(
         db, field="key", value=authentication_request.connection_key
     )
-    authentication = connection_config.get_saas_config().client_config.authentication
-    auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
-        authentication.strategy, authentication.configuration
-    )
+    verify_oauth_connection_config(connection_config)
+
     try:
+        authentication = (
+            connection_config.get_saas_config().client_config.authentication
+        )
+        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
+            authentication.strategy, authentication.configuration
+        )
         auth_strategy.get_access_token(code, connection_config)
-    except OAuth2TokenException as exc:
+    except (OAuth2TokenException, FidesopsException) as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc))

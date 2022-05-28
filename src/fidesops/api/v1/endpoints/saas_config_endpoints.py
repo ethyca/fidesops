@@ -9,6 +9,7 @@ from starlette.status import (
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
 from fidesops.api import deps
@@ -58,6 +59,43 @@ def _get_saas_connection_config(
             detail="This action is only applicable to connection configs of connection type 'saas'",
         )
     return connection_config
+
+
+def verify_oauth_connection_config(
+    connection_config: Optional[ConnectionConfig],
+) -> None:
+    """
+    Verifies that the connection config is present and contains
+    the necessary configurations for OAuth2 authentication. Returns
+    an HTTPException with the appropriate error message indicating
+    which configurations are missing or incorrect.
+    """
+
+    if not connection_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="The connection config cannot be found.",
+        )
+
+    saas_config = connection_config.get_saas_config()
+    if not saas_config:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="The connection config does not contain a SaaS config.",
+        )
+
+    authentication = connection_config.get_saas_config().client_config.authentication
+    if not authentication:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="The connection config does not contain an authentication configuration.",
+        )
+
+    if authentication.strategy != OAuth2AuthenticationStrategy.strategy_name:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="The connection config does not use OAuth2 authentication.",
+        )
 
 
 @router.put(
@@ -193,18 +231,9 @@ def authorize_connection(
 ) -> Optional[str]:
     """Returns the authorization URL for the SaaS Connector (if available)"""
 
-    saas_config = connection_config.get_saas_config()
-    if saas_config is None:
-        return None
-
-    authentication = saas_config.client_config.authentication
-    if authentication is None:
-        return None
-
-    if authentication.strategy != OAuth2AuthenticationStrategy.strategy_name:
-        return None
-
+    verify_oauth_connection_config(connection_config)
+    authentication = connection_config.get_saas_config().client_config.authentication
     auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
         authentication.strategy, authentication.configuration
     )
-    return auth_strategy.get_authorization_url(connection_config)
+    return auth_strategy.get_authorization_url(db, connection_config)

@@ -147,6 +147,7 @@ def oauth2_configuration() -> OAuth2AuthenticationConfiguration:
                     "name": "scope",
                     "value": "admin.read admin.write",
                 },
+                {"name": "state", "value": "<state>"},
             ],
         },
         "token_request": {

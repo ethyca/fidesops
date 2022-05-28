@@ -1,16 +1,17 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional
 from urllib.parse import urlencode
 from uuid import uuid4
 
 from requests import PreparedRequest
+from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import FidesopsException, OAuth2TokenException
 from fidesops.db.session import get_db_session
 from fidesops.models.authentication_request import AuthenticationRequest
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.saas_config import ClientConfig, QueryParam, SaaSRequest
+from fidesops.schemas.saas.saas_config import ClientConfig, SaaSRequest
 from fidesops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
     StrategyConfiguration,
@@ -47,8 +48,11 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         The existing/updated access token is then added to the request as a bearer token.
         """
 
+        # make sure required secrets have been provided
+        self._check_required_secrets(connection_config)
+
         access_token = connection_config.secrets.get("access_token")
-        if access_token is None:
+        if not access_token:
             raise FidesopsException(
                 f"OAuth2 access token not found for {connection_config.key}, please "
                 f"authenticate connection via /api/v1/connection/{connection_config.key}/authorize"
@@ -58,13 +62,14 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         # a refresh token to be returned as part of an access token request
         #
         # https://datatracker.ietf.org/doc/html/rfc6749#section-5.1
+
         if self.refresh_request:
-            expires_at = int(connection_config.secrets.get("expires_at"))
-            if self._close_to_expiration(expires_at):
+            expires_at = connection_config.secrets.get("expires_at")
+            if self._close_to_expiration(expires_at, connection_config):
                 refresh_response = self._call_token_request(
                     "refresh", self.refresh_request, connection_config
                 )
-                access_token = self._process_response(
+                access_token = self._validate_and_store_response(
                     refresh_response, connection_config
                 )
 
@@ -73,13 +78,22 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         return request
 
     @staticmethod
-    def _close_to_expiration(expires_at: int) -> bool:
+    def _close_to_expiration(
+        expires_at: int, connection_config: ConnectionConfig
+    ) -> bool:
         """Check if the access_token will expire in the next 10 minutes"""
+
+        if expires_at is None:
+            logger.info(
+                f"The expires_at value is not defined for {connection_config.key}, skipping token refresh"
+            )
+            return False
+
         return expires_at < (datetime.utcnow() + timedelta(minutes=10)).timestamp()
 
     @staticmethod
     def _call_token_request(
-        action: str,
+        action: Literal["access", "refresh"],
         token_request: SaaSRequest,
         connection_config: ConnectionConfig,
     ) -> Dict[str, Any]:
@@ -134,7 +148,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
 
         return json_response
 
-    def _process_response(
+    def _validate_and_store_response(
         self, response: Dict[str, Any], connection_config: ConnectionConfig
     ) -> str:
         """
@@ -168,7 +182,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         # https://datatracker.ietf.org/doc/html/rfc6749#section-6
 
         refresh_token = response.get("refresh_token")
-        if refresh_token is not None:
+        if refresh_token:
             data["refresh_token"] = refresh_token
 
         # If omitted, the authorization server SHOULD provide the
@@ -180,7 +194,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         # by the optional expires_in field of the OAuth2AuthenticationConfiguration
 
         expires_in = response.get("expires_in") or self.expires_in
-        if expires_in is not None:
+        if expires_in:
             data["expires_at"] = int(datetime.utcnow().timestamp()) + expires_in
 
         # persist new tokens to the database
@@ -189,6 +203,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         merged_connection_config = db.merge(connection_config)
         updated_secrets = {**merged_connection_config.secrets, **data}
         merged_connection_config.update(db, data={"secrets": updated_secrets})
+        db.close()
 
         logger.info(
             f"Successfully updated the OAuth2 token(s) for {connection_config.key}"
@@ -197,24 +212,23 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         return access_token
 
     def get_authorization_url(
-        self, connection_config: ConnectionConfig
+        self, db: Session, connection_config: ConnectionConfig
     ) -> Optional[str]:
         """
         Returns the authorization URL to initiate the OAuth2 workflow.
         Also stores a reference between the authorization request and the connector
         to be able to link the returned auth code to the correct connector."""
 
+        # make sure the required secrets to generate the authorization url have been provided
+        self._check_required_secrets(connection_config)
+
         # generate the state that will be used to link this authorization request to this connector
         state = str(uuid4())
-        SessionLocal = get_db_session()
-        db = SessionLocal()
         AuthenticationRequest.create_or_update(
             db, data={"connection_key": connection_config.key, "state": state}
         )
-        # add state as a query param
-        self.authorization_request.query_params.append(
-            QueryParam(name="state", value=state)
-        )
+        # add state to secrets
+        connection_config.secrets["state"] = state
 
         # assign placeholders in the authorization request config
         prepared_authorization_request = map_param_values(
@@ -242,14 +256,33 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
     def get_access_token(self, code: str, connection_config: ConnectionConfig) -> None:
         """
         Generates and executes the access token request based on the OAuth2 config
-        and connection config secrets.
+        and connection config secrets. The access and refresh tokens returned from
+        this request are stored in the connection config secrets.
         """
 
+        self._check_required_secrets(connection_config)
         connection_config.secrets = {**connection_config.secrets, "code": code}
         access_response = self._call_token_request(
             "access", self.token_request, connection_config
         )
-        self._process_response(access_response, connection_config)
+        self._validate_and_store_response(access_response, connection_config)
+
+    @staticmethod
+    def _check_required_secrets(connection_config: ConnectionConfig) -> None:
+        secrets = connection_config.secrets
+        required_secrets = {
+            "client_id": secrets.get("client_id"),
+            "client_secret": secrets.get("client_secret"),
+            "redirect_uri": secrets.get("redirect_uri"),
+        }
+
+        if not all(required_secrets.values()):
+            missing_secrets = [
+                name for name, value in required_secrets.items() if not value
+            ]
+            raise FidesopsException(
+                f"Missing required secret(s) '{', '.join(missing_secrets)}' for {connection_config.key}"
+            )
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
