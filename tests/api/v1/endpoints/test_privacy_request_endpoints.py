@@ -1870,6 +1870,7 @@ class TestResumeErasureRequestWithManualConfirmation:
     )
     def test_resume_with_manual_count(
         self,
+        submit_mock,
         db,
         api_client,
         url,
