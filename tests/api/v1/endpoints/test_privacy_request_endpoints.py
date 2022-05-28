@@ -1865,6 +1865,9 @@ class TestResumeErasureRequestWithManualConfirmation:
             == "Collection 'manual_example:filing_cabinet' is paused at the access step. Pass in manual data instead to '/privacy-request/{privacy_request_id}/manual_input' to resume."
         )
 
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
     def test_resume_with_manual_count(
         self,
         db,
