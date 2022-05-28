@@ -50,6 +50,8 @@ def retry(
 
     If an exception is raised, we retry the function `count` times with exponential backoff. After the number of
     retries have expired, we call GraphTask.end() with the appropriate `action_type` and `default_return`.
+
+    If we exceed the number of TASK_RETRY_COUNT retries, we re-raise the exception to stop execution of the privacy request.
     """
 
     def decorator(func: Callable) -> Callable:
@@ -86,12 +88,13 @@ def retry(
                     )
                     sleep(func_delay)
                     raised_ex = ex
+
             self.log_end(action_type, raised_ex)
             self.resources.request.cache_failed_step_and_collection(
                 failed_step=action_type, failed_collection=self.traversal_node.address
             )
             # Re-raise to stop privacy request execution on failure.
-            raise Exception(raised_ex)
+            raise raised_ex
 
         return result
 
