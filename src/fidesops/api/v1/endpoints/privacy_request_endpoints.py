@@ -671,6 +671,8 @@ def resume_privacy_request_with_manual_input(
         privacy_request=privacy_request,
     ).submit(from_step=paused_step)
 
+    privacy_request.cache_failed_step_and_collection()  # Reset failed step and collection to None
+
     return privacy_request
 
 
