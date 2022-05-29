@@ -272,7 +272,7 @@ def get_config() -> FidesopsConfig:
     """
     try:
         return FidesopsConfig.parse_obj(load_toml("fidesops.toml"))
-    except (FileNotFoundError, ValidationError) as e:
+    except (FileNotFoundError) as e:
         logger.warning("fidesops.toml could not be loaded: %s", NotPii(e))
         # If no path is specified Pydantic will attempt to read settings from
         # the environment. Default values will still be used if the matching
