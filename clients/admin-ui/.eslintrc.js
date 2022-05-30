@@ -1,5 +1,6 @@
 module.exports = {
   extends: [
+    'next/babel',
     'airbnb',
     'airbnb-typescript/base',
     'prettier',
