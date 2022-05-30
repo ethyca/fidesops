@@ -1,3 +1,5 @@
+# Configuration TOML used in select unit tests
+
 [database]
 SERVER="testserver"
 USER="testuser"
