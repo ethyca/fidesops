@@ -56,7 +56,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
                 >
                   <Text fontSize="sm">Edit</Text>
                 </MenuItem>
-                {DeleteUserModal(user)}
+                <DeleteUserModal {...user} />
               </MenuList>
             </Portal>
           </Menu>
