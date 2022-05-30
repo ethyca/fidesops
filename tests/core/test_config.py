@@ -52,11 +52,16 @@ def test_config_from_env_vars() -> None:
     "app_encryption_key,expected_error",
     [
         ("tooshortkey", "must be exactly 32 characters, received 11"),
-        ("muchmuchmuchmuchmuchmuchmuchmuchtoolongkey", "must be exactly 32 characters, received 42"),
+        (
+            "muchmuchmuchmuchmuchmuchmuchmuchtoolongkey",
+            "must be exactly 32 characters, received 42",
+        ),
         ("atestencryptionkeythatisvalidlen", None),
     ],
 )
-def test_config_app_encryption_key_validation(app_encryption_key, expected_error) -> None:
+def test_config_app_encryption_key_validation(
+    app_encryption_key, expected_error
+) -> None:
     """Test APP_ENCRYPTION_KEY is validated to be exactly 32 characters."""
     with patch.dict(
         os.environ,

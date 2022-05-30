@@ -149,7 +149,7 @@ class SecuritySettings(FidesSettings):
     ) -> Optional[str]:
         """Validate the encryption key is exactly 32 characters"""
         if v is None:
-            raise ValueError(f"APP_ENCRYPTION_KEY value not provided!")
+            raise ValueError("APP_ENCRYPTION_KEY value not provided!")
         encryption_key = v.encode(values.get("ENCODING", "UTF-8"))
         if len(encryption_key) != 32:
             raise ValueError(
@@ -194,16 +194,25 @@ class SecuritySettings(FidesSettings):
         return hashed_client_id, salt
 
     LOG_LEVEL: str = "INFO"
+
     @validator("LOG_LEVEL", pre=True)
     def validate_log_level(cls, value: str) -> str:
         """Ensure the provided LOG_LEVEL is a valid value."""
-        valid_values = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL]
-        value = value.upper() # force uppercase, for safety
+        valid_values = [
+            logging.DEBUG,
+            logging.INFO,
+            logging.WARNING,
+            logging.ERROR,
+            logging.CRITICAL,
+        ]
+        value = value.upper()  # force uppercase, for safety
 
         # Attempt to convert the string value (e.g. 'debug') to a numeric level, e.g. 10 (logging.DEBUG)
         # NOTE: If the string doesn't match a valid level, this will return a string like 'Level {value}'
         if logging.getLevelName(value) not in valid_values:
-            raise ValueError(f"Invalid LOG_LEVEL provided '{value}', must be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL")
+            raise ValueError(
+                f"Invalid LOG_LEVEL provided '{value}', must be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL"
+            )
 
         return value
 
@@ -234,6 +243,14 @@ class FidesopsConfig(FidesSettings):
         f'Startup configuration: pii logging = {os.getenv("FIDESOPS__LOG_PII") == "True"}'
     )
 
+    def log_all_config_values(self) -> None:
+        """Output DEBUG logs of all the config values."""
+        for settings in [self.database, self.redis, self.security, self.execution]:
+            for key, value in settings.dict().items():
+                logger.debug(
+                    f"Using config: {NotPii(settings.Config.env_prefix)}{NotPii(key)} = {NotPii(value)}"
+                )
+
 
 def load_file(file_name: str) -> str:
     """Load a file and from the first matching location.
@@ -246,7 +263,6 @@ def load_file(file_name: str) -> str:
 
     raises FileNotFound if none is found
     """
-
     possible_directories = [
         os.getenv("FIDESOPS__CONFIG_PATH"),
         os.curdir,

@@ -38,6 +38,14 @@ for handler in ExceptionHandlers.get_handlers():
 def start_webserver() -> None:
     """Run any pending DB migrations and start the webserver."""
     logger.info("****************fidesops****************")
+
+    if logger.getEffectiveLevel() == logging.DEBUG:
+        logger.warning(
+            "WARNING: log level is DEBUG, so sensitive or personal data may be logged. "
+            "Set FIDESOPS__SECURITY__LOG_LEVEL to INFO or higher in production."
+        )
+        config.log_all_config_values()
+
     if config.database.ENABLED:
         logger.info("Running any pending DB migrations...")
         init_db(config.database.SQLALCHEMY_DATABASE_URI, config.package.PATH)
