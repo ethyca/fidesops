@@ -14,7 +14,7 @@ from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.util.logger import get_fides_log_record_factory
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=config.security.LOG_LEVEL)
 logging.setLogRecordFactory(get_fides_log_record_factory())
 logger = logging.getLogger(__name__)
 

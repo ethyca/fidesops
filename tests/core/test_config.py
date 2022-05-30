@@ -1,3 +1,4 @@
+import logging
 import os
 from unittest.mock import patch
 
@@ -44,7 +45,6 @@ def test_config_from_env_vars() -> None:
     config = get_config()
     assert config.database.SERVER == "envserver"
     assert config.redis.HOST == "envhost"
-    # encryption key should be unchanged
     assert config.security.APP_ENCRYPTION_KEY == "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
 
 
@@ -73,3 +73,32 @@ def test_config_app_encryption_key_validation(app_encryption_key, expected_error
             config = get_config()
             assert config.security.APP_ENCRYPTION_KEY == app_encryption_key
 
+
+@pytest.mark.parametrize(
+    "log_level,expected_log_level",
+    [
+        ("DEBUG", "DEBUG"),
+        ("debug", "DEBUG"),
+        ("INFO", "INFO"),
+        ("WARNING", "WARNING"),
+        ("ERROR", "ERROR"),
+        ("CRITICAL", "CRITICAL"),
+        ("INVALID", None),
+    ],
+)
+def test_config_log_level(log_level, expected_log_level):
+    """Test overriding the log level using ENV vars."""
+    with patch.dict(
+        os.environ,
+        {
+            "FIDESOPS__SECURITY__LOG_LEVEL": log_level,
+        },
+        clear=True,
+    ):
+        if expected_log_level is not None:
+            config = get_config()
+            assert config.security.LOG_LEVEL == expected_log_level
+        else:
+            with pytest.raises(ValidationError) as err:
+                config = get_config()
+            assert "Invalid LOG_LEVEL" in str(err.value)

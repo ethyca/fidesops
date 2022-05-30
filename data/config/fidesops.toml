@@ -21,6 +21,7 @@ CORS_ORIGINS=["http://test.com", "https://test.com"]
 OAUTH_ROOT_CLIENT_ID="testrootclientid"
 OAUTH_ROOT_CLIENT_SECRET="testrootclientsecret"
 DRP_JWT_SECRET="testdrpsecret"
+LOG_LEVEL = "DEBUG"
 
 [execution]
 TASK_RETRY_COUNT=0

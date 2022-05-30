@@ -193,6 +193,20 @@ class SecuritySettings(FidesSettings):
         hashed_client_id = hashlib.sha512(value.encode(encoding) + salt).hexdigest()
         return hashed_client_id, salt
 
+    LOG_LEVEL: str = "INFO"
+    @validator("LOG_LEVEL", pre=True)
+    def validate_log_level(cls, value: str) -> str:
+        """Ensure the provided LOG_LEVEL is a valid value."""
+        valid_values = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL]
+        value = value.upper() # force uppercase, for safety
+
+        # Attempt to convert the string value (e.g. 'debug') to a numeric level, e.g. 10 (logging.DEBUG)
+        # NOTE: If the string doesn't match a valid level, this will return a string like 'Level {value}'
+        if logging.getLevelName(value) not in valid_values:
+            raise ValueError(f"Invalid LOG_LEVEL provided '{value}', must be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL")
+
+        return value
+
     class Config:
         env_prefix = "FIDESOPS__SECURITY__"
 
@@ -280,7 +294,7 @@ def get_config() -> FidesopsConfig:
         try:
             return FidesopsConfig()
         except ValidationError as exc:
-            logger.error("ValidationError: %s", exc)
+            logger.error("Fidesops config could not be loaded: %s", NotPii(exc))
             # If FidesopsConfig is missing any required values Pydantic will throw
             # an ImportError. This means the config has not been correctly specified
             # so we can throw the missing config error.
