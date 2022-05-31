@@ -70,7 +70,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
                     "refresh", self.refresh_request, connection_config
                 )
                 access_token = self._validate_and_store_response(
-                    refresh_response, connection_config
+                    None, refresh_response, connection_config
                 )
 
         # add access_token to request
@@ -149,7 +149,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         return json_response
 
     def _validate_and_store_response(
-        self, response: Dict[str, Any], connection_config: ConnectionConfig
+        self, db: Session, response: Dict[str, Any], connection_config: ConnectionConfig
     ) -> str:
         """
         Persists and returns the new access token.
@@ -198,12 +198,17 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
             data["expires_at"] = int(datetime.utcnow().timestamp()) + expires_in
 
         # persist new tokens to the database
-        SessionLocal = get_db_session()
-        db = SessionLocal()
-        merged_connection_config = db.merge(connection_config)
-        updated_secrets = {**merged_connection_config.secrets, **data}
-        merged_connection_config.update(db, data={"secrets": updated_secrets})
-        db.close()
+        # ideally we use a passed in database session but we create a new
+        # session if one is not available
+        updated_secrets = {**connection_config.secrets, **data}
+        if db:
+            connection_config.update(db, data={"secrets": updated_secrets})
+        else:
+            SessionLocal = get_db_session()
+            db = SessionLocal()
+            merged_connection_config = db.merge(connection_config)
+            merged_connection_config.update(db, data={"secrets": updated_secrets})
+            db.close()
 
         logger.info(
             f"Successfully updated the OAuth2 token(s) for {connection_config.key}"
@@ -253,7 +258,9 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
             f"?{urlencode(prepared_authorization_request.query_params)}"
         )
 
-    def get_access_token(self, code: str, connection_config: ConnectionConfig) -> None:
+    def get_access_token(
+        self, db: Session, code: str, connection_config: ConnectionConfig
+    ) -> None:
         """
         Generates and executes the access token request based on the OAuth2 config
         and connection config secrets. The access and refresh tokens returned from
@@ -265,7 +272,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         access_response = self._call_token_request(
             "access", self.token_request, connection_config
         )
-        self._validate_and_store_response(access_response, connection_config)
+        self._validate_and_store_response(db, access_response, connection_config)
 
     @staticmethod
     def _check_required_secrets(connection_config: ConnectionConfig) -> None:

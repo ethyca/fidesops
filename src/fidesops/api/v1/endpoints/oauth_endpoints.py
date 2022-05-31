@@ -206,6 +206,6 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None
         auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
             authentication.strategy, authentication.configuration
         )
-        auth_strategy.get_access_token(code, connection_config)
+        auth_strategy.get_access_token(db, code, connection_config)
     except (OAuth2TokenException, FidesopsException) as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc))

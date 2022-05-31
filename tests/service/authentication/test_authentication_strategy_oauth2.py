@@ -223,6 +223,7 @@ class TestAccessTokenRequest:
         mock_send: Mock,
         mock_connection_config_update: Mock,
         mock_time: Mock,
+        db: Session,
         oauth2_connection_config,
         oauth2_configuration,
     ):
@@ -240,7 +241,7 @@ class TestAccessTokenRequest:
         auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
             "oauth2", oauth2_configuration
         )
-        auth_strategy.get_access_token("auth_code", oauth2_connection_config)
+        auth_strategy.get_access_token(db, "auth_code", oauth2_connection_config)
 
         # verify correct values for connection_config update
         mock_connection_config_update.assert_called_once_with(
@@ -269,6 +270,7 @@ class TestAccessTokenRequest:
         mock_send: Mock,
         mock_connection_config_update: Mock,
         mock_time: Mock,
+        db: Session,
         oauth2_connection_config,
         oauth2_configuration,
     ):
@@ -285,7 +287,7 @@ class TestAccessTokenRequest:
         auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
             "oauth2", oauth2_configuration
         )
-        auth_strategy.get_access_token("auth_code", oauth2_connection_config)
+        auth_strategy.get_access_token(db, "auth_code", oauth2_connection_config)
 
         # verify correct values for connection_config update
         mock_connection_config_update.assert_called_once_with(
@@ -307,6 +309,7 @@ class TestAccessTokenRequest:
 
     def test_get_access_token_missing_secrets(
         self,
+        db: Session,
         oauth2_connection_config,
         oauth2_configuration,
     ):
@@ -318,7 +321,7 @@ class TestAccessTokenRequest:
             "oauth2", oauth2_configuration
         )
         with pytest.raises(FidesopsException) as exc:
-            auth_strategy.get_access_token("auth_code", oauth2_connection_config)
+            auth_strategy.get_access_token(db, "auth_code", oauth2_connection_config)
         assert (
             str(exc.value)
             == f"Missing required secret(s) 'client_id, client_secret' for oauth2_connector"
