@@ -43,7 +43,7 @@ export function mapFiltersToSearchParams({
     ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
     ...(verbose ? { verbose } : {}),
   };
-};
+}
 
 // Subject requests API
 export const privacyRequestApi = createApi({
