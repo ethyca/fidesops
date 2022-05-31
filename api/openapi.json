@@ -6416,7 +6416,7 @@
             }
           },
           "policy": {
-            "$ref": "#/components/schemas/Policy"
+            "$ref": "#/components/schemas/PolicyResponse"
           }
         },
         "description": "Schema to check the status of a PrivacyRequest"
@@ -6526,7 +6526,7 @@
             }
           },
           "policy": {
-            "$ref": "#/components/schemas/Policy"
+            "$ref": "#/components/schemas/PolicyResponse"
           },
           "results": {
             "title": "Results",
