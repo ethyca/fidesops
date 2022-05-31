@@ -31,7 +31,7 @@ const RequestType = ({ rules }: RequestTypeProps) => {
     </Tag>
   ));
 
-  return <>{tags}</>;
+  return tags;
 };
 
 export default RequestType;

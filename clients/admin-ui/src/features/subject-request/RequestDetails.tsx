@@ -1,4 +1,4 @@
-import { Box, Divider, Flex, Heading, Tag, Text } from '@fidesui/react';
+import { Box, Divider, Flex, Heading, Text } from '@fidesui/react';
 import React from 'react';
 
 import ClipboardButton from '../common/ClipboardButton';
