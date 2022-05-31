@@ -3,6 +3,7 @@ import React from 'react';
 
 import ClipboardButton from '../common/ClipboardButton';
 import RequestStatusBadge from '../common/RequestStatusBadge';
+import RequestType from '../common/RequestType';
 import { PrivacyRequest } from '../privacy-requests/types';
 
 type RequestDetailsProps = {
@@ -10,7 +11,7 @@ type RequestDetailsProps = {
 };
 
 const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
-  const { id, status } = subjectRequest;
+  const { id, status, policy } = subjectRequest;
 
   return (
     <>
@@ -39,16 +40,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         <Text mb={4} mr={2} fontSize='sm' color='gray.900' fontWeight='500'>
           Request Type:
         </Text>
-        <Tag
-          color='white'
-          bg='primary.400'
-          fontWeight='medium'
-          fontSize='sm'
-          mr={1}
-          mb={4}
-        >
-          {subjectRequest.policy.name}
-        </Tag>
+        <RequestType rules={policy.rules} />
       </Flex>
       <Flex alignItems='flex-start'>
         <Text mb={4} mr={2} fontSize='sm' color='gray.900' fontWeight='500'>

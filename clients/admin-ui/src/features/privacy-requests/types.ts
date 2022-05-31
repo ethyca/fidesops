@@ -7,6 +7,11 @@ export type PrivacyRequestStatus =
   | 'paused'
   | 'pending';
 
+export enum ActionType {
+  ACCESS = 'access',
+  ERASURE = 'erasure',
+}
+
 export interface DenyPrivacyRequest {
   id: string;
   reason: string;
@@ -26,6 +31,13 @@ export interface ExecutionLog {
   status: string;
   updated_at: string;
 }
+
+export interface Rule {
+  name: string;
+  key: string;
+  action_type: ActionType;
+}
+
 export interface PrivacyRequest {
   status: PrivacyRequestStatus;
   results?: Record<string, ExecutionLog[]>;
@@ -36,6 +48,7 @@ export interface PrivacyRequest {
   policy: {
     name: string;
     key: string;
+    rules: Rule[];
   };
   reviewer: {
     id: string;
