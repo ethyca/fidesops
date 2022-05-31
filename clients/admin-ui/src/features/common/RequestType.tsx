@@ -1,4 +1,4 @@
-import { Tag } from '@fidesui/react';
+import { Box, Tag } from '@fidesui/react';
 import React from 'react';
 
 import { ActionType, Rule } from '../privacy-requests/types';
@@ -31,7 +31,7 @@ const RequestType = ({ rules }: RequestTypeProps) => {
     </Tag>
   ));
 
-  return tags;
+  return <Box>{tags}</Box>;
 };
 
 export default RequestType;
