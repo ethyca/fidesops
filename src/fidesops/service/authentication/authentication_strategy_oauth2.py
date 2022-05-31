@@ -149,7 +149,10 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         return json_response
 
     def _validate_and_store_response(
-        self, db: Session, response: Dict[str, Any], connection_config: ConnectionConfig
+        self,
+        db: Optional[Session],
+        response: Dict[str, Any],
+        connection_config: ConnectionConfig,
     ) -> str:
         """
         Persists and returns the new access token.
