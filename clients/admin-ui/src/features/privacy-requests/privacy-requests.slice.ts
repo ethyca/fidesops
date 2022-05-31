@@ -12,7 +12,7 @@ import {
 } from './types';
 
 // Helpers
-export const mapFiltersToSearchParams = ({
+export function mapFiltersToSearchParams({
   status,
   id,
   from,
@@ -20,7 +20,7 @@ export const mapFiltersToSearchParams = ({
   page,
   size,
   verbose,
-}: Partial<PrivacyRequestParams>) => {
+}: Partial<PrivacyRequestParams>): any {
   let fromISO;
   if (from) {
     fromISO = new Date(from);
