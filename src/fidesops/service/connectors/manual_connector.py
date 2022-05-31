@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.graph.traversal import TraversalNode
-from fidesops.models.policy import ActionType, Policy
+from fidesops.models.policy import PausedStep, Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.util.collection_util import Row
@@ -45,7 +45,7 @@ class ManualConnector(BaseConnector[None]):
 
         # Save the step (access) and collection where we're paused.
         privacy_request.cache_paused_step_and_collection(
-            ActionType.access, node.address
+            PausedStep.access, node.address
         )
         raise PrivacyRequestPaused(
             f"Collection '{node.address.value}' waiting on manual data for privacy request '{privacy_request.id}'"
@@ -69,7 +69,7 @@ class ManualConnector(BaseConnector[None]):
             return manual_cached_count
 
         privacy_request.cache_paused_step_and_collection(
-            ActionType.erasure, node.address
+            PausedStep.erasure, node.address
         )
         raise PrivacyRequestPaused(
             f"Collection '{node.address.value}' waiting on manual erasure confirmation for privacy request '{privacy_request.id}'"

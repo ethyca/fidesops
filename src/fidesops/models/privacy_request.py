@@ -21,6 +21,7 @@ from fidesops.models.client import ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.policy import (
     ActionType,
+    PausedStep,
     Policy,
     PolicyPreWebhook,
     WebhookDirection,
@@ -232,7 +233,7 @@ class PrivacyRequest(Base):
 
     def cache_paused_step_and_collection(
         self,
-        paused_step: Optional[ActionType] = None,
+        paused_step: Optional[PausedStep] = None,
         paused_collection: Optional[CollectionAddress] = None,
     ) -> None:
         """
@@ -257,7 +258,7 @@ class PrivacyRequest(Base):
 
     def get_paused_step_and_collection(
         self,
-    ) -> Tuple[Optional[ActionType], Optional[CollectionAddress]]:
+    ) -> Tuple[Optional[PausedStep], Optional[CollectionAddress]]:
         """Get both the paused step (access or erasure) and collection awaiting manual input for the given privacy request.
 
         The paused step lets us know if we should resume privacy request execution from the "access" or the "erasure"
@@ -269,7 +270,7 @@ class PrivacyRequest(Base):
 
         if node_addr:
             split_addr = node_addr.split(self.PAUSED_SEPARATOR)
-            return ActionType(split_addr[0]), CollectionAddress.from_string(
+            return PausedStep(split_addr[0]), CollectionAddress.from_string(
                 split_addr[1]
             )
         return None, None  # If no cached data, return a tuple of Nones
@@ -309,8 +310,7 @@ class PrivacyRequest(Base):
     def get_manual_erasure_count(self, collection: CollectionAddress) -> Optional[int]:
         """Retrieve number of rows manually masked for this collection from the cache.
 
-        The count isn't actually used, we mainly care that data exists for this
-        collection at all. If there's no data, we return None.
+        Cached as an integer to mimic what we return from erasures in an automated way.
         """
         cache: FidesopsRedis = get_cache()
         prefix = f"MANUAL_MASK__{self.id}__{collection.value}"

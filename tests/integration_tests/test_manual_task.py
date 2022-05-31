@@ -4,7 +4,7 @@ import pytest
 
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.graph.config import CollectionAddress
-from fidesops.models.policy import ActionType
+from fidesops.models.policy import PausedStep
 from fidesops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -42,7 +42,7 @@ def test_postgres_with_manual_input_access_request_task(
 
     request_type, paused_node = privacy_request.get_paused_step_and_collection()
     assert paused_node.value == "manual_example:storage_unit"
-    assert request_type == ActionType.access
+    assert request_type == PausedStep.access
 
     # Mock user retrieving storage unit data by adding manual data to cache
     privacy_request.cache_manual_input(
@@ -209,7 +209,7 @@ def test_no_manual_input_found(
         )
 
     request_type, paused_node = privacy_request.get_paused_step_and_collection()
-    assert request_type == ActionType.access
+    assert request_type == PausedStep.access
     assert paused_node.value == "manual_example:storage_unit"
 
     # Mock user retrieving storage unit data by adding manual data to cache,
@@ -271,12 +271,9 @@ def test_no_manual_input_found(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_collections_with_manual_erasure_confirmation(
-    db,
     policy,
     integration_postgres_config,
     integration_manual_config,
-    postgres_integration_db,
-    cache,
 ) -> None:
     """Run an erasure privacy request with two manual nodes"""
     privacy_request = PrivacyRequest(
@@ -365,7 +362,7 @@ def test_collections_with_manual_erasure_confirmation(
 
     request_type, paused_node = privacy_request.get_paused_step_and_collection()
     assert paused_node.value == "manual_example:filing_cabinet"
-    assert request_type == ActionType.erasure
+    assert request_type == PausedStep.erasure
 
     # Mock confirming from user that there was no data in the filing cabinet
     privacy_request.cache_manual_erasure_count(
@@ -386,7 +383,7 @@ def test_collections_with_manual_erasure_confirmation(
 
     request_type, paused_node = privacy_request.get_paused_step_and_collection()
     assert paused_node.value == "manual_example:storage_unit"
-    assert request_type == ActionType.erasure
+    assert request_type == PausedStep.erasure
 
     # Mock confirming from user that storage unit erasure is complete
     privacy_request.cache_manual_erasure_count(

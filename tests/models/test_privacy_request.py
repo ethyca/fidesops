@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.graph.config import CollectionAddress
-from fidesops.models.policy import ActionType, Policy
+from fidesops.models.policy import PausedStep, Policy
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.util.cache import FidesopsRedis, get_identity_cache_key
@@ -366,7 +366,7 @@ class TestCachePausedLocation:
     def test_privacy_request_cache_paused_location(self, privacy_request):
         assert privacy_request.get_paused_step_and_collection() == (None, None)
 
-        paused_step = ActionType.erasure
+        paused_step = PausedStep.erasure
         privacy_request.cache_paused_step_and_collection(paused_step, paused_location)
 
         assert privacy_request.get_paused_step_and_collection() == (

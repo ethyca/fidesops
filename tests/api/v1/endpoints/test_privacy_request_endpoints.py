@@ -1657,7 +1657,7 @@ class TestResumeAccessRequestWithManualInput:
         assert response.status_code == 400
         assert (
             response.json()["detail"]
-            == f"Cannot resume privacy request '{privacy_request.id}'; no paused collection."
+            == f"Cannot resume privacy request '{privacy_request.id}'; no paused collection or no paused step."
         )
 
     def test_resume_with_manual_input_collection_has_changed(
@@ -1788,7 +1788,7 @@ class TestValidateManualInput:
 
 class TestResumeErasureRequestWithManualConfirmation:
     @pytest.fixture(scope="function")
-    def url(self, db, privacy_request):
+    def url(self, privacy_request):
         return V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_ERASURE.format(
             privacy_request_id=privacy_request.id
         )
@@ -1825,7 +1825,7 @@ class TestResumeErasureRequestWithManualConfirmation:
         assert response.status_code == 400
         assert (
             response.json()["detail"]
-            == f"Cannot resume privacy request '{privacy_request.id}'; no paused collection."
+            == f"Cannot resume privacy request '{privacy_request.id}'; no paused collection or no paused step."
         )
 
     def test_resume_with_manual_erasure_confirmation_collection_has_changed(
@@ -1865,19 +1865,20 @@ class TestResumeErasureRequestWithManualConfirmation:
             == "Collection 'manual_example:filing_cabinet' is paused at the access step. Pass in manual data instead to '/privacy-request/{privacy_request_id}/manual_input' to resume."
         )
 
+    @pytest.mark.usefixtures(
+        "postgres_example_test_dataset_config", "manual_dataset_config"
+    )
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_resume_with_manual_count(
         self,
-        submit_mock,
+        _,
         db,
         api_client,
         url,
         generate_auth_header,
         privacy_request,
-        postgres_example_test_dataset_config,
-        manual_dataset_config,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
         privacy_request.status = PrivacyRequestStatus.paused
