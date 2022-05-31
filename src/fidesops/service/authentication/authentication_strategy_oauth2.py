@@ -208,10 +208,10 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
             connection_config.update(db, data={"secrets": updated_secrets})
         else:
             SessionLocal = get_db_session()
-            db = SessionLocal()
-            merged_connection_config = db.merge(connection_config)
-            merged_connection_config.update(db, data={"secrets": updated_secrets})
-            db.close()
+            new_db: Session = SessionLocal()
+            merged_connection_config = new_db.merge(connection_config)
+            merged_connection_config.update(new_db, data={"secrets": updated_secrets})
+            new_db.close()
 
         logger.info(
             f"Successfully updated the OAuth2 token(s) for {connection_config.key}"
