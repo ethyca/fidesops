@@ -60,10 +60,10 @@ def mssql_discover():
 
     print(f"{len(set(all_columns))} columns found")
     print(f"{len(set(flagged_columns))} columns flagged")
-    as_string = ",\n".join(flagged_datatypes)
-    print(f"Flagged datatypes: \n{as_string}")
-    # print(f"Flagged columns:")
-    # print(",\n".join(flagged_columns))
+    print(f"Flagged datatypes:")
+    print(",\n".join(flagged_datatypes))
+    print(f"Flagged columns:")
+    print(",\n".join(flagged_columns))
 
 
 if __name__ == "__main__":
