@@ -158,7 +158,7 @@ class SaaSRequest(BaseModel):
 
 
 class Endpoint(BaseModel):
-    """An collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"""
+    """A collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"""
 
     name: str
     requests: Dict[Literal["read", "update", "delete"], SaaSRequest]

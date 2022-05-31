@@ -3,7 +3,7 @@ import logging
 import re
 from collections import defaultdict
 from functools import reduce
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
@@ -171,9 +171,7 @@ def format_body(
     return headers, output
 
 
-def assign_placeholders(
-    value: Union[str, int], param_values: Dict[str, Any]
-) -> Optional[str]:
+def assign_placeholders(value: Any, param_values: Dict[str, Any]) -> Optional[Any]:
     """
     Finds all the placeholders (indicated by <>) in the passed in value
     and replaces them with the actual param values
@@ -188,7 +186,7 @@ def assign_placeholders(
                 value = value.replace(f"<{placeholder}>", str(placeholder_value))
             else:
                 return None
-    return str(value) if value is not None else None
+    return value if value is not None else None
 
 
 def map_param_values(
@@ -208,7 +206,7 @@ def map_param_values(
         - action: 'refresh', context: 'Outreach Connector OAuth2'
     """
 
-    path: Optional[str] = assign_placeholders(current_request.path, param_values)
+    path = assign_placeholders(current_request.path, param_values)
     if path is None:
         raise ValueError(
             f"At least one param_value references an invalid field for the '{action}' request of {context}."
@@ -228,7 +226,7 @@ def map_param_values(
         if query_param_value is not None:
             query_params[query_param.name] = query_param_value
 
-    body: Optional[str] = assign_placeholders(current_request.body, param_values)
+    body = assign_placeholders(current_request.body, param_values)
     # if we declared a body and it's None after assigning placeholders we should error the request
     if current_request.body and body is None:
         raise ValueError(

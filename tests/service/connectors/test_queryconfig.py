@@ -23,7 +23,7 @@ from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors.query_config import MongoQueryConfig, SQLQueryConfig
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
 from fidesops.service.masking.strategy.masking_strategy_hash import (
-    HASH,
+    HASH_STRATEGY_NAME,
     HashMaskingStrategy,
 )
 from fidesops.util.data_category import DataCategory
@@ -305,7 +305,9 @@ class TestSQLQueryConfig:
         }
         # cache secrets for hash strategy
         secret = MaskingSecretCache[str](
-            secret="adobo", masking_strategy=HASH, secret_type=SecretType.salt
+            secret="adobo",
+            masking_strategy=HASH_STRATEGY_NAME,
+            secret_type=SecretType.salt,
         )
         cache_secret(secret, privacy_request.id)
 
@@ -598,7 +600,9 @@ class TestMongoQueryConfig:
         target.data_category = DataCategory("user.provided.identifiable.gender").value
         # cache secrets for hash strategy
         secret = MaskingSecretCache[str](
-            secret="adobo", masking_strategy=HASH, secret_type=SecretType.salt
+            secret="adobo",
+            masking_strategy=HASH_STRATEGY_NAME,
+            secret_type=SecretType.salt,
         )
         cache_secret(secret, privacy_request.id)
 
@@ -661,7 +665,7 @@ class TestSaaSQueryConfig:
         )
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations"
-        assert prepared_request.query_params == {"count": "1000", "offset": "0"}
+        assert prepared_request.query_params == {"count": 1000, "offset": 0}
         assert prepared_request.body is None
 
         # dynamic path with no query params

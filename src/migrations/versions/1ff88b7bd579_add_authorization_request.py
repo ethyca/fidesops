@@ -1,7 +1,7 @@
 """add authorization request
 
 Revision ID: 1ff88b7bd579
-Revises: 5078badb90b9
+Revises: 3a7c5fb119c9
 Create Date: 2022-05-25 04:09:22.149110
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "1ff88b7bd579"
-down_revision = "5078badb90b9"
+down_revision = "3a7c5fb119c9"
 branch_labels = None
 depends_on = None
 
