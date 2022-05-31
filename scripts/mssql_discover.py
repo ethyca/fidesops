@@ -1,6 +1,12 @@
 import sqlalchemy
 
-MASTER_MSSQL_URL = ""
+USER = ""
+PASS = ""
+IP = ""
+PORT = "1433"
+DB = ""
+
+MASTER_MSSQL_URL = f"mssql+pyodbc://{USER}:{PASS}@{IP}:{PORT}/{DB}?driver=ODBC+Driver+17+for+SQL+Server"
 
 
 SUPPORTED_DATA_TYPES = set(
