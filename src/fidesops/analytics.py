@@ -45,7 +45,9 @@ def generate_and_store_client_id() -> str:
 
 analytics_client = AnalyticsClient(
     # env var (internal mode) supersedes config file
-    client_id=os.getenv("FIDESOPS__ROOT_USER__ANALYTICS_ID") or config.root_user.ANALYTICS_ID or generate_and_store_client_id(),
+    client_id=os.getenv("FIDESOPS__ROOT_USER__ANALYTICS_ID")
+    or config.root_user.ANALYTICS_ID
+    or generate_and_store_client_id(),
     developer_mode=in_developer_mode(),
     extra_data=None,
     os=system(),
@@ -62,4 +64,6 @@ def send_event(event: AnalyticsEvent) -> None:
     except AnalyticsError as err:
         logger.warning(f"Error sending analytics event: {err}")
     else:
-        logger.info(f"Analytics event sent: {event.event} with client id: {analytics_client.client_id}")
+        logger.info(
+            f"Analytics event sent: {event.event} with client id: {analytics_client.client_id}"
+        )

@@ -336,9 +336,7 @@ def get_censored_config(the_config: FidesopsConfig) -> Dict[str, Any]:
     return filtered
 
 
-def update_config_file(
-        updates: Dict[str, Dict[str, Any]]
-) -> None:
+def update_config_file(updates: Dict[str, Dict[str, Any]]) -> None:
     """
     Overwrite the existing config file with a new version that includes the desired `updates`.
     :param updates: A nested `dict`, where top-level keys correspond to configuration sections and top-level values contain `dict`s whose key/value pairs correspond to the desired option/value updates.

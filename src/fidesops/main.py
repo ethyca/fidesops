@@ -52,15 +52,20 @@ def start_webserver() -> None:
         logger.info("Starting scheduled request intake...")
         initiate_scheduled_request_intake()
     import os
-    if os.getenv('FIDESOPS__ROOT_USER__ANALYTICS_ID'):
-        logger.info(f"Analytics ID override active for internal use. Will send events with client id = {os.getenv('FIDESOPS__ROOT_USER__ANALYTICS_ID')}")
 
-    send_event(AnalyticsEvent(
-        docker=in_docker_container(),
-        event=EVENT.server_start.value,
-        event_created_at=datetime.now(tz=timezone.utc),
-        local_host=running_on_local_host(),
-    ))
+    if os.getenv("FIDESOPS__ROOT_USER__ANALYTICS_ID"):
+        logger.info(
+            f"Analytics ID override active for internal use. Will send events with client id = {os.getenv('FIDESOPS__ROOT_USER__ANALYTICS_ID')}"
+        )
+
+    send_event(
+        AnalyticsEvent(
+            docker=in_docker_container(),
+            event=EVENT.server_start.value,
+            event_created_at=datetime.now(tz=timezone.utc),
+            local_host=running_on_local_host(),
+        )
+    )
 
     logger.info("Starting web server...")
     uvicorn.run(
