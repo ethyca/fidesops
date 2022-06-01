@@ -38,7 +38,7 @@ def running_on_local_host() -> bool:
 def generate_and_store_client_id() -> str:
     update_obj: Dict[str, Dict] = {}
     client_id: str = generate_client_id(FIDESOPS)  # get fideslog bytestring
-    logger.info(f"analytics client id generated")
+    logger.info("analytics client id generated")
     update_obj.update(root_user={"ANALYTICS_ID": client_id})
     update_config_file(update_obj)
     return client_id
