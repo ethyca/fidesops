@@ -535,8 +535,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resuming-a-paused-privacy-request" class="md-nav__link">
-    Resuming a paused privacy request
+  <a href="#resuming-a-paused-access-privacy-request" class="md-nav__link">
+    Resuming a paused access privacy request
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resuming-a-paused-erasure-privacy-request" class="md-nav__link">
+    Resuming a paused erasure privacy request
   </a>
   
 </li>
@@ -1336,8 +1343,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resuming-a-paused-privacy-request" class="md-nav__link">
-    Resuming a paused privacy request
+  <a href="#resuming-a-paused-access-privacy-request" class="md-nav__link">
+    Resuming a paused access privacy request
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resuming-a-paused-erasure-privacy-request" class="md-nav__link">
+    Resuming a paused erasure privacy request
   </a>
   
 </li>
@@ -1360,7 +1374,8 @@
 <p>In this section we'll cover:</p>
 <ul>
 <li>How to describe a manual dataset</li>
-<li>How to send manual data to resume a privacy request</li>
+<li>How to send manual data to resume the access portion of a privacy request</li>
+<li>How to send manual data to resume the erasure portion of a privacy request</li>
 </ul>
 <h2 id="overview">Overview</h2>
 <p>Not all data can be automatically retrieved. When services have no external API, or when user data is held in a physical location, you can define a <a href="../datasets/">dataset</a> to describe the types of manual fields you plan to upload, as well as any dependencies between these manual collections and other collections. </p>
@@ -1401,10 +1416,11 @@ defined as the unit's <a href="../datasets/#field-members">identity</a>, which w
 <span class="w">              </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
 <span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
-<h2 id="resuming-a-paused-privacy-request">Resuming a paused privacy request</h2>
-<p>A privacy request will pause execution when it reaches a manual collection.  An administrator
+<h2 id="resuming-a-paused-access-privacy-request">Resuming a paused access privacy request</h2>
+<p>A privacy request will pause execution when it reaches a manual collection in an access request.  An administrator
 should manually retrieve the data and send it in a POST request.  The fields 
 should match the fields on the paused collection.  </p>
+<p>Erasure requests with manual collections will also need data manually added as well.</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>POST {{host}}/privacy-request/{{privacy_request_id}}/manual_input</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -1415,6 +1431,14 @@ should match the fields on the paused collection.  </p>
 </code></pre></div></td></tr></table></div>
 <p>If no manual data can be found, simply pass in an empty list to resume the privacy request:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[]</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
+<h2 id="resuming-a-paused-erasure-privacy-request">Resuming a paused erasure privacy request</h2>
+<p>A privacy request will pause execution when it reaches a manual collection in an erasure request.  An administrator
+should manually mask the records in question and send confirmation of the rows affected in a POST request.  </p>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>POST {{host}}/privacy-request/{{privacy_request_id}}/erasure_confirm</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="nt">&quot;row_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">}</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
+<p>If no manual data was destroyed, pass in a count of 0 to resume the privacy request:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="nt">&quot;row_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">}</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 
               

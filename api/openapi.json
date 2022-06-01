@@ -2922,6 +2922,66 @@
         ]
       }
     },
+    "/api/v1/privacy-request/{privacy_request_id}/erasure_confirm": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Resume With Erasure Confirmation",
+        "description": "Resume the erasure portion of privacy request by passing in the number of rows that were manually masked.\n\nIf no rows were masked, pass in a 0 to resume the privacy request.",
+        "operationId": "resume_with_erasure_confirmation_api_v1_privacy_request__privacy_request_id__erasure_confirm_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Privacy Request Id",
+              "type": "string"
+            },
+            "name": "privacy_request_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RowCountRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:resume"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/privacy-request/administrate/approve": {
       "patch": {
         "tags": [
@@ -6627,6 +6687,20 @@
           }
         },
         "description": "Pass in a list of privacy request ids"
+      },
+      "RowCountRequest": {
+        "title": "RowCountRequest",
+        "required": [
+          "row_count"
+        ],
+        "type": "object",
+        "properties": {
+          "row_count": {
+            "title": "Row Count",
+            "type": "integer"
+          }
+        },
+        "description": "Schema for a user to manually confirm data erased for a collection"
       },
       "RuleCreate": {
         "title": "RuleCreate",
