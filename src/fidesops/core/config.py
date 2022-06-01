@@ -248,7 +248,10 @@ class FidesopsConfig(FidesSettings):
         for settings in [self.database, self.redis, self.security, self.execution]:
             for key, value in settings.dict().items():
                 logger.debug(
-                    f"Using config: {NotPii(settings.Config.env_prefix)}{NotPii(key)} = {NotPii(value)}"
+                    "Using config: %s%s = %s",
+                    NotPii(settings.Config.env_prefix),
+                    NotPii(key),
+                    NotPii(value),
                 )
 
 
