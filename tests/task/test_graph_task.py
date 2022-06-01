@@ -1,35 +1,25 @@
-import pytest
-
 import dask
+import pytest
 from bson import ObjectId
 
-from fidesops.graph.config import (
-    CollectionAddress,
-    FieldPath,
-)
+from fidesops.graph.config import CollectionAddress, FieldPath
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.models.policy import Policy, ActionType, RuleTarget, Rule
+from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.task.graph_task import (
-    collect_queries,
-    TaskResources,
     EMPTY_REQUEST,
+    TaskResources,
     build_affected_field_logs,
-)
-from .traversal_data import (
-    sample_traversal,
-    combined_mongo_postgresql_graph,
-    traversal_paired_dependency,
-)
-from ..graph.graph_test_util import (
-    MockSqlTask,
-    MockMongoTask,
-    field,
-    erasure_policy,
+    collect_queries,
 )
 
-dask.config.set(scheduler="processes")
+from ..graph.graph_test_util import MockMongoTask, MockSqlTask, erasure_policy, field
+from .traversal_data import (
+    combined_mongo_postgresql_graph,
+    sample_traversal,
+    traversal_paired_dependency,
+)
 
 connection_configs = [
     ConnectionConfig(key="mysql", connection_type=ConnectionType.postgres),

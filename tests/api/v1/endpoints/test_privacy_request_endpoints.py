@@ -8,12 +8,13 @@ from unittest import mock
 
 import pytest
 from dateutil.parser import parse
-from fastapi import status
+from fastapi import HTTPException, status
 from fastapi_pagination import Params
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
+    validate_manual_input,
 )
 from fidesops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
@@ -26,14 +27,19 @@ from fidesops.api.v1.urn_registry import (
     DATASETS,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
+    PRIVACY_REQUEST_MANUAL_ERASURE,
+    PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
 )
 from fidesops.core.config import config
+from fidesops.graph.config import CollectionAddress
+from fidesops.graph.graph import DatasetGraph
 from fidesops.models.audit_log import AuditLog
 from fidesops.models.client import ClientDetail
+from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import ActionType
 from fidesops.models.privacy_request import (
     ExecutionLog,
@@ -48,6 +54,7 @@ from fidesops.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
 )
 from fidesops.schemas.masking.masking_secrets import SecretType
+from fidesops.schemas.policy import PolicyResponse
 from fidesops.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
@@ -481,6 +488,12 @@ class TestGetPrivacyRequests:
                         "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
+                        "rules": [
+                            rule.dict()
+                            for rule in PolicyResponse.from_orm(
+                                privacy_request.policy
+                            ).rules
+                        ],
                     },
                 }
             ],
@@ -526,6 +539,12 @@ class TestGetPrivacyRequests:
                         "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
+                        "rules": [
+                            rule.dict()
+                            for rule in PolicyResponse.from_orm(
+                                privacy_request.policy
+                            ).rules
+                        ],
                     },
                 }
             ],
@@ -823,6 +842,12 @@ class TestGetPrivacyRequests:
                         "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
+                        "rules": [
+                            rule.dict()
+                            for rule in PolicyResponse.from_orm(
+                                privacy_request.policy
+                            ).rules
+                        ],
                     },
                     "results": {
                         "my-mongo-db": [
@@ -1608,5 +1633,289 @@ class TestResumePrivacyRequest:
                 "drp_action": None,
                 "key": privacy_request.policy.key,
                 "name": privacy_request.policy.name,
+                "rules": [
+                    rule.dict()
+                    for rule in PolicyResponse.from_orm(privacy_request.policy).rules
+                ],
             },
         }
+
+
+class TestResumeAccessRequestWithManualInput:
+    @pytest.fixture(scope="function")
+    def url(self, privacy_request):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_INPUT.format(
+            privacy_request_id=privacy_request.id
+        )
+
+    def test_manual_resume_not_authenticated(self, api_client, url):
+        response = api_client.post(url, headers={}, json={})
+        assert response.status_code == 401
+
+    def test_manual_resume_wrong_scope(self, api_client, url, generate_auth_header):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 403
+
+    def test_manual_resume_privacy_request_not_paused(
+        self, api_client, url, generate_auth_header, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == f"Invalid resume request: privacy request '{privacy_request.id}' status = in_processing. Privacy request is not paused."
+        )
+
+    def test_manual_resume_privacy_request_no_paused_location(
+        self, db, api_client, url, generate_auth_header, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db)
+
+        response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == f"Cannot resume privacy request '{privacy_request.id}'; no paused collection or no paused step."
+        )
+
+    def test_resume_with_manual_input_collection_has_changed(
+        self, db, api_client, url, generate_auth_header, privacy_request
+    ):
+        """Fail if user has changed graph so that the paused node doesn't exist"""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db)
+
+        privacy_request.cache_paused_step_and_collection(
+            ActionType.access, CollectionAddress("manual_example", "filing_cabinet")
+        )
+        response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == "Cannot save manual data. No collection in graph with name: 'manual_example:filing_cabinet'."
+        )
+
+    @pytest.mark.usefixtures(
+        "postgres_example_test_dataset_config", "manual_dataset_config"
+    )
+    def test_resume_with_manual_input_invalid_data(
+        self,
+        db,
+        api_client,
+        url,
+        generate_auth_header,
+        privacy_request,
+    ):
+        """Fail if the manual data entered does not match fields on the dataset"""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db)
+
+        privacy_request.cache_paused_step_and_collection(
+            ActionType.access, CollectionAddress("manual_input", "filing_cabinet")
+        )
+        response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == "Cannot save manual rows. No 'mock' field defined on the 'manual_input:filing_cabinet' collection."
+        )
+
+    @pytest.mark.usefixtures(
+        "postgres_example_test_dataset_config", "manual_dataset_config"
+    )
+    def test_resume_with_manual_input(
+        self,
+        db,
+        api_client,
+        url,
+        generate_auth_header,
+        privacy_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db)
+
+        privacy_request.cache_paused_step_and_collection(
+            ActionType.access, CollectionAddress("manual_input", "filing_cabinet")
+        )
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json=[
+                {
+                    "id": 1,
+                    "authorized_user": "Jason Doe",
+                    "customer_id": 1,
+                    "payment_card_id": "abcde",
+                }
+            ],
+        )
+        assert response.status_code == 200
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+
+class TestValidateManualInput:
+    """Verify pytest cell-var-from-loop warning is a false positive"""
+
+    @pytest.fixture(scope="function")
+    @pytest.mark.usefixtures("postgres_example_test_dataset_config")
+    def dataset_graph(self, db):
+        datasets = DatasetConfig.all(db=db)
+        dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+        dataset_graph = DatasetGraph(*dataset_graphs)
+        return dataset_graph
+
+    @pytest.mark.usefixtures("postgres_example_test_dataset_config")
+    def test_all_fields_match(self, dataset_graph):
+        paused_location = CollectionAddress("postgres_example_test_dataset", "address")
+
+        manual_rows = [{"city": "Nashville", "state": "TN"}]
+        validate_manual_input(manual_rows, paused_location, dataset_graph)
+
+    @pytest.mark.usefixtures("postgres_example_test_dataset_config")
+    def test_one_field_does_not_match(self, dataset_graph):
+        paused_location = CollectionAddress("postgres_example_test_dataset", "address")
+
+        manual_rows = [{"city": "Nashville", "state": "TN", "ccn": "aaa-aaa"}]
+        with pytest.raises(HTTPException) as exc:
+            validate_manual_input(manual_rows, paused_location, dataset_graph)
+        assert (
+            exc.value.detail
+            == "Cannot save manual rows. No 'ccn' field defined on the 'postgres_example_test_dataset:address' collection."
+        )
+
+    @pytest.mark.usefixtures("postgres_example_test_dataset_config")
+    def test_field_on_second_row_does_not_match(self, dataset_graph):
+        paused_location = CollectionAddress("postgres_example_test_dataset", "address")
+
+        manual_rows = [
+            {"city": "Nashville", "state": "TN"},
+            {"city": "Austin", "misspelled_state": "TX"},
+        ]
+        with pytest.raises(HTTPException) as exc:
+            validate_manual_input(manual_rows, paused_location, dataset_graph)
+        assert (
+            exc.value.detail
+            == "Cannot save manual rows. No 'misspelled_state' field defined on the 'postgres_example_test_dataset:address' collection."
+        )
+
+
+class TestResumeErasureRequestWithManualConfirmation:
+    @pytest.fixture(scope="function")
+    def url(self, privacy_request):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_ERASURE.format(
+            privacy_request_id=privacy_request.id
+        )
+
+    def test_manual_resume_not_authenticated(self, api_client, url):
+        response = api_client.post(url, headers={}, json={})
+        assert response.status_code == 401
+
+    def test_manual_resume_wrong_scope(self, api_client, url, generate_auth_header):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 403
+
+    def test_manual_resume_privacy_request_not_paused(
+        self, api_client, url, generate_auth_header, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header, json={"row_count": 0})
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == f"Invalid resume request: privacy request '{privacy_request.id}' status = in_processing. Privacy request is not paused."
+        )
+
+    def test_manual_resume_privacy_request_no_paused_location(
+        self, db, api_client, url, generate_auth_header, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db)
+
+        response = api_client.post(url, headers=auth_header, json={"row_count": 0})
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == f"Cannot resume privacy request '{privacy_request.id}'; no paused collection or no paused step."
+        )
+
+    def test_resume_with_manual_erasure_confirmation_collection_has_changed(
+        self, db, api_client, url, generate_auth_header, privacy_request
+    ):
+        """Fail if user has changed graph so that the paused node doesn't exist"""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db)
+
+        privacy_request.cache_paused_step_and_collection(
+            ActionType.erasure, CollectionAddress("manual_example", "filing_cabinet")
+        )
+        response = api_client.post(url, headers=auth_header, json={"row_count": 0})
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == "Cannot save manual data. No collection in graph with name: 'manual_example:filing_cabinet'."
+        )
+
+    def test_resume_still_paused_at_access_request(
+        self, db, api_client, url, generate_auth_header, privacy_request
+    ):
+        """Fail if user hitting wrong endpoint to resume."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db)
+
+        privacy_request.cache_paused_step_and_collection(
+            ActionType.access, CollectionAddress("manual_example", "filing_cabinet")
+        )
+        response = api_client.post(url, headers=auth_header, json={"row_count": 0})
+        assert response.status_code == 400
+
+        assert (
+            response.json()["detail"]
+            == "Collection 'manual_example:filing_cabinet' is paused at the access step. Pass in manual data instead to '/privacy-request/{privacy_request_id}/manual_input' to resume."
+        )
+
+    @pytest.mark.usefixtures(
+        "postgres_example_test_dataset_config", "manual_dataset_config"
+    )
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
+    def test_resume_with_manual_count(
+        self,
+        _,
+        db,
+        api_client,
+        url,
+        generate_auth_header,
+        privacy_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db)
+
+        privacy_request.cache_paused_step_and_collection(
+            ActionType.erasure, CollectionAddress("manual_input", "filing_cabinet")
+        )
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={"row_count": 5},
+        )
+        assert response.status_code == 200
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.in_processing

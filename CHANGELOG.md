@@ -17,8 +17,38 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.0...main)
-* 
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.1...main)
+
+### Changed
+* Use the `RuleResponse` schema within the `PrivacyRequestReposnse` schema [#580](https://github.com/ethyca/fidesops/pull/580)
+
+## [1.5.1](https://github.com/ethyca/fidesops/compare/1.5.0...1.5.1) - 2022-05-27
+
+### Added
+* Added `FIDESOPS__DATABASE__ENABLED` and `FIDESOPS__REDIS__ENABLED` configuration variables to allow `fidesops` to run cleanly in a "stateless" mode without any database or redis cache integration [#550](https://github.com/ethyca/fidesops/pull/550)
+* Pause Access Request Execution / Resume on Manual Input in [#554](https://github.com/ethyca/fidesops/pull/554)
+* A `[package]` section of the `fidesops.toml` configuration file may specify the path to the `fidesops` package itself [#566](https://github.com/ethyca/fidesops/pull/566)
+* Pause Erasure Request Execution / Resume on Manual Input in [#571](https://github.com/ethyca/fidesops/pull/571/)
+
+### Changed
+* `MaskingStrategyFactory` and associated `MaskingStrategy` implementations now use a decorator-based registration system, to improve extensibility [#560](https://github.com/ethyca/fidesops/pull/560)
+* Added `from __future__ import annotations` to `src/fidesops/util/logger.py` to maintain backward compatibility with Python < 3.9 [#569](https://github.com/ethyca/fidesops/pull/569)
+
+### Developer Experience
+
+* Import ordering is now enforced using [isort](https://pycqa.github.io/isort/) in CI [#533](https://github.com/ethyca/fidesops/pull/533)
+* Teardown all Docker infra once it's finished with [#498](https://github.com/ethyca/fidesops/pull/498/)
+* Update PR checklist for [`CHANGELOG.md`](https://github.com/ethyca/fidesops/blob/main/CHANGELOG.md) file [#558](https://github.com/ethyca/fidesops/pull/558)
+* Database migrations are included in the published PyPI package [#566](https://github.com/ethyca/fidesops/pull/566)
+
+### Docs
+
+* Updated documentation for the user management ui [#530](https://github.com/ethyca/fidesops/pull/530)
+* Added documentation for the privacy center [#549](https://github.com/ethyca/fidesops/pull/549)
+
+### Fixed
+
+* Fixed type errors for privacy center build [#540](https://github.com/ethyca/fidesops/pull/540)
 
 ## [1.5.0](https://github.com/ethyca/fidesops/compare/1.4.2...1.5.0) - 2022-05-18
 
@@ -54,13 +84,14 @@ The types of changes are:
 * DRP exerise endpoint [#496](https://github.com/ethyca/fidesops/pull/496)
 * Frontend for privacy request denial reaons [#480](https://github.com/ethyca/fidesops/pull/480)
 * Publish Fidesops to Pypi [#491](https://github.com/ethyca/fidesops/pull/491)
+* DRP data rights endpoint [#526](https://github.com/ethyca/fidesops/pull/526)
 * ADDS Fideslog integration [#541](https://github.com/ethyca/fidesops/pull/541)
 
 
-### Changed 
+### Changed
 * Converted HTTP Status Codes to Starlette constant values [#438](https://github.com/ethyca/fidesops/pull/438)
 * SaasConnector.send behavior on ignore_errors now returns raw response [#462](https://github.com/ethyca/fidesops/pull/462)
-* Seed user permissions in `create_superuser.py` script [#468](https://github.com/ethyca/fidesops/pull/468) 
+* Seed user permissions in `create_superuser.py` script [#468](https://github.com/ethyca/fidesops/pull/468)
 * User API Endpoints (update fields and reset user passwords) [#471](https://github.com/ethyca/fidesops/pull/471)
 * Format tests with `black` [#466](https://github.com/ethyca/fidesops/pull/466)
 * Extract privacy request endpoint logic into separate service for DRP [#470](https://github.com/ethyca/fidesops/pull/470)

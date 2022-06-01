@@ -8,9 +8,11 @@ from starlette.middleware.cors import CORSMiddleware
 
 from fidesops.analytics import in_docker_container, running_on_local_host, send_event
 from fidesops.api.v1.api import api_router
+from fidesops.api.v1.exception_handlers import ExceptionHandlers
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesops.db.database import init_db
+from fidesops.common_exceptions import FunctionalityNotConfigured
 from fidesops.core.config import config
+from fidesops.db.database import init_db
 from fidesops.schemas.analytics import EVENT
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
@@ -33,17 +35,22 @@ if config.security.CORS_ORIGINS:
     )
 
 app.include_router(api_router)
+for handler in ExceptionHandlers.get_handlers():
+    app.add_exception_handler(FunctionalityNotConfigured, handler)
 
 
 def start_webserver() -> None:
     """Run any pending DB migrations and start the webserver."""
     logger.info("****************fidesops****************")
-    logger.info("Running any pending DB migrations...")
-    init_db(config.database.SQLALCHEMY_DATABASE_URI)
+    if config.database.ENABLED:
+        logger.info("Running any pending DB migrations...")
+        init_db(config.database.SQLALCHEMY_DATABASE_URI, config.package.PATH)
+
     scheduler.start()
 
-    logger.info("Starting scheduled request intake...")
-    initiate_scheduled_request_intake()
+    if config.database.ENABLED:
+        logger.info("Starting scheduled request intake...")
+        initiate_scheduled_request_intake()
     import os
     if os.getenv('FIDESOPS__ROOT_USER__ANALYTICS_ID'):
         logger.info(f"Analytics ID override active for internal use. Will send events with client id = {os.getenv('FIDESOPS__ROOT_USER__ANALYTICS_ID')}")
@@ -57,7 +64,7 @@ def start_webserver() -> None:
 
     logger.info("Starting web server...")
     uvicorn.run(
-        "src.fidesops.main:app",
+        "fidesops.main:app",
         host="0.0.0.0",
         port=8080,
         log_config=None,

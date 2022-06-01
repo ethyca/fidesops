@@ -3,17 +3,11 @@
 import hashlib
 import logging
 import os
-from typing import Dict, List, Optional, Union, Tuple, Any, MutableMapping
+from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
 
 import bcrypt
 import toml
-from pydantic import (
-    AnyHttpUrl,
-    BaseSettings,
-    PostgresDsn,
-    ValidationError,
-    validator,
-)
+from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, ValidationError, validator
 from pydantic.env_settings import SettingsSourceCallable
 
 from fidesops.common_exceptions import MissingConfig
@@ -47,6 +41,7 @@ class DatabaseSettings(FidesSettings):
     DB: str
     PORT: str = "5432"
     TEST_DB: str = "test"
+    ENABLED: bool = True
 
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
     SQLALCHEMY_TEST_DATABASE_URI: Optional[PostgresDsn] = None
@@ -99,6 +94,31 @@ class ExecutionSettings(FidesSettings):
         env_prefix = "FIDESOPS__EXECUTION__"
 
 
+class PackageSettings(FidesSettings):
+    """Configuration settings for the fidesops package itself."""
+
+    PATH: Optional[str] = None
+
+    @validator("PATH", pre=True)
+    def ensure_valid_package_path(cls, v: Optional[str]) -> str:
+        """
+        Ensure a valid path to the fidesops src/ directory is provided.
+
+        This is required to enable fidesops-plus to start successfully.
+        """
+
+        if isinstance(v, str) and os.path.isdir(v):
+            return (
+                v if os.path.basename(v) == "fidesops" else os.path.join(v, "fidesops/")
+            )
+
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        return os.path.normpath(os.path.join(current_dir, "../../"))
+
+    class Config:
+        env_prefix = "FIDESOPS__PACKAGE__"
+
+
 class RedisSettings(FidesSettings):
     """Configuration settings for Redis."""
 
@@ -109,6 +129,7 @@ class RedisSettings(FidesSettings):
     DECODE_RESPONSES: bool = True
     DEFAULT_TTL_SECONDS: int = 604800
     DB_INDEX: int
+    ENABLED: bool = True
 
     class Config:
         env_prefix = "FIDESOPS__REDIS__"
@@ -182,6 +203,7 @@ class FidesopsConfig(FidesSettings):
     """Configuration variables for the FastAPI project"""
 
     database: DatabaseSettings
+    package = PackageSettings()
     redis: RedisSettings
     security: SecuritySettings
     execution: ExecutionSettings

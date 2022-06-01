@@ -5,24 +5,20 @@ import pytest
 from starlette.testclient import TestClient
 
 from fidesops.api.v1 import scope_registry as scopes
+from fidesops.api.v1.urn_registry import POLICY_DETAIL as POLICY_DETAIL_URI
+from fidesops.api.v1.urn_registry import POLICY_LIST as POLICY_CREATE_URI
+from fidesops.api.v1.urn_registry import RULE_DETAIL as RULE_DETAIL_URI
+from fidesops.api.v1.urn_registry import RULE_LIST as RULE_CREATE_URI
 from fidesops.api.v1.urn_registry import (
-    POLICY_LIST as POLICY_CREATE_URI,
-    POLICY_DETAIL as POLICY_DETAIL_URI,
-    RULE_LIST as RULE_CREATE_URI,
-    RULE_DETAIL as RULE_DETAIL_URI,
-    RULE_TARGET_LIST,
     RULE_TARGET_DETAIL,
+    RULE_TARGET_LIST,
     V1_URL_PREFIX,
 )
 from fidesops.models.client import ClientDetail
-from fidesops.models.policy import (
-    ActionType,
-    Policy,
-    Rule,
-    RuleTarget,
-    DrpAction,
+from fidesops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fidesops.service.masking.strategy.masking_strategy_nullify import (
+    NULL_REWRITE_STRATEGY_NAME,
 )
-from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.util.data_category import DataCategory, generate_fides_data_categories
 
 
@@ -712,7 +708,7 @@ class TestCreateRules:
                 "name": "test erasure rule",
                 "action_type": ActionType.erasure.value,
                 "masking_strategy": {
-                    "strategy": NULL_REWRITE,
+                    "strategy": NULL_REWRITE_STRATEGY_NAME,
                     "configuration": {},
                 },
             }
@@ -730,7 +726,7 @@ class TestCreateRules:
         rule_data = response_data[0]
         assert "masking_strategy" in rule_data
         masking_strategy_data = rule_data["masking_strategy"]
-        assert masking_strategy_data["strategy"] == NULL_REWRITE
+        assert masking_strategy_data["strategy"] == NULL_REWRITE_STRATEGY_NAME
         assert "configuration" not in masking_strategy_data
 
     def test_update_rule_policy_id_fails(
@@ -1073,7 +1069,7 @@ class TestRuleTargets:
                 "name": "Erasure Rule",
                 "policy_id": policy.id,
                 "masking_strategy": {
-                    "strategy": NULL_REWRITE,
+                    "strategy": NULL_REWRITE_STRATEGY_NAME,
                     "configuration": {},
                 },
             },

@@ -18,10 +18,7 @@ nav:
       - Authenticate with OAuth: guides/oauth.md  
       - Connect SQL and NoSQL Databases: guides/database_connectors.md
       - Configure Datasets: guides/datasets.md
-      - Connect to SaaS Applications: guides/saas_connectors.md
-      - SaaS Configuration: guides/saas_config.md
-      - SaaS Post-Processors: guides/saas_postprocessors.md
-      - SaaS Pagination: guides/saas_pagination.md
+      - Define Manual Datasets: guides/manual_data.md
       - Annotate Complex Fields: guides/complex_fields.md
       - Preview Query Execution: guides/query_execution.md  
       - Create Request Policies: guides/policies.md  
@@ -32,9 +29,23 @@ nav:
       - Report on Privacy Requests: guides/reporting.md
       - Configure OneTrust Integration: guides/onetrust.md  
       - Configuration Reference: guides/configuration_reference.md
-      - Admin UI: guides/admin_ui.md
-      - Postman Collection: postman/using_postman.md
       - Data Rights Protocol: guides/data_rights_protocol.md
+  - SaaS Connectors:
+      - Connect to SaaS Applications: saas_connectors/saas_connectors.md
+      - SaaS Configuration: saas_connectors/saas_config.md
+      - SaaS Post-Processors: saas_connectors/saas_postprocessors.md
+      - SaaS Pagination: saas_connectors/saas_pagination.md
+      - Connection Examples:
+        - Hubspot: saas_connectors/example_configs/hubspot.md
+        - Mailchimp: saas_connectors/example_configs/mailchimp.md
+        - Segment: saas_connectors/example_configs/segment.md
+        - Sentry: saas_connectors/example_configs/sentry.md
+        - Stripe: saas_connectors/example_configs/stripe.md
+  - Fidesops UI:
+      - Overview: ui/overview.md
+      - Privacy Center: ui/privacy_center.md
+      - Admin UI: 
+        - User Management: ui/user_management.md
   - Deployment Guide: deployment.md
   - Glossary: glossary.md
   - API: api/index.md
@@ -46,6 +57,7 @@ nav:
       - Testing: development/testing.md
       - Pull Requests: development/pull_requests.md
       - Releases: development/releases.md
+      - Postman Collection: postman/using_postman.md
   - Community:
       - GitHub: community/github.md
       - Code of Conduct: community/code_of_conduct.md

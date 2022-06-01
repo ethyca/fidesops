@@ -1,10 +1,11 @@
+from fidesops.schemas.masking.masking_configuration import HmacMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fidesops.service.masking.strategy.masking_strategy_hmac import (
+    HMAC_STRATEGY_NAME,
     HmacMaskingStrategy,
-    HMAC,
 )
-from fidesops.schemas.masking.masking_configuration import HmacMaskingConfiguration
-from ....test_helpers.cache_secrets_helper import clear_cache_secrets, cache_secret
+
+from ....test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
 
 request_id = "1345134"
 
@@ -15,11 +16,15 @@ def test_hmac_sha_256():
     expected = "df1e66dc2262ae3336f36294811f795b075900287e0a1add7974eacea8a52970"
 
     secret_key = MaskingSecretCache[str](
-        secret="test_key", masking_strategy=HMAC, secret_type=SecretType.key
+        secret="test_key",
+        masking_strategy=HMAC_STRATEGY_NAME,
+        secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
     secret_salt = MaskingSecretCache[str](
-        secret="test_salt", masking_strategy=HMAC, secret_type=SecretType.salt
+        secret="test_salt",
+        masking_strategy=HMAC_STRATEGY_NAME,
+        secret_type=SecretType.salt,
     )
     cache_secret(secret_salt, request_id)
 
@@ -34,11 +39,15 @@ def test_mask_sha512():
     expected = "0b4b968fa95510640bff35404ca89c146769e0a88cd4a6c15843176735a0820eec0f6580a21fd2b6b30f130cef01ccb4c5ab1d63387c4153ce8fc507e52efbaf"
 
     secret_key = MaskingSecretCache[str](
-        secret="test_key", masking_strategy=HMAC, secret_type=SecretType.key
+        secret="test_key",
+        masking_strategy=HMAC_STRATEGY_NAME,
+        secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
     secret_salt = MaskingSecretCache[str](
-        secret="test_salt", masking_strategy=HMAC, secret_type=SecretType.salt
+        secret="test_salt",
+        masking_strategy=HMAC_STRATEGY_NAME,
+        secret_type=SecretType.salt,
     )
     cache_secret(secret_salt, request_id)
 
@@ -53,11 +62,15 @@ def test_mask_sha256_default():
     expected = "df1e66dc2262ae3336f36294811f795b075900287e0a1add7974eacea8a52970"
 
     secret_key = MaskingSecretCache[str](
-        secret="test_key", masking_strategy=HMAC, secret_type=SecretType.key
+        secret="test_key",
+        masking_strategy=HMAC_STRATEGY_NAME,
+        secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
     secret_salt = MaskingSecretCache[str](
-        secret="test_salt", masking_strategy=HMAC, secret_type=SecretType.salt
+        secret="test_salt",
+        masking_strategy=HMAC_STRATEGY_NAME,
+        secret_type=SecretType.salt,
     )
     cache_secret(secret_salt, request_id)
 
@@ -73,11 +86,15 @@ def test_mask_sha256_default_multi_value():
     expected2 = "fdc1f6389fbbb07174d4f15a4bbf0c0e2226a32ef2b288aa9a490e9fb91ce4bf"
 
     secret_key = MaskingSecretCache[str](
-        secret="test_key", masking_strategy=HMAC, secret_type=SecretType.key
+        secret="test_key",
+        masking_strategy=HMAC_STRATEGY_NAME,
+        secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
     secret_salt = MaskingSecretCache[str](
-        secret="test_salt", masking_strategy=HMAC, secret_type=SecretType.salt
+        secret="test_salt",
+        masking_strategy=HMAC_STRATEGY_NAME,
+        secret_type=SecretType.salt,
     )
     cache_secret(secret_salt, request_id)
 
@@ -93,11 +110,15 @@ def test_mask_arguments_null():
     expected = None
 
     secret_key = MaskingSecretCache[str](
-        secret="test_key", masking_strategy=HMAC, secret_type=SecretType.key
+        secret="test_key",
+        masking_strategy=HMAC_STRATEGY_NAME,
+        secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
     secret_salt = MaskingSecretCache[str](
-        secret="test_salt", masking_strategy=HMAC, secret_type=SecretType.salt
+        secret="test_salt",
+        masking_strategy=HMAC_STRATEGY_NAME,
+        secret_type=SecretType.salt,
     )
     cache_secret(secret_salt, request_id)
 

@@ -2,18 +2,16 @@ import logging
 from typing import List
 
 from fastapi import APIRouter, HTTPException
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
+from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fidesops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
 from fidesops.common_exceptions import ValidationError
-from fidesops.schemas.masking.masking_api import MaskingAPIResponse, MaskingAPIRequest
+from fidesops.schemas.masking.masking_api import MaskingAPIRequest, MaskingAPIResponse
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
-
 from fidesops.service.masking.strategy.masking_strategy_factory import (
-    get_strategies,
-    get_strategy,
+    MaskingStrategyFactory,
     NoSuchStrategyException,
 )
 
@@ -28,7 +26,7 @@ def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
     try:
         values = request.values
         masking_strategy = request.masking_strategy
-        strategy = get_strategy(
+        strategy = MaskingStrategyFactory.get_strategy(
             masking_strategy.strategy, masking_strategy.configuration
         )
         logger.info(f"Starting masking with strategy {masking_strategy.strategy}")
@@ -46,4 +44,7 @@ def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
 def list_masking_strategies() -> List[MaskingStrategyDescription]:
     """Lists available masking strategies with instructions on how to use them"""
     logger.info("Getting available masking strategies")
-    return [strategy.get_description() for strategy in get_strategies()]
+    return [
+        strategy.get_description()
+        for strategy in MaskingStrategyFactory.get_strategies()
+    ]

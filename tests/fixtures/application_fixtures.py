@@ -4,11 +4,6 @@ from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
 
-from fidesops.api.v1.scope_registry import SCOPE_REGISTRY, PRIVACY_REQUEST_READ
-from fidesops.models.fidesops_user import FidesopsUser
-from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
-from fidesops.util.data_category import DataCategory
-
 import pydash
 import pytest
 import yaml
@@ -16,41 +11,43 @@ from faker import Faker
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
+from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
 from fidesops.core.config import load_file, load_toml
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import (
-    ConnectionConfig,
     AccessLevel,
+    ConnectionConfig,
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.models.fidesops_user import FidesopsUser
+from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.models.policy import (
     ActionType,
     Policy,
+    PolicyPostWebhook,
+    PolicyPreWebhook,
     Rule,
     RuleTarget,
-    PolicyPreWebhook,
-    PolicyPostWebhook,
 )
-
-from fidesops.models.privacy_request import (
-    PrivacyRequest,
-    PrivacyRequestStatus,
-)
-from fidesops.models.storage import StorageConfig, ResponseFormat
-from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
+from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesops.models.storage import ResponseFormat, StorageConfig
 from fidesops.schemas.storage.storage import (
     FileNaming,
     StorageDetails,
     StorageSecrets,
     StorageType,
 )
-from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
+from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC_STRATEGY_NAME
+from fidesops.service.masking.strategy.masking_strategy_nullify import (
+    NULL_REWRITE_STRATEGY_NAME,
+)
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
-    STRING_REWRITE,
+    STRING_REWRITE_STRATEGY_NAME,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.util.cache import FidesopsRedis
+from fidesops.util.data_category import DataCategory
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -386,7 +383,7 @@ def erasure_policy_string_rewrite_long(
             "name": "Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": STRING_REWRITE,
+                "strategy": STRING_REWRITE_STRATEGY_NAME,
                 "configuration": {
                     "rewrite_value": "some rewrite value that is very long and goes on and on"
                 },
@@ -429,13 +426,16 @@ def erasure_policy_two_rules(
             "client_id": oauth_client.id,
             "name": "Second Erasure Rule",
             "policy_id": erasure_policy.id,
-            "masking_strategy": {"strategy": NULL_REWRITE, "configuration": {}},
+            "masking_strategy": {
+                "strategy": NULL_REWRITE_STRATEGY_NAME,
+                "configuration": {},
+            },
         },
     )
 
     # TODO set masking strategy in Rule.create() call above, once more masking strategies beyond NULL_REWRITE are supported.
     second_erasure_rule.masking_strategy = {
-        "strategy": STRING_REWRITE,
+        "strategy": STRING_REWRITE_STRATEGY_NAME,
         "configuration": {"rewrite_value": "*****"},
     }
 
@@ -564,6 +564,55 @@ def policy_drp_action(
 
 
 @pytest.fixture(scope="function")
+def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Generator:
+    erasure_request_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example erasure request policy drp",
+            "key": "example_erasure_request_policy_drp",
+            "drp_action": "deletion",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    erasure_request_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "Erasure Request Rule DRP",
+            "policy_id": erasure_request_policy.id,
+            "masking_strategy": {
+                "strategy": STRING_REWRITE_STRATEGY_NAME,
+                "configuration": {"rewrite_value": "MASKED"},
+            },
+        },
+    )
+
+    rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.provided.identifiable").value,
+            "rule_id": erasure_request_rule.id,
+        },
+    )
+    yield erasure_request_policy
+    try:
+        rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_request_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_request_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def erasure_policy_string_rewrite(
     db: Session,
     oauth_client: ClientDetail,
@@ -586,7 +635,7 @@ def erasure_policy_string_rewrite(
             "name": "string rewrite erasure rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": STRING_REWRITE,
+                "strategy": STRING_REWRITE_STRATEGY_NAME,
                 "configuration": {"rewrite_value": "MASKED"},
             },
         },
@@ -639,7 +688,7 @@ def erasure_policy_hmac(
             "name": "hmac erasure rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": HMAC,
+                "strategy": HMAC_STRATEGY_NAME,
                 "configuration": {},
             },
         },
@@ -926,6 +975,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/mysql_example_test_dataset.yml",
         "data/dataset/mariadb_example_test_dataset.yml",
         "data/dataset/bigquery_example_test_dataset.yml",
+        "data/dataset/manual_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
