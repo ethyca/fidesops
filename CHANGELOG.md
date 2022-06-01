@@ -21,6 +21,7 @@ The types of changes are:
 
 ### Changed
 * Use the `RuleResponse` schema within the `PrivacyRequestReposnse` schema [#580](https://github.com/ethyca/fidesops/pull/580)
+* Modified `filter` post-processor to include toggles for exact and case sensitive matching [#584](https://github.com/ethyca/fidesops/pull/584)
 
 ## [1.5.1](https://github.com/ethyca/fidesops/compare/1.5.0...1.5.1) - 2022-05-27
 
