@@ -6,7 +6,7 @@ from pydantic import ValidationError
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.models.policy import ActionType
+from fidesops.models.policy import PausedStep
 from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.task import graph_task
@@ -19,7 +19,6 @@ def test_restart_graph_from_failure(
     example_datasets,
     integration_postgres_config,
     integration_mongodb_config,
-    integration_mongodb_connector,
 ) -> None:
     """Run a failed privacy request and restart from failure"""
     dataset_postgres = FidesopsDataset(**example_datasets[0])
@@ -80,7 +79,7 @@ def test_restart_graph_from_failure(
     ]
 
     assert privacy_request.get_failed_step_and_collection() == (
-        ActionType.access,
+        PausedStep.access,
         CollectionAddress("mongo_test", "customer_details"),
     )
 

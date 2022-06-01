@@ -41,7 +41,7 @@ from fidesops.graph.graph import DatasetGraph
 from fidesops.models.audit_log import AuditLog
 from fidesops.models.client import ClientDetail
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import ActionType
+from fidesops.models.policy import ActionType, PausedStep
 from fidesops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -1693,7 +1693,7 @@ class TestResumeAccessRequestWithManualInput:
         privacy_request.save(db)
 
         privacy_request.cache_paused_step_and_collection(
-            ActionType.access, CollectionAddress("manual_example", "filing_cabinet")
+            PausedStep.access, CollectionAddress("manual_example", "filing_cabinet")
         )
         response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
         assert response.status_code == 422
@@ -1719,7 +1719,7 @@ class TestResumeAccessRequestWithManualInput:
         privacy_request.save(db)
 
         privacy_request.cache_paused_step_and_collection(
-            ActionType.access, CollectionAddress("manual_input", "filing_cabinet")
+            PausedStep.access, CollectionAddress("manual_input", "filing_cabinet")
         )
         response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
         assert response.status_code == 422
@@ -1744,7 +1744,7 @@ class TestResumeAccessRequestWithManualInput:
         privacy_request.save(db)
 
         privacy_request.cache_paused_step_and_collection(
-            ActionType.access, CollectionAddress("manual_input", "filing_cabinet")
+            PausedStep.access, CollectionAddress("manual_input", "filing_cabinet")
         )
         response = api_client.post(
             url,
@@ -1861,7 +1861,7 @@ class TestResumeErasureRequestWithManualConfirmation:
         privacy_request.save(db)
 
         privacy_request.cache_paused_step_and_collection(
-            ActionType.erasure, CollectionAddress("manual_example", "filing_cabinet")
+            PausedStep.erasure, CollectionAddress("manual_example", "filing_cabinet")
         )
         response = api_client.post(url, headers=auth_header, json={"row_count": 0})
         assert response.status_code == 422
@@ -1879,7 +1879,7 @@ class TestResumeErasureRequestWithManualConfirmation:
         privacy_request.save(db)
 
         privacy_request.cache_paused_step_and_collection(
-            ActionType.access, CollectionAddress("manual_example", "filing_cabinet")
+            PausedStep.access, CollectionAddress("manual_example", "filing_cabinet")
         )
         response = api_client.post(url, headers=auth_header, json={"row_count": 0})
         assert response.status_code == 400
@@ -1909,7 +1909,7 @@ class TestResumeErasureRequestWithManualConfirmation:
         privacy_request.save(db)
 
         privacy_request.cache_paused_step_and_collection(
-            ActionType.erasure, CollectionAddress("manual_input", "filing_cabinet")
+            PausedStep.erasure, CollectionAddress("manual_input", "filing_cabinet")
         )
         response = api_client.post(
             url,
@@ -1977,7 +1977,7 @@ class TestRestartFromFailure:
         privacy_request.status = PrivacyRequestStatus.error
         privacy_request.save(db)
         privacy_request.cache_failed_step_and_collection(
-            ActionType.access, CollectionAddress("test_dataset", "test_collection")
+            PausedStep.access, CollectionAddress("test_dataset", "test_collection")
         )
 
         response = api_client.post(url, headers=auth_header)
@@ -1986,4 +1986,4 @@ class TestRestartFromFailure:
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.in_processing
 
-        submit_mock.assert_called_with(from_step=ActionType.access)
+        submit_mock.assert_called_with(from_step=PausedStep.access)
