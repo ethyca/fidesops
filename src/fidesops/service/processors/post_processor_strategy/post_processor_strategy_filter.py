@@ -124,7 +124,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         """
 
         # validate inputs
-        if not (isinstance(target, str) or isinstance(target, list)):
+        if not isinstance(target, (str, list)):
             raise FidesopsException(
                 f"Field value '{self.field}' for filter postprocessor must be a string or list of strings, found '{type(target).__name__}'"
             )
