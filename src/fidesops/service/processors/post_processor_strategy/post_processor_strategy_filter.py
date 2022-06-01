@@ -123,6 +123,10 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         - case_sensitive: cases must match between filter_value and target
         """
 
+        # does not match if we don't have anything to compare to
+        if target is None:
+            return False
+
         # validate inputs
         if not isinstance(target, (str, list)):
             raise FidesopsException(
