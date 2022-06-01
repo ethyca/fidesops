@@ -324,7 +324,7 @@ def update_config_file(
     try:
         config_path: str = load_file("fidesops.toml")
         current_config: MutableMapping[str, Any] = load_toml("fidesops.toml")
-    except (FileNotFoundError, ValidationError) as e:
+    except FileNotFoundError as e:
         logger.warning("fidesops.toml could not be loaded: %s", NotPii(e))
 
     for key, value in updates.items():
