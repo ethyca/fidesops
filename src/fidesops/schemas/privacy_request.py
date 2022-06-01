@@ -9,7 +9,7 @@ from fidesops.models.policy import ActionType
 from fidesops.models.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
-from fidesops.schemas.policy import Policy as PolicySchema
+from fidesops.schemas.policy import PolicyResponse as PolicySchema
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.schemas.user import PrivacyRequestReviewer
@@ -101,6 +101,12 @@ class ExecutionLogDetailResponse(ExecutionLogResponse):
     """Schema for the detailed ExecutionLogs when accessed directly"""
 
     dataset_name: Optional[str]
+
+
+class RowCountRequest(BaseSchema):
+    """Schema for a user to manually confirm data erased for a collection"""
+
+    row_count: int
 
 
 class PrivacyRequestResponse(BaseSchema):
