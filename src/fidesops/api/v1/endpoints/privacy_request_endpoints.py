@@ -671,8 +671,6 @@ def resume_privacy_request_with_manual_input(
         privacy_request=privacy_request,
     ).submit(from_step=paused_step)
 
-    privacy_request.cache_failed_step_and_collection()  # Reset failed step and collection to None
-
     return privacy_request
 
 
@@ -701,6 +699,34 @@ def resume_with_manual_input(
         cache=cache,
         expected_paused_step=PausedStep.access,
         manual_rows=manual_rows,
+    )
+
+
+@router.post(
+    PRIVACY_REQUEST_MANUAL_ERASURE,
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestResponse,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+    ],
+)
+def resume_with_erasure_confirmation(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    cache: FidesopsRedis = Depends(deps.get_cache),
+    manual_count: RowCountRequest,
+) -> PrivacyRequestResponse:
+    """Resume the erasure portion of privacy request by passing in the number of rows that were manually masked.
+
+    If no rows were masked, pass in a 0 to resume the privacy request.
+    """
+    return resume_privacy_request_with_manual_input(
+        privacy_request_id=privacy_request_id,
+        db=db,
+        cache=cache,
+        expected_paused_step=PausedStep.erasure,
+        manual_count=manual_count.row_count,
     )
 
 
@@ -750,35 +776,9 @@ def restart_privacy_request_from_failure(
         privacy_request=privacy_request,
     ).submit(from_step=failed_step)
 
+    privacy_request.cache_failed_step_and_collection()  # Reset failed step and collection to None
+
     return privacy_request
-
-
-@router.post(
-    PRIVACY_REQUEST_MANUAL_ERASURE,
-    status_code=HTTP_200_OK,
-    response_model=PrivacyRequestResponse,
-    dependencies=[
-        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-    ],
-)
-def resume_with_erasure_confirmation(
-    privacy_request_id: str,
-    *,
-    db: Session = Depends(deps.get_db),
-    cache: FidesopsRedis = Depends(deps.get_cache),
-    manual_count: RowCountRequest,
-) -> PrivacyRequestResponse:
-    """Resume the erasure portion of privacy request by passing in the number of rows that were manually masked.
-
-    If no rows were masked, pass in a 0 to resume the privacy request.
-    """
-    return resume_privacy_request_with_manual_input(
-        privacy_request_id=privacy_request_id,
-        db=db,
-        cache=cache,
-        expected_paused_step=PausedStep.erasure,
-        manual_count=manual_count.row_count,
-    )
 
 
 def review_privacy_request(

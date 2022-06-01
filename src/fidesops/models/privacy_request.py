@@ -269,7 +269,7 @@ class PrivacyRequest(Base):
     ) -> Tuple[Optional[PausedStep], Optional[CollectionAddress]]:
         """Get both the failed step (access or erasure) and collection that triggered failure.
 
-        The paused step lets us know if we should resume privacy request execution from the "access" or the "erasure"
+        The failed step lets us know if we should resume privacy request execution from the "access" or the "erasure"
         portion of the privacy request flow.
         """
         return get_step_and_collection(cached_key=f"EN_FAILED_LOCATION__{self.id}")
