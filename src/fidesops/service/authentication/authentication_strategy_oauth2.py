@@ -8,7 +8,6 @@ from requests import PreparedRequest
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import FidesopsException, OAuth2TokenException
-from fidesops.db.session import get_db_session
 from fidesops.models.authentication_request import AuthenticationRequest
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.saas_config import ClientConfig, SaaSRequest
@@ -201,18 +200,12 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
             data["expires_at"] = int(datetime.utcnow().timestamp()) + expires_in
 
         # persist new tokens to the database
-        # ideally we use a passed in database session but we create a new
-        # session if one is not available
+        # ideally we use a passed in database session but we can
+        # get the session from the connection_config as a fallback
+        if not db:
+            db = Session.object_session(connection_config)
         updated_secrets = {**connection_config.secrets, **data}
-        if db:
-            connection_config.update(db, data={"secrets": updated_secrets})
-        else:
-            SessionLocal = get_db_session()
-            new_db: Session = SessionLocal()
-            merged_connection_config = new_db.merge(connection_config)
-            merged_connection_config.update(new_db, data={"secrets": updated_secrets})
-            new_db.close()
-
+        connection_config.update(db, data={"secrets": updated_secrets})
         logger.info(
             f"Successfully updated the OAuth2 token(s) for {connection_config.key}"
         )
@@ -279,7 +272,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
 
     @staticmethod
     def _check_required_secrets(connection_config: ConnectionConfig) -> None:
-        secrets = connection_config.secrets
+        secrets = connection_config.secrets or {}
         required_secrets = {
             "client_id": secrets.get("client_id"),
             "client_secret": secrets.get("client_secret"),

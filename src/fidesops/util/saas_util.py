@@ -186,7 +186,7 @@ def assign_placeholders(value: Any, param_values: Dict[str, Any]) -> Optional[An
                 value = value.replace(f"<{placeholder}>", str(placeholder_value))
             else:
                 return None
-    return value if value is not None else None
+    return value
 
 
 def map_param_values(
