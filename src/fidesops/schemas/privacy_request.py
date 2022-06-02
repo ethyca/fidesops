@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum as EnumType
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import Field, validator
 
@@ -127,6 +127,10 @@ class PrivacyRequestResponse(BaseSchema):
     # creation.
     identity: Optional[Dict[str, str]]
     policy: PolicySchema
+    stopped_step: Optional[str]
+    stopped_collection: Optional[str]
+    manual_queries: List[Dict[str, Any]] = []
+    resume_endpoint: Optional[str]
 
     class Config:
         """Set orm_mode and use_enum_values"""

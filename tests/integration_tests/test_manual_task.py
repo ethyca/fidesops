@@ -44,6 +44,17 @@ def test_postgres_with_manual_input_access_request_task(
     assert paused_node.value == "manual_example:storage_unit"
     assert request_type == PausedStep.access
 
+    cached_queries = privacy_request.get_cached_queries(
+        PausedStep.access, CollectionAddress("manual_example", "storage_unit")
+    )
+    # Assert instructional query we'll surface to the user
+    assert cached_queries == [
+        {
+            "query": "SELECT box_id,email FROM storage_unit WHERE email = :email",
+            "parameters": {"email": ("customer-1@example.com",)},
+        }
+    ]
+
     # Mock user retrieving storage unit data by adding manual data to cache
     privacy_request.cache_manual_input(
         CollectionAddress.from_string("manual_example:storage_unit"),
@@ -60,6 +71,21 @@ def test_postgres_with_manual_input_access_request_task(
             {"email": "customer-1@example.com"},
         )
 
+    request_type, paused_node = privacy_request.get_paused_step_and_collection()
+    assert paused_node.value == "manual_example:filing_cabinet"
+    assert request_type == PausedStep.access
+
+    cached_queries = privacy_request.get_cached_queries(
+        PausedStep.access, CollectionAddress("manual_example", "filing_cabinet")
+    )
+    assert cached_queries == [
+        {
+            "query": "SELECT id,authorized_user,customer_id,payment_card_id FROM filing_cabinet WHERE customer_id = :customer_id",
+            "parameters": {"customer_id": (1,)},
+        }
+    ], "Assert instructional query that we will surface to the user"
+
+    # Add manual filing cabinet data from the user
     privacy_request.cache_manual_input(
         CollectionAddress.from_string("manual_example:filing_cabinet"),
         [{"id": 1, "authorized_user": "Jane Doe", "payment_card_id": "pay_bbb-bbb"}],
@@ -271,14 +297,17 @@ def test_no_manual_input_found(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_collections_with_manual_erasure_confirmation(
-    policy,
+    db,
+    erasure_policy,
     integration_postgres_config,
     integration_manual_config,
+    privacy_request,
 ) -> None:
     """Run an erasure privacy request with two manual nodes"""
-    privacy_request = PrivacyRequest(
-        id=f"test_postgres_access_request_task_{uuid.uuid4()}"
-    )
+    privacy_request.policy = erasure_policy
+    rule = erasure_policy.rules[0]
+    target = rule.targets[0]
+    target.data_category = "user.provided.identifiable"
 
     cached_data_for_erasures = {
         "postgres_example:payment_card": [
@@ -349,11 +378,12 @@ def test_collections_with_manual_erasure_confirmation(
         ],
     }
 
-    # ATTEMPT 1 - erasure request will pause to wait for confirmation that data has been destroyed from the filing cabinet
+    # ATTEMPT 1 - erasure request will pause to wait for confirmation that data has been destroyed from
+    # the filing cabinet
     with pytest.raises(PrivacyRequestPaused):
         graph_task.run_erasure(
             privacy_request,
-            policy,
+            erasure_policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
@@ -363,6 +393,16 @@ def test_collections_with_manual_erasure_confirmation(
     request_type, paused_node = privacy_request.get_paused_step_and_collection()
     assert paused_node.value == "manual_example:filing_cabinet"
     assert request_type == PausedStep.erasure
+
+    cached_manual_queries = privacy_request.get_cached_queries(
+        PausedStep.erasure, CollectionAddress("manual_example", "filing_cabinet")
+    )
+    assert cached_manual_queries == [
+        {
+            "query": "UPDATE filing_cabinet SET authorized_user = :authorized_user WHERE id = :id",
+            "parameters": {"authorized_user": None, "id": 1},
+        }
+    ]
 
     # Mock confirming from user that there was no data in the filing cabinet
     privacy_request.cache_manual_erasure_count(
@@ -374,7 +414,7 @@ def test_collections_with_manual_erasure_confirmation(
     with pytest.raises(PrivacyRequestPaused):
         graph_task.run_erasure(
             privacy_request,
-            policy,
+            erasure_policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
@@ -385,6 +425,16 @@ def test_collections_with_manual_erasure_confirmation(
     assert paused_node.value == "manual_example:storage_unit"
     assert request_type == PausedStep.erasure
 
+    cached_manual_queries = privacy_request.get_cached_queries(
+        PausedStep.erasure, CollectionAddress("manual_example", "storage_unit")
+    )
+    assert cached_manual_queries == [
+        {
+            "query": "UPDATE storage_unit SET email = :email WHERE box_id = :box_id",
+            "parameters": {"email": None, "box_id": 5},
+        }
+    ]
+
     # Mock confirming from user that storage unit erasure is complete
     privacy_request.cache_manual_erasure_count(
         CollectionAddress.from_string("manual_example:storage_unit"), 1
@@ -393,7 +443,7 @@ def test_collections_with_manual_erasure_confirmation(
     # Attempt 3 - We've confirmed data has been removed for manual nodes so we can proceed with the rest of the erasure
     v = graph_task.run_erasure(
         privacy_request,
-        policy,
+        erasure_policy,
         postgres_and_manual_nodes("postgres_example", "manual_example"),
         [integration_postgres_config, integration_manual_config],
         {"email": "customer-1@example.com"},

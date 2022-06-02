@@ -281,7 +281,6 @@ def execution_logs_by_dataset_name(
 
 def _filter_privacy_request_queryset(
     query: Query,
-    db: Session = Depends(deps.get_db),
     request_id: Optional[str] = None,
     status: Optional[PrivacyRequestStatus] = None,
     created_lt: Optional[datetime] = None,
@@ -306,7 +305,7 @@ def _filter_privacy_request_queryset(
     for end, start, field_name in [
         [created_lt, created_gt, "created"],
         [completed_lt, completed_gt, "completed"],
-        [errored_lt, errored_gt, "errorer"],
+        [errored_lt, errored_gt, "errored"],
         [started_lt, started_gt, "started"],
     ]:
         if end is None or start is None:
@@ -362,6 +361,48 @@ def _filter_privacy_request_queryset(
     return query.order_by(PrivacyRequest.created_at.desc())
 
 
+def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
+    """
+    Update a paused or errored privacy request with instructions about resuming.
+    """
+    stopped_step: Optional[PausedStep] = None
+    stopped_collection: Optional[CollectionAddress] = None
+    resume_endpoint: Optional[str] = None
+    cached_queries: List[Dict[str, Any]] = []
+
+    if privacy_request.status == PrivacyRequestStatus.paused:
+        (
+            stopped_step,
+            stopped_collection,
+        ) = privacy_request.get_paused_step_and_collection()
+        cached_queries = privacy_request.get_cached_queries(
+            stopped_step, stopped_collection
+        )
+
+        if stopped_step:
+            resume_endpoint = (
+                PRIVACY_REQUEST_MANUAL_ERASURE
+                if stopped_step == PausedStep.erasure
+                else PRIVACY_REQUEST_MANUAL_INPUT
+            )
+        else:
+            resume_endpoint = PRIVACY_REQUEST_RESUME
+
+    elif privacy_request.status == PrivacyRequestStatus.error:
+        (
+            stopped_step,
+            stopped_collection,
+        ) = privacy_request.get_failed_step_and_collection()
+        resume_endpoint = PRIVACY_REQUEST_RETRY
+
+    privacy_request.stopped_step = stopped_step.value if stopped_step else None
+    privacy_request.stopped_collection = (
+        stopped_collection.value if stopped_collection else None
+    )
+    privacy_request.manual_queries = cached_queries
+    privacy_request.resume_endpoint = resume_endpoint
+
+
 @router.get(
     urls.PRIVACY_REQUESTS,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
@@ -401,7 +442,6 @@ def get_request_status(
     query = db.query(PrivacyRequest)
     query = _filter_privacy_request_queryset(
         query,
-        db,
         request_id,
         status,
         created_lt,
@@ -435,6 +475,9 @@ def get_request_status(
         # it is explicitly requested
         for item in paginated.items:
             item.identity = item.get_cached_identity_data()
+
+    for item in paginated.items:
+        attach_resume_instructions(item)
 
     return paginated
 

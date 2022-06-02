@@ -72,7 +72,7 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
     return generate_jwe(json.dumps(jwe.dict()))
 
 
-class PrivacyRequest(Base):
+class PrivacyRequest(Base):  # pylint: disable=R0904
     """
     The DB ORM model to describe current and historic PrivacyRequests. A privacy request is a
     database record representing a data subject request's progression within the Fidesops system.
@@ -316,6 +316,30 @@ class PrivacyRequest(Base):
         value_dict: Optional[Dict[str, int]] = cache.get_encoded_objects_by_prefix(
             prefix
         )
+        return list(value_dict.values())[0] if value_dict else None
+
+    def cache_queries(
+        self,
+        paused_step: PausedStep,
+        paused_collection: CollectionAddress,
+        query_params: List[Dict[str, Any]],
+    ) -> None:
+        """Cache the list of queries to be performed manually for a given paused step and collection"""
+        cache: FidesopsRedis = get_cache()
+        cache.set_encoded_object(
+            f"PAUSED_QUERY__{paused_step.value}__{paused_collection}__{self.id}",
+            query_params,
+        )
+
+    def get_cached_queries(
+        self, paused_step: PausedStep, paused_collection: CollectionAddress
+    ) -> Optional[List[Dict[str, Any]]]:
+        """Get the list of queries to be performed manually for a given paused step and collection"""
+        cache: FidesopsRedis = get_cache()
+        prefix = f"PAUSED_QUERY__{paused_step.value}__{paused_collection}__{self.id}"
+        value_dict: Optional[
+            Dict[str, Optional[List[Dict[str, Any]]]]
+        ] = cache.get_encoded_objects_by_prefix(prefix)
         return list(value_dict.values())[0] if value_dict else None
 
     def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
