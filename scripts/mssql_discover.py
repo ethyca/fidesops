@@ -54,20 +54,19 @@ def mssql_discover():
         db_name = db_name[0]
         try:
             columns = engine.execute(
-                f"SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, IS_NULLABLE FROM {db_name}.INFORMATION_SCHEMA.COLUMNS;"
+                f"SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM {db_name}.INFORMATION_SCHEMA.COLUMNS;"
             ).all()
         except Exception:
-            # print(f"Access to {db_name}'s tables denied.")
             continue
 
         all_columns.extend(columns)
-        for table, column, data_type, nullable in columns:
+        for table, column, data_type in columns:
             if data_type not in SUPPORTED_DATA_TYPES:
                 flagged_datatypes.add(data_type)
-                flagged_columns.append(f"{table}.{column}: {data_type}")
+                flagged_columns.append(f"{db_name}.{table}.{column}: {data_type}")
 
-    print(f"{len(set(all_columns))} columns found")
-    print(f"{len(set(flagged_columns))} columns flagged")
+    print(f"{len(all_columns)} columns found")
+    print(f"{len(flagged_columns)} columns flagged")
     print(f"Flagged datatypes:")
     print(",\n".join(flagged_datatypes))
     print(f"Flagged columns:")
