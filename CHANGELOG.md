@@ -22,6 +22,7 @@ The types of changes are:
 ### Added
 * Added `FIDESOPS__SECURITY__LOG_LEVEL` configuration variable to allow controlling the log level [#579](https://github.com/ethyca/fidesops/pull/579)
 * Added `DEBUG` logs at startup to view all configuration values [#579](https://github.com/ethyca/fidesops/pull/579)
+* All directories containing `*.py` files now also contain `__init__.py` files [#590](https://github.com/ethyca/fidesops/pull/590)
 
 ### Changed
 * Use the `RuleResponse` schema within the `PrivacyRequestReposnse` schema [#580](https://github.com/ethyca/fidesops/pull/580)
