@@ -81,7 +81,6 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         expires_at: int, connection_config: ConnectionConfig
     ) -> bool:
         """Check if the access_token will expire in the next 10 minutes"""
-
         if expires_at is None:
             logger.info(
                 f"The expires_at value is not defined for {connection_config.key}, skipping token refresh"
