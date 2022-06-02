@@ -1335,6 +1335,56 @@
         ]
       }
     },
+    "/api/v1/oauth/callback": {
+      "post": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "Oauth Callback",
+        "description": "Uses the passed in code to generate the token access request\nfor the connection associated with the given state.",
+        "operationId": "oauth_callback_api_v1_oauth_callback_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Code",
+              "type": "string"
+            },
+            "name": "code",
+            "in": "query"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "State",
+              "type": "string"
+            },
+            "name": "state",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/policy": {
       "get": {
         "tags": [
@@ -3629,6 +3679,58 @@
         ]
       }
     },
+    "/api/v1/connection/{connection_key}/authorize": {
+      "get": {
+        "tags": [
+          "SaaS Configs"
+        ],
+        "summary": "Authorize Connection",
+        "description": "Returns the authorization URL for the SaaS Connector (if available)",
+        "operationId": "authorize_connection_api_v1_connection__connection_key__authorize_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Connection Key",
+              "pattern": "^[a-zA-Z0-9_.]+$",
+              "type": "string"
+            },
+            "name": "connection_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Authorize Connection Api V1 Connection  Connection Key  Authorize Get",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection:authorize"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/user": {
       "get": {
         "tags": [
@@ -4583,8 +4685,7 @@
         "title": "ClientConfig",
         "required": [
           "protocol",
-          "host",
-          "authentication"
+          "host"
         ],
         "type": "object",
         "properties": {
@@ -4594,14 +4695,7 @@
           },
           "host": {
             "title": "Host",
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "$ref": "#/components/schemas/ConnectorParamRef"
-              }
-            ]
+            "type": "string"
           },
           "authentication": {
             "$ref": "#/components/schemas/Strategy"
@@ -4730,16 +4824,6 @@
           }
         },
         "description": "Used to define the required parameters for the connector (user-provided and constants)"
-      },
-      "ConnectorParamRef": {
-        "title": "ConnectorParamRef",
-        "type": "object",
-        "properties": {
-          "connector_param": {
-            "title": "Connector Param"
-          }
-        },
-        "description": "A reference to a value in the connector params (by name)"
       },
       "CreateConnectionConfiguration": {
         "title": "CreateConnectionConfiguration",
@@ -4972,7 +5056,7 @@
             "default": []
           }
         },
-        "description": "An collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"
+        "description": "A collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"
       },
       "ExecutionLogDetailResponse": {
         "title": "ExecutionLogDetailResponse",
