@@ -363,7 +363,7 @@ def _filter_privacy_request_queryset(
 
 def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     """
-    Update a paused or errored privacy request with instructions about resuming.
+    Temporarily update a paused or errored privacy request object with instructions about how to resume manually.
     """
     stopped_step: Optional[PausedStep] = None
     stopped_collection: Optional[CollectionAddress] = None
@@ -375,17 +375,19 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
             stopped_step,
             stopped_collection,
         ) = privacy_request.get_paused_step_and_collection()
-        cached_queries = privacy_request.get_cached_queries(
-            stopped_step, stopped_collection
-        )
 
         if stopped_step:
+            # Graph is paused on a specific collection
+            cached_queries = privacy_request.get_cached_queries(
+                stopped_step, stopped_collection
+            )
             resume_endpoint = (
                 PRIVACY_REQUEST_MANUAL_ERASURE
                 if stopped_step == PausedStep.erasure
                 else PRIVACY_REQUEST_MANUAL_INPUT
             )
         else:
+            # Graph is paused on a pre-processing webhook
             resume_endpoint = PRIVACY_REQUEST_RESUME
 
     elif privacy_request.status == PrivacyRequestStatus.error:
@@ -400,7 +402,11 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
         stopped_collection.value if stopped_collection else None
     )
     privacy_request.manual_queries = cached_queries
-    privacy_request.resume_endpoint = resume_endpoint
+    privacy_request.resume_endpoint = (
+        resume_endpoint.format(privacy_request_id=privacy_request.id)
+        if resume_endpoint
+        else None
+    )
 
 
 @router.get(

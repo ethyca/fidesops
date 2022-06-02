@@ -1,6 +1,8 @@
 import uuid
 
 import pytest
+from sqlalchemy import String, bindparam, text
+from sqlalchemy.sql.elements import TextClause
 
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.graph.config import CollectionAddress
@@ -10,6 +12,7 @@ from fidesops.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
 )
+from fidesops.service.connectors.manual_connector import format_cached_query
 from fidesops.task import graph_task
 
 from ..graph.graph_test_util import assert_rows_match
@@ -457,4 +460,20 @@ def test_collections_with_manual_erasure_confirmation(
         "postgres_example:orders": 0,
         "postgres_example:address": 0,
         "manual_example:filing_cabinet": 0,
+    }
+
+
+def test_format_cached_query():
+    assert format_cached_query(None) is None
+
+    stmt = text(
+        "SELECT id,street,state,phone from customer where customer_id=:customer_id"
+    )
+    stmt = stmt.bindparams(
+        bindparam("customer_id", type_=String, value="12345"),
+    )
+
+    assert format_cached_query(stmt) == {
+        "query": "SELECT id,street,state,phone from customer where customer_id=:customer_id",
+        "parameters": {"customer_id": "12345"},
     }

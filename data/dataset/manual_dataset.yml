@@ -14,7 +14,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: customer_id
-            data_categories: [ user.provided.identifiable.unique_id ]
+            data_categories: [ user.provided.identifiable ]
             fidesops_meta:
               references:
                 - dataset: postgres_example_test_dataset

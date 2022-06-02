@@ -456,3 +456,22 @@ class TestPrivacyRequestCacheFailedStep:
             PausedStep.access,
             CollectionAddress("test", "test"),
         )
+
+
+class TestPrivacyRequestCacheQueries:
+    def test_cache_queries(self, privacy_request):
+        queries = {
+            "query": "UPDATE manual_collection SET authorized_user = :authorized_user WHERE id = :id",
+            "parameters": {"authorized_user": "abcde_masked_user", "id": 32424},
+        }
+        privacy_request.cache_queries(PausedStep.access, paused_location, [queries])
+
+        assert privacy_request.get_cached_queries(
+            PausedStep.access, paused_location
+        ) == [queries]
+
+    def test_get_queries_none_cached(self, privacy_request):
+        assert (
+            privacy_request.get_cached_queries(PausedStep.access, paused_location)
+            is None
+        )

@@ -113,8 +113,8 @@ class ManualConnector(BaseConnector[None]):
 
 def format_cached_query(stmt: Optional[TextClause]) -> Optional[Dict[str, Any]]:
     """
-    Format the SQLAlchemy TextClause for caching in Redis, for returning to the user the manual actions required on their
-    end. Store the query and the parameters separately.
+    Format the SQLAlchemy TextClause for caching in Redis, for describing to the user the manual actions required on their
+    part. Store the query and the parameters separately.
 
     For example:
     {

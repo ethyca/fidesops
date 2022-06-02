@@ -322,13 +322,13 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         self,
         paused_step: PausedStep,
         paused_collection: CollectionAddress,
-        query_params: List[Dict[str, Any]],
+        query: List[Dict[str, Any]],
     ) -> None:
         """Cache the list of queries to be performed manually for a given paused step and collection"""
         cache: FidesopsRedis = get_cache()
         cache.set_encoded_object(
             f"PAUSED_QUERY__{paused_step.value}__{paused_collection}__{self.id}",
-            query_params,
+            query,
         )
 
     def get_cached_queries(
