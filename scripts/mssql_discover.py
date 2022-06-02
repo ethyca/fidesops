@@ -1,5 +1,7 @@
 import sqlalchemy
 
+# This file is not committed to the repo, please create secrets.py with the required
+# variables in the same dir as this file before running this script
 from secrets import (
     USER,
     PASS,
