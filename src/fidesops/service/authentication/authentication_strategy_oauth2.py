@@ -271,7 +271,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
 
     @staticmethod
     def _check_required_secrets(connection_config: ConnectionConfig) -> None:
-        secrets = connection_config.secrets
+        secrets = connection_config.secrets or {}
         required_secrets = {
             "client_id": secrets.get("client_id"),
             "client_secret": secrets.get("client_secret"),

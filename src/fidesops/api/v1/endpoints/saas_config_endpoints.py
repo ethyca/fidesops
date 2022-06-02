@@ -25,6 +25,7 @@ from fidesops.api.v1.urn_registry import (
     SAAS_CONFIG_VALIDATE,
     V1_URL_PREFIX,
 )
+from fidesops.common_exceptions import FidesopsException
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.schemas.saas.saas_config import (
@@ -233,7 +234,11 @@ def authorize_connection(
 
     verify_oauth_connection_config(connection_config)
     authentication = connection_config.get_saas_config().client_config.authentication
-    auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
-        authentication.strategy, authentication.configuration
-    )
-    return auth_strategy.get_authorization_url(db, connection_config)
+
+    try:
+        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
+            authentication.strategy, authentication.configuration
+        )
+        return auth_strategy.get_authorization_url(db, connection_config)
+    except FidesopsException as exc:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc))
