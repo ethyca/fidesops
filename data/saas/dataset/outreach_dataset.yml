@@ -3,7 +3,7 @@ dataset:
     name: Outreach Dataset
     description: A sample dataset representing the Outreach connector for Fidesops
     collections:
-      - name: recipient
+      - name: recipients
         fields:
           - name: id
             data_categories: [system.operations]
@@ -19,7 +19,7 @@ dataset:
                 data_categories: [user.provided.identifiable.contact.email]
                 fidesops_meta:
                   data_type: string
-      - name: prospect
+      - name: prospects
         fields:
           - name: id
             data_categories: [system.operations]

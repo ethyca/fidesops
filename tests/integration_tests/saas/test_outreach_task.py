@@ -41,12 +41,12 @@ def test_outreach_access_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:prospect"],
+        v[f"{dataset_name}:prospects"],
         min_size=1,
         keys=["type", "id", "attributes", "relationships", "links"],
     )
     assert_rows_match(
-        v[f"{dataset_name}:recipient"],
+        v[f"{dataset_name}:recipients"],
         min_size=1,
         keys=["type", "id", "attributes", "links"],
     )
@@ -54,11 +54,11 @@ def test_outreach_access_request_task(
     # verify we only returned data for our identity email
     assert (
         outreach_identity_email
-        in v[f"{dataset_name}:prospect"][0]["attributes"]["emails"]
+        in v[f"{dataset_name}:prospects"][0]["attributes"]["emails"]
     )
 
     assert (
-        v[f"{dataset_name}:recipient"][0]["attributes"]["value"]
+        v[f"{dataset_name}:recipients"][0]["attributes"]["value"]
         == outreach_identity_email
     )
 
@@ -69,14 +69,14 @@ def test_outreach_access_request_task(
     )
 
     assert set(filtered_results.keys()) == {
-        f"{dataset_name}:prospect",
-        f"{dataset_name}:recipient",
+        f"{dataset_name}:prospects",
+        f"{dataset_name}:recipients",
     }
 
-    assert set(filtered_results[f"{dataset_name}:prospect"][0].keys()) == {
+    assert set(filtered_results[f"{dataset_name}:prospects"][0].keys()) == {
         "attributes",
     }
 
-    assert set(filtered_results[f"{dataset_name}:recipient"][0].keys()) == {
+    assert set(filtered_results[f"{dataset_name}:recipients"][0].keys()) == {
         "attributes",
     }
