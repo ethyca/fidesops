@@ -30,8 +30,6 @@ def outreach_secrets():
         or os.environ.get("OUTREACH_CLIENT_SECRET"),
         "redirect_uri": pydash.get(saas_config, "outreach.redirect_uri")
         or os.environ.get("OUTREACH_REDIRECT_URI"),
-        "redirect_uri": pydash.get(saas_config, "outreach.redirect_uri")
-        or os.environ.get("OUTREACH_REDIRECT_URI"),
         "page_size": pydash.get(saas_config, "outreach.page_size")
         or os.environ.get("OUTREACH_PAGE_SIZE"),
     }
@@ -78,9 +76,9 @@ def outreach_connection_config(
 def outreach_dataset_config(
     db: Session,
     outreach_connection_config: ConnectionConfig,
-    segment_dataset: Dict[str, Any],
+    outreach_dataset: Dict[str, Any],
 ) -> Generator:
-    fides_key = segment_dataset["fides_key"]
+    fides_key = outreach_dataset["fides_key"]
     outreach_connection_config.name = fides_key
     outreach_connection_config.key = fides_key
     outreach_connection_config.save(db=db)

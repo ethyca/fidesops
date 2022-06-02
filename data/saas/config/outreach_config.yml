@@ -66,42 +66,47 @@ saas_config:
             - name: refresh_token
               value: <refresh_token>
 
-test_request:
-  method: GET
-  path: /api/v2/roles
+  test_request:
+    method: GET
+    path: /api/v2/roles
 
-endpoints:
-  - name: prospects
-    requests:
-      read:
-        method: GET
-        path: /api/v2/prospects
-        query_params:
-          - name: page[size]
-            value: <page_size>
-        param_values:
-          - name: page_size
-            connector_param: page_size
-        data_path: data
-        pagination:
-          strategy: link
-          configuration:
-            source: body
-            path: links.next
-  - name: recipients
-    requests:
-      read:
-        method: GET
-        path: /api/v2/recipients
-        query_params:
-          - name: page[size]
-            value: <page_size>
-        param_values:
-          - name: page_size
-            connector_param: page_size
-        data_path: data
-        pagination:
-          strategy: link
-          configuration:
-            source: body
-            path: links.next
+  endpoints:
+    - name: prospect
+      requests:
+        read:
+          method: GET
+          path: /api/v2/prospects
+          query_params:
+            - name: filter[emails]
+              value: <email>
+          param_values:
+            - name: email
+              identity: email
+          data_path: data
+    - name: recipient
+      requests:
+        read:
+          method: GET
+          path: /api/v2/recipients
+          query_params:
+            - name: page[size]
+              value: <page_size>
+          param_values:
+            - name: page_size
+              connector_param: page_size
+            - name: placeholder
+              identity: email
+          data_path: data
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: links.next
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: attributes.value
+                value:
+                  identity: email
+                exact: False
+                case_sensitive: False
