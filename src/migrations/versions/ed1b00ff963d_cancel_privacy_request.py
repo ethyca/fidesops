@@ -1,7 +1,7 @@
 """cancel privacy request
 
 Revision ID: ed1b00ff963d
-Revises: 3a7c5fb119c9
+Revises: 1ff88b7bd579
 Create Date: 2022-06-03 15:45:14.584540
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "ed1b00ff963d"
-down_revision = "3a7c5fb119c9"
+down_revision = "1ff88b7bd579"
 branch_labels = None
 depends_on = None
 
