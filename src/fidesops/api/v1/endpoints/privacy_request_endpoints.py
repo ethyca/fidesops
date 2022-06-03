@@ -280,7 +280,6 @@ def execution_logs_by_dataset_name(
 
 def _filter_privacy_request_queryset(
     query: Query,
-    db: Session = Depends(deps.get_db),
     request_id: Optional[str] = None,
     status: Optional[PrivacyRequestStatus] = None,
     created_lt: Optional[datetime] = None,
@@ -400,7 +399,6 @@ def get_request_status(
     query = db.query(PrivacyRequest)
     query = _filter_privacy_request_queryset(
         query,
-        db,
         request_id,
         status,
         created_lt,
