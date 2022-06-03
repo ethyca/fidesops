@@ -59,6 +59,7 @@ class PrivacyRequestStatus(str, EnumType):
     in_processing = "in_processing"
     complete = "complete"
     paused = "paused"
+    canceled = "canceled"
     error = "error"
 
 
@@ -116,6 +117,9 @@ class PrivacyRequest(Base):
         Policy,
         backref="privacy_requests",
     )
+
+    cancel_reason = Column(String)
+    canceled_at = Column(DateTime(timezone=True), nullable=True)
 
     # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.
@@ -379,6 +383,16 @@ class PrivacyRequest(Base):
         if self.started_processing_at is None:
             self.started_processing_at = datetime.utcnow()
             self.save(db=db)
+
+    def cancel_processing(self, db: Session, cancel_reason: Optional[str]) -> None:
+        """Cancels a privacy request.  Currently should only cancel 'pending' tasks"""
+        if self.canceled_at is not None:
+            self.status = PrivacyRequestStatus.canceled
+            self.cancel_reason = cancel_reason
+            self.canceled_at = datetime.utcnow()
+            self.save(db)
+
+        # TODO cancel celery task PrivacyRequestRunner.submit
 
     def error_processing(self, db: Session) -> None:
         """Mark privacy request as errored, and note time processing was finished"""
