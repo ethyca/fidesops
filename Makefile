@@ -85,7 +85,7 @@ check-all: isort-ci black-ci pylint mypy check-migrations pytest pytest-integrat
 black-ci: compose-build
 	@echo "Running black checks..."
 	@docker-compose run $(IMAGE_NAME) \
-		black --check src/ \
+		black --check src/ && black --check tests/ \
 		|| (echo "Error running 'black --check', please run 'make black' to format your code!"; exit 1)
 	@make teardown
 
