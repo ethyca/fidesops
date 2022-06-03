@@ -28,7 +28,7 @@ help:
 
 init-db: compose-build
 	@echo "Check for new migrations to run..."
-	@docker-compose run --rm -e ANALYTICS_OPT_OUT \ $(IMAGE_NAME) \
+	@docker-compose run --rm -e ANALYTICS_OPT_OUT $(IMAGE_NAME) \
 	python -c "\
 	from fidesops.db.database import init_db; \
 	from fidesops.core.config import config; \

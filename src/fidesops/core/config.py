@@ -7,6 +7,7 @@ from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
 
 import bcrypt
 import toml
+from fideslog.sdk.python.utils import generate_client_id, FIDESOPS
 from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, ValidationError, validator
 from pydantic.env_settings import SettingsSourceCallable
 
@@ -195,8 +196,26 @@ class RootUserSettings(FidesSettings):
     """Configuration settings for Analytics variables."""
 
     ANALYTICS_OPT_OUT: Optional[bool]
-    # analytics id should be set to "internal" when in development / testing
     ANALYTICS_ID: Optional[str]
+
+    @validator("ANALYTICS_ID", pre=True)
+    def populate_analytics_id(cls, v: Optional[str]) -> str:
+        """
+        Populates the appropriate value for analytics id based on config
+        """
+        return v or cls.generate_and_store_client_id()
+
+    @staticmethod
+    def generate_and_store_client_id() -> str:
+        update_obj: Dict[str, Dict] = {}
+        client_id: str = generate_client_id(FIDESOPS)
+        logger.debug("analytics client id generated")
+        update_obj.update(root_user={"ANALYTICS_ID": client_id})
+        update_config_file(update_obj)
+        return client_id
+
+    class Config:
+        env_prefix = "FIDESOPS__ROOT_USER__"
 
 
 class FidesopsConfig(FidesSettings):
