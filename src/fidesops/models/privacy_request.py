@@ -386,7 +386,7 @@ class PrivacyRequest(Base):
 
     def cancel_processing(self, db: Session, cancel_reason: Optional[str]) -> None:
         """Cancels a privacy request.  Currently should only cancel 'pending' tasks"""
-        if self.canceled_at is not None:
+        if self.canceled_at is None:
             self.status = PrivacyRequestStatus.canceled
             self.cancel_reason = cancel_reason
             self.canceled_at = datetime.utcnow()
