@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9019796e-9107-41a1-a268-4d2cda117e85",
+		"_postman_id": "ffdc764a-b9d2-45ec-a106-ba25cb840a73",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -3499,6 +3499,43 @@
 							"path": [
 								"drp",
 								"data-rights"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Revoke request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"request_id\": \"{{privacy_request_id}}\", \n    \"reason\": \"Accidentally submitted\"\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/drp/revoke",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"drp",
+								"revoke"
 							]
 						}
 					},
