@@ -209,8 +209,7 @@ class PrivacyRequestRunner:
                 return
 
             privacy_request.finished_processing_at = datetime.utcnow()
-            if privacy_request.status != PrivacyRequestStatus.error:
-                privacy_request.status = PrivacyRequestStatus.complete
+            privacy_request.status = PrivacyRequestStatus.complete
             privacy_request.save(db=session)
             logging.info(f"Privacy request {privacy_request.id} run completed.")
             session.close()
