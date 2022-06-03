@@ -15,7 +15,6 @@ const ActivityTimeline = ({
 }: ActivityTimelineProps) => {
   const { results } = subjectRequest;
 
-  // const resultKeys = Object.keys(results!);
   const resultKeys = [
     'postgres_example',
     'postgres_example',
