@@ -6,7 +6,11 @@ from fastapi import FastAPI
 from fideslog.sdk.python.event import AnalyticsEvent
 from starlette.middleware.cors import CORSMiddleware
 
-from fidesops.analytics import in_docker_container, running_on_local_host, send_analytics_event
+from fidesops.analytics import (
+    in_docker_container,
+    running_on_local_host,
+    send_analytics_event,
+)
 from fidesops.api.v1.api import api_router
 from fidesops.api.v1.exception_handlers import ExceptionHandlers
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX

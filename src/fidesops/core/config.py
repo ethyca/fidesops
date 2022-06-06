@@ -7,7 +7,7 @@ from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
 
 import bcrypt
 import toml
-from fideslog.sdk.python.utils import generate_client_id, FIDESOPS
+from fideslog.sdk.python.utils import FIDESOPS, generate_client_id
 from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, ValidationError, validator
 from pydantic.env_settings import SettingsSourceCallable
 
