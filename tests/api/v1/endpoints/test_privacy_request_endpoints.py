@@ -486,6 +486,7 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "paused_at": None,
                     "reviewer": None,
                     "policy": {
                         "drp_action": None,
@@ -539,6 +540,7 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "paused_at": None,
                     "reviewer": None,
                     "policy": {
                         "drp_action": None,
@@ -844,6 +846,7 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "paused_at": None,
                     "reviewer": None,
                     "policy": {
                         "drp_action": None,
@@ -1763,6 +1766,7 @@ class TestResumePrivacyRequest:
             "reviewed_at": None,
             "reviewed_by": None,
             "reviewer": None,
+            "paused_at": None,
             "policy": {
                 "drp_action": None,
                 "key": privacy_request.policy.key,

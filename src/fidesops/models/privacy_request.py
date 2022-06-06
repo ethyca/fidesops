@@ -165,6 +165,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     reviewer = relationship(
         "FidesopsUser", backref=backref("privacy_request", passive_deletes=True)
     )
+    paused_at = Column(DateTime(timezone=True), nullable=True)
 
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
@@ -413,6 +414,16 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         if self.status == PrivacyRequestStatus.pending:
             self.status = PrivacyRequestStatus.in_processing
         self.save(db=db)
+
+    def pause_processing(self, db: Session) -> None:
+        """Mark privacy request as paused, and save paused_at"""
+        self.update(
+            db,
+            data={
+                "status": PrivacyRequestStatus.paused,
+                "paused_at": datetime.utcnow(),
+            },
+        )
 
     def error_processing(self, db: Session) -> None:
         """Mark privacy request as errored, and note time processing was finished"""

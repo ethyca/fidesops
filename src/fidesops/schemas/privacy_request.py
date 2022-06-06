@@ -128,6 +128,7 @@ class PrivacyRequestResponse(BaseSchema):
     reviewed_by: Optional[str]
     reviewer: Optional[PrivacyRequestReviewer]
     finished_processing_at: Optional[datetime]
+    paused_at: Optional[datetime]
     status: PrivacyRequestStatus
     external_id: Optional[str]
     # This field intentionally doesn't use the PrivacyRequestIdentity schema
