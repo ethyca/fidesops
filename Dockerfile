@@ -1,16 +1,15 @@
 FROM node:16 as frontend
 
-WORKDIR /fides/clients/admin-ui
-
+WORKDIR clients/hello_world
 # install node modules
-COPY clients/admin-ui/ .
+COPY clients/hello_world/ .
 RUN npm install
 
 # Build the frontend static files
 RUN npm run export
 
 
-FROM --platform=linux/amd64 python:3.9.6-slim-buster
+FROM --platform=linux/amd64 python:3.9.13-slim-buster as backend
 
 ARG MSSQL_REQUIRED
 
@@ -55,7 +54,7 @@ RUN pwd
 # Make a static files directory
 RUN mkdir -p src/fidesops/build/static
 # Copy frontend build over
-COPY --from=frontend clients/admin-ui/out/ src/fidesops/build/static/
+COPY --from=frontend clients/hello_world/out/ src/fidesops/build/static/
 
 # Copy in the application files and install it locally
 COPY . /fidesops
