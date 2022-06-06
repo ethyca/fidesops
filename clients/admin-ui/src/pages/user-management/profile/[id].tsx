@@ -40,7 +40,6 @@ const Profile: NextPage<{ session: { user: User } }> = ({ session }) => (
             </Breadcrumb>
           </Box>
         </Heading>
-        {/* @ts-ignore */}
         <EditUserForm user={session.user} />
       </Box>
     </main>
