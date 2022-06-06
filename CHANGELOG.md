@@ -20,6 +20,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.2...main)
 
 ### Added
+* Subject Request Details page [#563](https://github.com/ethyca/fidesops/pull/563)
 * Restart Graph from Failure [#578](https://github.com/ethyca/fidesops/pull/578)
 
 
@@ -41,6 +42,7 @@ The types of changes are:
 
 ### Developer Experience
 * Adds a script for MSSQL schema exploration [#557](https://github.com/ethyca/fidesops/pull/581)
+
 
 ## [1.5.1](https://github.com/ethyca/fidesops/compare/1.5.0...1.5.1) - 2022-05-27
 
