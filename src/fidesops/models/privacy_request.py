@@ -56,7 +56,7 @@ class ManualAction(BaseSchema):
 
     "locators" are similar to the SQL "WHERE" information.
     "get" contains a list of fields that should be retrieved from the source
-    "update" is a dictionary of fields and the value it should be replaced with.
+    "update" is a dictionary of fields and the value they should be replaced with.
     """
 
     locators: Dict[str, Any]

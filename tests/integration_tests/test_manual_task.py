@@ -465,19 +465,3 @@ def test_collections_with_manual_erasure_confirmation(
     }
 
     assert privacy_request.get_paused_collection_details() is None
-
-
-def test_format_cached_query():
-    assert format_cached_query(None) is None
-
-    stmt = text(
-        "SELECT id,street,state,phone from customer where customer_id=:customer_id"
-    )
-    stmt = stmt.bindparams(
-        bindparam("customer_id", type_=String, value="12345"),
-    )
-
-    assert format_cached_query(stmt) == {
-        "query": "SELECT id,street,state,phone from customer where customer_id=:customer_id",
-        "parameters": {"customer_id": "12345"},
-    }

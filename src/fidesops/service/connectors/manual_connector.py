@@ -1,8 +1,6 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy.sql.elements import TextClause
-
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.graph.traversal import TraversalNode
 from fidesops.models.policy import PausedStep, Policy
@@ -108,29 +106,3 @@ class ManualConnector(BaseConnector[None]):
         raise PrivacyRequestPaused(
             f"Collection '{node.address.value}' waiting on manual erasure confirmation for privacy request '{privacy_request.id}'"
         )
-
-
-def format_cached_query(stmt: Optional[TextClause]) -> Optional[Dict[str, Any]]:
-    """
-    Format the SQLAlchemy TextClause for caching in Redis, for describing to the user the manual actions required on their
-    part. Store the query and the parameters separately.
-
-    For example:
-    {
-        'query': 'UPDATE filing_cabinet SET authorized_user = :authorized_user WHERE id = :id',
-        'parameters': {
-            'authorized_user': None,
-            'id': 121
-        }
-    }
-    """
-    if stmt is None:
-        return None
-
-    query_elems: Dict[str, Any] = {"query": str(stmt), "parameters": {}}
-    for (
-        param_name,
-        bind_parameters,
-    ) in stmt._bindparams.items():  # pylint: disable=W0212
-        query_elems["parameters"][param_name] = bind_parameters.value
-    return query_elems

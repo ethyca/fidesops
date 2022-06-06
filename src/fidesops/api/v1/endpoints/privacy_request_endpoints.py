@@ -809,8 +809,8 @@ def restart_privacy_request_from_failure(
             detail=f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection.",
         )
 
-    failed_step: Optional[PausedStep] = failed_details.step
-    failed_collection: Optional[CollectionAddress] = failed_details.collection
+    failed_step: PausedStep = failed_details.step
+    failed_collection: CollectionAddress = failed_details.collection
 
     logger.info(
         f"Restarting failed privacy request '{privacy_request_id}' from '{failed_step} step, 'collection '{failed_collection}'"
