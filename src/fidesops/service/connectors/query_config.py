@@ -18,7 +18,7 @@ from fidesops.graph.config import (
 )
 from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.policy import ActionType, Policy, Rule
-from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.models.privacy_request import ManualAction, PrivacyRequest
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
@@ -254,6 +254,76 @@ class QueryConfig(Generic[T], ABC):
         """Generate an update statement. If there is no data to be updated
         (for example, if the policy identifies no fields to be updated)
         returns None"""
+
+
+class ManualQueryConfig(QueryConfig[Executable]):
+    def generate_query(
+        self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
+    ) -> Optional[ManualAction]:
+        """Describe the details needed to manually retrieve data from the
+        current collection.
+
+        Example:
+        {
+            "step": "access",
+            "collection": "manual_dataset:manual_collection",
+            "action_needed": [
+                {
+                    "locators": {'email': "customer-1@example.com"},
+                    "get": ["id", "box_id"]
+                    "update":  {}
+                }
+            ]
+        }
+
+        """
+
+        locators: Dict[str, Any] = self.node.typed_filtered_values(input_data)
+        get: List[str] = [
+            field_path.string_path
+            for field_path in self.node.node.collection.top_level_field_dict
+        ]
+
+        if get and locators:
+            return ManualAction(locators=locators, get=get, update=None)
+        return None
+
+    def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
+        """Convert query to string"""
+
+    def dry_run_query(self) -> Optional[str]:
+        """dry run query for display"""
+
+    def generate_update_stmt(
+        self, row: Row, policy: Policy, request: PrivacyRequest
+    ) -> Optional[ManualAction]:
+        """Describe the details needed to manually mask data in the
+        current collection.
+
+        Example:
+         {
+            "step": "erasure",
+            "collection": "manual_dataset:manual_collection",
+            "action_needed": [
+                {
+                    "locators": {'id': 1},
+                    "get": []
+                    "update":  {'authorized_user': None}
+                }
+            ]
+        }
+        """
+        locators: Dict[str, Any] = filter_nonempty_values(
+            {
+                field_path.string_path: field.cast(row[field_path.string_path])
+                for field_path, field in self.primary_key_field_paths.items()
+            }
+        )
+        update_stmt: Dict[str, Any] = self.update_value_map(row, policy, request)
+
+        if update_stmt and locators:
+            return ManualAction(locators=locators, get=None, update=update_stmt)
+        return None
 
 
 class SQLQueryConfig(QueryConfig[Executable]):

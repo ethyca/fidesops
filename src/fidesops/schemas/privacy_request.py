@@ -1,12 +1,16 @@
 from datetime import datetime
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import Field, validator
 
 from fidesops.core.config import config
 from fidesops.models.policy import ActionType
-from fidesops.models.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
+from fidesops.models.privacy_request import (
+    ExecutionLogStatus,
+    PrivacyRequestStatus,
+    StoppedCollection,
+)
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.policy import PolicyResponse as PolicySchema
@@ -109,6 +113,11 @@ class RowCountRequest(BaseSchema):
     row_count: int
 
 
+class StoppedCollectionDetails(StoppedCollection):
+
+    collection: Optional[str] = None
+
+
 class PrivacyRequestResponse(BaseSchema):
     """Schema to check the status of a PrivacyRequest"""
 
@@ -127,9 +136,7 @@ class PrivacyRequestResponse(BaseSchema):
     # creation.
     identity: Optional[Dict[str, str]]
     policy: PolicySchema
-    stopped_step: Optional[str]
-    stopped_collection: Optional[str]
-    manual_queries: List[Dict[str, Any]] = []
+    stopped_collection_details: Optional[StoppedCollectionDetails] = None
     resume_endpoint: Optional[str]
 
     class Config:

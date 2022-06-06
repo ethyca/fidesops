@@ -2,7 +2,6 @@ import uuid
 
 import pytest
 from sqlalchemy import String, bindparam, text
-from sqlalchemy.sql.elements import TextClause
 
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.graph.config import CollectionAddress
@@ -43,20 +42,19 @@ def test_postgres_with_manual_input_access_request_task(
             {"email": "customer-1@example.com"},
         )
 
-    request_type, paused_node = privacy_request.get_paused_step_and_collection()
-    assert paused_node.value == "manual_example:storage_unit"
-    assert request_type == PausedStep.access
-
-    cached_queries = privacy_request.get_cached_queries(
-        PausedStep.access, CollectionAddress("manual_example", "storage_unit")
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details.collection == CollectionAddress(
+        "manual_example", "storage_unit"
     )
-    # Assert instructional query we'll surface to the user
-    assert cached_queries == [
-        {
-            "query": "SELECT box_id,email FROM storage_unit WHERE email = :email",
-            "parameters": {"email": ("customer-1@example.com",)},
-        }
-    ]
+    assert paused_details.step == PausedStep.access
+    assert len(paused_details.action_needed) == 1
+
+    assert paused_details.action_needed[0].locators == {
+        "email": ["customer-1@example.com"]
+    }
+
+    assert paused_details.action_needed[0].get == ["box_id", "email"]
+    assert paused_details.action_needed[0].update is None
 
     # Mock user retrieving storage unit data by adding manual data to cache
     privacy_request.cache_manual_input(
@@ -74,19 +72,21 @@ def test_postgres_with_manual_input_access_request_task(
             {"email": "customer-1@example.com"},
         )
 
-    request_type, paused_node = privacy_request.get_paused_step_and_collection()
-    assert paused_node.value == "manual_example:filing_cabinet"
-    assert request_type == PausedStep.access
-
-    cached_queries = privacy_request.get_cached_queries(
-        PausedStep.access, CollectionAddress("manual_example", "filing_cabinet")
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details.collection == CollectionAddress(
+        "manual_example", "filing_cabinet"
     )
-    assert cached_queries == [
-        {
-            "query": "SELECT id,authorized_user,customer_id,payment_card_id FROM filing_cabinet WHERE customer_id = :customer_id",
-            "parameters": {"customer_id": (1,)},
-        }
-    ], "Assert instructional query that we will surface to the user"
+    assert paused_details.step == PausedStep.access
+    assert len(paused_details.action_needed) == 1
+    assert paused_details.action_needed[0].locators == {"customer_id": [1]}
+
+    assert paused_details.action_needed[0].get == [
+        "id",
+        "authorized_user",
+        "customer_id",
+        "payment_card_id",
+    ]
+    assert paused_details.action_needed[0].update is None
 
     # Add manual filing cabinet data from the user
     privacy_request.cache_manual_input(
@@ -142,10 +142,9 @@ def test_postgres_with_manual_input_access_request_task(
         keys=["city", "id", "state", "street", "zip"],
     )
 
-    # Paused node removed from cache
-    request_type, paused_node = privacy_request.get_paused_step_and_collection()
-    assert request_type is None
-    assert paused_node is None
+    # Paused details removed from cache
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details is None
 
     execution_logs = db.query(ExecutionLog).filter_by(
         privacy_request_id=privacy_request.id
@@ -237,9 +236,11 @@ def test_no_manual_input_found(
             {"email": "customer-1@example.com"},
         )
 
-    request_type, paused_node = privacy_request.get_paused_step_and_collection()
-    assert request_type == PausedStep.access
-    assert paused_node.value == "manual_example:storage_unit"
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details.collection == CollectionAddress(
+        "manual_example", "storage_unit"
+    )
+    assert paused_details.step == PausedStep.access
 
     # Mock user retrieving storage unit data by adding manual data to cache,
     # In this case, no data was found in the storage unit, so we pass in an empty list.
@@ -257,6 +258,12 @@ def test_no_manual_input_found(
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
         )
+
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details.collection == CollectionAddress(
+        "manual_example", "filing_cabinet"
+    )
+    assert paused_details.step == PausedStep.access
 
     # No filing cabinet input found
     privacy_request.cache_manual_input(
@@ -292,9 +299,8 @@ def test_no_manual_input_found(
     )
 
     # Paused node removed from cache
-    request_type, paused_node = privacy_request.get_paused_step_and_collection()
-    assert request_type is None
-    assert paused_node is None
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details is None
 
 
 @pytest.mark.integration_postgres
@@ -393,19 +399,17 @@ def test_collections_with_manual_erasure_confirmation(
             cached_data_for_erasures,
         )
 
-    request_type, paused_node = privacy_request.get_paused_step_and_collection()
-    assert paused_node.value == "manual_example:filing_cabinet"
-    assert request_type == PausedStep.erasure
-
-    cached_manual_queries = privacy_request.get_cached_queries(
-        PausedStep.erasure, CollectionAddress("manual_example", "filing_cabinet")
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details.collection == CollectionAddress(
+        "manual_example", "filing_cabinet"
     )
-    assert cached_manual_queries == [
-        {
-            "query": "UPDATE filing_cabinet SET authorized_user = :authorized_user WHERE id = :id",
-            "parameters": {"authorized_user": None, "id": 1},
-        }
-    ]
+    assert paused_details.step == PausedStep.erasure
+    assert len(paused_details.action_needed) == 1
+
+    assert paused_details.action_needed[0].locators == {"id": 1}
+
+    assert paused_details.action_needed[0].get is None
+    assert paused_details.action_needed[0].update == {"authorized_user": None}
 
     # Mock confirming from user that there was no data in the filing cabinet
     privacy_request.cache_manual_erasure_count(
@@ -424,19 +428,17 @@ def test_collections_with_manual_erasure_confirmation(
             cached_data_for_erasures,
         )
 
-    request_type, paused_node = privacy_request.get_paused_step_and_collection()
-    assert paused_node.value == "manual_example:storage_unit"
-    assert request_type == PausedStep.erasure
-
-    cached_manual_queries = privacy_request.get_cached_queries(
-        PausedStep.erasure, CollectionAddress("manual_example", "storage_unit")
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details.collection == CollectionAddress(
+        "manual_example", "storage_unit"
     )
-    assert cached_manual_queries == [
-        {
-            "query": "UPDATE storage_unit SET email = :email WHERE box_id = :box_id",
-            "parameters": {"email": None, "box_id": 5},
-        }
-    ]
+    assert paused_details.step == PausedStep.erasure
+    assert len(paused_details.action_needed) == 1
+
+    assert paused_details.action_needed[0].locators == {"box_id": 5}
+
+    assert paused_details.action_needed[0].get is None
+    assert paused_details.action_needed[0].update == {"email": None}
 
     # Mock confirming from user that storage unit erasure is complete
     privacy_request.cache_manual_erasure_count(
@@ -461,6 +463,8 @@ def test_collections_with_manual_erasure_confirmation(
         "postgres_example:address": 0,
         "manual_example:filing_cabinet": 0,
     }
+
+    assert privacy_request.get_paused_collection_details() is None
 
 
 def test_format_cached_query():

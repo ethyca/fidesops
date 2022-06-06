@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import datetime
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as EnumColumn
@@ -27,6 +27,7 @@ from fidesops.models.policy import (
     WebhookDirection,
     WebhookTypes,
 )
+from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fidesops.schemas.external_https import (
     SecondPartyRequestFormat,
@@ -48,6 +49,30 @@ from fidesops.util.collection_util import Row
 from fidesops.util.oauth_util import generate_jwe
 
 logger = logging.getLogger(__name__)
+
+
+class ManualAction(BaseSchema):
+    """Class to surface how to manually retrieve or mask data in a database-agnostic way
+
+    "locators" are similar to the SQL "WHERE" information.
+    "get" contains a list of fields that should be retrieved from the source
+    "update" is a dictionary of fields and the value it should be replaced with.
+    """
+
+    locators: Dict[str, Any]
+    get: Optional[List[str]]
+    update: Optional[Dict[str, Any]]
+
+
+class StoppedCollection(BaseSchema):
+    """Class that contains details about the collection that halted privacy request execution"""
+
+    step: PausedStep
+    collection: CollectionAddress
+    action_needed: Optional[List[ManualAction]] = None
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class PrivacyRequestStatus(str, EnumType):
@@ -229,50 +254,58 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         result_prefix = f"{self.id}__*"
         return cache.get_encoded_objects_by_prefix(result_prefix)
 
-    def cache_paused_step_and_collection(
+    def cache_paused_collection_details(
         self,
-        paused_step: Optional[PausedStep] = None,
-        paused_collection: Optional[CollectionAddress] = None,
+        step: Optional[PausedStep] = None,
+        collection: Optional[CollectionAddress] = None,
+        action_needed: Optional[List[ManualAction]] = None,
     ) -> None:
         """
-        Cache both paused step (access or erasure) and paused collection
+        Cache details about the paused step, paused collection, and any action needed to resume the privacy request.
         """
-        cache_step_and_collection(
-            paused_step, paused_collection, cache_key=f"PAUSED_LOCATION__{self.id}"
+        cache_restart_details(
+            cache_key=f"PAUSED_LOCATION__{self.id}",
+            step=step,
+            collection=collection,
+            action_needed=action_needed,
         )
 
-    def get_paused_step_and_collection(
+    def get_paused_collection_details(
         self,
-    ) -> Tuple[Optional[PausedStep], Optional[CollectionAddress]]:
-        """Get both the paused step (access or erasure) and collection awaiting manual input for the given privacy request.
+    ) -> Optional[StoppedCollection]:
+        """Return details about the paused step, paused collection, and any action needed to resume the paused privacy request.
 
         The paused step lets us know if we should resume privacy request execution from the "access" or the "erasure"
         portion of the privacy request flow, and the collection tells us where we should cache manual input data for later use,
         In other words, this manual data belongs to this collection.
         """
-        return get_step_and_collection(cached_key=f"EN_PAUSED_LOCATION__{self.id}")
+        return get_restart_details(cached_key=f"EN_PAUSED_LOCATION__{self.id}")
 
-    def cache_failed_step_and_collection(
+    def cache_failed_collection_details(
         self,
-        failed_step: Optional[PausedStep] = None,
-        failed_collection: Optional[CollectionAddress] = None,
+        step: Optional[PausedStep] = None,
+        collection: Optional[CollectionAddress] = None,
     ) -> None:
         """
-        Cache both the failed step (access or erasure) and failed collection.
+        Cache details about the failed step and failed collection details. No specific input data is required to surface
+        a failed request, so action_needed is None.
         """
-        cache_step_and_collection(
-            failed_step, failed_collection, cache_key=f"FAILED_LOCATION__{self.id}"
+        cache_restart_details(
+            cache_key=f"FAILED_LOCATION__{self.id}",
+            step=step,
+            collection=collection,
+            action_needed=None,
         )
 
-    def get_failed_step_and_collection(
+    def get_failed_collection_details(
         self,
-    ) -> Tuple[Optional[PausedStep], Optional[CollectionAddress]]:
-        """Get both the failed step (access or erasure) and collection that triggered failure.
+    ) -> Optional[StoppedCollection]:
+        """Get details about the failed step (access or erasure) and collection that triggered failure.
 
         The failed step lets us know if we should resume privacy request execution from the "access" or the "erasure"
         portion of the privacy request flow.
         """
-        return get_step_and_collection(cached_key=f"EN_FAILED_LOCATION__{self.id}")
+        return get_restart_details(cached_key=f"EN_FAILED_LOCATION__{self.id}")
 
     def cache_manual_input(
         self, collection: CollectionAddress, manual_rows: Optional[List[Row]]
@@ -316,30 +349,6 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         value_dict: Optional[Dict[str, int]] = cache.get_encoded_objects_by_prefix(
             prefix
         )
-        return list(value_dict.values())[0] if value_dict else None
-
-    def cache_queries(
-        self,
-        paused_step: PausedStep,
-        paused_collection: CollectionAddress,
-        query: List[Dict[str, Any]],
-    ) -> None:
-        """Cache the list of queries to be performed manually for a given paused step and collection"""
-        cache: FidesopsRedis = get_cache()
-        cache.set_encoded_object(
-            f"PAUSED_QUERY__{paused_step.value}__{paused_collection}__{self.id}",
-            query,
-        )
-
-    def get_cached_queries(
-        self, paused_step: PausedStep, paused_collection: CollectionAddress
-    ) -> Optional[List[Dict[str, Any]]]:
-        """Get the list of queries to be performed manually for a given paused step and collection"""
-        cache: FidesopsRedis = get_cache()
-        prefix = f"PAUSED_QUERY__{paused_step.value}__{paused_collection}__{self.id}"
-        value_dict: Optional[
-            Dict[str, Optional[List[Dict[str, Any]]]]
-        ] = cache.get_encoded_objects_by_prefix(prefix)
         return list(value_dict.values())[0] if value_dict else None
 
     def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
@@ -420,44 +429,47 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 PAUSED_SEPARATOR = "__fidesops_paused_sep__"
 
 
-def cache_step_and_collection(
-    step: Optional[PausedStep], collection: Optional[CollectionAddress], cache_key: str
+def cache_restart_details(
+    cache_key: str,
+    step: Optional[PausedStep] = None,
+    collection: Optional[CollectionAddress] = None,
+    action_needed: Optional[List[ManualAction]] = None,
 ) -> None:
-    """Generic method to cache which collection and which step (access/erasure) we're stopped on
+    """Generic method to cache which collection and step(access/erasure) halted PrivacyRequest execution,
+    as well as data (action_needed) to resume the privacy request if applicable.
 
-    For example, we might pause a privacy request at the erasure step of the postgres_example:address collection or
-    the request might have failed at the access step of the mongo_example:payment_card collection.
+    For example, we might pause a privacy request at the access step of the postgres_example:address collection.  The
+    user might need to retrieve an "email" field and an "address" field where the customer_id is 22 to resume the request.
 
     The "step" is needed because we may build and execute multiple graphs as part of running a privacy request.
     An erasure request builds two graphs, one to access the data, and the second to mask it.
     We need to know if we should resume execution from the access or the erasure portion of the request.
     """
     cache: FidesopsRedis = get_cache()
+    cache_stopped: Optional[StoppedCollection] = None
+    if collection and step:
+        cache_stopped = StoppedCollection(
+            step=step, collection=collection, action_needed=action_needed
+        )
 
-    # Store both the step and collection under one value
     cache.set_encoded_object(
         cache_key,
-        f"{step.value}{PAUSED_SEPARATOR}{collection.value}"
-        if step and collection
-        else None,
+        cache_stopped.dict() if cache_stopped else None,
     )
 
 
-def get_step_and_collection(
+def get_restart_details(
     cached_key: str,
-) -> Tuple[Optional[PausedStep], Optional[CollectionAddress]]:
-    """Get both the stopped step (access or erasure) and collection where we've stopped the privacy request.
+) -> Optional[StoppedCollection]:
+    """Get details about the collection that halted privacy request execution and details to resume if applicable.
 
     The "step" lets us know if we should resume privacy request execution from the "access" or the "erasure"
-    portion of the privacy request flow, and the collection lets us know which node we stopped on.
+    portion of the privacy request flow, and the collection lets us know which node we stopped on.  "action_needed"
+    describes actions that need to be manually performed before resuming request.
     """
     cache: FidesopsRedis = get_cache()
-    node_addr: str = cache.get_encoded_by_key(cached_key)
-
-    if node_addr:
-        split_addr = node_addr.split(PAUSED_SEPARATOR)
-        return PausedStep(split_addr[0]), CollectionAddress.from_string(split_addr[1])
-    return None, None  # If no cached data, return a tuple of Nones
+    cached_stopped: Optional[StoppedCollection] = cache.get_encoded_by_key(cached_key)
+    return StoppedCollection.parse_obj(cached_stopped) if cached_stopped else None
 
 
 class ExecutionLogStatus(EnumType):
