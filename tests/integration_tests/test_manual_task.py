@@ -11,7 +11,6 @@ from fidesops.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
 )
-from fidesops.service.connectors.manual_connector import format_cached_query
 from fidesops.task import graph_task
 
 from ..graph.graph_test_util import assert_rows_match
