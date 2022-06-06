@@ -6,6 +6,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from fidesops.api.v1.api import api_router
 from fidesops.api.v1.exception_handlers import ExceptionHandlers
+from fidesops.api.v1.http_middleware import HttpMiddleware
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
 from fidesops.common_exceptions import FunctionalityNotConfigured
 from fidesops.core.config import config
@@ -29,6 +30,8 @@ if config.security.CORS_ORIGINS:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+app.add_middleware(HttpMiddleware)
 
 app.include_router(api_router)
 for handler in ExceptionHandlers.get_handlers():
