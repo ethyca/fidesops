@@ -19,6 +19,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.2...main)
 
+### Added
+* Restart Graph from Failure [#578](https://github.com/ethyca/fidesops/pull/578)
+
 
 ## [1.5.2](https://github.com/ethyca/fidesops/compare/1.5.1...1.5.2)
 
@@ -30,7 +33,6 @@ The types of changes are:
 * Added dataset for Outreach with access configuration [#588](https://github.com/ethyca/fidesops/pull/588)
 * All directories containing `*.py` files now also contain `__init__.py` files [#590](https://github.com/ethyca/fidesops/pull/590)
 * Pause Erasure Request Execution / Resume on Manual Input in [#571](https://github.com/ethyca/fidesops/pull/571/)
-* Restart Graph from Failure [#578](https://github.com/ethyca/fidesops/pull/578)
 
 ### Changed
 * Use the `RuleResponse` schema within the `PrivacyRequestReposnse` schema [#580](https://github.com/ethyca/fidesops/pull/580)
