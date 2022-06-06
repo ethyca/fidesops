@@ -1,0 +1,13 @@
+.idea
+.vscode
+.DS_Store
+.git
+.mypy_cache
+
+venv/
+clients/admin-ui/node_modules
+clients/admin-ui/.next
+clients/privacy-center/node_modules
+clients/privacy-center/.next
+clients/hello_world/node_modules
+clients/hello_world/.next
