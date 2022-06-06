@@ -17,7 +17,10 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.1...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.2...main)
+
+
+## [1.5.2](https://github.com/ethyca/fidesops/compare/1.5.1...1.5.2)
 
 ### Added
 * Added OAuth2 authentication strategy for SaaS connectors [#555](https://github.com/ethyca/fidesops/pull/555)
@@ -32,6 +35,7 @@ The types of changes are:
 ### Changed
 * Use the `RuleResponse` schema within the `PrivacyRequestReposnse` schema [#580](https://github.com/ethyca/fidesops/pull/580)
 * Updated the webserver to use `PORT` config variable from the `fidesops.toml` file [#586](https://github.com/ethyca/fidesops/pull/586)
+* Updated `black-ci` makefile command to also check `tests/` directory [#594](https://github.com/ethyca/fidesops/pull/594)
 
 ### Developer Experience
 * Adds a script for MSSQL schema exploration [#557](https://github.com/ethyca/fidesops/pull/581)
