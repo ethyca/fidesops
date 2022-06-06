@@ -236,7 +236,8 @@ def _run_tests(
             for env_var in EXTERNAL_DATASTORE_CONFIG[datastore]:
                 environment_variables += f"-e {env_var} "
 
-    environment_variables += f"-e ANALYTICS_OPT_OUT={analytics_opt_out}"
+    if analytics_opt_out:
+        environment_variables += f"-e ANALYTICS_OPT_OUT"
 
     pytest_path += f' -m "{pytest_markers}"'
 
