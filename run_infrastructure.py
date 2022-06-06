@@ -300,6 +300,11 @@ if __name__ == "__main__":
         "--run_create_test_data",
         action="store_true",
     )
+    parser.add_argument(
+        "-a",
+        "--analytics_opt_out",
+        action="store_true",
+    )
 
     config_args = parser.parse_args()
 
@@ -312,4 +317,5 @@ if __name__ == "__main__":
         run_tests=config_args.run_tests,
         run_create_superuser=config_args.run_create_superuser,
         run_create_test_data=config_args.run_create_test_data,
+        analytics_opt_out=config_args.analytics_opt_out
     )
