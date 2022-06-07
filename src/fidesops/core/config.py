@@ -2,7 +2,7 @@
 
 import hashlib
 import logging
-import os
+from os import curdir, getenv, pardir, path
 from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
 
 import bcrypt
@@ -98,23 +98,22 @@ class ExecutionSettings(FidesSettings):
 class PackageSettings(FidesSettings):
     """Configuration settings for the fidesops package itself."""
 
-    PATH: Optional[str] = None
+    MIGRATION_PATH: Optional[str] = None
 
-    @validator("PATH", pre=True)
-    def ensure_valid_package_path(cls, v: Optional[str]) -> str:
+    @validator("MIGRATION_PATH", pre=True)
+    def ensure_valid_migration_path(cls, v: Optional[str]) -> str:
         """
-        Ensure a valid path to the fidesops src/ directory is provided.
+        Ensure a valid path to the fidesops `migrations/` directory is provided.
 
         This is required to enable fidesops-plus to start successfully.
         """
 
-        if isinstance(v, str) and os.path.isdir(v):
-            return (
-                v if os.path.basename(v) == "fidesops" else os.path.join(v, "fidesops/")
-            )
-
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        return os.path.normpath(os.path.join(current_dir, "../../"))
+        current_dir = path.dirname(path.abspath(__file__))
+        return (
+            path.normpath(v + "/migrations")
+            if isinstance(v, str) and path.isdir(v)
+            else path.normpath(path.join(current_dir, "../../migrations"))
+        )
 
     class Config:
         env_prefix = "FIDESOPS__PACKAGE__"
@@ -258,9 +257,9 @@ class FidesopsConfig(FidesSettings):
     root_user: RootUserSettings
 
     PORT: int
-    is_test_mode: bool = os.getenv("TESTING") == "True"
-    hot_reloading: bool = os.getenv("FIDESOPS__HOT_RELOAD") == "True"
-    dev_mode: bool = os.getenv("FIDESOPS__DEV_MODE") == "True"
+    is_test_mode: bool = getenv("TESTING") == "True"
+    hot_reloading: bool = getenv("FIDESOPS__HOT_RELOAD") == "True"
+    dev_mode: bool = getenv("FIDESOPS__DEV_MODE") == "True"
 
     class Config:  # pylint: disable=C0115
         case_sensitive = True
@@ -296,17 +295,17 @@ def load_file(file_name: str) -> str:
     raises FileNotFound if none is found
     """
     possible_directories = [
-        os.getenv("FIDESOPS__CONFIG_PATH"),
-        os.curdir,
-        os.pardir,
-        os.path.expanduser("~"),
+        getenv("FIDESOPS__CONFIG_PATH"),
+        curdir,
+        pardir,
+        path.expanduser("~"),
     ]
 
     directories: List[str] = [d for d in possible_directories if d]
 
     for dir_str in directories:
-        possible_location = os.path.join(dir_str, file_name)
-        if possible_location and os.path.isfile(possible_location):
+        possible_location = path.join(dir_str, file_name)
+        if possible_location and path.isfile(possible_location):
             logger.info("Loading file %s from %s", NotPii(file_name), NotPii(dir_str))
             return possible_location
         logger.debug("%s not found at %s", NotPii(file_name), NotPii(dir_str))

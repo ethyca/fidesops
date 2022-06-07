@@ -16,13 +16,14 @@ from .base import Base
 
 def get_alembic_config(
     database_url: str,
-    package_source_dir: str = config.package.PATH,
+    migrations_dir: str = config.package.MIGRATION_PATH,
 ) -> Config:
     """
     Do lots of magic to make alembic work programmatically.
     """
 
-    migrations_dir = os.path.join(package_source_dir, "migrations/")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    package_source_dir = os.path.normpath(os.path.join(current_dir, "../../"))
     alembic_config = Config(os.path.join(package_source_dir, "alembic.ini"))
     alembic_config.set_main_option("script_location", migrations_dir.replace("%", "%%"))
     alembic_config.set_main_option("sqlalchemy.url", database_url)
@@ -35,14 +36,11 @@ def upgrade_db(alembic_config: Config, revision: str = "head") -> None:
     command.upgrade(alembic_config, revision)
 
 
-def init_db(
-    database_url: PostgresDsn,
-    package_source_dir: str = config.package.PATH,
-) -> None:
+def init_db(database_url: PostgresDsn) -> None:
     """
     Runs the migrations and creates all of the database objects.
     """
-    alembic_config = get_alembic_config(database_url, package_source_dir)
+    alembic_config = get_alembic_config(database_url)
     upgrade_db(alembic_config)
 
 
