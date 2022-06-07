@@ -264,11 +264,11 @@ class FidesopsConfig(FidesSettings):
     class Config:  # pylint: disable=C0115
         case_sensitive = True
 
-    logger.warning(
+    logger.debug(
         f"Startup configuration: reloading = {hot_reloading}, dev_mode = {dev_mode}"
     )
-    logger.warning(
-        f'Startup configuration: pii logging = {os.getenv("FIDESOPS__LOG_PII") == "True"}'
+    logger.debug(
+        f'Startup configuration: pii logging = {getenv("FIDESOPS__LOG_PII") == "True"}'
     )
 
     def log_all_config_values(self) -> None:
