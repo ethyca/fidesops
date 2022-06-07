@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Optional
 
 from fastapi import Request
 from fideslog.sdk.python.event import AnalyticsEvent
@@ -17,30 +18,32 @@ class HttpMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
 
     async def dispatch(self, request: Request, call_next):
-        is_from_front_end = bool(request.headers.get("request_source") in ['admin-ui', 'privacy-center'])  # fixme: add to front end
+        fides_source: Optional[str] = request.headers.get("X-Fides-Source")  # fixme: add to front-end
 
         # process the request and get the response
         try:
             response = await call_next(request)
-            status_code = response.status_code
+            HttpMiddleware.prepare_and_send_analytics_event(response.status_code, fides_source, None)
         except Exception as e:
-            error_class = e.__class__.__name__
-            status_code = e.args[0]
+            HttpMiddleware.prepare_and_send_analytics_event(e.args[0], fides_source, e.__class__.__name__)
 
+        return response
+
+    @staticmethod
+    def prepare_and_send_analytics_event(status_code: int, fides_source: Optional[str], error_class: Optional[str]):
         # log response code and/or err type
         analytics_event = AnalyticsEvent(
             docker=in_docker_container(),
-            event=EVENT.server_start.value,
+            event=EVENT.server_start.value,  # fixme: add to enum EVENT.endpoint_call or something
             event_created_at=datetime.now(tz=timezone.utc),
             local_host=running_on_local_host(),
             endpoint=request.url.path,
             status_code=status_code,
-            extra_data={
-                "is_from_front_end": is_from_front_end
-            }
         )
         if error_class:
             analytics_event.error = error_class
+        if fides_source:
+            analytics_event.extra_data = {
+                "fides_source": fides_source  # fixme: add to enums
+            }
         send_analytics_event(analytics_event)
-
-        return response
