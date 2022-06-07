@@ -19,7 +19,7 @@ def in_docker_container() -> bool:
 
 def running_on_local_host() -> bool:
     """For events submitted as a result of making API server requests, `True` if the API server is running on the user's local host. Default: `False`."""
-    return False
+    return True
 
 
 analytics_client = AnalyticsClient(
