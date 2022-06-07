@@ -108,7 +108,7 @@ isort-ci:
 pylint: compose-build
 	@echo "Running pylint checks..."
 	@docker-compose run \
-	  	-e ANALYTICS_OPT_OUT \
+		-e ANALYTICS_OPT_OUT \
 		$(IMAGE_NAME) \
 		pylint src/
 	@make teardown
