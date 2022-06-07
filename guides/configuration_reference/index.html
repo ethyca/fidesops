@@ -1700,6 +1700,22 @@
 <td>True</td>
 <td>If MASKING_STRICT is True, we only use "update" requests to mask data. (For third-party integrations, you should define an <code>update</code> endpoint to use.)  If MASKING_STRICT is False, you are allowing fidesops to use any defined DELETE or GDPR DELETE endpoints to remove PII. In this case, you should define <code>delete</code> or <code>data_protection_request</code> endpoints for your third-party integrations.  Note that setting MASKING_STRICT to False means that data may be deleted beyond the specific data categories that you've configured in your Policy.</td>
 </tr>
+<tr>
+<td>---</td>
+<td>---</td>
+<td>---</td>
+<td>---</td>
+<td>---</td>
+<td>---</td>
+</tr>
+<tr>
+<td><code>ANALYTICS_OPT_OUT</code></td>
+<td><code>FIDESOPS__USER__ANALYTICS_OPT_OUT</code></td>
+<td>bool</td>
+<td>False</td>
+<td>False</td>
+<td>Opt out of sending anonymous usage data to Ethyca to improve the product experience</td>
+</tr>
 </tbody>
 </table>
 <h2 id="an-example-fidesopstoml-configuration-file">An example <code>fidesops.toml</code> configuration file</h2>
@@ -1732,7 +1748,10 @@
 <span class="normal">27</span>
 <span class="normal">28</span>
 <span class="normal">29</span>
-<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code>[database]
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span></pre></div></td><td class="code"><div><pre><span></span><code>[database]
 SERVER=&quot;db&quot;
 USER=&quot;postgres&quot;
 PASSWORD=&quot;a-password&quot;
@@ -1762,6 +1781,9 @@ TASK_RETRY_DELAY=20
 TASK_RETRY_BACKOFF=2
 REQUIRE_MANUAL_REQUEST_APPROVAL=true
 MASKING_STRICT=true
+
+[root_user]
+ANALYTICS_OPT_OUT=false
 </code></pre></div></td></tr></table></div>
 <p>Please note: The configuration is case-sensitive, so the variables must be specified in UPPERCASE.</p>
 <h2 id="additional-environment-variables">Additional environment variables</h2>
