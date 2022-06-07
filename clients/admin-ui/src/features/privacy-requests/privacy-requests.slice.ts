@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
 import { HYDRATE } from 'next-redux-wrapper';
 
 import type { AppState } from '../../app/store';
@@ -10,6 +10,7 @@ import {
   PrivacyRequestResponse,
   PrivacyRequestStatus,
 } from './types';
+import { buildBaseQuery } from '../common/helpers';
 
 // Helpers
 export function mapFiltersToSearchParams({
@@ -48,17 +49,7 @@ export function mapFiltersToSearchParams({
 // Subject requests API
 export const privacyRequestApi = createApi({
   reducerPath: 'privacyRequestApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_FIDESOPS_API!,
-    prepareHeaders: (headers, { getState }) => {
-      const { token } = (getState() as AppState).user;
-      headers.set('Access-Control-Allow-Origin', '*');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: buildBaseQuery(),
   tagTypes: ['Request'],
   endpoints: (build) => ({
     getAllPrivacyRequests: build.query<
@@ -137,6 +128,7 @@ export const requestCSVDownload = async ({
       headers: {
         'Access-Control-Allow-Origin': '*',
         Authorization: `Bearer ${token}`,
+        'X-Fides-Source': 'fidesops-admin-ui'
       },
     }
   )

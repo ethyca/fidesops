@@ -3,6 +3,8 @@
  */
 
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
+import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import {AppState} from "../../app/store";
 
 /**
  * Type predicate to narrow an unknown error to `FetchBaseQueryError`
@@ -25,6 +27,22 @@ export function isErrorWithMessage(
     'message' in error &&
     typeof (error as any).message === 'string'
   );
+}
+
+
+export function buildBaseQuery() {
+  return fetchBaseQuery({
+    baseUrl: process.env.NEXT_PUBLIC_FIDESOPS_API!,
+    prepareHeaders: (headers, {getState}) => {
+      const {token} = (getState() as AppState).user;
+      headers.set('Access-Control-Allow-Origin', '*');
+      headers.set('X-Fides-Source', 'fidesops-admin-ui');
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
+      return headers;
+    },
+  })
 }
 
 // generic error of the structure we expect from the Fidesops backend

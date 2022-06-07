@@ -24,10 +24,10 @@ class HttpMiddleware(BaseHTTPMiddleware):
         try:
             response = await call_next(request)
             HttpMiddleware.prepare_and_send_analytics_event(response.status_code, fides_source, None)
+            return response
         except Exception as e:
             HttpMiddleware.prepare_and_send_analytics_event(e.args[0], fides_source, e.__class__.__name__)
-
-        return response
+            raise
 
     @staticmethod
     def prepare_and_send_analytics_event(status_code: int, fides_source: Optional[str], error_class: Optional[str]):

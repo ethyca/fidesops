@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
 import { HYDRATE } from 'next-redux-wrapper';
 
 import type { AppState } from '../../app/store';
@@ -12,6 +12,7 @@ import {
   UsersListParams,
   UsersResponse,
 } from './types';
+import { buildBaseQuery } from '../common/helpers';
 
 export interface State {
   id: string;
@@ -48,17 +49,7 @@ export const mapFiltersToSearchParams = ({
 // User API
 export const userApi = createApi({
   reducerPath: 'userApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_FIDESOPS_API!,
-    prepareHeaders: (headers, { getState }) => {
-      const { token } = (getState() as AppState).user;
-      headers.set('Access-Control-Allow-Origin', '*');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: buildBaseQuery(),
   tagTypes: ['User'],
   endpoints: (build) => ({
     getAllUsers: build.query<UsersResponse, UsersListParams>({
