@@ -63,7 +63,7 @@ export const privacyRequestApi = createApi({
   endpoints: (build) => ({
     getAllPrivacyRequests: build.query<
       PrivacyRequestResponse,
-      PrivacyRequestParams
+      Partial<PrivacyRequestParams>
     >({
       query: (filters) => ({
         url: `privacy-request`,
