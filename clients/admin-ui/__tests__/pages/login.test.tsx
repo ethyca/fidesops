@@ -1,14 +1,8 @@
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from '../../../__tests__/test-utils';
-import LoginPage from '../login';
+import LoginPage from '../../src/pages/login';
+import { act, fireEvent, render, screen, waitFor } from '../test-utils';
 
 const useRouter = jest.spyOn(require('next/router'), 'useRouter');
 
