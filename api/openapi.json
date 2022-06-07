@@ -164,7 +164,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -213,7 +213,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -257,7 +257,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -357,7 +357,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -408,7 +408,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -469,7 +469,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -541,7 +541,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -607,7 +607,7 @@
             "required": true,
             "schema": {
               "title": "Fides Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "fides_key",
@@ -617,7 +617,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -666,7 +666,7 @@
             "required": true,
             "schema": {
               "title": "Fides Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "fides_key",
@@ -676,7 +676,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -1514,7 +1514,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -1565,7 +1565,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -1631,7 +1631,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -1641,7 +1641,7 @@
             "required": true,
             "schema": {
               "title": "Rule Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "rule_key",
@@ -1685,7 +1685,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -1695,7 +1695,7 @@
             "required": true,
             "schema": {
               "title": "Rule Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "rule_key",
@@ -1761,7 +1761,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -1771,7 +1771,7 @@
             "required": true,
             "schema": {
               "title": "Rule Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "rule_key",
@@ -1781,7 +1781,7 @@
             "required": true,
             "schema": {
               "title": "Rule Target Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "rule_target_key",
@@ -1825,7 +1825,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -1897,7 +1897,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -1967,7 +1967,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -2039,7 +2039,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -2109,7 +2109,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -2119,7 +2119,7 @@
             "required": true,
             "schema": {
               "title": "Pre Webhook Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "pre_webhook_key",
@@ -2168,7 +2168,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -2178,7 +2178,7 @@
             "required": true,
             "schema": {
               "title": "Pre Webhook Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "pre_webhook_key",
@@ -2227,7 +2227,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -2237,7 +2237,7 @@
             "required": true,
             "schema": {
               "title": "Pre Webhook Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "pre_webhook_key",
@@ -2298,7 +2298,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -2308,7 +2308,7 @@
             "required": true,
             "schema": {
               "title": "Post Webhook Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "post_webhook_key",
@@ -2357,7 +2357,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -2367,7 +2367,7 @@
             "required": true,
             "schema": {
               "title": "Post Webhook Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "post_webhook_key",
@@ -2416,7 +2416,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -2426,7 +2426,7 @@
             "required": true,
             "schema": {
               "title": "Post Webhook Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "post_webhook_key",
@@ -3032,6 +3032,56 @@
         ]
       }
     },
+    "/api/v1/privacy-request/{privacy_request_id}/retry": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Restart Privacy Request From Failure",
+        "description": "Restart a privacy request from failure",
+        "operationId": "restart_privacy_request_from_failure_api_v1_privacy_request__privacy_request_id__retry_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Privacy Request Id",
+              "type": "string"
+            },
+            "name": "privacy_request_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:resume"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/privacy-request/administrate/approve": {
       "patch": {
         "tags": [
@@ -3319,7 +3369,7 @@
             "required": true,
             "schema": {
               "title": "Config Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "config_key",
@@ -3398,7 +3448,7 @@
             "required": true,
             "schema": {
               "title": "Config Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "config_key",
@@ -3447,7 +3497,7 @@
             "required": true,
             "schema": {
               "title": "Config Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "config_key",
@@ -3540,7 +3590,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -3589,7 +3639,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -3631,7 +3681,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -3692,7 +3742,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -4457,7 +4507,7 @@
           },
           "storage_key": {
             "title": "Storage Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           }
         }
@@ -4754,7 +4804,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "connection_type": {
@@ -4825,6 +4875,37 @@
         },
         "description": "Used to define the required parameters for the connector (user-provided and constants)"
       },
+      "ContactDetails": {
+        "title": "ContactDetails",
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "An individual name used as part of publishing contact information. Encrypted at rest on the server.",
+            "default": ""
+          },
+          "address": {
+            "title": "Address",
+            "type": "string",
+            "description": "An individual address used as part of publishing contact information. Encrypted at rest on the server.",
+            "default": ""
+          },
+          "email": {
+            "title": "Email",
+            "type": "string",
+            "description": "An individual email used as part of publishing contact information. Encrypted at rest on the server.",
+            "default": ""
+          },
+          "phone": {
+            "title": "Phone",
+            "type": "string",
+            "description": "An individual phone number used as part of publishing contact information. Encrypted at rest on the server.",
+            "default": ""
+          }
+        },
+        "description": "The contact details information model.\n\nUsed to capture contact information for controllers, used\nas part of exporting a data map / ROPA.\n\nThis model is nested under an Organization and\npotentially under a system/dataset."
+      },
       "CreateConnectionConfiguration": {
         "title": "CreateConnectionConfiguration",
         "required": [
@@ -4840,7 +4921,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "connection_type": {
@@ -4866,6 +4947,17 @@
           }
         },
         "description": "A wrapper for the data upload location returned upon successful upload"
+      },
+      "DatasetMetadata": {
+        "title": "DatasetMetadata",
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "title": "Resource Id",
+            "type": "string"
+          }
+        },
+        "description": "The DatasetMetadata resource model.\n\nObject used to hold application specific metadata for a dataset"
       },
       "DatasetTraversalDetails": {
         "title": "DatasetTraversalDetails",
@@ -5255,52 +5347,89 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
           },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "name": {
             "title": "Name",
             "type": "string",
-            "description": "Human-Readable string name for this resource."
+            "description": "Human-Readable name for this resource."
           },
           "description": {
             "title": "Description",
             "type": "string",
-            "description": "In-depth description of what this resource is."
+            "description": "A detailed description of what this resource is."
           },
           "meta": {
             "title": "Meta",
             "type": "object",
             "additionalProperties": {
               "type": "string"
-            }
+            },
+            "description": "An optional object that provides additional information about the Dataset. You can structure the object however you like. It can be a simple set of `key: value` properties or a deeply nested hierarchy of objects. How you use the object is up to you: Fides ignores it."
           },
           "data_categories": {
             "title": "Data Categories",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
-              "type": "string"
-            }
-          },
-          "data_qualifiers": {
-            "title": "Data Qualifiers",
-            "type": "array",
-            "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
-            "default": [
-              "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-            ]
+            "description": "Array of Data Category resources identified by `fides_key`, that apply to all collections in the Dataset."
+          },
+          "data_qualifier": {
+            "title": "Data Qualifier",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "Array of Data Qualifier resources identified by `fides_key`, that apply to all collections in the Dataset.",
+            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+          },
+          "fidesctl_meta": {
+            "title": "Fidesctl Meta",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DatasetMetadata"
+              }
+            ],
+            "description": "\n    The DatasetMetadata resource model.\n\n    Object used to hold application specific metadata for a dataset\n    "
+          },
+          "joint_controller": {
+            "title": "Joint Controller",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContactDetails"
+              }
+            ],
+            "description": "\n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
+          },
+          "retention": {
+            "title": "Retention",
+            "type": "string",
+            "description": "An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset.",
+            "default": "No retention or erasure policy"
+          },
+          "third_country_transfers": {
+            "title": "Third Country Transfers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)."
           },
           "collections": {
             "title": "Collections",
@@ -5325,30 +5454,34 @@
         "properties": {
           "name": {
             "title": "Name",
-            "type": "string"
+            "type": "string",
+            "description": "Human-Readable name for this resource."
           },
           "description": {
             "title": "Description",
-            "type": "string"
+            "type": "string",
+            "description": "A detailed description of what this resource is."
           },
           "data_categories": {
             "title": "Data Categories",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
-              "type": "string"
-            }
-          },
-          "data_qualifiers": {
-            "title": "Data Qualifiers",
-            "type": "array",
-            "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             },
-            "default": [
-              "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-            ]
+            "description": "Array of Data Category resources identified by `fides_key`, that apply to all fields in the collection."
+          },
+          "data_qualifier": {
+            "title": "Data Qualifier",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "Array of Data Qualifier resources identified by `fides_key`, that apply to all fields in the collection.",
+            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+          },
+          "retention": {
+            "title": "Retention",
+            "type": "string",
+            "description": "An optional string to describe the retention policy for a Dataset collection. This field can also be applied more granularly at the field level of a Dataset."
           },
           "fields": {
             "title": "Fields",
@@ -5372,25 +5505,34 @@
         "properties": {
           "name": {
             "title": "Name",
-            "type": "string"
+            "type": "string",
+            "description": "Human-Readable name for this resource."
           },
           "description": {
             "title": "Description",
-            "type": "string"
+            "type": "string",
+            "description": "A detailed description of what this resource is."
           },
           "data_categories": {
             "title": "Data Categories",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
-            }
+            },
+            "description": "Arrays of Data Categories, identified by `fides_key`, that applies to this field."
           },
           "data_qualifier": {
             "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
+            "description": "A Data Qualifier that applies to this field. Note that this field holds a single value, therefore, the property name is singular.",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+          },
+          "retention": {
+            "title": "Retention",
+            "type": "string",
+            "description": "An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset."
           },
           "fidesops_meta": {
             "$ref": "#/components/schemas/FidesopsMeta"
@@ -5414,7 +5556,7 @@
             "title": "After",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             }
           }
@@ -5431,7 +5573,7 @@
         "properties": {
           "dataset": {
             "title": "Dataset",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "field": {
@@ -6161,7 +6303,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "drp_action": {
@@ -6226,7 +6368,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "drp_action": {
@@ -6255,7 +6397,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "name": {
@@ -6264,7 +6406,7 @@
           },
           "connection_config_key": {
             "title": "Connection Config Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           }
         },
@@ -6300,7 +6442,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "name": {
@@ -6330,7 +6472,7 @@
           },
           "connection_config_key": {
             "title": "Connection Config Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "order": {
@@ -6426,7 +6568,7 @@
           },
           "policy_key": {
             "title": "Policy Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "encryption_key": {
@@ -6800,7 +6942,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "action_type": {
@@ -6808,7 +6950,7 @@
           },
           "storage_destination_key": {
             "title": "Storage Destination Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "masking_strategy": {
@@ -6831,7 +6973,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "action_type": {
@@ -6859,7 +7001,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "data_category": {
@@ -6884,7 +7026,7 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "name": {
@@ -7091,7 +7233,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "format": {
@@ -7129,7 +7271,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "format": {
@@ -7591,7 +7733,7 @@
         "properties": {
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "order": {

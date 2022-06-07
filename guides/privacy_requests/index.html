@@ -647,6 +647,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#how-can-i-restart-a-failed-privacy-request" class="md-nav__link">
+    How can I restart a failed Privacy Request?
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-can-i-integrate-the-privacy-request-flow-into-my-existing-support-tools" class="md-nav__link">
     How can I integrate the Privacy Request flow into my existing support tools?
   </a>
@@ -1378,6 +1385,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#how-can-i-restart-a-failed-privacy-request" class="md-nav__link">
+    How can I restart a failed Privacy Request?
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-can-i-integrate-the-privacy-request-flow-into-my-existing-support-tools" class="md-nav__link">
     How can I integrate the Privacy Request flow into my existing support tools?
   </a>
@@ -1420,6 +1434,7 @@
 <li>How can I submit a Privacy Request?</li>
 <li>How can I approve/deny a Privacy Request? </li>
 <li>How do I monitor Privacy Requests as they execute?</li>
+<li>How can I restart a failed request?</li>
 <li>How can I integrate the Privacy Request flow into my existing support tools?</li>
 <li>Specifying encryption of access request results </li>
 <li>Decrypting access request results</li>
@@ -1510,6 +1525,10 @@ Privacy Requests are executed immediately by default. This setting may be change
 <p><code>GET api/v1/privacy-request?request_id=&lt;privacy_request_id&gt;</code></p>
 <p><code>GET api/v1/privacy-request?external_id=&lt;external_id&gt;</code></p>
 <p>For more detailed examples and further Privacy Request filtering in Fidesops please see <a href="../reporting/">How-To: Report on Privacy Requests</a>.</p>
+<h2 id="how-can-i-restart-a-failed-privacy-request">How can I restart a failed Privacy Request?</h2>
+<p>To restart a failed Privacy Request from the failed collection, submit a request to:</p>
+<p><code>POST /api/v1/privacy-request/&lt;privacy_request_id&gt;/retry</code></p>
+<p>with an empty request body.  </p>
 <h2 id="how-can-i-integrate-the-privacy-request-flow-into-my-existing-support-tools">How can I integrate the Privacy Request flow into my existing support tools?</h2>
 <p>Alongside generic API interoperability, Fidesops provides a direct integration with the OneTrust's DSAR automation flow.</p>
 <ul>
