@@ -16,13 +16,3 @@ Admin UI for managing FidesOps privacy requests. A web application built in Next
 4. Run the Privacy Request center using `npm run dev`.
 5. Submit a privacy request through the Privacy Request center.
 6. View that request in the Admin UI and either approve or deny it.
-
-## Authentication
-
-To enable stable authentication you must supply a `NEXTAUTH_SECRET` environment
-variable. The best way to do this is by creating a `.env.local` file, which Next
-will automatically pick up:
-
-```bash
-echo NEXTAUTH_SECRET=`openssl rand -base64 32` >> .env.local
-```
