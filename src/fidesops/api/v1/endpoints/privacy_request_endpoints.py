@@ -375,7 +375,7 @@ def get_request_status(
     *,
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
-    request_id: Optional[str] = None,
+    id: Optional[str] = None,
     status: Optional[PrivacyRequestStatus] = None,
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
@@ -401,7 +401,7 @@ def get_request_status(
     query = _filter_privacy_request_queryset(
         query,
         db,
-        request_id,
+        id,
         status,
         created_lt,
         created_gt,
