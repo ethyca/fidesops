@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 
 
 class ManualAction(BaseSchema):
-    """Class to surface how to manually retrieve or mask data in a database-agnostic way
+    """Surface how to manually retrieve or mask data in a database-agnostic way
 
     "locators" are similar to the SQL "WHERE" information.
     "get" contains a list of fields that should be retrieved from the source
@@ -288,7 +288,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         collection: Optional[CollectionAddress] = None,
     ) -> None:
         """
-        Cache details about the failed step and failed collection details. No specific input data is required to surface
+        Cache details about the failed step and failed collection details. No specific input data is required to resume
         a failed request, so action_needed is None.
         """
         cache_restart_details(

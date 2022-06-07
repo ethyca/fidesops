@@ -364,7 +364,7 @@ def _filter_privacy_request_queryset(
 
 def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     """
-    Temporarily update a paused or errored privacy request object with instructions from Redis cache
+    Temporarily update a paused or errored privacy request object with instructions from the Redis cache
     about how to resume manually if applicable.
     """
     resume_endpoint: Optional[str] = None
