@@ -132,7 +132,7 @@ class RedisSettings(FidesSettings):
     DB_INDEX: int
     ENABLED: bool = True
     SSL: bool = False
-    SSL_CERT_REQS: str
+    SSL_CERT_REQS: Optional[str] = "required"
 
     class Config:
         env_prefix = "FIDESOPS__REDIS__"
