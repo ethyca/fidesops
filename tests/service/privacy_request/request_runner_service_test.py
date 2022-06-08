@@ -38,7 +38,10 @@ from fidesops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
 from fidesops.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
-from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
+from fidesops.service.privacy_request.request_runner_service import (
+    run_privacy_request,
+    PrivacyRequestRunner,
+)
 from fidesops.util.async_util import wait_for
 from fidesops.util.data_category import DataCategory
 
@@ -56,16 +59,22 @@ def test_policy_upload_called(
 
 def test_start_processing_sets_started_processing_at(
     db: Session,
-    privacy_request: PrivacyRequest,
-    privacy_request_runner: PrivacyRequestRunner,
+    privacy_request_status_pending: PrivacyRequest,
+    celery_app,
 ) -> None:
-    privacy_request.started_processing_at = None
-    wait_for(privacy_request_runner.submit())
-
+    assert privacy_request_status_pending.started_processing_at is None
+    run_privacy_request = celery_app.tasks[
+        "fidesops.service.privacy_request.request_runner_service.run_privacy_request"
+    ]
+    res = run_privacy_request.delay(privacy_request_status_pending.id).get(timeout=10)
     _sessionmaker = get_db_session()
     db = _sessionmaker()
-    privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
-    assert privacy_request.started_processing_at is not None
+    assert (
+        PrivacyRequest.get(
+            db=db, id=privacy_request_status_pending.id
+        ).started_processing_at
+        is not None
+    )
 
 
 def test_start_processing_doesnt_overwrite_started_processing_at(
