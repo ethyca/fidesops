@@ -49,8 +49,9 @@ if (typeof window !== 'undefined' && 'localStorage' in window) {
     try {
       storedAuthState = JSON.parse(storedAuthStateString);
     } catch (error) {
+      // TODO: build in formal error logging system
       // eslint-disable-next-line no-console
-      console.log(error);
+      console.error(error);
     }
   }
 }
