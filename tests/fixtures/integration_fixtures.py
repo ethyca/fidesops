@@ -156,6 +156,7 @@ def integration_mongodb_config() -> ConnectionConfig:
         connection_type=ConnectionType.mongodb,
         access=AccessLevel.write,
         secrets=integration_secrets["mongo_example"],
+        name="mongo_example",
     )
 
 

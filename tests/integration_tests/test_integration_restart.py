@@ -13,6 +13,86 @@ from fidesops.task import graph_task
 
 
 @pytest.mark.integration
+def test_skip_collection(
+    db,
+    policy,
+    example_datasets,
+    integration_postgres_config,
+    integration_mongodb_config,
+) -> None:
+    """Mark Mongo ConnectionConfig as disabled and then assert that all mongo collections are skipped"""
+    integration_mongodb_config.disabled = True
+    integration_mongodb_config.save(db)
+
+    dataset_postgres = FidesopsDataset(**example_datasets[0])
+    graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
+    dataset_mongo = FidesopsDataset(**example_datasets[1])
+    mongo_graph = convert_dataset_to_graph(
+        dataset_mongo, integration_mongodb_config.key
+    )
+    dataset_graph = DatasetGraph(*[graph, mongo_graph])
+
+    privacy_request = PrivacyRequest(
+        id=f"test_postgres_access_request_task_{uuid.uuid4()}"
+    )
+
+    results = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        dataset_graph,
+        [integration_postgres_config, integration_mongodb_config],
+        {"email": "customer-1@example.com"},
+    )
+    assert all(
+        [dataset.startswith("postgres_example") for dataset in results]
+    ), "No mongo results"
+
+    execution_logs = [
+        (
+            CollectionAddress(log.dataset_name, log.collection_name).value,
+            log.status.value,
+        )
+        for log in db.query(ExecutionLog)
+        .filter_by(privacy_request_id=privacy_request.id)
+        .order_by("created_at")
+    ]
+
+    assert execution_logs == [
+        ("postgres_example_test_dataset:customer", "in_processing"),
+        ("postgres_example_test_dataset:customer", "complete"),
+        ("postgres_example_test_dataset:payment_card", "in_processing"),
+        ("postgres_example_test_dataset:payment_card", "complete"),
+        ("postgres_example_test_dataset:orders", "in_processing"),
+        ("postgres_example_test_dataset:orders", "complete"),
+        ("postgres_example_test_dataset:order_item", "in_processing"),
+        ("postgres_example_test_dataset:order_item", "complete"),
+        ("postgres_example_test_dataset:product", "in_processing"),
+        ("postgres_example_test_dataset:product", "complete"),
+        ("mongo_test:customer_details", "skipped"),
+        ("mongo_test:flights", "skipped"),
+        ("mongo_test:employee", "skipped"),
+        ("mongo_test:aircraft", "skipped"),
+        ("mongo_test:conversations", "skipped"),
+        ("mongo_test:payment_card", "skipped"),
+        ("postgres_example_test_dataset:login", "in_processing"),
+        ("postgres_example_test_dataset:login", "complete"),
+        ("postgres_example_test_dataset:employee", "in_processing"),
+        ("postgres_example_test_dataset:employee", "complete"),
+        ("postgres_example_test_dataset:address", "in_processing"),
+        ("postgres_example_test_dataset:address", "complete"),
+        ("postgres_example_test_dataset:service_request", "in_processing"),
+        ("postgres_example_test_dataset:service_request", "complete"),
+        ("mongo_test:customer_feedback", "skipped"),
+        ("mongo_test:internal_customer_profile", "skipped"),
+        ("mongo_test:rewards", "skipped"),
+        ("postgres_example_test_dataset:report", "in_processing"),
+        ("postgres_example_test_dataset:report", "complete"),
+        ("postgres_example_test_dataset:visit", "in_processing"),
+        ("postgres_example_test_dataset:visit", "complete"),
+    ]
+
+
+@pytest.mark.integration
 def test_restart_graph_from_failure(
     db,
     policy,
