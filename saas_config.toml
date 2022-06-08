@@ -42,3 +42,10 @@ namespace_id = ""
 access_secret = ""
 user_token = ""
 identity_email = ""
+
+
+[zendesk]
+domain = ""
+app_username = ""
+app_password = ""
+identity_email = ""

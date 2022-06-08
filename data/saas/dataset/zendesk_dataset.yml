@@ -1,0 +1,273 @@
+dataset:
+  - fides_key: zendesk_connector_example
+    name: Zendesk Dataset
+    description: A sample dataset representing the Zendesk connector for Fidesops
+    collections:
+      # - name: ticket_soft_delete
+      #   fields:
+      #     - name: customer_id
+      #       data_categories: [user.derived.identifiable.unique_id]
+      #     - name: ticket_id
+      #       data_categories: [system.operations]
+      # - name: comments
+      #   fields:
+      #     - name: id
+      #       data_categories: [system.operations]
+      #     - name: type
+      #       data_categories: [system.operations] 
+      #     - name: public
+      #       data_categories: [system.operations] 
+      #     - name: data
+      #       fields:
+      #         - name: from
+      #           data_categories: [system.operations] 
+      #         - name: to
+      #           data_categories: [system.operations] 
+      #         - name: recording_url
+      #           data_categories: [system.operations] 
+      #         - name: recording_opted_out
+      #           data_categories: [system.operations] 
+      #         - name: call_id
+      #           data_categories: [user.derived.identifiable.unique_id]
+      #         - name: call_duration
+      #           data_categories: [system.operations] 
+      #         - name: answered_by_id
+      #           data_categories: [user.derived.identifiable.unique_id]
+      #         - name: started_at
+      #           data_categories: [system.operations] 
+      #         - name: location
+      #           data_categories: [system.operations] 
+      #         - name: author_id
+      #           data_categories: [user.derived.identifiable.unique_id]
+      #         - name: public
+      #           data_categories: [system.operations] 
+      #         - name: brand_id
+      #           data_categories: [system.operations]
+      #         - name: via_id
+      #           data_categories: [system.operations]
+      #         - name: answered_by_name
+      #           data_categories: [system.operations] 
+      #         - name: transcription_status
+      #           data_categories: [system.operations] 
+      #     - name: formatted_from
+      #       data_categories: [system.operations] 
+      #     - name: formatted_to
+      #       data_categories: [system.operations] 
+      #     - name: transcription_visible
+      #       data_categories: [system.operations] 
+      #     - name: author_id
+      #       data_categories: [user.derived.identifiable.unique_id]
+      #     - name: body
+      #       data_categories: [system.operations] 
+      #     - name: html_body
+      #       data_categories: [system.operations] 
+      #     - name: trusted
+      #       data_categories: [system.operations] 
+      #     - name: attachments
+      #       data_categories: [system.operations] 
+      #     - name: created_at
+      #       data_categories: [system.operations] 
+      #     - name: via
+      #       fields:
+      #         - name: channel
+      #           data_categories: [system.operations] 
+      #         - name: source
+      #           fields:
+      #             - name: rel
+      #               data_categories: [system.operations] 
+      #             - name: from
+      #               fields:
+      #                 - name: formatted_phone
+      #                   data_categories: [system.operations] 
+      #                 - name: phone
+      #                   data_categories: [system.operations] 
+      #                 - name: name
+      #                   data_categories: [system.operations] 
+      #             - name: to
+      #               fields:
+      #                 - name: formatted_phone
+      #                   data_categories: [system.operations] 
+      #                 - name: phone
+      #                   data_categories: [system.operations] 
+      #                 - name: name
+      #                   data_categories: [system.operations] 
+      #     - name: metadata
+      #       fields:
+      #         - name: system
+      #           fields:
+      #             - name: client
+      #               data_categories: [system.operations]
+      #             - name: ip_address
+      #               data_categories: [system.operations]
+      #         - name: custom
+      #           data_categories: [system.operations]
+      # - name: ticket
+      #   fields:
+      #     - name: id
+      #       data_categories: [system.operations]
+      #     - name: external_id
+      #       data_categories: [system.operations]
+      #     - name: created_at
+      #       data_categories: [system.operations]
+      #     - name: updated_at
+      #       data_categories: [system.operations]
+      #     - name: type
+      #       data_categories: [system.operations]
+      #     - name: subject
+      #       data_categories: [system.operations]
+      #     - name: raw_subject
+      #       data_categories: [system.operations]
+      #     - name: description
+      #       data_categories: [system.operations]
+      #     - name: priority
+      #       data_categories: [system.operations]
+      #     - name: status
+      #       data_categories: [system.operations]
+      #     - name: recipient
+      #       data_categories: [system.operations]
+      #     - name: requester_id
+      #       data_categories: [user.derived.identifiable.unique_id]
+      #     - name: submitter_id
+      #       data_categories: [user.derived.identifiable.unique_id]
+      #     - name: assignee_id
+      #       data_categories: [user.derived.identifiable.unique_id]
+      #     - name: organization_id
+      #       data_categories: [system.operations]
+      #     - name: group_id
+      #       data_categories: [system.operations]
+      #     - name: collaborator_ids
+      #       data_categories: [user.derived.identifiable.unique_id]
+      #     - name: follower_ids
+      #       data_categories: [user.derived.identifiable.unique_id]
+      #     - name: email_cc_ids
+      #       data_categories: [user.derived.identifiable.unique_id]
+      #     - name: forum_topic_id
+      #       data_categories: [system.operations]
+      #     - name: problem_id
+      #       data_categories: [system.operations]
+      #     - name: has_incidents
+      #       data_categories: [system.operations]
+      #     - name: is_public
+      #       data_categories: [system.operations]
+      #     - name: due_at
+      #       data_categories: [system.operations]
+      #     - name: tags
+      #       data_categories: [system.operations]
+      #     - name: custom_fields
+      #       data_categories: [system.operations]
+      #       fields:
+      #         - name: id
+      #           data_categories: [system.operations]
+      #         - name: value
+      #           data_categories: [system.operations]
+      #     - name: satisfaction_rating
+      #       data_categories: [system.operations]
+      #     - name: sharing_agreement_ids
+      #       data_categories: [system.operations]
+      #     - name: fields
+      #       data_categories: [system.operations]
+      #       fields:
+      #         - name: id
+      #           data_categories: [system.operations]
+      #         - name: value
+      #           data_categories: [system.operations]
+      #     - name: followup_ids
+      #       data_categories: [system.operations]
+      #     - name: brand_id
+      #       data_categories: [system.operations]
+      #     - name: allow_channelback
+      #       data_categories: [system.operations]
+      #     - name: allow_attachments
+      #       data_categories: [system.operations]
+      # - name: identity
+      #   fields:
+      #     - name: id
+      #       data_categories: [system.operations]
+      #     - name: user_id
+      #       data_categories: [user.derived.identifiable.unique_id]
+      #     - name: type
+      #       data_categories: [system.operations]
+      #     - name: value
+      #       data_categories: [system.operations]
+      #     - name: verified
+      #       data_categories: [system.operations]
+      #     - name: primary
+      #       data_categories: [system.operations]
+      #     - name: created_at
+      #       data_categories: [system.operations]
+      #     - name: updated_at
+      #       data_categories: [system.operations]
+      #     - name: undeliverable_count
+      #       data_categories: [system.operations]
+      #     - name: deliverable_state
+      #       data_categories: [system.operations]
+      # - name: user_soft_delete
+      #   fields:
+      #     - name: customer_id
+      #       data_categories: [user.derived.identifiable.unique_id]
+      - name: users
+        fields:
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+          - name: name
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+          - name: time_zone
+            data_categories: [system.operations]
+          - name: phone
+            data_categories: [user.provided.identifiable.contact.phone_number]
+          - name: shared_phone_number
+            data_categories: [user.provided.identifiable.contact.phone_number]
+          - name: photo
+            data_categories: [system.operations]
+          - name: locale_id
+            data_categories: [system.operations]
+          - name: locale
+            data_categories: [system.operations]
+          - name: role
+            data_categories: [system.operations]
+          - name: verified
+            data_categories: [system.operations]
+          - name: external_id
+            data_categories: [system.operations]
+          - name: tags
+            data_categories: [system.operations]
+          - name: alias
+            data_categories: [system.operations]
+          - name: active
+            data_categories: [system.operations]
+          - name: shared
+            data_categories: [system.operations]
+          - name: shared_agent
+            data_categories: [system.operations]
+          - name: last_login_at
+            data_categories: [system.operations]
+          - name: two_factor_auth_enabled
+            data_categories: [system.operations]
+          - name: signature
+            data_categories: [system.operations]
+          - name: details
+            data_categories: [system.operations]
+          - name: notes
+            data_categories: [system.operations]
+          - name: role_type
+            data_categories: [system.operations]
+          - name: custom_role_id
+            data_categories: [system.operations]
+          - name: moderator
+            data_categories: [system.operations]
+          - name: ticket_restriction
+            data_categories: [system.operations]
+          - name: only_private_comments
+            data_categories: [system.operations]
+          - name: restricted_agent
+            data_categories: [system.operations]
+          - name: suspended
+            data_categories: [system.operations]
+          - name: chat_only
+            data_categories: [system.operations]
+          - name: default_group_id
+            data_categories: [system.operations]
+          - name: report_csv
+            data_categories: [system.operations]

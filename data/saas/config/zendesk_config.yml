@@ -1,0 +1,201 @@
+saas_config:
+  fides_key: zendesk_connector_example
+  name: Zendesk SaaS Config
+  description: A sample schema representing the Zendesk connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: app_username
+    - name: app_password    
+
+  client_config:
+    protocol: https
+    host:
+      connector_param: domain
+    authentication:
+      strategy: basic_authentication
+      configuration:
+        username:
+          connector_param: app_username
+        password:
+          connector_param: app_password
+
+  test_request:
+    method: GET
+    path: /api/v2/users
+    # /search.json
+    #   query_params:
+    #     - name: query
+    #       value: test@ethyca
+
+  endpoints:
+  # - name: ticket_soft_delete
+  #   requests:
+  #     delete:
+  #       method: DELETE
+  #       path: /api/v2/tickets/destroy_many.json
+  #       query_params:
+  #         - name: ids
+  #           value: ticket_soft_delete
+  #       # parameters:
+  #       #   - !!com.ethyca.service.system.adaptor.model.dsr.structure.batch.BatchPlaceHolder
+  #       #     name: ids
+  #       #     source: ticket_id
+  #       #     sourceType: META
+  #       #     batchSize: 100
+  #       #     paramMapper: COMMA_SEPARATED
+  #       # jobHandler: &jobHandler
+  #       #   !!com.ethyca.service.system.adaptor.datastore.http.HttpSimpleJobHandler
+  #       #               urlField:
+  #       #                 name: job_status
+  #       #                 fields:
+  #       #                   - name: url
+  #       #               statusField:
+  #       #                 name: job_status
+  #       #                 fields:
+  #       #                   - name: status
+  # - name: comments
+  #   requests:
+  #     read:
+  #       method: GET
+  #       path: /api/v2/tickets/<ticket_id>/comments.json
+  #       query_params:
+  #         - name: page
+  #           value: 0
+  #       param_values:
+  #         - name: ticket_id
+  #           references:
+  #             - dataset: zendesk_connector_example
+  #               field: ticket.id
+  #               direction: from
+  #       # parameters:
+  #       #   - name: page
+  #       #     source: page
+  #       #     sourceType: META
+  #       data_path: comments
+  #       pagination:
+  #         strategy: link
+  #         configuration:
+  #           source: body
+  #           path: links.next
+  # - name: ticket
+  #   requests:
+  #     read:
+  #       method: GET
+  #       path: /api/v2/users/<customer_id>/tickets/requested.json
+  #       query_params:
+  #         - name: page
+  #           value: 0
+  #       param_values:
+  #         - name: customer_id
+  #           references:
+  #             - dataset: zendesk_connector_example
+  #               field: customer.id
+  #               direction: from
+  #       # parameters:
+  #       #   - name: page
+  #       #     source: page
+  #       #     sourceType: META
+  #       data_path: tickets
+  #       pagination:
+  #         strategy: link
+  #         configuration:
+  #           source: body
+  #           path: links.next
+  #     delete:
+  #       method: DELETE
+  #       path: /api/v2/deleted_tickets/destroy_many.json
+  #       query_params:
+  #         - name: ids
+  #           value: ticket
+  #       # parameters:
+  #       #   - !!com.ethyca.service.system.adaptor.model.dsr.structure.batch.BatchPlaceHolder
+  #       #     name: ids
+  #       #     source: ticket_id
+  #       #     sourceType: META
+  #       #     batchSize: 100
+  #       #     paramMapper: COMMA_SEPARATED
+  #       # jobHandler: *jobHandler
+  #       pagination:
+  #         strategy: link
+  #         configuration:
+  #           source: body
+  #           path: links.next
+  # - name: identitiy
+  #   requests:
+  #     read:
+  #       method: GET
+  #       path: /api/v2/users/<customer_id>/identities.json
+  #       query_params:
+  #         - name: page
+  #           value: 0
+  #       param_values:
+  #         - name: customer_id
+  #           references:
+  #             - dataset: zendesk_connector_example
+  #               field: customer.id
+  #               direction: from
+  #       # parameters:
+  #       #   - name: page
+  #       #     source: page
+  #       #     sourceType: META
+  #       data_path: identities
+  #       pagination:
+  #         strategy: link
+  #         configuration:
+  #           source: body
+  #           path: links.next
+  # - name: user_soft_delete
+  #   requests:
+  #     delete:
+  #       method: DELETE
+  #       path: /api/v2/users/<customer_id>.json
+  #       query_params:
+  #         - name: page
+  #           value: 0
+  #       param_values:
+  #         - name: customer_id
+  #           references:
+  #             - dataset: zendesk_connector_example
+  #               field: customer.id
+  #               direction: from
+  #       # parameters:
+  #       #   - name: page
+  #       #     source: page
+  #       #     sourceType: META
+  #       data_path: users
+  - name: user
+    # after: 
+    requests:
+      read:
+        method: GET
+        path: /api/v2/users/search.json
+        query_params:
+          - name: query
+            value: email
+          - name: page
+            value: 0
+        # parameters:
+        #   - name: query
+        #     source: email
+        #     sourceType: IDENTITY
+        #   - name: page
+        #     source: page
+        #     sourceType: META
+        data_path: users
+      delete:
+        method: DELETE
+        path: /api/v2/users/<customer_id>.json
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: zendesk_connector_example
+                field: customer.id
+                direction: from
+        data_path: users
+        pagination:
+          strategy: link
+          configuration:
+            source: body
+            path: links.next
