@@ -37,3 +37,6 @@ MASKING_STRICT = true
 
 [root_user]
 ANALYTICS_OPT_OUT = false
+
+[admin_ui]
+ENABLED = true

@@ -249,6 +249,15 @@ class RootUserSettings(FidesSettings):
         env_prefix = "FIDESOPS__ROOT_USER__"
 
 
+class AdminUiSettings(FidesSettings):
+    """Configuration settings for Analytics variables."""
+
+    ENABLED: bool
+
+    class Config:
+        env_prefix = "FIDESOPS__ADMINUI__"
+
+
 class FidesopsConfig(FidesSettings):
     """Configuration variables for the FastAPI project"""
 
@@ -258,6 +267,7 @@ class FidesopsConfig(FidesSettings):
     security: SecuritySettings
     execution: ExecutionSettings
     root_user: RootUserSettings
+    admin_ui: AdminUiSettings
 
     PORT: int
     is_test_mode: bool = os.getenv("TESTING") == "True"
