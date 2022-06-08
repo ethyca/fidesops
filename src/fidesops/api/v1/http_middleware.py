@@ -18,7 +18,7 @@ class HttpMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
 
     async def dispatch(self, request: Request, call_next):
-        fides_source: Optional[str] = request.headers.get("X-Fides-Source")  # fixme: add to front-end
+        fides_source: Optional[str] = request.headers.get("X-Fides-Source")
 
         # process the request and get the response
         try:
