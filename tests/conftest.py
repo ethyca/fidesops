@@ -161,3 +161,13 @@ def integration_config() -> MutableMapping[str, Any]:
 def celery_enable_logging():
     """Turns on celery output logs."""
     return True
+
+
+@pytest.fixture(autouse=True, scope="function")
+def celery_use_virtual_worker(celery_worker):
+    """
+    This is a catch-all fixture that forces all of our
+    tests to use a virtual celery worker if a registered
+    task is executed within the scope of the test.
+    """
+    yield celery_worker
