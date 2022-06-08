@@ -42,6 +42,11 @@ def outreach_identity_email():
     )
 
 
+@pytest.fixture(scope="function")
+def outreach_erasure_identity_email():
+    return "ethyca+outreach+rtf@example.com"
+
+
 @pytest.fixture
 def outreach_config() -> Dict[str, Any]:
     return load_config("data/saas/config/outreach_config.yml")

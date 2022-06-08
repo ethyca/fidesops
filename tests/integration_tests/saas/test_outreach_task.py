@@ -80,3 +80,17 @@ def test_outreach_access_request_task(
     assert set(filtered_results[f"{dataset_name}:recipients"][0].keys()) == {
         "attributes",
     }
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_outreach
+def test_outreach_erasure_request_task(
+    db,
+    policy,
+    erasure_policy_string_rewrite,
+    outreach_connection_config,
+    outreach_dataset_config,
+    outreach_erasure_identity_email,
+    outreach_create_erasure_data,
+) -> None:
+    """Full erasure request based on the Outreach SaaS config"""
