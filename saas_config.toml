@@ -49,3 +49,11 @@ client_id = ""
 client_secret = ""
 redirect_uri = ""
 page_size = ""
+
+[salesforce]
+domain = ""
+client_id = ""
+client_secret = ""
+access_token = ""
+username = ""
+password = ""
