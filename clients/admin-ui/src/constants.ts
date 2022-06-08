@@ -1,6 +1,5 @@
 import { UserPrivileges } from './features/user-management/types';
 
-// eslint-disable-next-line import/prefer-default-export
 export const STORED_CREDENTIALS_KEY = 'auth.fidesops-admin-ui';
 
 export const USER_PRIVILEGES: UserPrivileges[] = [
