@@ -4,6 +4,7 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   Heading,
+  Spinner,
   Text,
 } from '@fidesui/react';
 import type { NextPage } from 'next';
@@ -19,22 +20,31 @@ import SubjectRequest from '../../features/subject-request/SubjectRequest';
 const useSubjectRequestDetails = () => {
   const router = useRouter();
   const { id = '' } = router.query;
-  const { data } = useGetAllPrivacyRequestsQuery({
-    id: Array.isArray(id) ? id[0] : id,
-    verbose: true,
-  });
+  const { data, isLoading, isUninitialized } = useGetAllPrivacyRequestsQuery(
+    {
+      id: Array.isArray(id) ? id[0] : id,
+      verbose: true,
+    },
+    {
+      skip: id === '',
+    }
+  );
 
-  return data;
+  return { data, isLoading, isUninitialized };
 };
 
 const SubjectRequestDetails: NextPage = () => {
-  const data = useSubjectRequestDetails();
-  const body =
+  const { data, isLoading, isUninitialized } = useSubjectRequestDetails();
+  let body =
     !data || data?.items.length === 0 ? (
       <Text>404 no subject request found</Text>
     ) : (
       <SubjectRequest subjectRequest={data?.items[0]!} />
     );
+
+  if (isLoading || isUninitialized) {
+    body = <Spinner />;
+  }
 
   return (
     <ProtectedRoute>
