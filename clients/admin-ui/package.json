@@ -6,7 +6,8 @@
     "dev:mock": "echo '🚨 Running with mock API'; NEXT_PUBLIC_MOCK_API=true next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --fix --ext .ts,.tsx ",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write .",
     "test": "jest --watch",
     "test:ci": "jest",
     "analyze": "cross-env ANALYZE=true next build",
@@ -62,6 +63,7 @@
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^27.5.1",
+    "prettier": "^2.6.2",
     "typescript": "4.5.5"
   },
   "msw": {

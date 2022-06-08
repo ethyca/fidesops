@@ -60,6 +60,7 @@ RUN mkdir -p /fidesops/src/fidesops/build/static/
 # Copy frontend build over
 COPY --from=frontend /fidesops/clients/hello_world/out/ /fidesops/src/fidesops/build/static/
 
+# Enable detection of running within Docker
+ENV RUNNING_IN_DOCKER=true
+
 CMD [ "fidesops", "webserver" ]
-
-
