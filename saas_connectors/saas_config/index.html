@@ -769,6 +769,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#data-protection-request" class="md-nav__link">
+    Data protection request
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#endpoints" class="md-nav__link">
     Endpoints
   </a>
@@ -1482,6 +1489,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#data-protection-request" class="md-nav__link">
+    Data protection request
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#endpoints" class="md-nav__link">
     Endpoints
   </a>
@@ -1859,10 +1873,15 @@
 <span class="w">    </span><span class="nt">token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;api_key&gt;</span><span class="w"></span>
 </code></pre></div></td></tr></table></div></p>
 <h4 id="test-request">Test request</h4>
-<p>Once the base client is defined we can use a <code>test_request</code> to verify our hostname and credentials. This is in the form of an idempotent request (usually a read). The testing approach is the same for any <a href="../../guides/database_connectors/#testing-your-connection">ConnectionConfig test</a>.
-test_request:
-  method: GET
-  path: /3.0/lists
+<p>Once the base client is defined we can use a <code>test_request</code> to verify our hostname and credentials. This is in the form of an idempotent request (usually a read). The testing approach is the same for any <a href="../../guides/database_connectors/#testing-your-connection">ConnectionConfig test</a>.</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">test_request</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/3.0/lists</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
+<h4 id="data-protection-request">Data protection request</h4>
+<p>If your third party integration supports something like a GDPR delete endpoint, that can be configured as a <code>data_protection_request</code>.  It has similar attributes to the test request or endpoint requests, but it is generally one endpoint that removes all user PII in one go. 
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1878,28 +1897,22 @@ test_request:
 <span class="normal">13</span>
 <span class="normal">14</span>
 <span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code>#### Data Protection Request
-If your third party integration supports something like a GDPR delete endpoint, that can be configured as a `data_protection_request`.  It has similar attributes to the test request or endpoint requests, but it is generally one endpoint that removes all user PII in one go. 
-```yaml
-  data_protection_request:
-    method: POST
-    path: /v1beta/workspaces/&lt;workspace_name&gt;/regulations
-    param_values:
-      - name: workspace_name
-        connector_param: workspace
-      - name: user_id
-        identity: email
-    body: &#39;{&quot;regulation_type&quot;: &quot;Suppress_With_Delete&quot;, &quot;attributes&quot;: {&quot;name&quot;: &quot;userId&quot;, &quot;values&quot;: [&quot;&lt;user_id&gt;&quot;,]}}&#39;
-    client_config:
-      protocol: https
-      host: &lt;config_domain&gt;
-      authentication:
-        strategy: bearer
-        configuration:
-          username: &lt;access_token&gt;
+<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">data_protection_request</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POST</span><span class="w"></span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/v1beta/workspaces/&lt;workspace_name&gt;/regulations</span><span class="w"></span>
+<span class="w">  </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">workspace_name</span><span class="w"></span>
+<span class="w">      </span><span class="nt">connector_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">workspace</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user_id</span><span class="w"></span>
+<span class="w">      </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="w">  </span><span class="nt">body</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{&quot;regulation_type&quot;:</span><span class="nv"> </span><span class="s">&quot;Suppress_With_Delete&quot;,</span><span class="nv"> </span><span class="s">&quot;attributes&quot;:</span><span class="nv"> </span><span class="s">{&quot;name&quot;:</span><span class="nv"> </span><span class="s">&quot;userId&quot;,</span><span class="nv"> </span><span class="s">&quot;values&quot;:</span><span class="nv"> </span><span class="s">[&quot;&lt;user_id&gt;&quot;,]}}&#39;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">client_config</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https</span><span class="w"></span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;config_domain&gt;</span><span class="w"></span>
+<span class="w">    </span><span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bearer</span><span class="w"></span>
+<span class="w">      </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;access_token&gt;</span><span class="w"></span>
 </code></pre></div></td></tr></table></div></p>
 <h4 id="endpoints">Endpoints</h4>
 <p>This is where we define how we are going to access and update each collection in the corresponding Dataset. The endpoint section contains the following members:</p>
