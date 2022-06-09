@@ -1,12 +1,15 @@
 FROM node:16 as frontend
 
-WORKDIR /fidesops/clients/hello_world
+RUN if [ "$FIDESOPS__ADMINUI__ENABLED" = "true" ] ; then WORKDIR /fidesops/clients/hello_world ; fi
 # install node modules
-COPY clients/hello_world/ .
-RUN npm install
+RUN if [ "$FIDESOPS__ADMINUI__ENABLED" = "true" ] ; then COPY clients/hello_world/ . ; fi
+RUN if [ "$FIDESOPS__ADMINUI__ENABLED" = "true" ] ; then  npm install ; fi
 
 # Build the frontend static files
-RUN npm run export
+RUN if [ "$FIDESOPS__ADMINUI__ENABLED" = "true" ] ; then  npm run export ; fi
+
+# Seed empty directory so copy works in the next layer
+RUN if [ "$FIDESOPS__ADMINUI__ENABLED" != "true" ] ; then mkdir -p /fidesops/clients/hello_world/out/ ; fi
 
 
 FROM --platform=linux/amd64 python:3.9.6-slim-buster as backend
@@ -57,7 +60,7 @@ RUN pip install -e .
 
 # Make a static files directory
 RUN mkdir -p /fidesops/src/fidesops/build/static/
-# Copy frontend build over
+# Copy frontend build over. If UI is toggled off this copies over an empty folder
 COPY --from=frontend /fidesops/clients/hello_world/out/ /fidesops/src/fidesops/build/static/
 
 # Enable detection of running within Docker
