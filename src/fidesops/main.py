@@ -18,7 +18,7 @@ from fidesops.api.v1.urn_registry import V1_URL_PREFIX
 from fidesops.common_exceptions import FunctionalityNotConfigured
 from fidesops.core.config import config
 from fidesops.db.database import init_db
-from fidesops.schemas.analytics import EVENT
+from fidesops.schemas.analytics import Event
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.util.logger import get_fides_log_record_factory
@@ -70,7 +70,7 @@ def start_webserver() -> None:
     send_analytics_event(
         AnalyticsEvent(
             docker=in_docker_container(),
-            event=EVENT.server_start.value,
+            event=Event.server_start.value,
             event_created_at=datetime.now(tz=timezone.utc),
             local_host=running_on_local_host(),
         )
