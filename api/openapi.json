@@ -2649,7 +2649,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page_Union_fidesops.schemas.privacy_request.PrivacyRequestVerboseResponse__fidesops.schemas.privacy_request.PrivacyRequestResponse__"
+                  "$ref": "#/components/schemas/Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__"
                 }
               }
             }
@@ -5114,8 +5114,7 @@
             "$ref": "#/components/schemas/CollectionAddressResponse"
           },
           "query": {
-            "title": "Query",
-            "type": "string"
+            "title": "Query"
           }
         },
         "description": "Response model for dataset dry run"
@@ -5791,6 +5790,31 @@
         "additionalProperties": false,
         "description": "MS SQL Secrets Schema for API Docs"
       },
+      "ManualAction": {
+        "title": "ManualAction",
+        "required": [
+          "locators"
+        ],
+        "type": "object",
+        "properties": {
+          "locators": {
+            "title": "Locators",
+            "type": "object"
+          },
+          "get": {
+            "title": "Get",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "update": {
+            "title": "Update",
+            "type": "object"
+          }
+        },
+        "description": "Surface how to manually retrieve or mask data in a database-agnostic way\n\n\"locators\" are similar to the SQL \"WHERE\" information.\n\"get\" contains a list of fields that should be retrieved from the source\n\"update\" is a dictionary of fields and the value they should be replaced with."
+      },
       "MariaDBDocsSchema": {
         "title": "MariaDBDocsSchema",
         "type": "object",
@@ -6186,8 +6210,8 @@
           }
         }
       },
-      "Page_Union_fidesops.schemas.privacy_request.PrivacyRequestVerboseResponse__fidesops.schemas.privacy_request.PrivacyRequestResponse__": {
-        "title": "Page[Union[fidesops.schemas.privacy_request.PrivacyRequestVerboseResponse, fidesops.schemas.privacy_request.PrivacyRequestResponse]]",
+      "Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__": {
+        "title": "Page[Union[PrivacyRequestVerboseResponse, PrivacyRequestResponse]]",
         "required": [
           "items",
           "total",
@@ -6289,6 +6313,14 @@
           }
         },
         "description": "A named variable which can be sourced from identities, dataset references, or connector params. These values\nare used to replace the placeholders in the path, header, query, and body param values."
+      },
+      "PausedStep": {
+        "title": "PausedStep",
+        "enum": [
+          "access",
+          "erasure"
+        ],
+        "description": "An enumeration."
       },
       "Policy": {
         "title": "Policy",
@@ -6687,6 +6719,11 @@
             "type": "string",
             "format": "date-time"
           },
+          "paused_at": {
+            "title": "Paused At",
+            "type": "string",
+            "format": "date-time"
+          },
           "status": {
             "$ref": "#/components/schemas/PrivacyRequestStatus"
           },
@@ -6703,6 +6740,13 @@
           },
           "policy": {
             "$ref": "#/components/schemas/PolicyResponse"
+          },
+          "stopped_collection_details": {
+            "$ref": "#/components/schemas/StoppedCollectionDetails"
+          },
+          "resume_endpoint": {
+            "title": "Resume Endpoint",
+            "type": "string"
           }
         },
         "description": "Schema to check the status of a PrivacyRequest"
@@ -6797,6 +6841,11 @@
             "type": "string",
             "format": "date-time"
           },
+          "paused_at": {
+            "title": "Paused At",
+            "type": "string",
+            "format": "date-time"
+          },
           "status": {
             "$ref": "#/components/schemas/PrivacyRequestStatus"
           },
@@ -6813,6 +6862,13 @@
           },
           "policy": {
             "$ref": "#/components/schemas/PolicyResponse"
+          },
+          "stopped_collection_details": {
+            "$ref": "#/components/schemas/StoppedCollectionDetails"
+          },
+          "resume_endpoint": {
+            "title": "Resume Endpoint",
+            "type": "string"
           },
           "results": {
             "title": "Results",
@@ -7200,6 +7256,30 @@
         },
         "additionalProperties": false,
         "description": "Snowflake Secrets Schema for API Docs"
+      },
+      "StoppedCollectionDetails": {
+        "title": "StoppedCollectionDetails",
+        "required": [
+          "step"
+        ],
+        "type": "object",
+        "properties": {
+          "step": {
+            "$ref": "#/components/schemas/PausedStep"
+          },
+          "collection": {
+            "title": "Collection",
+            "type": "string"
+          },
+          "action_needed": {
+            "title": "Action Needed",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManualAction"
+            }
+          }
+        },
+        "description": "Class that contains details about the collection that halted privacy request execution"
       },
       "StorageDestination": {
         "title": "StorageDestination",
@@ -7702,7 +7782,14 @@
             "title": "Location",
             "type": "array",
             "items": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
             }
           },
           "msg": {
