@@ -1,5 +1,7 @@
 import { UserPrivileges } from './features/user-management/types';
 
+export const BASE_URL = '/api/v1';
+
 export const STORED_CREDENTIALS_KEY = 'auth.fidesops-admin-ui';
 
 export const USER_PRIVILEGES: UserPrivileges[] = [

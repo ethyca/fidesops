@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 import type { RootState } from '../../app/store';
+import { BASE_URL } from '../../constants';
 import { selectToken } from '../auth';
 import {
   DenyPrivacyRequest,
@@ -49,7 +50,7 @@ export function mapFiltersToSearchParams({
 export const privacyRequestApi = createApi({
   reducerPath: 'privacyRequestApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_FIDESOPS_API!,
+    baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const token = selectToken(getState() as RootState);
       headers.set('Access-Control-Allow-Origin', '*');
@@ -116,9 +117,7 @@ export const requestCSVDownload = async ({
   }
 
   return fetch(
-    `${
-      process.env.NEXT_PUBLIC_FIDESOPS_API
-    }/privacy-request?${new URLSearchParams({
+    `${BASE_URL}/privacy-request?${new URLSearchParams({
       ...mapFiltersToSearchParams({
         id,
         from,
