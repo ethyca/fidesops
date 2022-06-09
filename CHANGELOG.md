@@ -20,6 +20,12 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.2...main)
 
 
+### Changed
+* Database migrations now exist as part of the core `fidesops` package [#620](https://github.com/ethyca/fidesops/pull/620)
+
+### Removed
+* The `[package]` config section no longer exists [#620](https://github.com/ethyca/fidesops/pull/620)
+
 ## [1.5.2](https://github.com/ethyca/fidesops/compare/1.5.1...1.5.2)
 
 ### Added
