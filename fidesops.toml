@@ -37,3 +37,4 @@ MASKING_STRICT = true
 
 [root_user]
 ANALYTICS_OPT_OUT = false
+ANALYTICS_ID = "73e110fecf8ce7b018b94abc08240cd6"
