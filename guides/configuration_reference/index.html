@@ -1485,6 +1485,22 @@
 </thead>
 <tbody>
 <tr>
+<td><code>PORT</code></td>
+<td>---</td>
+<td>int</td>
+<td>8080</td>
+<td>8080</td>
+<td>The port at which the webserver will run.</td>
+</tr>
+<tr>
+<td>Database Variables</td>
+<td>---</td>
+<td>---</td>
+<td>---</td>
+<td>---</td>
+<td>---</td>
+</tr>
+<tr>
 <td><code>SERVER</code></td>
 <td><code>FIDESOPS__DATABASE__SERVER</code></td>
 <td>string</td>
@@ -1533,7 +1549,7 @@
 <td>Whether the application database should be enabled. Only set to false for certain narrow uses of the application that do not require a backing application database.</td>
 </tr>
 <tr>
-<td>---</td>
+<td>Redis Variables</td>
 <td>---</td>
 <td>---</td>
 <td>---</td>
@@ -1589,7 +1605,7 @@
 <td>Whether the application's redis cache should be enabled. Only set to false for certain narrow uses of the application that do not require a backing redis cache.</td>
 </tr>
 <tr>
-<td>---</td>
+<td>Security Variables</td>
 <td>---</td>
 <td>---</td>
 <td>---</td>
@@ -1645,7 +1661,7 @@
 <td>The time period Fidesops API tokens will be valid</td>
 </tr>
 <tr>
-<td>---</td>
+<td>Execution Variables</td>
 <td>---</td>
 <td>---</td>
 <td>---</td>
@@ -1751,7 +1767,11 @@
 <span class="normal">30</span>
 <span class="normal">31</span>
 <span class="normal">32</span>
-<span class="normal">33</span></pre></div></td><td class="code"><div><pre><span></span><code>[database]
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span></pre></div></td><td class="code"><div><pre><span></span><code>PORT=8080
+
+[database]
 SERVER=&quot;db&quot;
 USER=&quot;postgres&quot;
 PASSWORD=&quot;a-password&quot;
@@ -1815,6 +1835,11 @@ ANALYTICS_OPT_OUT=false
 <td><code>FIDESOPS__CONFIG_PATH</code></td>
 <td>None</td>
 <td>If this variable is set to a path, that path will be used to load .toml files first. That is, any .toml files on this path will override any installed .toml files.</td>
+</tr>
+<tr>
+<td><code>FIDESOPS__DATABASE__SQLALCHEMY_DATABASE_URI</code></td>
+<td>None</td>
+<td>An optional override for the URI used for the database connection.</td>
 </tr>
 </tbody>
 </table>

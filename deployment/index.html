@@ -1437,7 +1437,7 @@
 <li>Self-hosted PostgreSQL Docker container with a persistent volume mount (e.g. on a Kubernetes cluster)</li>
 <li>Self-hosted PostgreSQL server (e.g. on an EC2 server)</li>
 </ul>
-<p>NOTE: there <em>is no reason to expose this database to the public Internet</em> as long as it is will be accessible by your <code>fidesops</code> web server!</p>
+<p>NOTE: there <em>is no reason to expose this database to the public Internet</em> as long as it will be accessible by your <code>fidesops</code> web server!</p>
 <p>Setting up a production-grade PostgreSQL database is likely something your team is already familiar with, so we won't revisit that here. Once it's up and running, make sure you create a unique user and database to use for <code>fidesops</code> (we recommended calling these both <code>fidesops</code>) and assign a secure password, then keep track of all those credentials. You'll need those values later to populate these configuration variables for <code>fidesops</code>:</p>
 <table>
 <thead>
@@ -1610,19 +1610,7 @@
 <span class="normal">11</span>
 <span class="normal">12</span>
 <span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span></pre></div></td><td class="code"><div><pre><span></span><code>docker run \
+<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code>docker run \
   -p 8080:8080 \
   --env FIDESOPS__SECURITY__APP_ENCRYPTION_KEY=&quot;averyveryverysecretencryptionkey&quot; \
   --env FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_ID=&quot;fidesopsadmin&quot; \
@@ -1636,18 +1624,6 @@
   --env FIDESOPS__REDIS__PORT=6379 \
   --env FIDESOPS__REDIS__PASSWORD=&quot;fidesopssecret&quot; \
   ethyca/fidesops
-
-INFO:fidesops.main:****************fidesops****************
-INFO:fidesops.main:Running any pending DB migrations...
-INFO:alembic.runtime.migration:Context impl PostgresqlImpl.
-INFO:alembic.runtime.migration:Will assume transactional DDL.
-INFO:fidesops.main:Starting scheduled request intake...
-INFO:apscheduler.scheduler:Scheduler started
-INFO:fidesops.main:Starting web server...
-INFO:uvicorn.error:Started server process [1]
-INFO:uvicorn.error:Waiting for application startup.
-INFO:uvicorn.error:Application startup complete.
-INFO:uvicorn.error:Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
 </code></pre></div></td></tr></table></div>
 <p>Or if you prefer to create your .env file and pass an <code>--env-file</code> variable, you can use the following: </p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -1657,6 +1633,28 @@ INFO:uvicorn.error:Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
   -p 8080:8080 \
   --env-file=&lt;ENV FILE NAME&gt;.env \
   ethyca/fidesops
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>config.env</env></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code>FIDESOPS__SECURITY__APP_ENCRYPTION_KEY=&quot;averyveryverysecretencryptionkey&quot;
+FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_ID=&quot;fidesopsadmin&quot;
+FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_SECRET=&quot;fidesopsadminsecret&quot;
+FIDESOPS__DATABASE__SERVER=&quot;postgres.internal&quot;
+FIDESOPS__DATABASE__PORT=&quot;5432&quot;
+FIDESOPS__DATABASE__USER=&quot;fidesops&quot;
+FIDESOPS__DATABASE__PASSWORD=&quot;fidesopssecret&quot;
+FIDESOPS__DATABASE__DB=&quot;fidesops&quot;
+FIDESOPS__REDIS__HOST=&quot;redis.internal&quot;
+FIDESOPS__REDIS__PORT=6379
+FIDESOPS__REDIS__PASSWORD=&quot;fidesopssecret&quot;
 </code></pre></div></td></tr></table></div>
 <p>Now, for most Docker hosts, you won't be calling <code>docker run</code> directly, and instead will be providing configuration variables to Kubernetes/Swarm/ECS/etc. As you can see in the <code>docker run</code> example above, this config is quite minimal and should just involve specifying (1) the image, (2) the port mapping, (3) all the various environment variables for configuration.</p>
 <p>Note that there's no need for a persistent volume mount for the web server, it's fully ephemeral and relies on the database for all it's permanent state.</p>
