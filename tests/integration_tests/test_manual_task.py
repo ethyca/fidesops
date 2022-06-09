@@ -1,7 +1,6 @@
 import uuid
 
 import pytest
-from sqlalchemy import String, bindparam, text
 
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.graph.config import CollectionAddress

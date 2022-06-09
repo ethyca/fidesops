@@ -240,7 +240,7 @@ class QueryConfig(Generic[T], ABC):
         returns None"""
 
     @abstractmethod
-    def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
+    def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> Optional[str]:
         """Convert query to string"""
 
     @abstractmethod
@@ -288,11 +288,21 @@ class ManualQueryConfig(QueryConfig[Executable]):
             return ManualAction(locators=locators, get=get, update=None)
         return None
 
-    def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
-        """Convert query to string"""
+    def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> None:
+        """Not used for ManualQueryConfig, we output the dry run query as a dictionary instead of a string"""
 
-    def dry_run_query(self) -> Optional[str]:
-        """dry run query for display"""
+    def dry_run_query(self) -> Optional[ManualAction]:
+        """Displays the ManualAction needed with question marks instead of action data for the locators
+        as a dry run query"""
+        fake_data: Dict[str, Any] = self.display_query_data()
+        manual_query: Optional[ManualAction] = self.generate_query(fake_data, None)
+        if not manual_query:
+            return None
+
+        for where_params in manual_query.locators.values():
+            for i, _ in enumerate(where_params):
+                where_params[i] = "?"
+        return manual_query
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest

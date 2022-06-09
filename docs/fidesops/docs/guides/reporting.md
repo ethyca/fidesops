@@ -186,7 +186,6 @@ Time received,Subject identity,Policy key,Request status,Reviewer,Time approved/
 2022-03-14 16:53:28.869258+00:00,{'email': 'customer-1@example.com'},my_primary_policy,complete,fid_16ffde2f-613b-4f79-bbae-41420b0f836b,2022-03-14 16:54:08.804283+00:00
 ```
 
-
 ## Details to resume a privacy request
 
 Privacy requests may need to be resumed in the event the request was paused, or restarted, in the event a privacy request failed.
@@ -244,7 +243,7 @@ guides for more information on resuming a paused access request.
 
 The request below is in a `paused` state.  The `stopped_collection_details` shows us that the request
 paused execution during the `erasure` step of the `manual_key:filing_cabinet` collection.  Looking at `action_needed.locators` field, we can
-see that the user should find the record in the filing cabinet with an `id` of 2, and replace its `authorized_user` with None. 
+see that the user should find the record in the filing cabinet with an `id` of 2, and replace its `authorized_user` with `None`. 
 A confirmation of the rows masked should be uploaded to the `resume_endpoint`  See the [Manual Data](https://ethyca.github.io/fidesops/guides/manual_data/#resuming-a-paused-erasure-privacy-request) 
 guides for more information on resuming a paused erasure request.
               

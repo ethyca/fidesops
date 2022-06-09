@@ -1131,9 +1131,7 @@ class TestGetPrivacyRequests:
             "collection": "manual_example:another_collection",
             "action_needed": None,
         }
-        assert data["resume_endpoint"] == "/privacy-request/{}/retry".format(
-            privacy_request.id
-        )
+        assert data["resume_endpoint"] == f"/privacy-request/{privacy_request.id}/retry"
 
 
 class TestGetExecutionLogs:
@@ -1334,6 +1332,9 @@ class TestRequestPreview:
     def test_request_preview_all(
         self,
         dataset_config_preview,
+        manual_dataset_config,
+        integration_manual_config,
+        postgres_example_test_dataset_config,
         api_client: TestClient,
         url,
         generate_auth_header,
@@ -1342,6 +1343,7 @@ class TestRequestPreview:
         response = api_client.put(url, headers=auth_header)
         assert response.status_code == 200
         response_body: List[DryRunDatasetResponse] = json.loads(response.text)
+
         assert (
             next(
                 response["query"]
@@ -1351,6 +1353,24 @@ class TestRequestPreview:
             )
             == "SELECT email,id FROM subscriptions WHERE email = ?"
         )
+
+        assert next(
+            response["query"]
+            for response in response_body
+            if response["collectionAddress"]["dataset"] == "manual_input"
+            if response["collectionAddress"]["collection"] == "filing_cabinet"
+        ) == {
+            "locators": {"customer_id": ["?", "?"]},
+            "get": ["authorized_user", "customer_id", "id", "payment_card_id"],
+            "update": None,
+        }
+
+        assert next(
+            response["query"]
+            for response in response_body
+            if response["collectionAddress"]["dataset"] == "manual_input"
+            if response["collectionAddress"]["collection"] == "storage_unit"
+        ) == {"locators": {"email": ["?"]}, "get": ["box_id", "email"], "update": None}
 
 
 class TestApprovePrivacyRequest:

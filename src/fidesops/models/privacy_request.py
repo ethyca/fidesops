@@ -5,6 +5,7 @@ from datetime import datetime
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional
 
+from pydantic import root_validator
 from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, String
@@ -62,6 +63,19 @@ class ManualAction(BaseSchema):
     locators: Dict[str, Any]
     get: Optional[List[str]]
     update: Optional[Dict[str, Any]]
+
+    @root_validator
+    @classmethod
+    def get_or_update_details(
+        cls: BaseSchema, values: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Validate that 'get' or 'update' details are supplied."""
+        if values and not values.get("get") and not values.get("update"):
+            raise ValueError(
+                "A ManualAction requires either 'get' or 'update' instructions."
+            )
+
+        return values
 
 
 class StoppedCollection(BaseSchema):

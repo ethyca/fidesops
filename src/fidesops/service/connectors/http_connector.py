@@ -79,6 +79,9 @@ class HTTPSConnector(BaseConnector[None]):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Currently not supported as webhooks are not called at the collection level"""
+        raise NotImplementedError(
+            "Currently not supported as webhooks are not yet called at the collection level"
+        )
 
     def mask_data(
         self,
@@ -88,6 +91,9 @@ class HTTPSConnector(BaseConnector[None]):
         rows: List[Row],
     ) -> int:
         """Currently not supported as webhooks are not called at the collection level"""
+        raise NotImplementedError(
+            "Currently not supported as webhooks are not yet called at the collection level"
+        )
 
     def create_client(self) -> None:
         """Not required for this type"""

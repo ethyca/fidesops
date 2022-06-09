@@ -395,6 +395,7 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
         )
 
     privacy_request.stopped_collection_details = stopped_collection_details
+    # replaces the placeholder in the url with the privacy request id
     privacy_request.resume_endpoint = (
         resume_endpoint.format(privacy_request_id=privacy_request.id)
         if resume_endpoint
@@ -474,9 +475,10 @@ def get_request_status(
         # it is explicitly requested
         for item in paginated.items:
             item.identity = item.get_cached_identity_data()
-
-    for item in paginated.items:
-        attach_resume_instructions(item)
+            attach_resume_instructions(item)
+    else:
+        for item in paginated.items:
+            attach_resume_instructions(item)
 
     return paginated
 
