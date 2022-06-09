@@ -48,11 +48,6 @@ The types of changes are:
 ### Developer Experience
 * Adds a script for MSSQL schema exploration [#557](https://github.com/ethyca/fidesops/pull/581)
 
-### Added
-* Added OAuth2 authentication strategy for SaaS connectors [#555](https://github.com/ethyca/fidesops/pull/555)
-* Modified `filter` post-processor to include toggles for exact and case sensitive matching [#584](https://github.com/ethyca/fidesops/pull/584)
-* Added dataset for Outreach with access configuration [#588](https://github.com/ethyca/fidesops/pull/588)
-
 ## [1.5.1](https://github.com/ethyca/fidesops/compare/1.5.0...1.5.1) - 2022-05-27
 
 ### Added
