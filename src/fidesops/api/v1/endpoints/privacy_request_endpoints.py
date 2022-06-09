@@ -68,7 +68,10 @@ from fidesops.schemas.privacy_request import (
     ReviewPrivacyRequestIds,
     RowCountRequest,
 )
-from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
+from fidesops.service.privacy_request.request_runner_service import (
+    PrivacyRequestRunner,
+    run_privacy_request,
+)
 from fidesops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
@@ -176,10 +179,7 @@ def create_privacy_request(
             )
 
             if not config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL:
-                PrivacyRequestRunner(
-                    cache=cache,
-                    privacy_request=privacy_request,
-                ).submit()
+                run_privacy_request.delay(privacy_request.id)
 
         except common_exceptions.RedisConnectionError as exc:
             logger.error("RedisConnectionError: %s", exc)
@@ -571,10 +571,10 @@ def resume_privacy_request(
     privacy_request.status = PrivacyRequestStatus.in_processing
     privacy_request.save(db=db)
 
-    PrivacyRequestRunner(
-        cache=cache,
-        privacy_request=privacy_request,
-    ).submit(from_webhook=webhook)
+    run_privacy_request.delay(
+        privacy_request_id=privacy_request.id,
+        from_webhook_id=webhook.id,
+    )
 
     return privacy_request
 
@@ -666,10 +666,10 @@ def resume_privacy_request_with_manual_input(
     privacy_request.status = PrivacyRequestStatus.in_processing
     privacy_request.save(db=db)
 
-    PrivacyRequestRunner(
-        cache=cache,
-        privacy_request=privacy_request,
-    ).submit(from_step=paused_step)
+    run_privacy_request.delay(
+        privacy_request_id=privacy_request.id,
+        from_step=paused_step,
+    )
 
     return privacy_request
 
@@ -770,11 +770,10 @@ def restart_privacy_request_from_failure(
 
     privacy_request.status = PrivacyRequestStatus.in_processing
     privacy_request.save(db=db)
-
-    PrivacyRequestRunner(
-        cache=cache,
-        privacy_request=privacy_request,
-    ).submit(from_step=failed_step)
+    run_privacy_request.delay(
+        privacy_request_id=privacy_request.id,
+        from_step=failed_step,
+    )
 
     privacy_request.cache_failed_step_and_collection()  # Reset failed step and collection to None
 
@@ -850,10 +849,7 @@ def approve_privacy_request(
         privacy_request.reviewed_by = user_id
         privacy_request.save(db=db)
 
-        PrivacyRequestRunner(
-            cache=cache,
-            privacy_request=privacy_request,
-        ).submit()
+        run_privacy_request.delay(privacy_request_id=privacy_request.id)
 
     return review_privacy_request(
         db, cache, privacy_requests.request_ids, _process_request

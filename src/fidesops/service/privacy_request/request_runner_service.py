@@ -239,35 +239,6 @@ def run_privacy_request(
         session.close()
 
 
-class PrivacyRequestRunner:
-    """The class responsible for dispatching PrivacyRequests into the execution layer"""
-
-    def __init__(
-        self,
-        cache: FidesopsRedis,
-        privacy_request: PrivacyRequest,
-    ):
-        self.privacy_request = privacy_request
-
-    def submit(
-        self,
-        from_webhook: Optional[PolicyPreWebhook] = None,
-        from_step: Optional[PausedStep] = None,
-    ) -> Awaitable[None]:
-        """Run this privacy request in a separate thread."""
-        from_webhook_id = from_webhook.id if from_webhook else None
-        return run_privacy_request.apply_async(
-            kwargs={
-                "privacy_request_id": self.privacy_request.id,
-                "from_webhook_id": from_webhook_id,
-                "from_step": from_step,
-            }
-        )
-
-    def dry_run(self, privacy_request: PrivacyRequest) -> None:
-        """Pretend to dispatch privacy_request into the execution layer, return the query plan"""
-
-
 def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) -> None:
     """Initiates scheduler to expire privacy request when the redis cache expires"""
     scheduler.add_job(
