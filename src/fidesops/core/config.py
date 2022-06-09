@@ -255,7 +255,7 @@ class AdminUiSettings(FidesSettings):
     ENABLED: bool
 
     class Config:
-        env_prefix = "FIDESOPS__ADMINUI__"
+        env_prefix = "FIDESOPS__ADMIN_UI__"
 
 
 class FidesopsConfig(FidesSettings):
