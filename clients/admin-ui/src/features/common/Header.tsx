@@ -14,10 +14,10 @@ import NextLink from 'next/link';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { BASE_ASSET_URN } from "../../constants"
 import { logout, selectUser } from '../auth';
 import { UserIcon } from './Icon';
 import Image from './Image';
-import { BASE_ASSET_URN } from "../../constants"
 
 const useHeader = () => {
   const dispatch = useDispatch();

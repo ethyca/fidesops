@@ -7,15 +7,15 @@ import {
   Spinner,
   Text,
 } from '@fidesui/react';
-import type { NextPage } from 'next';;
+import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import React from 'react';
 
 import ProtectedRoute from '../../features/auth/ProtectedRoute';
+import Head from '../../features/common/Head';
 import NavBar from '../../features/common/NavBar';
 import { useGetAllPrivacyRequestsQuery } from '../../features/privacy-requests';
 import SubjectRequest from '../../features/subject-request/SubjectRequest';
-import Head from '../../features/common/Head'
 
 const useSubjectRequestDetails = () => {
   const router = useRouter();

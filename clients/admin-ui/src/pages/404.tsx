@@ -1,5 +1,6 @@
 import { Box, Button, Heading, Stack, Text } from '@fidesui/react';
 import NextLink from 'next/link';
+
 import Head from '../features/common/Head'
 import Image from '../features/common/Image';
 

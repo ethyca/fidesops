@@ -3,10 +3,10 @@ import type { NextPage } from 'next';
 import React from 'react';
 
 import ProtectedRoute from '../../features/auth/ProtectedRoute';
+import Head from '../../features/common/Head'
 import NavBar from '../../features/common/NavBar';
 import UserManagementTable from '../../features/user-management/UserManagementTable';
 import UserManagementTableActions from '../../features/user-management/UserManagementTableActions';
-import Head from '../../features/common/Head'
 
 const UserManagement: NextPage = () => (
   <ProtectedRoute>
