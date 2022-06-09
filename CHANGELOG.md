@@ -24,6 +24,12 @@ The types of changes are:
 * Restart Graph from Failure [#578](https://github.com/ethyca/fidesops/pull/578)
 * Redis SSL Support [#611](https://github.com/ethyca/fidesops/pull/611)
 * Celery as a dependency for use in the execution layer [#610](https://github.com/ethyca/fidesops/pull/610)
+* Cache and Surface Resume/Restart Instructions [#591](https://github.com/ethyca/fidesops/pull/591)
+
+### Changed
+
+* Refactor auth and enable static file serving [#577](https://github.com/ethyca/fidesops/pull/577)
+
 
 ## [1.5.2](https://github.com/ethyca/fidesops/compare/1.5.1...1.5.2)
 
