@@ -126,7 +126,7 @@ pytest: compose-build
 	@docker-compose run \
 		-e ANALYTICS_OPT_OUT \
 		$(IMAGE_NAME) \
-		pytest $(pytestpath) -m "not integration and not integration_external and not integration_saas" --lf -x
+		pytest $(pytestpath) -m "not integration and not integration_external and not integration_saas"
 
 	@make teardown
 
