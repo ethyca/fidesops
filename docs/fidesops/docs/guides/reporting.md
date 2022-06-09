@@ -188,17 +188,15 @@ Time received,Subject identity,Policy key,Request status,Reviewer,Time approved/
 
 ## Details to resume a privacy request
 
-Privacy requests may need to be resumed in the event the request was paused, or restarted, in the event a privacy request failed.
-Some collections may require manual input from the user to proceed privacy request execution. The information
-needed to proceed can be accessed from the `GET api/v1/privacy-request?request_id=<privacy_request_id>` endpoint.
+A privacy request may pause when manual input is needed from the user, or it might fail for various reason on a specific collection.  
+Details to resume or retry that privacy request can be accessed via the `GET api/v1/privacy-request?request_id=<privacy_request_id>` endpoint.
 
 ### Paused Access Request Example
 
-The request below is in a `paused` state.  If we look at the `stopped_collection_details` key, we can see that the request
-paused execution during the `access` step of the `manual_key:filing_cabinet` collection.  Looking at `action_needed.locators` field, we can
-see that the user should find the record in the filing cabinet with a customer_id of 72909, and get the 
-"authorized_user", "customer_id", "id", and "payment_card_id" fields from that record.  These values should be manually
-uploaded to the `resume_endpoint`.  See the [Manual Data](https://ethyca.github.io/fidesops/guides/manual_data/#resuming-a-paused-access-privacy-request) 
+The request below is in a `paused` state because we're waiting on manual input from the user to proceed. If we look at the `stopped_collection_details` key, we can see that the request
+paused execution during the `access` step of the `manual_key:filing_cabinet` collection.  The `action_needed.locators` field shows the user they should
+fetch the record in the filing cabinet with a `customer_id` of `72909`, and pull the `authorized_user`, `customer_id`, `id`, and `payment_card_id` fields
+from that record.  These values should be manually uploaded to the `resume_endpoint`.  See the [Manual Data](https://ethyca.github.io/fidesops/guides/manual_data/#resuming-a-paused-access-privacy-request) 
 guides for more information on resuming a paused access request.
                           
 
@@ -241,10 +239,10 @@ guides for more information on resuming a paused access request.
 
 ### Paused Erasure Request Example
 
-The request below is in a `paused` state.  The `stopped_collection_details` shows us that the request
+The request below is in a `paused` state because we're waiting on the user to confirm they've masked the appropriate data before proceeding.  The `stopped_collection_details` shows us that the request
 paused execution during the `erasure` step of the `manual_key:filing_cabinet` collection.  Looking at `action_needed.locators` field, we can
 see that the user should find the record in the filing cabinet with an `id` of 2, and replace its `authorized_user` with `None`. 
-A confirmation of the rows masked should be uploaded to the `resume_endpoint`  See the [Manual Data](https://ethyca.github.io/fidesops/guides/manual_data/#resuming-a-paused-erasure-privacy-request) 
+A confirmation of the masked records count should be uploaded to the `resume_endpoint`  See the [Manual Data](https://ethyca.github.io/fidesops/guides/manual_data/#resuming-a-paused-erasure-privacy-request) 
 guides for more information on resuming a paused erasure request.
               
 ```json
@@ -285,9 +283,8 @@ guides for more information on resuming a paused erasure request.
 
 ### Failed Request Example
 
-The below request is an `error` state.  Under `stopped_collection_details` we can see that it failed at the
-erasure step of the `postgres_dataset:payment_card` collection.  After troubleshooting the issues there, for example,
-your postgres password could be incorrect, you would resume the request with a POST to the `resume_endpoint`.
+The below request is an `error` state because something failed in the `erasure` step of the `postgres_dataset:payment_card` collection.  
+After troubleshooting the issues with your postgres connection, you would resume the request with a POST to the `resume_endpoint`.
 
 ```json
 {
