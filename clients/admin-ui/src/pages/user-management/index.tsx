@@ -1,21 +1,17 @@
 import { Box, Heading } from '@fidesui/react';
 import type { NextPage } from 'next';
-import Head from 'next/head';
 import React from 'react';
 
 import ProtectedRoute from '../../features/auth/ProtectedRoute';
 import NavBar from '../../features/common/NavBar';
 import UserManagementTable from '../../features/user-management/UserManagementTable';
 import UserManagementTableActions from '../../features/user-management/UserManagementTableActions';
+import Head from '../../features/common/Head'
 
 const UserManagement: NextPage = () => (
   <ProtectedRoute>
     <div>
-      <Head>
-        <title>Fides Admin UI - User Management</title>
-        <meta name="description" content="Generated from FidesUI template" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+      <Head />
 
       <NavBar />
 
