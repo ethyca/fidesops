@@ -24,6 +24,7 @@ The types of changes are:
 * Restart Graph from Failure [#578](https://github.com/ethyca/fidesops/pull/578)
 * Redis SSL Support [#611](https://github.com/ethyca/fidesops/pull/611)
 * Cache and Surface Resume/Restart Instructions [#591](https://github.com/ethyca/fidesops/pull/591)
+* Build and deploy Admin UI from webserver [#625](https://github.com/ethyca/fidesops/pull/625)
 
 ### Changed
 
