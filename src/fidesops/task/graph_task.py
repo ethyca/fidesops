@@ -448,7 +448,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return output
 
     def skip_if_disabled(self) -> None:
-        """If the collection is attached to a disabled ConnectionConfig, we will skip execution."""
+        """Skip execution for the given collection if it is attached to a disabled ConnectionConfig."""
         connection_config: ConnectionConfig = self.connector.configuration
         if connection_config.disabled:
             raise CollectionDisabled(

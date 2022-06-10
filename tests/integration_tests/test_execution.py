@@ -3,6 +3,7 @@ from unittest import mock
 
 import pytest
 from pydantic import ValidationError
+from sqlalchemy.exc import InvalidRequestError
 
 from fidesops.db.session import get_db_session
 from fidesops.graph.config import CollectionAddress
@@ -21,6 +22,9 @@ from fidesops.models.privacy_request import (
 )
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.task import graph_task
+from ..service.privacy_request.request_runner_service_test import (
+    get_privacy_request_results,
+)
 
 from ..fixtures.application_fixtures import integration_secrets
 
@@ -49,6 +53,121 @@ def mongo_postgres_dataset_graph(
     )
     dataset_graph = DatasetGraph(*[graph, mongo_graph])
     return dataset_graph
+
+
+@pytest.mark.integration
+@pytest.mark.postgres
+class TestDeleteCollection:
+    def test_delete_collection_before_new_request(
+        self,
+        db,
+        policy,
+        cache,
+        postgres_example_test_dataset_config_read_access,
+        read_connection_config,
+        postgres_integration_db,
+    ) -> None:
+        """Delete the connection config before execution starts which also
+        deletes its dataset config. The graph is built with nothing in it, and no results are returned.
+        """
+        read_connection_config.delete(db)
+
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(db, policy, cache, data)
+
+        assert pr.get_results() == {}
+
+    @mock.patch("fidesops.task.graph_task.GraphTask.log_start")
+    def test_delete_collection_while_in_progress(
+        self,
+        mocked_log_start,
+        db,
+        policy,
+        integration_postgres_config,
+        example_datasets,
+    ) -> None:
+        """Assert that deleting a collection while the privacy request is in progress doesn't affect the current execution plan.
+        We still proceed to visit the deleted collections, because we rely on the ConnectionConfigs already in memory.
+        """
+        # Create a new ConnectionConfig instead of using the fixture because I need to be able to access this
+        # outside of the current session.
+        mongo_connection_config = ConnectionConfig(
+            key="mongo_example_in_progress",
+            connection_type=ConnectionType.mongodb,
+            access=AccessLevel.write,
+            secrets=integration_secrets["mongo_example"],
+            name="mongo_example_in_progress",
+        )
+        mongo_connection_config.save(db)
+        dataset_postgres = FidesopsDataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(
+            dataset_postgres, integration_postgres_config.key
+        )
+        dataset_mongo = FidesopsDataset(**example_datasets[1])
+        mongo_graph = convert_dataset_to_graph(
+            dataset_mongo, mongo_connection_config.key
+        )
+        dataset_graph = DatasetGraph(*[graph, mongo_graph])
+
+        def delete_connection_config(_):
+            """
+            Delete the mongo connection in a separate session, for testing purposes, while the privacy request
+            is in progress. Arbitrarily hooks into the log_start method to do this.
+            """
+            SessionLocal = get_db_session()
+            new_session = SessionLocal()
+            try:
+                reloaded_config = new_session.query(ConnectionConfig).get(
+                    mongo_connection_config.id
+                )
+
+                reloaded_config.delete(db)
+            except InvalidRequestError:
+                pass
+            new_session.close()
+
+        mocked_log_start.side_effect = delete_connection_config
+        privacy_request = PrivacyRequest(
+            id=f"test_postgres_access_request_task_{uuid.uuid4()}"
+        )
+
+        results = graph_task.run_access_request(
+            privacy_request,
+            policy,
+            dataset_graph,
+            [integration_postgres_config, mongo_connection_config],
+            {"email": "customer-1@example.com"},
+        )
+        assert any(
+            collection.startswith("mongo_test") for collection in results
+        ), "mongo results still returned"
+        assert any(
+            collection.startswith("postgres_example_test_dataset")
+            for collection in results
+        ), "postgres results returned"
+
+        postgres_logs = db.query(ExecutionLog).filter_by(
+            privacy_request_id=privacy_request.id,
+            dataset_name="postgres_example_test_dataset",
+        )
+        assert postgres_logs.count() == 11
+        assert postgres_logs.filter_by(status="complete").count() == 11
+
+        mongo_logs = db.query(ExecutionLog).filter_by(
+            privacy_request_id=privacy_request.id, dataset_name="mongo_test"
+        )
+        assert mongo_logs.count() == 9
+        assert (
+            mongo_logs.filter_by(status="complete").count() == 9
+        ), "Mongo collections still visited"
+
+        db.delete(mongo_connection_config)
 
 
 @pytest.mark.integration
