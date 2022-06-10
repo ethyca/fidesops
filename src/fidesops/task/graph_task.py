@@ -447,7 +447,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # Return filtered rows with non-matched array data removed.
         return output
 
-    def skip_if_disabled(self):
+    def skip_if_disabled(self) -> None:
         """If the collection is attached to a disabled ConnectionConfig, we will skip execution."""
         connection_config: ConnectionConfig = self.connector.configuration
         if connection_config.disabled:

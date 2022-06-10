@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 
 from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
 from sqlalchemy.dialects.postgresql import JSONB
@@ -114,8 +114,8 @@ class ConnectionConfig(Base):
 
 @event.listens_for(ConnectionConfig.disabled, "set")
 def connection_config_disabled_set(
-    target: ConnectionConfig, value: bool, original_value: bool, _
-):
+    target: ConnectionConfig, value: bool, original_value: bool, _: Any
+) -> None:
     """Update ConnectionConfig.disabled_at if ConnectionConfig.disabled changes"""
     if value != original_value:
         target.disabled_at = datetime.utcnow() if value else None

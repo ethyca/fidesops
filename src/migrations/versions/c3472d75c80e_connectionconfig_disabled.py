@@ -1,7 +1,7 @@
 """connectionconfig disabled
 
 Revision ID: c3472d75c80e
-Revises: 1ff88b7bd579
+Revises: 27fe9da9d0f9
 Create Date: 2022-06-08 20:15:28.924262
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "c3472d75c80e"
-down_revision = "1ff88b7bd579"
+down_revision = "27fe9da9d0f9"
 branch_labels = None
 depends_on = None
 
