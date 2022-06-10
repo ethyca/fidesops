@@ -37,6 +37,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         super().__init__(configuration)
         self.secrets = configuration.secrets
         self.saas_config = configuration.get_saas_config()
+
+        if not self.saas_config:
+            raise FidesopsException("No SaaS configuration present")
+
         self.client_config = self.saas_config.client_config
         self.endpoints = self.saas_config.top_level_endpoint_dict
         self.collection_name: Optional[str] = None
@@ -46,6 +50,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Returns the query config for a given node which includes the endpoints
         and connector param values for the current collection.
         """
+        if not self.saas_config:
+            raise FidesopsException("No SaaS configuration present")
+
+        if not self.secrets:
+            raise FidesopsException("No connection configuration secrets present")
+
         # store collection_name for logging purposes
         self.collection_name = node.address.collection
         return SaaSQueryConfig(
@@ -54,6 +64,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
+        if not self.saas_config:
+            raise FidesopsException("No SaaS configuration present")
+
         test_request: SaaSRequest = self.saas_config.test_request
         prepared_request: SaaSRequestParams = SaaSRequestParams(
             method=test_request.method, path=test_request.path
@@ -64,6 +77,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def build_uri(self) -> str:
         """Build base URI for the given connector"""
+        if not self.secrets:
+            raise FidesopsException("No connection configuration secrets present")
+
         host = self.client_config.host
         return (
             f"{self.client_config.protocol}://{assign_placeholders(host, self.secrets)}"
@@ -95,6 +111,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         if saas_request.client_config:
             return self._build_client_with_config(saas_request.client_config)
 
+        if not self.saas_config:
+            raise FidesopsException("No SaaS configuration present")
+
         return self._build_client_with_config(self.saas_config.client_config)
 
     def retrieve_data(
@@ -110,10 +129,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         query_config: SaaSQueryConfig = self.query_config(node)
         read_request: Optional[SaaSRequest] = query_config.get_request_by_action("read")
         if not read_request:
+            if self.saas_config:
+                raise FidesopsException(
+                    f"The 'read' action is not defined for the '{self.collection_name}' "
+                    f"endpoint in {self.saas_config.fides_key}"
+                )
             raise FidesopsException(
-                f"The 'read' action is not defined for the '{self.collection_name}' "
-                f"endpoint in {self.saas_config.fides_key}"
+                f"The 'read' action is not defined for the '{self.collection_name}'"
             )
+
         prepared_requests: List[SaaSRequestParams] = query_config.generate_requests(
             input_data, policy
         )
@@ -123,13 +147,18 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         # list of rows after each request.
         rows: List[Row] = []
         for next_request in prepared_requests:
-            while next_request:
-                processed_rows, next_request = self.execute_prepared_request(
+            request: Optional[SaaSRequestParams]
+            while request:
+                processed_rows: Optional[List[Row]]
+                processed_rows, request = self.execute_prepared_request(
                     next_request,
                     privacy_request.get_cached_identity_data(),
                     read_request,
-                )
-                rows.extend(processed_rows)
+                ) or (None, None)
+
+                if processed_rows:
+                    rows.extend(processed_rows)
+
         return rows
 
     def execute_prepared_request(
@@ -143,7 +172,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Returns processed data and request_params for next page of data if available.
         """
         client: AuthenticatedClient = self.create_client_from_request(saas_request)
-        response: Response = client.send(prepared_request, saas_request)
+        response: Response = client.send(prepared_request, saas_request.ignore_errors)
         response = self._handle_errored_response(saas_request, response)
         response_data = self._unwrap_response_data(saas_request, response)
 
@@ -151,7 +180,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         rows = self.process_response_data(
             response_data,
             identity_data,
-            saas_request.postprocessors,
+            saas_request.postprocessors,  # type: ignore
         )
 
         logger.info(
