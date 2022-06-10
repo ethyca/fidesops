@@ -76,9 +76,7 @@ class PrivacyRequestRunner:
                 logging.info(
                     f"Pausing execution of privacy request {privacy_request.id}. Halt instruction received from webhook {webhook.key}."
                 )
-                privacy_request.update(
-                    db=db, data={"status": PrivacyRequestStatus.paused}
-                )
+                privacy_request.pause_processing(db)
                 initiate_paused_privacy_request_followup(privacy_request)
                 return False
             except ClientUnsuccessfulException as exc:
@@ -184,16 +182,17 @@ class PrivacyRequestRunner:
                     )
 
             except PrivacyRequestPaused as exc:
-                privacy_request.status = PrivacyRequestStatus.paused
-                privacy_request.save(db=session)
+                privacy_request.pause_processing(session)
                 _log_warning(exc, config.dev_mode)
                 session.close()
                 return
 
             except BaseException as exc:  # pylint: disable=broad-except
-                privacy_request.status = PrivacyRequestStatus.error
+                privacy_request.error_processing(db=session)
                 # If dev mode, log traceback
                 _log_exception(exc, config.dev_mode)
+                session.close()
+                return
 
             # Run post-execution webhooks
             proceed = self.run_webhooks_and_report_status(
@@ -206,8 +205,7 @@ class PrivacyRequestRunner:
                 return
 
             privacy_request.finished_processing_at = datetime.utcnow()
-            if privacy_request.status != PrivacyRequestStatus.error:
-                privacy_request.status = PrivacyRequestStatus.complete
+            privacy_request.status = PrivacyRequestStatus.complete
             privacy_request.save(db=session)
             logging.info(f"Privacy request {privacy_request.id} run completed.")
             session.close()
