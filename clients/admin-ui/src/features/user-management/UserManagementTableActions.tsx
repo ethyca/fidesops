@@ -9,6 +9,7 @@ import NextLink from 'next/link';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { USER_MANAGEMENT_ROUTE } from '../../constants';
 import { SearchLineIcon } from '../common/Icon';
 import { selectUserFilters, setUsernameSearch } from './user-management.slice';
 
@@ -37,15 +38,15 @@ const UserManagementTableActions: React.FC = () => {
         <Input
           type='search'
           minWidth={200}
-          placeholder="Search by Username"
-          size="sm"
-          borderRadius="md"
+          placeholder='Search by Username'
+          size='sm'
+          borderRadius='md'
           value={username}
-          name="search"
+          name='search'
           onChange={handleSearchChange}
         />
       </InputGroup>
-      <NextLink href='/user-management/new' passHref>
+      <NextLink href={`${USER_MANAGEMENT_ROUTE}/new`} passHref>
         <Button
           variant='solid'
           bg='primary.800'

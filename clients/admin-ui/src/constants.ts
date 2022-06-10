@@ -48,3 +48,8 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: 'user-permission:read',
   },
 ];
+
+export const INDEX_ROUTE = '/';
+export const LOGIN_ROUTE = '/login';
+export const USER_MANAGEMENT_ROUTE = '/user-management';
+export const DATASTORE_CONNECTION_ROUTE = '/datastore-connection';

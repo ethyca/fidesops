@@ -1,6 +1,7 @@
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 
+import { INDEX_ROUTE, LOGIN_ROUTE } from '../../src/constants';
 import LoginPage from '../../src/pages/login';
 import { act, fireEvent, render, screen, waitFor } from '../test-utils';
 
@@ -10,10 +11,10 @@ afterAll(() => {
   useRouter.mockRestore();
 });
 
-describe('/login', () => {
+describe(LOGIN_ROUTE, () => {
   it('Should redirect when the user logs in successfully', async () => {
     const server = setupServer(
-      rest.post(`/login`, (req, res, ctx) =>
+      rest.post(LOGIN_ROUTE, (req, res, ctx) =>
         res(
           ctx.json({
             user_data: {
@@ -53,12 +54,12 @@ describe('/login', () => {
     });
 
     await waitFor(() => expect(push).toHaveBeenCalledTimes(1));
-    expect(push).toHaveBeenCalledWith('/');
+    expect(push).toHaveBeenCalledWith(INDEX_ROUTE);
 
     server.close();
   });
 
-  it('Should redirect to "/" when the user is already logged in', async () => {
+  it(`Should redirect to "${INDEX_ROUTE}" when the user is already logged in`, async () => {
     await act(async () => {
       const push = jest.fn();
       useRouter.mockImplementation(() => ({
@@ -78,7 +79,7 @@ describe('/login', () => {
         });
       });
 
-      expect(push).toHaveBeenCalledWith('/');
+      expect(push).toHaveBeenCalledWith(INDEX_ROUTE);
       expect(push).toHaveBeenCalledTimes(1);
     });
   });

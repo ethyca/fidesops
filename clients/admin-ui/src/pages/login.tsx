@@ -18,6 +18,7 @@ import { useRouter } from 'next/router';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { INDEX_ROUTE } from '../constants';
 import { login, selectToken, useLoginMutation } from '../features/auth';
 import Image from '../features/common/Image';
 
@@ -70,7 +71,7 @@ const useLogin = () => {
   };
 
   if (token) {
-    router.push('/');
+    router.push(INDEX_ROUTE);
   }
 
   return {
@@ -97,41 +98,41 @@ const Login: NextPage = () => {
           <Head>
             <title>FidesUI App</title>
             <meta
-              name="description"
-              content="Generated from FidesUI template"
+              name='description'
+              content='Generated from FidesUI template'
             />
-            <link rel="icon" href="/favicon.ico" />
+            <link rel='icon' href='/favicon.ico' />
           </Head>
 
           <main>
             <Stack
               spacing={16}
-              mx="auto"
-              maxW="lg"
+              mx='auto'
+              maxW='lg'
               py={12}
               px={6}
-              align="center"
-              minH="100vh"
-              justify="center"
+              align='center'
+              minH='100vh'
+              justify='center'
             >
               <Box display={['none', 'none', 'block']}>
                 <Image
-                  src="/logo.svg"
-                  alt="FidesUI logo"
-                  width="156px"
-                  height="48px"
+                  src='/logo.svg'
+                  alt='FidesUI logo'
+                  width='156px'
+                  height='48px'
                 />
               </Box>
-              <Stack align="center" spacing={[0, 0, 6]}>
+              <Stack align='center' spacing={[0, 0, 6]}>
                 <Heading
-                  fontSize="4xl"
-                  colorScheme="primary"
+                  fontSize='4xl'
+                  colorScheme='primary'
                   display={['none', 'none', 'block']}
                 >
                   Sign into your account
                 </Heading>
                 <Box
-                  bg="white"
+                  bg='white'
                   py={12}
                   px={[0, 0, 40]}
                   width={['100%', '100%', 640]}
@@ -141,40 +142,40 @@ const Login: NextPage = () => {
                   bottom={0}
                   left={0}
                   right={0}
-                  boxShadow="base"
+                  boxShadow='base'
                 >
-                  <Stack align="center" justify="center" spacing={8}>
+                  <Stack align='center' justify='center' spacing={8}>
                     <Stack display={['block', 'block', 'none']} spacing={12}>
-                      <Flex justifyContent="center">
+                      <Flex justifyContent='center'>
                         <Image
-                          src="/logo.svg"
-                          alt="FidesUI logo"
-                          width="156px"
-                          height="48px"
+                          src='/logo.svg'
+                          alt='FidesUI logo'
+                          width='156px'
+                          height='48px'
                         />
                       </Flex>
-                      <Heading fontSize="3xl" colorScheme="primary">
+                      <Heading fontSize='3xl' colorScheme='primary'>
                         Sign into your account
                       </Heading>
                     </Stack>
                     <chakra.form
                       onSubmit={handleSubmit}
                       maxW={['xs', 'xs', '100%']}
-                      width="100%"
+                      width='100%'
                     >
                       <Stack spacing={6}>
                         <FormControl
                           isInvalid={touched.email && Boolean(errors.email)}
                         >
-                          <FormLabel htmlFor="email" fontWeight="medium">
+                          <FormLabel htmlFor='email' fontWeight='medium'>
                             Username
                           </FormLabel>
                           <Input
-                            id="email"
-                            name="email"
-                            aria-label="email"
-                            focusBorderColor="primary.500"
-                            placeholder="username"
+                            id='email'
+                            name='email'
+                            aria-label='email'
+                            focusBorderColor='primary.500'
+                            placeholder='username'
                             onChange={handleChange}
                             onBlur={handleBlur}
                             value={values.email}
@@ -188,15 +189,15 @@ const Login: NextPage = () => {
                             touched.password && Boolean(errors.password)
                           }
                         >
-                          <FormLabel htmlFor="password" fontWeight="medium">
+                          <FormLabel htmlFor='password' fontWeight='medium'>
                             Password
                           </FormLabel>
                           <Input
-                            id="password"
-                            name="password"
-                            focusBorderColor="primary.500"
-                            type="password"
-                            aria-label="password"
+                            id='password'
+                            name='password'
+                            focusBorderColor='primary.500'
+                            type='password'
+                            aria-label='password'
                             value={values.password}
                             onChange={handleChange}
                             onBlur={handleBlur}
@@ -208,13 +209,13 @@ const Login: NextPage = () => {
                         </FormControl>
 
                         <Button
-                          type="submit"
-                          bg="primary.800"
+                          type='submit'
+                          bg='primary.800'
                           _hover={{ bg: 'primary.400' }}
                           _active={{ bg: 'primary.500' }}
                           disabled={!values.email || !values.password}
                           isLoading={isLoading}
-                          colorScheme="primary"
+                          colorScheme='primary'
                         >
                           Sign in
                         </Button>

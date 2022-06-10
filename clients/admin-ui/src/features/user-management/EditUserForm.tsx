@@ -18,7 +18,7 @@ import { useRouter } from 'next/router';
 import React from 'react';
 import { useSelector } from 'react-redux';
 
-import { USER_PRIVILEGES } from '../../constants';
+import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from '../../constants';
 import { selectUser } from '../auth';
 import { User } from './types';
 import UpdatePasswordModal from './UpdatePasswordModal';
@@ -93,7 +93,7 @@ const useUserForm = () => {
       );
 
       if (!updatePermissionsError) {
-        router.push('/user-management');
+        router.push(USER_MANAGEMENT_ROUTE);
       }
     },
     validate: () => {
@@ -217,7 +217,7 @@ const EditUserForm: React.FC = () => {
             <Text>Edit privileges assigned to this user</Text>
             <Divider mb={2} mt={2} />
 
-            <Stack spacing={[1, 5]} direction="column">
+            <Stack spacing={[1, 5]} direction='column'>
               {USER_PRIVILEGES.map((policy) => {
                 const isChecked = values.scopes
                   ? values.scopes.indexOf(policy.scope) >= 0
@@ -255,7 +255,7 @@ const EditUserForm: React.FC = () => {
             </Stack>
           </Stack>
 
-          <NextLink href='/user-management' passHref>
+          <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
             <Button mr={3} variant='outline' size='sm'>
               Cancel
             </Button>
