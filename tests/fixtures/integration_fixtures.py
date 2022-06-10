@@ -14,7 +14,7 @@ from fidesops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.service.connectors import MongoDBConnector, PostgreSQLConnector
+from fidesops.service.connectors import MongoDBConnector
 
 from .application_fixtures import faker, integration_secrets
 

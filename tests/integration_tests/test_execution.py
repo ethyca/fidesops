@@ -105,7 +105,7 @@ class TestSkipDisabledCollection:
         integration_postgres_config,
         example_datasets,
     ) -> None:
-        """Assert that disabling a collection while the privacy request is in progress doesn't affect the current execution.
+        """Assert that disabling a collection while the privacy request is in progress doesn't affect the current execution plan.
         We still proceed to visit the disabled collections, because we rely on the ConnectionConfigs already in memory.
         """
         # Create a new ConnectionConfig instead of using the fixture because I need to be able to access this
@@ -169,7 +169,6 @@ class TestSkipDisabledCollection:
             for collection in results
         )
 
-        logs = get_sorted_execution_logs(db, privacy_request)
         postgres_logs = db.query(ExecutionLog).filter_by(
             privacy_request_id=privacy_request.id,
             dataset_name="postgres_example_test_dataset",
