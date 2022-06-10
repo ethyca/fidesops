@@ -191,7 +191,7 @@ def validate_secrets(
         )
 
     try:
-        schema = get_connection_secrets_validator(connection_type.value, saas_config)
+        schema = get_connection_secrets_validator(connection_type.value, saas_config)  # type: ignore
         logger.info(
             f"Validating secrets on connection config with key '{connection_config.key}'"
         )
@@ -211,7 +211,10 @@ def connection_status(
 
     connector = get_connector(connection_config)
     try:
-        status: ConnectionTestStatus = connector.test_connection()
+        status = connector.test_connection()
+        if not status:
+            raise ConnectionException("No connection")
+
     except (ConnectionException, ClientUnsuccessfulException) as exc:
         logger.warning(
             "Connection test failed on %s: %s",

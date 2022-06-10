@@ -42,13 +42,14 @@ def cache_data(
 
     # Store masking secrets in the cache
     logger.info(f"Caching masking secrets for privacy request {privacy_request.id}")
-    erasure_rules: List[Rule] = policy.get_rules_for_action(
-        action_type=ActionType.erasure
-    )
+    erasure_rules = policy.get_rules_for_action(action_type=ActionType.erasure)
     unique_masking_strategies_by_name: Set[str] = set()
     for rule in erasure_rules:
-        strategy_name: str = rule.masking_strategy["strategy"]
-        configuration: MaskingConfiguration = rule.masking_strategy["configuration"]
+        if not rule.masking_strategy:
+            raise ValueError(f"No masking strategy round for {rule['name']}")
+
+        strategy_name = rule.masking_strategy["strategy"]
+        configuration = rule.masking_strategy["configuration"]
         if strategy_name in unique_masking_strategies_by_name:
             continue
         unique_masking_strategies_by_name.add(strategy_name)

@@ -5,6 +5,7 @@ include dev-requirements.txt
 include versioneer.py
 include src/alembic.ini
 include src/fidesops/_version.py
+include src/fidesops/py.typed
 graft src/migrations
 exclude src/migrations/README
 exclude src/migrations/script.py.mako

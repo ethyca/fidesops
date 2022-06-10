@@ -200,12 +200,19 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None
     verify_oauth_connection_config(connection_config)
 
     try:
-        authentication = (
-            connection_config.get_saas_config().client_config.authentication
-        )
-        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
-            authentication.strategy, authentication.configuration
-        )
+        saas_config = connection_config.get_saas_config()
+        if not saas_config:
+            raise FidesopsException("No SAAS configuration found")
+
+        authentication = saas_config.client_config.authentication
+        if not authentication:
+            raise FidesopsException("No strategy found")
+
+        strategy = get_strategy(authentication.strategy, authentication.configuration)
+        if not strategy:
+            raise FidesopsException("No authentication strategy found")
+
+        auth_strategy: OAuth2AuthenticationStrategy = strategy  # type: ignore
         auth_strategy.get_access_token(db, code, connection_config)
     except (OAuth2TokenException, FidesopsException) as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc))

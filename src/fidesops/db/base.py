@@ -1,7 +1,7 @@
 # pylint: disable=W0611
 # Import all the models, so that Base has them before being
 # imported by Alembic
-from fidesops.db.base_class import Base
+from fidesops.db.base_class import Base  # type: ignore
 from fidesops.models.audit_log import AuditLog
 from fidesops.models.authentication_request import AuthenticationRequest
 from fidesops.models.client import ClientDetail

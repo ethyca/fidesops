@@ -4,10 +4,31 @@ requires = ["setuptools", "wheel", "versioneer-518"]  # PEP 508 specifications.
 ######
 # MyPy
 ######
-# [tool.mypy] Waiting for new version of Mypy
-# warn_unused_configs = true
-# ignore_missing_imports = true
-# pretty = true
+[tool.mypy]
+exclude = ["migrations/"]
+plugins = ["sqlmypy"]
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = [
+  "alembic.*",
+  "apscheduler.*",
+  "dask.*",
+  "fideslang.*",
+  "fideslog.*",
+  "jose.*",
+  "pandas.*",
+  "pydash.*",
+  "pymongo.*",
+  "snowflake.*",
+  "sqlalchemy_utils.*",
+  "uvicorn.*"
+]
+ignore_missing_imports = true
 
 #######
 # Black

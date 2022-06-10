@@ -61,7 +61,7 @@ def retry(
             method_name = func.__name__
             self = args[0]
 
-            raised_ex = None
+            raised_ex: Optional[Exception] = None
             if config.dev_mode:
                 # If dev mode, return here so exception isn't caught
                 return func(*args, **kwargs)
