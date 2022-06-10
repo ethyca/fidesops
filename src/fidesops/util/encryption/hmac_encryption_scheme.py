@@ -1,6 +1,6 @@
 import hashlib
 import hmac
-from typing import Callable, Optional
+from typing import Callable
 
 from fidesops.core.config import config
 from fidesops.schemas.masking.masking_configuration import HmacMaskingConfiguration
