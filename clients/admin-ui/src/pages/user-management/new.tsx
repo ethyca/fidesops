@@ -20,10 +20,10 @@ const CreateNewUser: NextPage = () => (
       <NavBar />
       <main>
         <Box px={9} py={10}>
-          <Heading fontSize='2xl' fontWeight='semibold'>
+          <Heading fontSize="2xl" fontWeight="semibold">
             User Management
             <Box mt={2} mb={7}>
-              <Breadcrumb fontWeight='medium' fontSize='sm'>
+              <Breadcrumb fontWeight="medium" fontSize="sm">
                 <BreadcrumbItem>
                   <Link href={USER_MANAGEMENT_ROUTE} passHref>
                     <BreadcrumbLink href={USER_MANAGEMENT_ROUTE}>
@@ -33,7 +33,7 @@ const CreateNewUser: NextPage = () => (
                 </BreadcrumbItem>
 
                 <BreadcrumbItem>
-                  <BreadcrumbLink href='#'>Add New User</BreadcrumbLink>
+                  <BreadcrumbLink href="#">Add New User</BreadcrumbLink>
                 </BreadcrumbItem>
               </Breadcrumb>
             </Box>
