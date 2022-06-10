@@ -5,9 +5,12 @@ requires = ["setuptools", "wheel", "versioneer-518"]  # PEP 508 specifications.
 # MyPy
 ######
 [tool.mypy]
-exclude = ["migrations/"]
-plugins = ["sqlmypy"]
+exclude = ["src.migrations.*"]
+warn_unused_configs = true
+pretty = true
+plugins = ["pydantic.mypy", "sqlmypy"]
 disallow_untyped_defs = true
+show_error_codes = true
 
 [[tool.mypy.overrides]]
 module = ["tests.*"]

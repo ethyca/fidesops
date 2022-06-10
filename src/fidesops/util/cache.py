@@ -1,10 +1,10 @@
 import base64
 import logging
 import pickle
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Union
 
 from redis import Redis
-from redis.client import Script
+from redis.client import Script  # type: ignore
 
 from fidesops import common_exceptions
 from fidesops.core.config import config
