@@ -17,17 +17,34 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.2...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.3...main)
 
 ### Added
 * Subject Request Details page [#563](https://github.com/ethyca/fidesops/pull/563)
 * Restart Graph from Failure [#578](https://github.com/ethyca/fidesops/pull/578)
 * Redis SSL Support [#611](https://github.com/ethyca/fidesops/pull/611)
+* Celery as a dependency for use in the execution layer [#610](https://github.com/ethyca/fidesops/pull/610)
 * Cache and Surface Resume/Restart Instructions [#591](https://github.com/ethyca/fidesops/pull/591)
 
 ### Changed
 
 * Refactor auth and enable static file serving [#577](https://github.com/ethyca/fidesops/pull/577)
+* Bumped mypy to version 0.961 [#630](https://github.com/ethyca/fidesops/pull/630)
+* Bumped Python to version 3.9.13 in the `Dockerfile` [#630](https://github.com/ethyca/fidesops/pull/630)
+* Matched the path to the migrations in the mypy settings with the new location [#634](https://github.com/ethyca/fidesops/pull/634)
+
+### Fixed
+* Fixed error with running mypy on M1 Macs [#630](https://github.com/ethyca/fidesops/pull/630)
+* Fixed error with mypy on Python versions greater than 3.9.6 [#630](https://github.com/ethyca/fidesops/pull/630)
+
+## [1.5.3](https://github.com/ethyca/fidesops/compare/1.5.2...1.5.3)
+
+### Changed
+* Database migrations now exist as part of the core `fidesops` package [#620](https://github.com/ethyca/fidesops/pull/620)
+
+### Removed
+* The `[package]` config section no longer exists [#620](https://github.com/ethyca/fidesops/pull/620)
+
 
 ## [1.5.2](https://github.com/ethyca/fidesops/compare/1.5.1...1.5.2)
 
