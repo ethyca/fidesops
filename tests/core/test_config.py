@@ -25,7 +25,6 @@ def test_config_from_default() -> None:
     },
     clear=True,
 )
-@pytest.mark.xfail(strict=True, reason="Fix available in next release of fideslib")
 def test_config_from_path() -> None:
     """Test reading config using the FIDESOPS__CONFIG_PATH option."""
     config = get_config(FidesopsConfig)
@@ -69,7 +68,6 @@ def test_config_app_encryption_key_validation() -> None:
     "app_encryption_key",
     ["tooshortkey", "muchmuchmuchmuchmuchmuchmuchmuchtoolongkey"],
 )
-@pytest.mark.xfail(strict=True, reason="Fix available in next release of fideslib")
 def test_config_app_encryption_key_validation_length_error(app_encryption_key) -> None:
     """Test APP_ENCRYPTION_KEY is validated to be exactly 32 characters."""
     with patch.dict(
@@ -108,7 +106,6 @@ def test_config_log_level(log_level, expected_log_level):
         assert config.security.LOG_LEVEL == expected_log_level
 
 
-@pytest.mark.xfail(strict=True, reason="Fix available in next release of fideslib")
 def test_config_log_level_invalid():
     with patch.dict(
         os.environ,
