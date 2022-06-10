@@ -22,11 +22,11 @@ from fidesops.models.privacy_request import (
 )
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.task import graph_task
+
+from ..fixtures.application_fixtures import integration_secrets
 from ..service.privacy_request.request_runner_service_test import (
     get_privacy_request_results,
 )
-
-from ..fixtures.application_fixtures import integration_secrets
 
 
 def get_sorted_execution_logs(db, privacy_request: PrivacyRequest):
