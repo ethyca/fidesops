@@ -1,22 +1,25 @@
 import string
-from typing import Optional, List
 from secrets import choice
+from typing import List, Optional
 
 from fidesops.schemas.masking.masking_configuration import (
-    RandomStringMaskingConfiguration,
     MaskingConfiguration,
+    RandomStringMaskingConfiguration,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
-    MaskingStrategyDescription,
     MaskingStrategyConfigurationDescription,
+    MaskingStrategyDescription,
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.service.masking.strategy.masking_strategy_factory import (
+    MaskingStrategyFactory,
+)
+
+RANDOM_STRING_REWRITE_STRATEGY_NAME = "random_string_rewrite"
 
 
-RANDOM_STRING_REWRITE = "random_string_rewrite"
-
-
+@MaskingStrategyFactory.register(RANDOM_STRING_REWRITE_STRATEGY_NAME)
 class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     """Masks each provied value with a random string of the length specified in the configuration."""
 
@@ -28,7 +31,7 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
         self.format_preservation = configuration.format_preservation
 
     def mask(
-        self, values: Optional[List[str]], privacy_request_id: Optional[str]
+        self, values: Optional[List[str]], request_id: Optional[str]
     ) -> Optional[List[str]]:
         """Replaces the value with a random lowercase string of the configured length"""
         if values is None:
@@ -57,7 +60,7 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     @staticmethod
     def get_description() -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=RANDOM_STRING_REWRITE,
+            name=RANDOM_STRING_REWRITE_STRATEGY_NAME,
             description="Masks the input value with a random string of a specified length",
             configurations=[
                 MaskingStrategyConfigurationDescription(

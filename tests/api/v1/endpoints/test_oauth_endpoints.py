@@ -1,31 +1,36 @@
-from datetime import datetime
 import json
-import pytest
+from datetime import datetime
+from unittest import mock
+from unittest.mock import Mock
 
+import pytest
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.scope_registry import (
-    SCOPE_REGISTRY,
+    CLIENT_CREATE,
     CLIENT_DELETE,
     CLIENT_READ,
-    STORAGE_READ,
-    CLIENT_CREATE,
-    SCOPE_READ,
     CLIENT_UPDATE,
+    SCOPE_READ,
+    SCOPE_REGISTRY,
+    STORAGE_READ,
 )
 from fidesops.api.v1.urn_registry import (
     CLIENT,
     CLIENT_BY_ID,
     CLIENT_SCOPE,
+    OAUTH_CALLBACK,
+    SCOPE,
     TOKEN,
     V1_URL_PREFIX,
-    SCOPE,
 )
+from fidesops.common_exceptions import OAuth2TokenException
+from fidesops.models.authentication_request import AuthenticationRequest
 from fidesops.models.client import ClientDetail
 from fidesops.schemas.jwt import (
+    JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
-    JWE_ISSUED_AT,
 )
 from fidesops.util.oauth_util import extract_payload, generate_jwe
 
@@ -386,3 +391,74 @@ class TestAcquireAccessToken:
         assert json.loads(extract_payload(jwt))[JWE_PAYLOAD_SCOPES] == []
 
         new_client.delete(db)
+
+
+class TestCallback:
+    @pytest.fixture
+    def callback_url(self) -> str:
+        return V1_URL_PREFIX + OAUTH_CALLBACK
+
+    def test_callback_for_missing_state(self, db, api_client: TestClient, callback_url):
+        response = api_client.post(
+            callback_url, params={"code": "abc", "state": "not_found"}
+        )
+        assert response.status_code == 404
+        assert response.json() == {
+            "detail": "No authentication request found for the given state."
+        }
+
+    @mock.patch(
+        "fidesops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthenticationStrategy.get_access_token"
+    )
+    def test_callback_for_valid_state(
+        self,
+        get_access_token_mock: Mock,
+        db,
+        api_client: TestClient,
+        callback_url,
+        oauth2_connection_config,
+    ):
+        get_access_token_mock.return_value = None
+        authentication_request = AuthenticationRequest.create_or_update(
+            db,
+            data={
+                "connection_key": oauth2_connection_config.key,
+                "state": "new_request",
+            },
+        )
+        response = api_client.post(
+            callback_url, params={"code": "abc", "state": "new_request"}
+        )
+        assert response.ok
+        get_access_token_mock.assert_called_once()
+
+        authentication_request.delete(db)
+
+    @mock.patch(
+        "fidesops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthenticationStrategy.get_access_token"
+    )
+    def test_callback_for_valid_state_with_token_error(
+        self,
+        get_access_token_mock: Mock,
+        db,
+        api_client: TestClient,
+        callback_url,
+        oauth2_connection_config,
+    ):
+        get_access_token_mock.side_effect = OAuth2TokenException(
+            "Unable to retrieve access token."
+        )
+        authentication_request = AuthenticationRequest.create_or_update(
+            db,
+            data={
+                "connection_key": oauth2_connection_config.key,
+                "state": "new_request",
+            },
+        )
+        response = api_client.post(
+            callback_url, params={"code": "abc", "state": "new_request"}
+        )
+        assert response.status_code == 400
+        assert response.json() == {"detail": "Unable to retrieve access token."}
+
+        authentication_request.delete(db)

@@ -52,3 +52,10 @@ identity_email=""
 project_id=""
 username=""
 password=""
+
+[outreach]
+domain = ""
+client_id = ""
+client_secret = ""
+redirect_uri = ""
+page_size = ""

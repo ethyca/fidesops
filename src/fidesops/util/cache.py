@@ -1,14 +1,7 @@
 import base64
 import logging
 import pickle
-from typing import (
-    Any,
-    List,
-    Optional,
-    Set,
-    Union,
-    Dict,
-)
+from typing import Any, Dict, List, Optional, Set, Union
 
 from redis import Redis
 from redis.client import Script
@@ -108,6 +101,8 @@ def get_cache() -> FidesopsRedis:
             port=config.redis.PORT,
             db=config.redis.DB_INDEX,
             password=config.redis.PASSWORD,
+            ssl=config.redis.SSL,
+            ssl_cert_reqs=config.redis.SSL_CERT_REQS,
         )
 
     connected = _connection.ping()

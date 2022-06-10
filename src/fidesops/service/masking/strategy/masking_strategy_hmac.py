@@ -1,26 +1,30 @@
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 
 from fidesops.schemas.masking.masking_configuration import (
-    MaskingConfiguration,
     HmacMaskingConfiguration,
+    MaskingConfiguration,
 )
 from fidesops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
-    SecretType,
     MaskingSecretMeta,
+    SecretType,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
-    MaskingStrategyDescription,
     MaskingStrategyConfigurationDescription,
+    MaskingStrategyDescription,
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.service.masking.strategy.masking_strategy_factory import (
+    MaskingStrategyFactory,
+)
 from fidesops.util.encryption.hmac_encryption_scheme import hmac_encrypt_return_str
 from fidesops.util.encryption.secrets_util import SecretsUtil
 
-HMAC = "hmac"
+HMAC_STRATEGY_NAME = "hmac"
 
 
+@MaskingStrategyFactory.register(HMAC_STRATEGY_NAME)
 class HmacMaskingStrategy(MaskingStrategy):
     """
     Masks a value by generating a hash using a hash algorithm and a required secret key.  One of the differences
@@ -34,7 +38,7 @@ class HmacMaskingStrategy(MaskingStrategy):
         self.format_preservation = configuration.format_preservation
 
     def mask(
-        self, values: Optional[List[str]], privacy_request_id: Optional[str]
+        self, values: Optional[List[str]], request_id: Optional[str]
     ) -> Optional[List[str]]:
         """
         Returns a hash using the hmac algorithm, generating a hash of each of the supplied value and the secret hmac_key.
@@ -46,10 +50,10 @@ class HmacMaskingStrategy(MaskingStrategy):
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
         key: str = SecretsUtil.get_or_generate_secret(
-            privacy_request_id, SecretType.key, masking_meta[SecretType.key]
+            request_id, SecretType.key, masking_meta[SecretType.key]
         )
         salt: str = SecretsUtil.get_or_generate_secret(
-            privacy_request_id, SecretType.salt, masking_meta[SecretType.salt]
+            request_id, SecretType.salt, masking_meta[SecretType.salt]
         )
         masked_values: List[str] = []
         for value in values:
@@ -76,7 +80,7 @@ class HmacMaskingStrategy(MaskingStrategy):
     @staticmethod
     def get_description() -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=HMAC,
+            name=HMAC_STRATEGY_NAME,
             description="Masks the input value by using the HMAC algorithm along with a hashed version of the data "
             "and a secret key.",
             configurations=[
@@ -102,11 +106,11 @@ class HmacMaskingStrategy(MaskingStrategy):
     def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
         return {
             SecretType.key: MaskingSecretMeta[str](
-                masking_strategy=HMAC,
+                masking_strategy=HMAC_STRATEGY_NAME,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             ),
             SecretType.salt: MaskingSecretMeta[str](
-                masking_strategy=HMAC,
+                masking_strategy=HMAC_STRATEGY_NAME,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             ),
         }

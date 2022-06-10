@@ -1,7 +1,7 @@
 import logging
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Generic, Optional, Any, TypeVar, Dict, Tuple, Set
+from typing import Any, Dict, Generic, Optional, Set, Tuple, TypeVar
 
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
@@ -33,6 +33,12 @@ class DataTypeConverter(ABC, Generic[T]):
             f"{self.name} does not support length truncation. Using original masked value instead for update query."
         )
         return val
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, DataTypeConverter):
+            return False
+
+        return self.__dict__ == other.__dict__
 
 
 class NoOpTypeConverter(DataTypeConverter[Any]):
@@ -133,6 +139,12 @@ class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
                 return None
         return None
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ObjectTypeConverter):
+            return False
+
+        return self.__dict__ == other.__dict__
+
 
 class ObjectTypeConverter(DataTypeConverter[Dict[str, Any]]):
     """Json data type converter."""
@@ -145,6 +157,12 @@ class ObjectTypeConverter(DataTypeConverter[Dict[str, Any]]):
         if isinstance(other, dict):
             return other
         return None
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ObjectTypeConverter):
+            return False
+
+        return self.__dict__ == other.__dict__
 
 
 class DataType(Enum):

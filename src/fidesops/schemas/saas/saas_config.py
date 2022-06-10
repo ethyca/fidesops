@@ -1,19 +1,17 @@
-from typing import Any, Dict, List, Literal, Optional, Union, Set
+from typing import Any, Dict, List, Literal, Optional, Set, Union
 
-from fidesops.schemas.saas.shared_schemas import HTTPMethod
-from fidesops.service.pagination.pagination_strategy_factory import get_strategy
-from pydantic import BaseModel, validator, root_validator, Extra
-from fidesops.schemas.base_class import BaseSchema
-from fidesops.schemas.dataset import FidesopsDatasetReference, FidesCollectionKey
+from pydantic import BaseModel, Extra, root_validator, validator
+
 from fidesops.graph.config import (
     Collection,
+    CollectionAddress,
     Dataset,
     FieldAddress,
     ScalarField,
-    CollectionAddress,
-    Field,
 )
-from fidesops.schemas.saas.strategy_configuration import ConnectorParamRef
+from fidesops.schemas.base_class import BaseSchema
+from fidesops.schemas.dataset import FidesCollectionKey, FidesopsDatasetReference
+from fidesops.schemas.saas.shared_schemas import HTTPMethod
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
@@ -65,10 +63,8 @@ class ClientConfig(BaseModel):
     """Definition for an authenticated base HTTP client"""
 
     protocol: str
-    host: Union[
-        str, ConnectorParamRef
-    ]  # can be defined inline or be a connector_param reference
-    authentication: Strategy
+    host: str
+    authentication: Optional[Strategy]
 
 
 class Header(BaseModel):
@@ -116,6 +112,10 @@ class SaaSRequest(BaseModel):
         the specified pagination strategy. Passes in the raw value dict
         before any field validation.
         """
+
+        # delay import to avoid cyclic-dependency error
+        from fidesops.service.pagination.pagination_strategy_factory import get_strategy
+
         pagination = values.get("pagination")
         if pagination is not None:
             pagination_strategy = get_strategy(
@@ -149,7 +149,7 @@ class SaaSRequest(BaseModel):
                         collect = param.references[0].field.split(".")[0]
                         referenced_collections.append(collect)
 
-            if not len(set(referenced_collections)) == 1:
+            if len(set(referenced_collections)) != 1:
                 raise ValueError(
                     "Grouped input fields must all reference the same collection."
                 )
@@ -158,7 +158,7 @@ class SaaSRequest(BaseModel):
 
 
 class Endpoint(BaseModel):
-    """An collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"""
+    """A collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"""
 
     name: str
     requests: Dict[Literal["read", "update", "delete"], SaaSRequest]

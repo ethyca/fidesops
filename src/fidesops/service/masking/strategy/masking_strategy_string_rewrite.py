@@ -1,20 +1,23 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from fidesops.schemas.masking.masking_configuration import (
-    StringRewriteMaskingConfiguration,
     MaskingConfiguration,
+    StringRewriteMaskingConfiguration,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
-    MaskingStrategyDescription,
     MaskingStrategyConfigurationDescription,
+    MaskingStrategyDescription,
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.service.masking.strategy.masking_strategy_factory import (
+    MaskingStrategyFactory,
+)
+
+STRING_REWRITE_STRATEGY_NAME = "string_rewrite"
 
 
-STRING_REWRITE = "string_rewrite"
-
-
+@MaskingStrategyFactory.register(STRING_REWRITE_STRATEGY_NAME)
 class StringRewriteMaskingStrategy(MaskingStrategy):
     """Masks the values with a pre-determined value"""
 
@@ -26,7 +29,7 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
         self.format_preservation = configuration.format_preservation
 
     def mask(
-        self, values: Optional[List[str]], privacy_request_id: Optional[str]
+        self, values: Optional[List[str]], request_id: Optional[str]
     ) -> Optional[List[str]]:
         """Replaces the value with the value specified in strategy spec. Returns None if input is
         None"""
@@ -53,7 +56,7 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
     @staticmethod
     def get_description() -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=STRING_REWRITE,
+            name=STRING_REWRITE_STRATEGY_NAME,
             description="Masks the input value with a default string value",
             configurations=[
                 MaskingStrategyConfigurationDescription(

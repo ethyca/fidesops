@@ -1,5 +1,3 @@
-import {string} from "prop-types";
-
 export type PrivacyRequestStatus =
   | 'approved'
   | 'complete'
@@ -9,21 +7,48 @@ export type PrivacyRequestStatus =
   | 'paused'
   | 'pending';
 
+export enum ActionType {
+  ACCESS = 'access',
+  ERASURE = 'erasure',
+}
 
-export interface DenyPrivacyRequest{
-  id:string,
-  reason: string
+export interface DenyPrivacyRequest {
+  id: string;
+  reason: string;
+}
+
+interface FieldsAffected {
+  path: string;
+  field_name: string;
+  data_categories: string[];
+}
+
+export interface ExecutionLog {
+  collection_name: string;
+  fields_affected: FieldsAffected[];
+  message: string;
+  action_type: string;
+  status: string;
+  updated_at: string;
+}
+
+export interface Rule {
+  name: string;
+  key: string;
+  action_type: ActionType;
 }
 
 export interface PrivacyRequest {
   status: PrivacyRequestStatus;
+  results?: Record<string, ExecutionLog[]>;
   identity: {
     email?: string;
-    phone?: string;
+    phone_number?: string;
   };
   policy: {
     name: string;
     key: string;
+    rules: Rule[];
   };
   reviewer: {
     id: string;
@@ -46,4 +71,5 @@ export interface PrivacyRequestParams {
   to: string;
   page: number;
   size: number;
+  verbose?: boolean;
 }

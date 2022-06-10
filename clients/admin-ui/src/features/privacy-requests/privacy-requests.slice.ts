@@ -1,25 +1,26 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { HYDRATE } from 'next-redux-wrapper';
 
-import type { AppState } from '../../app/store';
+import type { RootState } from '../../app/store';
+import { selectToken } from '../auth';
 import {
+  DenyPrivacyRequest,
   PrivacyRequest,
   PrivacyRequestParams,
   PrivacyRequestResponse,
   PrivacyRequestStatus,
-  DenyPrivacyRequest,
 } from './types';
 
 // Helpers
-export const mapFiltersToSearchParams = ({
+export function mapFiltersToSearchParams({
   status,
   id,
   from,
   to,
   page,
   size,
-}: Partial<PrivacyRequestParams>) => {
+  verbose,
+}: Partial<PrivacyRequestParams>): any {
   let fromISO;
   if (from) {
     fromISO = new Date(from);
@@ -35,13 +36,14 @@ export const mapFiltersToSearchParams = ({
   return {
     include_identities: 'true',
     ...(status ? { status } : {}),
-    ...(id ? { id } : {}),
+    ...(id ? { request_id: id } : {}),
     ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
     ...(toISO ? { created_lt: toISO.toISOString() } : {}),
     ...(page ? { page: `${page}` } : {}),
     ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
+    ...(verbose ? { verbose } : {}),
   };
-};
+}
 
 // Subject requests API
 export const privacyRequestApi = createApi({
@@ -49,7 +51,7 @@ export const privacyRequestApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESOPS_API!,
     prepareHeaders: (headers, { getState }) => {
-      const { token } = (getState() as AppState).user;
+      const token = selectToken(getState() as RootState);
       headers.set('Access-Control-Allow-Origin', '*');
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
@@ -61,7 +63,7 @@ export const privacyRequestApi = createApi({
   endpoints: (build) => ({
     getAllPrivacyRequests: build.query<
       PrivacyRequestResponse,
-      PrivacyRequestParams
+      Partial<PrivacyRequestParams>
     >({
       query: (filters) => ({
         url: `privacy-request`,
@@ -156,6 +158,7 @@ interface SubjectRequestsState {
   to: string;
   page: number;
   size: number;
+  verbose?: boolean;
 }
 
 const initialState: SubjectRequestsState = {
@@ -208,11 +211,9 @@ export const subjectRequestsSlice = createSlice({
       page: initialState.page,
       size: action.payload,
     }),
-  },
-  extraReducers: {
-    [HYDRATE]: (state, action) => ({
+    setVerbose: (state, action: PayloadAction<boolean>) => ({
       ...state,
-      ...action.payload.subjectRequests,
+      verbose: action.payload,
     }),
   },
 });
@@ -224,16 +225,17 @@ export const {
   setRequestFrom,
   setRequestTo,
   setPage,
+  setVerbose,
   clearAllFilters,
 } = subjectRequestsSlice.actions;
 
-export const selectRevealPII = (state: AppState) =>
+export const selectRevealPII = (state: RootState) =>
   state.subjectRequests.revealPII;
-export const selectRequestStatus = (state: AppState) =>
+export const selectRequestStatus = (state: RootState) =>
   state.subjectRequests.status;
 
 export const selectPrivacyRequestFilters = (
-  state: AppState
+  state: RootState
 ): PrivacyRequestParams => ({
   status: state.subjectRequests.status,
   id: state.subjectRequests.id,
@@ -241,6 +243,7 @@ export const selectPrivacyRequestFilters = (
   to: state.subjectRequests.to,
   page: state.subjectRequests.page,
   size: state.subjectRequests.size,
+  verbose: state.subjectRequests.verbose,
 });
 
 export const { reducer } = subjectRequestsSlice;
