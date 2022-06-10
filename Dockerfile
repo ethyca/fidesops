@@ -7,7 +7,7 @@ RUN npm install
 RUN npm run export
 
 
-FROM --platform=linux/amd64 python:3.9.6-slim-buster as backend
+FROM --platform=linux/amd64 python:3.9.13-slim-buster as backend
 
 ARG MSSQL_REQUIRED
 
