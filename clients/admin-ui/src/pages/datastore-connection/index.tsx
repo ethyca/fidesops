@@ -5,24 +5,25 @@ import React from 'react';
 
 import ProtectedRoute from '../../features/auth/ProtectedRoute';
 import NavBar from '../../features/common/NavBar';
+import ConnectionFilters from '../../features/datastore-connections/ConnectionFilters';
 
 const DatastoreConnections: NextPage = () => (
   <ProtectedRoute>
     <div>
       <Head>
         <title>Fides Admin UI - Datastore Connections</title>
-        <meta name='description' content='' />
-        <link rel='icon' href='/favicon.ico' />
+        <meta name="description" content="" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <NavBar />
 
       <main>
         <Box px={9} py={10}>
-          <Heading fontSize='2xl' fontWeight='semibold'>
-            Datastore Connections
+          <Heading fontSize="2xl" fontWeight="semibold">
+            Datastore Connection Management
           </Heading>
-          <Box>Filler</Box>
+          <ConnectionFilters />
         </Box>
       </main>
     </div>
