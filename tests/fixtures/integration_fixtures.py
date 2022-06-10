@@ -163,7 +163,7 @@ def integration_mongodb_config(db) -> ConnectionConfig:
     connection_config.delete(db)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def integration_mongodb_connector(integration_mongodb_config) -> MongoClient:
     return MongoDBConnector(integration_mongodb_config).client()
 

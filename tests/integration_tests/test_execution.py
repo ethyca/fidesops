@@ -56,7 +56,6 @@ def mongo_postgres_dataset_graph(
 
 
 @pytest.mark.integration
-@pytest.mark.postgres
 class TestDeleteCollection:
     def test_delete_collection_before_new_request(
         self,
