@@ -59,7 +59,7 @@ describe('ProtectedRoute', () => {
       }));
 
       render(
-        <ProtectedRoute redirectUrl='some/other/page'>
+        <ProtectedRoute redirectUrl="some/other/page">
           <div>Protected Page</div>
         </ProtectedRoute>,
         {
