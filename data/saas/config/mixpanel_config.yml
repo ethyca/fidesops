@@ -15,15 +15,12 @@ saas_config:
 
   client_config:
     protocol: https
-    host:
-      connector_param: domain
+    host: <domain>
     authentication:
-      strategy: basic_authentication
+      strategy: basic
       configuration:
-        username:
-          connector_param: username
-        password:
-          connector_param: password
+        username: <username>
+        password: <password>
 
   test_request:
     path: /api/2.0/annotations
@@ -35,9 +32,10 @@ saas_config:
     query_params:
       - name: token
         value: <token>
-    body: '{
+    body: |
+      {
         "distinct_ids": ["<distinct_id>"]
-      }'
+      }
     param_values:
       - name: token
         connector_param: project_token
@@ -48,75 +46,74 @@ saas_config:
             direction: from
     client_config:
       protocol: https
-      host:
-        connector_param: domain
+      host: <domain>
       authentication:
-        strategy: bearer_authentication
+        strategy: bearer
         configuration:
-          token:
-            connector_param: gdpr_oauth_token
+          token: <gdpr_oauth_token>
 
   endpoints:
-  - name: user
-    requests:
-      read:
-        path: /api/2.0/engage/
-        method: GET
-        query_params: 
-          - name: project_id
-            value: <project_id>
-        body: '{
-            "where": "properties[\"$email\"] == \"<email>\""
-          }'
-        param_values:
-          - name: email
-            identity: email
-            data_type: string
-          - name: project_id
-            connector_param: project_id
-        data_path: results
-      update:
-        path: /engage#profile-set
-        method: POST
-        body: '[{
-            "$token": "<token>",
-            "$distinct_id": "<distinct_id>",
-          }]'
-        param_values:
-          - name: token
-            connector_param: project_token
-          - name: distinct_id
-            references:
-              - dataset: mixpanel_connector_example
-                field: user.$distinct_id
-                direction: from
-        client_config:
-          protocol: https
-          host:
-            connector_param: api_domain
-          authentication:
-            strategy: basic_authentication
-            configuration:
-              username:
-                connector_param: username
-              password:
-                connector_param: password
-  - name: events
-    requests:
-      read:
-        path: /api/2.0/stream/query
-        method: GET
-        query_params:
-          - name: project_id
-            value: <project_id>
-          - name: distinct_ids
-            value: '["<distinct_id>"]'
-        param_values:
-          - name: distinct_id
-            references:
-              - dataset: mixpanel_connector_example
-                field: user.$distinct_id
-                direction: from
-          - name: project_id
-            connector_param: project_id
-        data_path: results.events
+    - name: user
+      requests:
+        read:
+          path: /api/2.0/engage/
+          method: GET
+          query_params:
+            - name: project_id
+              value: <project_id>
+          body: |
+            {
+              "where": "properties['$email'] == '<email>'"
+            }
+          param_values:
+            - name: email
+              identity: email
+            - name: project_id
+              connector_param: project_id
+          data_path: results
+        update:
+          path: /engage#profile-set
+          method: POST
+          body: |
+            [
+              {
+                "$token": "<token>",
+                "$distinct_id": "<distinct_id>"
+              }
+            ]
+          param_values:
+            - name: token
+              connector_param: project_token
+            - name: distinct_id
+              references:
+                - dataset: mixpanel_connector_example
+                  field: user.$distinct_id
+                  direction: from
+          client_config:
+            protocol: https
+            host: <api_domain>
+            authentication:
+              strategy: basic
+              configuration:
+                username: <username>
+                password: <password>
+    - name: events
+      requests:
+        read:
+          path: /api/2.0/stream/query
+          method: GET
+          query_params:
+            - name: project_id
+              value: <project_id>
+            - name: distinct_ids
+              value: |
+                ["<distinct_id>"]
+          param_values:
+            - name: distinct_id
+              references:
+                - dataset: mixpanel_connector_example
+                  field: user.$distinct_id
+                  direction: from
+            - name: project_id
+              connector_param: project_id
+          data_path: results.events
