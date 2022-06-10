@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timezone
+from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI
@@ -22,7 +23,6 @@ from fidesops.schemas.analytics import EVENT
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.util.logger import get_fides_log_record_factory
-from pathlib import Path
 
 logging.basicConfig(level=config.security.LOG_LEVEL)
 logging.setLogRecordFactory(get_fides_log_record_factory())
