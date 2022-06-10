@@ -344,7 +344,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.update_status(str(ex), [], action_type, ExecutionLogStatus.paused)
 
     def log_skipped(self, action_type: ActionType, ex: str) -> None:
-        """On paused activities"""
+        """Log that a collection was skipped.  For now, this is because a collection has been disabled."""
         logger.info(f"Skipping {self.resources.request.id}, node {self.key}")
 
         self.update_status(str(ex), [], action_type, ExecutionLogStatus.skipped)

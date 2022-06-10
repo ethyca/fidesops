@@ -48,11 +48,6 @@ class DatasetConfig(Base):
         backref="datasets",
     )
 
-    @property
-    def disabled(self) -> bool:
-        """Whether dataset is disabled; it inherits the setting of its ConnectionConfig"""
-        return self.connection_config.disabled
-
     @classmethod
     def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "DatasetConfig":
         """

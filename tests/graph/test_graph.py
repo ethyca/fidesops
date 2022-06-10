@@ -92,7 +92,7 @@ def test_retry_decorator(privacy_request, policy):
         def log_retry(self, _: ActionType):
             self.retry_logged += 1
 
-        @retry(action_type=ActionType.access)
+        @retry(action_type=ActionType.access, default_return=[])
         def test_function(self):
             self.call_count += 1
             input_data["nonexistent_value"]

@@ -158,6 +158,7 @@ def integration_mongodb_config(db) -> ConnectionConfig:
         secrets=integration_secrets["mongo_example"],
         name="mongo_example",
     )
+    connection_config.save(db)
     yield connection_config
     connection_config.delete(db)
 

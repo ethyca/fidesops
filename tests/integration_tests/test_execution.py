@@ -169,6 +169,98 @@ class TestDeleteCollection:
 
         db.delete(mongo_connection_config)
 
+    def test_collection_omitted_on_restart_from_failure(
+        self,
+        db,
+        policy,
+        integration_postgres_config,
+        integration_mongodb_config,
+        mongo_postgres_dataset_graph,
+        example_datasets,
+    ) -> None:
+        """Remove secrets to make privacy request fail, then delete the connection config. Build a graph
+        that does not contain the deleted dataset config and re-run."""
+
+        integration_mongodb_config.secrets = {}
+        integration_mongodb_config.save(db)
+
+        privacy_request = PrivacyRequest(
+            id=f"test_postgres_access_request_task_{uuid.uuid4()}"
+        )
+
+        with pytest.raises(ValidationError):
+            graph_task.run_access_request(
+                privacy_request,
+                policy,
+                mongo_postgres_dataset_graph,
+                [integration_postgres_config, integration_mongodb_config],
+                {"email": "customer-1@example.com"},
+            )
+
+        execution_logs = get_sorted_execution_logs(db, privacy_request)
+        assert execution_logs == [
+            ("postgres_example_test_dataset:customer", "in_processing"),
+            ("postgres_example_test_dataset:customer", "complete"),
+            ("postgres_example_test_dataset:payment_card", "in_processing"),
+            ("postgres_example_test_dataset:payment_card", "complete"),
+            ("postgres_example_test_dataset:orders", "in_processing"),
+            ("postgres_example_test_dataset:orders", "complete"),
+            ("postgres_example_test_dataset:order_item", "in_processing"),
+            ("postgres_example_test_dataset:order_item", "complete"),
+            ("postgres_example_test_dataset:product", "in_processing"),
+            ("postgres_example_test_dataset:product", "complete"),
+            ("mongo_test:customer_details", "in_processing"),
+            ("mongo_test:customer_details", "error"),
+        ], "Execution failed at first mongo collection"
+
+        integration_mongodb_config.delete(db)
+
+        dataset_postgres = FidesopsDataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(
+            dataset_postgres, integration_postgres_config.key
+        )
+        postgres_only_dataset_graph = DatasetGraph(*[graph])
+
+        results = graph_task.run_access_request(
+            privacy_request,
+            policy,
+            postgres_only_dataset_graph,
+            [integration_postgres_config],
+            {"email": "customer-1@example.com"},
+        )
+
+        execution_logs = get_sorted_execution_logs(db, privacy_request)
+        assert execution_logs == [
+            ("postgres_example_test_dataset:customer", "in_processing"),
+            ("postgres_example_test_dataset:customer", "complete"),
+            ("postgres_example_test_dataset:payment_card", "in_processing"),
+            ("postgres_example_test_dataset:payment_card", "complete"),
+            ("postgres_example_test_dataset:orders", "in_processing"),
+            ("postgres_example_test_dataset:orders", "complete"),
+            ("postgres_example_test_dataset:order_item", "in_processing"),
+            ("postgres_example_test_dataset:order_item", "complete"),
+            ("postgres_example_test_dataset:product", "in_processing"),
+            ("postgres_example_test_dataset:product", "complete"),
+            ("mongo_test:customer_details", "in_processing"),
+            ("mongo_test:customer_details", "error"),
+            ("postgres_example_test_dataset:employee", "in_processing"),
+            ("postgres_example_test_dataset:employee", "complete"),
+            ("postgres_example_test_dataset:service_request", "in_processing"),
+            ("postgres_example_test_dataset:service_request", "complete"),
+            ("postgres_example_test_dataset:report", "in_processing"),
+            ("postgres_example_test_dataset:report", "complete"),
+            ("postgres_example_test_dataset:visit", "in_processing"),
+            ("postgres_example_test_dataset:visit", "complete"),
+            ("postgres_example_test_dataset:address", "in_processing"),
+            ("postgres_example_test_dataset:address", "complete"),
+            ("postgres_example_test_dataset:login", "in_processing"),
+            ("postgres_example_test_dataset:login", "complete"),
+        ], "No mongo collections run"
+
+        assert all(
+            [dataset.startswith("postgres_example") for dataset in results]
+        ), "No mongo results"
+
 
 @pytest.mark.integration
 class TestSkipDisabledCollection:
