@@ -6,20 +6,18 @@ from unittest.mock import Mock
 import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
+from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fidesops.models.client import ClientDetail
-from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
-    STORAGE_DELETE,
-    CONNECTION_READ,
     CONNECTION_DELETE,
+    CONNECTION_READ,
+    STORAGE_DELETE,
 )
-
-from sqlalchemy.orm import Session
-
 from fidesops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fidesops.models.client import ClientDetail
+from fidesops.models.connectionconfig import ConnectionConfig
 
 page_size = Params().size
 
@@ -269,18 +267,14 @@ class TestPatchConnections:
         mysql_connection = response_body["succeeded"][2]
         assert mysql_connection["access"] == "read"
         assert mysql_connection["updated_at"] is not None
-        mysql_resource = (
-            db.query(ConnectionConfig).filter_by(key="my_mysql_db").first()
-        )
+        mysql_resource = db.query(ConnectionConfig).filter_by(key="my_mysql_db").first()
         assert mysql_resource.access.value == "read"
         assert "secrets" not in mysql_connection
 
         mssql_connection = response_body["succeeded"][3]
         assert mssql_connection["access"] == "write"
         assert mssql_connection["updated_at"] is not None
-        mssql_resource = (
-            db.query(ConnectionConfig).filter_by(key="my_mssql_db").first()
-        )
+        mssql_resource = db.query(ConnectionConfig).filter_by(key="my_mssql_db").first()
         assert mssql_resource.access.value == "write"
         assert "secrets" not in mssql_connection
 
@@ -687,11 +681,11 @@ class TestPutConnectionConfigSecrets:
         assert redshift_connection_config.last_test_succeeded is None
 
     def test_put_connection_config_bigquery_secrets(
-            self,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            bigquery_connection_config_without_secrets,
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        bigquery_connection_config_without_secrets,
     ) -> None:
         """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
@@ -708,18 +702,18 @@ class TestPutConnectionConfigSecrets:
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
                 "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/something%40project-12345.iam.gserviceaccount.com"
-            }
+                "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/something%40project-12345.iam.gserviceaccount.com",
+            },
         }
         resp = api_client.put(
             url + "?verify=False",
             headers=auth_header,
             json=payload,
-            )
+        )
         assert resp.status_code == 200
         assert (
-                json.loads(resp.text)["msg"]
-                == f"Secrets updated for ConnectionConfig with key: {bigquery_connection_config_without_secrets.key}."
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {bigquery_connection_config_without_secrets.key}."
         )
         db.refresh(bigquery_connection_config_without_secrets)
         assert bigquery_connection_config_without_secrets.secrets == {
@@ -735,8 +729,8 @@ class TestPutConnectionConfigSecrets:
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
                 "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/something%40project-12345.iam.gserviceaccount.com"
-            }
+                "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/something%40project-12345.iam.gserviceaccount.com",
+            },
         }
         assert bigquery_connection_config_without_secrets.last_test_timestamp is None
         assert bigquery_connection_config_without_secrets.last_test_succeeded is None
@@ -824,7 +818,9 @@ class TestPutConnectionConfigSecrets:
         saas_example_secrets,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{saas_example_connection_config.key}/secret"
+        url = (
+            f"{V1_URL_PREFIX}{CONNECTIONS}/{saas_example_connection_config.key}/secret"
+        )
         payload = saas_example_secrets
 
         resp = api_client.put(

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.9.6-slim-buster
+FROM --platform=linux/amd64 python:3.9.13-slim-buster
 
 ARG MSSQL_REQUIRED
 
@@ -42,5 +42,8 @@ RUN if [ "$MSSQL_REQUIRED" = "true" ] ; then pip install -U pip -r mssql-require
 COPY . /fidesops
 WORKDIR /fidesops
 RUN pip install -e .
+
+# Enable detection of running within Docker
+ENV RUNNING_IN_DOCKER=true
 
 CMD [ "fidesops", "webserver" ]

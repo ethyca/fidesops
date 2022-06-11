@@ -1,14 +1,16 @@
-import pytest
 import random
+from typing import List
+
+import pytest
 import requests
+
 from fidesops.core.config import config
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.task import graph_task
-from fidesops.task.graph_task import get_cached_data_for_erasures
 from fidesops.task.filter_results import filter_data_categories
-from tests.fixtures.saas.stripe_fixtures import stripe_secrets
+from fidesops.task.graph_task import get_cached_data_for_erasures
 from tests.graph.graph_test_util import assert_rows_match
 
 
@@ -94,7 +96,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:charge"],
-        min_size=2,
+        min_size=3,
         keys=[
             "amount",
             "amount_captured",
@@ -338,7 +340,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:payment_intent"],
-        min_size=4,
+        min_size=5,
         keys=[
             "amount",
             "amount_capturable",
@@ -454,8 +456,6 @@ def test_stripe_access_request_task(
     # verify we only returned data for our identity email
     assert v[f"{dataset_name}:customer"][0]["email"] == stripe_identity_email
     customer_id: str = v[f"{dataset_name}:customer"][0]["id"]
-    charge_id: str = v[f"{dataset_name}:charge"][0]["id"]
-    payment_intent_id: str = v[f"{dataset_name}:payment_intent"][0]["id"]
 
     for bank_account in v[f"{dataset_name}:bank_account"]:
         assert bank_account["customer"] == customer_id
@@ -463,8 +463,15 @@ def test_stripe_access_request_task(
     for card in v[f"{dataset_name}:card"]:
         assert card["customer"] == customer_id
 
+    charge_ids: List[str] = []
     for charge in v[f"{dataset_name}:charge"]:
         assert charge["customer"] == customer_id
+        charge_ids.append(charge["id"])
+
+    payment_intent_ids: List[str] = []
+    for payment_intent in v[f"{dataset_name}:payment_intent"]:
+        assert payment_intent["customer"] == customer_id
+        payment_intent_ids.append(payment_intent["id"])
 
     for credit_note in v[f"{dataset_name}:credit_note"]:
         assert credit_note["customer"] == customer_id
@@ -480,8 +487,8 @@ def test_stripe_access_request_task(
     # disputes are retrieved by charge.id or payment_intent.id
     for dispute in v[f"{dataset_name}:dispute"]:
         assert (
-            dispute["charge"] == charge_id
-            or dispute["payment_intent_id"] == payment_intent_id
+            dispute["charge"] in charge_ids
+            or dispute["payment_intent"] in payment_intent_ids
         )
 
     for invoice in v[f"{dataset_name}:invoice"]:
@@ -489,9 +496,6 @@ def test_stripe_access_request_task(
 
     for invoice_item in v[f"{dataset_name}:invoice_item"]:
         assert invoice_item["customer"] == customer_id
-
-    for payment_intent in v[f"{dataset_name}:payment_intent"]:
-        assert payment_intent["customer"] == customer_id
 
     for payment_method in v[f"{dataset_name}:payment_method"]:
         assert payment_method["customer"] == customer_id
@@ -1067,9 +1071,8 @@ def test_stripe_erasure_request_task(
         ],
     )
 
-    # run erasure with MASKING_STRICT to execute the update actions
-
-    config.execution.MASKING_STRICT = True
+    # Run erasure with masking_strict = False so both update and delete actions can be used
+    config.execution.MASKING_STRICT = False
 
     x = graph_task.run_erasure(
         privacy_request,
@@ -1080,20 +1083,20 @@ def test_stripe_erasure_request_task(
         get_cached_data_for_erasures(privacy_request.id),
     )
 
-    # verify masking request was issued for endpoints with an update action
+    # verify masking request was issued for endpoints with both update/delete actions
     assert x == {
         f"{dataset_name}:customer": 1,
-        f"{dataset_name}:tax_id": 0,
-        f"{dataset_name}:invoice_item": 0,
+        f"{dataset_name}:tax_id": 1,
+        f"{dataset_name}:invoice_item": 1,
         f"{dataset_name}:charge": 0,
-        f"{dataset_name}:invoice": 0,
+        f"{dataset_name}:invoice": 2,
         f"{dataset_name}:card": 1,
         f"{dataset_name}:customer_balance_transaction": 0,
         f"{dataset_name}:payment_intent": 0,
         f"{dataset_name}:payment_method": 2,
         f"{dataset_name}:credit_note": 0,
         f"{dataset_name}:bank_account": 1,
-        f"{dataset_name}:subscription": 0,
+        f"{dataset_name}:subscription": 1,
         f"{dataset_name}:dispute": 0,
     }
 
@@ -1142,46 +1145,6 @@ def test_stripe_erasure_request_task(
     bank_account = response.json()["data"][0]
     assert bank_account["account_holder_name"] == "MASKED"
 
-    # run erasure without MASKING_STRICT to execute the delete actions
-
-    config.execution.MASKING_STRICT = False
-
-    x = graph_task.run_erasure(
-        privacy_request,
-        erasure_policy_string_rewrite,
-        graph,
-        [stripe_connection_config],
-        {"email": stripe_erasure_identity_email},
-        get_cached_data_for_erasures(privacy_request.id),
-    )
-
-    # verify masking request was issued for endpoints with an update or delete action
-    assert x == {
-        f"{dataset_name}:customer": 1,
-        f"{dataset_name}:tax_id": 1,
-        f"{dataset_name}:invoice_item": 1,
-        f"{dataset_name}:charge": 0,
-        f"{dataset_name}:invoice": 2,
-        f"{dataset_name}:card": 1,
-        f"{dataset_name}:customer_balance_transaction": 0,
-        f"{dataset_name}:payment_intent": 0,
-        f"{dataset_name}:payment_method": 2,
-        f"{dataset_name}:credit_note": 0,
-        f"{dataset_name}:bank_account": 1,
-        f"{dataset_name}:subscription": 1,
-        f"{dataset_name}:dispute": 0,
-    }
-
-    # customer
-    response = requests.get(
-        url=f"{base_url}/v1/customers",
-        headers=headers,
-        params={"email": stripe_erasure_identity_email},
-    )
-    customer = response.json()["data"][0]
-    customer_id = customer["id"]
-    assert customer["shipping"]["name"] == "MASKED"
-
     # tax_id
     response = requests.get(
         url=f"{base_url}/v1/customers/{customer_id}/tax_ids", headers=headers
@@ -1198,34 +1161,6 @@ def test_stripe_erasure_request_task(
     invoice_item = response.json()["data"]
     # Can't delete an invoice item that is attached to an invoice that is no longer editable
     assert len(invoice_item) == 1
-
-    # card
-    response = requests.get(
-        url=f"{base_url}/v1/customers/{customer_id}/sources",
-        headers=headers,
-        params={"object": "card"},
-    )
-    card = response.json()["data"][0]
-    assert card["name"] == "MASKED"
-
-    # payment_method
-    response = requests.get(
-        url=f"{base_url}/v1/customers/{customer_id}/payment_methods",
-        headers=headers,
-        params={"type": "card"},
-    )
-    payment_methods = response.json()["data"]
-    for payment_method in payment_methods:
-        assert payment_method["billing_details"]["name"] == "MASKED"
-
-    # bank_account
-    response = requests.get(
-        url=f"{base_url}/v1/customers/{customer_id}/sources",
-        headers=headers,
-        params={"object": "bank_account"},
-    )
-    bank_account = response.json()["data"][0]
-    assert bank_account["account_holder_name"] == "MASKED"
 
     # subscription
     response = requests.get(

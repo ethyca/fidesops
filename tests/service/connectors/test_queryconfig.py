@@ -1,16 +1,16 @@
 import json
-from typing import Dict, Any, Set, Optional
+from typing import Any, Dict, Optional, Set
 
 import pytest
 
+from fidesops.core.config import config
 from fidesops.graph.config import (
     CollectionAddress,
+    FieldAddress,
     FieldPath,
     ObjectField,
     ScalarField,
-    FieldAddress,
 )
-from fidesops.core.config import config
 from fidesops.graph.graph import DatasetGraph, Edge
 from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.datasetconfig import convert_dataset_to_graph
@@ -18,22 +18,18 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fidesops.schemas.saas.saas_config import SaaSConfig, ParamValue, SaaSRequest
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
+from fidesops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
+from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fidesops.service.connectors.query_config import MongoQueryConfig, SQLQueryConfig
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
-from fidesops.service.connectors.query_config import SQLQueryConfig, MongoQueryConfig
-
 from fidesops.service.masking.strategy.masking_strategy_hash import (
+    HASH_STRATEGY_NAME,
     HashMaskingStrategy,
-    HASH,
 )
 from fidesops.util.data_category import DataCategory
 
-from ...task.traversal_data import (
-    integration_db_graph,
-    combined_mongo_postgresql_graph,
-)
-from ...test_helpers.cache_secrets_helper import clear_cache_secrets, cache_secret
+from ...task.traversal_data import combined_mongo_postgresql_graph, integration_db_graph
+from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
 
 # customers -> address, order
 # orders -> address, payment card
@@ -297,7 +293,9 @@ class TestSQLQueryConfig:
         }
         # cache secrets for hash strategy
         secret = MaskingSecretCache[str](
-            secret="adobo", masking_strategy=HASH, secret_type=SecretType.salt
+            secret="adobo",
+            masking_strategy=HASH_STRATEGY_NAME,
+            secret_type=SecretType.salt,
         )
         cache_secret(secret, privacy_request.id)
 
@@ -311,12 +309,15 @@ class TestSQLQueryConfig:
         assert (
             text_clause._bindparams["name"].value
             == HashMaskingStrategy(HashMaskingConfiguration(algorithm="SHA-512")).mask(
-                ["John Customer"], privacy_request_id=privacy_request.id
+                ["John Customer"], request_id=privacy_request.id
             )[0][0:40]
         )
-        assert text_clause._bindparams["email"].value == HashMaskingStrategy(
-            HashMaskingConfiguration(algorithm="SHA-512")
-        ).mask(["customer-1@example.com"], privacy_request_id=privacy_request.id)[0]
+        assert (
+            text_clause._bindparams["email"].value
+            == HashMaskingStrategy(HashMaskingConfiguration(algorithm="SHA-512")).mask(
+                ["customer-1@example.com"], request_id=privacy_request.id
+            )[0]
+        )
         clear_cache_secrets(privacy_request.id)
 
     def test_generate_update_stmts_from_multiple_rules(
@@ -587,7 +588,9 @@ class TestMongoQueryConfig:
         target.data_category = DataCategory("user.provided.identifiable.gender").value
         # cache secrets for hash strategy
         secret = MaskingSecretCache[str](
-            secret="adobo", masking_strategy=HASH, secret_type=SecretType.salt
+            secret="adobo",
+            masking_strategy=HASH_STRATEGY_NAME,
+            secret_type=SecretType.salt,
         )
         cache_secret(secret, privacy_request.id)
 
@@ -596,9 +599,12 @@ class TestMongoQueryConfig:
         )
         assert mongo_statement[0] == {"_id": 1}
         assert len(mongo_statement[1]["$set"]["gender"]) == 30
-        assert mongo_statement[1]["$set"]["birthday"] == HashMaskingStrategy(
-            HashMaskingConfiguration(algorithm="SHA-512")
-        ).mask(["1988-01-10"], privacy_request_id=privacy_request.id)[0]
+        assert (
+            mongo_statement[1]["$set"]["birthday"]
+            == HashMaskingStrategy(HashMaskingConfiguration(algorithm="SHA-512")).mask(
+                ["1988-01-10"], request_id=privacy_request.id
+            )[0]
+        )
 
 
 @pytest.mark.unit_saas
@@ -881,8 +887,9 @@ class TestSaaSQueryConfig:
         assert prepared_request.query_params == {}
         assert prepared_request.body == "name%5Bfirst%5D=MASKED&name%5Blast%5D=MASKED"
 
-
-    def test_get_masking_request(self, combined_traversal, saas_example_connection_config):
+    def test_get_masking_request(
+        self, combined_traversal, saas_example_connection_config
+    ):
         saas_config: Optional[
             SaaSConfig
         ] = saas_example_connection_config.get_saas_config()
@@ -916,8 +923,7 @@ class TestSaaSQueryConfig:
 
         # Define delete request on conversations endpoint
         endpoints["conversations"].requests["delete"] = SaaSRequest(
-            method="DELETE",
-            path="/api/0/<conversation>/<conversation_id>/"
+            method="DELETE", path="/api/0/<conversation>/<conversation_id>/"
         )
         # Delete endpoint not used because MASKING_STRICT is True
         assert config.execution.MASKING_STRICT is True
@@ -935,11 +941,10 @@ class TestSaaSQueryConfig:
         assert saas_request.method == "DELETE"
 
         # Define GDPR Delete
-        data_protection_request = SaaSRequest(
-            method="PUT",
-            path="/api/0/gdpr_delete"
+        data_protection_request = SaaSRequest(method="PUT", path="/api/0/gdpr_delete")
+        query_config = SaaSQueryConfig(
+            conversations, endpoints, {}, data_protection_request
         )
-        query_config = SaaSQueryConfig(conversations, endpoints, {}, data_protection_request)
 
         # Assert GDPR Delete takes priority over Delete
         saas_request: SaaSRequest = query_config.get_masking_request()

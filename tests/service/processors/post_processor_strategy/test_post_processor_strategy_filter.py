@@ -1,5 +1,7 @@
+from typing import Any, Dict
+
 import pytest
-from typing import Dict, Any
+
 from fidesops.common_exceptions import FidesopsException
 from fidesops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
@@ -153,6 +155,7 @@ def test_filter_by_nonexistent_identity_reference():
     result = processor.process(data)
     assert result == []
 
+
 def test_filter_by_identity_reference_with_no_identity_data():
     identity_data = None
     config = FilterPostProcessorConfiguration(
@@ -181,3 +184,155 @@ def test_filter_no_value():
     )
     processor = FilterPostProcessorStrategy(configuration=config)
     assert processor.process(None) == []
+
+
+def test_filter_non_exact_match():
+    config = FilterPostProcessorConfiguration(
+        field="email_contact", value="somebody@email.com", exact=False
+    )
+    data = {
+        "id": 238475234,
+        "email_contact": "[Somebody] somebody@email.com",
+        "name": "Somebody Cool",
+    }
+    processor = FilterPostProcessorStrategy(configuration=config)
+    result = processor.process(data)
+    assert result == data
+
+
+def test_filter_case_insensitive_match():
+    config = FilterPostProcessorConfiguration(
+        field="email_contact", value="SOMEBODY@email.com", case_sensitive=False
+    )
+    data = {
+        "id": 238475234,
+        "email_contact": "somebody@email.com",
+        "name": "Somebody Cool",
+    }
+    processor = FilterPostProcessorStrategy(configuration=config)
+    result = processor.process(data)
+    assert result == data
+
+
+def test_filter_nested_field():
+    config = FilterPostProcessorConfiguration(
+        field="attribute.email_contact", value="somebody@email.com"
+    )
+    data = {
+        "id": 238475234,
+        "attribute": {"email_contact": "somebody@email.com"},
+        "name": "Somebody Cool",
+    }
+    processor = FilterPostProcessorStrategy(configuration=config)
+    result = processor.process(data)
+    assert result == data
+
+
+def test_filter_nested_array_field():
+    config = FilterPostProcessorConfiguration(
+        field="attribute.email_contacts", value="somebody@email.com"
+    )
+    data = {
+        "id": 238475234,
+        "attribute": {"email_contacts": ["somebody@email.com"]},
+        "name": "Somebody Cool",
+    }
+    processor = FilterPostProcessorStrategy(configuration=config)
+    result = processor.process(data)
+    assert result == data
+
+
+def test_filter_nested_array_field_non_exact_match():
+    config = FilterPostProcessorConfiguration(
+        field="attribute.email_contacts", value="somebody@email.com", exact=False
+    )
+    data = {
+        "id": 238475234,
+        "attribute": {"email_contacts": ["[Somebody] somebody@email.com"]},
+        "name": "Somebody Cool",
+    }
+    processor = FilterPostProcessorStrategy(configuration=config)
+    result = processor.process(data)
+    assert result == data
+
+
+def test_filter_nested_array_field_case_insensitive_match():
+    config = FilterPostProcessorConfiguration(
+        field="attribute.email_contacts",
+        value="somebody@email.com",
+        case_sensitive=False,
+    )
+    data = {
+        "id": 238475234,
+        "attribute": {"email_contacts": ["SOMEBODY@email.com"]},
+        "name": "Somebody Cool",
+    }
+    processor = FilterPostProcessorStrategy(configuration=config)
+    result = processor.process(data)
+    assert result == data
+
+
+def test_filter_nested_array_field_non_exact_case_insensitive_match():
+    config = FilterPostProcessorConfiguration(
+        field="attribute.email_contacts",
+        value="somebody@email.com",
+        exact=False,
+        case_sensitive=False,
+    )
+    data = {
+        "id": 238475234,
+        "attribute": {"email_contacts": ["[Somebody] SOMEBODY@email.com"]},
+        "name": "Somebody Cool",
+    }
+    processor = FilterPostProcessorStrategy(configuration=config)
+    result = processor.process(data)
+    assert result == data
+
+
+def test_filter_nested_array_field_exact_case_sensitive_match():
+    config = FilterPostProcessorConfiguration(
+        field="attribute.email_contacts", value="somebody@email.com"
+    )
+    data = {
+        "id": 238475234,
+        "attribute": {"email_contacts": ["[Somebody] SOMEBODY@email.com"]},
+        "name": "Somebody Cool",
+    }
+    processor = FilterPostProcessorStrategy(configuration=config)
+    result = processor.process(data)
+    assert result == []
+
+
+def test_filter_invalid_field_value():
+    config = FilterPostProcessorConfiguration(
+        field="attribute", value="somebody@email.com"
+    )
+    data = {
+        "id": 238475234,
+        "attribute": {"email_contacts": ["somebody@email.com"]},
+        "name": "Somebody Cool",
+    }
+    processor = FilterPostProcessorStrategy(configuration=config)
+    with pytest.raises(FidesopsException) as exc:
+        processor.process(data)
+    assert str(exc.value) == (
+        "Field value 'attribute' for filter postprocessor "
+        "must be a string or list of strings, found 'dict'"
+    )
+
+
+def test_filter_invalid_field_value_array():
+    config = FilterPostProcessorConfiguration(
+        field="attribute.email_contacts", value="somebody@email.com"
+    )
+    data = {
+        "id": 238475234,
+        "attribute": {"email_contacts": ["somebody@email.com", {"phone": 123}]},
+        "name": "Somebody Cool",
+    }
+    processor = FilterPostProcessorStrategy(configuration=config)
+    with pytest.raises(FidesopsException) as exc:
+        processor.process(data)
+    assert str(exc.value) == (
+        "Every value in the 'attribute.email_contacts' list must be a string"
+    )

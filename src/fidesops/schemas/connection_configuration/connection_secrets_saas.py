@@ -1,6 +1,8 @@
 import abc
 from typing import Any, Dict, Type
-from pydantic import BaseModel, Extra, root_validator, create_model
+
+from pydantic import BaseModel, Extra, create_model, root_validator
+
 from fidesops.schemas.saas.saas_config import SaaSConfig
 
 
@@ -12,7 +14,7 @@ class SaaSSchema(BaseModel, abc.ABC):
 
     @root_validator
     @classmethod
-    def required_components_supplied(
+    def required_components_supplied(  # type: ignore
         cls: BaseModel, values: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Validate that the minimum required components have been supplied."""
@@ -23,7 +25,7 @@ class SaaSSchema(BaseModel, abc.ABC):
         )
         if not min_fields_present:
             raise ValueError(
-                f"{cls.__name__} must be supplied all of: [{', '.join(required_components)}]."
+                f"{cls.__name__} must be supplied all of: [{', '.join(required_components)}]."  # type: ignore
             )
 
         return values

@@ -6,10 +6,11 @@ from fidesops.schemas.masking.masking_configuration import (
 )
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import (
+    AES_ENCRYPT_STRATEGY_NAME,
     AesEncryptionMaskingStrategy,
-    AES_ENCRYPT,
 )
-from ....test_helpers.cache_secrets_helper import clear_cache_secrets, cache_secret
+
+from ....test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
 
 request_id = "1345134"
 GCM_CONFIGURATION = AesEncryptionMaskingConfiguration(
@@ -45,18 +46,20 @@ def test_mask_all_aes_modes(mock_encrypt: Mock):
 
 def cache_secrets() -> None:
     secret_key = MaskingSecretCache[bytes](
-        secret=b"\x94Y\xa8Z", masking_strategy=AES_ENCRYPT, secret_type=SecretType.key
+        secret=b"\x94Y\xa8Z",
+        masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
+        secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
     secret_hmac_key = MaskingSecretCache[str](
         secret="other_key",
-        masking_strategy=AES_ENCRYPT,
+        masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
         secret_type=SecretType.key_hmac,
     )
     cache_secret(secret_hmac_key, request_id)
     secret_hmac_salt = MaskingSecretCache[str](
         secret="some_salt",
-        masking_strategy=AES_ENCRYPT,
+        masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
         secret_type=SecretType.salt_hmac,
     )
     cache_secret(secret_hmac_salt, request_id)

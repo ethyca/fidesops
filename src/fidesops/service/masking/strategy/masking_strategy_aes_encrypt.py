@@ -1,35 +1,39 @@
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 
 from fidesops.schemas.masking.masking_configuration import (
-    MaskingConfiguration,
     AesEncryptionMaskingConfiguration,
     HmacMaskingConfiguration,
+    MaskingConfiguration,
 )
 from fidesops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
-    SecretType,
     MaskingSecretMeta,
+    SecretType,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
-    MaskingStrategyDescription,
     MaskingStrategyConfigurationDescription,
+    MaskingStrategyDescription,
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.service.masking.strategy.masking_strategy_factory import (
+    MaskingStrategyFactory,
+)
 from fidesops.util.encryption.aes_gcm_encryption_scheme import encrypt
 from fidesops.util.encryption.hmac_encryption_scheme import hmac_encrypt_return_bytes
 from fidesops.util.encryption.secrets_util import SecretsUtil
 
-AES_ENCRYPT = "aes_encrypt"
+AES_ENCRYPT_STRATEGY_NAME = "aes_encrypt"
 
 
+@MaskingStrategyFactory.register(AES_ENCRYPT_STRATEGY_NAME)
 class AesEncryptionMaskingStrategy(MaskingStrategy):
     def __init__(self, configuration: AesEncryptionMaskingConfiguration):
         self.mode = configuration.mode
         self.format_preservation = configuration.format_preservation
 
     def mask(
-        self, values: Optional[List[str]], privacy_request_id: Optional[str]
+        self, values: Optional[List[str]], request_id: Optional[str]
     ) -> Optional[List[str]]:
         if values is None:
             return None
@@ -38,23 +42,21 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
                 SecretType, MaskingSecretMeta
             ] = self._build_masking_secret_meta()
             key: bytes = SecretsUtil.get_or_generate_secret(
-                privacy_request_id, SecretType.key, masking_meta[SecretType.key]
+                request_id, SecretType.key, masking_meta[SecretType.key]
             )
             key_hmac: str = SecretsUtil.get_or_generate_secret(
-                privacy_request_id,
+                request_id,
                 SecretType.key_hmac,
                 masking_meta[SecretType.key_hmac],
             )
-            """
-            The nonce is generated deterministically such that the same input val will result in same nonce
-            and therefore the same masked val through the aes strategy. This is called convergent encryption, with this
-            implementation loosely based on https://www.vaultproject.io/docs/secrets/transit#convergent-encryption
-            """
+            # The nonce is generated deterministically such that the same input val will result in same nonce
+            # and therefore the same masked val through the aes strategy. This is called convergent encryption, with this
+            # implementation loosely based on https://www.vaultproject.io/docs/secrets/transit#convergent-encryption
 
             masked_values: List[str] = []
             for value in values:
                 nonce: bytes = self._generate_nonce(
-                    value, key_hmac, privacy_request_id, masking_meta
+                    value, key_hmac, request_id, masking_meta
                 )
                 masked: str = encrypt(value, key, nonce)
                 if self.format_preservation is not None:
@@ -62,8 +64,8 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
                     masked = formatter.format(masked)
                 masked_values.append(masked)
             return masked_values
-        else:
-            raise ValueError(f"aes_mode {self.mode} is not supported")
+
+        raise ValueError(f"aes_mode {self.mode} is not supported")
 
     def secrets_required(self) -> bool:
         return True
@@ -84,7 +86,7 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         """Returns the description used for documentation. In particular, used by the
         documentation endpoint in masking_endpoints.list_masking_strategies"""
         return MaskingStrategyDescription(
-            name=AES_ENCRYPT,
+            name=AES_ENCRYPT_STRATEGY_NAME,
             description="Masks by encrypting the value using AES",
             configurations=[
                 MaskingStrategyConfigurationDescription(
@@ -114,10 +116,8 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         salt: str = SecretsUtil.get_or_generate_secret(
             privacy_request_id, SecretType.salt_hmac, masking_meta[SecretType.salt_hmac]
         )
-        """
-        Trim to 12 bytes, which is recommended length from aes gcm lib:
-        https://cryptography.io/en/latest/hazmat/primitives/aead/#cryptography.hazmat.primitives.ciphers.aead.AESGCM.encrypt
-        """
+        # Trim to 12 bytes, which is recommended length from aes gcm lib:
+        # https://cryptography.io/en/latest/hazmat/primitives/aead/#cryptography.hazmat.primitives.ciphers.aead.AESGCM.encrypt
         return hmac_encrypt_return_bytes(
             value, key, salt, HmacMaskingConfiguration.Algorithm.sha_256
         )[:12]
@@ -126,15 +126,15 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
     def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
         return {
             SecretType.key: MaskingSecretMeta[bytes](
-                masking_strategy=AES_ENCRYPT,
+                masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
                 generate_secret_func=SecretsUtil.generate_secret_bytes,
             ),
             SecretType.key_hmac: MaskingSecretMeta[str](
-                masking_strategy=AES_ENCRYPT,
+                masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             ),
             SecretType.salt_hmac: MaskingSecretMeta[str](
-                masking_strategy=AES_ENCRYPT,
+                masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             ),
         }

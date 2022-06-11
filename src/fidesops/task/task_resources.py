@@ -1,30 +1,32 @@
 import logging
-from typing import Dict, Any, Optional, List
-
-from fidesops.schemas.shared_schemas import FidesOpsKey
+from typing import Any, Dict, List, Optional
 
 from fidesops.common_exceptions import ConnectorNotFoundException
 from fidesops.db.session import get_db_session
-from fidesops.graph.config import (
-    CollectionAddress,
-)
+from fidesops.graph.config import CollectionAddress
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.models.policy import ActionType, Policy
-from fidesops.models.privacy_request import ExecutionLog, ExecutionLogStatus
-from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.models.privacy_request import (
+    ExecutionLog,
+    ExecutionLogStatus,
+    PrivacyRequest,
+)
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.connectors import (
     BaseConnector,
+    BigQueryConnector,
+    ManualConnector,
+    MariaDBConnector,
+    MicrosoftSQLServerConnector,
     MongoDBConnector,
     MySQLConnector,
     PostgreSQLConnector,
-    SnowflakeConnector,
     RedshiftConnector,
-    MicrosoftSQLServerConnector,
-    MariaDBConnector,
-    BigQueryConnector,
     SaaSConnector,
+    SnowflakeConnector,
 )
 from fidesops.util.cache import get_cache
+from fidesops.util.collection_util import Row
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +69,8 @@ class Connections:
             return BigQueryConnector(connection_config)
         if connection_config.connection_type == ConnectionType.saas:
             return SaaSConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.manual:
+            return ManualConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )
@@ -120,9 +124,25 @@ class TaskResources:
         """Store in cache. Object will be stored in redis under 'REQUEST_ID__TYPE__ADDRESS'"""
         self.cache.set_encoded_object(f"{self.request.id}__{key}", value)
 
-    def get_all_cached_objects(self) -> Dict[str, Optional[Any]]:
+    def get_all_cached_objects(self) -> Dict[str, Optional[List[Row]]]:
         """Retrieve the results of all steps (cache_object)"""
         value_dict = self.cache.get_encoded_objects_by_prefix(self.request.id)
+        # extract request id to return a map of address:value
+        return {k.split("__")[-1]: v for k, v in value_dict.items()}
+
+    def cache_erasure(self, key: str, value: int) -> None:
+        """Cache that a node's masking is complete. Object will be stored in redis under
+        'REQUEST_ID__erasure_request__ADDRESS
+        '"""
+        self.cache.set_encoded_object(
+            f"{self.request.id}__erasure_request__{key}", value
+        )
+
+    def get_all_cached_erasures(self) -> Dict[str, int]:
+        """Retrieve which collections have been masked and their row counts(cache_erasure)"""
+        value_dict = self.cache.get_encoded_objects_by_prefix(
+            f"{self.request.id}__erasure_request"
+        )
         # extract request id to return a map of address:value
         return {k.split("__")[-1]: v for k, v in value_dict.items()}
 

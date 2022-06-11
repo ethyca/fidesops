@@ -1,20 +1,19 @@
+"""One-time script to create the root user for the Admin UI"""
+
 import getpass
 from typing import List
 
 from sqlalchemy.orm import Session
 
-from fidesops.api.v1.scope_registry import SCOPE_REGISTRY, CLIENT_CREATE
+from fidesops.api.v1.scope_registry import CLIENT_CREATE, SCOPE_REGISTRY
 from fidesops.common_exceptions import KeyOrNameAlreadyExists
 from fidesops.core.config import config
 from fidesops.db.database import init_db
 from fidesops.db.session import get_db_session
-from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
+from fidesops.models.client import ADMIN_UI_ROOT, ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.schemas.user import UserCreate
-
-
-"""One-time script to create the root user for the Admin UI"""
 
 
 def get_username(prompt: str) -> str:
@@ -29,16 +28,34 @@ def get_password(prompt: str) -> str:
     return password
 
 
+def get_input(prompt: str) -> str:
+    """
+    Prompt the user for generic input.
+
+    NB. This method is important to preserve so that
+    our tests can effectively mock the `input` function
+    and data that it returns.
+    """
+    return input(prompt)
+
+
 def collect_username_and_password(db: Session) -> UserCreate:
     """Collect username and password information and validate"""
     username = get_username("Enter your username: ")
+    first_name = get_input("Enter your first name: ")
+    last_name = get_input("Enter your last name: ")
     password = get_password("Enter your password: ")
     verify_pass = get_password("Enter your password again: ")
 
     if password != verify_pass:
         raise Exception("Passwords do not match.")
 
-    user_data = UserCreate(username=username, password=password)
+    user_data = UserCreate(
+        username=username,
+        password=password,
+        first_name=first_name,
+        last_name=last_name,
+    )
     user = FidesopsUser.get_by(db, field="username", value=user_data.username)
 
     if user:

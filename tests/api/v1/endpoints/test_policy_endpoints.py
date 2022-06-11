@@ -5,23 +5,20 @@ import pytest
 from starlette.testclient import TestClient
 
 from fidesops.api.v1 import scope_registry as scopes
+from fidesops.api.v1.urn_registry import POLICY_DETAIL as POLICY_DETAIL_URI
+from fidesops.api.v1.urn_registry import POLICY_LIST as POLICY_CREATE_URI
+from fidesops.api.v1.urn_registry import RULE_DETAIL as RULE_DETAIL_URI
+from fidesops.api.v1.urn_registry import RULE_LIST as RULE_CREATE_URI
 from fidesops.api.v1.urn_registry import (
-    POLICY_LIST as POLICY_CREATE_URI,
-    POLICY_DETAIL as POLICY_DETAIL_URI,
-    RULE_LIST as RULE_CREATE_URI,
-    RULE_DETAIL as RULE_DETAIL_URI,
-    RULE_TARGET_LIST,
     RULE_TARGET_DETAIL,
+    RULE_TARGET_LIST,
     V1_URL_PREFIX,
 )
 from fidesops.models.client import ClientDetail
-from fidesops.models.policy import (
-    ActionType,
-    Policy,
-    Rule,
-    RuleTarget, DrpAction,
+from fidesops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fidesops.service.masking.strategy.masking_strategy_nullify import (
+    NULL_REWRITE_STRATEGY_NAME,
 )
-from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.util.data_category import DataCategory, generate_fides_data_categories
 
 
@@ -143,7 +140,7 @@ class TestGetPolicyDetail:
         assert resp.status_code == 404
 
     def test_get_policy_returns_drp_action(
-            self, api_client: TestClient, generate_auth_header, policy_drp_action, url
+        self, api_client: TestClient, generate_auth_header, policy_drp_action, url
     ):
         auth_header = generate_auth_header(scopes=[scopes.POLICY_READ])
         resp = api_client.get(
@@ -325,18 +322,18 @@ class TestCreatePolicies:
         assert len(data["failed"]) == 2
 
     def test_create_policy_with_duplicate_drp_action(
-            self,
-            url,
-            api_client: TestClient,
-            generate_auth_header,
-            policy_drp_action,
-            storage_config,
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        policy_drp_action,
+        storage_config,
     ):
         data = [
             {
                 "name": "policy with pre-existing drp action",
                 "action_type": ActionType.access.value,
-                "drp_action": DrpAction.access.value
+                "drp_action": DrpAction.access.value,
             }
         ]
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
@@ -347,13 +344,13 @@ class TestCreatePolicies:
         assert len(data["failed"]) == 1
 
     def test_update_policy_with_duplicate_drp_action(
-            self,
-            db,
-            url,
-            api_client: TestClient,
-            generate_auth_header,
-            policy_drp_action,
-            storage_config,
+        self,
+        db,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        policy_drp_action,
+        storage_config,
     ):
         # creates a new drp policy
         data = [
@@ -361,7 +358,7 @@ class TestCreatePolicies:
                 "key": "erasure_drp_policy",
                 "name": "erasure drp policy",
                 "action_type": ActionType.erasure.value,
-                "drp_action": DrpAction.deletion.value
+                "drp_action": DrpAction.deletion.value,
             }
         ]
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
@@ -375,7 +372,7 @@ class TestCreatePolicies:
                 "key": "erasure_drp_policy",
                 "name": "policy with pre-existing drp action",
                 "action_type": ActionType.access.value,
-                "drp_action": DrpAction.access.value
+                "drp_action": DrpAction.access.value,
             }
         ]
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
@@ -391,19 +388,19 @@ class TestCreatePolicies:
         pol.delete(db=db)
 
     def test_update_policy_with_drp_action(
-            self,
-            url,
-            api_client: TestClient,
-            generate_auth_header,
-            policy,
-            storage_config,
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        policy,
+        storage_config,
     ):
         data = [
             {
                 "key": policy.key,
                 "name": "updated name",
                 "action_type": ActionType.access.value,
-                "drp_action": DrpAction.access.value
+                "drp_action": DrpAction.access.value,
             }
         ]
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
@@ -413,7 +410,7 @@ class TestCreatePolicies:
         assert len(response_data) == 1
 
     def test_create_policy_invalid_drp_action(
-            self, url, api_client: TestClient, payload, generate_auth_header, storage_config
+        self, url, api_client: TestClient, payload, generate_auth_header, storage_config
     ):
         payload = [
             {
@@ -429,10 +426,19 @@ class TestCreatePolicies:
         assert resp.status_code == 422
 
         response_body = json.loads(resp.text)
-        assert "value is not a valid enumeration member; permitted: 'access', 'deletion', 'sale:opt_out', 'sale:opt_in', 'access:categories', 'access:specific'" == response_body["detail"][0]["msg"]
+        assert (
+            "value is not a valid enumeration member; permitted: 'access', 'deletion', 'sale:opt_out', 'sale:opt_in', 'access:categories', 'access:specific'"
+            == response_body["detail"][0]["msg"]
+        )
 
     def test_create_policy_with_drp_action(
-            self, db, url, api_client: TestClient, payload, generate_auth_header, storage_config
+        self,
+        db,
+        url,
+        api_client: TestClient,
+        payload,
+        generate_auth_header,
+        storage_config,
     ):
         payload = [
             {
@@ -516,7 +522,7 @@ class TestCreatePolicies:
         generate_auth_header,
         storage_config,
     ):
-        key = "here-is-an-invalid-key"
+        key = "here*is*an*invalid*key"
         data = [
             {
                 "name": "test create policy api",
@@ -531,7 +537,7 @@ class TestCreatePolicies:
         assert resp.status_code == 422
         assert (
             json.loads(resp.text)["detail"][0]["msg"]
-            == "FidesKey must only contain alphanumeric characters, '.' or '_'."
+            == "FidesKey must only contain alphanumeric characters, '.', '_' or '-'."
         )
 
     def test_create_policy_already_exists(
@@ -588,7 +594,11 @@ class TestCreateRules:
         assert resp.status_code == 404
 
     def test_create_rules_mismatching_drp_policy(
-            self, api_client: TestClient, generate_auth_header, policy_drp_action, storage_config
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        policy_drp_action,
+        storage_config,
     ):
         data = [
             {
@@ -698,7 +708,7 @@ class TestCreateRules:
                 "name": "test erasure rule",
                 "action_type": ActionType.erasure.value,
                 "masking_strategy": {
-                    "strategy": NULL_REWRITE,
+                    "strategy": NULL_REWRITE_STRATEGY_NAME,
                     "configuration": {},
                 },
             }
@@ -716,7 +726,7 @@ class TestCreateRules:
         rule_data = response_data[0]
         assert "masking_strategy" in rule_data
         masking_strategy_data = rule_data["masking_strategy"]
-        assert masking_strategy_data["strategy"] == NULL_REWRITE
+        assert masking_strategy_data["strategy"] == NULL_REWRITE_STRATEGY_NAME
         assert "configuration" not in masking_strategy_data
 
     def test_update_rule_policy_id_fails(
@@ -1059,7 +1069,7 @@ class TestRuleTargets:
                 "name": "Erasure Rule",
                 "policy_id": policy.id,
                 "masking_strategy": {
-                    "strategy": NULL_REWRITE,
+                    "strategy": NULL_REWRITE_STRATEGY_NAME,
                     "configuration": {},
                 },
             },

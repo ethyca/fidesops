@@ -1,12 +1,21 @@
 import json
-import pytest
 from typing import Optional
+from unittest import mock
+from unittest.mock import Mock
+
+import pytest
+from sqlalchemy.orm import Session
+from starlette.testclient import TestClient
+
 from fidesops.api.v1.scope_registry import (
+    CLIENT_READ,
+    CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
 )
 from fidesops.api.v1.urn_registry import (
+    AUTHORIZE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     V1_URL_PREFIX,
@@ -16,8 +25,6 @@ from fidesops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from starlette.testclient import TestClient
-from sqlalchemy.orm import Session
 from tests.api.v1.endpoints.test_dataset_endpoints import _reject_key
 
 
@@ -95,9 +102,9 @@ class TestValidateSaaSConfig:
     ) -> None:
         auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
         saas_config = saas_example_config
-        param_values = saas_config["endpoints"][0]["requests"]["read"][
-            "param_values"
-        ][0]
+        param_values = saas_config["endpoints"][0]["requests"]["read"]["param_values"][
+            0
+        ]
         param_values["identity"] = "email"
         param_values["references"] = [
             {
@@ -111,7 +118,10 @@ class TestValidateSaaSConfig:
         )
         assert response.status_code == 422
         details = json.loads(response.text)["detail"]
-        assert details[0]["msg"] == "Must have exactly one of 'identity', 'references', or 'connector_param'"
+        assert (
+            details[0]["msg"]
+            == "Must have exactly one of 'identity', 'references', or 'connector_param'"
+        )
 
     def test_put_validate_saas_config_wrong_reference_direction(
         self,
@@ -122,9 +132,9 @@ class TestValidateSaaSConfig:
     ) -> None:
         auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
         saas_config = saas_example_config
-        param_values = saas_config["endpoints"][0]["requests"]["read"][
-            "param_values"
-        ][0]
+        param_values = saas_config["endpoints"][0]["requests"]["read"]["param_values"][
+            0
+        ]
         param_values["references"] = [
             {
                 "dataset": "postgres_example_test_dataset",
@@ -137,7 +147,11 @@ class TestValidateSaaSConfig:
         )
         assert response.status_code == 422
         details = json.loads(response.text)["detail"]
-        assert details[0]["msg"] == "References can only have a direction of 'from', found 'to'"
+        assert (
+            details[0]["msg"]
+            == "References can only have a direction of 'from', found 'to'"
+        )
+
 
 @pytest.mark.unit_saas
 class TestPutSaaSConfig:
@@ -190,7 +204,9 @@ class TestPutSaaSConfig:
         generate_auth_header,
     ) -> None:
         path = V1_URL_PREFIX + SAAS_CONFIG
-        path_params = {"connection_key": saas_example_connection_config_without_saas_config.key}
+        path_params = {
+            "connection_key": saas_example_connection_config_without_saas_config.key
+        }
         saas_config_url = path.format(**path_params)
 
         auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
@@ -200,7 +216,9 @@ class TestPutSaaSConfig:
         assert response.status_code == 200
 
         updated_config = ConnectionConfig.get_by(
-            db=db, field="key", value=saas_example_connection_config_without_saas_config.key
+            db=db,
+            field="key",
+            value=saas_example_connection_config_without_saas_config.key,
         )
         db.expire(updated_config)
         saas_config = updated_config.saas_config
@@ -395,3 +413,39 @@ class TestDeleteSaaSConfig:
             "before deleting this SaaS config. Must clear the secrets from this connection "
             "config before deleting the SaaS config."
         )
+
+
+class TestAuthorizeConnection:
+    @pytest.fixture
+    def authorize_url(self, oauth2_connection_config) -> str:
+        path = V1_URL_PREFIX + AUTHORIZE
+        path_params = {"connection_key": oauth2_connection_config.key}
+        return path.format(**path_params)
+
+    def test_client_not_authenticated(self, api_client: TestClient, authorize_url):
+        response = api_client.get(authorize_url)
+        assert response.status_code == 401
+
+    def test_client_wrong_scope(
+        self, api_client: TestClient, authorize_url, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header([CLIENT_READ])
+        response = api_client.get(authorize_url, headers=auth_header)
+        assert 403 == response.status_code
+
+    @mock.patch(
+        "fidesops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthenticationStrategy.get_authorization_url"
+    )
+    def test_get_authorize_url(
+        self,
+        authorization_url_mock: Mock,
+        api_client: TestClient,
+        authorize_url,
+        generate_auth_header,
+    ):
+        authorization_url = "https://localhost/auth/authorize"
+        authorization_url_mock.return_value = authorization_url
+        auth_header = generate_auth_header([CONNECTION_AUTHORIZE])
+        response = api_client.get(authorize_url, headers=auth_header)
+        assert response.ok
+        assert response.text == f'"{authorization_url}"'

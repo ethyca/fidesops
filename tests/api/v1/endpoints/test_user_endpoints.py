@@ -1,50 +1,48 @@
+import json
 from datetime import datetime
 from email.mime import application
 from typing import List
-import json
 
 import pytest
-
 from fastapi_pagination import Params
-from starlette.testclient import TestClient
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
-    HTTP_403_FORBIDDEN,
-    HTTP_401_UNAUTHORIZED,
     HTTP_400_BAD_REQUEST,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
 )
+from starlette.testclient import TestClient
 
+from fidesops.api.v1.scope_registry import (
+    PRIVACY_REQUEST_READ,
+    SCOPE_REGISTRY,
+    STORAGE_READ,
+    USER_CREATE,
+    USER_DELETE,
+    USER_PASSWORD_RESET,
+    USER_READ,
+    USER_UPDATE,
+)
 from fidesops.api.v1.urn_registry import (
-    V1_URL_PREFIX,
-    USERS,
     LOGIN,
     LOGOUT,
     USER_DETAIL,
+    USERS,
+    V1_URL_PREFIX,
 )
-from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
-from fidesops.api.v1.scope_registry import (
-    STORAGE_READ,
-    USER_CREATE,
-    USER_READ,
-    USER_UPDATE,
-    USER_DELETE,
-    USER_PASSWORD_RESET,
-    SCOPE_REGISTRY,
-    PRIVACY_REQUEST_READ,
-)
+from fidesops.models.client import ADMIN_UI_ROOT, ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
-from fidesops.util.oauth_util import generate_jwe, extract_payload
 from fidesops.schemas.jwt import (
+    JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
-    JWE_ISSUED_AT,
 )
-
+from fidesops.util.oauth_util import extract_payload, generate_jwe
 from tests.conftest import generate_auth_header_for_user
 
 page_size = Params().size
@@ -669,13 +667,16 @@ class TestUserLogin:
 
         db.refresh(user)
         assert user.client is not None
-        assert list(response.json().keys()) == ["access_token"]
-        token = response.json()["access_token"]
-
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
         token_data = json.loads(extract_payload(token))
-
         assert token_data["client-id"] == user.client.id
-        assert token_data["scopes"] == [PRIVACY_REQUEST_READ]
+        assert token_data["scopes"] == [
+            PRIVACY_REQUEST_READ
+        ]  # Uses scopes on existing client
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == user.id
 
         user.client.delete(db)
 
@@ -699,15 +700,16 @@ class TestUserLogin:
 
         db.refresh(user)
         assert user.client is not None
-        assert list(response.json().keys()) == ["access_token"]
-        token = response.json()["access_token"]
-
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
         token_data = json.loads(extract_payload(token))
-
         assert token_data["client-id"] == existing_client_id
         assert token_data["scopes"] == [
             PRIVACY_REQUEST_READ
         ]  # Uses scopes on existing client
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == user.id
 
 
 class TestUserLogout:

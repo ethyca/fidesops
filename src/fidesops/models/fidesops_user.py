@@ -1,11 +1,12 @@
 from datetime import datetime
-from typing import Dict, Any, Tuple
+from typing import Any, Dict, Tuple
 
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy import Column, DateTime, String
 from sqlalchemy.orm import Session, relationship
 
 from fidesops.core.config import config
 from fidesops.db.base_class import Base
+from fidesops.models.audit_log import AuditLog
 from fidesops.util.cryptographic_util import generate_salt, hash_with_salt
 
 
@@ -20,8 +21,18 @@ class FidesopsUser(Base):
     last_login_at = Column(DateTime(timezone=True), nullable=True)
     password_reset_at = Column(DateTime(timezone=True), nullable=True)
 
+    # passive_deletes="all" prevents audit logs from having their privacy_request_id set to null when
+    # a privacy_request is deleted.  We want to retain for record-keeping.
+    audit_logs = relationship(
+        AuditLog,
+        backref="fidesops_user",
+        lazy="dynamic",
+        passive_deletes="all",
+        primaryjoin="foreign(AuditLog.user_id)==FidesopsUser.id",
+    )
+
     client = relationship(
-        "ClientDetail", backref="user", cascade="all, delete", uselist=False
+        "ClientDetail", backref="user", cascade="all, delete", uselist=False  # type: ignore
     )
 
     @classmethod

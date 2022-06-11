@@ -1,7 +1,6 @@
 import random
 from typing import Iterable
 
-
 from sqlalchemy.engine import Engine
 
 from fidesops.db.base_class import FidesopsBase
@@ -11,15 +10,15 @@ from fidesops.graph.traversal import Traversal, TraversalNode
 
 # to avoid having faker spam the logs
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.models.policy import Policy, RuleTarget, Rule, ActionType
+from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.connectors import BaseConnector, MongoDBConnector
 from fidesops.service.connectors.sql_connector import SQLConnector
-
 from fidesops.task.graph_task import GraphTask
 from fidesops.task.task_resources import TaskResources
-from ..fixtures.application_fixtures import faker
 from fidesops.util.collection_util import Row
+
+from ..fixtures.application_fixtures import faker
 
 
 class MockResources(TaskResources):
@@ -43,7 +42,11 @@ class MockSqlConnector(SQLConnector):
         raise AttributeError("Unsupported")
 
     def retrieve_data(
-        self, node: TraversalNode, policy: Policy, privacy_request: PrivacyRequest, input_data: Dict[str, List[Any]]
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         return [generate_collection(node.node.collection) for _ in range(3)]
 
@@ -56,6 +59,7 @@ class MockSqlTask(GraphTask):
 class MockMongoTask(GraphTask):
     def connector(self) -> BaseConnector:
         return MongoDBConnector(ConnectionConfig())
+
 
 #  -------------------------------------------
 #   test utility functions
@@ -132,9 +136,13 @@ def field(dataresources: List[Dataset], *address: str) -> ScalarField:
 
     try:
         # Assuming object field with at most one level - get ScalarField out of object field
-        df: ScalarField = next(df for df in ds.field_dict.values() if df.name == address[3])
+        df: ScalarField = next(
+            df for df in ds.field_dict.values() if df.name == address[3]
+        )
     except:
-        df: ScalarField = next(df for df in ds.field_dict.values() if df.name == address[2])
+        df: ScalarField = next(
+            df for df in ds.field_dict.values() if df.name == address[2]
+        )
     return df
 
 

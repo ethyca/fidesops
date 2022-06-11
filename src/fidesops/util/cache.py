@@ -1,17 +1,10 @@
 import base64
 import logging
 import pickle
-from typing import (
-    Any,
-    List,
-    Optional,
-    Set,
-    Union,
-    Dict,
-)
+from typing import Any, Dict, List, Optional, Union
 
 from redis import Redis
-from redis.client import Script
+from redis.client import Script  # type: ignore
 
 from fidesops import common_exceptions
 from fidesops.core.config import config
@@ -108,6 +101,8 @@ def get_cache() -> FidesopsRedis:
             port=config.redis.PORT,
             db=config.redis.DB_INDEX,
             password=config.redis.PASSWORD,
+            ssl=config.redis.SSL,
+            ssl_cert_reqs=config.redis.SSL_CERT_REQS,
         )
 
     connected = _connection.ping()
@@ -125,6 +120,13 @@ def get_identity_cache_key(privacy_request_id: str, identity_attribute: str) -> 
     return f"id-{privacy_request_id}-identity-{identity_attribute}"
 
 
+def get_drp_request_body_cache_key(
+    privacy_request_id: str, identity_attribute: str
+) -> str:
+    """Return the key at which to save this PrivacyRequest's drp request body for the passed in attribute"""
+    return f"id-{privacy_request_id}-drp-{identity_attribute}"
+
+
 def get_encryption_cache_key(privacy_request_id: str, encryption_attr: str) -> str:
     """Return the key at which to save this PrivacyRequest's encryption attribute"""
     return f"id-{privacy_request_id}-encryption-{encryption_attr}"
@@ -139,7 +141,7 @@ def get_masking_secret_cache_key(
     )
 
 
-def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> Set:
+def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]:
     """Returns all cache keys related to this privacy request's cached identities"""
     cache: FidesopsRedis = get_cache()
     return cache.keys(f"{privacy_request_id}-*") + cache.keys(

@@ -1,9 +1,11 @@
+# pylint: disable=too-many-branches,too-many-locals
+
 import csv
 import io
 import logging
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Union
+from typing import Any, Callable, DefaultDict, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
@@ -16,6 +18,7 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_424_FAILED_DEPENDENCY,
 )
 
@@ -23,23 +26,30 @@ from fidesops import common_exceptions
 from fidesops.api import deps
 from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
-from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, PRIVACY_REQUEST_REVIEW
+from fidesops.api.v1.scope_registry import (
+    PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_REVIEW,
+)
 from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
+    PRIVACY_REQUEST_MANUAL_ERASURE,
+    PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_RESUME,
+    PRIVACY_REQUEST_RETRY,
     REQUEST_PREVIEW,
 )
 from fidesops.common_exceptions import TraversalError, ValidationError
 from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
-from fidesops.graph.graph import DatasetGraph
+from fidesops.graph.graph import DatasetGraph, Node
 from fidesops.graph.traversal import Traversal
 from fidesops.models.audit_log import AuditLog, AuditLogAction
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import ActionType, Policy, PolicyPreWebhook
+from fidesops.models.policy import PausedStep, Policy, PolicyPreWebhook
 from fidesops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
@@ -47,24 +57,27 @@ from fidesops.models.privacy_request import (
 )
 from fidesops.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fidesops.schemas.external_https import PrivacyRequestResumeFormat
-from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
-from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
-from fidesops.schemas.policy import Rule
 from fidesops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
+    DenyPrivacyRequests,
     ExecutionLogDetailResponse,
     PrivacyRequestCreate,
     PrivacyRequestResponse,
     PrivacyRequestVerboseResponse,
     ReviewPrivacyRequestIds,
-    DenyPrivacyRequests,
+    RowCountRequest,
+    StoppedCollection,
 )
-from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
+from fidesops.service.privacy_request.request_service import (
+    build_required_privacy_request_kwargs,
+    cache_data,
+)
 from fidesops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.cache import FidesopsRedis
+from fidesops.util.collection_util import Row
 from fidesops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 
 logger = logging.getLogger(__name__)
@@ -127,7 +140,7 @@ def create_privacy_request(
             continue
 
         logger.info(f"Finding policy with key '{privacy_request_data.policy_key}'")
-        policy = Policy.get_by(
+        policy: Optional[Policy] = Policy.get_by(
             db=db,
             field="key",
             value=privacy_request_data.policy_key,
@@ -144,47 +157,24 @@ def create_privacy_request(
             failed.append(failure)
             continue
 
-        kwargs = {
-            "requested_at": privacy_request_data.requested_at,
-            "policy_id": policy.id,
-            "status": "pending",
-        }
+        kwargs = build_required_privacy_request_kwargs(
+            privacy_request_data.requested_at, policy.id
+        )
         for field in optional_fields:
             attr = getattr(privacy_request_data, field)
             if attr is not None:
                 kwargs[field] = attr
 
         try:
-            privacy_request = PrivacyRequest.create(db=db, data=kwargs)
+            privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
 
-            # Store identity in the cache
-            logger.info(f"Caching identity for privacy request {privacy_request.id}")
-            privacy_request.cache_identity(privacy_request_data.identity)
-            privacy_request.cache_encryption(privacy_request_data.encryption_key)
-
-            # Store masking secrets in the cache
-            logger.info(
-                f"Caching masking secrets for privacy request {privacy_request.id}"
+            cache_data(
+                privacy_request,
+                policy,
+                privacy_request_data.identity,
+                privacy_request_data.encryption_key,
+                None,
             )
-            erasure_rules: List[Rule] = policy.get_rules_for_action(
-                action_type=ActionType.erasure
-            )
-            unique_masking_strategies_by_name: Set[str] = set()
-            for rule in erasure_rules:
-                strategy_name: str = rule.masking_strategy["strategy"]
-                configuration: MaskingConfiguration = rule.masking_strategy[
-                    "configuration"
-                ]
-                if strategy_name in unique_masking_strategies_by_name:
-                    continue
-                unique_masking_strategies_by_name.add(strategy_name)
-                masking_strategy = get_strategy(strategy_name, configuration)
-                if masking_strategy.secrets_required():
-                    masking_secrets: List[
-                        MaskingSecretCache
-                    ] = masking_strategy.generate_secrets_for_cache()
-                    for masking_secret in masking_secrets:
-                        privacy_request.cache_masking_secret(masking_secret)
 
             if not config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL:
                 PrivacyRequestRunner(
@@ -235,7 +225,7 @@ def privacy_request_csv_download(
     )
     privacy_request_ids: List[str] = [r.id for r in privacy_request_query]
     denial_audit_log_query: Query = db.query(AuditLog).filter(
-        AuditLog.action == AuditLogAction.denied.value,
+        AuditLog.action == AuditLogAction.denied,
         AuditLog.privacy_request_id.in_(privacy_request_ids),
     )
     denial_audit_logs: Dict[str, str] = {
@@ -267,131 +257,6 @@ def privacy_request_csv_download(
     return response
 
 
-@router.get(
-    urls.PRIVACY_REQUESTS,
-    dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
-    response_model=Page[
-        Union[
-            PrivacyRequestVerboseResponse,
-            PrivacyRequestResponse,
-        ]
-    ],
-)
-def get_request_status(
-    *,
-    db: Session = Depends(deps.get_db),
-    params: Params = Depends(),
-    id: Optional[str] = None,
-    status: Optional[PrivacyRequestStatus] = None,
-    created_lt: Optional[datetime] = None,
-    created_gt: Optional[datetime] = None,
-    started_lt: Optional[datetime] = None,
-    started_gt: Optional[datetime] = None,
-    completed_lt: Optional[datetime] = None,
-    completed_gt: Optional[datetime] = None,
-    errored_lt: Optional[datetime] = None,
-    errored_gt: Optional[datetime] = None,
-    external_id: Optional[str] = None,
-    verbose: Optional[bool] = False,
-    include_identities: Optional[bool] = False,
-    download_csv: Optional[bool] = False,
-) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
-    """Returns PrivacyRequest information. Supports a variety of optional query params.
-
-    To fetch a single privacy request, use the id query param `?id=`.
-    To see individual execution logs, use the verbose query param `?verbose=True`.
-    """
-
-    if any([completed_lt, completed_gt]) and any([errored_lt, errored_gt]):
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail="Cannot specify both succeeded and failed query params.",
-        )
-
-    for end, start, field_name in [
-        [created_lt, created_gt, "created"],
-        [completed_lt, completed_gt, "completed"],
-        [errored_lt, errored_gt, "errorer"],
-        [started_lt, started_gt, "started"],
-    ]:
-        if end is None or start is None:
-            continue
-        if not (isinstance(end, datetime) and isinstance(start, datetime)):
-            continue
-        else:
-            if end < start:
-                # With date fields, if the start date is after the end date, return a 400
-                # because no records will lie within this range.
-                raise HTTPException(
-                    status_code=HTTP_400_BAD_REQUEST,
-                    detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
-                )
-
-    query = db.query(PrivacyRequest)
-
-    # Further restrict all PrivacyRequests by query params
-    if id:
-        query = query.filter(PrivacyRequest.id.ilike(f"{id}%"))
-    if external_id:
-        query = query.filter(PrivacyRequest.external_id.ilike(f"{external_id}%"))
-    if status:
-        query = query.filter(PrivacyRequest.status == status)
-    if created_lt:
-        query = query.filter(PrivacyRequest.created_at < created_lt)
-    if created_gt:
-        query = query.filter(PrivacyRequest.created_at > created_gt)
-    if started_lt:
-        query = query.filter(PrivacyRequest.started_processing_at < started_lt)
-    if started_gt:
-        query = query.filter(PrivacyRequest.started_processing_at > started_gt)
-    if completed_lt:
-        query = query.filter(
-            PrivacyRequest.status == PrivacyRequestStatus.complete.value,
-            PrivacyRequest.finished_processing_at < completed_lt,
-        )
-    if completed_gt:
-        query = query.filter(
-            PrivacyRequest.status == PrivacyRequestStatus.complete.value,
-            PrivacyRequest.finished_processing_at > completed_gt,
-        )
-    if errored_lt:
-        query = query.filter(
-            PrivacyRequest.status == PrivacyRequestStatus.error.value,
-            PrivacyRequest.finished_processing_at < errored_lt,
-        )
-    if errored_gt:
-        query = query.filter(
-            PrivacyRequest.status == PrivacyRequestStatus.error.value,
-            PrivacyRequest.finished_processing_at > errored_gt,
-        )
-
-    if download_csv:
-        # Returning here if download_csv param was specified
-        logger.info("Downloading privacy requests as csv")
-        return privacy_request_csv_download(db, query)
-
-    # Conditionally embed execution log details in the response.
-    if verbose:
-        logger.info(f"Finding execution log details")
-        PrivacyRequest.execution_logs_by_dataset = property(
-            execution_logs_by_dataset_name
-        )
-    else:
-        PrivacyRequest.execution_logs_by_dataset = property(lambda self: None)
-
-    query = query.order_by(PrivacyRequest.created_at.desc())
-
-    paginated = paginate(query, params)
-    if include_identities:
-        # Conditionally include the cached identity data in the response if
-        # it is explicitly requested
-        for item in paginated.items:
-            item.identity = item.get_cached_identity_data()
-
-    logger.info(f"Finding all request statuses with pagination params {params}")
-    return paginated
-
-
 def execution_logs_by_dataset_name(
     self: PrivacyRequest,
 ) -> DefaultDict[str, List["ExecutionLog"]]:
@@ -413,6 +278,209 @@ def execution_logs_by_dataset_name(
             continue
         execution_logs[log.dataset_name].append(log)
     return execution_logs
+
+
+def _filter_privacy_request_queryset(
+    query: Query,
+    request_id: Optional[str] = None,
+    status: Optional[PrivacyRequestStatus] = None,
+    created_lt: Optional[datetime] = None,
+    created_gt: Optional[datetime] = None,
+    started_lt: Optional[datetime] = None,
+    started_gt: Optional[datetime] = None,
+    completed_lt: Optional[datetime] = None,
+    completed_gt: Optional[datetime] = None,
+    errored_lt: Optional[datetime] = None,
+    errored_gt: Optional[datetime] = None,
+    external_id: Optional[str] = None,
+) -> Query:
+    """
+    Utility method to apply filters to our privacy request query
+    """
+    if any([completed_lt, completed_gt]) and any([errored_lt, errored_gt]):
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Cannot specify both succeeded and failed query params.",
+        )
+
+    for end, start, field_name in [
+        [created_lt, created_gt, "created"],
+        [completed_lt, completed_gt, "completed"],
+        [errored_lt, errored_gt, "errored"],
+        [started_lt, started_gt, "started"],
+    ]:
+        if end is None or start is None:
+            continue
+
+        if not (isinstance(end, datetime) and isinstance(start, datetime)):
+            continue
+
+        if end < start:
+            # With date fields, if the start date is after the end date, return a 400
+            # because no records will lie within this range.
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
+            )
+
+    # Further restrict all PrivacyRequests by query params
+    if request_id:
+        query = query.filter(PrivacyRequest.id.ilike(f"{request_id}%"))
+    if external_id:
+        query = query.filter(PrivacyRequest.external_id.ilike(f"{external_id}%"))
+    if status:
+        query = query.filter(PrivacyRequest.status == status)
+    if created_lt:
+        query = query.filter(PrivacyRequest.created_at < created_lt)
+    if created_gt:
+        query = query.filter(PrivacyRequest.created_at > created_gt)
+    if started_lt:
+        query = query.filter(PrivacyRequest.started_processing_at < started_lt)
+    if started_gt:
+        query = query.filter(PrivacyRequest.started_processing_at > started_gt)
+    if completed_lt:
+        query = query.filter(
+            PrivacyRequest.status == PrivacyRequestStatus.complete,
+            PrivacyRequest.finished_processing_at < completed_lt,
+        )
+    if completed_gt:
+        query = query.filter(
+            PrivacyRequest.status == PrivacyRequestStatus.complete,
+            PrivacyRequest.finished_processing_at > completed_gt,
+        )
+    if errored_lt:
+        query = query.filter(
+            PrivacyRequest.status == PrivacyRequestStatus.error,
+            PrivacyRequest.finished_processing_at < errored_lt,
+        )
+    if errored_gt:
+        query = query.filter(
+            PrivacyRequest.status == PrivacyRequestStatus.error,
+            PrivacyRequest.finished_processing_at > errored_gt,
+        )
+
+    return query.order_by(PrivacyRequest.created_at.desc())
+
+
+def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
+    """
+    Temporarily update a paused or errored privacy request object with instructions from the Redis cache
+    about how to resume manually if applicable.
+    """
+    resume_endpoint: Optional[str] = None
+    stopped_collection_details: Optional[StoppedCollection] = None
+
+    if privacy_request.status == PrivacyRequestStatus.paused:
+        stopped_collection_details = privacy_request.get_paused_collection_details()
+
+        if stopped_collection_details:
+            # Graph is paused on a specific collection
+            resume_endpoint = (
+                PRIVACY_REQUEST_MANUAL_ERASURE
+                if stopped_collection_details.step == PausedStep.erasure
+                else PRIVACY_REQUEST_MANUAL_INPUT
+            )
+        else:
+            # Graph is paused on a pre-processing webhook
+            resume_endpoint = PRIVACY_REQUEST_RESUME
+
+    elif privacy_request.status == PrivacyRequestStatus.error:
+        stopped_collection_details = privacy_request.get_failed_collection_details()
+        resume_endpoint = PRIVACY_REQUEST_RETRY
+
+    if stopped_collection_details:
+        stopped_collection_details.step = stopped_collection_details.step.value
+        stopped_collection_details.collection = (
+            stopped_collection_details.collection.value
+        )
+
+    privacy_request.stopped_collection_details = stopped_collection_details
+    # replaces the placeholder in the url with the privacy request id
+    privacy_request.resume_endpoint = (
+        resume_endpoint.format(privacy_request_id=privacy_request.id)
+        if resume_endpoint
+        else None
+    )
+
+
+@router.get(
+    urls.PRIVACY_REQUESTS,
+    dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
+    response_model=Page[
+        Union[
+            PrivacyRequestVerboseResponse,
+            PrivacyRequestResponse,
+        ]
+    ],
+)
+def get_request_status(
+    *,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+    request_id: Optional[str] = None,
+    status: Optional[PrivacyRequestStatus] = None,
+    created_lt: Optional[datetime] = None,
+    created_gt: Optional[datetime] = None,
+    started_lt: Optional[datetime] = None,
+    started_gt: Optional[datetime] = None,
+    completed_lt: Optional[datetime] = None,
+    completed_gt: Optional[datetime] = None,
+    errored_lt: Optional[datetime] = None,
+    errored_gt: Optional[datetime] = None,
+    external_id: Optional[str] = None,
+    verbose: Optional[bool] = False,
+    include_identities: Optional[bool] = False,
+    download_csv: Optional[bool] = False,
+) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
+    """Returns PrivacyRequest information. Supports a variety of optional query params.
+
+    To fetch a single privacy request, use the request_id query param `?request_id=`.
+    To see individual execution logs, use the verbose query param `?verbose=True`.
+    """
+
+    logger.info(f"Finding all request statuses with pagination params {params}")
+    query = db.query(PrivacyRequest)
+    query = _filter_privacy_request_queryset(
+        query,
+        request_id,
+        status,
+        created_lt,
+        created_gt,
+        started_lt,
+        started_gt,
+        completed_lt,
+        completed_gt,
+        errored_lt,
+        errored_gt,
+        external_id,
+    )
+
+    if download_csv:
+        # Returning here if download_csv param was specified
+        logger.info("Downloading privacy requests as csv")
+        return privacy_request_csv_download(db, query)
+
+    # Conditionally embed execution log details in the response.
+    if verbose:
+        logger.info("Finding execution log details")
+        PrivacyRequest.execution_logs_by_dataset = property(
+            execution_logs_by_dataset_name
+        )
+    else:
+        PrivacyRequest.execution_logs_by_dataset = property(lambda self: None)
+
+    paginated = paginate(query, params)
+    if include_identities:
+        # Conditionally include the cached identity data in the response if
+        # it is explicitly requested
+        for item in paginated.items:  # type: ignore
+            item.identity = item.get_cached_identity_data()
+            attach_resume_instructions(item)
+    else:
+        for item in paginated.items:  # type: ignore
+            attach_resume_instructions(item)
+
+    return paginated
 
 
 @router.get(
@@ -461,7 +529,7 @@ def get_request_preview_queries(
         if not dataset_configs:
             raise HTTPException(
                 status_code=HTTP_404_NOT_FOUND,
-                detail=f"No datasets could be found",
+                detail="No datasets could be found",
             )
     else:
         for dataset_key in dataset_keys:
@@ -511,7 +579,7 @@ def get_request_preview_queries(
         logger.info(f"Dry run failed: {err}")
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Dry run failed",
+            detail="Dry run failed",
         )
 
 
@@ -555,6 +623,214 @@ def resume_privacy_request(
     return privacy_request
 
 
+def validate_manual_input(
+    manual_rows: List[Row],
+    collection: CollectionAddress,
+    dataset_graph: DatasetGraph,
+) -> None:
+    """Validate manually-added data for a collection.
+
+    The specified collection must exist and all fields must be previously defined.
+    """
+    for row in manual_rows:
+        for field_name in row:
+            if not dataset_graph.nodes[collection].contains_field(
+                lambda f: f.name == field_name  # pylint: disable=W0640
+            ):
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"Cannot save manual rows. No '{field_name}' field defined on the '{collection.value}' collection.",
+                )
+
+
+def resume_privacy_request_with_manual_input(
+    privacy_request_id: str,
+    db: Session,
+    cache: FidesopsRedis,
+    expected_paused_step: PausedStep,
+    manual_rows: List[Row] = [],
+    manual_count: Optional[int] = None,
+) -> PrivacyRequest:
+    """Resume privacy request after validating and caching manual data for an access or an erasure request."""
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+    if privacy_request.status != PrivacyRequestStatus.paused:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid resume request: privacy request '{privacy_request.id}' "
+            f"status = {privacy_request.status.value}. Privacy request is not paused.",
+        )
+
+    paused_details: Optional[
+        StoppedCollection
+    ] = privacy_request.get_paused_collection_details()
+    if not paused_details:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot resume privacy request '{privacy_request.id}'; no paused details.",
+        )
+
+    paused_step: PausedStep = paused_details.step
+    paused_collection: CollectionAddress = paused_details.collection
+
+    if paused_step != expected_paused_step:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Collection '{paused_collection}' is paused at the {paused_step.value} step. Pass in manual data instead to "
+            f"'{PRIVACY_REQUEST_MANUAL_ERASURE if paused_step == PausedStep.erasure else PRIVACY_REQUEST_MANUAL_INPUT}' to resume.",
+        )
+
+    datasets = DatasetConfig.all(db=db)
+    dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+    dataset_graph = DatasetGraph(*dataset_graphs)
+
+    node: Optional[Node] = dataset_graph.nodes.get(paused_collection)
+    if not node:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Cannot save manual data. No collection in graph with name: '{paused_collection.value}'.",
+        )
+
+    if paused_step == PausedStep.access:
+        validate_manual_input(manual_rows, paused_collection, dataset_graph)
+        logger.info(
+            f"Caching manual input for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
+        )
+        privacy_request.cache_manual_input(paused_collection, manual_rows)
+
+    elif paused_step == PausedStep.erasure:
+        logger.info(
+            f"Caching manually erased row count for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
+        )
+        privacy_request.cache_manual_erasure_count(paused_collection, manual_count)
+
+    logger.info(
+        f"Resuming privacy request '{privacy_request_id}', {paused_step.value} step, from collection "
+        f"'{paused_collection.value}'"
+    )
+
+    privacy_request.status = PrivacyRequestStatus.in_processing
+    privacy_request.save(db=db)
+
+    PrivacyRequestRunner(
+        cache=cache,
+        privacy_request=privacy_request,
+    ).submit(from_step=paused_step)
+
+    return privacy_request
+
+
+@router.post(
+    PRIVACY_REQUEST_MANUAL_INPUT,
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestResponse,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+    ],
+)
+def resume_with_manual_input(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    cache: FidesopsRedis = Depends(deps.get_cache),
+    manual_rows: List[Row],
+) -> PrivacyRequestResponse:
+    """Resume a privacy request by passing in manual input for the paused collection.
+
+    If there's no manual data to submit, pass in an empty list to resume the privacy request.
+    """
+    return resume_privacy_request_with_manual_input(
+        privacy_request_id=privacy_request_id,
+        db=db,
+        cache=cache,
+        expected_paused_step=PausedStep.access,
+        manual_rows=manual_rows,
+    )
+
+
+@router.post(
+    PRIVACY_REQUEST_MANUAL_ERASURE,
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestResponse,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+    ],
+)
+def resume_with_erasure_confirmation(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    cache: FidesopsRedis = Depends(deps.get_cache),
+    manual_count: RowCountRequest,
+) -> PrivacyRequestResponse:
+    """Resume the erasure portion of privacy request by passing in the number of rows that were manually masked.
+
+    If no rows were masked, pass in a 0 to resume the privacy request.
+    """
+    return resume_privacy_request_with_manual_input(
+        privacy_request_id=privacy_request_id,
+        db=db,
+        cache=cache,
+        expected_paused_step=PausedStep.erasure,
+        manual_count=manual_count.row_count,
+    )
+
+
+@router.post(
+    PRIVACY_REQUEST_RETRY,
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestResponse,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+    ],
+)
+def restart_privacy_request_from_failure(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    cache: FidesopsRedis = Depends(deps.get_cache),
+) -> PrivacyRequestResponse:
+    """Restart a privacy request from failure"""
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+
+    if privacy_request.status != PrivacyRequestStatus.error:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+        )
+
+    failed_details: Optional[
+        StoppedCollection
+    ] = privacy_request.get_failed_collection_details()
+    if not failed_details:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection.",
+        )
+
+    failed_step: PausedStep = failed_details.step
+    failed_collection: CollectionAddress = failed_details.collection
+
+    logger.info(
+        f"Restarting failed privacy request '{privacy_request_id}' from '{failed_step} step, 'collection '{failed_collection}'"
+    )
+
+    privacy_request.status = PrivacyRequestStatus.in_processing
+    privacy_request.save(db=db)
+
+    PrivacyRequestRunner(
+        cache=cache,
+        privacy_request=privacy_request,
+    ).submit(from_step=failed_step)
+
+    privacy_request.cache_failed_collection_details()  # Reset failed step and collection to None
+
+    return privacy_request
+
+
 def review_privacy_request(
     db: Session, cache: FidesopsRedis, request_ids: List[str], process_request: Callable
 ) -> BulkReviewResponse:
@@ -576,7 +852,7 @@ def review_privacy_request(
         if privacy_request.status != PrivacyRequestStatus.pending:
             failed.append(
                 {
-                    "message": f"Cannot transition status",
+                    "message": "Cannot transition status",
                     "data": PrivacyRequestResponse.from_orm(privacy_request),
                 }
             )

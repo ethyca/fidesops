@@ -47,3 +47,10 @@ identity_email = ""
 host = ""
 api_key = ""
 identity_email = ""
+
+[outreach]
+domain = ""
+client_id = ""
+client_secret = ""
+redirect_uri = ""
+page_size = ""

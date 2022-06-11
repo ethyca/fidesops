@@ -5,35 +5,37 @@ from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock
 
-import dask
 import pytest
 
 from fidesops.core.config import config
-from fidesops.graph.config import FieldAddress, Collection, ScalarField, Dataset
+from fidesops.graph.config import (
+    Collection,
+    CollectionAddress,
+    Dataset,
+    FieldAddress,
+    ScalarField,
+)
 from fidesops.graph.data_type import DataType, StringTypeConverter
 from fidesops.graph.graph import DatasetGraph, Edge, Node
 from fidesops.graph.traversal import TraversalNode
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.models.policy import Policy
-from fidesops.models.policy import Rule, RuleTarget, ActionType
+from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.service.connectors import get_connector
 from fidesops.task import graph_task
 from fidesops.task.filter_results import filter_data_categories
-from fidesops.task.graph_task import (
-    get_cached_data_for_erasures,
-)
+from fidesops.task.graph_task import get_cached_data_for_erasures
+
 from ..graph.graph_test_util import (
     assert_rows_match,
-    records_matching_fields,
-    field,
     erasure_policy,
+    field,
+    records_matching_fields,
 )
-from ..task.traversal_data import integration_db_graph, integration_db_dataset
+from ..task.traversal_data import integration_db_dataset, integration_db_graph
 
-dask.config.set(scheduler="processes")
 logger = logging.getLogger(__name__)
 sample_postgres_configuration_policy = erasure_policy(
     "system.operations",
@@ -201,6 +203,7 @@ def test_composite_key_erasure(
 
     # re-run access request. Description has been
     # nullified here.
+    privacy_request = PrivacyRequest(id=f"test_postgres_task_{random.randint(0,1000)}")
     access_request_data = graph_task.run_access_request(
         privacy_request,
         policy,
@@ -860,7 +863,10 @@ class TestRetrievingData:
         }
 
         results = connector.retrieve_data(
-            traversal_node, Policy(), privacy_request, {"email": ["customer-1@example.com"]}
+            traversal_node,
+            Policy(),
+            privacy_request,
+            {"email": ["customer-1@example.com"]},
         )
         assert len(results) is 1
         assert results == [
@@ -889,9 +895,13 @@ class TestRetrievingData:
             )
         }
 
-        assert [] == connector.retrieve_data(traversal_node, Policy(), privacy_request, {"email": []})
+        assert [] == connector.retrieve_data(
+            traversal_node, Policy(), privacy_request, {"email": []}
+        )
 
-        assert [] == connector.retrieve_data(traversal_node, Policy(), privacy_request, {})
+        assert [] == connector.retrieve_data(
+            traversal_node, Policy(), privacy_request, {}
+        )
 
         assert [] == connector.retrieve_data(
             traversal_node, Policy(), privacy_request, {"bad_key": ["test"]}
@@ -901,7 +911,9 @@ class TestRetrievingData:
             traversal_node, Policy(), privacy_request, {"email": [None]}
         )
 
-        assert [] == connector.retrieve_data(traversal_node, Policy(), privacy_request, {"email": None})
+        assert [] == connector.retrieve_data(
+            traversal_node, Policy(), privacy_request, {"email": None}
+        )
 
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
@@ -922,7 +934,10 @@ class TestRetrievingData:
             )
         }
         results = connector.retrieve_data(
-            traversal_node, Policy(), privacy_request, {"email": ["customer_not_in_dataset@example.com"]}
+            traversal_node,
+            Policy(),
+            privacy_request,
+            {"email": ["customer_not_in_dataset@example.com"]},
         )
         assert results == []
 
@@ -953,64 +968,33 @@ class TestRetryIntegration:
         mock_retrieve.side_effect = Exception("Insufficient data")
 
         # Call run_access_request with an email that isn't in the database
-        access_request_results = graph_task.run_access_request(
-            privacy_request,
-            sample_postgres_configuration_policy,
-            dataset_graph,
-            [integration_postgres_config],
-            {"email": "customer-5@example.com"},
-        )
+        with pytest.raises(Exception) as exc:
+            access_request_results = graph_task.run_access_request(
+                privacy_request,
+                sample_postgres_configuration_policy,
+                dataset_graph,
+                [integration_postgres_config],
+                {"email": "customer-5@example.com"},
+            )
 
         execution_logs = db.query(ExecutionLog).filter_by(
             privacy_request_id=privacy_request.id
         )
 
-        assert 33 == execution_logs.count()
+        assert 3 == execution_logs.count()
 
-        processing = execution_logs.filter_by(status="in_processing")
-        assert 11 == processing.count()
-        assert {
-            "employee",
-            "visit",
-            "customer",
-            "report",
-            "orders",
-            "payment_card",
-            "service_request",
-            "login",
-            "address",
-            "order_item",
-            "product",
-        } == set([pro.collection_name for pro in processing])
-
-        errored = execution_logs.filter_by(status="error")
-        retried = execution_logs.filter_by(status="retrying")
-
-        assert 11 == retried.count()
-        assert 11 == errored.count()
-
-        cannot_reach = {
-            "visit",
-            "payment_card",
-            "customer",
-            "orders",
-            "order_item",
-            "address",
-            "product",
-            "service_request",
-            "login",
-            "employee",
-            "report",
-        }
-
-        assert cannot_reach == set([ret.collection_name for ret in retried])
-        assert cannot_reach == set([err.collection_name for err in errored])
-
-        complete = execution_logs.filter_by(status="complete")
-        assert 0 == complete.count()
-
-        # No results were accessible because all retrieve_data calls failed.
-        assert access_request_results == {}
+        # Execution starts with the employee collection, retries once on failure, and then errors
+        assert [
+            (
+                CollectionAddress(log.dataset_name, log.collection_name).value,
+                log.status.value,
+            )
+            for log in execution_logs.order_by("created_at")
+        ] == [
+            ("postgres_example_test_dataset:employee", "in_processing"),
+            ("postgres_example_test_dataset:employee", "retrying"),
+            ("postgres_example_test_dataset:employee", "error"),
+        ]
 
     @mock.patch("fidesops.service.connectors.sql_connector.SQLConnector.mask_data")
     def test_retry_erasure(
@@ -1023,7 +1007,7 @@ class TestRetryIntegration:
         policy,
         integration_postgres_config,
     ):
-        config.execution.TASK_RETRY_COUNT = 1
+        config.execution.TASK_RETRY_COUNT = 2
         config.execution.TASK_RETRY_DELAY = 0.1
         config.execution.TASK_RETRY_BACKOFF = 0.01
 
@@ -1035,66 +1019,44 @@ class TestRetryIntegration:
         mock_mask.side_effect = Exception("Insufficient data")
 
         # Call run_erasure with an email that isn't in the database
-        erasure_results = graph_task.run_erasure(
-            privacy_request,
-            sample_postgres_configuration_policy,
-            dataset_graph,
-            [integration_postgres_config],
-            {"email": "customer-5@example.com"},
-            {
-                "postgres_example_test_dataset:employee": [],
-                "postgres_example_test_dataset:visit": [],
-                "postgres_example_test_dataset:customer": [],
-                "postgres_example_test_dataset:report": [],
-                "postgres_example_test_dataset:orders": [],
-                "postgres_example_test_dataset:payment_card": [],
-                "postgres_example_test_dataset:service_request": [],
-                "postgres_example_test_dataset:login": [],
-                "postgres_example_test_dataset:address": [],
-                "postgres_example_test_dataset:order_item": [],
-                "postgres_example_test_dataset:product": [],
-            },
-        )
+        with pytest.raises(Exception):
+            graph_task.run_erasure(
+                privacy_request,
+                sample_postgres_configuration_policy,
+                dataset_graph,
+                [integration_postgres_config],
+                {"email": "customer-5@example.com"},
+                {
+                    "postgres_example_test_dataset:employee": [],
+                    "postgres_example_test_dataset:visit": [],
+                    "postgres_example_test_dataset:customer": [],
+                    "postgres_example_test_dataset:report": [],
+                    "postgres_example_test_dataset:orders": [],
+                    "postgres_example_test_dataset:payment_card": [],
+                    "postgres_example_test_dataset:service_request": [],
+                    "postgres_example_test_dataset:login": [],
+                    "postgres_example_test_dataset:address": [],
+                    "postgres_example_test_dataset:order_item": [],
+                    "postgres_example_test_dataset:product": [],
+                },
+            )
 
         execution_logs = db.query(ExecutionLog).filter_by(
             privacy_request_id=privacy_request.id
         )
 
-        assert 31 == execution_logs.count()
-        processing = execution_logs.filter_by(status="in_processing")
-        assert 11 == processing.count()
-        assert {
-            "orders",
-            "order_item",
-            "visit",
-            "payment_card",
-            "customer",
-            "employee",
-            "address",
-            "service_request",
-            "login",
-            "report",
-            "product",
-        } == set([pro.collection_name for pro in processing])
+        assert 4 == execution_logs.count()
 
-        errored = execution_logs.filter_by(status="error")
-        retried = execution_logs.filter_by(status="retrying")
-        assert 9 == retried.count()
-        assert 9 == errored.count()
-
-        complete = execution_logs.filter_by(status="complete")
-        assert 2 == complete.count()
-
-        assert erasure_results == {
-            "postgres_example_test_dataset:visit": 0,
-            "postgres_example_test_dataset:service_request": 0,
-            "postgres_example_test_dataset:employee": 0,
-            "postgres_example_test_dataset:customer": 0,
-            "postgres_example_test_dataset:report": 0,
-            "postgres_example_test_dataset:address": 0,
-            "postgres_example_test_dataset:payment_card": 0,
-            "postgres_example_test_dataset:orders": 0,
-            "postgres_example_test_dataset:login": 0,
-            "postgres_example_test_dataset:order_item": 0,
-            "postgres_example_test_dataset:product": 0,
-        }
+        # Execution starts with the address collection, retries twice on failure, and then errors
+        assert [
+            (
+                CollectionAddress(log.dataset_name, log.collection_name).value,
+                log.status.value,
+            )
+            for log in execution_logs.order_by("created_at")
+        ] == [
+            ("postgres_example_test_dataset:address", "in_processing"),
+            ("postgres_example_test_dataset:address", "retrying"),
+            ("postgres_example_test_dataset:address", "retrying"),
+            ("postgres_example_test_dataset:address", "error"),
+        ]

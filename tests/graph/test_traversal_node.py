@@ -1,4 +1,5 @@
 from fidesops.graph.traversal import *
+
 from .test_graph_traversal import generate_node
 
 
@@ -110,5 +111,3 @@ class TestTraversalNode:
 
         tn = TraversalNode(generate_node("a", "b", "c", "c2"))
         assert not tn.is_root_node()
-
-

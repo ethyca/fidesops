@@ -35,6 +35,8 @@ def run_infrastructure(
     run_quickstart: bool = False,  # Should we run the quickstart command?
     run_tests: bool = False,  # Should we run the tests after creating the infra?
     run_create_superuser: bool = False,  # Should we run the create_superuser command?
+    run_create_test_data: bool = False,  # Should we run the create_test_data command?
+    analytics_opt_out: bool = False,  # Should we opt out of analytics?
 ) -> None:
     """
     - Create a Docker Compose file path for all datastores specified in `datastores`.
@@ -90,10 +92,14 @@ def run_infrastructure(
             datastores,
             docker_compose_path=path,
             pytest_path=pytest_path,
+            analytics_opt_out=analytics_opt_out,
         )
 
     elif run_create_superuser:
         return _run_create_superuser(path, IMAGE_NAME)
+
+    elif run_create_test_data:
+        return _run_create_test_data(path, IMAGE_NAME)
 
 
 def seed_initial_data(
@@ -166,6 +172,18 @@ def _run_create_superuser(
     _run_cmd_or_err(f"docker exec -it {image_name} python create_superuser.py")
 
 
+def _run_create_test_data(
+    path: str,
+    image_name: str,
+) -> None:
+    """
+    Invokes the Fidesops create_user_and_client command
+    """
+    _run_cmd_or_err(f'echo "Running create superuser..."')
+    _run_cmd_or_err(f"docker-compose {path} up -d")
+    _run_cmd_or_err(f"docker exec -it {image_name} python create_test_data.py")
+
+
 def _open_shell(
     path: str,
     image_name: str,
@@ -189,6 +207,7 @@ def _run_tests(
     datastores: List[str],
     docker_compose_path: str,
     pytest_path: str = "",
+    analytics_opt_out: bool = False,
 ) -> None:
     """
     Runs unit tests against the specified datastores
@@ -216,6 +235,9 @@ def _run_tests(
         if datastore in datastores:
             for env_var in EXTERNAL_DATASTORE_CONFIG[datastore]:
                 environment_variables += f"-e {env_var} "
+
+    if analytics_opt_out:
+        environment_variables += "-e ANALYTICS_OPT_OUT"
 
     pytest_path += f' -m "{pytest_markers}"'
 
@@ -274,6 +296,17 @@ if __name__ == "__main__":
         action="store_true",
     )
 
+    parser.add_argument(
+        "-td",
+        "--run_create_test_data",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-a",
+        "--analytics_opt_out",
+        action="store_true",
+    )
+
     config_args = parser.parse_args()
 
     run_infrastructure(
@@ -283,5 +316,7 @@ if __name__ == "__main__":
         run_application=config_args.run_application,
         run_quickstart=config_args.run_quickstart,
         run_tests=config_args.run_tests,
-        run_create_superuser=config_args.run_create_superuser
+        run_create_superuser=config_args.run_create_superuser,
+        run_create_test_data=config_args.run_create_test_data,
+        analytics_opt_out=config_args.analytics_opt_out,
     )

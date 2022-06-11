@@ -1,13 +1,15 @@
 {
-  "name": "fidesui-template",
+  "name": "fidesops-admin-ui",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "dev:mock": "echo '🚨 Running with mock API'; NEXT_PUBLIC_MOCK_API=true next dev",
-    "build": "next build",
+    "build": "next build && next export",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write .",
     "test": "jest --watch",
+    "test:ci": "jest",
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build"
@@ -26,10 +28,8 @@
     "formik": "^2.2.9",
     "framer-motion": "^5",
     "lodash.debounce": "^4.0.8",
-    "msw": "^0.29.0",
+    "msw": "^0.42.0",
     "next": "12.1.0",
-    "next-auth": "^4.2.1",
-    "next-redux-wrapper": "^7.0.5",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.6",
@@ -55,8 +55,10 @@
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^27.5.1",
+    "prettier": "^2.6.2",
     "typescript": "4.5.5"
   },
   "msw": {

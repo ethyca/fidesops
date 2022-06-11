@@ -80,14 +80,15 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Literal, Optional, Tuple, Set, Dict, Any, Callable
+from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple
+
 from pydantic import BaseModel, validator
 
 from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.data_type import (
+    DataType,
     DataTypeConverter,
     get_data_type_converter,
-    DataType,
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.collection_util import merge_dicts
@@ -292,6 +293,12 @@ class ScalarField(Field):
             return {FieldPath(self.name): self}  # pylint: disable=no-member
         return {}
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ScalarField):
+            return False
+
+        return self.__dict__ == other.__dict__
+
 
 class ObjectField(Field):
     """A field that represents a json dict structure."""
@@ -343,6 +350,15 @@ class ObjectField(Field):
                 for field_path, field in child_dicts.items()
             },
         )
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ObjectField):
+            return False
+
+        print(f"{self.__dict__=}")
+        print(f"{other.__dict__=}")
+
+        return self.__dict__ == other.__dict__
 
 
 # pylint: disable=too-many-arguments
@@ -439,7 +455,7 @@ class Collection(BaseModel):
     def identities(self) -> Dict[FieldPath, Tuple[str, ...]]:
         """return identity pointers included in the table"""
         return {
-            field_path: field.identity
+            field_path: field.identity  # type: ignore
             for field_path, field in self.field_dict.items()
             if field.identity
         }
