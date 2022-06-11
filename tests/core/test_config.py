@@ -21,7 +21,7 @@ def test_config_from_default() -> None:
 @patch.dict(
     os.environ,
     {
-        "FIDESOPS__CONFIG_PATH": "data/config/",
+        "FIDES__CONFIG_PATH": "data/config/",
     },
     clear=True,
 )

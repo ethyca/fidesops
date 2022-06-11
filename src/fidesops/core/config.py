@@ -147,7 +147,7 @@ class FidesopsConfig(FidesSettings):
     def log_all_config_values(self) -> None:
         """Output DEBUG logs of all the config values."""
         for settings in [self.database, self.redis, self.security, self.execution]:
-            for key, value in settings.dict().items():
+            for key, value in settings.dict().items():  # type: ignore
                 logger.debug(
                     "Using config: %s%s = %s",
                     NotPii(settings.Config.env_prefix),  # type: ignore
