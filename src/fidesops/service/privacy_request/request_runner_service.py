@@ -125,10 +125,10 @@ def upload_access_results(
 
 @celery_app.task(bind=True)
 def run_privacy_request(
-    self,
+    self,  # Required to introspect the task object within the scope of this task
     privacy_request_id: str,
     from_webhook_id: Optional[str] = None,
-    from_step: Optional[PausedStep] = None,
+    from_step: Optional[str] = None,
 ) -> None:
     # pylint: disable=too-many-locals
     """
@@ -138,9 +138,9 @@ def run_privacy_request(
         3. Start the access request / erasure request execution
         4. When finished, upload the results to the configured storage destination if applicable
     """
-    # import pdb
-
-    # pdb.set_trace()
+    # Re-cast `from_step` into an Enum to enforce the validation since unserializable objects
+    # can't be passed into and between tasks
+    from_step = PausedStep(from_step)
     SessionLocal = get_db_session()
     with SessionLocal() as session:
 
