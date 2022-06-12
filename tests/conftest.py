@@ -171,3 +171,14 @@ def celery_use_virtual_worker(celery_worker):
     task is executed within the scope of the test.
     """
     yield celery_worker
+
+
+@pytest.fixture(scope="function")
+def run_privacy_request_task(celery_app):
+    """
+    This fixture is the version of the run_privacy_request task that is
+    registered to the `celery_app` fixture which uses the virtualised `celery_worker`
+    """
+    yield celery_app.tasks[
+        "fidesops.service.privacy_request.request_runner_service.run_privacy_request"
+    ]
