@@ -69,7 +69,6 @@ from fidesops.schemas.privacy_request import (
     RowCountRequest,
 )
 from fidesops.service.privacy_request.request_runner_service import (
-    PrivacyRequestRunner,
     run_privacy_request,
 )
 from fidesops.service.privacy_request.request_service import (
