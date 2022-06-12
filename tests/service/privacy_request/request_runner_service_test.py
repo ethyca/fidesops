@@ -40,33 +40,35 @@ from fidesops.service.masking.strategy.masking_strategy_factory import (
 from fidesops.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 from fidesops.service.privacy_request.request_runner_service import (
     run_privacy_request,
-    PrivacyRequestRunner,
+    run_webhooks_and_report_status,
 )
-from fidesops.util.async_util import wait_for
 from fidesops.util.data_category import DataCategory
+
+
+PRIVACY_REQUEST_TASK_TIMEOUT = 2
 
 
 @mock.patch("fidesops.service.privacy_request.request_runner_service.upload")
 def test_policy_upload_called(
     upload_mock: Mock,
-    db: Session,
-    privacy_request: PrivacyRequest,
-    privacy_request_runner: PrivacyRequestRunner,
+    privacy_request_status_pending: PrivacyRequest,
+    run_privacy_request_task,
 ) -> None:
-    wait_for(privacy_request_runner.submit())
+    run_privacy_request_task.delay(privacy_request_status_pending.id).get(
+        timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+    )
     assert upload_mock.called
 
 
 def test_start_processing_sets_started_processing_at(
     db: Session,
     privacy_request_status_pending: PrivacyRequest,
-    celery_app,
+    run_privacy_request_task,
 ) -> None:
     assert privacy_request_status_pending.started_processing_at is None
-    run_privacy_request = celery_app.tasks[
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request"
-    ]
-    res = run_privacy_request.delay(privacy_request_status_pending.id).get(timeout=10)
+    run_privacy_request_task.delay(privacy_request_status_pending.id).get(
+        timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+    )
     _sessionmaker = get_db_session()
     db = _sessionmaker()
     assert (
@@ -80,16 +82,24 @@ def test_start_processing_sets_started_processing_at(
 def test_start_processing_doesnt_overwrite_started_processing_at(
     db: Session,
     privacy_request: PrivacyRequest,
-    privacy_request_runner: PrivacyRequestRunner,
+    run_privacy_request_task,
 ) -> None:
     before = privacy_request.started_processing_at
-    wait_for(privacy_request_runner.submit())
+    assert before is not None
+
+    run_privacy_request_task.delay(privacy_request.id).get(
+        timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+    )
+
+    _sessionmaker = get_db_session()
+    db = _sessionmaker()
+
     privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
     assert privacy_request.started_processing_at == before
 
 
 @mock.patch(
-    "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.run_webhooks_and_report_status",
+    "fidesops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
 @mock.patch(
     "fidesops.service.privacy_request.request_runner_service.run_access_request"
@@ -101,15 +111,17 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     run_webhooks,
     db: Session,
     privacy_request: PrivacyRequest,
-    privacy_request_runner: PrivacyRequestRunner,
+    run_privacy_request_task,
     erasure_policy,
 ) -> None:
     privacy_request.started_processing_at = None
     privacy_request.policy = erasure_policy
     privacy_request.save(db)
 
-    privacy_request.started_processing_at = None
-    wait_for(privacy_request_runner.submit(from_step=PausedStep.access))
+    run_privacy_request_task.delay(
+        privacy_request_id=privacy_request.id,
+        from_step=PausedStep.access.value,
+    ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
 
     _sessionmaker = get_db_session()
     db = _sessionmaker()
@@ -126,7 +138,7 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
 
 
 @mock.patch(
-    "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.run_webhooks_and_report_status",
+    "fidesops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
 @mock.patch(
     "fidesops.service.privacy_request.request_runner_service.run_access_request"
@@ -138,14 +150,17 @@ def test_resume_privacy_request_from_erasure(
     run_webhooks,
     db: Session,
     privacy_request: PrivacyRequest,
-    privacy_request_runner: PrivacyRequestRunner,
+    run_privacy_request_task,
     erasure_policy,
 ) -> None:
     privacy_request.started_processing_at = None
     privacy_request.policy = erasure_policy
     privacy_request.save(db)
 
-    wait_for(privacy_request_runner.submit(from_step=PausedStep.erasure))
+    run_privacy_request_task.delay(
+        privacy_request_id=privacy_request.id,
+        from_step=PausedStep.erasure.value,
+    ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
 
     _sessionmaker = get_db_session()
     db = _sessionmaker()
@@ -164,7 +179,7 @@ def test_resume_privacy_request_from_erasure(
 def get_privacy_request_results(
     db,
     policy,
-    cache,
+    run_privacy_request_task,
     privacy_request_data: Dict[str, Any],
 ) -> PrivacyRequest:
     """Utility method to run a privacy request and return results after waiting for
@@ -207,11 +222,8 @@ def get_privacy_request_results(
             for masking_secret in masking_secrets:
                 privacy_request.cache_masking_secret(masking_secret)
 
-    wait_for(
-        PrivacyRequestRunner(
-            cache=cache,
-            privacy_request=privacy_request,
-        ).submit()
+    run_privacy_request_task.delay(privacy_request.id).get(
+        timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
 
     return PrivacyRequest.get(db=db, id=privacy_request.id)
@@ -229,6 +241,7 @@ def test_create_and_process_access_request(
     policy,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
+    run_privacy_request_task,
 ):
     customer_email = "customer-1@example.com"
     data = {
@@ -237,7 +250,12 @@ def test_create_and_process_access_request(
         "identity": {"email": customer_email},
     }
 
-    pr = get_privacy_request_results(db, policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
 
     results = pr.get_results()
     assert len(results.keys()) == 11
@@ -280,6 +298,7 @@ def test_create_and_process_access_request_mssql(
     policy,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
+    run_privacy_request_task,
 ):
 
     customer_email = "customer-1@example.com"
@@ -289,7 +308,12 @@ def test_create_and_process_access_request_mssql(
         "identity": {"email": customer_email},
     }
 
-    pr = get_privacy_request_results(db, policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
 
     results = pr.get_results()
     assert len(results.keys()) == 11
@@ -320,6 +344,7 @@ def test_create_and_process_access_request_mysql(
     policy,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
+    run_privacy_request_task,
 ):
 
     customer_email = "customer-1@example.com"
@@ -329,7 +354,12 @@ def test_create_and_process_access_request_mysql(
         "identity": {"email": customer_email},
     }
 
-    pr = get_privacy_request_results(db, policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
 
     results = pr.get_results()
     assert len(results.keys()) == 11
@@ -361,6 +391,7 @@ def test_create_and_process_access_request_mariadb(
     policy,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
+    run_privacy_request_task,
 ):
 
     customer_email = "customer-1@example.com"
@@ -370,7 +401,12 @@ def test_create_and_process_access_request_mariadb(
         "identity": {"email": customer_email},
     }
 
-    pr = get_privacy_request_results(db, policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
 
     results = pr.get_results()
     assert len(results.keys()) == 11
@@ -403,6 +439,7 @@ def test_create_and_process_access_request_saas_mailchimp(
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
     mailchimp_identity_email,
+    run_privacy_request_task,
 ):
     customer_email = mailchimp_identity_email
     data = {
@@ -411,7 +448,12 @@ def test_create_and_process_access_request_saas_mailchimp(
         "identity": {"email": customer_email},
     }
 
-    pr = get_privacy_request_results(db, policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
     results = pr.get_results()
     assert len(results.keys()) == 3
 
@@ -442,6 +484,7 @@ def test_create_and_process_erasure_request_saas(
     generate_auth_header,
     mailchimp_identity_email,
     reset_mailchimp_data,
+    run_privacy_request_task,
 ):
     customer_email = mailchimp_identity_email
     data = {
@@ -450,7 +493,12 @@ def test_create_and_process_erasure_request_saas(
         "identity": {"email": customer_email},
     }
 
-    pr = get_privacy_request_results(db, erasure_policy_hmac, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy_hmac,
+        run_privacy_request_task,
+        data,
+    )
 
     connector = SaaSConnector(mailchimp_connection_config)
     request: SaaSRequestParams = SaaSRequestParams(
@@ -494,6 +542,7 @@ def test_create_and_process_access_request_saas_hubspot(
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
     hubspot_identity_email,
+    run_privacy_request_task,
 ):
     customer_email = hubspot_identity_email
     data = {
@@ -502,7 +551,12 @@ def test_create_and_process_access_request_saas_hubspot(
         "identity": {"email": customer_email},
     }
 
-    pr = get_privacy_request_results(db, policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
     results = pr.get_results()
     assert len(results.keys()) == 3
 
@@ -530,6 +584,7 @@ def test_create_and_process_erasure_request_specific_category_postgres(
     generate_auth_header,
     erasure_policy,
     read_connection_config,
+    run_privacy_request_task,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
@@ -542,7 +597,12 @@ def test_create_and_process_erasure_request_specific_category_postgres(
     stmt = select("*").select_from(table("customer"))
     res = postgres_integration_db.execute(stmt).all()
 
-    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
     pr.delete(db=db)
 
     stmt = select(
@@ -569,6 +629,7 @@ def test_create_and_process_erasure_request_specific_category_mssql(
     db,
     generate_auth_header,
     erasure_policy,
+    run_privacy_request_task,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
@@ -578,7 +639,12 @@ def test_create_and_process_erasure_request_specific_category_mssql(
         "identity": {"email": customer_email},
     }
 
-    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
     pr.delete(db=db)
 
     stmt = select(
@@ -605,6 +671,7 @@ def test_create_and_process_erasure_request_specific_category_mysql(
     db,
     generate_auth_header,
     erasure_policy,
+    run_privacy_request_task,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
@@ -614,7 +681,12 @@ def test_create_and_process_erasure_request_specific_category_mysql(
         "identity": {"email": customer_email},
     }
 
-    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
     pr.delete(db=db)
 
     stmt = select(
@@ -641,6 +713,7 @@ def test_create_and_process_erasure_request_specific_category_mariadb(
     db,
     generate_auth_header,
     erasure_policy,
+    run_privacy_request_task,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
@@ -650,7 +723,12 @@ def test_create_and_process_erasure_request_specific_category_mariadb(
         "identity": {"email": customer_email},
     }
 
-    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
     pr.delete(db=db)
 
     stmt = select(
@@ -677,6 +755,7 @@ def test_create_and_process_erasure_request_generic_category(
     db,
     generate_auth_header,
     erasure_policy,
+    run_privacy_request_task,
 ):
     # It's safe to change this here since the `erasure_policy` fixture is scoped
     # at function level
@@ -692,7 +771,12 @@ def test_create_and_process_erasure_request_generic_category(
         "identity": {"email": email},
     }
 
-    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
     pr.delete(db=db)
 
     stmt = select(
@@ -726,6 +810,7 @@ def test_create_and_process_erasure_request_aes_generic_category(
     db,
     generate_auth_header,
     erasure_policy_aes,
+    run_privacy_request_task,
 ):
     # It's safe to change this here since the `erasure_policy` fixture is scoped
     # at function level
@@ -741,7 +826,12 @@ def test_create_and_process_erasure_request_aes_generic_category(
         "identity": {"email": email},
     }
 
-    pr = get_privacy_request_results(db, erasure_policy_aes, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy_aes,
+        run_privacy_request_task,
+        data,
+    )
     pr.delete(db=db)
 
     stmt = select(
@@ -776,6 +866,7 @@ def test_create_and_process_erasure_request_with_table_joins(
     db,
     cache,
     erasure_policy,
+    run_privacy_request_task,
 ):
     # It's safe to change this here since the `erasure_policy` fixture is scoped
     # at function level
@@ -791,7 +882,12 @@ def test_create_and_process_erasure_request_with_table_joins(
         "identity": {"email": customer_email},
     }
 
-    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
     pr.delete(db=db)
 
     stmt = select(
@@ -822,6 +918,7 @@ def test_create_and_process_erasure_request_read_access(
     db,
     cache,
     erasure_policy,
+    run_privacy_request_task,
 ):
     customer_email = "customer-2@example.com"
     customer_id = 2
@@ -831,7 +928,12 @@ def test_create_and_process_erasure_request_read_access(
         "identity": {"email": customer_email},
     }
 
-    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
     errored_execution_logs = pr.execution_logs.filter_by(status="error")
     assert errored_execution_logs.count() == 9
     assert (
@@ -897,10 +999,7 @@ def snowflake_resources(
 @pytest.mark.integration_external
 @pytest.mark.integration_snowflake
 def test_create_and_process_access_request_snowflake(
-    snowflake_resources,
-    db,
-    cache,
-    policy,
+    snowflake_resources, db, cache, policy, run_privacy_request_task
 ):
     customer_email = snowflake_resources["email"]
     customer_name = snowflake_resources["name"]
@@ -909,7 +1008,12 @@ def test_create_and_process_access_request_snowflake(
         "policy_key": policy.key,
         "identity": {"email": customer_email},
     }
-    pr = get_privacy_request_results(db, policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
     results = pr.get_results()
     customer_table_key = (
         f"EN_{pr.id}__access_request__snowflake_example_test_dataset:customer"
@@ -930,6 +1034,7 @@ def test_create_and_process_erasure_request_snowflake(
     db,
     cache,
     erasure_policy,
+    run_privacy_request_task,
 ):
     customer_email = snowflake_resources["email"]
     snowflake_client = snowflake_resources["client"]
@@ -939,7 +1044,12 @@ def test_create_and_process_erasure_request_snowflake(
         "policy_key": erasure_policy.key,
         "identity": {"email": customer_email},
     }
-    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
     pr.delete(db=db)
 
     stmt = f'select "name", "variant_eg" from "customer" where "email" = {formatted_customer_email};'
@@ -1005,10 +1115,7 @@ def redshift_resources(
 @pytest.mark.integration_external
 @pytest.mark.integration_redshift
 def test_create_and_process_access_request_redshift(
-    redshift_resources,
-    db,
-    cache,
-    policy,
+    redshift_resources, db, cache, policy, run_privacy_request_task
 ):
     customer_email = redshift_resources["email"]
     customer_name = redshift_resources["name"]
@@ -1017,7 +1124,12 @@ def test_create_and_process_access_request_redshift(
         "policy_key": policy.key,
         "identity": {"email": customer_email},
     }
-    pr = get_privacy_request_results(db, policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
     results = pr.get_results()
     customer_table_key = (
         f"EN_{pr.id}__access_request__redshift_example_test_dataset:customer"
@@ -1048,6 +1160,7 @@ def test_create_and_process_erasure_request_redshift(
     db,
     cache,
     erasure_policy,
+    run_privacy_request_task,
 ):
     customer_email = redshift_resources["email"]
     data = {
@@ -1057,7 +1170,12 @@ def test_create_and_process_erasure_request_redshift(
     }
 
     # Should erase customer name
-    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
     pr.delete(db=db)
 
     connector = redshift_resources["connector"]
@@ -1082,7 +1200,12 @@ def test_create_and_process_erasure_request_redshift(
     target.save(db=db)
 
     # Should erase state fields on address table
-    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
     pr.delete(db=db)
 
     connector = redshift_resources["connector"]
@@ -1102,10 +1225,7 @@ def test_create_and_process_erasure_request_redshift(
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 def test_create_and_process_access_request_bigquery(
-    bigquery_resources,
-    db,
-    cache,
-    policy,
+    bigquery_resources, db, cache, policy, run_privacy_request_task
 ):
     customer_email = bigquery_resources["email"]
     customer_name = bigquery_resources["name"]
@@ -1114,7 +1234,12 @@ def test_create_and_process_access_request_bigquery(
         "policy_key": policy.key,
         "identity": {"email": customer_email},
     }
-    pr = get_privacy_request_results(db, policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
     results = pr.get_results()
     customer_table_key = (
         f"EN_{pr.id}__access_request__bigquery_example_test_dataset:customer"
@@ -1145,6 +1270,7 @@ def test_create_and_process_erasure_request_bigquery(
     db,
     cache,
     erasure_policy,
+    run_privacy_request_task,
 ):
     customer_email = bigquery_resources["email"]
     data = {
@@ -1154,7 +1280,12 @@ def test_create_and_process_erasure_request_bigquery(
     }
 
     # Should erase customer name
-    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
     pr.delete(db=db)
 
     bigquery_client = bigquery_resources["client"]
@@ -1192,23 +1323,20 @@ def test_create_and_process_erasure_request_bigquery(
             assert row.state is None
 
 
-class TestPrivacyRequestRunnerRunWebhooks:
+class TestRunPrivacyRequestRunsWebhooks:
     @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
     def test_run_webhooks_halt_received(
         self,
         mock_trigger_policy_webhook,
         db,
         privacy_request,
-        privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
         mock_trigger_policy_webhook.side_effect = PrivacyRequestPaused(
             "Request received to halt"
         )
 
-        proceed = privacy_request_runner.run_webhooks_and_report_status(
-            db, privacy_request, PolicyPreWebhook
-        )
+        proceed = run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert not proceed
         assert privacy_request.finished_processing_at is None
         assert privacy_request.status == PrivacyRequestStatus.paused
@@ -1219,7 +1347,6 @@ class TestPrivacyRequestRunnerRunWebhooks:
         mock_trigger_policy_webhook,
         db,
         privacy_request,
-        privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
         config.redis.DEFAULT_TTL_SECONDS = (
@@ -1229,9 +1356,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
             "Request received to halt"
         )
 
-        proceed = privacy_request_runner.run_webhooks_and_report_status(
-            db, privacy_request, PolicyPreWebhook
-        )
+        proceed = run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert not proceed
         time.sleep(3)
 
@@ -1246,16 +1371,13 @@ class TestPrivacyRequestRunnerRunWebhooks:
         mock_trigger_policy_webhook,
         db,
         privacy_request,
-        privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
         mock_trigger_policy_webhook.side_effect = ClientUnsuccessfulException(
             status_code=500
         )
 
-        proceed = privacy_request_runner.run_webhooks_and_report_status(
-            db, privacy_request, PolicyPreWebhook
-        )
+        proceed = run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert not proceed
         assert privacy_request.status == PrivacyRequestStatus.error
 
@@ -1265,16 +1387,13 @@ class TestPrivacyRequestRunnerRunWebhooks:
         mock_trigger_policy_webhook,
         db,
         privacy_request,
-        privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
         mock_trigger_policy_webhook.side_effect = ValidationError(
             errors={}, model=SecondPartyResponseFormat
         )
 
-        proceed = privacy_request_runner.run_webhooks_and_report_status(
-            db, privacy_request, PolicyPreWebhook
-        )
+        proceed = run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert not proceed
         assert privacy_request.finished_processing_at is not None
         assert privacy_request.status == PrivacyRequestStatus.error
@@ -1285,13 +1404,10 @@ class TestPrivacyRequestRunnerRunWebhooks:
         mock_trigger_policy_webhook,
         db,
         privacy_request,
-        privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
 
-        proceed = privacy_request_runner.run_webhooks_and_report_status(
-            db, privacy_request, PolicyPreWebhook
-        )
+        proceed = run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert proceed
         assert privacy_request.status == PrivacyRequestStatus.in_processing
         assert privacy_request.finished_processing_at is None
@@ -1303,11 +1419,10 @@ class TestPrivacyRequestRunnerRunWebhooks:
         mock_trigger_policy_webhook,
         db,
         privacy_request,
-        privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
         """Test running webhooks after specific webhook - for when we're resuming privacy request execution"""
-        proceed = privacy_request_runner.run_webhooks_and_report_status(
+        proceed = run_webhooks_and_report_status(
             db, privacy_request, PolicyPreWebhook, policy_pre_execution_webhooks[0].id
         )
         assert proceed
