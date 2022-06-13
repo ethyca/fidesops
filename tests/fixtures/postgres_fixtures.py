@@ -140,6 +140,7 @@ def connection_config(
             "connection_type": ConnectionType.postgres,
             "access": AccessLevel.write,
             "secrets": integration_secrets["postgres_example"],
+            "description": "Primary postgres connection",
         },
     )
     yield connection_config
@@ -158,6 +159,7 @@ def read_connection_config(
             "connection_type": ConnectionType.postgres,
             "access": AccessLevel.read,
             "secrets": integration_secrets["postgres_example"],
+            "description": "Read-only connection config",
         },
     )
     yield connection_config

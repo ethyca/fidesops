@@ -44,6 +44,8 @@ The connection between Fidesops and your database is represented by a _Connectio
 
 * `access` sets the connection's permissions, one of "read" (Fidesops may only read from your database) or "write" (Fidesops can read from and write to your database).
 
+* `description` is an extra field to add further details about your connection. 
+
 While the ConnectionConfig object contains meta information about the database, you'll notice that it doesn't actually identify the database itself. We'll get to that when we set the ConnectionConfig's "secrets".
 
 
@@ -130,7 +132,8 @@ PATCH api/v1/connection
     "name": "Manual connector",
     "key": "manual_connector",
     "connection_type": "manual",
-    "access": "read"
+    "access": "read",
+    "description": "Connector describing manual actions"
   }
 ]
 ``` 

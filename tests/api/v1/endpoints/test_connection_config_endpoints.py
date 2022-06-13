@@ -235,6 +235,7 @@ class TestPatchConnections:
                 "name": "Snowflake Warehouse",
                 "connection_type": "snowflake",
                 "access": "write",
+                "description": "Backup snowflake db",
             },
         ]
 
@@ -308,10 +309,12 @@ class TestPatchConnections:
         snowflake_connection = response_body["succeeded"][7]
         assert snowflake_connection["access"] == "write"
         assert snowflake_connection["updated_at"] is not None
+        assert snowflake_connection["description"] == "Backup snowflake db"
         snowflake_resource = (
             db.query(ConnectionConfig).filter_by(key="my_snowflake").first()
         )
         assert snowflake_resource.access.value == "write"
+        assert snowflake_resource.description == "Backup snowflake db"
         assert "secrets" not in snowflake_connection
 
         postgres_resource.delete(db)
@@ -357,12 +360,14 @@ class TestPatchConnections:
             "key": "postgres_db_1",
             "connection_type": "postgres",
             "access": "write",
+            "description": None,
         }
         assert response_body["failed"][1]["data"] == {
             "name": "My Mongo DB",
             "key": None,
             "connection_type": "mongodb",
             "access": "read",
+            "description": None,
         }
 
 
@@ -404,6 +409,7 @@ class TestGetConnections:
             "last_test_succeeded",
             "key",
             "created_at",
+            "description",
         }
 
         assert connection["key"] == "my_postgres_db_1"
@@ -415,6 +421,34 @@ class TestGetConnections:
         assert response_body["total"] == 1
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
+
+    def test_search_connections(
+        self,
+        connection_config,
+        read_connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+
+        resp = api_client.get(url + "?search=primary", headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 1
+        assert "primary" in resp.json()["items"][0]["description"].lower()
+
+        resp = api_client.get(url + "?search=read", headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 1
+        assert "read" in resp.json()["items"][0]["description"].lower()
+
+        resp = api_client.get(url + "?search=nonexistent", headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 0
+
+        resp = api_client.get(url + "?search=postgres", headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 2
 
 
 class TestGetConnection:
@@ -462,6 +496,7 @@ class TestGetConnection:
             "last_test_succeeded",
             "key",
             "created_at",
+            "description",
         }
 
         assert response_body["key"] == "my_postgres_db_1"
