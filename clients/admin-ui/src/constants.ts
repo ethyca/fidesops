@@ -49,7 +49,11 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
   },
 ];
 
+// API ROUTES
 export const INDEX_ROUTE = '/';
 export const LOGIN_ROUTE = '/login';
 export const USER_MANAGEMENT_ROUTE = '/user-management';
+export const CONNECTION_ROUTE = '/connection';
+
+// UI ROUTES
 export const DATASTORE_CONNECTION_ROUTE = '/datastore-connection';

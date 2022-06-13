@@ -30,7 +30,7 @@ import {
   setRequestStatus,
   setRequestTo,
 } from '../privacy-requests';
-import { DatastoreConnectionStatus } from './types';
+import { PrivacyRequestStatus } from '../privacy-requests/types';
 
 const useConstantFilters = () => {
   const filters = useSelector(selectPrivacyRequestFilters);
@@ -40,7 +40,7 @@ const useConstantFilters = () => {
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setRequestId(event.target.value));
   const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) =>
-    dispatch(setRequestStatus(event.target.value as DatastoreConnectionStatus));
+    dispatch(setRequestStatus(event.target.value as PrivacyRequestStatus));
   const handleFromChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setRequestFrom(event?.target.value));
   const handleToChange = (event: React.ChangeEvent<HTMLInputElement>) =>
@@ -77,7 +77,7 @@ const useConstantFilters = () => {
   };
 };
 
-const StatusOption: React.FC<{ status: DatastoreConnectionStatus }> = ({
+const StatusOption: React.FC<{ status: PrivacyRequestStatus }> = ({
   status,
 }) => <option value={status}>{statusPropMap[status].label}</option>;
 

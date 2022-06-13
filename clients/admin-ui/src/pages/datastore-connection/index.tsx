@@ -6,28 +6,35 @@ import React from 'react';
 import ProtectedRoute from '../../features/auth/ProtectedRoute';
 import NavBar from '../../features/common/NavBar';
 import ConnectionFilters from '../../features/datastore-connections/ConnectionFilters';
+import { useGetAllDatastoreConnectionsQuery } from '../../features/datastore-connections/datastore-connection.slice';
+import { temp } from '../../features/datastore-connections/types';
 
-const DatastoreConnections: NextPage = () => (
-  <ProtectedRoute>
-    <div>
-      <Head>
-        <title>Fides Admin UI - Datastore Connections</title>
-        <meta name="description" content="" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+const DatastoreConnections: NextPage = () => {
+  const { data, isSuccess } = useGetAllDatastoreConnectionsQuery(temp);
+  console.log(data);
+  return (
+    <ProtectedRoute>
+      <div>
+        <Head>
+          <title>Fides Admin UI - Datastore Connections</title>
+          <meta name="description" content="" />
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
 
-      <NavBar />
+        <NavBar />
 
-      <main>
-        <Box px={9} py={10}>
-          <Heading fontSize="2xl" fontWeight="semibold">
-            Datastore Connection Management
-          </Heading>
-          <ConnectionFilters />
-        </Box>
-      </main>
-    </div>
-  </ProtectedRoute>
-);
+        <main>
+          <Box px={9} py={10}>
+            <Heading fontSize="2xl" fontWeight="semibold">
+              Datastore Connection Management
+            </Heading>
+            <ConnectionFilters />
+            {isSuccess ? data!.size : null}
+          </Box>
+        </main>
+      </div>
+    </ProtectedRoute>
+  );
+};
 
 export default DatastoreConnections;

@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import React from 'react';
 
 import {
+  CONNECTION_ROUTE,
   DATASTORE_CONNECTION_ROUTE,
   INDEX_ROUTE,
   USER_MANAGEMENT_ROUTE,
@@ -18,16 +19,16 @@ const NavBar = () => {
     <>
       <Header />
       <Flex
-        borderBottom='1px'
-        borderTop='1px'
+        borderBottom="1px"
+        borderTop="1px"
         px={9}
         py={1}
-        borderColor='gray.100'
+        borderColor="gray.100"
       >
         <NextLink href={INDEX_ROUTE} passHref>
           <Button
-            as='a'
-            variant='ghost'
+            as="a"
+            variant="ghost"
             mr={4}
             colorScheme={
               router && router.pathname === INDEX_ROUTE
@@ -41,8 +42,8 @@ const NavBar = () => {
 
         <NextLink href={DATASTORE_CONNECTION_ROUTE} passHref>
           <Button
-            as='a'
-            variant='ghost'
+            as="a"
+            variant="ghost"
             mr={4}
             colorScheme={
               router && router.pathname.startsWith(DATASTORE_CONNECTION_ROUTE)
@@ -56,8 +57,8 @@ const NavBar = () => {
 
         <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
           <Button
-            as='a'
-            variant='ghost'
+            as="a"
+            variant="ghost"
             mr={4}
             colorScheme={
               router && router.pathname.startsWith(USER_MANAGEMENT_ROUTE)
@@ -69,10 +70,10 @@ const NavBar = () => {
           </Button>
         </NextLink>
 
-        <NextLink href='#' passHref>
+        <NextLink href="#" passHref>
           <Button
-            as='a'
-            variant='ghost'
+            as="a"
+            variant="ghost"
             disabled
             rightIcon={<ArrowDownLineIcon />}
           >
