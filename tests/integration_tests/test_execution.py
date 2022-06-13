@@ -57,19 +57,19 @@ def mongo_postgres_dataset_graph(
 
 @pytest.mark.integration
 class TestDeleteCollection:
+    @pytest.mark.usefixtures(
+        "postgres_integration_db", "postgres_example_test_dataset_config_read_access"
+    )
     def test_delete_collection_before_new_request(
         self,
         db,
         policy,
         cache,
-        postgres_example_test_dataset_config_read_access,
         read_connection_config,
-        postgres_integration_db,
     ) -> None:
         """Delete the connection config before execution starts which also
         deletes its dataset config. The graph is built with nothing in it, and no results are returned.
         """
-        read_connection_config.delete(db)
 
         customer_email = "customer-1@example.com"
         data = {
@@ -79,7 +79,10 @@ class TestDeleteCollection:
         }
 
         pr = get_privacy_request_results(db, policy, cache, data)
+        assert pr.get_results() != {}
 
+        read_connection_config.delete(db)
+        pr = get_privacy_request_results(db, policy, cache, data)
         assert pr.get_results() == {}
 
     @mock.patch("fidesops.task.graph_task.GraphTask.log_start")
@@ -214,6 +217,7 @@ class TestDeleteCollection:
 
         integration_mongodb_config.delete(db)
 
+        # Just rebuilding a graph without the deleted config.
         dataset_postgres = FidesopsDataset(**example_datasets[0])
         graph = convert_dataset_to_graph(
             dataset_postgres, integration_postgres_config.key
@@ -259,6 +263,33 @@ class TestDeleteCollection:
         assert all(
             [dataset.startswith("postgres_example") for dataset in results]
         ), "No mongo results"
+
+    @pytest.mark.usefixtures(
+        "postgres_integration_db", "postgres_example_test_dataset_config_read_access"
+    )
+    def test_delete_connection_config_on_completed_request(
+        self,
+        db,
+        policy,
+        cache,
+        read_connection_config,
+    ) -> None:
+        """Delete the connection config on a completed request leaves execution logs untouched"""
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(db, policy, cache, data)
+        assert pr.get_results() != {}
+        logs = get_sorted_execution_logs(db, pr)
+        assert len(logs) == 22
+
+        read_connection_config.delete(db)
+        logs = get_sorted_execution_logs(db, pr)
+        assert len(logs) == 22
 
 
 @pytest.mark.integration
@@ -490,6 +521,34 @@ class TestSkipDisabledCollection:
         assert all(
             [dataset.startswith("postgres_example") for dataset in results]
         ), "No mongo results"
+
+    @pytest.mark.usefixtures(
+        "postgres_integration_db", "postgres_example_test_dataset_config_read_access"
+    )
+    def test_disable_connection_config_on_completed_request(
+        self,
+        db,
+        policy,
+        cache,
+        read_connection_config,
+    ) -> None:
+        """Disabling the connection config on a completed request leaves execution logs untouched"""
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(db, policy, cache, data)
+        assert pr.get_results() != {}
+        logs = get_sorted_execution_logs(db, pr)
+        assert len(logs) == 22
+
+        read_connection_config.disabled = True
+        read_connection_config.save(db)
+        logs = get_sorted_execution_logs(db, pr)
+        assert len(logs) == 22
 
 
 @pytest.mark.integration
