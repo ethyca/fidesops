@@ -86,7 +86,7 @@ def retry(
                 except CollectionDisabled as exc:
                     logger.warning(
                         f"Skipping disabled collection {self.traversal_node.address} "
-                        f"for privacy_request: {self.resources.request}"
+                        f"for privacy_request: {self.resources.request.id}"
                     )
                     self.log_skipped(action_type, exc)
                     return default_return
