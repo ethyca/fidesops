@@ -4,13 +4,13 @@ import string
 from datetime import datetime, timedelta
 from uuid import uuid4
 
+from fideslib.models.client import ClientDetail
+from fideslib.models.fides_user import FidesUser
 from sqlalchemy import orm
 
 from fidesops.core.config import config
 from fidesops.db.database import init_db
 from fidesops.db.session import get_db_session
-from fidesops.models.client import ClientDetail
-from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.models.storage import ResponseFormat, StorageConfig
@@ -91,7 +91,7 @@ def _create_policy(
     return policy
 
 
-def create_test_data(db: orm.Session) -> FidesopsUser:
+def create_test_data(db: orm.Session) -> FidesUser:
     """Script to create test data for the Admin UI"""
     print("Seeding database with privacy requests")
     _, client = ClientDetail.get_or_create(

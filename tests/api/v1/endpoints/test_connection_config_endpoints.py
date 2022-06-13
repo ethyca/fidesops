@@ -6,6 +6,7 @@ from unittest.mock import Mock
 import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
+from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
@@ -16,7 +17,6 @@ from fidesops.api.v1.scope_registry import (
     STORAGE_DELETE,
 )
 from fidesops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
-from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 
 page_size = Params().size

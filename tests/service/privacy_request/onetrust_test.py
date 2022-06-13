@@ -2,6 +2,7 @@ from unittest import mock
 from unittest.mock import Mock, call
 
 import pytest
+from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import (
@@ -9,7 +10,6 @@ from fidesops.common_exceptions import (
     PolicyNotFoundException,
     StorageConfigNotFoundException,
 )
-from fidesops.models.client import ClientDetail
 from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.models.storage import StorageConfig

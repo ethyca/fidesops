@@ -4,6 +4,8 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
+from fideslib.models.client import ClientDetail
+from fideslib.models.fides_user import FidesUser
 from jose import jwe
 from jose.constants import ALGORITHMS
 from pydantic import ValidationError
@@ -14,8 +16,6 @@ from fidesops.api import deps
 from fidesops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fidesops.common_exceptions import AuthenticationFailure, AuthorizationError
 from fidesops.core.config import config
-from fidesops.models.client import ClientDetail
-from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.policy import PolicyPreWebhook
 from fidesops.schemas.external_https import WebhookJWE
 from fidesops.schemas.jwt import (
@@ -80,7 +80,7 @@ async def get_current_user(
     security_scopes: SecurityScopes,
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(deps.get_db),
-) -> FidesopsUser:
+) -> FidesUser:
     """A wrapper around verify_oauth_client that returns that client's user if one exsits."""
     client = await verify_oauth_client(
         security_scopes=security_scopes,

@@ -4,6 +4,7 @@ import enum
 from datetime import datetime
 from typing import Optional
 
+from fideslib.db.base import Base
 from sqlalchemy import Boolean, Column, DateTime, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
@@ -14,7 +15,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fidesops.core.config import config
-from fidesops.db.base_class import Base, JSONTypeOverride
+from fidesops.db.base_class import JSONTypeOverride
 from fidesops.schemas.saas.saas_config import SaaSConfig
 
 

@@ -322,4 +322,4 @@ class JSONTypeOverride(JSONType):  # pylint: disable=W0223
         return value
 
 
-Base = declarative_base(cls=OrmWrappedFidesopsBase)
+# Base = declarative_base(cls=OrmWrappedFidesopsBase)

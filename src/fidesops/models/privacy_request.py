@@ -5,6 +5,10 @@ from datetime import datetime
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional
 
+from fideslib.db.base import Base
+from fideslib.models.audit_log import AuditLog
+from fideslib.models.client import ClientDetail
+from fideslib.models.fides_user import FidesUser
 from pydantic import root_validator
 from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as EnumColumn
@@ -15,11 +19,8 @@ from sqlalchemy.orm import Session, backref, relationship
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.common_exceptions import PrivacyRequestPaused
-from fidesops.db.base_class import Base, FidesopsBase
+from fidesops.db.base_class import FidesopsBase
 from fidesops.graph.config import CollectionAddress
-from fidesops.models.audit_log import AuditLog
-from fidesops.models.client import ClientDetail
-from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.policy import (
     ActionType,
     PausedStep,
@@ -134,7 +135,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     # Who approved/denied the request
     reviewed_by = Column(
         String,
-        ForeignKey(FidesopsUser.id_field_path, ondelete="SET NULL"),
+        ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
         nullable=True,
     )
     client_id = Column(
@@ -177,7 +178,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     )
 
     reviewer = relationship(
-        FidesopsUser, backref=backref("privacy_request", passive_deletes=True)
+        FidesUser, backref=backref("privacy_request", passive_deletes=True)
     )
     paused_at = Column(DateTime(timezone=True), nullable=True)
 

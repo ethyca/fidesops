@@ -4,6 +4,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from fideslang import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
+from fideslib.db.base import Base
+from fideslib.models.client import ClientDetail
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
@@ -17,8 +19,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fidesops import common_exceptions
 from fidesops.common_exceptions import WebhookOrderException
 from fidesops.core.config import config
-from fidesops.db.base_class import Base, FidesopsBase, JSONTypeOverride
-from fidesops.models.client import ClientDetail
+from fidesops.db.base_class import FidesopsBase, JSONTypeOverride
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.shared_schemas import FidesOpsKey

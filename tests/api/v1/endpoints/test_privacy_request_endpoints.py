@@ -10,6 +10,8 @@ import pytest
 from dateutil.parser import parse
 from fastapi import HTTPException, status
 from fastapi_pagination import Params
+from fideslib.models.audit_log import AuditLog
+from fideslib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.endpoints.privacy_request_endpoints import (
@@ -38,8 +40,6 @@ from fidesops.api.v1.urn_registry import (
 from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
-from fidesops.models.audit_log import AuditLog
-from fidesops.models.client import ClientDetail
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import ActionType, PausedStep
 from fidesops.models.privacy_request import (

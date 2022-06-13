@@ -11,6 +11,8 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslib.models.audit_log import AuditLog, AuditLogAction
+from fideslib.models.client import ClientDetail
 from pydantic import conlist
 from sqlalchemy.orm import Query, Session
 from starlette.responses import StreamingResponse
@@ -45,8 +47,6 @@ from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph, Node
 from fidesops.graph.traversal import Traversal
-from fidesops.models.audit_log import AuditLog, AuditLogAction
-from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import PausedStep, Policy, PolicyPreWebhook

@@ -4,6 +4,7 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
+from fideslib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.scope_registry import (
@@ -26,7 +27,6 @@ from fidesops.api.v1.urn_registry import (
 )
 from fidesops.common_exceptions import OAuth2TokenException
 from fidesops.models.authentication_request import AuthenticationRequest
-from fidesops.models.client import ClientDetail
 from fidesops.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,

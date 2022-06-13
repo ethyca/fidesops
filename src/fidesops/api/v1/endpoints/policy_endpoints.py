@@ -5,6 +5,7 @@ from fastapi import APIRouter, Body, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslib.models.client import ClientDetail
 from pydantic import conlist
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -22,7 +23,6 @@ from fidesops.common_exceptions import (
     RuleTargetValidationError,
     RuleValidationError,
 )
-from fidesops.models.client import ClientDetail
 from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas import policy as schemas

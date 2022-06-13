@@ -1,4 +1,5 @@
 import pytest
+from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import (
@@ -6,7 +7,6 @@ from fidesops.common_exceptions import (
     PolicyValidationError,
     RuleValidationError,
 )
-from fidesops.models.client import ClientDetail
 from fidesops.models.policy import (
     ActionType,
     Policy,

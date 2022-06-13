@@ -1,8 +1,8 @@
+from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 
 from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.core.config import config
-from fidesops.models.client import ClientDetail
 from fidesops.util.cryptographic_util import hash_with_salt
 
 

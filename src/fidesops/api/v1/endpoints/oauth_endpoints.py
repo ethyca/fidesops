@@ -3,6 +3,7 @@ from typing import List
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, Security
 from fastapi.security import HTTPBasic
+from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
@@ -37,7 +38,6 @@ from fidesops.common_exceptions import (
     OAuth2TokenException,
 )
 from fidesops.models.authentication_request import AuthenticationRequest
-from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.client import ClientCreatedResponse
 from fidesops.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm

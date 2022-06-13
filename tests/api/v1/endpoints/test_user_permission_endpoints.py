@@ -1,6 +1,9 @@
 import json
 
 import pytest
+from fideslib.models.client import ClientDetail
+from fideslib.models.fides_user import FidesUser
+from fideslib.models.fides_user_permissions import FidesUserPermissions
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -18,9 +21,6 @@ from fidesops.api.v1.scope_registry import (
     USER_PERMISSION_UPDATE,
 )
 from fidesops.api.v1.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
-from fidesops.models.client import ClientDetail
-from fidesops.models.fidesops_user import FidesopsUser
-from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 
 
 class TestCreateUserPermissions:
@@ -48,7 +48,7 @@ class TestCreateUserPermissions:
         url,
     ) -> None:
         auth_header = generate_auth_header([USER_PERMISSION_CREATE])
-        user = FidesopsUser.create(
+        user = FidesUser.create(
             db=db,
             data={"username": "user_1", "password": "test_password"},
         )
@@ -68,7 +68,7 @@ class TestCreateUserPermissions:
         response = api_client.post(
             f"{V1_URL_PREFIX}/user/{user_id}/permission", headers=auth_header, json=body
         )
-        permissions = FidesopsUserPermissions.get_by(db, field="user_id", value=user_id)
+        permissions = FidesUserPermissions.get_by(db, field="user_id", value=user_id)
         assert HTTP_404_NOT_FOUND == response.status_code
         assert permissions is None
 
@@ -76,7 +76,7 @@ class TestCreateUserPermissions:
         self, db, api_client, generate_auth_header
     ) -> None:
         auth_header = generate_auth_header([USER_PERMISSION_CREATE])
-        user = FidesopsUser.create(
+        user = FidesUser.create(
             db=db,
             data={"username": "user_1", "password": "test_password"},
         )
@@ -85,7 +85,7 @@ class TestCreateUserPermissions:
         response = api_client.post(
             f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
         )
-        permissions = FidesopsUserPermissions.get_by(db, field="user_id", value=user.id)
+        permissions = FidesUserPermissions.get_by(db, field="user_id", value=user.id)
         response_body = json.loads(response.text)
         assert HTTP_201_CREATED == response.status_code
         assert response_body["id"] == permissions.id
@@ -128,12 +128,12 @@ class TestEditUserPermissions:
     ) -> None:
         auth_header = generate_auth_header([USER_PERMISSION_UPDATE])
         invalid_user_id = "bogus_user_id"
-        user = FidesopsUser.create(
+        user = FidesUser.create(
             db=db,
             data={"username": "user_1", "password": "test_password"},
         )
 
-        permissions = FidesopsUserPermissions.create(
+        permissions = FidesUserPermissions.create(
             db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
         )
         body = {"id": permissions.id, "scopes": [PRIVACY_REQUEST_READ]}
@@ -142,7 +142,7 @@ class TestEditUserPermissions:
             headers=auth_header,
             json=body,
         )
-        permissions = FidesopsUserPermissions.get_by(
+        permissions = FidesUserPermissions.get_by(
             db, field="user_id", value=invalid_user_id
         )
         assert HTTP_404_NOT_FOUND == response.status_code
@@ -151,12 +151,12 @@ class TestEditUserPermissions:
 
     def test_edit_user_permissions(self, db, api_client, generate_auth_header) -> None:
         auth_header = generate_auth_header([USER_PERMISSION_UPDATE])
-        user = FidesopsUser.create(
+        user = FidesUser.create(
             db=db,
             data={"username": "user_1", "password": "test_password"},
         )
 
-        permissions = FidesopsUserPermissions.create(
+        permissions = FidesUserPermissions.create(
             db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
         )
 
@@ -200,12 +200,12 @@ class TestGetUserPermissions:
     ) -> None:
         auth_header = generate_auth_header([USER_PERMISSION_READ])
         invalid_user_id = "bogus_user_id"
-        user = FidesopsUser.create(
+        user = FidesUser.create(
             db=db,
             data={"username": "user_1", "password": "test_password"},
         )
 
-        permissions = FidesopsUserPermissions.create(
+        permissions = FidesUserPermissions.create(
             db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
         )
         body = {"id": permissions.id, "scopes": [PRIVACY_REQUEST_READ]}
@@ -214,7 +214,7 @@ class TestGetUserPermissions:
             headers=auth_header,
             json=body,
         )
-        permissions = FidesopsUserPermissions.get_by(
+        permissions = FidesUserPermissions.get_by(
             db, field="user_id", value=invalid_user_id
         )
         assert HTTP_404_NOT_FOUND == response.status_code
@@ -223,11 +223,11 @@ class TestGetUserPermissions:
 
     def test_get_user_permissions(self, db, api_client, generate_auth_header) -> None:
         auth_header = generate_auth_header([USER_PERMISSION_READ])
-        user = FidesopsUser.create(
+        user = FidesUser.create(
             db=db,
             data={"username": "user_1", "password": "test_password"},
         )
-        permissions = FidesopsUserPermissions.create(
+        permissions = FidesUserPermissions.create(
             db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
         )
 

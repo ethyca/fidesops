@@ -2,6 +2,7 @@ import json
 from uuid import uuid4
 
 import pytest
+from fideslib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
 from fidesops.api.v1 import scope_registry as scopes
@@ -14,7 +15,6 @@ from fidesops.api.v1.urn_registry import (
     RULE_TARGET_LIST,
     V1_URL_PREFIX,
 )
-from fidesops.models.client import ClientDetail
 from fidesops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fidesops.service.masking.strategy.masking_strategy_nullify import (
     NULL_REWRITE_STRATEGY_NAME,

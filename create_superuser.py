@@ -3,6 +3,9 @@
 import getpass
 from typing import List
 
+from fideslib.models.client import ClientDetail
+from fideslib.models.fides_user import FidesUser
+from fideslib.models.fides_user_permissions import FidesUserPermissions
 from sqlalchemy.orm import Session
 
 from fidesops.api.v1.scope_registry import CLIENT_CREATE, SCOPE_REGISTRY
@@ -10,9 +13,7 @@ from fidesops.common_exceptions import KeyOrNameAlreadyExists
 from fidesops.core.config import config
 from fidesops.db.database import init_db
 from fidesops.db.session import get_db_session
-from fidesops.models.client import ADMIN_UI_ROOT, ClientDetail
-from fidesops.models.fidesops_user import FidesopsUser
-from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
+from fidesops.models.client import ADMIN_UI_ROOT
 from fidesops.schemas.user import UserCreate
 
 
@@ -56,7 +57,7 @@ def collect_username_and_password(db: Session) -> UserCreate:
         first_name=first_name,
         last_name=last_name,
     )
-    user = FidesopsUser.get_by(db, field="username", value=user_data.username)
+    user = FidesUser.get_by(db, field="username", value=user_data.username)
 
     if user:
         raise Exception(f"User with username '{username}' already exists.")
@@ -64,14 +65,14 @@ def collect_username_and_password(db: Session) -> UserCreate:
     return user_data
 
 
-def create_user_and_client(db: Session) -> FidesopsUser:
+def create_user_and_client(db: Session) -> FidesUser:
     """One-time script to create the first user for the Admin UI"""
     if db.query(ClientDetail).filter_by(fides_key=ADMIN_UI_ROOT).first():
         raise KeyOrNameAlreadyExists("Admin UI Client already created.")
 
     user_data: UserCreate = collect_username_and_password(db)
 
-    superuser = FidesopsUser.create(db=db, data=user_data.dict())
+    superuser = FidesUser.create(db=db, data=user_data.dict())
 
     scopes: List[str] = SCOPE_REGISTRY
     scopes.remove(CLIENT_CREATE)
@@ -80,9 +81,7 @@ def create_user_and_client(db: Session) -> FidesopsUser:
         db, scopes, fides_key=ADMIN_UI_ROOT, user_id=superuser.id
     )
 
-    FidesopsUserPermissions.create(
-        db=db, data={"user_id": superuser.id, "scopes": scopes}
-    )
+    FidesUserPermissions.create(db=db, data={"user_id": superuser.id, "scopes": scopes})
     print(f"Superuser '{user_data.username}' created successfully!")
     return superuser
 

@@ -1,10 +1,9 @@
 from enum import Enum as EnumType
 
+from fideslib.db.base_class import Base
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import String
-
-from fidesops.db.base_class import Base
 
 
 class AuditLogAction(str, EnumType):
@@ -14,14 +13,14 @@ class AuditLogAction(str, EnumType):
     denied = "denied"
 
 
-class AuditLog(Base):
-    """The log of all user actions within the system"""
-
-    user_id = Column(String, nullable=True, index=True)
-    privacy_request_id = Column(String, nullable=True, index=True)
-    action = Column(
-        EnumColumn(AuditLogAction),
-        index=True,
-        nullable=False,
-    )
-    message = Column(String, nullable=True)
+# class AuditLog(Base):
+#    """The log of all user actions within the system"""
+#
+#    user_id = Column(String, nullable=True, index=True)
+#    privacy_request_id = Column(String, nullable=True, index=True)
+#    action = Column(
+#        EnumColumn(AuditLogAction),
+#        index=True,
+#        nullable=False,
+#    )
+#    message = Column(String, nullable=True)
