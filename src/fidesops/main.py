@@ -43,9 +43,9 @@ if config.security.CORS_ORIGINS:
 
 @app.middleware("http")
 async def dispatch_log_request(request: Request, call_next: Callable) -> Response:
-    fides_source: Optional[str] = request.headers.get("X-Fides-Source")  # fixme: admin-ui not sending source
+    fides_source: Optional[str] = request.headers.get("X-Fides-Source")
     now: datetime = datetime.now(tz=timezone.utc)
-    endpoint = f"{request.method.capitalize()}: {request.url}"
+    endpoint = f"{request.method}: {request.url.path}"
 
     try:
         response = await call_next(request)
@@ -69,9 +69,7 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
         return response
     except Exception as e:
         logger.warning("exception caught")
-        response.background = BackgroundTask(prepare_and_log_request,
-                                             endpoint, e.args[0], now, fides_source, e.__class__.__name__
-                                             )
+        prepare_and_log_request(endpoint, e.args[0], now, fides_source, e.__class__.__name__)
         raise
 
 

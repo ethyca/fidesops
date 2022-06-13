@@ -23,7 +23,7 @@ export default NextAuth({
               username: credentials!.email,
               password: credentials!.password,
             }),
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-Fides-Source': 'fidesops-admin-ui' },
           });
         } catch (error) {
           throw new Error('Failed to authenticate');
