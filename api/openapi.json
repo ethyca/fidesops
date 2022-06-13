@@ -4823,6 +4823,11 @@
             "type": "string",
             "format": "date-time"
           },
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
+          },
           "last_test_timestamp": {
             "title": "Last Test Timestamp",
             "type": "string",
@@ -4929,6 +4934,11 @@
           },
           "access": {
             "$ref": "#/components/schemas/AccessLevel"
+          },
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -5235,7 +5245,8 @@
           "complete",
           "error",
           "paused",
-          "retrying"
+          "retrying",
+          "skipped"
         ],
         "description": "Enum for execution log statuses, reflecting where they are in their workflow"
       },

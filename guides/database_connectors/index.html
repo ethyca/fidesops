@@ -1658,6 +1658,9 @@ categories.</p>
 <li>
 <p><code>access</code> sets the connection's permissions, one of "read" (Fidesops may only read from your database) or "write" (Fidesops can read from and write to your database).</p>
 </li>
+<li>
+<p><code>disabled</code> determines whether the ConnectionConfig is active.  If True, we skip running queries for any collection associated with that ConnectionConfig.</p>
+</li>
 </ul>
 <p>While the ConnectionConfig object contains meta information about the database, you'll notice that it doesn't actually identify the database itself. We'll get to that when we set the ConnectionConfig's "secrets".</p>
 <h4 id="example-1-postgresql-connectionconfig">Example 1: PostgreSQL ConnectionConfig</h4>
@@ -1691,90 +1694,100 @@ categories.</p>
 <span class="normal"> 7</span>
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection
 
 [
   { 
     &quot;name&quot;: &quot;My Mongo DB&quot;,
     &quot;key&quot;: &quot;my_mongo_db&quot;,
     &quot;connection_type&quot;: &quot;mongodb&quot;,
-    &quot;access&quot;: &quot;write&quot;
+    &quot;access&quot;: &quot;write&quot;,
+    &quot;disabled&quot;: false
   }
 ]
 </code></pre></div></td></tr></table></div>
 <h4 id="example-3-mysql-connectionconfig">Example 3: MySQL ConnectionConfig</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection 
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection 
 [
   { 
     &quot;name&quot;: &quot;My MySQL DB&quot;,
     &quot;key&quot;: &quot;my_mysql_db&quot;,
     &quot;connection_type&quot;: &quot;mysql&quot;,
-    &quot;access&quot;: &quot;write&quot;
+    &quot;access&quot;: &quot;write&quot;,
+    &quot;disabled&quot;: false
   }
 ]
 </code></pre></div></td></tr></table></div>
 <h4 id="example-4-mariadb-connectionconfig">Example 4: MariaDB ConnectionConfig</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection 
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection 
 [
   { 
     &quot;name&quot;: &quot;My Maria DB&quot;,
     &quot;key&quot;: &quot;my_maria_db&quot;,
     &quot;connection_type&quot;: &quot;mariadb&quot;,
-    &quot;access&quot;: &quot;write&quot;
+    &quot;access&quot;: &quot;write&quot;,
+    &quot;disabled&quot;: false
   }
 ]
 </code></pre></div></td></tr></table></div>
 <h4 id="example-5-mssql-connectionconfig">Example 5: MsSQL ConnectionConfig</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection 
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection 
 [
   { 
     &quot;name&quot;: &quot;My MsSQL DB&quot;,
     &quot;key&quot;: &quot;my_mssql_db&quot;,
     &quot;connection_type&quot;: &quot;mssql&quot;,
-    &quot;access&quot;: &quot;write&quot;
+    &quot;access&quot;: &quot;write&quot;,
+    &quot;disabled&quot;: false
   }
 ]
 </code></pre></div></td></tr></table></div>
 <h4 id="example-6-manual-connectionconfig">Example 6: Manual ConnectionConfig</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection 
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection 
 [
   {
     &quot;name&quot;: &quot;Manual connector&quot;,
     &quot;key&quot;: &quot;manual_connector&quot;,
     &quot;connection_type&quot;: &quot;manual&quot;,
-    &quot;access&quot;: &quot;read&quot;
+    &quot;access&quot;: &quot;read&quot;,
+    &quot;disabled&quot;: false
   }
 ]
 </code></pre></div></td></tr></table></div>
