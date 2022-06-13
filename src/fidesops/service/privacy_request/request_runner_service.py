@@ -123,7 +123,6 @@ def upload_access_results(
 
 @celery_app.task(bind=True)
 def run_privacy_request(
-    self,  # Required to introspect the task object within the scope of this task
     privacy_request_id: str,
     from_webhook_id: Optional[str] = None,
     from_step: Optional[str] = None,
