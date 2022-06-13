@@ -84,6 +84,7 @@ def test_outreach_access_request_task(
     }
 
 
+@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_outreach
 def test_outreach_erasure_request_task(
