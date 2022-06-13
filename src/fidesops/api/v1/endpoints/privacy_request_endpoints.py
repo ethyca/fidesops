@@ -69,9 +69,7 @@ from fidesops.schemas.privacy_request import (
     RowCountRequest,
     StoppedCollection,
 )
-from fidesops.service.privacy_request.request_runner_service import (
-    run_privacy_request,
-)
+from fidesops.service.privacy_request.request_runner_service import run_privacy_request
 from fidesops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,

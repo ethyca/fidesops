@@ -31,9 +31,7 @@ from fidesops.service.outbound_urn_registry import (
     ONETRUST_GET_SUBTASKS_BY_REF_ID,
     ONETRUST_PUT_SUBTASK_STATUS,
 )
-from fidesops.service.privacy_request.request_runner_service import (
-    run_privacy_request,
-)
+from fidesops.service.privacy_request.request_runner_service import run_privacy_request
 from fidesops.util.cache import get_cache
 from fidesops.util.storage_authenticator import get_onetrust_access_token
 

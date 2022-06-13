@@ -44,7 +44,6 @@ from fidesops.service.privacy_request.request_runner_service import (
 )
 from fidesops.util.data_category import DataCategory
 
-
 PRIVACY_REQUEST_TASK_TIMEOUT = 2
 
 

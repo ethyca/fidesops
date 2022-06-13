@@ -28,9 +28,7 @@ from fidesops.schemas.drp_privacy_request import (
 from fidesops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
-from fidesops.service.privacy_request.request_runner_service import (
-    run_privacy_request,
-)
+from fidesops.service.privacy_request.request_runner_service import run_privacy_request
 from fidesops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
