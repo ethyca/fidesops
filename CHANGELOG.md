@@ -28,6 +28,8 @@ The types of changes are:
 * Build and deploy Admin UI from webserver [#625](https://github.com/ethyca/fidesops/pull/625)
 * Allow disabling a ConnectionConfig [#637](https://github.com/ethyca/fidesops/pull/637)
 * Erasure support for Outreach connector [#619](https://github.com/ethyca/fidesops/pull/619)
+* Adds searching of ConnectionConfigs [#641](https://github.com/ethyca/fidesops/pull/641)
+* Added `AdminUiSettings` to the `log_all_config_values` helper method [#647](https://github.com/ethyca/fidesops/pull/647)
 * Adds Fideslog integration [#541](https://github.com/ethyca/fidesops/pull/541)
 * Adds endpoint analytics events [#622](https://github.com/ethyca/fidesops/pull/622)
 
