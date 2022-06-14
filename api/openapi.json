@@ -41,9 +41,18 @@
           "Connections"
         ],
         "summary": "Get Connections",
-        "description": "Returns all connection configurations in the database.",
+        "description": "Returns all connection configurations in the database.\nOptionally filter the key, name, and description with a search query param",
         "operationId": "get_connections_api_v1_connection_get",
         "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Search",
+              "type": "string"
+            },
+            "name": "search",
+            "in": "query"
+          },
           {
             "required": false,
             "schema": {
@@ -4807,6 +4816,10 @@
             "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
           "connection_type": {
             "$ref": "#/components/schemas/ConnectionType"
           },
@@ -4943,6 +4956,10 @@
             "title": "Disabled",
             "type": "boolean",
             "default": false
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
           }
         },
         "additionalProperties": false,

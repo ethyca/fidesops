@@ -637,6 +637,26 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#searching-connectionconfigs" class="md-nav__link">
+    Searching ConnectionConfigs
+  </a>
+  
+    <nav class="md-nav" aria-label="Searching ConnectionConfigs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1" class="md-nav__link">
+    Example 1
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-do-connectionconfigs-differ-from-datasets" class="md-nav__link">
     How do ConnectionConfigs differ from Datasets?
   </a>
@@ -1596,6 +1616,26 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#searching-connectionconfigs" class="md-nav__link">
+    Searching ConnectionConfigs
+  </a>
+  
+    <nav class="md-nav" aria-label="Searching ConnectionConfigs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1" class="md-nav__link">
+    Example 1
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-do-connectionconfigs-differ-from-datasets" class="md-nav__link">
     How do ConnectionConfigs differ from Datasets?
   </a>
@@ -1624,6 +1664,7 @@
 <li>How do you create a ConnectionConfig object?</li>
 <li>How do you identify the database that a ConnectionConfig connects to?</li>
 <li>How do you test and update a ConnectionConfig's Secrets?</li>
+<li>How do you search your ConnectionConfigs?</li>
 <li>How does a ConnectionConfig differ from a Dataset?</li>
 </ul>
 <p>Take me directly to the <a href="/fidesops/api#operations-tag-Connections">ConnectionConfig API documentation</a>.</p>
@@ -1660,6 +1701,9 @@ categories.</p>
 </li>
 <li>
 <p><code>disabled</code> determines whether the ConnectionConfig is active.  If True, we skip running queries for any collection associated with that ConnectionConfig.</p>
+</li>
+<li>
+<p><code>description</code> is an extra field to add further details about your connection. </p>
 </li>
 </ul>
 <p>While the ConnectionConfig object contains meta information about the database, you'll notice that it doesn't actually identify the database itself. We'll get to that when we set the ConnectionConfig's "secrets".</p>
@@ -1780,14 +1824,16 @@ categories.</p>
 <span class="normal"> 7</span>
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection 
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection 
 [
   {
     &quot;name&quot;: &quot;Manual connector&quot;,
     &quot;key&quot;: &quot;manual_connector&quot;,
     &quot;connection_type&quot;: &quot;manual&quot;,
     &quot;access&quot;: &quot;read&quot;,
-    &quot;disabled&quot;: false
+    &quot;disabled&quot;: false,
+    &quot;description&quot;: &quot;Connector describing manual actions&quot;
   }
 ]
 </code></pre></div></td></tr></table></div>
@@ -1924,6 +1970,45 @@ you should adjust the ConnectionConfig Secrets properties through additional cal
 <span class="w">    </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Example of a dataset containing a variety of related tables like customers, products, addresses, etc.&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;collections&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]</span><span class="w"></span>
 <span class="p">}]</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
+<h2 id="searching-connectionconfigs">Searching ConnectionConfigs</h2>
+<p>You can search the <code>name</code>, <code>key</code>, and <code>description</code> fields of your ConnectionConfigs with the <code>search</code> query parameter.</p>
+<h3 id="example-1">Example 1</h3>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>GET /api/v1/connection/?search=application mysql</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;items&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Application MySQL DB&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;app_mysql_db&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My Backup MySQL DB&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;connection_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mysql&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;access&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;read&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2022-06-13T18:03:28.404091+00:00&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2022-06-13T18:03:28.404091+00:00&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;last_test_timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;last_test_succeeded&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">],</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;total&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;page&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 <h2 id="how-do-connectionconfigs-differ-from-datasets">How do ConnectionConfigs differ from Datasets?</h2>
 <p>A Dataset is an annotation of your database schema; it describes the PII category (or Data Categories) for each field that the database contains. A ConnectionConfig holds the secrets to connect to the database. Each Dataset has a foreign key to a ConnectionConfig.</p>
