@@ -1,4 +1,4 @@
-import { Grid, Spinner } from '@fidesui/react';
+import { SimpleGrid, Spinner } from '@fidesui/react';
 
 import ConnectionGridItem from './ConnectionGridItem';
 import { useGetAllDatastoreConnectionsQuery } from './datastore-connection.slice';
@@ -14,12 +14,26 @@ const ConnectionGrid: React.FC = () => {
     return <Spinner />;
   }
 
-  const test = <ConnectionGridItem data={data!.items[0]} />;
-  const gridItems = [test, test, test, test, test];
-  // const gridItems = data!.items.map((d) => (
-  //   <ConnectionGridItem key={d.key} data={d} />
-  // ));
-  return <Grid templateColumns="repeat(3, 1fr)">{gridItems}</Grid>;
+  const test = [
+    data!.items[0],
+    data!.items[0],
+    data!.items[0],
+    data!.items[0],
+    data!.items[0],
+    data!.items[0],
+    data!.items[0],
+    data!.items[0],
+    data!.items[0],
+    data!.items[0],
+  ];
+  const gridItems = test.map((d, idx) => (
+    <ConnectionGridItem key={d.key + idx} data={d} />
+  ));
+  return (
+    <SimpleGrid minChildWidth={400} columns={3} spacing={0}>
+      {gridItems}
+    </SimpleGrid>
+  );
 };
 
 export default ConnectionGrid;
