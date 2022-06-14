@@ -4,7 +4,8 @@
 
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import {AppState} from "../../app/store";
+import {RootState} from "../../app/store";
+import {selectToken} from "../auth";
 
 /**
  * Type predicate to narrow an unknown error to `FetchBaseQueryError`
@@ -34,7 +35,7 @@ export function buildBaseQuery() {
   return fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESOPS_API!,
     prepareHeaders: (headers, {getState}) => {
-      const {token} = (getState() as AppState).user;
+      const token = selectToken(getState() as RootState);
       headers.set('Access-Control-Allow-Origin', '*');
       headers.set('X-Fides-Source', 'fidesops-admin-ui');
       if (token) {

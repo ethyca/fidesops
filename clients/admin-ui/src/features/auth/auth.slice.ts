@@ -9,6 +9,7 @@ import type { RootState } from '../../app/store';
 import { STORED_CREDENTIALS_KEY } from '../../constants';
 import { User } from '../user-management/types';
 import { LoginRequest, LoginResponse } from './types';
+import {buildBaseQuery} from "../common/helpers";
 
 export interface AuthState {
   user: User | null;
@@ -73,17 +74,7 @@ credentialStorage.startListening({
 // Auth API
 export const authApi = createApi({
   reducerPath: 'authApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_FIDESOPS_API!,
-    prepareHeaders: (headers, { getState }) => {
-      const token = selectToken(getState() as RootState);
-      headers.set('Access-Control-Allow-Origin', '*');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: buildBaseQuery(),
   tagTypes: ['Auth'],
   endpoints: (build) => ({
     login: build.mutation<LoginResponse, LoginRequest>({

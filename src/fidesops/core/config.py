@@ -105,7 +105,6 @@ class RootUserSettings(FidesSettings):
         """
         Populates the appropriate value for analytics id based on config
         """
-        logger.info("found value: " + v)
         return v or cls.generate_and_store_client_id()
 
     @staticmethod

@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timezone
-from typing import Optional, Callable
+from typing import Callable, Optional
 
 import uvicorn
 from fastapi import FastAPI, Request, Response
@@ -54,31 +54,45 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
         # More context- https://github.com/tiangolo/fastapi/issues/1840
         try:
             if response.status_code >= 400:
-                response.background = BackgroundTask(prepare_and_log_request,
-                                                     endpoint, response.status_code, now, fides_source, "HTTPException"
-                                                     )
+                response.background = BackgroundTask(
+                    prepare_and_log_request,
+                    endpoint,
+                    response.status_code,
+                    now,
+                    fides_source,
+                    "HTTPException",
+                )
             else:
-                response.background = BackgroundTask(prepare_and_log_request,
-                                                     endpoint, response.status_code, now, fides_source, None
-                                                     )
+                response.background = BackgroundTask(
+                    prepare_and_log_request,
+                    endpoint,
+                    response.status_code,
+                    now,
+                    fides_source,
+                    None,
+                )
         except Exception as exc:
             # always continue if something went wrong with analytics
-            logger.warning(f"Analytics event for endpoint {request.url} failed to send: {exc}")
+            logger.warning(
+                f"Analytics event for endpoint {request.url} failed to send: {exc}"
+            )
             return response
 
         return response
     except Exception as e:
         logger.warning("exception caught")
-        prepare_and_log_request(endpoint, e.args[0], now, fides_source, e.__class__.__name__)
+        prepare_and_log_request(
+            endpoint, e.args[0], now, fides_source, e.__class__.__name__
+        )
         raise
 
 
 def prepare_and_log_request(
-        endpoint: str,
-        status_code: int,
-        event_created_at: datetime,
-        fides_source: Optional[str],
-        error_class: Optional[str],
+    endpoint: str,
+    status_code: int,
+    event_created_at: datetime,
+    fides_source: Optional[str],
+    error_class: Optional[str],
 ):
     analytics_event = AnalyticsEvent(
         docker=in_docker_container(),
