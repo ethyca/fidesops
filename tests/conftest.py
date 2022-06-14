@@ -163,22 +163,22 @@ def celery_enable_logging():
     return True
 
 
-@pytest.fixture(autouse=True, scope="function")
-def celery_use_virtual_worker(celery_worker):
+@pytest.fixture(autouse=True, scope="session")
+def celery_use_virtual_worker(celery_session_worker):
     """
     This is a catch-all fixture that forces all of our
     tests to use a virtual celery worker if a registered
     task is executed within the scope of the test.
     """
-    yield celery_worker
+    yield celery_session_worker
 
 
-@pytest.fixture(scope="function")
-def run_privacy_request_task(celery_app):
+@pytest.fixture(scope="session")
+def run_privacy_request_task(celery_session_app):
     """
     This fixture is the version of the run_privacy_request task that is
     registered to the `celery_app` fixture which uses the virtualised `celery_worker`
     """
-    yield celery_app.tasks[
+    yield celery_session_app.tasks[
         "fidesops.service.privacy_request.request_runner_service.run_privacy_request"
     ]
