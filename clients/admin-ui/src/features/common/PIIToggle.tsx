@@ -8,7 +8,7 @@ const PIIToggle: React.FC = () => {
   const dispatch = useDispatch();
   const handleToggle = (event: ChangeEvent<HTMLInputElement>) =>
     dispatch(setRevealPII(event.target.checked));
-  return <Switch colorScheme='secondary' onChange={handleToggle} />;
+  return <Switch colorScheme="secondary" onChange={handleToggle} />;
 };
 
 export default PIIToggle;

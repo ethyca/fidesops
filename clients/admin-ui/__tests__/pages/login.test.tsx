@@ -1,7 +1,7 @@
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 
-import { BASE_API_URN } from '../../src/constants'
+import { BASE_API_URN } from '../../src/constants';
 import LoginPage from '../../src/pages/login';
 import { act, fireEvent, render, screen, waitFor } from '../test-utils';
 

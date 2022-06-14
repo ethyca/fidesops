@@ -19,12 +19,12 @@ type EventDetailsProps = {
 };
 
 const EventDetails = ({ eventDetails }: EventDetailsProps) => (
-  <Box width='100%'>
-    <Text color='gray.900' fontSize='md' fontWeight='500' mb={1}>
+  <Box width="100%">
+    <Text color="gray.900" fontSize="md" fontWeight="500" mb={1}>
       Event Details
     </Text>
     <TableContainer>
-      <Table size='sm'>
+      <Table size="sm">
         <Thead>
           <Tr>
             <Th>Timestamp </Th>

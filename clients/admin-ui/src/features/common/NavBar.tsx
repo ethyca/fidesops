@@ -13,16 +13,16 @@ const NavBar = () => {
     <>
       <Header />
       <Flex
-        borderBottom='1px'
-        borderTop='1px'
+        borderBottom="1px"
+        borderTop="1px"
         px={9}
         py={1}
-        borderColor='gray.100'
+        borderColor="gray.100"
       >
-        <NextLink href='/' passHref>
+        <NextLink href="/" passHref>
           <Button
-            as='a'
-            variant='ghost'
+            as="a"
+            variant="ghost"
             mr={4}
             colorScheme={
               router && router.pathname === '/' ? 'complimentary' : 'ghost'
@@ -32,16 +32,16 @@ const NavBar = () => {
           </Button>
         </NextLink>
 
-        <NextLink href='#' passHref>
-          <Button as='a' variant='ghost' disabled mr={4}>
+        <NextLink href="#" passHref>
+          <Button as="a" variant="ghost" disabled mr={4}>
             Datastore Connections
           </Button>
         </NextLink>
 
-        <NextLink href='/user-management' passHref>
+        <NextLink href="/user-management" passHref>
           <Button
-            as='a'
-            variant='ghost'
+            as="a"
+            variant="ghost"
             mr={4}
             colorScheme={
               router && router.pathname.startsWith('/user-management')
@@ -53,10 +53,10 @@ const NavBar = () => {
           </Button>
         </NextLink>
 
-        <NextLink href='#' passHref>
+        <NextLink href="#" passHref>
           <Button
-            as='a'
-            variant='ghost'
+            as="a"
+            variant="ghost"
             disabled
             rightIcon={<ArrowDownLineIcon />}
           >

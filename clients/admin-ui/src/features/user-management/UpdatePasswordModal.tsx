@@ -79,12 +79,12 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
   return (
     <>
       <Button
-        bg='primary.800'
+        bg="primary.800"
         _hover={{ bg: 'primary.400' }}
         _active={{ bg: 'primary.500' }}
-        colorScheme='primary'
-        maxWidth='40%'
-        size='sm'
+        colorScheme="primary"
+        maxWidth="40%"
+        size="sm"
         onClick={onOpen}
       >
         Update Password
@@ -95,24 +95,24 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
           <ModalHeader>Update Password</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <Stack direction='column' spacing='15px'>
+            <Stack direction="column" spacing="15px">
               <FormControl>
                 <Input
                   isRequired
-                  name='oldPassword'
+                  name="oldPassword"
                   onChange={handleChange}
-                  placeholder='Old Password'
-                  type='password'
+                  placeholder="Old Password"
+                  type="password"
                   value={oldPasswordValue}
                 />
               </FormControl>
               <FormControl>
                 <Input
                   isRequired
-                  name='newPassword'
+                  name="newPassword"
                   onChange={handleChange}
-                  placeholder='New Password'
-                  type='password'
+                  placeholder="New Password"
+                  type="password"
                   value={newPasswordValue}
                 />
               </FormControl>

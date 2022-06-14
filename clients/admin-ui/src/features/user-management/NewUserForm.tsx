@@ -131,7 +131,7 @@ const UserForm: NextPage = () => {
   return (
     <div>
       <main>
-        <Heading mb={4} fontSize='xl' colorScheme='primary'>
+        <Heading mb={4} fontSize="xl" colorScheme="primary">
           Profile
         </Heading>
         <Divider mb={7} />
@@ -142,18 +142,18 @@ const UserForm: NextPage = () => {
         >
           <Stack mb={8} spacing={6}>
             <FormControl
-              id='username'
+              id="username"
               isInvalid={touched.username && Boolean(errors.username)}
             >
-              <FormLabel htmlFor='username' fontWeight='medium'>
+              <FormLabel htmlFor="username" fontWeight="medium">
                 Username
               </FormLabel>
               <Input
-                id='username'
-                maxWidth='40%'
-                name='username'
-                focusBorderColor='primary.500'
-                placeholder='Enter new username'
+                id="username"
+                maxWidth="40%"
+                name="username"
+                focusBorderColor="primary.500"
+                placeholder="Enter new username"
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.username}
@@ -162,51 +162,51 @@ const UserForm: NextPage = () => {
               <FormErrorMessage>{errors.username}</FormErrorMessage>
             </FormControl>
 
-            <FormControl id='first_name'>
-              <FormLabel htmlFor='first_name' fontWeight='medium'>
+            <FormControl id="first_name">
+              <FormLabel htmlFor="first_name" fontWeight="medium">
                 First Name
               </FormLabel>
               <Input
-                id='first_name'
-                maxWidth='40%'
-                name='first_name'
-                focusBorderColor='primary.500'
-                placeholder='Enter first name of user'
+                id="first_name"
+                maxWidth="40%"
+                name="first_name"
+                focusBorderColor="primary.500"
+                placeholder="Enter first name of user"
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.first_name}
               />
             </FormControl>
 
-            <FormControl id='last_name'>
-              <FormLabel htmlFor='last_name' fontWeight='medium'>
+            <FormControl id="last_name">
+              <FormLabel htmlFor="last_name" fontWeight="medium">
                 Last Name
               </FormLabel>
               <Input
-                id='last_name'
-                maxWidth='40%'
-                name='last_name'
-                focusBorderColor='primary.500'
-                placeholder='Enter last name of user'
+                id="last_name"
+                maxWidth="40%"
+                name="last_name"
+                focusBorderColor="primary.500"
+                placeholder="Enter last name of user"
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.last_name}
               />
             </FormControl>
             <FormControl
-              id='password'
+              id="password"
               isInvalid={touched.password && Boolean(errors.password)}
             >
-              <FormLabel htmlFor='password' fontWeight='medium'>
+              <FormLabel htmlFor="password" fontWeight="medium">
                 Password
               </FormLabel>
               <Input
-                id='password'
-                maxWidth='40%'
-                name='password'
-                focusBorderColor='primary.500'
-                placeholder='********'
-                type='password'
+                id="password"
+                maxWidth="40%"
+                name="password"
+                focusBorderColor="primary.500"
+                placeholder="********"
+                type="password"
                 value={values.password}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -215,7 +215,7 @@ const UserForm: NextPage = () => {
               <FormErrorMessage>{errors.password}</FormErrorMessage>
             </FormControl>
             <Divider mb={7} mt={7} />
-            <Heading fontSize='xl' colorScheme='primary'>
+            <Heading fontSize="xl" colorScheme="primary">
               Privileges
             </Heading>
             <Text>Select privileges to assign to this user</Text>
@@ -229,7 +229,7 @@ const UserForm: NextPage = () => {
                   key={`${policy.privilege}`}
                   onChange={handleChange}
                   id={`scopes-${policy.privilege}`}
-                  name='scopes'
+                  name="scopes"
                   // @ts-ignore
                   isChecked={values.scopes[policy.privilege]}
                   value={
@@ -246,8 +246,8 @@ const UserForm: NextPage = () => {
             </Stack>
           </Stack>
 
-          <NextLink href='/user-management' passHref>
-            <Button variant='outline' mr={3} size='sm'>
+          <NextLink href="/user-management" passHref>
+            <Button variant="outline" mr={3} size="sm">
               Cancel
             </Button>
           </NextLink>
@@ -258,7 +258,7 @@ const UserForm: NextPage = () => {
             _active={{ bg: 'primary.500' }}
             colorScheme="primary"
             // disabled={!(isValid && dirty)}
-            size='sm'
+            size="sm"
           >
             Save
           </Button>
