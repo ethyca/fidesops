@@ -1732,6 +1732,22 @@
 <td>False</td>
 <td>Opt out of sending anonymous usage data to Ethyca to improve the product experience</td>
 </tr>
+<tr>
+<td>Admin UI Variables</td>
+<td>---</td>
+<td>---</td>
+<td>---</td>
+<td>---</td>
+<td>---</td>
+</tr>
+<tr>
+<td><code>ENABLED</code></td>
+<td><code>FIDESOPS__ADMIN_UI__ENABLED</code></td>
+<td>bool</td>
+<td>False</td>
+<td>True</td>
+<td>Toggle whether the <code>/static</code> file directory is mounted to serve the Admin UI</td>
+</tr>
 </tbody>
 </table>
 <h2 id="an-example-fidesopstoml-configuration-file">An example <code>fidesops.toml</code> configuration file</h2>
@@ -1769,7 +1785,10 @@
 <span class="normal">32</span>
 <span class="normal">33</span>
 <span class="normal">34</span>
-<span class="normal">35</span></pre></div></td><td class="code"><div><pre><span></span><code>PORT=8080
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span></pre></div></td><td class="code"><div><pre><span></span><code>PORT=8080
 
 [database]
 SERVER=&quot;db&quot;
@@ -1804,6 +1823,9 @@ MASKING_STRICT=true
 
 [root_user]
 ANALYTICS_OPT_OUT=false
+
+[admin_ui]
+ENABLED = true
 </code></pre></div></td></tr></table></div>
 <p>Please note: The configuration is case-sensitive, so the variables must be specified in UPPERCASE.</p>
 <h2 id="additional-environment-variables">Additional environment variables</h2>

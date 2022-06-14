@@ -4876,6 +4876,10 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
           }
         },
         "description": "Used to define the required parameters for the connector (user-provided and constants)"
