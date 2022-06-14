@@ -1,8 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { HYDRATE } from 'next-redux-wrapper';
 
-import type { AppState } from '../../app/store';
+import type { RootState } from '../../app/store';
 import {
   User,
   UserPasswordUpdate,
@@ -14,39 +13,68 @@ import {
 } from './types';
 import { buildBaseQuery } from '../common/helpers';
 
-export interface State {
+export interface UserManagementState {
   id: string;
   page: number;
   size: number;
-  user: User;
+  username: string;
   token: string | null;
 }
 
-const initialState: State = {
+const initialState: UserManagementState = {
   id: '',
   page: 1,
   size: 25,
-  user: {
-    id: '',
-    password: '',
-    username: '',
-    created_at: '',
-  },
   token: null,
+  username: '',
 };
+
+export const userManagementSlice = createSlice({
+  name: 'userManagement',
+  initialState,
+  reducers: {
+    assignToken: (state, action: PayloadAction<string>) => ({
+      ...state,
+      token: action.payload,
+    }),
+    setUsernameSearch: (state, action: PayloadAction<string>) => ({
+      ...state,
+      page: initialState.page,
+      username: action.payload,
+    }),
+    setPage: (state, action: PayloadAction<number>) => ({
+      ...state,
+      page: action.payload,
+    }),
+    setSize: (state, action: PayloadAction<number>) => ({
+      ...state,
+      page: initialState.page,
+      size: action.payload,
+    }),
+  },
+});
+
+export const { setPage, setUsernameSearch } = userManagementSlice.actions;
+
+export const selectUserFilters = (state: RootState): UsersListParams => ({
+  page: state.userManagement.page,
+  size: state.userManagement.size,
+  username: state.userManagement.username,
+});
+
+export const { reducer } = userManagementSlice;
 
 // Helpers
 export const mapFiltersToSearchParams = ({
   page,
   size,
-  user,
+  username,
 }: Partial<UsersListParams>) => ({
   ...(page ? { page: `${page}` } : {}),
   ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
-  ...(user ? { username: user.username } : {}),
+  ...(username ? { username } : {}),
 });
 
-// User API
 export const userApi = createApi({
   reducerPath: 'userApi',
   baseQuery: buildBaseQuery(),
@@ -157,46 +185,3 @@ export const {
   useCreateUserPermissionsMutation,
   useGetUserPermissionsQuery,
 } = userApi;
-
-export const userSlice = createSlice({
-  name: 'user',
-  initialState,
-  reducers: {
-    assignToken: (state, action: PayloadAction<string>) => ({
-      ...state,
-      token: action.payload,
-    }),
-    setUser: (state, action: PayloadAction<User>) => ({
-      ...state,
-      page: initialState.page,
-      user: action.payload,
-    }),
-    setPage: (state, action: PayloadAction<number>) => ({
-      ...state,
-      page: action.payload,
-    }),
-    setSize: (state, action: PayloadAction<number>) => ({
-      ...state,
-      page: initialState.page,
-      size: action.payload,
-    }),
-  },
-  extraReducers: {
-    [HYDRATE]: (state, action) => ({
-      ...state,
-      ...action.payload.user,
-    }),
-  },
-});
-
-export const { assignToken, setUser, setPage } = userSlice.actions;
-
-export const selectUserToken = (state: AppState) => state.user.token;
-
-export const selectUserFilters = (state: AppState): UsersListParams => ({
-  page: state.user.page,
-  size: state.user.size,
-  user: state.user.user,
-});
-
-export const { reducer } = userSlice;
