@@ -169,6 +169,7 @@ class ConnectorParam(BaseModel):
     """Used to define the required parameters for the connector (user-provided and constants)"""
 
     name: str
+    default_value: Optional[str]
     description: Optional[str]
 
 
@@ -192,6 +193,18 @@ class SaaSConfig(BaseModel):
     endpoints: List[Endpoint]
     test_request: SaaSRequest
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
+
+    @validator("connector_params")
+    def validate_connector_params(cls, v: List[ConnectorParam]) -> List[ConnectorParam]:
+        """
+        Validate that the domain is present in the connector params.
+        The domain is used to identify which SaaS provider the config is for.
+        """
+        if not [param.name for param in v if param.name == "domain"]:
+            raise ValueError(
+                "SaaS config is missing a connector_param with name 'domain'"
+            )
+        return v
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:

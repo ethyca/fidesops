@@ -33,10 +33,14 @@ class TestSaaSConnectionSecrets:
         config = {"domain": "domain", "username": "username"}
         with pytest.raises(ValidationError) as exc:
             schema.parse_obj(config)
+        required_fields = [
+            connector_param.name
+            for connector_param in saas_config.connector_params
+            if not connector_param.default_value
+        ]
         assert (
             f"{saas_config.fides_key}_schema must be supplied all of: "
-            f"[{', '.join([connector_param.name for connector_param in saas_config.connector_params])}]."
-            in str(exc.value)
+            f"[{', '.join(required_fields)}]." in str(exc.value)
         )
 
     def test_extra_fields(self, saas_config, saas_example_secrets):
@@ -48,3 +52,9 @@ class TestSaaSConnectionSecrets:
         with pytest.raises(ValidationError) as exc:
             schema.parse_obj(config)
         assert exc.value.errors()[0]["msg"] == "extra fields not permitted"
+
+    def test_default_value_fields(self, saas_config, saas_example_secrets):
+        schema = SaaSSchemaFactory(saas_config).get_saas_schema()
+        del saas_example_secrets["domain"]
+        config = saas_example_secrets
+        schema.parse_obj(config)
