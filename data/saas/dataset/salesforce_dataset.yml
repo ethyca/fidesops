@@ -64,23 +64,23 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: OtherStreet
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.street]
             fidesops_meta:
               data_type: string
           - name: OtherCity
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.city]
             fidesops_meta:
               data_type: string
           - name: OtherState
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.state]
             fidesops_meta:
               data_type: string
           - name: OtherPostalCode
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.postal_code]
             fidesops_meta:
               data_type: string
           - name: OtherCountry
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.country]
             fidesops_meta:
               data_type: string
           - name: OtherLatitude
@@ -96,27 +96,27 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: OtherAddress
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact]
             fidesops_meta:
               data_type: string
           - name: MailingStreet
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.street]
             fidesops_meta:
               data_type: string
           - name: MailingCity
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.city]
             fidesops_meta:
               data_type: string
           - name: MailingState
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.state]
             fidesops_meta:
               data_type: string
           - name: MailingPostalCode
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.postal_code]
             fidesops_meta:
               data_type: string
           - name: MailingCountry
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.country]
             fidesops_meta:
               data_type: string
           - name: MailingLatitude
@@ -132,31 +132,31 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: MailingAddress
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact]
             fidesops_meta:
               data_type: string
           - name: Phone
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: Fax
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact]
             fidesops_meta:
               data_type: string
           - name: MobilePhone
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: HomePhone
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: OtherPhone
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: AssistantPhone
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: ReportsToId
@@ -164,7 +164,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: Email
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
               data_type: string
           - name: Title
@@ -185,8 +185,6 @@ dataset:
               data_type: string
           - name: Birthdate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: Description
             data_categories: [system.operations]
             fidesops_meta:
@@ -197,16 +195,12 @@ dataset:
               data_type: string
           - name: CreatedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: CreatedById
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: LastModifiedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: LastModifiedById
             data_categories: [system.operations]
             fidesops_meta:
@@ -217,32 +211,20 @@ dataset:
               data_type: string
           - name: LastActivityDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: LastCURequestDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: LastCUUpdateDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: LastViewedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: LastReferencedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: EmailBouncedReason
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: EmailBouncedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: IsEmailBounced
             data_categories: [system.operations]
             fidesops_meta:
@@ -336,11 +318,11 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: SuppliedEmail
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
               data_type: string
           - name: SuppliedPhone
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: SuppliedCompany
@@ -381,8 +363,6 @@ dataset:
               data_type: string
           - name: ClosedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: IsEscalated
             data_categories: [system.operations]
             fidesops_meta:
@@ -393,16 +373,12 @@ dataset:
               data_type: string
           - name: CreatedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: CreatedById
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: LastModifiedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: LastModifiedById
             data_categories: [system.operations]
             fidesops_meta:
@@ -412,19 +388,19 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: ContactPhone
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: ContactMobile
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: ContactEmail
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
               data_type: string
           - name: ContactFax
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact]
             fidesops_meta:
               data_type: string
           - name: Comments
@@ -433,12 +409,8 @@ dataset:
               data_type: string
           - name: LastViewedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: LastReferencedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
       - name: leads
         fields:
           - name: attributes
@@ -504,23 +476,23 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: Street
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.street]
             fidesops_meta:
               data_type: string
           - name: City
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.city]
             fidesops_meta:
               data_type: string
           - name: State
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.state]
             fidesops_meta:
               data_type: string
           - name: PostalCode
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.postal_code]
             fidesops_meta:
               data_type: string
           - name: Country
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.postal_code]
             fidesops_meta:
               data_type: string
           - name: Latitude
@@ -536,23 +508,23 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: Address
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact]
             fidesops_meta:
               data_type: string
           - name: Phone
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: MobilePhone
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: Fax
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact]
             fidesops_meta:
               data_type: string
           - name: Email
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
               data_type: string
           - name: Website
@@ -601,8 +573,6 @@ dataset:
               data_type: string
           - name: ConvertedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: ConvertedAccountId
             data_categories: [system.operations]
             fidesops_meta:
@@ -621,16 +591,12 @@ dataset:
               data_type: string
           - name: CreatedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: CreatedById
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: LastModifiedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: LastModifiedById
             data_categories: [system.operations]
             fidesops_meta:
@@ -641,16 +607,10 @@ dataset:
               data_type: string
           - name: LastActivityDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: LastViewedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: LastReferencedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: Jigsaw
             data_categories: [system.operations]
             fidesops_meta:
@@ -677,8 +637,6 @@ dataset:
               data_type: string
           - name: EmailBouncedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: IndividualId
             data_categories: [system.operations]
             fidesops_meta:
@@ -741,16 +699,12 @@ dataset:
               data_type: string
           - name: CreatedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: CreatedById
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: LastModifiedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: LastModifiedById
             data_categories: [system.operations]
             fidesops_meta:
@@ -761,8 +715,6 @@ dataset:
               data_type: string
           - name: FirstRespondedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: Salutation
             data_categories: [system.operations]
             fidesops_meta:
@@ -784,39 +736,39 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: Street
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.street]
             fidesops_meta:
               data_type: string
           - name: City
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.city]
             fidesops_meta:
               data_type: string
           - name: State
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.state]
             fidesops_meta:
               data_type: string
           - name: PostalCode
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.postal_code]
             fidesops_meta:
               data_type: string
           - name: Country
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.country]
             fidesops_meta:
               data_type: string
           - name: Email
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
               data_type: string
           - name: Phone
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: Fax
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: MobilePhone
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: Description
@@ -852,6 +804,22 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: LeadOrContactOwnerId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+      - name: accounts
+        fields:
+          - name: attributes
+            fields:
+              - name: type
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: url
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+          - name: Id
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
@@ -892,23 +860,23 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: BillingStreet
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.street]
             fidesops_meta:
               data_type: string
           - name: BillingCity
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.city]
             fidesops_meta:
               data_type: string
           - name: BillingState
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.state]
             fidesops_meta:
               data_type: string
           - name: BillingPostalCode
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.postal_code]
             fidesops_meta:
               data_type: string
           - name: BillingCountry
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.country]
             fidesops_meta:
               data_type: string
           - name: BillingLatitude
@@ -924,27 +892,27 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: BillingAddress
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact]
             fidesops_meta:
               data_type: string
           - name: ShippingStreet
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.street]
             fidesops_meta:
               data_type: string
           - name: ShippingCity
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.city]
             fidesops_meta:
               data_type: string
           - name: ShippingState
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.state]
             fidesops_meta:
               data_type: string
           - name: ShippingPostalCode
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.postal_code]
             fidesops_meta:
               data_type: string
           - name: ShippingCountry
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.country]
             fidesops_meta:
               data_type: string
           - name: ShippingLatitude
@@ -960,15 +928,15 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: ShippingAddress
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact]
             fidesops_meta:
               data_type: string
           - name: Phone
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: Fax
-            data_categories: [system.operations]
+            data_categories: [user.provided.identifiable.contact]
             fidesops_meta:
               data_type: string
           - name: AccountNumber
@@ -1025,16 +993,12 @@ dataset:
               data_type: string
           - name: CreatedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: CreatedById
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: LastModifiedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: LastModifiedById
             data_categories: [system.operations]
             fidesops_meta:
@@ -1045,16 +1009,10 @@ dataset:
               data_type: string
           - name: LastActivityDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: LastViewedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: LastReferencedDate
             data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: Jigsaw
             data_categories: [system.operations]
             fidesops_meta:

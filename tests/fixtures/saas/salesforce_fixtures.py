@@ -80,7 +80,7 @@ def salesforce_dataset() -> Dict[str, Any]:
 
 @pytest.fixture(scope="function")
 def salesforce_connection_config(
-    db: session, salesforce_config, salesforce_secrets, salesforce_token
+    db: session, salesforce_config,salesforce_dataset, salesforce_secrets, salesforce_token
 ) -> Generator:
     fides_key = salesforce_config["fides_key"]
     salesforce_secrets['access_token'] = salesforce_token
