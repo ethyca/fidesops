@@ -95,7 +95,7 @@ def prepare_and_log_request(
     event_created_at: datetime,
     fides_source: Optional[str],
     error_class: Optional[str],
-):
+) -> None:
     analytics_event = AnalyticsEvent(
         docker=in_docker_container(),
         event=Event.endpoint_call.value,
