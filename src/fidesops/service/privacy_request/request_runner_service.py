@@ -121,7 +121,7 @@ def upload_access_results(
             privacy_request.status = PrivacyRequestStatus.error
 
 
-@celery_app.task(bind=True)
+@celery_app.task()
 def run_privacy_request(
     privacy_request_id: str,
     from_webhook_id: Optional[str] = None,
