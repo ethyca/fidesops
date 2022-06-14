@@ -1,8 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createApi } from '@reduxjs/toolkit/query/react';
+import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 
 import type { RootState } from '../../app/store';
 import { BASE_API_URN } from '../../constants';
+import {selectToken} from "../auth";
+import {addCommonHeaders} from "../common/CommonHeaders";
 import {
   DenyPrivacyRequest,
   PrivacyRequest,
@@ -10,7 +12,6 @@ import {
   PrivacyRequestResponse,
   PrivacyRequestStatus,
 } from './types';
-import { buildBaseQuery } from '../common/helpers';
 
 // Helpers
 export function mapFiltersToSearchParams({
@@ -47,9 +48,15 @@ export function mapFiltersToSearchParams({
 }
 
 // Subject requests API
-export const privacyRequestApi = createApi({
+export const privacyRequestApi: any = createApi({
   reducerPath: 'privacyRequestApi',
-  baseQuery: buildBaseQuery(),
+  baseQuery: fetchBaseQuery({
+    baseUrl: BASE_API_URN,
+    prepareHeaders: (headers, {getState}) => {
+      const token: string | null = selectToken(getState() as RootState);
+      return addCommonHeaders(headers, token)
+    },
+  }),
   tagTypes: ['Request'],
   endpoints: (build) => ({
     getAllPrivacyRequests: build.query<

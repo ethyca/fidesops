@@ -1,7 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createApi } from '@reduxjs/toolkit/query/react';
+import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 
 import type { RootState } from '../../app/store';
+import {BASE_API_URN} from "../../constants";
+import {selectToken} from "../auth";
+import {addCommonHeaders} from "../common/CommonHeaders";
 import {
   User,
   UserPasswordUpdate,
@@ -11,7 +14,6 @@ import {
   UsersListParams,
   UsersResponse,
 } from './types';
-import { buildBaseQuery } from '../common/helpers';
 
 export interface UserManagementState {
   id: string;
@@ -75,9 +77,15 @@ export const mapFiltersToSearchParams = ({
   ...(username ? { username } : {}),
 });
 
-export const userApi = createApi({
+export const userApi: any = createApi({
   reducerPath: 'userApi',
-  baseQuery: buildBaseQuery(),
+  baseQuery: fetchBaseQuery({
+    baseUrl: BASE_API_URN,
+    prepareHeaders: (headers, {getState}) => {
+      const token: string | null = selectToken(getState() as RootState);
+      return addCommonHeaders(headers, token)
+    },
+  }),
   tagTypes: ['User'],
   endpoints: (build) => ({
     getAllUsers: build.query<UsersResponse, UsersListParams>({
