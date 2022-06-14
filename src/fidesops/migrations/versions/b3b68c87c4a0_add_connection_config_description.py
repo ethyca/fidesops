@@ -1,7 +1,7 @@
 """add connection config description
 
 Revision ID: b3b68c87c4a0
-Revises: 27fe9da9d0f9
+Revises: c3472d75c80e
 Create Date: 2022-06-13 17:24:56.889227
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "b3b68c87c4a0"
-down_revision = "27fe9da9d0f9"
+down_revision = "c3472d75c80e"
 branch_labels = None
 depends_on = None
 
