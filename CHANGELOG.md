@@ -25,6 +25,9 @@ The types of changes are:
 * Redis SSL Support [#611](https://github.com/ethyca/fidesops/pull/611)
 * Celery as a dependency for use in the execution layer [#610](https://github.com/ethyca/fidesops/pull/610)
 * Cache and Surface Resume/Restart Instructions [#591](https://github.com/ethyca/fidesops/pull/591)
+* Build and deploy Admin UI from webserver [#625](https://github.com/ethyca/fidesops/pull/625)
+* Allow disabling a ConnectionConfig [#637](https://github.com/ethyca/fidesops/pull/637)
+* Erasure support for Outreach connector [#619](https://github.com/ethyca/fidesops/pull/619)
 * Adds searching of ConnectionConfigs [#641](https://github.com/ethyca/fidesops/pull/641)
 
 ### Changed
@@ -41,6 +44,7 @@ The types of changes are:
 ### Fixed
 * Fixed error with running mypy on M1 Macs [#630](https://github.com/ethyca/fidesops/pull/630)
 * Fixed error with mypy on Python versions greater than 3.9.6 [#630](https://github.com/ethyca/fidesops/pull/630)
+* Bumped fideslib to 2.0.4. This fixes the issue where alembic couldn't find the `fidesops.toml` file from its new location [#643](https://github.com/ethyca/fidesops/pull/643)
 
 ## [1.5.3](https://github.com/ethyca/fidesops/compare/1.5.2...1.5.3)
 

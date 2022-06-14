@@ -19,6 +19,7 @@ class CreateConnectionConfiguration(BaseModel):
     key: Optional[FidesOpsKey]
     connection_type: ConnectionType
     access: AccessLevel
+    disabled: Optional[bool] = False
     description: Optional[str]
 
     class Config:
@@ -43,6 +44,7 @@ class ConnectionConfigurationResponse(BaseModel):
     access: AccessLevel
     created_at: datetime
     updated_at: Optional[datetime]
+    disabled: Optional[bool] = False
     last_test_timestamp: Optional[datetime]
     last_test_succeeded: Optional[bool]
 

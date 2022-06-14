@@ -112,6 +112,7 @@ class TestPatchConnections:
         assert postgres_connection["created_at"] is not None
         assert postgres_connection["updated_at"] is not None
         assert postgres_connection["last_test_timestamp"] is None
+        assert postgres_connection["disabled"] is False
         assert "secrets" not in postgres_connection
 
         mongo_connection = response_body["succeeded"][1]
@@ -120,6 +121,7 @@ class TestPatchConnections:
         assert mongo_connection["key"] == "my_mongo_db"  # stringified name
         assert mongo_connection["connection_type"] == "mongodb"
         assert mongo_connection["access"] == "read"
+        assert postgres_connection["disabled"] is False
         assert mongo_connection["created_at"] is not None
         assert mongo_connection["updated_at"] is not None
         assert mongo_connection["last_test_timestamp"] is None
@@ -193,6 +195,7 @@ class TestPatchConnections:
                 "key": "postgres_db_1",
                 "connection_type": "postgres",
                 "access": "read",
+                "disabled": True,
             },
             {
                 "key": "my_mongo_db",
@@ -251,19 +254,23 @@ class TestPatchConnections:
 
         postgres_connection = response_body["succeeded"][0]
         assert postgres_connection["access"] == "read"
+        assert postgres_connection["disabled"] is True
         assert "secrets" not in postgres_connection
         assert postgres_connection["updated_at"] is not None
         postgres_resource = (
             db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()
         )
         assert postgres_resource.access.value == "read"
+        assert postgres_resource.disabled
 
         mongo_connection = response_body["succeeded"][1]
         assert mongo_connection["access"] == "write"
+        assert mongo_connection["disabled"] is False
         assert mongo_connection["updated_at"] is not None
         mongo_resource = db.query(ConnectionConfig).filter_by(key="my_mongo_db").first()
         assert mongo_resource.access.value == "write"
         assert "secrets" not in mongo_connection
+        assert not mongo_resource.disabled
 
         mysql_connection = response_body["succeeded"][2]
         assert mysql_connection["access"] == "read"
@@ -360,6 +367,7 @@ class TestPatchConnections:
             "key": "postgres_db_1",
             "connection_type": "postgres",
             "access": "write",
+            "disabled": False,
             "description": None,
         }
         assert response_body["failed"][1]["data"] == {
@@ -367,6 +375,7 @@ class TestPatchConnections:
             "key": None,
             "connection_type": "mongodb",
             "access": "read",
+            "disabled": False,
             "description": None,
         }
 
@@ -409,6 +418,7 @@ class TestGetConnections:
             "last_test_succeeded",
             "key",
             "created_at",
+            "disabled",
             "description",
         }
 
@@ -496,6 +506,7 @@ class TestGetConnection:
             "last_test_succeeded",
             "key",
             "created_at",
+            "disabled",
             "description",
         }
 
