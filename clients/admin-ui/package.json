@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write .",
+    "format:ci": "prettier --check .",
     "test": "jest --watch",
     "test:ci": "jest",
     "analyze": "cross-env ANALYZE=true next build",
