@@ -1,7 +1,7 @@
 """add default policies
 
 Revision ID: 55d61eb8ed12
-Revises: c3472d75c80e
+Revises: b3b68c87c4a0
 Create Date: 2022-06-13 19:26:24.197262
 
 """
@@ -12,7 +12,6 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.db.base import ClientDetail, Policy, Rule, RuleTarget, StorageConfig
-from fidesops.db.session import get_db_session
 from fidesops.models.policy import ActionType, DrpAction
 from fidesops.schemas.storage.storage import StorageType
 from fidesops.util.data_category import DataCategory
@@ -22,7 +21,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 revision = "55d61eb8ed12"
-down_revision = "c3472d75c80e"
+down_revision = "b3b68c87c4a0"
 branch_labels = None
 depends_on = None
 
