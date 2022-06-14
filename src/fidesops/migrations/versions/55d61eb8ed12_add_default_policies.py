@@ -15,6 +15,9 @@ from fidesops.core.config import config
 from fidesops.db.base import ClientDetail, Policy, Rule, RuleTarget, StorageConfig
 from fidesops.models.policy import ActionType, DrpAction
 from fidesops.schemas.storage.storage import StorageType
+from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
+    STRING_REWRITE_STRATEGY_NAME,
+)
 from fidesops.util.data_category import DataCategory
 
 logging.basicConfig()
@@ -206,8 +209,8 @@ def autogenerate_erasure_policy(db: Session, client: ClientDetail) -> None:
             "policy_id": erasure_policy.id,
             "client_id": client.id,
             "masking_strategy": {
-                "strategy": "null_rewrite",
-                "configuration": {},
+                "strategy": STRING_REWRITE_STRATEGY_NAME,
+                "configuration": {"rewrite_value": "MASKED"},
             },
         },
     )
