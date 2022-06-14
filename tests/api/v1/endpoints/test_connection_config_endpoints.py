@@ -7,6 +7,7 @@ import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
 from sqlalchemy.orm import Session
+from sqlalchemy.testing import db
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.scope_registry import (
@@ -434,6 +435,7 @@ class TestGetConnections:
 
     def test_search_connections(
         self,
+        db,
         connection_config,
         read_connection_config,
         api_client: TestClient,
@@ -458,7 +460,22 @@ class TestGetConnections:
 
         resp = api_client.get(url + "?search=postgres", headers=auth_header)
         assert resp.status_code == 200
-        assert len(resp.json()["items"]) == 2
+        items = resp.json()["items"]
+        assert len(items) == 2
+
+        ordered = (
+            db.query(ConnectionConfig)
+            .filter(
+                ConnectionConfig.key.in_(
+                    [read_connection_config.key, connection_config.key]
+                )
+            )
+            .order_by(ConnectionConfig.created_at.desc())
+            .all()
+        )
+        assert len(ordered) == 2
+        assert ordered[0].key == items[0]["key"]
+        assert ordered[1].key == items[1]["key"]
 
 
 class TestGetConnection:
