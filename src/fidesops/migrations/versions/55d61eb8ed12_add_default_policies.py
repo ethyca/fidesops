@@ -10,10 +10,9 @@ import logging
 from sqlalchemy.orm import Session
 
 from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
+from fidesops.db.base import ClientDetail, Policy, Rule, RuleTarget, StorageConfig
 from fidesops.db.session import get_db_session
-from fidesops.models.client import ClientDetail
-from fidesops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
-from fidesops.models.storage import StorageConfig
+from fidesops.models.policy import ActionType, DrpAction
 from fidesops.schemas.storage.storage import StorageType
 from fidesops.util.data_category import DataCategory
 
