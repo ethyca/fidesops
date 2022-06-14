@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { createApi } from '@reduxjs/toolkit/query/react';
 
 import type { RootState } from '../../app/store';
+import { BASE_API_URN } from '../../constants';
 import {
   DenyPrivacyRequest,
   PrivacyRequest,
@@ -106,9 +107,7 @@ export const requestCSVDownload = async ({
   }
 
   return fetch(
-    `${
-      process.env.NEXT_PUBLIC_FIDESOPS_API
-    }/privacy-request?${new URLSearchParams({
+    `${BASE_API_URN}/privacy-request?${new URLSearchParams({
       ...mapFiltersToSearchParams({
         id,
         from,
