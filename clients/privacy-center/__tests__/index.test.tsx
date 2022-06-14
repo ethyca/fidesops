@@ -48,5 +48,5 @@ describe('Home', () => {
       const logo = screen.getByAltText('Logo');
       expect(logo.src).toEqual(`http://localhost${mockConfig.logo_path}`);
     });
-  })
+  });
 });

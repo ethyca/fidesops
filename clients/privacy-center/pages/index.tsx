@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import type { NextPage } from "next";
-import Head from "next/head";
+import React, { useEffect, useState } from 'react';
+import type { NextPage } from 'next';
+import Head from 'next/head';
 import {
   Flex,
   Heading,
@@ -11,13 +11,13 @@ import {
   AlertIcon,
   AlertDescription,
   CloseButton,
-  Image
-} from "@fidesui/react";
+  Image,
+} from '@fidesui/react';
 
-import { useRequestModal, RequestModal } from "../components/RequestModal";
-import type { AlertState } from "../types/AlertState";
+import { useRequestModal, RequestModal } from '../components/RequestModal';
+import type { AlertState } from '../types/AlertState';
 
-import config from "../config/config.json";
+import config from '../config/config.json';
 
 const Home: NextPage = () => {
   const [alert, setAlert] = useState<AlertState | null>(null);
@@ -75,10 +75,10 @@ const Home: NextPage = () => {
       </header>
 
       <main>
-        <Stack align="center" py={["6", "16"]} px={5} spacing={8}>
+        <Stack align="center" py={['6', '16']} px={5} spacing={8}>
           <Stack align="center" spacing={3}>
             <Heading
-              fontSize={["3xl", "4xl"]}
+              fontSize={['3xl', '4xl']}
               color="gray.600"
               fontWeight="semibold"
               textAlign="center"
@@ -86,7 +86,7 @@ const Home: NextPage = () => {
               {config.title}
             </Heading>
             <Text
-              fontSize={["small", "medium"]}
+              fontSize={['small', 'medium']}
               fontWeight="medium"
               maxWidth={624}
               textAlign="center"
@@ -95,7 +95,7 @@ const Home: NextPage = () => {
               {config.description}
             </Text>
           </Stack>
-          <Flex m={-2} flexDirection={["column", "column", "row"]}>
+          <Flex m={-2} flexDirection={['column', 'column', 'row']}>
             {config.actions.map((action) => (
               <Box
                 as="button"
@@ -105,17 +105,17 @@ const Home: NextPage = () => {
                 px={6}
                 borderRadius={4}
                 boxShadow="base"
-                maxWidth={["100%", "100%", "100%", 304]}
+                maxWidth={['100%', '100%', '100%', 304]}
                 transition="box-shadow 50ms"
                 cursor="pointer"
                 userSelect="none"
                 m={2}
                 _hover={{
-                  boxShadow: "complimentary-2xl",
+                  boxShadow: 'complimentary-2xl',
                 }}
                 _focus={{
-                  outline: "none",
-                  boxShadow: "complimentary-2xl",
+                  outline: 'none',
+                  boxShadow: 'complimentary-2xl',
                 }}
                 onClick={() => onOpen(action.policy_key)}
               >
@@ -123,8 +123,8 @@ const Home: NextPage = () => {
                   <Image
                     src={action.icon_path}
                     alt={action.description}
-                    width='54px'
-                    height='54px'
+                    width="54px"
+                    height="54px"
                   />
                   <Stack spacing={1} textAlign="center">
                     <Heading
