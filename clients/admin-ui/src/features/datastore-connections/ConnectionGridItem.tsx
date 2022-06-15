@@ -1,7 +1,9 @@
-import { Box, HStack, Text } from "@fidesui/react";
+import { Box, Button, Flex, HStack, Spacer, Text } from "@fidesui/react";
 import { format } from "date-fns-tz";
 import React from "react";
 
+import ConnectionMenu from "./ConnectionMenu";
+import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import { DatastoreConnection } from "./types";
 
 type ConnectionGridItemProps = {
@@ -17,7 +19,7 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({ data }) => (
     boxSizing="border-box"
     p="18px 16px 16px 16px"
   >
-    <HStack mb="6px">
+    <Flex justifyContent="center" alignItems="center">
       <Box width="32px" height="32px" backgroundColor="aliceblue" />
       <Text
         color="gray.900"
@@ -28,14 +30,11 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({ data }) => (
       >
         {data.name}
       </Text>
-    </HStack>
-    <Text
-      color="gray.600"
-      fontSize="sm"
-      fontWeight="sm"
-      lineHeight="20px"
-      // mb="1px"
-    >
+      <Spacer />
+      <ConnectionStatusBadge disabled={data.disabled} />
+      <ConnectionMenu />
+    </Flex>
+    <Text color="gray.600" fontSize="sm" fontWeight="sm" lineHeight="20px">
       {/* {data.connection_type} Database Connector */}
       Mailchimp Saas Connector
     </Text>
@@ -43,7 +42,7 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({ data }) => (
       Edited on {format(new Date(data.updated_at!), "MMMM d, Y, KK:mm:ss z")}
     </Text>
 
-    <HStack mt="8px">
+    <Flex mt="0px" justifyContent="center" alignItems="center">
       <Box
         width="12px"
         height="12px"
@@ -55,11 +54,16 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({ data }) => (
         fontSize="xs"
         fontWeight="semibold"
         lineHeight="16px"
+        ml="10px"
       >
         Last tested on{" "}
         {format(new Date(data.last_test_timestamp!), "MMMM d, Y, KK:mm:ss z")}
       </Text>
-    </HStack>
+      <Spacer />
+      <Button size="xs" variant="outline">
+        Test
+      </Button>
+    </Flex>
   </Box>
 );
 
