@@ -34,7 +34,7 @@ def saas_example_secrets():
         "username": pydash.get(saas_config, "saas_example.username"),
         "api_key": pydash.get(saas_config, "saas_example.api_key"),
         "api_version": pydash.get(saas_config, "saas_example.api_version"),
-        "page_limit": pydash.get(saas_config, "saas_example.page_limit"),
+        "page_size": pydash.get(saas_config, "saas_example.page_size"),
     }
 
 

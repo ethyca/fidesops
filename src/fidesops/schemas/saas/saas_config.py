@@ -196,10 +196,8 @@ class SaaSConfig(BaseModel):
 
     @validator("connector_params")
     def validate_connector_params(cls, v: List[ConnectorParam]) -> List[ConnectorParam]:
-        """
-        Validate that the domain is present in the connector params.
-        The domain is used to identify which SaaS provider the config is for.
-        """
+        """Validate that the domain is present in the connector params."""
+
         if not [param.name for param in v if param.name == "domain"]:
             raise ValueError(
                 "SaaS config is missing a connector_param with name 'domain'"
