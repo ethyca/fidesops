@@ -23,129 +23,28 @@ saas_config:
   test_request:
     method: GET
     path: /services/data/v54.0/sobjects
-  
 
   endpoints:
-    - name: organizations
+    - name: contact_list
       requests:
         read:
           method: GET
-          path: /api/0/organizations/
+          path: /services/data/v54.0/query
+          query_params:
+            - name: q
+              value: SELECT Id FROM Contact WHERE Email='<email>'
           param_values:
-            - name: placeholder
+            - name: email
               identity: email
-          pagination:
-            strategy: link
-            configuration:
-              source: headers
-              rel: next
-    - name: contact
+          data_path: records
+    - name: contacts
       requests:
         read:
           method: GET
-          path: /services/data/v54.0/sobjects/Contact
-          # query_params:
-          #   - name: contact_id
-          #     references:
-          #       - dataset: salesforce_connector_example
-          #         field: contact.Id
-          param_values:
-            - name: contact_id
-              identity: contact_id
-        delete:
-          method: DELETE
           path: /services/data/v54.0/sobjects/Contact/<contact_id>
           param_values:
             - name: contact_id
               references:
-                - dataset: stripe_connector_example
-                  field: contact.id
-                  direction: from
-    - name: case
-      requests:
-        read:
-          method: GET
-          path: /services/data/v54.0/sobjects/Case
-        #   query_params: 
-        #     - name: case_id
-        #       references:
-        #         - dataset: salesforce_connector_example
-        #           field: case.Id
-          param_values:
-            - name: case_id
-              identity: case_id
-        delete:
-          method: DELETE
-          path: /services/data/v54.0/sobjects/Contact/<case_id>
-          param_values:
-            - name: case_id
-              references:
-                - dataset: stripe_connector_example
-                  field: case.id
-                  direction: from
-    - name: lead
-      requests:
-        read:
-          method: GET
-          path: /services/data/v54.0/sobjects/Lead
-        #   query_params: 
-        #     - name: lead_id
-        #       references:
-        #         - dataset: salesforce_connector_example
-        #           field: lead.Id
-          param_values:
-            - name: lead_id
-              identity: lead_id
-        delete:
-          method: DELETE
-          path: /services/data/v54.0/sobjects/Contact/<lead_id>
-          param_values:
-            - name: lead_id
-              references:
-                - dataset: stripe_connector_example
-                  field: lead.id
-                  direction: from
-    - name: account
-      requests:
-        read:
-          method: GET
-          path: /services/data/v54.0/sobjects/Account
-        #   query_params: 
-        #     - name: account_id
-        #       references:
-        #         - dataset: salesforce_connector_example
-        #           field: account.Id
-          param_values:
-            - name: account_id
-              identity: account_id
-        delete:
-          method: DELETE
-          path: /services/data/v54.0/sobjects/Contact/<account_id>
-          param_values:
-            - name: account_id
-              references:
-                - dataset: stripe_connector_example
-                  field: account.id
-                  direction: from
-    - name: campaign_member
-      requests:
-        read:
-          method: GET
-          path: /services/data/v54.0/sobjects/CampaignMember
-        #   query_params: 
-        #     - name: campaign_member_id
-        #       references:
-        #         - dataset: salesforce_connector_example
-        #           field: campaign_member.Id
-          param_values:
-            - name: campaign_member_id
-              identity: campaign_member_id
-        delete:
-          method: DELETE
-          path: /services/data/v54.0/sobjects/Contact/<campaign_member_id>
-          param_values:
-            - name: campaign_member_id
-              references:
-                - dataset: stripe_connector_example
-                  field: campaign_member.id
+                - dataset: salesforce_connector_example
+                  field: contact_list.Id
                   direction: from
