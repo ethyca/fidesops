@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "../../app/store";
-import { BASE_API_URN } from "../../constants";
+import { BASE_URL } from "../../constants";
 import { selectToken } from "../auth";
 import {
   User,
@@ -79,7 +79,7 @@ export const mapFiltersToSearchParams = ({
 export const userApi = createApi({
   reducerPath: "userApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: BASE_API_URN,
+    baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const token = selectToken(getState() as RootState);
       headers.set("Access-Control-Allow-Origin", "*");

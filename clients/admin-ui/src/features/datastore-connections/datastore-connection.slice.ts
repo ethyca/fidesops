@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "../../app/store";
-import { CONNECTION_ROUTE } from "../../constants";
+import { BASE_URL, CONNECTION_ROUTE } from "../../constants";
 import { selectToken } from "../auth";
 import { PrivacyRequestParams } from "../privacy-requests/types";
 import {
@@ -48,7 +48,7 @@ function mapFiltersToSearchParams({
 export const datastoreConnectionApi = createApi({
   reducerPath: "datastoreConnectionApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_FIDESOPS_API!,
+    baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const token = selectToken(getState() as RootState);
       headers.set("Access-Control-Allow-Origin", "*");

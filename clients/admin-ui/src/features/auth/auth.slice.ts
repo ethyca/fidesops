@@ -74,7 +74,7 @@ credentialStorage.startListening({
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: BASE_API_URN,
+    baseUrl: process.env.NEXT_PUBLIC_FIDESOPS_API! + BASE_API_URN,
     prepareHeaders: (headers, { getState }) => {
       const token = selectToken(getState() as RootState);
       headers.set("Access-Control-Allow-Origin", "*");
