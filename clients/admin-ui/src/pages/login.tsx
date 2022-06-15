@@ -19,8 +19,8 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { INDEX_ROUTE } from "../constants";
 import { login, selectToken, useLoginMutation } from "../features/auth";
-import Image from "../features/common/Image";
 import Head from "../features/common/Head";
+import Image from "../features/common/Image";
 
 const useLogin = () => {
   const [loginRequest, { isLoading }] = useLoginMutation();

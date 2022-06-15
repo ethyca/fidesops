@@ -3,10 +3,10 @@ import type { NextPage } from "next";
 
 import { LOGIN_ROUTE } from "../constants";
 import ProtectedRoute from "../features/auth/ProtectedRoute";
+import Head from "../features/common/Head";
 import NavBar from "../features/common/NavBar";
 import RequestFilters from "../features/privacy-requests/RequestFilters";
 import RequestTable from "../features/privacy-requests/RequestTable";
-import Head from "../features/common/Head";
 
 const Home: NextPage = () => (
   <ProtectedRoute redirectUrl={LOGIN_ROUTE}>

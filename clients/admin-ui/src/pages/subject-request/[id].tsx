@@ -13,10 +13,10 @@ import React from "react";
 
 import { INDEX_ROUTE } from "../../constants";
 import ProtectedRoute from "../../features/auth/ProtectedRoute";
+import Head from "../../features/common/Head";
 import NavBar from "../../features/common/NavBar";
 import { useGetAllPrivacyRequestsQuery } from "../../features/privacy-requests";
 import SubjectRequest from "../../features/subject-request/SubjectRequest";
-import Head from "../../features/common/Head";
 
 const useSubjectRequestDetails = () => {
   const router = useRouter();

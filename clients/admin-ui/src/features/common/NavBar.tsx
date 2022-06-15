@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import React from "react";
 
 import {
-  CONNECTION_ROUTE,
   DATASTORE_CONNECTION_ROUTE,
   INDEX_ROUTE,
   USER_MANAGEMENT_ROUTE,
