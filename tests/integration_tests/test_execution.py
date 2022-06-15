@@ -5,6 +5,7 @@ import pytest
 from pydantic import ValidationError
 from sqlalchemy.exc import InvalidRequestError
 
+from fidesops.core.config import config
 from fidesops.db.session import get_db_session
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
@@ -182,6 +183,8 @@ class TestDeleteCollection:
     ) -> None:
         """Remove secrets to make privacy request fail, then delete the connection config. Build a graph
         that does not contain the deleted dataset config and re-run."""
+
+        config.dev_mode = False
 
         integration_mongodb_config.secrets = {}
         integration_mongodb_config.save(db)
@@ -438,6 +441,8 @@ class TestSkipDisabledCollection:
         """Remove secrets to make privacy request fail, then disable connection config
         and confirm that datastores are skipped on re-run"""
 
+        config.dev_mode = False
+
         integration_mongodb_config.secrets = {}
         integration_mongodb_config.save(db)
 
@@ -561,6 +566,8 @@ def test_restart_graph_from_failure(
     mongo_postgres_dataset_graph,
 ) -> None:
     """Run a failed privacy request and restart from failure"""
+
+    config.dev_mode = False
 
     privacy_request = PrivacyRequest(
         id=f"test_postgres_access_request_task_{uuid.uuid4()}"
