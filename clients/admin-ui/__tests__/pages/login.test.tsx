@@ -1,27 +1,27 @@
-import { rest } from 'msw';
-import { setupServer } from 'msw/node';
+import { rest } from "msw";
+import { setupServer } from "msw/node";
 
-import { INDEX_ROUTE, LOGIN_ROUTE } from '../../src/constants';
-import LoginPage from '../../src/pages/login';
-import { act, fireEvent, render, screen, waitFor } from '../test-utils';
+import { BASE_API_URN, INDEX_ROUTE } from "../../src/constants";
+import LoginPage from "../../src/pages/login";
+import { act, fireEvent, render, screen, waitFor } from "../test-utils";
 
-const useRouter = jest.spyOn(require('next/router'), 'useRouter');
+const useRouter = jest.spyOn(require("next/router"), "useRouter");
 
 afterAll(() => {
   useRouter.mockRestore();
 });
 
-describe(LOGIN_ROUTE, () => {
-  it('Should redirect when the user logs in successfully', async () => {
+describe("/login", () => {
+  it("Should redirect when the user logs in successfully", async () => {
     const server = setupServer(
-      rest.post(LOGIN_ROUTE, (req, res, ctx) =>
+      rest.post(`${BASE_API_URN}/login`, (req, res, ctx) =>
         res(
           ctx.json({
             user_data: {
-              username: 'Test',
+              username: "Test",
             },
             token_data: {
-              access_token: 'test-access-token',
+              access_token: "test-access-token",
             },
           })
         )
@@ -41,14 +41,14 @@ describe(LOGIN_ROUTE, () => {
 
     expect(push).toBeCalledTimes(0);
 
-    const email = screen.getByRole('textbox', { name: /email/i });
+    const email = screen.getByRole("textbox", { name: /email/i });
     const passwordInput = screen.getByLabelText(/password/i);
-    const loginButton = screen.getByRole('button');
+    const loginButton = screen.getByRole("button");
 
     await act(async () => {
-      await fireEvent.change(email, { target: { value: 'test-user' } });
+      await fireEvent.change(email, { target: { value: "test-user" } });
       await fireEvent.change(passwordInput, {
-        target: { value: 'test-user-password' },
+        target: { value: "test-user-password" },
       });
       await fireEvent.submit(loginButton);
     });
@@ -71,9 +71,9 @@ describe(LOGIN_ROUTE, () => {
           preloadedState: {
             auth: {
               user: {
-                username: 'Test User',
+                username: "Test User",
               },
-              token: 'valid-token',
+              token: "valid-token",
             },
           },
         });

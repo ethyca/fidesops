@@ -1,16 +1,16 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import type { RootState } from '../../app/store';
-import { CONNECTION_ROUTE } from '../../constants';
-import { selectToken } from '../auth';
-import { PrivacyRequestParams } from '../privacy-requests/types';
+import type { RootState } from "../../app/store";
+import { CONNECTION_ROUTE } from "../../constants";
+import { selectToken } from "../auth";
+import { PrivacyRequestParams } from "../privacy-requests/types";
 import {
   DatastoreConnection,
   DatastoreConnectionParams,
   DatastoreConnectionResponse,
   DatastoreConnectionStatus,
-} from './types';
+} from "./types";
 
 function mapFiltersToSearchParams({
   status,
@@ -34,31 +34,31 @@ function mapFiltersToSearchParams({
   }
 
   return {
-    include_identities: 'true',
+    include_identities: "true",
     ...(status ? { status } : {}),
     ...(id ? { request_id: id } : {}),
     ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
     ...(toISO ? { created_lt: toISO.toISOString() } : {}),
     ...(page ? { page: `${page}` } : {}),
-    ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
+    ...(typeof size !== "undefined" ? { size: `${size}` } : {}),
     ...(verbose ? { verbose } : {}),
   };
 }
 
 export const datastoreConnectionApi = createApi({
-  reducerPath: 'datastoreConnectionApi',
+  reducerPath: "datastoreConnectionApi",
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESOPS_API!,
     prepareHeaders: (headers, { getState }) => {
       const token = selectToken(getState() as RootState);
-      headers.set('Access-Control-Allow-Origin', '*');
+      headers.set("Access-Control-Allow-Origin", "*");
       if (token) {
-        headers.set('authorization', `Bearer ${token}`);
+        headers.set("authorization", `Bearer ${token}`);
       }
       return headers;
     },
   }),
-  tagTypes: ['DatastoreConnection'],
+  tagTypes: ["DatastoreConnection"],
   endpoints: (build) => ({
     getAllDatastoreConnections: build.query<
       DatastoreConnectionResponse,
@@ -68,13 +68,13 @@ export const datastoreConnectionApi = createApi({
         url: CONNECTION_ROUTE,
         params: mapFiltersToSearchParams(filters),
       }),
-      providesTags: () => ['DatastoreConnection'],
+      providesTags: () => ["DatastoreConnection"],
     }),
     getDatastoreConnectionById: build.query<DatastoreConnection, string>({
       query: (id) => ({
         url: `${CONNECTION_ROUTE}/${id}`,
       }),
-      providesTags: () => ['DatastoreConnection'],
+      providesTags: () => ["DatastoreConnection"],
     }),
     getDatastoreConnectionStatus: build.query<
       DatastoreConnectionStatus,
@@ -83,30 +83,30 @@ export const datastoreConnectionApi = createApi({
       query: (id) => ({
         url: `${CONNECTION_ROUTE}/${id}/test`,
       }),
-      providesTags: () => ['DatastoreConnection'],
+      providesTags: () => ["DatastoreConnection"],
     }),
     patchDatastoreConnections: build.mutation({
       query: () => ({
         url: CONNECTION_ROUTE,
-        method: 'PATCH',
+        method: "PATCH",
         body: {},
       }),
-      invalidatesTags: () => ['DatastoreConnection'],
+      invalidatesTags: () => ["DatastoreConnection"],
     }),
     deleteDatastoreConnection: build.mutation({
       query: (id) => ({
         url: `${CONNECTION_ROUTE}/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
-      invalidatesTags: () => ['DatastoreConnection'],
+      invalidatesTags: () => ["DatastoreConnection"],
     }),
     updateDatastoreConnectionSecrets: build.mutation({
       query: (id) => ({
         url: `${CONNECTION_ROUTE}/${id}/secret`,
-        method: 'PUT',
+        method: "PUT",
         body: {},
       }),
-      invalidatesTags: () => ['DatastoreConnection'],
+      invalidatesTags: () => ["DatastoreConnection"],
     }),
   }),
 });

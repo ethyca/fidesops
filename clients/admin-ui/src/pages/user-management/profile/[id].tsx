@@ -4,15 +4,15 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   Heading,
-} from '@fidesui/react';
-import type { NextPage } from 'next';
-import Link from 'next/link';
-import React from 'react';
+} from "@fidesui/react";
+import type { NextPage } from "next";
+import Link from "next/link";
+import React from "react";
 
-import { USER_MANAGEMENT_ROUTE } from '../../../constants';
-import ProtectedRoute from '../../../features/auth/ProtectedRoute';
-import NavBar from '../../../features/common/NavBar';
-import EditUserForm from '../../../features/user-management/EditUserForm';
+import { USER_MANAGEMENT_ROUTE } from "../../../constants";
+import ProtectedRoute from "../../../features/auth/ProtectedRoute";
+import NavBar from "../../../features/common/NavBar";
+import EditUserForm from "../../../features/user-management/EditUserForm";
 
 const Profile: NextPage = () => (
   <ProtectedRoute>

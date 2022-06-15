@@ -4,14 +4,14 @@ import {
   InputGroup,
   InputLeftElement,
   Stack,
-} from '@fidesui/react';
-import NextLink from 'next/link';
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+} from "@fidesui/react";
+import NextLink from "next/link";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-import { USER_MANAGEMENT_ROUTE } from '../../constants';
-import { SearchLineIcon } from '../common/Icon';
-import { selectUserFilters, setUsernameSearch } from './user-management.slice';
+import { USER_MANAGEMENT_ROUTE } from "../../constants";
+import { SearchLineIcon } from "../common/Icon";
+import { selectUserFilters, setUsernameSearch } from "./user-management.slice";
 
 const useUserManagementTableActions = () => {
   const filters = useSelector(selectUserFilters);

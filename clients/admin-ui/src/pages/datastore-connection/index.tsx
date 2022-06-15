@@ -1,12 +1,12 @@
-import { Box, Heading } from '@fidesui/react';
-import type { NextPage } from 'next';
-import Head from 'next/head';
-import React from 'react';
+import { Box, Heading } from "@fidesui/react";
+import type { NextPage } from "next";
+import Head from "next/head";
+import React from "react";
 
-import ProtectedRoute from '../../features/auth/ProtectedRoute';
-import NavBar from '../../features/common/NavBar';
-import ConnectionFilters from '../../features/datastore-connections/ConnectionFilters';
-import ConnectionGrid from '../../features/datastore-connections/ConnectionGrid';
+import ProtectedRoute from "../../features/auth/ProtectedRoute";
+import NavBar from "../../features/common/NavBar";
+import ConnectionFilters from "../../features/datastore-connections/ConnectionFilters";
+import ConnectionGrid from "../../features/datastore-connections/ConnectionGrid";
 
 const DatastoreConnections: NextPage = () => (
   <ProtectedRoute>

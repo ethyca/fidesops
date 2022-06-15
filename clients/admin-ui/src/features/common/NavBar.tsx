@@ -1,16 +1,16 @@
-import { Button, Flex } from '@fidesui/react';
-import NextLink from 'next/link';
-import { useRouter } from 'next/router';
-import React from 'react';
+import { Button, Flex } from "@fidesui/react";
+import NextLink from "next/link";
+import { useRouter } from "next/router";
+import React from "react";
 
 import {
   CONNECTION_ROUTE,
   DATASTORE_CONNECTION_ROUTE,
   INDEX_ROUTE,
   USER_MANAGEMENT_ROUTE,
-} from '../../constants';
-import Header from './Header';
-import { ArrowDownLineIcon } from './Icon';
+} from "../../constants";
+import Header from "./Header";
+import { ArrowDownLineIcon } from "./Icon";
 
 const NavBar = () => {
   const router = useRouter();
@@ -32,8 +32,8 @@ const NavBar = () => {
             mr={4}
             colorScheme={
               router && router.pathname === INDEX_ROUTE
-                ? 'complimentary'
-                : 'ghost'
+                ? "complimentary"
+                : "ghost"
             }
           >
             Subject Requests
@@ -47,8 +47,8 @@ const NavBar = () => {
             mr={4}
             colorScheme={
               router && router.pathname.startsWith(DATASTORE_CONNECTION_ROUTE)
-                ? 'complimentary'
-                : 'ghost'
+                ? "complimentary"
+                : "ghost"
             }
           >
             Datastore Connections
@@ -62,8 +62,8 @@ const NavBar = () => {
             mr={4}
             colorScheme={
               router && router.pathname.startsWith(USER_MANAGEMENT_ROUTE)
-                ? 'complimentary'
-                : 'ghost'
+                ? "complimentary"
+                : "ghost"
             }
           >
             User Management

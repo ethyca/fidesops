@@ -1,1 +1,1 @@
-export * from './datastore-connection.slice';
+export * from "./datastore-connection.slice";

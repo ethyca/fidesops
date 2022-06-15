@@ -11,23 +11,23 @@ import {
   Stack,
   Text,
   useToast,
-} from '@fidesui/react';
-import { useFormik } from 'formik';
-import NextLink from 'next/link';
-import { useRouter } from 'next/router';
-import React from 'react';
-import { useSelector } from 'react-redux';
+} from "@fidesui/react";
+import { useFormik } from "formik";
+import NextLink from "next/link";
+import { useRouter } from "next/router";
+import React from "react";
+import { useSelector } from "react-redux";
 
-import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from '../../constants';
-import { selectUser } from '../auth';
-import { User } from './types';
-import UpdatePasswordModal from './UpdatePasswordModal';
+import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from "../../constants";
+import { selectUser } from "../auth";
+import { User } from "./types";
+import UpdatePasswordModal from "./UpdatePasswordModal";
 import {
   useEditUserMutation,
   useGetUserByIdQuery,
   useGetUserPermissionsQuery,
   useUpdateUserPermissionsMutation,
-} from './user-management.slice';
+} from "./user-management.slice";
 
 const useUserForm = () => {
   const router = useRouter();
@@ -41,12 +41,12 @@ const useUserForm = () => {
 
   const formik = useFormik({
     initialValues: {
-      username: existingUser?.username ?? '',
-      first_name: existingUser?.first_name ?? '',
-      last_name: existingUser?.last_name ?? '',
-      password: existingUser?.password ?? '',
-      scopes: existingScopes?.scopes ?? '',
-      id: existingUser?.id ?? '',
+      username: existingUser?.username ?? "",
+      first_name: existingUser?.first_name ?? "",
+      last_name: existingUser?.last_name ?? "",
+      password: existingUser?.password ?? "",
+      scopes: existingScopes?.scopes ?? "",
+      id: existingUser?.id ?? "",
     },
     enableReinitialize: true,
     onSubmit: async (values) => {
@@ -66,26 +66,26 @@ const useUserForm = () => {
 
       if (editUserError) {
         toast({
-          status: 'error',
+          status: "error",
           description: editUserError.data.detail.length
             ? `${editUserError.data.detail[0].msg}`
-            : 'An unexpected error occurred. Please try again.',
+            : "An unexpected error occurred. Please try again.",
         });
         return;
       }
 
       if (editUserError && editUserError.status === 422) {
         toast({
-          status: 'error',
+          status: "error",
           description: editUserError.data.detail.length
             ? `${editUserError.data.detail[0].msg}`
-            : 'An unexpected error occurred. Please try again.',
+            : "An unexpected error occurred. Please try again.",
         });
       }
 
       const userWithPrivileges = {
         id: data ? data.id : null,
-        scopes: [...new Set(values.scopes, 'privacy-request:read')],
+        scopes: [...new Set(values.scopes, "privacy-request:read")],
       };
 
       const { error: updatePermissionsError } = await updateUserPermissions(
@@ -112,7 +112,7 @@ const useUserForm = () => {
   const { data: userPermissions = { scopes: [] } } = useGetUserPermissionsQuery(
     currentUser.id
   );
-  canUpdateUser = userPermissions.scopes.includes('user:update');
+  canUpdateUser = userPermissions.scopes.includes("user:update");
 
   return {
     ...formik,
@@ -148,7 +148,7 @@ const EditUserForm: React.FC = () => {
         <Divider mb={7} />
         <chakra.form
           onSubmit={handleSubmit}
-          maxW={['xs', 'xs', '100%']}
+          maxW={["xs", "xs", "100%"]}
           width="100%"
         >
           <Stack mb={8} spacing={6}>
@@ -235,7 +235,7 @@ const EditUserForm: React.FC = () => {
                         ]);
                       } else {
                         setFieldValue(
-                          'scopes',
+                          "scopes",
                           values.scopes.filter(
                             (scope) => scope !== policy.scope
                           )
@@ -245,8 +245,8 @@ const EditUserForm: React.FC = () => {
                     id={`scopes-${policy.privilege}`}
                     name="scopes"
                     value={policy.scope}
-                    isDisabled={policy.scope === 'privacy-request:read'}
-                    isReadOnly={policy.scope === 'privacy-request:read'}
+                    isDisabled={policy.scope === "privacy-request:read"}
+                    isReadOnly={policy.scope === "privacy-request:read"}
                   >
                     {policy.privilege}
                   </Checkbox>
@@ -263,8 +263,8 @@ const EditUserForm: React.FC = () => {
           <Button
             type="submit"
             bg="primary.800"
-            _hover={{ bg: 'primary.400' }}
-            _active={{ bg: 'primary.500' }}
+            _hover={{ bg: "primary.400" }}
+            _active={{ bg: "primary.500" }}
             colorScheme="primary"
             disabled={!existingUser && !(isValid && dirty)}
             size="sm"

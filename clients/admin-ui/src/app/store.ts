@@ -1,22 +1,22 @@
-import { configureStore, StateFromReducersMapObject } from '@reduxjs/toolkit';
-import { setupListeners } from '@reduxjs/toolkit/query/react';
+import { configureStore, StateFromReducersMapObject } from "@reduxjs/toolkit";
+import { setupListeners } from "@reduxjs/toolkit/query/react";
 
-import { STORED_CREDENTIALS_KEY } from '../constants';
+import { STORED_CREDENTIALS_KEY } from "../constants";
 import {
   authApi,
   AuthState,
   credentialStorage,
   reducer as authReducer,
-} from '../features/auth';
-import { datastoreConnectionApi } from '../features/datastore-connections';
+} from "../features/auth";
+import { datastoreConnectionApi } from "../features/datastore-connections";
 import {
   privacyRequestApi,
   reducer as privacyRequestsReducer,
-} from '../features/privacy-requests';
+} from "../features/privacy-requests";
 import {
   reducer as userManagementReducer,
   userApi,
-} from '../features/user-management';
+} from "../features/user-management";
 
 const reducer = {
   [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
@@ -46,7 +46,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
   });
 
 let storedAuthState: AuthState | undefined;
-if (typeof window !== 'undefined' && 'localStorage' in window) {
+if (typeof window !== "undefined" && "localStorage" in window) {
   const storedAuthStateString = localStorage.getItem(STORED_CREDENTIALS_KEY);
   if (storedAuthStateString) {
     try {

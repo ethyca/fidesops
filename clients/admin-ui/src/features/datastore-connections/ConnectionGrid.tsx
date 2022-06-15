@@ -1,8 +1,8 @@
-import { SimpleGrid, Spinner } from '@fidesui/react';
+import { SimpleGrid, Spinner } from "@fidesui/react";
 
-import ConnectionGridItem from './ConnectionGridItem';
-import { useGetAllDatastoreConnectionsQuery } from './datastore-connection.slice';
-import { temp } from './types';
+import ConnectionGridItem from "./ConnectionGridItem";
+import { useGetAllDatastoreConnectionsQuery } from "./datastore-connection.slice";
+import { temp } from "./types";
 
 // type ConnectionGridProps = {};
 
