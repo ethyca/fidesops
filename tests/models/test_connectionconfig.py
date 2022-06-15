@@ -132,7 +132,7 @@ class TestConnectionConfigModel:
         connection_config.update_saas_config(db, saas_config=saas_config)
         assert connection_config.secrets == {"domain": "localhost"}
 
-        # verify that a user defined secret overrides the default value
+        # verify that a user-defined secret overrides the default value
         connection_config.update(db, data={"secrets": saas_example_secrets})
         assert connection_config.secrets["domain"] == saas_example_secrets["domain"]
 
