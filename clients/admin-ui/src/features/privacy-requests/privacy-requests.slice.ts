@@ -52,9 +52,9 @@ export const privacyRequestApi: any = createApi({
   reducerPath: "privacyRequestApi",
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_API_URN,
-    prepareHeaders: (headers, {getState}) => {
+    prepareHeaders: (headers, { getState }) => {
       const token: string | null = selectToken(getState() as RootState);
-      return addCommonHeaders(headers, token)
+      return addCommonHeaders(headers, token);
     },
   }),
   tagTypes: ["Request"],
@@ -127,7 +127,7 @@ export const requestCSVDownload = async ({
       headers: {
         "Access-Control-Allow-Origin": "*",
         Authorization: `Bearer ${token}`,
-        'X-Fides-Source': 'fidesops-admin-ui'
+        "X-Fides-Source": "fidesops-admin-ui",
       },
     }
   )

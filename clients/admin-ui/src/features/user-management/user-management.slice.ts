@@ -81,9 +81,9 @@ export const userApi: any = createApi({
   reducerPath: "userApi",
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_API_URN,
-    prepareHeaders: (headers, {getState}) => {
+    prepareHeaders: (headers, { getState }) => {
       const token: string | null = selectToken(getState() as RootState);
-      return addCommonHeaders(headers, token)
+      return addCommonHeaders(headers, token);
     },
   }),
   tagTypes: ["User"],
