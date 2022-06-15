@@ -956,6 +956,7 @@ class TestRetryIntegration:
         policy,
         integration_postgres_config,
     ):
+        config.dev_mode = False
         config.execution.TASK_RETRY_COUNT = 1
         config.execution.TASK_RETRY_DELAY = 0.1
         config.execution.TASK_RETRY_BACKOFF = 0.01
@@ -1007,6 +1008,7 @@ class TestRetryIntegration:
         policy,
         integration_postgres_config,
     ):
+        config.dev_mode = False
         config.execution.TASK_RETRY_COUNT = 2
         config.execution.TASK_RETRY_DELAY = 0.1
         config.execution.TASK_RETRY_BACKOFF = 0.01
