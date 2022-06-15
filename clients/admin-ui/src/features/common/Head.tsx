@@ -1,7 +1,7 @@
-import Head from 'next/head';
-import React from 'react';
+import Head from "next/head";
+import React from "react";
 
-import { BASE_ASSET_URN } from '../../constants';
+import { BASE_ASSET_URN } from "../../constants";
 
 const FidesHead = () => (
   <Head>

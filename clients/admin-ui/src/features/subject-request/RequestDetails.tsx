@@ -1,10 +1,10 @@
-import { Box, Divider, Flex, Heading, Text } from '@fidesui/react';
-import React from 'react';
+import { Box, Divider, Flex, Heading, Text } from "@fidesui/react";
+import React from "react";
 
-import ClipboardButton from '../common/ClipboardButton';
-import RequestStatusBadge from '../common/RequestStatusBadge';
-import RequestType from '../common/RequestType';
-import { PrivacyRequest } from '../privacy-requests/types';
+import ClipboardButton from "../common/ClipboardButton";
+import RequestStatusBadge from "../common/RequestStatusBadge";
+import RequestType from "../common/RequestType";
+import { PrivacyRequest } from "../privacy-requests/types";
 
 type RequestDetailsProps = {
   subjectRequest: PrivacyRequest;

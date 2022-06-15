@@ -11,15 +11,15 @@ import {
   ModalOverlay,
   Stack,
   useDisclosure,
-} from '@fidesui/react';
-import React, { useState } from 'react';
+} from "@fidesui/react";
+import React, { useState } from "react";
 
-import { useUpdateUserPasswordMutation } from './user-management.slice';
+import { useUpdateUserPasswordMutation } from "./user-management.slice";
 
 const useUpdatePasswordModal = (id: string) => {
   const modal = useDisclosure();
-  const [oldPasswordValue, setOldPasswordValue] = useState('');
-  const [newPasswordValue, setNewPasswordValue] = useState('');
+  const [oldPasswordValue, setOldPasswordValue] = useState("");
+  const [newPasswordValue, setNewPasswordValue] = useState("");
   const [changePassword, { isLoading }] = useUpdateUserPasswordMutation();
 
   const changePasswordValidation = !!(
@@ -29,7 +29,7 @@ const useUpdatePasswordModal = (id: string) => {
   );
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.name === 'oldPassword') {
+    if (event.target.name === "oldPassword") {
       setOldPasswordValue(event.target.value);
     } else {
       setNewPasswordValue(event.target.value);
@@ -80,8 +80,8 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
     <>
       <Button
         bg="primary.800"
-        _hover={{ bg: 'primary.400' }}
-        _active={{ bg: 'primary.500' }}
+        _hover={{ bg: "primary.400" }}
+        _active={{ bg: "primary.500" }}
         colorScheme="primary"
         maxWidth="40%"
         size="sm"

@@ -8,11 +8,11 @@ import {
   Th,
   Thead,
   Tr,
-} from '@fidesui/react';
-import { format } from 'date-fns-tz';
-import React from 'react';
+} from "@fidesui/react";
+import { format } from "date-fns-tz";
+import React from "react";
 
-import { ExecutionLog } from '../privacy-requests/types';
+import { ExecutionLog } from "../privacy-requests/types";
 
 type EventDetailsProps = {
   eventDetails: ExecutionLog[];
@@ -37,7 +37,7 @@ const EventDetails = ({ eventDetails }: EventDetailsProps) => (
           {eventDetails?.map((detail) => (
             <Tr key={detail.updated_at}>
               <Td>
-                {format(new Date(detail.updated_at), 'MMMM d, Y, KK:mm:ss z')}
+                {format(new Date(detail.updated_at), "MMMM d, Y, KK:mm:ss z")}
               </Td>
               <Td> {detail.collection_name}</Td>
               <Td> {detail.status}</Td>

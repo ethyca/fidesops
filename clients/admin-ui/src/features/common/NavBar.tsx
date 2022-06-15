@@ -1,10 +1,10 @@
-import { Button, Flex } from '@fidesui/react';
-import NextLink from 'next/link';
-import { useRouter } from 'next/router';
-import React from 'react';
+import { Button, Flex } from "@fidesui/react";
+import NextLink from "next/link";
+import { useRouter } from "next/router";
+import React from "react";
 
-import Header from './Header';
-import { ArrowDownLineIcon } from './Icon';
+import Header from "./Header";
+import { ArrowDownLineIcon } from "./Icon";
 
 const NavBar = () => {
   const router = useRouter();
@@ -25,7 +25,7 @@ const NavBar = () => {
             variant="ghost"
             mr={4}
             colorScheme={
-              router && router.pathname === '/' ? 'complimentary' : 'ghost'
+              router && router.pathname === "/" ? "complimentary" : "ghost"
             }
           >
             Subject Requests
@@ -44,9 +44,9 @@ const NavBar = () => {
             variant="ghost"
             mr={4}
             colorScheme={
-              router && router.pathname.startsWith('/user-management')
-                ? 'complimentary'
-                : 'ghost'
+              router && router.pathname.startsWith("/user-management")
+                ? "complimentary"
+                : "ghost"
             }
           >
             User Management

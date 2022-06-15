@@ -1,9 +1,9 @@
-import { Icon, Tooltip, useClipboard } from '@fidesui/react';
-import React, { useState } from 'react';
+import { Icon, Tooltip, useClipboard } from "@fidesui/react";
+import React, { useState } from "react";
 
 enum TooltipText {
-  COPY = 'Copy',
-  COPIED = 'Copied',
+  COPY = "Copy",
+  COPIED = "Copied",
 }
 
 const useClipboardButton = (requestId: string) => {
@@ -53,7 +53,7 @@ const ClipboardButton = ({ requestId }: ClipboardButtonProps) => {
     setTooltipText,
   } = useClipboardButton(requestId);
 
-  const iconColor = !highlighted ? 'gray.600' : 'complimentary.500';
+  const iconColor = !highlighted ? "gray.600" : "complimentary.500";
 
   return (
     <Tooltip

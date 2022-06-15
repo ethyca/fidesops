@@ -13,20 +13,20 @@ import {
   Stack,
   Text,
   useDisclosure,
-} from '@fidesui/react';
-import React, { useState } from 'react';
+} from "@fidesui/react";
+import React, { useState } from "react";
 
-import { User } from './types';
-import { useDeleteUserMutation } from './user-management.slice';
+import { User } from "./types";
+import { useDeleteUserMutation } from "./user-management.slice";
 
 const DeleteUserModal: React.FC<User> = ({ id, username }) => {
-  const [usernameValue, setUsernameValue] = useState('');
-  const [confirmValue, setConfirmValue] = useState('');
+  const [usernameValue, setUsernameValue] = useState("");
+  const [confirmValue, setConfirmValue] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [deleteUser] = useDeleteUserMutation();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.name === 'username') {
+    if (event.target.name === "username") {
       setUsernameValue(event.target.value);
     } else {
       setConfirmValue(event.target.value);
@@ -51,7 +51,7 @@ const DeleteUserModal: React.FC<User> = ({ id, username }) => {
   return (
     <>
       <MenuItem
-        _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
+        _focus={{ color: "complimentary.500", bg: "gray.100" }}
         onClick={onOpen}
       >
         <Text fontSize="sm">Delete</Text>

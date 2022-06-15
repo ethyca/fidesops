@@ -1,8 +1,8 @@
-import { Box, Flex, Text } from '@fidesui/react';
-import React from 'react';
+import { Box, Flex, Text } from "@fidesui/react";
+import React from "react";
 
-import { GreenCheckCircle } from '../common/Icon';
-import { PrivacyRequest } from '../privacy-requests/types';
+import { GreenCheckCircle } from "../common/Icon";
+import { PrivacyRequest } from "../privacy-requests/types";
 
 type ActivityTimelineProps = {
   subjectRequest: PrivacyRequest;
@@ -16,9 +16,9 @@ const ActivityTimeline = ({
   const { results } = subjectRequest;
 
   const resultKeys = [
-    'postgres_example',
-    'postgres_example',
-    'postgres_example',
+    "postgres_example",
+    "postgres_example",
+    "postgres_example",
   ];
 
   const timelineEntries = resultKeys.map((key, index) => (

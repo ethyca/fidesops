@@ -11,19 +11,19 @@ import {
   Stack,
   Text,
   useToast,
-} from '@fidesui/react';
-import { useFormik } from 'formik';
-import type { NextPage } from 'next';
-import NextLink from 'next/link';
-import { useRouter } from 'next/router';
-import React from 'react';
+} from "@fidesui/react";
+import { useFormik } from "formik";
+import type { NextPage } from "next";
+import NextLink from "next/link";
+import { useRouter } from "next/router";
+import React from "react";
 
-import { USER_PRIVILEGES } from '../../constants';
-import { isErrorWithDetail, isErrorWithDetailArray } from '../common/helpers';
+import { USER_PRIVILEGES } from "../../constants";
+import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import {
   useCreateUserMutation,
   useUpdateUserPermissionsMutation,
-} from './user-management.slice';
+} from "./user-management.slice";
 
 const useUserForm = () => {
   const [createUser] = useCreateUserMutation();
@@ -33,10 +33,10 @@ const useUserForm = () => {
 
   const formik = useFormik({
     initialValues: {
-      username: '',
-      first_name: '',
-      last_name: '',
-      password: '',
+      username: "",
+      first_name: "",
+      last_name: "",
+      password: "",
       scopes: [],
     },
     onSubmit: async (values) => {
@@ -49,8 +49,8 @@ const useUserForm = () => {
 
       const createUserResult = await createUser(userBody);
 
-      if ('error' in createUserResult) {
-        let errorMsg = 'An unexpected error occurred. Please try again.';
+      if ("error" in createUserResult) {
+        let errorMsg = "An unexpected error occurred. Please try again.";
         if (isErrorWithDetail(createUserResult.error)) {
           errorMsg = createUserResult.error.data.detail;
         } else if (isErrorWithDetailArray(createUserResult.error)) {
@@ -58,7 +58,7 @@ const useUserForm = () => {
           errorMsg = error.data.detail[0].msg;
         }
         toast({
-          status: 'error',
+          status: "error",
           description: errorMsg,
         });
         return;
@@ -68,15 +68,15 @@ const useUserForm = () => {
 
       const userWithPrivileges = {
         id: data ? data.id : null,
-        scopes: [...values.scopes, 'privacy-request:read'],
+        scopes: [...values.scopes, "privacy-request:read"],
       };
 
       const updateUserPermissionsResult = await updateUserPermissions(
         userWithPrivileges as { id: string }
       );
 
-      if (!('error' in updateUserPermissionsResult)) {
-        router.push('/user-management');
+      if (!("error" in updateUserPermissionsResult)) {
+        router.push("/user-management");
       }
     },
     validate: (values) => {
@@ -88,31 +88,31 @@ const useUserForm = () => {
       } = {};
 
       if (!values.username) {
-        errors.username = 'Username is required';
+        errors.username = "Username is required";
       }
 
       if (!values.password) {
-        errors.password = 'Password is required';
+        errors.password = "Password is required";
       }
 
       if (values.password.length < 8) {
-        errors.password = 'Password must have at least eight characters.';
+        errors.password = "Password must have at least eight characters.";
       }
 
       if (!/[0-9]/.test(values.password)) {
-        errors.password = 'Password must have at least one number.';
+        errors.password = "Password must have at least one number.";
       }
 
       if (!/[A-Z]/.test(values.password)) {
-        errors.password = 'Password must have at least one capital letter.';
+        errors.password = "Password must have at least one capital letter.";
       }
 
       if (!/[a-z]/.test(values.password)) {
-        errors.password = 'Password must have at least one lowercase letter.';
+        errors.password = "Password must have at least one lowercase letter.";
       }
 
       if (!/[\W]/.test(values.password)) {
-        errors.password = 'Password must have at least one symbol.';
+        errors.password = "Password must have at least one symbol.";
       }
 
       return errors;
@@ -137,7 +137,7 @@ const UserForm: NextPage = () => {
         <Divider mb={7} />
         <chakra.form
           onSubmit={handleSubmit}
-          maxW={['xs', 'xs', '100%']}
+          maxW={["xs", "xs", "100%"]}
           width="100%"
         >
           <Stack mb={8} spacing={6}>
@@ -225,7 +225,7 @@ const UserForm: NextPage = () => {
               {USER_PRIVILEGES.map((policy) => (
                 <Checkbox
                   colorScheme="purple"
-                  defaultChecked={policy.scope === 'privacy-request:read'}
+                  defaultChecked={policy.scope === "privacy-request:read"}
                   key={`${policy.privilege}`}
                   onChange={handleChange}
                   id={`scopes-${policy.privilege}`}
@@ -233,12 +233,12 @@ const UserForm: NextPage = () => {
                   // @ts-ignore
                   isChecked={values.scopes[policy.privilege]}
                   value={
-                    policy.scope === 'privacy-request:read'
+                    policy.scope === "privacy-request:read"
                       ? undefined
                       : policy.scope
                   }
-                  isDisabled={policy.scope === 'privacy-request:read'}
-                  isReadOnly={policy.scope === 'privacy-request:read'}
+                  isDisabled={policy.scope === "privacy-request:read"}
+                  isReadOnly={policy.scope === "privacy-request:read"}
                 >
                   {policy.privilege}
                 </Checkbox>
@@ -254,8 +254,8 @@ const UserForm: NextPage = () => {
           <Button
             type="submit"
             bg="primary.800"
-            _hover={{ bg: 'primary.400' }}
-            _active={{ bg: 'primary.500' }}
+            _hover={{ bg: "primary.400" }}
+            _active={{ bg: "primary.500" }}
             colorScheme="primary"
             // disabled={!(isValid && dirty)}
             size="sm"
