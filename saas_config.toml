@@ -3,7 +3,7 @@ domain = "domain"
 username = "username"
 api_key = "api_key"
 api_version = "2.0"
-page_size = 10
+page_size = "10"
 
 [mailchimp]
 domain = ""

@@ -202,7 +202,7 @@ def oauth2_connection_config(db: Session, oauth2_configuration) -> Generator:
         "name": "OAuth2 Connector",
         "description": "Generic OAuth2 connector for testing",
         "version": "0.0.1",
-        "connector_params": [{"name": item} for item in secrets.values()],
+        "connector_params": [{"name": item} for item in secrets.keys()],
         "client_config": {
             "protocol": "https",
             "host": secrets["domain"],
