@@ -234,7 +234,7 @@ class TestCreatePrivacyRequest:
                 "identity": {"email": "test@example.com"},
             }
         ]
-        resp = api_client.post(V1_URL_PREFIX + PRIVACY_REQUESTS, json=data)
+        resp = api_client.post(url, json=data)
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
@@ -1891,7 +1891,7 @@ class TestResumeAccessRequestWithManualInput:
         )
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @pytest.mark.usefixtures(
         "postgres_example_test_dataset_config", "manual_dataset_config"
@@ -2160,4 +2160,7 @@ class TestRestartFromFailure:
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.in_processing
 
-        submit_mock.assert_called_with(from_step=PausedStep.access)
+        submit_mock.assert_called_with(
+            privacy_request_id=privacy_request.id,
+            from_step=PausedStep.access,
+        )
