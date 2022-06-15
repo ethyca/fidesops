@@ -3,6 +3,7 @@ import uuid
 import pytest
 
 from fidesops.common_exceptions import PrivacyRequestPaused
+from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.models.policy import PausedStep
 from fidesops.models.privacy_request import (
@@ -26,6 +27,7 @@ def test_postgres_with_manual_input_access_request_task(
     integration_manual_config,
 ) -> None:
     """Run a privacy request with two manual nodes"""
+    config.dev_mode = False
     privacy_request = PrivacyRequest(
         id=f"test_postgres_access_request_task_{uuid.uuid4()}"
     )
