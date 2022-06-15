@@ -1307,7 +1307,12 @@ def test_create_and_process_erasure_request_bigquery(
     target.save(db=db)
 
     # Should erase state fields on address table
-    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
     pr.delete(db=db)
 
     bigquery_client = bigquery_resources["client"]
