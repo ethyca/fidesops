@@ -3,7 +3,7 @@ services:
     container_name: fidesops
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.app
     depends_on:
       - db
       - redis
@@ -61,7 +61,7 @@ services:
   celery:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.worker
     command: fidesops worker
     depends_on:
       fidesops:
@@ -80,7 +80,7 @@ services:
   docs:
     build:
       context: docs/fidesops/
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.docs
     volumes:
       - ./docs/fidesops:/docs
     expose:
