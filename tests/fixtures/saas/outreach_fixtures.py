@@ -3,9 +3,10 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+import requests
+from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
 
-from fidesops.core.config import load_toml
 from fidesops.db import session
 from fidesops.models.connectionconfig import (
     AccessLevel,
@@ -13,10 +14,11 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.util import cryptographic_util
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 
-saas_config = load_toml("saas_config.toml")
+saas_config = load_toml(["saas_config.toml"])
 
 
 @pytest.fixture(scope="function")
@@ -24,6 +26,8 @@ def outreach_secrets():
     return {
         "domain": pydash.get(saas_config, "outreach.domain")
         or os.environ.get("OUTREACH_DOMAIN"),
+        "requester_email": pydash.get(saas_config, "outreach.requester_email")
+        or os.environ.get("OUTREACH_REQUESTER_EMAIL"),
         "client_id": pydash.get(saas_config, "outreach.client_id")
         or os.environ.get("OUTREACH_CLIENT_ID"),
         "client_secret": pydash.get(saas_config, "outreach.client_secret")
@@ -40,6 +44,11 @@ def outreach_identity_email():
     return pydash.get(saas_config, "outreach.identity_email") or os.environ.get(
         "OUTREACH_IDENTITY_EMAIL"
     )
+
+
+@pytest.fixture(scope="function")
+def outreach_erasure_identity_email() -> str:
+    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 
 @pytest.fixture
@@ -92,3 +101,52 @@ def outreach_dataset_config(
     )
     yield dataset
     dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def outreach_create_erasure_data(
+    outreach_connection_config: ConnectionConfig, outreach_erasure_identity_email: str
+) -> None:
+
+    outreach_secrets = outreach_connection_config.secrets
+    base_url = f"https://{outreach_secrets['domain']}"
+    headers = {
+        "Authorization": f"Bearer {outreach_secrets['access_token']}",
+    }
+
+    # prospect
+    prospect_data = {
+        "data": {
+            "type": "prospect",
+            "attributes": {
+                "emails": [outreach_erasure_identity_email],
+                "firstName": "Ethyca",
+                "lastName": "RTF",
+            },
+        }
+    }
+
+    response = requests.post(
+        url=f"{base_url}/api/v2/prospects",
+        headers=headers,
+        json=prospect_data,
+    )
+    assert response.ok
+
+    # recipient
+    recipient_data = {
+        "data": {
+            "type": "recipient",
+            "attributes": {
+                "recipientType": "to",
+                "value": outreach_erasure_identity_email,
+            },
+        }
+    }
+
+    response = requests.post(
+        url=f"{base_url}/api/v2/recipients",
+        headers=headers,
+        json=recipient_data,
+    )
+    assert response.ok

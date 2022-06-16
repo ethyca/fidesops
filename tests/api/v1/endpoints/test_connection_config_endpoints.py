@@ -7,6 +7,7 @@ import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
 from sqlalchemy.orm import Session
+from sqlalchemy.testing import db
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.scope_registry import (
@@ -112,6 +113,7 @@ class TestPatchConnections:
         assert postgres_connection["created_at"] is not None
         assert postgres_connection["updated_at"] is not None
         assert postgres_connection["last_test_timestamp"] is None
+        assert postgres_connection["disabled"] is False
         assert "secrets" not in postgres_connection
 
         mongo_connection = response_body["succeeded"][1]
@@ -120,6 +122,7 @@ class TestPatchConnections:
         assert mongo_connection["key"] == "my_mongo_db"  # stringified name
         assert mongo_connection["connection_type"] == "mongodb"
         assert mongo_connection["access"] == "read"
+        assert postgres_connection["disabled"] is False
         assert mongo_connection["created_at"] is not None
         assert mongo_connection["updated_at"] is not None
         assert mongo_connection["last_test_timestamp"] is None
@@ -193,6 +196,7 @@ class TestPatchConnections:
                 "key": "postgres_db_1",
                 "connection_type": "postgres",
                 "access": "read",
+                "disabled": True,
             },
             {
                 "key": "my_mongo_db",
@@ -235,6 +239,7 @@ class TestPatchConnections:
                 "name": "Snowflake Warehouse",
                 "connection_type": "snowflake",
                 "access": "write",
+                "description": "Backup snowflake db",
             },
         ]
 
@@ -250,19 +255,23 @@ class TestPatchConnections:
 
         postgres_connection = response_body["succeeded"][0]
         assert postgres_connection["access"] == "read"
+        assert postgres_connection["disabled"] is True
         assert "secrets" not in postgres_connection
         assert postgres_connection["updated_at"] is not None
         postgres_resource = (
             db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()
         )
         assert postgres_resource.access.value == "read"
+        assert postgres_resource.disabled
 
         mongo_connection = response_body["succeeded"][1]
         assert mongo_connection["access"] == "write"
+        assert mongo_connection["disabled"] is False
         assert mongo_connection["updated_at"] is not None
         mongo_resource = db.query(ConnectionConfig).filter_by(key="my_mongo_db").first()
         assert mongo_resource.access.value == "write"
         assert "secrets" not in mongo_connection
+        assert not mongo_resource.disabled
 
         mysql_connection = response_body["succeeded"][2]
         assert mysql_connection["access"] == "read"
@@ -308,10 +317,12 @@ class TestPatchConnections:
         snowflake_connection = response_body["succeeded"][7]
         assert snowflake_connection["access"] == "write"
         assert snowflake_connection["updated_at"] is not None
+        assert snowflake_connection["description"] == "Backup snowflake db"
         snowflake_resource = (
             db.query(ConnectionConfig).filter_by(key="my_snowflake").first()
         )
         assert snowflake_resource.access.value == "write"
+        assert snowflake_resource.description == "Backup snowflake db"
         assert "secrets" not in snowflake_connection
 
         postgres_resource.delete(db)
@@ -357,12 +368,16 @@ class TestPatchConnections:
             "key": "postgres_db_1",
             "connection_type": "postgres",
             "access": "write",
+            "disabled": False,
+            "description": None,
         }
         assert response_body["failed"][1]["data"] == {
             "name": "My Mongo DB",
             "key": None,
             "connection_type": "mongodb",
             "access": "read",
+            "disabled": False,
+            "description": None,
         }
 
 
@@ -404,6 +419,8 @@ class TestGetConnections:
             "last_test_succeeded",
             "key",
             "created_at",
+            "disabled",
+            "description",
         }
 
         assert connection["key"] == "my_postgres_db_1"
@@ -415,6 +432,50 @@ class TestGetConnections:
         assert response_body["total"] == 1
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
+
+    def test_search_connections(
+        self,
+        db,
+        connection_config,
+        read_connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+
+        resp = api_client.get(url + "?search=primary", headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 1
+        assert "primary" in resp.json()["items"][0]["description"].lower()
+
+        resp = api_client.get(url + "?search=read", headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 1
+        assert "read" in resp.json()["items"][0]["description"].lower()
+
+        resp = api_client.get(url + "?search=nonexistent", headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 0
+
+        resp = api_client.get(url + "?search=postgres", headers=auth_header)
+        assert resp.status_code == 200
+        items = resp.json()["items"]
+        assert len(items) == 2
+
+        ordered = (
+            db.query(ConnectionConfig)
+            .filter(
+                ConnectionConfig.key.in_(
+                    [read_connection_config.key, connection_config.key]
+                )
+            )
+            .order_by(ConnectionConfig.created_at.desc())
+            .all()
+        )
+        assert len(ordered) == 2
+        assert ordered[0].key == items[0]["key"]
+        assert ordered[1].key == items[1]["key"]
 
 
 class TestGetConnection:
@@ -462,6 +523,8 @@ class TestGetConnection:
             "last_test_succeeded",
             "key",
             "created_at",
+            "disabled",
+            "description",
         }
 
         assert response_body["key"] == "my_postgres_db_1"
