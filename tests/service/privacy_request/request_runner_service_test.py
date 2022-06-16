@@ -998,7 +998,11 @@ def snowflake_resources(
 @pytest.mark.integration_external
 @pytest.mark.integration_snowflake
 def test_create_and_process_access_request_snowflake(
-    snowflake_resources, db, cache, policy, run_privacy_request_task
+    snowflake_resources,
+    db,
+    cache,
+    policy,
+    run_privacy_request_task,
 ):
     customer_email = snowflake_resources["email"]
     customer_name = snowflake_resources["name"]
