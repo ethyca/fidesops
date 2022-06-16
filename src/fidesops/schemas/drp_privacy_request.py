@@ -1,10 +1,12 @@
 from enum import Enum
-from typing import Optional, List
+from typing import List, Optional
 
 from pydantic import validator
 
 from fidesops.models.policy import DrpAction
 from fidesops.schemas.base_class import BaseSchema
+
+DRP_VERSION = "0.5"
 
 
 class DrpMeta(BaseSchema):
@@ -35,7 +37,7 @@ class DrpPrivacyRequestCreate(BaseSchema):
         use_enum_values = True
 
     @validator("exercise")
-    def check_exercise_length(cls, exercise: [List[DrpAction]]) -> List[DrpAction]:
+    def check_exercise_length(cls, exercise: List[DrpAction]) -> List[DrpAction]:
         """Validate the only one exercise action is provided"""
         if len(exercise) > 1:
             raise ValueError("Multiple exercise actions are not supported at this time")
@@ -55,3 +57,12 @@ class DrpIdentity(BaseSchema):
     address: Optional[str]
     address_verified: Optional[bool]
     owner_of_attorney: Optional[str]
+
+
+class DrpDataRightsResponse(BaseSchema):
+    """Drp data rights response"""
+
+    version: str
+    api_base: Optional[str]
+    actions: List[DrpAction]
+    user_relationships: Optional[List[str]]

@@ -2,22 +2,18 @@ from uuid import uuid4
 
 import pydash
 import sqlalchemy
-from sqlalchemy_utils.functions import (
-    create_database,
-    database_exists,
-    drop_database,
-)
+from fideslib.core.config import load_toml
+from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fidesops.core.config import load_toml
-from fidesops.db.session import get_db_session, get_db_engine
+from fidesops.db.session import get_db_engine, get_db_session
 from fidesops.models.connectionconfig import (
-    ConnectionConfig,
     AccessLevel,
+    ConnectionConfig,
     ConnectionType,
 )
 from fidesops.service.connectors.sql_connector import PostgreSQLConnector
 
-integration_config = load_toml("fidesops-integration.toml")
+integration_config = load_toml(["fidesops-integration.toml"])
 
 
 def setup():

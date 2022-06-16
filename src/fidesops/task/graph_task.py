@@ -1,43 +1,42 @@
 import copy
-
 import logging
 import traceback
 from abc import ABC
 from functools import wraps
-
 from time import sleep
-from typing import List, Dict, Any, Tuple, Callable, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 import dask
 from dask.threaded import get
 
+from fidesops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
 from fidesops.core.config import config
 from fidesops.graph.config import (
-    CollectionAddress,
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
-    FieldPath,
+    CollectionAddress,
     Field,
     FieldAddress,
+    FieldPath,
 )
-from fidesops.graph.graph import Edge, DatasetGraph, Node
-from fidesops.graph.traversal import TraversalNode, Traversal
-from fidesops.models.connectionconfig import ConnectionConfig, AccessLevel
+from fidesops.graph.graph import DatasetGraph, Edge, Node
+from fidesops.graph.traversal import Traversal, TraversalNode
+from fidesops.models.connectionconfig import AccessLevel, ConnectionConfig
 from fidesops.models.policy import ActionType, Policy
-from fidesops.models.privacy_request import PrivacyRequest, ExecutionLogStatus
+from fidesops.models.privacy_request import ExecutionLogStatus, PrivacyRequest
 from fidesops.service.connectors import BaseConnector
 from fidesops.task.consolidate_query_matches import consolidate_query_matches
 from fidesops.task.filter_element_match import filter_element_match
 from fidesops.task.refine_target_path import FieldPathNodeInput
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.cache import get_cache
-from fidesops.util.collection_util import partition, append, NodeInput, Row
+from fidesops.util.collection_util import NodeInput, Row, append, partition
 from fidesops.util.logger import NotPii
 from fidesops.util.saas_util import FIDESOPS_GROUPED_INPUTS
 
 logger = logging.getLogger(__name__)
 
-dask.config.set(scheduler="processes")
+dask.config.set(scheduler="threads")
 
 EMPTY_REQUEST = PrivacyRequest()
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
@@ -52,6 +51,8 @@ def retry(
 
     If an exception is raised, we retry the function `count` times with exponential backoff. After the number of
     retries have expired, we call GraphTask.end() with the appropriate `action_type` and `default_return`.
+
+    If we exceed the number of TASK_RETRY_COUNT retries, we re-raise the exception to stop execution of the privacy request.
     """
 
     def decorator(func: Callable) -> Callable:
@@ -67,6 +68,7 @@ def retry(
                 return func(*args, **kwargs)
             for attempt in range(config.execution.TASK_RETRY_COUNT + 1):
                 try:
+                    self.skip_if_disabled()
                     # Create ExecutionLog with status in_processing or retrying
                     if attempt:
                         self.log_retry(action_type)
@@ -74,6 +76,20 @@ def retry(
                         self.log_start(action_type)
                     # Run access or erasure request
                     return func(*args, **kwargs)
+                except PrivacyRequestPaused as ex:
+                    logger.warning(
+                        f"Privacy request {method_name} paused {self.traversal_node.address}"
+                    )
+                    self.log_paused(action_type, ex)
+                    # Re-raise to stop privacy request execution on pause.
+                    raise
+                except CollectionDisabled as exc:
+                    logger.warning(
+                        f"Skipping disabled collection {self.traversal_node.address} "
+                        f"for privacy_request: {self.resources.request.id}"
+                    )
+                    self.log_skipped(action_type, exc)
+                    return default_return
                 except BaseException as ex:  # pylint: disable=W0703
                     func_delay *= config.execution.TASK_RETRY_BACKOFF
                     logger.warning(
@@ -81,8 +97,13 @@ def retry(
                     )
                     sleep(func_delay)
                     raised_ex = ex
+
             self.log_end(action_type, raised_ex)
-            return default_return
+            self.resources.request.cache_failed_collection_details(
+                step=action_type, collection=self.traversal_node.address
+            )
+            # Re-raise to stop privacy request execution on failure.
+            raise raised_ex  # type: ignore
 
         return result
 
@@ -316,6 +337,18 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
 
+    def log_paused(self, action_type: ActionType, ex: Optional[BaseException]) -> None:
+        """On paused activities"""
+        logger.info(f"Pausing {self.resources.request.id}, node {self.key}")
+
+        self.update_status(str(ex), [], action_type, ExecutionLogStatus.paused)
+
+    def log_skipped(self, action_type: ActionType, ex: str) -> None:
+        """Log that a collection was skipped.  For now, this is because a collection has been disabled."""
+        logger.info(f"Skipping {self.resources.request.id}, node {self.key}")
+
+        self.update_status(str(ex), [], action_type, ExecutionLogStatus.skipped)
+
     def log_end(
         self, action_type: ActionType, ex: Optional[BaseException] = None
     ) -> None:
@@ -414,6 +447,15 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # Return filtered rows with non-matched array data removed.
         return output
 
+    def skip_if_disabled(self) -> None:
+        """Skip execution for the given collection if it is attached to a disabled ConnectionConfig."""
+        connection_config: ConnectionConfig = self.connector.configuration
+        if connection_config.disabled:
+            raise CollectionDisabled(
+                f"Skipping collection {self.traversal_node.node.address}. "
+                f"ConnectionConfig {connection_config.key} is disabled.",
+            )
+
     @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run an access request on a single node."""
@@ -469,6 +511,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             retrieved_data,
         )
         self.log_end(ActionType.erasure)
+        self.resources.cache_erasure(
+            f"{self.key}", output
+        )  # Cache that the erasure was performed in case we need to restart
         return output
 
 
@@ -488,6 +533,38 @@ def collect_queries(
     return env
 
 
+def update_mapping_from_cache(
+    dsk: Dict[CollectionAddress, Tuple[Any, ...]],
+    resources: TaskResources,
+    start_fn: Callable,
+) -> None:
+    """When resuming a privacy request from a paused or failed state, update the `dsk` dictionary with results we've
+    already obtained from a previous run. Remove upstream dependencies for these nodes, and just return the data we've
+    already retrieved, rather than visiting them again.
+
+    If there's no cached data, the dsk dictionary won't change.
+    """
+
+    cached_results: Dict[str, Optional[List[Row]]] = resources.get_all_cached_objects()
+
+    for collection_name in cached_results:
+        dsk[CollectionAddress.from_string(collection_name)] = (
+            start_fn(cached_results[collection_name]),
+        )
+
+
+def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, Any]]]:
+    """Return a function for collections with no upstream dependencies, that just start
+    with seed data.
+
+    This is used for root nodes or previously-visited nodes on restart."""
+
+    def g() -> List[Dict[str, Any]]:
+        return seed
+
+    return g
+
+
 def run_access_request(
     privacy_request: PrivacyRequest,
     policy: Policy,
@@ -499,17 +576,6 @@ def run_access_request(
     traversal: Traversal = Traversal(graph, identity)
     with TaskResources(privacy_request, policy, connection_configs) as resources:
 
-        def start_function(seed: Dict[str, Any]) -> Callable[[], List[Dict[str, Any]]]:
-            """Return a function that returns the seed value to kick off the dask function chain.
-
-            The first traversal_node in the dask function chain is just a function that when called returns
-            the graph seed value."""
-
-            def g() -> List[Dict[str, Any]]:
-                return [seed]
-
-            return g
-
         def collect_tasks_fn(
             tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
         ) -> None:
@@ -517,9 +583,10 @@ def run_access_request(
             if not tn.is_root_node():
                 data[tn.address] = GraphTask(tn, resources)
 
-        def termination_fn(*dependent_values: List[Row]) -> Dict[str, List[Row]]:
+        def termination_fn(
+            *dependent_values: List[Row],
+        ) -> Dict[str, Optional[List[Row]]]:
             """A termination function that just returns its inputs mapped to their source addresses.
-
             This needs to wait for all dependent keys because this is how dask is informed to wait for
             all terminating addresses before calling this."""
 
@@ -528,11 +595,14 @@ def run_access_request(
         env: Dict[CollectionAddress, Any] = {}
         end_nodes = traversal.traverse(env, collect_tasks_fn)
 
-        dsk = {k: (t.access_request, *t.input_keys) for k, t in env.items()}
-        dsk[ROOT_COLLECTION_ADDRESS] = (start_function(traversal.seed_data),)
+        dsk: Dict[CollectionAddress, Tuple[Any, ...]] = {
+            k: (t.access_request, *t.input_keys) for k, t in env.items()
+        }
+        dsk[ROOT_COLLECTION_ADDRESS] = (start_function([traversal.seed_data]),)
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
-        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
+        update_mapping_from_cache(dsk, resources, start_function)
 
+        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
         return v.compute()
 
 
@@ -549,6 +619,24 @@ def get_cached_data_for_erasures(
         f"PLACEHOLDER_RESULTS__{privacy_request_id}"
     )
     return {k.split("__")[-1]: v for k, v in value_dict.items()}
+
+
+def update_erasure_mapping_from_cache(
+    dsk: Dict[CollectionAddress, Tuple[Any, ...]],
+    resources: TaskResources,
+    start_fn: Callable,
+) -> None:
+    """On pause or restart from failure, update the dsk graph to skip running erasures on collections
+    we've already visited. Instead, just return the previous count of rows affected.
+
+    If there's no cached data, the dsk dictionary won't change.
+    """
+    cached_erasures: Dict[str, int] = resources.get_all_cached_erasures()
+
+    for collection_name in cached_erasures:
+        dsk[CollectionAddress.from_string(collection_name)] = (
+            start_fn(cached_erasures[collection_name]),
+        )
 
 
 def run_erasure(  # pylint: disable = too-many-arguments
@@ -586,7 +674,8 @@ def run_erasure(  # pylint: disable = too-many-arguments
         }
         # terminator function waits for all keys
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
-        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
+        update_erasure_mapping_from_cache(dsk, resources, start_function)
+        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
 
         update_cts: Tuple[int, ...] = v.compute()
         # we combine the output of the termination function with the input keys to provide

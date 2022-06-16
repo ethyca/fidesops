@@ -1,5 +1,12 @@
 import json
-from fidesops.core.config import load_toml
+import os
+from typing import Any, Dict, Generator
+
+import pydash
+import pytest
+from fideslib.core.config import load_toml
+from sqlalchemy.orm import Session
+
 from fidesops.db import session
 from fidesops.models.connectionconfig import (
     AccessLevel,
@@ -7,17 +14,12 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-import pytest
-import pydash
-import os
-from typing import Any, Dict, Generator
 from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors.saas_connector import SaaSConnector
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
-from sqlalchemy.orm import Session
 
-saas_config = load_toml("saas_config.toml")
+saas_config = load_toml(["saas_config.toml"])
 
 
 @pytest.fixture(scope="function")

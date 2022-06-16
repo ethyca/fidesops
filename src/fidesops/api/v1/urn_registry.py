@@ -1,5 +1,6 @@
 # Prefixes
 V1_URL_PREFIX = "/api/v1"
+YAML = "/yml"
 
 # Config URLs
 CONFIG = "/config"
@@ -10,6 +11,7 @@ CLIENT = "/oauth/client"
 SCOPE = "/oauth/scope"
 CLIENT_BY_ID = "/oauth/client/{client_id}"
 CLIENT_SCOPE = "/oauth/client/{client_id}/scope"
+OAUTH_CALLBACK = "/oauth/callback"
 
 # Encryption URLs
 ENCRYPT_AES = "/cryptography/encryption/aes/encrypt"
@@ -36,6 +38,9 @@ PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
 PRIVACY_REQUEST_DENY = "/privacy-request/administrate/deny"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
+PRIVACY_REQUEST_MANUAL_INPUT = "/privacy-request/{privacy_request_id}/manual_input"
+PRIVACY_REQUEST_MANUAL_ERASURE = "/privacy-request/{privacy_request_id}/erasure_confirm"
+PRIVACY_REQUEST_RETRY = "/privacy-request/{privacy_request_id}/retry"
 REQUEST_PREVIEW = "/privacy-request/preview"
 
 # Rule URLs
@@ -62,11 +67,15 @@ CONNECTIONS = "/connection"
 CONNECTION_BY_KEY = "/connection/{connection_key}"
 CONNECTION_SECRETS = "/connection/{connection_key}/secret"
 CONNECTION_TEST = "/connection/{connection_key}/test"
+AUTHORIZE = "/connection/{connection_key}/authorize"
 
 # Collection URLs
 DATASET_VALIDATE = CONNECTION_BY_KEY + "/validate_dataset"
 DATASETS = CONNECTION_BY_KEY + "/dataset"
 DATASET_BY_KEY = CONNECTION_BY_KEY + "/dataset/{fides_key}"
+
+# YAML Collection URLs
+YAML_DATASETS = YAML + DATASETS
 
 # SaaS Config URLs
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
@@ -91,3 +100,4 @@ HEALTH = "/health"
 # DRP
 DRP_EXERCISE = "/drp/exercise"
 DRP_STATUS = "/drp/status"
+DRP_DATA_RIGHTS = "/drp/data-rights"

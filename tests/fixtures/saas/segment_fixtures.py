@@ -7,9 +7,9 @@ import pydash
 import pytest
 import requests
 from faker import Faker
+from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
 
-from fidesops.core.config import load_toml
 from fidesops.db import session
 from fidesops.models.connectionconfig import (
     AccessLevel,
@@ -20,7 +20,7 @@ from fidesops.models.datasetconfig import DatasetConfig
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 
-saas_config = load_toml("saas_config.toml")
+saas_config = load_toml(["saas_config.toml"])
 
 
 @pytest.fixture(scope="function")
@@ -203,7 +203,7 @@ def segment_erasure_data(
                 "The user endpoint did not return the required data for testing during the time limit"
             )
         retries -= 1
-        time.sleep(5)
+        time.sleep(10)
 
     # Create event
     body = {

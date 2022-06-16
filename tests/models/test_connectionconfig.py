@@ -1,11 +1,11 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from fidesops.db.base_class import KeyValidationError, KeyOrNameAlreadyExists
+from fidesops.db.base_class import KeyOrNameAlreadyExists, KeyValidationError
 from fidesops.models.connectionconfig import (
+    AccessLevel,
     ConnectionConfig,
     ConnectionType,
-    AccessLevel,
 )
 from fidesops.util.text import to_snake_case
 
@@ -87,3 +87,25 @@ class TestConnectionConfigModel:
             == "Key my_postgres_db_1 already exists in ConnectionConfig. Keys will be snake-cased names if not provided. "
             "If you are seeing this error without providing a key, please provide a key or a different name."
         )
+
+    def test_setting_disabled_at(self, db, connection_config):
+        assert connection_config.disabled_at is None
+
+        connection_config.disabled = True
+        connection_config.save(db)
+        original_disabled_time = connection_config.disabled_at
+        assert original_disabled_time is not None
+
+        connection_config.disabled = True
+        connection_config.save(db)
+        assert connection_config.disabled_at is not None
+        assert connection_config.disabled_at == original_disabled_time
+
+        connection_config.disabled = False
+        connection_config.save(db)
+        assert connection_config.disabled_at is None
+
+        connection_config.disabled = True
+        connection_config.save(db)
+        assert connection_config.disabled_at is not None
+        assert connection_config.disabled_at > original_disabled_time

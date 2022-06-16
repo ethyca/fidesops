@@ -1,14 +1,14 @@
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, validator, ConstrainedStr
+from typing import Any, Dict, List, Optional
 
-from fideslang.models import Dataset, DatasetCollection, DatasetField
-from fidesops.graph.config import EdgeDirection
+from fideslang.models import Dataset, DatasetCollection, DatasetFieldBase
+from pydantic import BaseModel, ConstrainedStr, validator
 
 from fidesops.common_exceptions import (
     InvalidDataLengthValidationError,
+    InvalidDataTypeValidationError,
 )
-from fidesops.common_exceptions import InvalidDataTypeValidationError
-from fidesops.graph.data_type import parse_data_type_string, is_valid_data_type
+from fidesops.graph.config import EdgeDirection
+from fidesops.graph.data_type import is_valid_data_type, parse_data_type_string
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.shared_schemas import FidesOpsKey
@@ -121,11 +121,10 @@ class FidesopsMeta(BaseModel):
         return _valid_data_length(v)
 
 
-class FidesopsDatasetField(DatasetField):
+class FidesopsDatasetField(DatasetFieldBase):
     """Extends fideslang DatasetField model with additional Fidesops annotations"""
 
     fidesops_meta: Optional[FidesopsMeta]
-
     fields: Optional[List["FidesopsDatasetField"]] = []
 
     @validator("data_categories")
@@ -255,4 +254,4 @@ class DryRunDatasetResponse(BaseSchema):
     """
 
     collectionAddress: CollectionAddressResponse
-    query: Optional[str]
+    query: Any

@@ -3,17 +3,17 @@ from uuid import uuid4
 
 import pydash
 import sqlalchemy
+from fideslib.core.config import load_toml
 
-from fidesops.core.config import load_toml
-from fidesops.db.session import get_db_session, get_db_engine
+from fidesops.db.session import get_db_engine, get_db_session
 from fidesops.models.connectionconfig import (
-    ConnectionConfig,
     AccessLevel,
+    ConnectionConfig,
     ConnectionType,
 )
 from fidesops.service.connectors.sql_connector import MariaDBConnector
 
-integration_config = load_toml("fidesops-integration.toml")
+integration_config = load_toml(["fidesops-integration.toml"])
 
 
 def truncate_tables(db_session):

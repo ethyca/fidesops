@@ -7,6 +7,7 @@ In this section we'll cover:
 - How do you create a ConnectionConfig object?
 - How do you identify the database that a ConnectionConfig connects to?
 - How do you test and update a ConnectionConfig's Secrets?
+- How do you search your ConnectionConfigs?
 - How does a ConnectionConfig differ from a Dataset?
 
 
@@ -44,6 +45,10 @@ The connection between Fidesops and your database is represented by a _Connectio
 
 * `access` sets the connection's permissions, one of "read" (Fidesops may only read from your database) or "write" (Fidesops can read from and write to your database).
 
+* `disabled` determines whether the ConnectionConfig is active.  If True, we skip running queries for any collection associated with that ConnectionConfig.
+
+* `description` is an extra field to add further details about your connection. 
+
 While the ConnectionConfig object contains meta information about the database, you'll notice that it doesn't actually identify the database itself. We'll get to that when we set the ConnectionConfig's "secrets".
 
 
@@ -74,7 +79,8 @@ PATCH api/v1/connection
     "name": "My Mongo DB",
     "key": "my_mongo_db",
     "connection_type": "mongodb",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
@@ -88,7 +94,8 @@ PATCH api/v1/connection
     "name": "My MySQL DB",
     "key": "my_mysql_db",
     "connection_type": "mysql",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
@@ -102,7 +109,8 @@ PATCH api/v1/connection
     "name": "My Maria DB",
     "key": "my_maria_db",
     "connection_type": "mariadb",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
@@ -116,11 +124,27 @@ PATCH api/v1/connection
     "name": "My MsSQL DB",
     "key": "my_mssql_db",
     "connection_type": "mssql",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
 
+#### Example 6: Manual ConnectionConfig
+
+```
+PATCH api/v1/connection 
+[
+  {
+    "name": "Manual connector",
+    "key": "manual_connector",
+    "connection_type": "manual",
+    "access": "read",
+    "disabled": false,
+    "description": "Connector describing manual actions"
+  }
+]
+``` 
 
 ### Set the ConnectionConfig's Secrets
 
@@ -241,6 +265,43 @@ you should adjust the ConnectionConfig Secrets properties through additional cal
 }
 ```
 
+## Associate a Dataset
+Once you have a working ConnectionConfig, it can be associated to an existing [dataset](datasets.md) by calling the `/dataset` endpoint, with a JSON version of your dataset as the request body:
+
+```json title="<code>PATCH /api/v1/connection/my_connection_key/dataset</code>"
+[{
+    "fides_key": "example_test_dataset",
+    "name": "Example Test Dataset",
+    "description": "Example of a dataset containing a variety of related tables like customers, products, addresses, etc.",
+    "collections": [...]
+}]
+```
+
+## Searching ConnectionConfigs
+
+You can search the `name`, `key`, and `description` fields of your ConnectionConfigs with the `search` query parameter.
+
+### Example 1
+```json title="<code>GET /api/v1/connection/?search=application mysql</code>"
+{
+    "items": [
+        {
+            "name": "Application MySQL DB",
+            "key": "app_mysql_db",
+            "description": "My Backup MySQL DB",
+            "connection_type": "mysql",
+            "access": "read",
+            "created_at": "2022-06-13T18:03:28.404091+00:00",
+            "updated_at": "2022-06-13T18:03:28.404091+00:00",
+            "last_test_timestamp": null,
+            "last_test_succeeded": null
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+```
 
 ## How do ConnectionConfigs differ from Datasets?
 

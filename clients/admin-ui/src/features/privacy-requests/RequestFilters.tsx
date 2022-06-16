@@ -9,17 +9,18 @@ import {
   Stack,
   Text,
   useToast,
-} from '@fidesui/react';
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+} from "@fidesui/react";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 
+import { selectToken } from "../auth";
 import {
   CloseSolidIcon,
   DownloadSolidIcon,
   SearchLineIcon,
-} from '../common/Icon';
-import { selectUserToken } from '../user/user.slice';
-import PIIToggle from './PIIToggle';
+} from "../common/Icon";
+import PIIToggle from "../common/PIIToggle";
+import { statusPropMap } from "../common/RequestStatusBadge";
 import {
   clearAllFilters,
   requestCSVDownload,
@@ -28,13 +29,12 @@ import {
   setRequestId,
   setRequestStatus,
   setRequestTo,
-} from './privacy-requests.slice';
-import { statusPropMap } from './RequestBadge';
-import { PrivacyRequestStatus } from './types';
+} from "./privacy-requests.slice";
+import { PrivacyRequestStatus } from "./types";
 
 const useRequestFilters = () => {
   const filters = useSelector(selectPrivacyRequestFilters);
-  const token = useSelector(selectUserToken);
+  const token = useSelector(selectToken);
   const dispatch = useDispatch();
   const toast = useToast();
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>
@@ -54,14 +54,14 @@ const useRequestFilters = () => {
       if (error instanceof Error) {
         message = error.message;
       } else {
-        message = 'Unknown error occurred';
+        message = "Unknown error occurred";
       }
     }
     if (message) {
       toast({
         description: `${message}`,
         duration: 5000,
-        status: 'error',
+        status: "error",
       });
     }
   };
@@ -100,7 +100,7 @@ const RequestFilters: React.FC = () => {
         placeholder="Select status"
         size="sm"
         minWidth="144px"
-        value={status || ''}
+        value={status || ""}
         onChange={handleStatusChange}
         borderRadius="md"
       >

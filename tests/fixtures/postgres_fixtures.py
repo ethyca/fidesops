@@ -1,22 +1,16 @@
 import logging
-import pytest
 from typing import Dict, Generator, List
 from uuid import uuid4
 
-from sqlalchemy.orm import (
-    Session,
-)
+import pytest
+from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
-from sqlalchemy_utils.functions import (
-    create_database,
-    database_exists,
-    drop_database,
-)
+from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fidesops.db.session import get_db_session, get_db_engine
+from fidesops.db.session import get_db_engine, get_db_session
 from fidesops.models.connectionconfig import (
-    ConnectionConfig,
     AccessLevel,
+    ConnectionConfig,
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
@@ -146,6 +140,8 @@ def connection_config(
             "connection_type": ConnectionType.postgres,
             "access": AccessLevel.write,
             "secrets": integration_secrets["postgres_example"],
+            "disabled": False,
+            "description": "Primary postgres connection",
         },
     )
     yield connection_config
@@ -164,6 +160,7 @@ def read_connection_config(
             "connection_type": ConnectionType.postgres,
             "access": AccessLevel.read,
             "secrets": integration_secrets["postgres_example"],
+            "description": "Read-only connection config",
         },
     )
     yield connection_config

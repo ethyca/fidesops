@@ -1,25 +1,27 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { HYDRATE } from 'next-redux-wrapper';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import type { AppState } from '../../app/store';
+import type { RootState } from "../../app/store";
+import { BASE_API_URN } from "../../constants";
+import { selectToken } from "../auth";
 import {
+  DenyPrivacyRequest,
   PrivacyRequest,
   PrivacyRequestParams,
   PrivacyRequestResponse,
   PrivacyRequestStatus,
-  DenyPrivacyRequest,
-} from './types';
+} from "./types";
 
 // Helpers
-export const mapFiltersToSearchParams = ({
+export function mapFiltersToSearchParams({
   status,
   id,
   from,
   to,
   page,
   size,
-}: Partial<PrivacyRequestParams>) => {
+  verbose,
+}: Partial<PrivacyRequestParams>): any {
   let fromISO;
   if (from) {
     fromISO = new Date(from);
@@ -33,65 +35,66 @@ export const mapFiltersToSearchParams = ({
   }
 
   return {
-    include_identities: 'true',
+    include_identities: "true",
     ...(status ? { status } : {}),
-    ...(id ? { id } : {}),
+    ...(id ? { request_id: id } : {}),
     ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
     ...(toISO ? { created_lt: toISO.toISOString() } : {}),
     ...(page ? { page: `${page}` } : {}),
-    ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
+    ...(typeof size !== "undefined" ? { size: `${size}` } : {}),
+    ...(verbose ? { verbose } : {}),
   };
-};
+}
 
 // Subject requests API
 export const privacyRequestApi = createApi({
-  reducerPath: 'privacyRequestApi',
+  reducerPath: "privacyRequestApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_FIDESOPS_API!,
+    baseUrl: BASE_API_URN,
     prepareHeaders: (headers, { getState }) => {
-      const { token } = (getState() as AppState).user;
-      headers.set('Access-Control-Allow-Origin', '*');
+      const token = selectToken(getState() as RootState);
+      headers.set("Access-Control-Allow-Origin", "*");
       if (token) {
-        headers.set('authorization', `Bearer ${token}`);
+        headers.set("authorization", `Bearer ${token}`);
       }
       return headers;
     },
   }),
-  tagTypes: ['Request'],
+  tagTypes: ["Request"],
   endpoints: (build) => ({
     getAllPrivacyRequests: build.query<
       PrivacyRequestResponse,
-      PrivacyRequestParams
+      Partial<PrivacyRequestParams>
     >({
       query: (filters) => ({
         url: `privacy-request`,
         params: mapFiltersToSearchParams(filters),
       }),
-      providesTags: () => ['Request'],
+      providesTags: () => ["Request"],
     }),
     approveRequest: build.mutation<
       PrivacyRequest,
-      Partial<PrivacyRequest> & Pick<PrivacyRequest, 'id'>
+      Partial<PrivacyRequest> & Pick<PrivacyRequest, "id">
     >({
       query: ({ id }) => ({
-        url: 'privacy-request/administrate/approve',
-        method: 'PATCH',
+        url: "privacy-request/administrate/approve",
+        method: "PATCH",
         body: {
           request_ids: [id],
         },
       }),
-      invalidatesTags: ['Request'],
+      invalidatesTags: ["Request"],
     }),
     denyRequest: build.mutation<PrivacyRequest, DenyPrivacyRequest>({
       query: ({ id, reason }) => ({
-        url: 'privacy-request/administrate/deny',
-        method: 'PATCH',
+        url: "privacy-request/administrate/deny",
+        method: "PATCH",
         body: {
           request_ids: [id],
           reason,
         },
       }),
-      invalidatesTags: ['Request'],
+      invalidatesTags: ["Request"],
     }),
   }),
 });
@@ -114,34 +117,32 @@ export const requestCSVDownload = async ({
   }
 
   return fetch(
-    `${
-      process.env.NEXT_PUBLIC_FIDESOPS_API
-    }/privacy-request?${new URLSearchParams({
+    `${BASE_API_URN}/privacy-request?${new URLSearchParams({
       ...mapFiltersToSearchParams({
         id,
         from,
         to,
         status,
       }),
-      download_csv: 'true',
+      download_csv: "true",
     })}`,
     {
       headers: {
-        'Access-Control-Allow-Origin': '*',
+        "Access-Control-Allow-Origin": "*",
         Authorization: `Bearer ${token}`,
       },
     }
   )
     .then((response) => {
       if (!response.ok) {
-        throw new Error('Got a bad response from the server');
+        throw new Error("Got a bad response from the server");
       }
       return response.blob();
     })
     .then((data) => {
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = window.URL.createObjectURL(data);
-      a.download = 'privacy-requests.csv';
+      a.download = "privacy-requests.csv";
       a.click();
     })
     .catch((error) => Promise.reject(error));
@@ -156,19 +157,20 @@ interface SubjectRequestsState {
   to: string;
   page: number;
   size: number;
+  verbose?: boolean;
 }
 
 const initialState: SubjectRequestsState = {
   revealPII: false,
-  id: '',
-  from: '',
-  to: '',
+  id: "",
+  from: "",
+  to: "",
   page: 1,
   size: 25,
 };
 
 export const subjectRequestsSlice = createSlice({
-  name: 'subjectRequests',
+  name: "subjectRequests",
   initialState,
   reducers: {
     setRevealPII: (state, action: PayloadAction<boolean>) => ({
@@ -208,11 +210,9 @@ export const subjectRequestsSlice = createSlice({
       page: initialState.page,
       size: action.payload,
     }),
-  },
-  extraReducers: {
-    [HYDRATE]: (state, action) => ({
+    setVerbose: (state, action: PayloadAction<boolean>) => ({
       ...state,
-      ...action.payload.subjectRequests,
+      verbose: action.payload,
     }),
   },
 });
@@ -224,16 +224,17 @@ export const {
   setRequestFrom,
   setRequestTo,
   setPage,
+  setVerbose,
   clearAllFilters,
 } = subjectRequestsSlice.actions;
 
-export const selectRevealPII = (state: AppState) =>
+export const selectRevealPII = (state: RootState) =>
   state.subjectRequests.revealPII;
-export const selectRequestStatus = (state: AppState) =>
+export const selectRequestStatus = (state: RootState) =>
   state.subjectRequests.status;
 
 export const selectPrivacyRequestFilters = (
-  state: AppState
+  state: RootState
 ): PrivacyRequestParams => ({
   status: state.subjectRequests.status,
   id: state.subjectRequests.id,
@@ -241,6 +242,7 @@ export const selectPrivacyRequestFilters = (
   to: state.subjectRequests.to,
   page: state.subjectRequests.page,
   size: state.subjectRequests.size,
+  verbose: state.subjectRequests.verbose,
 });
 
 export const { reducer } = subjectRequestsSlice;

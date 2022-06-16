@@ -1,24 +1,21 @@
-import pytest
-import requests_mock
-from datetime import (
-    datetime,
-    timedelta,
-    timezone,
-)
-from pydantic import ValidationError
+from datetime import datetime, timedelta, timezone
 from typing import List
 from uuid import uuid4
 
+import pytest
+import requests_mock
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
-from fidesops.models.policy import Policy
-from fidesops.models.privacy_request import (
-    PrivacyRequest,
-    PrivacyRequestStatus,
-)
+from fidesops.graph.config import CollectionAddress
+from fidesops.models.policy import PausedStep, Policy
+from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.service.connectors.manual_connector import ManualAction
 from fidesops.util.cache import FidesopsRedis, get_identity_cache_key
+
+paused_location = CollectionAddress("test_dataset", "test_collection")
 
 
 def test_privacy_request(
@@ -364,3 +361,105 @@ class TestPrivacyRequestTriggerWebhooks:
             )
             with pytest.raises(ValidationError):
                 privacy_request.trigger_policy_webhook(webhook)
+
+
+class TestCachePausedLocation:
+    def test_privacy_request_cache_paused_location(self, privacy_request):
+        assert privacy_request.get_paused_collection_details() is None
+
+        paused_step = PausedStep.erasure
+        privacy_request.cache_paused_collection_details(
+            step=paused_step,
+            collection=paused_location,
+            action_needed=[
+                ManualAction(
+                    locators={"email": "customer-1@example.com"},
+                    get=["box_id", "associated_data"],
+                    update=None,
+                )
+            ],
+        )
+
+        paused_details = privacy_request.get_paused_collection_details()
+        assert paused_details.step == paused_step
+        assert paused_details.collection == paused_location
+        assert paused_details.action_needed == [
+            ManualAction(
+                locators={"email": "customer-1@example.com"},
+                get=["box_id", "associated_data"],
+                update=None,
+            )
+        ]
+
+    def test_privacy_request_unpause(self, privacy_request):
+        privacy_request.cache_paused_collection_details()
+
+        assert privacy_request.get_paused_collection_details() is None
+
+
+class TestCacheManualInput:
+    def test_cache_manual_input(self, privacy_request):
+        manual_data = [{"id": 1, "name": "Jane"}, {"id": 2, "name": "Hank"}]
+
+        privacy_request.cache_manual_input(paused_location, manual_data)
+        assert (
+            privacy_request.get_manual_input(
+                paused_location,
+            )
+            == manual_data
+        )
+
+    def test_cache_empty_manual_input(self, privacy_request):
+        manual_data = []
+        privacy_request.cache_manual_input(paused_location, manual_data)
+
+        assert (
+            privacy_request.get_manual_input(
+                paused_location,
+            )
+            == []
+        )
+
+    def test_no_manual_data_in_cache(self, privacy_request):
+        assert (
+            privacy_request.get_manual_input(
+                paused_location,
+            )
+            is None
+        )
+
+
+class TestCacheManualErasureCount:
+    def test_cache_manual_erasure_count(self, privacy_request):
+        privacy_request.cache_manual_erasure_count(paused_location, 5)
+
+        cached_data = privacy_request.get_manual_erasure_count(paused_location)
+        assert cached_data == 5
+
+    def test_no_erasure_data_cached(self, privacy_request):
+        cached_data = privacy_request.get_manual_erasure_count(paused_location)
+        assert cached_data is None
+
+    def test_zero_cached(self, privacy_request):
+        privacy_request.cache_manual_erasure_count(paused_location, 0)
+        cached_data = privacy_request.get_manual_erasure_count(paused_location)
+        assert cached_data == 0
+
+
+class TestPrivacyRequestCacheFailedStep:
+    def test_cache_failed_step_and_collection(self, privacy_request):
+
+        privacy_request.cache_failed_collection_details(
+            step=PausedStep.erasure, collection=paused_location
+        )
+
+        cached_data = privacy_request.get_failed_collection_details()
+        assert cached_data.step == PausedStep.erasure
+        assert cached_data.collection == paused_location
+        assert cached_data.action_needed is None
+
+    def test_cache_null_step_and_location(self, privacy_request):
+        privacy_request.cache_failed_collection_details()
+
+        cached_data = privacy_request.get_failed_collection_details()
+        assert cached_data is None

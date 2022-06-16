@@ -2,16 +2,9 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 
-from sqlalchemy import (
-    Column,
-    Enum,
-    String,
-    DateTime,
-    Boolean,
-)
-
+from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session
@@ -20,12 +13,9 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fidesops.schemas.saas.saas_config import SaaSConfig
 from fidesops.core.config import config
-from fidesops.db.base_class import (
-    Base,
-    JSONTypeOverride,
-)
+from fidesops.db.base_class import Base, JSONTypeOverride
+from fidesops.schemas.saas.saas_config import SaaSConfig
 
 
 class ConnectionTestStatus(enum.Enum):
@@ -51,6 +41,7 @@ class ConnectionType(enum.Enum):
     mssql = "mssql"
     mariadb = "mariadb"
     bigquery = "bigquery"
+    manual = "manual"
 
 
 class AccessLevel(enum.Enum):
@@ -72,6 +63,7 @@ class ConnectionConfig(Base):
 
     name = Column(String, index=True, unique=True, nullable=False)
     key = Column(String, index=True, unique=True, nullable=False)
+    description = Column(String, index=True, nullable=True)
     connection_type = Column(Enum(ConnectionType), nullable=False)
     access = Column(Enum(AccessLevel), nullable=False)
     secrets = Column(
@@ -87,6 +79,8 @@ class ConnectionConfig(Base):
     )  # Type bytea in the db
     last_test_timestamp = Column(DateTime(timezone=True))
     last_test_succeeded = Column(Boolean)
+    disabled = Column(Boolean, server_default="f", default=False)
+    disabled_at = Column(DateTime(timezone=True))
 
     # only applicable to ConnectionConfigs of connection type saas
     saas_config = Column(
@@ -117,3 +111,12 @@ class ConnectionConfig(Base):
             dataset.delete(db=db)
 
         return super().delete(db=db)
+
+
+@event.listens_for(ConnectionConfig.disabled, "set")
+def connection_config_disabled_set(
+    target: ConnectionConfig, value: bool, original_value: bool, _: Any
+) -> None:
+    """Update ConnectionConfig.disabled_at if ConnectionConfig.disabled changes"""
+    if value != original_value:
+        target.disabled_at = datetime.utcnow() if value else None

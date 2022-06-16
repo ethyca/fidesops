@@ -43,6 +43,14 @@ access_secret = ""
 user_token = ""
 identity_email = ""
 
+[outreach]
+domain = ""
+client_id = ""
+client_secret = ""
+redirect_uri = ""
+page_size = ""
+requester_email = ""
+identity_email = ""
 
 [zendesk]
 domain = ""
