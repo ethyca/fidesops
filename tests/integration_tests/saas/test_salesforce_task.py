@@ -1,29 +1,29 @@
 import random
 
 import pytest
-from requests import Response
-from starlette.status import HTTP_200_OK
 
 from fidesops.graph.graph import DatasetGraph
-from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
+from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.service.connectors.saas_connector import SaaSConnector
+from fidesops.service.connectors import get_connector
 from fidesops.task import graph_task
-from fidesops.task.graph_task import get_cached_data_for_erasures
-from tests.graph.graph_test_util import assert_rows_match, records_matching_fields
+from tests.graph.graph_test_util import assert_rows_match
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_saas
+def test_salesforce_connection_test(salesforce_connection_config) -> None:
+    get_connector(salesforce_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_salesforce
 def test_salesforce_access_request_task(
-    db,
     policy,
     salesforce_identity_email,
-    salesforce_secrets,
     salesforce_connection_config,
     salesforce_dataset_config,
-    salesforce_data
+    salesforce_data,
 ) -> None:
     """Full access request based on the Salesforce SaaS config"""
 
@@ -115,7 +115,7 @@ def test_salesforce_access_request_task(
             "IndividualId",
         ],
     )
-    
+
     assert_rows_match(
         v[f"{dataset_name}:case_list"], min_size=1, keys=["attributes", "Id"]
     )
@@ -163,11 +163,11 @@ def test_salesforce_access_request_task(
             "LastReferencedDate",
         ],
     )
-    
+
     assert_rows_match(
         v[f"{dataset_name}:campaign_member_list"], min_size=1, keys=["attributes", "Id"]
     )
-    
+
     assert_rows_match(
         v[f"{dataset_name}:campaign_members"],
         min_size=1,
@@ -215,7 +215,7 @@ def test_salesforce_access_request_task(
     assert_rows_match(
         v[f"{dataset_name}:lead_list"], min_size=1, keys=["attributes", "Id"]
     )
-    
+
     assert_rows_match(
         v[f"{dataset_name}:leads"],
         min_size=1,
@@ -277,72 +277,70 @@ def test_salesforce_access_request_task(
             "IndividualId",
         ],
     )
-    
-    # This assertion fails as our Salesforce account has some other custom fields
-    # assert_rows_match(
-    #     v[f"{dataset_name}:accounts"],
-    #     min_size=1,
-    #     keys=[
-    #         "attributes",
-    #         "Id",
-    #         "IsDeleted",
-    #         "MasterRecordId",
-    #         "Name",
-    #         "Type",
-    #         "ParentId",
-    #         "BillingStreet",
-    #         "BillingCity",
-    #         "BillingState",
-    #         "BillingPostalCode",
-    #         "BillingCountry",
-    #         "BillingLatitude",
-    #         "BillingLongitude",
-    #         "BillingGeocodeAccuracy",
-    #         "BillingAddress",
-    #         "ShippingStreet",
-    #         "ShippingCity",
-    #         "ShippingState",
-    #         "ShippingPostalCode",
-    #         "ShippingCountry",
-    #         "ShippingLatitude",
-    #         "ShippingLongitude",
-    #         "ShippingGeocodeAccuracy",
-    #         "ShippingAddress",
-    #         "Phone",
-    #         "Fax",
-    #         "AccountNumber",
-    #         "Website",
-    #         "PhotoUrl",
-    #         "Sic",
-    #         "Industry",
-    #         "AnnualRevenue",
-    #         "NumberOfEmployees",
-    #         "Ownership",
-    #         "TickerSymbol",
-    #         "Description",
-    #         "Rating",
-    #         "Site",
-    #         "OwnerId",
-    #         "CreatedDate",
-    #         "CreatedById",
-    #         "LastModifiedDate",
-    #         "LastModifiedById",
-    #         "SystemModstamp",
-    #         "LastActivityDate",
-    #         "LastViewedDate",
-    #         "LastReferencedDate",
-    #         "Jigsaw",
-    #         "JigsawCompanyId",
-    #         "CleanStatus",
-    #         "AccountSource",
-    #         "DunsNumber",
-    #         "Tradestyle",
-    #         "NaicsCode",
-    #         "NaicsDesc",
-    #         "YearStarted",
-    #         "SicDesc",
-    #         "DandbCompanyId",
-    #         "OperatingHoursId",
-    #     ],
-    # )
 
+    assert_rows_match(
+        v[f"{dataset_name}:accounts"],
+        min_size=1,
+        keys=[
+            "attributes",
+            "Id",
+            "IsDeleted",
+            "MasterRecordId",
+            "Name",
+            "Type",
+            "ParentId",
+            "BillingStreet",
+            "BillingCity",
+            "BillingState",
+            "BillingPostalCode",
+            "BillingCountry",
+            "BillingLatitude",
+            "BillingLongitude",
+            "BillingGeocodeAccuracy",
+            "BillingAddress",
+            "ShippingStreet",
+            "ShippingCity",
+            "ShippingState",
+            "ShippingPostalCode",
+            "ShippingCountry",
+            "ShippingLatitude",
+            "ShippingLongitude",
+            "ShippingGeocodeAccuracy",
+            "ShippingAddress",
+            "Phone",
+            "Fax",
+            "AccountNumber",
+            "Website",
+            "PhotoUrl",
+            "Sic",
+            "Industry",
+            "AnnualRevenue",
+            "NumberOfEmployees",
+            "Ownership",
+            "TickerSymbol",
+            "Description",
+            "Rating",
+            "Site",
+            "OwnerId",
+            "CreatedDate",
+            "CreatedById",
+            "LastModifiedDate",
+            "LastModifiedById",
+            "SystemModstamp",
+            "LastActivityDate",
+            "LastViewedDate",
+            "LastReferencedDate",
+            "Jigsaw",
+            "JigsawCompanyId",
+            "CleanStatus",
+            "AccountSource",
+            "DunsNumber",
+            "Tradestyle",
+            "NaicsCode",
+            "NaicsDesc",
+            "YearStarted",
+            "SicDesc",
+            "DandbCompanyId",
+            "OperatingHoursId",
+        ],
+    )

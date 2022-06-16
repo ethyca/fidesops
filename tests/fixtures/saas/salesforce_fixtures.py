@@ -1,15 +1,11 @@
-import json
 import os
-import time
 from typing import Any, Dict, Generator
 
 import pydash
 import pytest
 import requests
-from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_201_CREATED
-from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
 from fidesops.core.config import load_toml
 from fidesops.db import session
@@ -19,27 +15,22 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors import SaaSConnector
 from fidesops.util import cryptographic_util
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 
 saas_config = load_toml("saas_config.toml")
-SALESFORCE_FIRSTNAME = "TestFirstName"
 
 
 @pytest.fixture(scope="session")
 def salesforce_identity_email():
-    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+    return "connectors+salesforce+sar@ethyca.com"
+
 
 @pytest.fixture(scope="session")
 def salesforce_erasure_identity_email():
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
-
-@pytest.fixture(scope="session")
-def salesforce_account_name():
-    return f"{cryptographic_util.generate_secure_random_string(13)} Test Account"
 
 
 @pytest.fixture(scope="session")
@@ -56,20 +47,23 @@ def salesforce_secrets():
         "client_secret": pydash.get(saas_config, "salesforce.client_secret")
         or os.environ.get("SALESFORCE_CLIENT_SECRET"),
         "access_token": pydash.get(saas_config, "salesforce.access_token")
-        or os.environ.get("SALESFORCE_ACCESS_TOKEN")
+        or os.environ.get("SALESFORCE_ACCESS_TOKEN"),
     }
 
+
 @pytest.fixture(scope="session")
-def salesforce_token(salesforce_secrets) -> str: 
+def salesforce_token(salesforce_secrets) -> str:
     body = {
-        "client_id" : salesforce_secrets["client_id"],
+        "client_id": salesforce_secrets["client_id"],
         "client_secret": salesforce_secrets["client_secret"],
-        "grant_type" : "password",
-        "username" : salesforce_secrets["username"],
-        "password" : salesforce_secrets["password"]
+        "grant_type": "password",
+        "username": salesforce_secrets["username"],
+        "password": salesforce_secrets["password"],
     }
-    response = requests.post("https://" + salesforce_secrets["domain"] + "/services/oauth2/token", body)
-    return response.json()['access_token']
+    response = requests.post(
+        "https://" + salesforce_secrets["domain"] + "/services/oauth2/token", body
+    )
+    return response.json()["access_token"]
 
 
 @pytest.fixture
@@ -84,10 +78,14 @@ def salesforce_dataset() -> Dict[str, Any]:
 
 @pytest.fixture(scope="function")
 def salesforce_connection_config(
-    db: session, salesforce_config,salesforce_dataset, salesforce_secrets, salesforce_token
+    db: session,
+    salesforce_config,
+    salesforce_dataset,
+    salesforce_secrets,
+    salesforce_token,
 ) -> Generator:
     fides_key = salesforce_config["fides_key"]
-    salesforce_secrets['access_token'] = salesforce_token
+    salesforce_secrets["access_token"] = salesforce_token
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -126,81 +124,76 @@ def salesforce_dataset_config(
 
 
 @pytest.fixture(scope="function")
-def salesforce_data(
-    salesforce_connection_config, salesforce_identity_email, salesforce_secrets, salesforce_account_name
+def stripe_create_erasure_data(
+    salesforce_identity_email, salesforce_secrets
 ) -> Generator:
     """
     Creates a dynamic test data record for tests.
     Yields contact ID as this may be useful to have in test scenarios
     """
-    connector = SaaSConnector(salesforce_connection_config)
 
     base_url = f"https://{salesforce_secrets['domain']}"
-    # Create account
-    account_data = {
-        "name": salesforce_account_name
-    }
     headers = {
-        "Content-Type": "application/json",
         "Authorization": f"Bearer {salesforce_secrets['access_token']}",
     }
+
+    # Create account
+    account_data = {"name": "Ethyca Test"}
     accounts_response = requests.post(
         url=f"{base_url}/services/data/v54.0/sobjects/Account",
         headers=headers,
-        json=account_data
+        json=account_data,
     )
-    
-    assert HTTP_201_CREATED == accounts_response.status_code
-    account_id = accounts_response.json()['id']
-    
+    assert accounts_response.ok
+    account_id = accounts_response.json()["id"]
 
     # Create contact
     contact_data = {
         "firstName": "Fidesops",
         "lastName": "Test Contact",
         "email": salesforce_identity_email,
-        "AccountId": account_id
+        "AccountId": account_id,
     }
     contacts_response = requests.post(
         url=f"{base_url}/services/data/v54.0/sobjects/Contact",
         headers=headers,
-        json=contact_data
+        json=contact_data,
     )
-    assert HTTP_201_CREATED == contacts_response.status_code
-    contact_id = contacts_response.json()['id']
-    
+    assert contacts_response.ok
+    contact_id = contacts_response.json()["id"]
+
     # Create lead
     lead_data = {
         "firstName": "Fidesops",
         "lastName": "Test Lead",
         "email": salesforce_identity_email,
-        "Company": "Test Company"
+        "Company": "Test Company",
     }
     leads_response = requests.post(
         url=f"{base_url}/services/data/v54.0/sobjects/Lead",
         headers=headers,
-        json=lead_data
+        json=lead_data,
     )
-    assert HTTP_201_CREATED == leads_response.status_code
-    lead_id = leads_response.json()['id']
-    
+    assert leads_response.ok
+    lead_id = leads_response.json()["id"]
+
     # Create Case
     case_data = {
         "SuppliedEmail": salesforce_identity_email,
         "SuppliedCompany": "Test Company",
-        "ContactId": contact_id
+        "ContactId": contact_id,
     }
     cases_response = requests.post(
         url=f"{base_url}/services/data/v54.0/sobjects/Case",
         headers=headers,
-        json=case_data
+        json=case_data,
     )
-    assert HTTP_201_CREATED == cases_response.status_code
-    case_id = cases_response.json()['id']
-    
+    assert cases_response.ok
+    case_id = cases_response.json()["id"]
+
     # Create Campaign Member
-    
-    # We need to create a campagin for it first
+
+    # We need to create a campaign for it first
     campaign_data = {
         "Description": "Test Description",
         "Name": "Test Campaign",
@@ -208,12 +201,12 @@ def salesforce_data(
     campaigns_response = requests.post(
         url=f"{base_url}/services/data/v54.0/sobjects/Campaign",
         headers=headers,
-        json=campaign_data
+        json=campaign_data,
     )
-    assert HTTP_201_CREATED == campaigns_response.status_code
-    campaign_id = campaigns_response.json()['id']
-    
-    #Now creating campaign member for this campaign
+    assert campaigns_response.ok
+    campaign_id = campaigns_response.json()["id"]
+
+    # Now creating campaign member for this campaign
     campaign_member_data = {
         "campaignId": campaign_id,
         "contactId": contact_id,
@@ -222,10 +215,9 @@ def salesforce_data(
     campaign_members_response = requests.post(
         url=f"{base_url}/services/data/v54.0/sobjects/CampaignMember",
         headers=headers,
-        json=campaign_member_data
+        json=campaign_member_data,
     )
-    assert HTTP_201_CREATED == campaign_members_response.status_code
-    campaign_member_id = campaign_members_response.json()['id']
-    
-    yield contact_id, lead_id, case_id, account_id, campaign_member_id
+    assert campaign_members_response.ok
+    campaign_member_id = campaign_members_response.json()["id"]
 
+    yield contact_id, lead_id, case_id, account_id, campaign_member_id
