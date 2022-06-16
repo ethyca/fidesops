@@ -13,29 +13,28 @@ import {
   Stack,
   Text,
   useDisclosure,
-} from '@fidesui/react';
-import React, { useState } from 'react';
+} from "@fidesui/react";
+import React, { useState } from "react";
 
-import { User } from '../user/types';
-import { useDeleteUserMutation } from '../user/user.slice';
+import { User } from "./types";
+import { useDeleteUserMutation } from "./user-management.slice";
 
-const DeleteUserModal = (user: User) => {
-  const [usernameValue, setUsernameValue] = useState('');
-  const [confirmValue, setConfirmValue] = useState('');
+const DeleteUserModal: React.FC<User> = ({ id, username }) => {
+  const [usernameValue, setUsernameValue] = useState("");
+  const [confirmValue, setConfirmValue] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [deleteUser] = useDeleteUserMutation();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.name === 'username') {
+    if (event.target.name === "username") {
       setUsernameValue(event.target.value);
     } else {
       setConfirmValue(event.target.value);
     }
   };
-  const { id: userId, username } = user;
 
   const deletionValidation = !!(
-    userId &&
+    id &&
     confirmValue &&
     usernameValue &&
     username === usernameValue &&
@@ -43,8 +42,8 @@ const DeleteUserModal = (user: User) => {
   );
 
   const handleDeleteUser = () => {
-    if (deletionValidation && userId) {
-      deleteUser(userId);
+    if (deletionValidation && id) {
+      deleteUser(id);
       onClose();
     }
   };
@@ -52,10 +51,10 @@ const DeleteUserModal = (user: User) => {
   return (
     <>
       <MenuItem
-        _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
+        _focus={{ color: "complimentary.500", bg: "gray.100" }}
         onClick={onOpen}
       >
-        <Text fontSize='sm'>Delete</Text>
+        <Text fontSize="sm">Delete</Text>
       </MenuItem>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
@@ -63,22 +62,22 @@ const DeleteUserModal = (user: User) => {
           <ModalHeader>Delete User</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <Stack direction='column' spacing='15px'>
+            <Stack direction="column" spacing="15px">
               <FormControl>
                 <Input
                   isRequired
-                  name='username'
+                  name="username"
                   onChange={handleChange}
-                  placeholder='Enter username'
+                  placeholder="Enter username"
                   value={usernameValue}
                 />
               </FormControl>
               <FormControl>
                 <Input
                   isRequired
-                  name='confirmUsername'
+                  name="confirmUsername"
                   onChange={handleChange}
-                  placeholder='Confirm username'
+                  placeholder="Confirm username"
                   value={confirmValue}
                 />
               </FormControl>
@@ -88,11 +87,11 @@ const DeleteUserModal = (user: User) => {
           <ModalFooter>
             <Button
               onClick={onClose}
-              marginRight='10px'
-              size='sm'
-              variant='solid'
-              bg='white'
-              width='50%'
+              marginRight="10px"
+              size="sm"
+              variant="solid"
+              bg="white"
+              width="50%"
             >
               Cancel
             </Button>
@@ -100,11 +99,11 @@ const DeleteUserModal = (user: User) => {
               disabled={!deletionValidation}
               onClick={handleDeleteUser}
               mr={3}
-              size='sm'
-              variant='solid'
-              bg='primary.800'
-              color='white'
-              width='50%'
+              size="sm"
+              variant="solid"
+              bg="primary.800"
+              color="white"
+              width="50%"
             >
               Delete User
             </Button>

@@ -19,6 +19,8 @@ class CreateConnectionConfiguration(BaseModel):
     key: Optional[FidesOpsKey]
     connection_type: ConnectionType
     access: AccessLevel
+    disabled: Optional[bool] = False
+    description: Optional[str]
 
     class Config:
         """Restrict adding other fields through this schema and set orm_mode to support mapping to ConnectionConfig"""
@@ -37,10 +39,12 @@ class ConnectionConfigurationResponse(BaseModel):
 
     name: str
     key: FidesOpsKey
+    description: Optional[str]
     connection_type: ConnectionType
     access: AccessLevel
     created_at: datetime
     updated_at: Optional[datetime]
+    disabled: Optional[bool] = False
     last_test_timestamp: Optional[datetime]
     last_test_succeeded: Optional[bool]
 

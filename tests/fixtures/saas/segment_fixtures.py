@@ -7,9 +7,9 @@ import pydash
 import pytest
 import requests
 from faker import Faker
+from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
 
-from fidesops.core.config import load_toml
 from fidesops.db import session
 from fidesops.models.connectionconfig import (
     AccessLevel,
@@ -21,7 +21,7 @@ from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 from tests.test_helpers.saas_test_utils import poll_for_existence
 
-saas_config = load_toml("saas_config.toml")
+saas_config = load_toml(["saas_config.toml"])
 
 
 @pytest.fixture(scope="function")
