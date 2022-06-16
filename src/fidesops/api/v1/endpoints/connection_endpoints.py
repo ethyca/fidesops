@@ -87,7 +87,7 @@ def get_connections(
     params: Params = Depends(),
     search: Optional[str] = None,
     disabled: Optional[bool] = None,
-    connection_type: Union[List[str], None] = Query(default=None),
+    connection_type: Optional[List[str]] = Query(default=None),  # type:ignore
 ) -> AbstractPage[ConnectionConfig]:
     """Returns all connection configurations in the database.
     Optionally filter the key, name, and description with a search query param.
