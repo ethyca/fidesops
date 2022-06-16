@@ -9,6 +9,7 @@ import requests
 from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_201_CREATED
+from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
 from fidesops.core.config import load_toml
 from fidesops.db import session
@@ -30,6 +31,10 @@ SALESFORCE_FIRSTNAME = "TestFirstName"
 
 @pytest.fixture(scope="session")
 def salesforce_identity_email():
+    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+
+@pytest.fixture(scope="session")
+def salesforce_erasure_identity_email():
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 @pytest.fixture(scope="session")
@@ -65,7 +70,6 @@ def salesforce_token(salesforce_secrets) -> str:
     }
     response = requests.post("https://" + salesforce_secrets["domain"] + "/services/oauth2/token", body)
     return response.json()['access_token']
-
 
 
 @pytest.fixture
@@ -131,39 +135,97 @@ def salesforce_data(
     """
     connector = SaaSConnector(salesforce_connection_config)
 
+    base_url = f"https://{salesforce_secrets['domain']}"
     # Create account
-    body = {
+    account_data = {
         "name": salesforce_account_name
     }
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {salesforce_secrets['access_token']}",
     }
-    accounts_request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.POST,
-        path="/services/data/v54.0/sobjects/Account",
+    accounts_response = requests.post(
+        url=f"{base_url}/services/data/v54.0/sobjects/Account",
         headers=headers,
-        body=json.dumps(body),
+        json=account_data
     )
-    accounts_response: Response = connector.create_client().send(accounts_request)
+    
     assert HTTP_201_CREATED == accounts_response.status_code
     account_id = accounts_response.json()['id']
     
 
     # Create contact
-    body = {
+    contact_data = {
         "firstName": "Fidesops",
         "lastName": "Test Contact",
         "email": salesforce_identity_email,
         "AccountId": account_id
     }
-    contacts_request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.POST,
-        path="/services/data/v54.0/sobjects/Contact",
+    contacts_response = requests.post(
+        url=f"{base_url}/services/data/v54.0/sobjects/Contact",
         headers=headers,
-        body=json.dumps(body),
+        json=contact_data
     )
-    contacts_response = connector.create_client().send(contacts_request)
     assert HTTP_201_CREATED == contacts_response.status_code
     contact_id = contacts_response.json()['id']
-    yield contact_id
+    
+    # Create lead
+    lead_data = {
+        "firstName": "Fidesops",
+        "lastName": "Test Lead",
+        "email": salesforce_identity_email,
+        "Company": "Test Company"
+    }
+    leads_response = requests.post(
+        url=f"{base_url}/services/data/v54.0/sobjects/Lead",
+        headers=headers,
+        json=lead_data
+    )
+    assert HTTP_201_CREATED == leads_response.status_code
+    lead_id = leads_response.json()['id']
+    
+    # Create Case
+    case_data = {
+        "SuppliedEmail": salesforce_identity_email,
+        "SuppliedCompany": "Test Company",
+        "ContactId": contact_id
+    }
+    cases_response = requests.post(
+        url=f"{base_url}/services/data/v54.0/sobjects/Case",
+        headers=headers,
+        json=case_data
+    )
+    assert HTTP_201_CREATED == cases_response.status_code
+    case_id = leads_response.json()['id']
+    
+    # Create Campaign Member
+    
+    # We need to create a campagin for it first
+    campaign_data = {
+        "Description": "Test Description",
+        "Name": "Test Campaign",
+    }
+    campaigns_response = requests.post(
+        url=f"{base_url}/services/data/v54.0/sobjects/Campaign",
+        headers=headers,
+        json=campaign_data
+    )
+    assert HTTP_201_CREATED == campaigns_response.status_code
+    campaign_id = campaigns_response.json()['id']
+    
+    #Now creating campaign member for this campaign
+    campaign_member_data = {
+        "campaignId": campaign_id,
+        "contactId": contact_id,
+        "leadId": lead_id,
+    }
+    campaign_members_response = requests.post(
+        url=f"{base_url}/services/data/v54.0/sobjects/CampaignMember",
+        headers=headers,
+        json=campaign_member_data
+    )
+    assert HTTP_201_CREATED == campaign_members_response.status_code
+    campaign_member_id = campaign_members_response.json()['id']
+    
+    yield contact_id, lead_id, case_id, account_id, campaign_member_id
+
