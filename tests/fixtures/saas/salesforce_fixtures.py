@@ -196,7 +196,7 @@ def salesforce_data(
         json=case_data
     )
     assert HTTP_201_CREATED == cases_response.status_code
-    case_id = leads_response.json()['id']
+    case_id = cases_response.json()['id']
     
     # Create Campaign Member
     
