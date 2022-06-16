@@ -7,7 +7,6 @@ import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
 from sqlalchemy.orm import Session
-from sqlalchemy.testing import db
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.scope_registry import (
@@ -432,6 +431,67 @@ class TestGetConnections:
         assert response_body["total"] == 1
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
+
+    def test_filter_connections(
+        self,
+        db,
+        connection_config,
+        disabled_connection_config,
+        read_connection_config,
+        redshift_connection_config,
+        mongo_connection_config,
+        api_client,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+
+        resp = api_client.get(url, headers=auth_header)
+        items = resp.json()["items"]
+        assert len(items) == 5
+
+        resp = api_client.get(url + "?connection_type=postgres", headers=auth_header)
+        items = resp.json()["items"]
+        assert len(items) == 3
+        assert all(
+            [con["connection_type"] == "postgres" for con in resp.json()["items"]]
+        )
+
+        resp = api_client.get(
+            url + "?connection_type=postgres&connection_type=redshift",
+            headers=auth_header,
+        )
+        items = resp.json()["items"]
+        assert resp.status_code == 200
+        assert len(items) == 4
+        assert all(
+            [
+                con["connection_type"] in ["redshift", "postgres"]
+                for con in resp.json()["items"]
+            ]
+        )
+
+        resp = api_client.get(
+            url + "?connection_type=postgres&disabled=false", headers=auth_header
+        )
+        assert resp.status_code == 200
+        items = resp.json()["items"]
+        assert len(items) == 2
+        assert all(
+            [con["connection_type"] in ["postgres"] for con in resp.json()["items"]]
+        )
+        assert all([con["disabled"] is False for con in resp.json()["items"]])
+
+        resp = api_client.get(
+            url + "?connection_type=postgres&disabled=True", headers=auth_header
+        )
+        items = resp.json()["items"]
+        assert resp.status_code == 200
+        assert len(items) == 1
+        assert all(
+            [con["connection_type"] in ["postgres"] for con in resp.json()["items"]]
+        )
+        assert all([con["disabled"] is True for con in resp.json()["items"]])
 
     def test_search_connections(
         self,

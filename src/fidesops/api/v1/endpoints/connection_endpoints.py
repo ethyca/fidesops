@@ -1,8 +1,8 @@
 import logging
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.params import Security
+from fastapi.params import Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -86,9 +86,15 @@ def get_connections(
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
     search: Optional[str] = None,
+    disabled: Optional[bool] = None,
+    connection_type: Union[List[str], None] = Query(default=None),
 ) -> AbstractPage[ConnectionConfig]:
     """Returns all connection configurations in the database.
-    Optionally filter the key, name, and description with a search query param
+    Optionally filter the key, name, and description with a search query param.
+    Can also filter on disabled and connection_type.
+
+    Connection_type supports "or" filtering:
+    ?connection_type=postgres&connection_type=mongo will be translated into an "or" query.
     """
     logger.info(
         f"Finding all connection configurations with pagination params {params} and search query: '{search if search else ''}'."
@@ -102,6 +108,13 @@ def get_connections(
                 ConnectionConfig.description.ilike(f"%{escape_like(search)}%"),
             )
         )
+
+    if connection_type:
+        query = query.filter(ConnectionConfig.connection_type.in_(connection_type))
+
+    if disabled is not None:
+        query = query.filter(ConnectionConfig.disabled == disabled)
+
     return paginate(
         query.order_by(ConnectionConfig.created_at.desc()),
         params=params,
