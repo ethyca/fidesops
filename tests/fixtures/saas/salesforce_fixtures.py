@@ -4,10 +4,9 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
+from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_201_CREATED
 
-from fidesops.core.config import load_toml
 from fidesops.db import session
 from fidesops.models.connectionconfig import (
     AccessLevel,
@@ -15,22 +14,11 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.service.connectors import SaaSConnector
 from fidesops.util import cryptographic_util
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 
-saas_config = load_toml("saas_config.toml")
-
-
-@pytest.fixture(scope="session")
-def salesforce_identity_email():
-    return "connectors+salesforce+sar@ethyca.com"
-
-
-@pytest.fixture(scope="session")
-def salesforce_erasure_identity_email():
-    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+saas_config = load_toml(["saas_config.toml"])
 
 
 @pytest.fixture(scope="session")
@@ -49,6 +37,16 @@ def salesforce_secrets():
         "access_token": pydash.get(saas_config, "salesforce.access_token")
         or os.environ.get("SALESFORCE_ACCESS_TOKEN"),
     }
+
+
+@pytest.fixture(scope="session")
+def salesforce_identity_email():
+    return "connectors+salesforce+sar@ethyca.com"
+
+
+@pytest.fixture(scope="session")
+def salesforce_erasure_identity_email():
+    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 
 @pytest.fixture(scope="session")
@@ -80,7 +78,6 @@ def salesforce_dataset() -> Dict[str, Any]:
 def salesforce_connection_config(
     db: session,
     salesforce_config,
-    salesforce_dataset,
     salesforce_secrets,
     salesforce_token,
 ) -> Generator:

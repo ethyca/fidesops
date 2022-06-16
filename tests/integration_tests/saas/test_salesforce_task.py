@@ -23,7 +23,6 @@ def test_salesforce_access_request_task(
     salesforce_identity_email,
     salesforce_connection_config,
     salesforce_dataset_config,
-    salesforce_data,
 ) -> None:
     """Full access request based on the Salesforce SaaS config"""
 
