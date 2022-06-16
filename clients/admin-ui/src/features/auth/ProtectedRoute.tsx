@@ -34,7 +34,7 @@ const ProtectedRoute = ({
 
 ProtectedRoute.defaultProps = {
   authenticatedBlock: null,
-  redirectUrl: { LOGIN_ROUTE },
+  redirectUrl: LOGIN_ROUTE,
 };
 
 export default ProtectedRoute;
