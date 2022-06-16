@@ -27,7 +27,6 @@ def test_postgres_with_manual_input_access_request_task(
     integration_manual_config,
 ) -> None:
     """Run a privacy request with two manual nodes"""
-    config.dev_mode = False
     privacy_request = PrivacyRequest(
         id=f"test_postgres_access_request_task_{uuid.uuid4()}"
     )

@@ -47,44 +47,26 @@ if config.security.CORS_ORIGINS:
 async def dispatch_log_request(request: Request, call_next: Callable) -> Response:
     fides_source: Optional[str] = request.headers.get("X-Fides-Source")
     now: datetime = datetime.now(tz=timezone.utc)
-    endpoint = f"{request.method}: {request.url.path}"
+    endpoint = f"{request.method}: {request.url}"
 
     try:
         response = await call_next(request)
         # HTTPExceptions are considered a handled err by default so are not thrown here.
         # Accepted workaround is to inspect status code of response.
         # More context- https://github.com/tiangolo/fastapi/issues/1840
-        try:
-            if response.status_code >= 400:
-                response.background = BackgroundTask(
-                    prepare_and_log_request,
-                    endpoint,
-                    response.status_code,
-                    now,
-                    fides_source,
-                    "HTTPException",
-                )
-            else:
-                response.background = BackgroundTask(
-                    prepare_and_log_request,
-                    endpoint,
-                    response.status_code,
-                    now,
-                    fides_source,
-                    None,
-                )
-        except Exception as exc:
-            # always continue if something went wrong with analytics
-            logger.warning(
-                f"Analytics event for endpoint {request.url} failed to send: {exc}"
-            )
-            return response
+        response.background = BackgroundTask(
+            prepare_and_log_request,
+            endpoint,
+            response.status_code,
+            now,
+            fides_source,
+            "HTTPException" if response.status_code >= 400 else None
+        )
 
         return response
     except Exception as e:
-        logger.warning("exception caught")
         prepare_and_log_request(
-            endpoint, e.args[0], now, fides_source, e.__class__.__name__
+            endpoint, 500, now, fides_source, e.__class__.__name__
         )
         raise
 

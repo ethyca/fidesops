@@ -70,7 +70,6 @@ def test_retry_decorator(privacy_request, policy):
         CollectionAddress("postgres_example", "payment_card")
     ]
 
-    config.dev_mode = False
     config.execution.TASK_RETRY_COUNT = 5
     config.execution.TASK_RETRY_DELAY = 0.1
     config.execution.TASK_RETRY_BACKOFF = 0.01
