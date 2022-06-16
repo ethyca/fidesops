@@ -10,6 +10,7 @@ import {
   DatastoreConnectionParams,
   DatastoreConnectionResponse,
   DatastoreConnectionStatus,
+  temp,
 } from "./types";
 
 function mapFiltersToSearchParams({
@@ -70,11 +71,14 @@ export const datastoreConnectionApi = createApi({
       }),
       providesTags: () => ["DatastoreConnection"],
     }),
-    getDatastoreConnectionById: build.query<DatastoreConnection, string>({
-      query: (id) => ({
-        url: `${CONNECTION_ROUTE}/${id}`,
+    getDatastoreConnectionByKey: build.query<DatastoreConnection, string>({
+      query: (key) => ({
+        url: `${CONNECTION_ROUTE}/${key}`,
       }),
-      providesTags: () => ["DatastoreConnection"],
+      providesTags: (result) => [
+        { type: "DatastoreConnection", id: result!.key },
+      ],
+      keepUnusedDataFor: 1,
     }),
     getDatastoreConnectionStatus: build.query<
       DatastoreConnectionStatus,
@@ -84,6 +88,38 @@ export const datastoreConnectionApi = createApi({
         url: `${CONNECTION_ROUTE}/${id}/test`,
       }),
       providesTags: () => ["DatastoreConnection"],
+      async onQueryStarted(key, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          const request = dispatch(
+            datastoreConnectionApi.endpoints.getDatastoreConnectionByKey.initiate(
+              key
+            )
+          );
+          const result = await request.unwrap();
+          request.unsubscribe();
+
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const patchResult = dispatch(
+            datastoreConnectionApi.util.updateQueryData(
+              "getAllDatastoreConnections",
+              temp,
+              (draft) => {
+                const newList = draft.items.map((d) => {
+                  if (d.key === key) {
+                    return { ...result };
+                  }
+                  return { ...d };
+                });
+                // eslint-disable-next-line no-param-reassign
+                draft.items = newList;
+              }
+            )
+          );
+        } catch {
+          console.error("Error while testing connection");
+        }
+      },
     }),
     patchDatastoreConnections: build.mutation({
       query: () => ({
@@ -113,6 +149,7 @@ export const datastoreConnectionApi = createApi({
 
 export const {
   useGetAllDatastoreConnectionsQuery,
+  useLazyGetDatastoreConnectionStatusQuery,
   // useGetDatastoreConnectionByIdQuery,
   // usePatchDatastoreConnectionsMutation,
   // useDeleteDatastoreConnectionMutation,
