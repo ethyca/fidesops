@@ -8,7 +8,10 @@ import {
   credentialStorage,
   reducer as authReducer,
 } from "../features/auth";
-import { datastoreConnectionApi } from "../features/datastore-connections";
+import {
+  datastoreConnectionApi,
+  reducer as datastoreConnectionReducer,
+} from "../features/datastore-connections";
 import {
   privacyRequestApi,
   reducer as privacyRequestsReducer,
@@ -25,6 +28,7 @@ const reducer = {
   [authApi.reducerPath]: authApi.reducer,
   userManagement: userManagementReducer,
   [datastoreConnectionApi.reducerPath]: datastoreConnectionApi.reducer,
+  datastoreConnections: datastoreConnectionReducer,
   auth: authReducer,
 };
 

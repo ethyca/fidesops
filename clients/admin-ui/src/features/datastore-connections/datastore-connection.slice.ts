@@ -4,7 +4,6 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../../app/store";
 import { BASE_URL, CONNECTION_ROUTE } from "../../constants";
 import { selectToken } from "../auth";
-import { PrivacyRequestParams } from "../privacy-requests/types";
 import {
   DatastoreConnection,
   DatastoreConnectionParams,
@@ -14,35 +13,14 @@ import {
 } from "./types";
 
 function mapFiltersToSearchParams({
-  status,
-  id,
-  from,
-  to,
+  search,
   page,
   size,
-  verbose,
-}: Partial<PrivacyRequestParams>): any {
-  let fromISO;
-  if (from) {
-    fromISO = new Date(from);
-    fromISO.setUTCHours(0, 0, 0);
-  }
-
-  let toISO;
-  if (to) {
-    toISO = new Date(to);
-    toISO.setUTCHours(23, 59, 59);
-  }
-
+}: Partial<DatastoreConnectionParams>): any {
   return {
-    include_identities: "true",
-    ...(status ? { status } : {}),
-    ...(id ? { request_id: id } : {}),
-    ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
-    ...(toISO ? { created_lt: toISO.toISOString() } : {}),
+    ...(search ? { search } : {}),
     ...(page ? { page: `${page}` } : {}),
     ...(typeof size !== "undefined" ? { size: `${size}` } : {}),
-    ...(verbose ? { verbose } : {}),
   };
 }
 
@@ -117,7 +95,7 @@ export const datastoreConnectionApi = createApi({
             )
           );
         } catch {
-          console.error("Error while testing connection");
+          throw new Error("Error while testing connection");
         }
       },
     }),
@@ -150,7 +128,42 @@ export const datastoreConnectionApi = createApi({
 export const {
   useGetAllDatastoreConnectionsQuery,
   useLazyGetDatastoreConnectionStatusQuery,
-  // useGetDatastoreConnectionByIdQuery,
-  // usePatchDatastoreConnectionsMutation,
-  // useDeleteDatastoreConnectionMutation,
 } = datastoreConnectionApi;
+
+const initialState: DatastoreConnectionParams = {
+  search: "",
+  page: 1,
+  size: 25,
+};
+
+export const datastoreConnectionSlice = createSlice({
+  name: "datastoreConnections",
+  initialState,
+  reducers: {
+    setSearch: (state, action: PayloadAction<string>) => ({
+      ...state,
+      page: initialState.page,
+      search: action.payload,
+    }),
+    setPage: (state, action: PayloadAction<number>) => ({
+      ...state,
+      page: action.payload,
+    }),
+    setSize: (state, action: PayloadAction<number>) => ({
+      ...state,
+      page: initialState.page,
+      size: action.payload,
+    }),
+  },
+});
+
+export const { setSearch, setSize, setPage } = datastoreConnectionSlice.actions;
+export const selectDatastoreConnectionFilters = (
+  state: RootState
+): DatastoreConnectionParams => ({
+  search: state.datastoreConnections.search,
+  page: state.datastoreConnections.page,
+  size: state.datastoreConnections.size,
+});
+
+export const { reducer } = datastoreConnectionSlice;

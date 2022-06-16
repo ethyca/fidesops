@@ -1,13 +1,62 @@
 import { Button, Flex, SimpleGrid, Spinner, Text } from "@fidesui/react";
-import React from "react";
+import debounce from "lodash.debounce";
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch } from "react-redux";
 
+import { useAppSelector } from "../../app/hooks";
+import PaginationFooter from "../common/PaginationFooter";
 import ConnectionGridItem from "./ConnectionGridItem";
-import { useGetAllDatastoreConnectionsQuery } from "./datastore-connection.slice";
-import { temp } from "./types";
+import {
+  selectDatastoreConnectionFilters,
+  setPage,
+  useGetAllDatastoreConnectionsQuery,
+} from "./datastore-connection.slice";
+
+const useConnectionGrid = () => {
+  const dispatch = useDispatch();
+  const filters = useAppSelector(selectDatastoreConnectionFilters);
+  const [cachedFilters, setCachedFilters] = useState(filters);
+  const updateCachedFilters = useRef(
+    debounce((updatedFilters) => setCachedFilters(updatedFilters), 250)
+  );
+  useEffect(() => {
+    updateCachedFilters.current(filters);
+  }, [setCachedFilters, filters]);
+
+  const handlePreviousPage = () => {
+    dispatch(setPage(filters.page - 1));
+  };
+
+  const handleNextPage = () => {
+    dispatch(setPage(filters.page + 1));
+  };
+
+  const { data, isLoading, isUninitialized } =
+    useGetAllDatastoreConnectionsQuery(cachedFilters);
+  const { items: connections, total } = data || { items: [], total: 0 };
+  return {
+    ...filters,
+    data,
+    isLoading,
+    isUninitialized,
+    connections,
+    total,
+    handleNextPage,
+    handlePreviousPage,
+  };
+};
 
 const ConnectionGrid: React.FC = () => {
-  const { data, isUninitialized, isLoading } =
-    useGetAllDatastoreConnectionsQuery(temp);
+  const {
+    data,
+    isUninitialized,
+    isLoading,
+    page,
+    size,
+    total,
+    handleNextPage,
+    handlePreviousPage,
+  } = useConnectionGrid();
   if (isUninitialized || isLoading) {
     return <Spinner />;
   }
@@ -31,7 +80,7 @@ const ConnectionGrid: React.FC = () => {
         Welcome to your Datastore!
       </Text>
       <Text color="gray.600" fontSize="sm" lineHeight="20px" mb="11px">
-        You don't have any Connections set up yet.
+        You don`&lsquo;t have any Connections set up yet.
       </Text>
       <Button
         variant="solid"
@@ -47,13 +96,20 @@ const ConnectionGrid: React.FC = () => {
 
   // @ts-ignore
   if (data?.items.length > 0) {
-    const gridItems = data!.items.map((d, idx) => (
-      <ConnectionGridItem key={d.key + idx} connectionData={d} />
+    const gridItems = data!.items.map((d) => (
+      <ConnectionGridItem key={d.key} connectionData={d} />
     ));
     body = (
-      <SimpleGrid minChildWidth={400} columns={3} spacing={0}>
-        {gridItems}
-      </SimpleGrid>
+      <>
+        <SimpleGrid minChildWidth={400}>{gridItems}</SimpleGrid>
+        <PaginationFooter
+          page={page}
+          size={size}
+          total={total}
+          handleNextPage={handleNextPage}
+          handlePreviousPage={handlePreviousPage}
+        />
+      </>
     );
   }
 

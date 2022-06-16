@@ -1,25 +1,16 @@
 import {
-  Button,
-  Flex,
   Input,
   InputGroup,
-  InputLeftAddon,
   InputLeftElement,
   Select,
   Stack,
-  Text,
   useToast,
 } from "@fidesui/react";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectToken } from "../auth";
-import {
-  CloseSolidIcon,
-  DownloadSolidIcon,
-  SearchLineIcon,
-} from "../common/Icon";
-import PIIToggle from "../common/PIIToggle";
+import { SearchLineIcon } from "../common/Icon";
 import { statusPropMap } from "../common/RequestStatusBadge";
 import {
   clearAllFilters,
@@ -82,36 +73,10 @@ const StatusOption: React.FC<{ status: PrivacyRequestStatus }> = ({
 }) => <option value={status}>{statusPropMap[status].label}</option>;
 
 const ConnectionFilters: React.FC = () => {
-  const {
-    status,
-    handleSearchChange,
-    handleStatusChange,
-    handleFromChange,
-    handleToChange,
-    handleClearAllFilters,
-    handleDownloadClick,
-    id,
-    from,
-    to,
-  } = useConstantFilters();
+  const { status, handleSearchChange, handleStatusChange, id } =
+    useConstantFilters();
   return (
     <Stack direction="row" spacing={4} mb={6}>
-      <Select
-        placeholder="Select status"
-        size="sm"
-        minWidth="144px"
-        value={status || ""}
-        onChange={handleStatusChange}
-        borderRadius="md"
-      >
-        <StatusOption status="approved" />
-        <StatusOption status="complete" />
-        <StatusOption status="denied" />
-        <StatusOption status="error" />
-        <StatusOption status="in_processing" />
-        <StatusOption status="paused" />
-        <StatusOption status="pending" />
-      </Select>
       <InputGroup size="sm">
         <InputLeftElement pointerEvents="none">
           <SearchLineIcon color="gray.300" w="17px" h="17px" />
@@ -127,52 +92,86 @@ const ConnectionFilters: React.FC = () => {
           onChange={handleSearchChange}
         />
       </InputGroup>
-      <InputGroup size="sm">
-        <InputLeftAddon borderRadius="md">From</InputLeftAddon>
-        <Input
-          type="date"
-          name="From"
-          value={from}
-          max={to || undefined}
-          onChange={handleFromChange}
-          borderRadius="md"
-        />
-      </InputGroup>
-      <InputGroup size="sm">
-        <InputLeftAddon borderRadius="md">To</InputLeftAddon>
-        <Input
-          type="date"
-          borderRadius="md"
-          name="To"
-          value={to}
-          min={from || undefined}
-          onChange={handleToChange}
-        />
-      </InputGroup>
-      <Flex flexShrink={0} alignItems="center">
-        <Text fontSize="xs" mr={2} size="sm">
-          Reveal PII
-        </Text>
-        <PIIToggle />
-      </Flex>
-      <Button
-        variant="ghost"
-        flexShrink={0}
-        rightIcon={<DownloadSolidIcon />}
+      <Select
+        placeholder="Datastore Type"
         size="sm"
-        onClick={handleDownloadClick}
+        minWidth="144px"
+        value={status || ""}
+        onChange={handleStatusChange}
+        borderRadius="md"
       >
-        Download
-      </Button>
-      <Button
-        variant="ghost"
-        flexShrink={0}
-        rightIcon={<CloseSolidIcon />}
+        <StatusOption status="approved" />
+        <StatusOption status="complete" />
+        <StatusOption status="denied" />
+        <StatusOption status="error" />
+        <StatusOption status="in_processing" />
+        <StatusOption status="paused" />
+        <StatusOption status="pending" />
+      </Select>
+      <Select
+        placeholder="System Type"
         size="sm"
-        onClick={handleClearAllFilters}
+        minWidth="144px"
+        value={status || ""}
+        onChange={handleStatusChange}
+        borderRadius="md"
       >
-        Clear all filters
-      </Button>
+        <StatusOption status="approved" />
+        <StatusOption status="complete" />
+        <StatusOption status="denied" />
+        <StatusOption status="error" />
+        <StatusOption status="in_processing" />
+        <StatusOption status="paused" />
+        <StatusOption status="pending" />
+      </Select>
+      <Select
+        placeholder="Data Category"
+        size="sm"
+        minWidth="144px"
+        value={status || ""}
+        onChange={handleStatusChange}
+        borderRadius="md"
+      >
+        <StatusOption status="approved" />
+        <StatusOption status="complete" />
+        <StatusOption status="denied" />
+        <StatusOption status="error" />
+        <StatusOption status="in_processing" />
+        <StatusOption status="paused" />
+        <StatusOption status="pending" />
+      </Select>
+      <Select
+        placeholder="Testing Status"
+        size="sm"
+        minWidth="144px"
+        value={status || ""}
+        onChange={handleStatusChange}
+        borderRadius="md"
+      >
+        <StatusOption status="approved" />
+        <StatusOption status="complete" />
+        <StatusOption status="denied" />
+        <StatusOption status="error" />
+        <StatusOption status="in_processing" />
+        <StatusOption status="paused" />
+        <StatusOption status="pending" />
+      </Select>
+      <Select
+        placeholder="Status"
+        size="sm"
+        minWidth="144px"
+        value={status || ""}
+        onChange={handleStatusChange}
+        borderRadius="md"
+      >
+        <StatusOption status="approved" />
+        <StatusOption status="complete" />
+        <StatusOption status="denied" />
+        <StatusOption status="error" />
+        <StatusOption status="in_processing" />
+        <StatusOption status="paused" />
+        <StatusOption status="pending" />
+      </Select>
     </Stack>
   );
 };

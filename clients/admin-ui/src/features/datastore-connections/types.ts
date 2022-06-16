@@ -25,8 +25,8 @@ export type DatastoreConnection = {
   access: AccessLevel;
   created_at: string;
   updated_at?: string;
-  last_test_timestamp?: string;
-  last_test_succeeded?: boolean;
+  last_test_timestamp: string;
+  last_test_succeeded: boolean;
 };
 
 export type DatastoreConnectionResponse = {
@@ -37,18 +37,13 @@ export type DatastoreConnectionResponse = {
 };
 
 export type DatastoreConnectionParams = {
-  id: string;
-  from: string;
-  to: string;
+  search: string;
   page: number;
   size: number;
-  verbose?: boolean;
 };
 
 export const temp: DatastoreConnectionParams = {
-  id: "",
-  from: "",
-  to: "",
+  search: "",
   page: 1,
   size: 20,
 };

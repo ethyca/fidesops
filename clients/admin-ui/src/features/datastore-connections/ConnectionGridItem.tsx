@@ -5,7 +5,76 @@ import React from "react";
 import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
-import { DatastoreConnection } from "./types";
+import { ConnectionType, DatastoreConnection } from "./types";
+
+function getConnectorDisplayName(connectionType: ConnectionType): string {
+  const databases = [
+    ConnectionType.POSTGRES,
+    ConnectionType.MONGODB,
+    ConnectionType.MYSQL,
+    ConnectionType.REDSHIFT,
+    ConnectionType.SNOWFLAKE,
+    ConnectionType.MSSQL,
+    ConnectionType.MARIADB,
+    ConnectionType.BIGQUERY,
+  ];
+
+  if (databases.includes(connectionType)) {
+    const databaseName = connectionType.replace(/^\w/, (c) => c.toUpperCase());
+    return `${databaseName} Database Connector`;
+  }
+
+  if (connectionType === ConnectionType.SAAS) {
+    return "Sass Connector";
+  }
+
+  if (connectionType === ConnectionType.HTTPS) {
+    return "HTTPS Connector";
+  }
+
+  if (connectionType === ConnectionType.MANUAL) {
+    return "Manual Connector";
+  }
+
+  return "Unknown Connector";
+}
+
+type TestDataProps = {
+  succeeded: boolean | null;
+  timestamp: string;
+};
+
+const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {
+  let testCircleColor = succeeded ? "green.500" : "red.500";
+  if (succeeded === null) {
+    testCircleColor = "gray.300";
+  }
+
+  const date = format(new Date(timestamp), "MMMM d, Y, KK:mm:ss z");
+  const testText = timestamp
+    ? `Last tested on ${date}`
+    : "This datastore has not been tested yet";
+
+  return (
+    <>
+      <Box
+        width="12px"
+        height="12px"
+        borderRadius="6px"
+        backgroundColor={testCircleColor}
+      />
+      <Text
+        color="gray.500"
+        fontSize="xs"
+        fontWeight="semibold"
+        lineHeight="16px"
+        ml="10px"
+      >
+        {testText}
+      </Text>
+    </>
+  );
+};
 
 type ConnectionGridItemProps = {
   connectionData: DatastoreConnection;
@@ -14,10 +83,7 @@ type ConnectionGridItemProps = {
 const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
   connectionData,
 }) => {
-  useLazyGetDatastoreConnectionStatusQuery();
-  const [trigger, result, lastPromiseInfo] =
-    useLazyGetDatastoreConnectionStatusQuery();
-
+  const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
   return (
     <Box
       width="100%"
@@ -43,8 +109,7 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
         <ConnectionMenu />
       </Flex>
       <Text color="gray.600" fontSize="sm" fontWeight="sm" lineHeight="20px">
-        {/* {data.connection_type} Database Connector */}
-        Mailchimp Saas Connector
+        {getConnectorDisplayName(connectionData.connection_type)}
       </Text>
       <Text color="gray.600" fontSize="sm" fontWeight="sm" lineHeight="20px">
         Edited on{" "}
@@ -52,27 +117,10 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
       </Text>
 
       <Flex mt="0px" justifyContent="center" alignItems="center">
-        <Box
-          width="12px"
-          height="12px"
-          borderRadius="6px"
-          backgroundColor={
-            connectionData.last_test_succeeded ? "green.500" : "red.500"
-          }
+        <TestData
+          succeeded={connectionData.last_test_succeeded}
+          timestamp={connectionData.last_test_timestamp}
         />
-        <Text
-          color="gray.500"
-          fontSize="xs"
-          fontWeight="semibold"
-          lineHeight="16px"
-          ml="10px"
-        >
-          Last tested on{" "}
-          {format(
-            new Date(connectionData.last_test_timestamp!),
-            "MMMM d, Y, KK:mm:ss z"
-          )}
-        </Text>
         <Spacer />
         <Button
           size="xs"
