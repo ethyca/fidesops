@@ -116,7 +116,7 @@ def get_connections(
         query = query.filter(ConnectionConfig.disabled == disabled)
 
     return paginate(
-        query.order_by(ConnectionConfig.created_at.desc()),
+        query.order_by(ConnectionConfig.name.asc()),
         params=params,
     )
 

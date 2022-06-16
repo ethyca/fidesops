@@ -530,7 +530,7 @@ class TestGetConnections:
                     [read_connection_config.key, connection_config.key]
                 )
             )
-            .order_by(ConnectionConfig.created_at.desc())
+            .order_by(ConnectionConfig.name.asc())
             .all()
         )
         assert len(ordered) == 2

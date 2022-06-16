@@ -31,6 +31,7 @@ The types of changes are:
 * Adds searching of ConnectionConfigs [#641](https://github.com/ethyca/fidesops/pull/641)
 * Added `AdminUiSettings` to the `log_all_config_values` helper method [#647](https://github.com/ethyca/fidesops/pull/647)
 * Prettier formatting CI check for frontend code [#655](https://github.com/ethyca/fidesops/pull/655)
+* Adds default policies [#654](https://github.com/ethyca/fidesops/pull/654)
 * Added ConnectionConfig `connection_type` and `disabled` filters [#675](https://github.com/ethyca/fidesops/pull/675)
 
 ### Changed
@@ -39,6 +40,7 @@ The types of changes are:
 * Bumped mypy to version 0.961 [#630](https://github.com/ethyca/fidesops/pull/630)
 * Bumped Python to version 3.9.13 in the `Dockerfile` [#630](https://github.com/ethyca/fidesops/pull/630)
 * Matched the path to the migrations in the mypy settings with the new location [#634](https://github.com/ethyca/fidesops/pull/634)
+* Sort ConnectionConfig by name ascending [#668](https://github.com/ethyca/fidesops/pull/672)
 
 ### Developer Experience
 
