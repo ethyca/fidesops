@@ -45,6 +45,8 @@ from fidesops.service.privacy_request.request_runner_service import (
 from fidesops.util.data_category import DataCategory
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 2
+# External services take much longer to return
+PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 15
 
 
 @mock.patch("fidesops.service.privacy_request.request_runner_service.upload")
@@ -453,6 +455,7 @@ def test_create_and_process_access_request_saas_mailchimp(
         policy,
         run_privacy_request_task,
         data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     results = pr.get_results()
     assert len(results.keys()) == 3
@@ -498,6 +501,7 @@ def test_create_and_process_erasure_request_saas(
         erasure_policy_hmac,
         run_privacy_request_task,
         data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
     connector = SaaSConnector(mailchimp_connection_config)
@@ -556,6 +560,7 @@ def test_create_and_process_access_request_saas_hubspot(
         policy,
         run_privacy_request_task,
         data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     results = pr.get_results()
     assert len(results.keys()) == 3
@@ -1017,7 +1022,7 @@ def test_create_and_process_access_request_snowflake(
         policy,
         run_privacy_request_task,
         data,
-        task_timeout=10,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     results = pr.get_results()
     customer_table_key = (
@@ -1054,7 +1059,7 @@ def test_create_and_process_erasure_request_snowflake(
         erasure_policy,
         run_privacy_request_task,
         data,
-        task_timeout=10,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     pr.delete(db=db)
 
@@ -1135,6 +1140,7 @@ def test_create_and_process_access_request_redshift(
         policy,
         run_privacy_request_task,
         data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     results = pr.get_results()
     customer_table_key = (
@@ -1181,6 +1187,7 @@ def test_create_and_process_erasure_request_redshift(
         erasure_policy,
         run_privacy_request_task,
         data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     pr.delete(db=db)
 
@@ -1211,6 +1218,7 @@ def test_create_and_process_erasure_request_redshift(
         erasure_policy,
         run_privacy_request_task,
         data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     pr.delete(db=db)
 
@@ -1249,7 +1257,7 @@ def test_create_and_process_access_request_bigquery(
         policy,
         run_privacy_request_task,
         data,
-        task_timeout=10,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     results = pr.get_results()
     customer_table_key = (
@@ -1296,7 +1304,7 @@ def test_create_and_process_erasure_request_bigquery(
         erasure_policy,
         run_privacy_request_task,
         data,
-        task_timeout=10,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     pr.delete(db=db)
 
@@ -1325,6 +1333,7 @@ def test_create_and_process_erasure_request_bigquery(
         erasure_policy,
         run_privacy_request_task,
         data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     pr.delete(db=db)
 
