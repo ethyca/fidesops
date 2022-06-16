@@ -62,7 +62,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A fidesops.tasks beat -l info --logfile=/var/log/celery.log
+    command: fidesops worker
     depends_on:
       fidesops:
         condition: service_healthy

@@ -2,6 +2,7 @@
 import click
 
 from fidesops.main import start_webserver
+from fidesops.tasks import start_worker
 
 
 @click.group()
@@ -18,3 +19,12 @@ def webserver(ctx: click.Context) -> None:
     Runs any pending DB migrations and starts the webserver.
     """
     start_webserver()
+
+
+@cli.command()
+@click.pass_context
+def worker(ctx: click.Context) -> None:
+    """
+    Starts a Celery worker
+    """
+    start_worker()
