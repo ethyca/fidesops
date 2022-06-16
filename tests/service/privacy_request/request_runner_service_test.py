@@ -180,6 +180,7 @@ def get_privacy_request_results(
     policy,
     run_privacy_request_task,
     privacy_request_data: Dict[str, Any],
+    task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT,
 ) -> PrivacyRequest:
     """Utility method to run a privacy request and return results after waiting for
     the returned future."""
@@ -222,7 +223,7 @@ def get_privacy_request_results(
                 privacy_request.cache_masking_secret(masking_secret)
 
     run_privacy_request_task.delay(privacy_request.id).get(
-        timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        timeout=task_timeout,
     )
 
     return PrivacyRequest.get(db=db, id=privacy_request.id)
@@ -1016,6 +1017,7 @@ def test_create_and_process_access_request_snowflake(
         policy,
         run_privacy_request_task,
         data,
+        task_timeout=10,
     )
     results = pr.get_results()
     customer_table_key = (
@@ -1052,6 +1054,7 @@ def test_create_and_process_erasure_request_snowflake(
         erasure_policy,
         run_privacy_request_task,
         data,
+        task_timeout=10,
     )
     pr.delete(db=db)
 
@@ -1228,7 +1231,11 @@ def test_create_and_process_erasure_request_redshift(
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 def test_create_and_process_access_request_bigquery(
-    bigquery_resources, db, cache, policy, run_privacy_request_task
+    bigquery_resources,
+    db,
+    cache,
+    policy,
+    run_privacy_request_task,
 ):
     customer_email = bigquery_resources["email"]
     customer_name = bigquery_resources["name"]
@@ -1242,6 +1249,7 @@ def test_create_and_process_access_request_bigquery(
         policy,
         run_privacy_request_task,
         data,
+        task_timeout=10,
     )
     results = pr.get_results()
     customer_table_key = (
@@ -1288,6 +1296,7 @@ def test_create_and_process_erasure_request_bigquery(
         erasure_policy,
         run_privacy_request_task,
         data,
+        task_timeout=10,
     )
     pr.delete(db=db)
 
