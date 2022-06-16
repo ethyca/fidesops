@@ -41,7 +41,9 @@ def salesforce_secrets():
 
 @pytest.fixture(scope="session")
 def salesforce_identity_email():
-    return "connectors+salesforce+sar@ethyca.com"
+    return pydash.get(saas_config, "salesforce.identity_email") or os.environ.get(
+        "SALESFORCE_IDENTITY_EMAIL"
+    )
 
 
 @pytest.fixture(scope="session")
