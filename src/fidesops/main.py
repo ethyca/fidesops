@@ -82,19 +82,23 @@ def prepare_and_log_request(
     fides_source: Optional[str],
     error_class: Optional[str],
 ) -> None:
-    analytics_event = AnalyticsEvent(
-        docker=in_docker_container(),
-        event=Event.endpoint_call.value,
-        event_created_at=event_created_at,
-        local_host=running_on_local_host(),
-        endpoint=endpoint,
-        status_code=status_code,
+    # this check prevents AnalyticsEvent from being called with invalid endpoint during unit tests
+    if config.root_user.ANALYTICS_OPT_OUT:
+        return
+    send_analytics_event(
+        AnalyticsEvent(
+            docker=in_docker_container(),
+            event=Event.endpoint_call.value,
+            event_created_at=event_created_at,
+            local_host=running_on_local_host(),
+            endpoint=endpoint,
+            status_code=status_code,
+            error=error_class or None,
+            extra_data={ExtraData.fides_source.value: fides_source}
+            if fides_source
+            else None,
+        )
     )
-    if error_class:
-        analytics_event.error = error_class
-    if fides_source:
-        analytics_event.extra_data = {ExtraData.fides_source.value: fides_source}
-    send_analytics_event(analytics_event)
 
 
 app.include_router(api_router)
