@@ -198,7 +198,9 @@ def segment_erasure_data(
 
     # Wait until user returns data
     error_message = "The user endpoint did not return the required data for testing during the time limit"
-    segment_id = poll_for_existence(_get_user_id, (email, segment_secrets), error_message=error_message, interval=10)
+    segment_id = poll_for_existence(
+        _get_user_id, (email, segment_secrets), error_message=error_message, interval=10
+    )
 
     # Create event
     body = {
@@ -214,4 +216,6 @@ def segment_erasure_data(
 
     # Wait until track_events returns data
     error_message = "The track_events endpoint did not return the required data for testing during the time limit"
-    poll_for_existence(_get_track_events, (segment_id, segment_secrets), error_message=error_message)
+    poll_for_existence(
+        _get_track_events, (segment_id, segment_secrets), error_message=error_message
+    )

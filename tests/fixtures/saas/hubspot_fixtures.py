@@ -144,8 +144,14 @@ def hubspot_erasure_data(
     # no need to subscribe contact, since creating a contact auto-subscribes them
 
     # Allows contact to be propagated in Hubspot before calling access / erasure requests
-    error_message = f"Contact with contact id {contact_id} could not be added to Hubspot"
-    poll_for_existence(_contact_exists,(hubspot_erasure_identity_email, connector), error_message=error_message)
+    error_message = (
+        f"Contact with contact id {contact_id} could not be added to Hubspot"
+    )
+    poll_for_existence(
+        _contact_exists,
+        (hubspot_erasure_identity_email, connector),
+        error_message=error_message,
+    )
 
     yield contact_id
 
@@ -157,8 +163,15 @@ def hubspot_erasure_data(
     connector.create_client().send(delete_request)
 
     # verify contact is deleted
-    error_message = f"Contact with contact id {contact_id} could not be deleted from Hubspot"
-    poll_for_existence(_contact_exists, (hubspot_erasure_identity_email, connector), error_message=error_message, existence_desired=False)
+    error_message = (
+        f"Contact with contact id {contact_id} could not be deleted from Hubspot"
+    )
+    poll_for_existence(
+        _contact_exists,
+        (hubspot_erasure_identity_email, connector),
+        error_message=error_message,
+        existence_desired=False,
+    )
 
 
 def _contact_exists(
@@ -193,6 +206,8 @@ def _contact_exists(
     )
     contact_response = connector.create_client().send(contact_request)
     contact_body = contact_response.json()
-    if contact_body["results"] and contact_body["results"][0]["properties"]["firstname"] == HUBSPOT_FIRSTNAME:
+    if (
+        contact_body["results"]
+        and contact_body["results"][0]["properties"]["firstname"] == HUBSPOT_FIRSTNAME
+    ):
         return contact_body
-

@@ -344,20 +344,18 @@ def test_salesforce_access_request_task(
         ],
     )
 
-    # verify we only returned data for our identity email
-    account_id: str = v[f"{dataset_name}:accounts"][0]["Id"]
-    contact_id: str = v[f"{dataset_name}:contacts"][0]["Id"]
-    lead_id: str = v[f"{dataset_name}:leads"][0]["Id"]
-
+    # verify we only returned data for our identity
     assert v[f"{dataset_name}:contacts"][0]["Email"] == salesforce_identity_email
-    assert v[f"{dataset_name}:cases"][0]["SuppliedEmail"] == salesforce_identity_email
-    assert v[f"{dataset_name}:leads"][0]["Email"] == salesforce_identity_email
+    account_id = v[f"{dataset_name}:contacts"][0]["AccountId"]
 
-    for bank_account in v[f"{dataset_name}:contacts"]:
-        assert bank_account["AccountId"] == account_id
-    for bank_account in v[f"{dataset_name}:cases"]:
-        assert bank_account["ContactId"] == contact_id
-    for bank_account in v[f"{dataset_name}:campaign_members"]:
-        assert bank_account["ContactId"] == contact_id
-    for bank_account in v[f"{dataset_name}:campaign_members"]:
-        assert bank_account["LeadId"] == lead_id
+    for case in v[f"{dataset_name}:cases"]:
+        assert case["ContactEmail"] == salesforce_identity_email
+
+    for lead in v[f"{dataset_name}:leads"]:
+        assert lead["Email"] == salesforce_identity_email
+
+    for campaign_member in v[f"{dataset_name}:campaign_members"]:
+        assert campaign_member["Email"] == salesforce_identity_email
+
+    for account in v[f"{dataset_name}:accounts"]:
+        assert account["Id"] == account_id

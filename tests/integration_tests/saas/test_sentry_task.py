@@ -245,8 +245,10 @@ def sentry_erasure_test_prep(sentry_connection_config, db):
     project = response.json()[0]
 
     # Wait until issues returns data
-    error_message = "The issues endpoint did not return the required data for testing during the time limit"    
-    poll_for_existence(_get_issues, (project, sentry_secrets, headers), error_message=error_message)
+    error_message = "The issues endpoint did not return the required data for testing during the time limit"
+    poll_for_existence(
+        _get_issues, (project, sentry_secrets, headers), error_message=error_message
+    )
 
     # Temporarily sets the access token to one that works for erasures
     sentry_connection_config.secrets["access_token"] = sentry_secrets[
