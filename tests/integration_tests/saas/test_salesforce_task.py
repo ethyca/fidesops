@@ -343,3 +343,17 @@ def test_salesforce_access_request_task(
             "OperatingHoursId",
         ],
     )
+    account_id: str = v[f"{dataset_name}:accounts"][0]["Id"]    
+    contact_id: str = v[f"{dataset_name}:contacts"][0]["Id"]
+    lead_id: str = v[f"{dataset_name}:leads"][0]["Id"]
+    assert v[f"{dataset_name}:contacts"][0]["Email"] == salesforce_identity_email
+    assert v[f"{dataset_name}:cases"][0]["SuppliedEmail"] == salesforce_identity_email
+    assert v[f"{dataset_name}:leads"][0]["Email"] == salesforce_identity_email
+    for bank_account in v[f"{dataset_name}:contacts"]:
+        assert bank_account["AccountId"] == account_id
+    for bank_account in v[f"{dataset_name}:cases"]:
+        assert bank_account["ContactId"] == contact_id
+    for bank_account in v[f"{dataset_name}:campaign_members"]:
+        assert bank_account["ContactId"] == contact_id
+    for bank_account in v[f"{dataset_name}:campaign_members"]:
+        assert bank_account["LeadId"] == lead_id
