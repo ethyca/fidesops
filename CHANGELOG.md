@@ -32,6 +32,7 @@ The types of changes are:
 * Added `AdminUiSettings` to the `log_all_config_values` helper method [#647](https://github.com/ethyca/fidesops/pull/647)
 * Prettier formatting CI check for frontend code [#655](https://github.com/ethyca/fidesops/pull/655)
 * Adds default policies [#654](https://github.com/ethyca/fidesops/pull/654)
+* Datastore Connection Landing Page [#674](https://github.com/ethyca/fidesops/pull/674)
 
 ### Changed
 
