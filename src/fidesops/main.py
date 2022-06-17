@@ -47,7 +47,13 @@ if config.security.CORS_ORIGINS:
 async def dispatch_log_request(request: Request, call_next: Callable) -> Response:
     fides_source: Optional[str] = request.headers.get("X-Fides-Source")
     now: datetime = datetime.now(tz=timezone.utc)
-    endpoint = f"{request.method}: {request.url}"
+    valid_hostname = request.url.hostname
+    # only needed until we implement validator fix in fideslog
+    if valid_hostname == "0.0.0.0":
+        valid_hostname = "localhost"
+    endpoint = (
+        f"{request.method}: {request.url.scheme}://{valid_hostname}{request.url.path}"
+    )
 
     try:
         response = await call_next(request)
@@ -62,8 +68,8 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
             fides_source,
             "HTTPException" if response.status_code >= 400 else None,
         )
-
         return response
+
     except Exception as e:
         prepare_and_log_request(endpoint, 500, now, fides_source, e.__class__.__name__)
         raise
