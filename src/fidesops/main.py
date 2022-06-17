@@ -60,14 +60,12 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
             response.status_code,
             now,
             fides_source,
-            "HTTPException" if response.status_code >= 400 else None
+            "HTTPException" if response.status_code >= 400 else None,
         )
 
         return response
     except Exception as e:
-        prepare_and_log_request(
-            endpoint, 500, now, fides_source, e.__class__.__name__
-        )
+        prepare_and_log_request(endpoint, 500, now, fides_source, e.__class__.__name__)
         raise
 
 
