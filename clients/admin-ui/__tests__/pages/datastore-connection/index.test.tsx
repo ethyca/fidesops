@@ -8,7 +8,7 @@ import {
   LOGIN_ROUTE,
 } from "../../../src/constants";
 import DatastoreConnectionPage from "../../../src/pages/datastore-connection";
-import { act, fireEvent, render, screen, waitFor } from "../../test-utils";
+import { act, render, waitFor } from "../../test-utils";
 
 const useRouter = jest.spyOn(require("next/router"), "useRouter");
 
