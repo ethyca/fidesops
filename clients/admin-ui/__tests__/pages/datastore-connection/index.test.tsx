@@ -7,7 +7,7 @@ import {
   DATASTORE_CONNECTION_ROUTE,
   LOGIN_ROUTE,
 } from "../../../src/constants";
-import DatastoreConnectionPage from "../../../src/pages/datastore-connection";
+import DatastoreConnections from "../../../src/pages/datastore-connection";
 import { act, render, waitFor } from "../../test-utils";
 
 const useRouter = jest.spyOn(require("next/router"), "useRouter");
@@ -25,7 +25,7 @@ describe(`${DATASTORE_CONNECTION_ROUTE}`, () => {
       }));
 
       await act(async () => {
-        render(<DatastoreConnectionPage />);
+        render(<DatastoreConnections />);
       });
 
       await waitFor(() => expect(push).toHaveBeenCalledTimes(1));
@@ -48,7 +48,7 @@ describe(`${DATASTORE_CONNECTION_ROUTE}`, () => {
         server.listen();
 
         await act(async () => {
-          render(<DatastoreConnectionPage />, {
+          render(<DatastoreConnections />, {
             preloadedState: {
               auth: {
                 user: {

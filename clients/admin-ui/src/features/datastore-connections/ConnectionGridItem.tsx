@@ -94,13 +94,20 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
       p="18px 16px 16px 16px"
     >
       <Flex justifyContent="center" alignItems="center">
-        <Box width="32px" height="32px" backgroundColor="aliceblue" />
+        <Box
+          width="32px"
+          height="32px"
+          backgroundColor="aliceblue"
+          minWidth="32px"
+        />
         <Text
           color="gray.900"
           fontSize="md"
           fontWeight="medium"
           m="8px"
-          lineHeight="24px"
+          textOverflow="ellipsis"
+          overflow="hidden"
+          whiteSpace="nowrap"
         >
           {connectionData.name}
         </Text>

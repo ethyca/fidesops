@@ -80,7 +80,7 @@ const ConnectionGrid: React.FC = () => {
         Welcome to your Datastore!
       </Text>
       <Text color="gray.600" fontSize="sm" lineHeight="20px" mb="11px">
-        You don`&lsquo;t have any Connections set up yet.
+        You don&lsquo;t have any Connections set up yet.
       </Text>
       <Button
         variant="solid"
@@ -88,6 +88,7 @@ const ConnectionGrid: React.FC = () => {
         color="white"
         flexShrink={0}
         size="sm"
+        disabled
       >
         Create New Connection
       </Button>

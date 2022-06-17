@@ -13,6 +13,7 @@ const ConnectionStatusBadge: React.FC = () => (
       color="white"
       flexShrink={0}
       size="sm"
+      disabled
     >
       Create New Connection
     </Button>
