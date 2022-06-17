@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Final, List, Optional, Union
 
 import requests
+from fideslib.db.session import get_db_session
 from requests import Response
 from sqlalchemy.orm import Session
 
@@ -12,7 +13,7 @@ from fidesops.common_exceptions import (
     PolicyNotFoundException,
     StorageConfigNotFoundException,
 )
-from fidesops.db.session import get_db_session
+from fidesops.core.config import config
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.models.storage import StorageConfig
@@ -47,7 +48,7 @@ class OneTrustService:
     @staticmethod
     def intake_onetrust_requests(config_key: FidesOpsKey) -> None:
         """Intake onetrust requests"""
-        SessionLocal = get_db_session()
+        SessionLocal = get_db_session(config)
         db = SessionLocal()
 
         onetrust_config: Optional[StorageConfig] = StorageConfig.get_by(

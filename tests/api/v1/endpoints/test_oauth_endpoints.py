@@ -4,7 +4,14 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
+from fideslib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
 from fideslib.models.client import ClientDetail
+from fideslib.oauth.jwt import generate_jwe
+from fideslib.oauth.oauth_util import extract_payload
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.scope_registry import (
@@ -26,13 +33,8 @@ from fidesops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.common_exceptions import OAuth2TokenException
+from fidesops.core.config import config
 from fidesops.models.authentication_request import AuthenticationRequest
-from fidesops.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_SCOPES,
-)
-from fidesops.util.oauth_util import extract_payload, generate_jwe
 
 
 class TestCreateClient:
@@ -56,7 +58,10 @@ class TestCreateClient:
             JWE_PAYLOAD_SCOPES: [CLIENT_CREATE],
         }
         # Build auth header without client
-        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+        }
 
         response = api_client.post(url, headers=auth_header)
         assert 403 == response.status_code
@@ -69,7 +74,10 @@ class TestCreateClient:
             JWE_PAYLOAD_SCOPES: oauth_client.scopes,
             JWE_ISSUED_AT: datetime(1995, 1, 1).isoformat(),
         }
-        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+        }
         response = api_client.post(url, headers=auth_header)
         assert 403 == response.status_code
 
@@ -88,7 +96,7 @@ class TestCreateClient:
         assert 200 == response.status_code
         assert list(response_body.keys()) == ["client_id", "client_secret"]
 
-        new_client = ClientDetail.get(db, id=response_body["client_id"])
+        new_client = ClientDetail.get(db, object_id=response_body["client_id"])
         assert new_client.hashed_secret != response_body["client_secret"]
 
         new_client.delete(db)
@@ -116,7 +124,7 @@ class TestCreateClient:
         assert 200 == response.status_code
         assert list(response_body.keys()) == ["client_id", "client_secret"]
 
-        new_client = ClientDetail.get(db, id=response_body["client_id"])
+        new_client = ClientDetail.get(db, object_id=response_body["client_id"])
         assert new_client.scopes == scopes
 
         new_client.delete(db)
@@ -346,7 +354,7 @@ class TestDeleteClient:
         assert response_body is None
 
         db.expunge_all()
-        client = ClientDetail.get(db, id=oauth_client.id)
+        client = ClientDetail.get(db, object_id=oauth_client.id)
         assert client is None
 
 
@@ -386,9 +394,17 @@ class TestAcquireAccessToken:
         jwt = json.loads(response.text).get("access_token")
         assert 200 == response.status_code
         assert (
-            data["client_id"] == json.loads(extract_payload(jwt))[JWE_PAYLOAD_CLIENT_ID]
+            data["client_id"]
+            == json.loads(extract_payload(jwt, config.security.APP_SECURITY_KEY))[
+                JWE_PAYLOAD_CLIENT_ID
+            ]
         )
-        assert json.loads(extract_payload(jwt))[JWE_PAYLOAD_SCOPES] == []
+        assert (
+            json.loads(extract_payload(jwt, config.security.APP_SECURITY_KEY))[
+                JWE_PAYLOAD_SCOPES
+            ]
+            == []
+        )
 
         new_client.delete(db)
 

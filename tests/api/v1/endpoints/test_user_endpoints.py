@@ -1,13 +1,19 @@
 import json
 from datetime import datetime
-from email.mime import application
 from typing import List
 
 import pytest
 from fastapi_pagination import Params
-from fideslib.models.client import ClientDetail
+from fideslib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
+from fideslib.models.client import ADMIN_UI_ROOT, ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
+from fideslib.oauth.jwt import generate_jwe
+from fideslib.oauth.oauth_util import extract_payload
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -22,7 +28,6 @@ from starlette.testclient import TestClient
 
 from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
-    SCOPE_REGISTRY,
     STORAGE_READ,
     USER_CREATE,
     USER_DELETE,
@@ -37,13 +42,7 @@ from fidesops.api.v1.urn_registry import (
     USERS,
     V1_URL_PREFIX,
 )
-from fidesops.models.client import ADMIN_UI_ROOT
-from fidesops.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_SCOPES,
-)
-from fidesops.util.oauth_util import extract_payload, generate_jwe
+from fidesops.core.config import config
 from tests.conftest import generate_auth_header_for_user
 
 page_size = Params().size
@@ -235,7 +234,7 @@ class TestDeleteUser:
             JWE_PAYLOAD_CLIENT_ID: client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload))
+        jwe = generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
         auth_header = {"Authorization": "Bearer " + jwe}
 
         response = api_client.delete(
@@ -286,7 +285,7 @@ class TestDeleteUser:
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload))
+        jwe = generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
         auth_header = {"Authorization": "Bearer " + jwe}
 
         response = api_client.delete(
@@ -670,7 +669,9 @@ class TestUserLogin:
         assert user.client is not None
         assert "token_data" in list(response.json().keys())
         token = response.json()["token_data"]["access_token"]
-        token_data = json.loads(extract_payload(token))
+        token_data = json.loads(
+            extract_payload(token, config.security.APP_ENCRYPTION_KEY)
+        )
         assert token_data["client-id"] == user.client.id
         assert token_data["scopes"] == [
             PRIVACY_REQUEST_READ
@@ -703,7 +704,9 @@ class TestUserLogin:
         assert user.client is not None
         assert "token_data" in list(response.json().keys())
         token = response.json()["token_data"]["access_token"]
-        token_data = json.loads(extract_payload(token))
+        token_data = json.loads(
+            extract_payload(token, config.security.APP_ENCRYPTION_KEY)
+        )
         assert token_data["client-id"] == existing_client_id
         assert token_data["scopes"] == [
             PRIVACY_REQUEST_READ
@@ -728,7 +731,10 @@ class TestUserLogout:
             JWE_PAYLOAD_CLIENT_ID: client_id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+        }
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == HTTP_204_NO_CONTENT
 
@@ -757,7 +763,10 @@ class TestUserLogout:
             JWE_PAYLOAD_CLIENT_ID: client_id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+        }
         response = api_client.post(url, headers=auth_header, json={})
         assert HTTP_403_FORBIDDEN == response.status_code
 

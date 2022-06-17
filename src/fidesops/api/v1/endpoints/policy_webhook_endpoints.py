@@ -5,6 +5,7 @@ from fastapi import APIRouter, Body, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslib.db.base_class import get_key_from_data
 from pydantic import conlist
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
@@ -18,7 +19,6 @@ from fidesops.api.v1.endpoints.connection_endpoints import (
 )
 from fidesops.api.v1.endpoints.policy_endpoints import get_policy_or_error
 from fidesops.common_exceptions import KeyOrNameAlreadyExists, WebhookOrderException
-from fidesops.db.base_class import get_key_from_data
 from fidesops.models.policy import (
     Policy,
     PolicyPostWebhook,

@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 
 import uvicorn
 from fastapi import FastAPI
+from fideslib.oauth.api.deps import get_db as lib_get_db
+from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
 from fideslog.sdk.python.event import AnalyticsEvent
 from starlette.middleware.cors import CORSMiddleware
 
@@ -21,6 +23,7 @@ from fidesops.schemas.analytics import EVENT
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.util.logger import get_fides_log_record_factory
+from fidesops.util.oauth_util import get_db, verify_oauth_client
 
 logging.basicConfig(level=config.security.LOG_LEVEL)
 logging.setLogRecordFactory(get_fides_log_record_factory())
@@ -39,6 +42,8 @@ if config.security.CORS_ORIGINS:
     )
 
 app.include_router(api_router)
+app.dependency_overrides[lib_get_db] = get_db
+app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 for handler in ExceptionHandlers.get_handlers():
     app.add_exception_handler(FunctionalityNotConfigured, handler)
 

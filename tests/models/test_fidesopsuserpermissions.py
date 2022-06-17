@@ -1,4 +1,3 @@
-import psycopg2.errors as db_errors
 import pytest
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions

@@ -774,7 +774,7 @@ class TestCreateRules:
             == f"Rule with identifier {rule.key} belongs to another policy."
         )
 
-        updated_rule = Rule.get(db=db, id=rule.id)
+        updated_rule = Rule.get(db=db, object_id=rule.id)
         db.expire(updated_rule)
         assert updated_rule.policy_id == policy.id
 
@@ -975,7 +975,7 @@ class TestRuleTargets:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
 
-        updated_target = RuleTarget.get(db=db, id=existing_target.id)
+        updated_target = RuleTarget.get(db=db, object_id=existing_target.id)
         db.expire(updated_target)
 
         assert updated_target.data_category == updated_data_category
@@ -1027,7 +1027,7 @@ class TestRuleTargets:
             == f"RuleTarget with identifier {existing_target.key} belongs to another rule."
         )
 
-        updated_target = RuleTarget.get(db=db, id=existing_target.id)
+        updated_target = RuleTarget.get(db=db, object_id=existing_target.id)
         db.expire(updated_target)
         assert updated_target.rule_id == existing_target.rule_id
 

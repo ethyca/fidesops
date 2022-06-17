@@ -4,13 +4,13 @@ import string
 from datetime import datetime, timedelta
 from uuid import uuid4
 
-from fideslib.models.client import ClientDetail
-from fideslib.models.fides_user import FidesUser
+from fideslib.db.session import get_db_session
 from sqlalchemy import orm
 
 from fidesops.core.config import config
 from fidesops.db.database import init_db
-from fidesops.db.session import get_db_session
+from fideslib.models.client import ClientDetail
+from fideslib.models.fides_user import FidesUser
 from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.models.storage import ResponseFormat, StorageConfig

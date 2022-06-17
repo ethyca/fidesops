@@ -58,7 +58,7 @@ class TestCreateDrpPrivacyRequest:
         assert response_data["status"] == "open"
         assert response_data["received_at"]
         assert response_data["request_id"]
-        pr = PrivacyRequest.get(db=db, id=response_data["request_id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data["request_id"])
 
         # test appropriate data is cached
         meta_key = get_drp_request_body_cache_key(
@@ -121,7 +121,7 @@ class TestCreateDrpPrivacyRequest:
         assert response_data["status"] == "open"
         assert response_data["received_at"]
         assert response_data["request_id"]
-        pr = PrivacyRequest.get(db=db, id=response_data["request_id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data["request_id"])
 
         # test appropriate data is cached
         meta_key = get_drp_request_body_cache_key(

@@ -3,18 +3,17 @@
 import getpass
 from typing import List
 
-from fideslib.models.client import ClientDetail
+from fideslib.db.session import get_db_session
+from fideslib.models.client import ADMIN_UI_ROOT, ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
+from fideslib.oauth.schemas.user import UserCreate
 from sqlalchemy.orm import Session
 
 from fidesops.api.v1.scope_registry import CLIENT_CREATE, SCOPE_REGISTRY
 from fidesops.common_exceptions import KeyOrNameAlreadyExists
 from fidesops.core.config import config
 from fidesops.db.database import init_db
-from fidesops.db.session import get_db_session
-from fidesops.models.client import ADMIN_UI_ROOT
-from fidesops.schemas.user import UserCreate
 
 
 def get_username(prompt: str) -> str:
@@ -81,13 +80,15 @@ def create_user_and_client(db: Session) -> FidesUser:
         db, scopes, fides_key=ADMIN_UI_ROOT, user_id=superuser.id
     )
 
-    FidesUserPermissions.create(db=db, data={"user_id": superuser.id, "scopes": scopes})
+    FidesUserPermissions.create(
+        db=db, data={"user_id": superuser.id, "scopes": scopes}
+    )
     print(f"Superuser '{user_data.username}' created successfully!")
     return superuser
 
 
 if __name__ == "__main__":
     init_db(config.database.SQLALCHEMY_DATABASE_URI)
-    session_local = get_db_session()
+    session_local = get_db_session(config)
     with session_local() as session:
         create_user_and_client(session)

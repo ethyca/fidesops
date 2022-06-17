@@ -6,13 +6,13 @@ from uuid import uuid4
 
 import pydash
 import pytest
+from fideslib.db.session import get_db_session
 from pydantic import ValidationError
 from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.core.config import config
-from fidesops.db.session import get_db_session
 from fidesops.models.policy import PausedStep, PolicyPostWebhook
 from fidesops.models.privacy_request import (
     ActionType,
@@ -64,7 +64,7 @@ def test_start_processing_sets_started_processing_at(
 
     _sessionmaker = get_db_session()
     db = _sessionmaker()
-    privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
+    privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert privacy_request.started_processing_at is not None
 
 
@@ -75,7 +75,7 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
 ) -> None:
     before = privacy_request.started_processing_at
     wait_for(privacy_request_runner.submit())
-    privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
+    privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert privacy_request.started_processing_at == before
 
 
@@ -105,7 +105,7 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     _sessionmaker = get_db_session()
     db = _sessionmaker()
 
-    privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
+    privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert privacy_request.started_processing_at is not None
 
     # Starting privacy request in the middle of the graph means we don't run pre-webhooks again
@@ -141,7 +141,7 @@ def test_resume_privacy_request_from_erasure(
     _sessionmaker = get_db_session()
     db = _sessionmaker()
 
-    privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
+    privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert privacy_request.started_processing_at is not None
 
     # Starting privacy request in the middle of the graph means we don't run pre-webhooks again
@@ -205,7 +205,7 @@ def get_privacy_request_results(
         ).submit()
     )
 
-    return PrivacyRequest.get(db=db, id=privacy_request.id)
+    return PrivacyRequest.get(db=db, object_id=privacy_request.id)
 
 
 @pytest.mark.integration_postgres
@@ -257,7 +257,7 @@ def test_create_and_process_access_request(
     policy.delete(db=db)
     pr.delete(db=db)
     assert not pr in db  # Check that `pr` has been expunged from the session
-    assert ExecutionLog.get(db, id=log_id).privacy_request_id == pr_id
+    assert ExecutionLog.get(db, object_id=log_id).privacy_request_id == pr_id
 
 
 @pytest.mark.integration

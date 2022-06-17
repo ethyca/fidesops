@@ -75,7 +75,7 @@ def upload_data(
     """
     logger.info(f"Finding privacy request with id '{request_id}'")
 
-    privacy_request = PrivacyRequest.get(db, id=request_id)
+    privacy_request = PrivacyRequest.get(db, object_id=request_id)
     if not privacy_request:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

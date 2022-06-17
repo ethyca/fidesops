@@ -7,9 +7,8 @@ from alembic import command
 from alembic.config import Config
 from alembic.migration import MigrationContext
 from fideslib.db.base import Base
+from fideslib.db.session import get_db_engine
 from pydantic import PostgresDsn
-
-from fidesops.db.session import get_db_engine
 
 
 def get_alembic_config(database_url: str) -> Config:

@@ -91,7 +91,7 @@ def get_privacy_request_or_error(
     """Load the privacy request or throw a 404"""
     logger.info(f"Finding privacy request with id '{privacy_request_id}'")
 
-    privacy_request = PrivacyRequest.get(db, id=privacy_request_id)
+    privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
 
     if not privacy_request:
         raise HTTPException(
@@ -544,7 +544,7 @@ def get_request_preview_queries(
             dataset_configs.append(dataset_config)
     try:
         connection_configs: List[ConnectionConfig] = [
-            ConnectionConfig.get(db=db, id=dataset.connection_config_id)
+            ConnectionConfig.get(db=db, object_id=dataset.connection_config_id)
             for dataset in dataset_configs
         ]
 
@@ -839,7 +839,7 @@ def review_privacy_request(
     failed: List[Dict[str, Any]] = []
 
     for request_id in request_ids:
-        privacy_request = PrivacyRequest.get(db, id=request_id)
+        privacy_request = PrivacyRequest.get(db, object_id=request_id)
         if not privacy_request:
             failed.append(
                 {

@@ -9,7 +9,7 @@ from fidesops.schemas.base_class import BaseSchema
 
 
 class UserPermissionsCreate(BaseSchema):
-    """Data required to create a FidesopsUserPermissions record"""
+    """Data required to create a FidesUserPermissions record"""
 
     scopes: List[str]
 
@@ -26,13 +26,13 @@ class UserPermissionsCreate(BaseSchema):
 
 
 class UserPermissionsEdit(UserPermissionsCreate):
-    """Data required to edit a FidesopsUserPermissions record"""
+    """Data required to edit a FidesUserPermissions record"""
 
     id: str
 
 
 class UserPermissionsResponse(UserPermissionsCreate):
-    """Response after creating, editing, or retrieving a FidesopsUserPermissions record"""
+    """Response after creating, editing, or retrieving a FidesUserPermissions record"""
 
     id: str
     user_id: str

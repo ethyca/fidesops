@@ -10,8 +10,14 @@ import pytest
 from dateutil.parser import parse
 from fastapi import HTTPException, status
 from fastapi_pagination import Params
+from fideslib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
 from fideslib.models.audit_log import AuditLog
 from fideslib.models.client import ClientDetail
+from fideslib.oauth.jwt import generate_jwe
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.endpoints.privacy_request_endpoints import (
@@ -48,14 +54,8 @@ from fidesops.models.privacy_request import (
     ManualAction,
     PrivacyRequest,
     PrivacyRequestStatus,
-    StoppedCollection,
 )
 from fidesops.schemas.dataset import DryRunDatasetResponse
-from fidesops.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_SCOPES,
-)
 from fidesops.schemas.masking.masking_secrets import SecretType
 from fidesops.schemas.policy import PolicyResponse
 from fidesops.util.cache import (
@@ -63,7 +63,6 @@ from fidesops.util.cache import (
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
-from fidesops.util.oauth_util import generate_jwe
 
 page_size = Params().size
 
@@ -99,7 +98,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         pr.delete(db=db)
         assert run_access_request_mock.called
 
@@ -128,7 +127,7 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         assert response_data[0]["status"] == "pending"
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         pr.delete(db=db)
         assert not run_access_request_mock.called
 
@@ -156,7 +155,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         pr.delete(db=db)
         assert run_access_request_mock.called
 
@@ -212,7 +211,7 @@ class TestCreatePrivacyRequest:
         assert start_processing_mock.called
 
         response_data = resp.json()["succeeded"]
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         pr.delete(db=db)
 
     @mock.patch(
@@ -240,7 +239,7 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         assert response_data[0]["external_id"] == external_id
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         assert pr.external_id == external_id
         pr.delete(db=db)
         assert run_access_request_mock.called
@@ -269,7 +268,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         key = get_identity_cache_key(
             privacy_request_id=pr.id,
             identity_attribute=list(identity.keys())[0],
@@ -302,7 +301,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         secret_key = get_masking_secret_cache_key(
             privacy_request_id=pr.id,
             masking_strategy="aes_encrypt",
@@ -352,7 +351,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         encryption_key = get_encryption_cache_key(
             privacy_request_id=pr.id,
             encryption_attr="key",
@@ -1483,7 +1482,10 @@ class TestApprovePrivacyRequest:
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+        }
 
         body = {"request_ids": [privacy_request.id]}
         response = api_client.patch(url, headers=auth_header, json=body)
@@ -1579,7 +1581,10 @@ class TestDenyPrivacyRequest:
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+        }
 
         body = {"request_ids": [privacy_request.id]}
         response = api_client.patch(url, headers=auth_header, json=body)
@@ -1625,7 +1630,10 @@ class TestDenyPrivacyRequest:
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+        }
         denial_reason = "Your request was denied because reasons"
         body = {"request_ids": [privacy_request.id], "reason": denial_reason}
         response = api_client.patch(url, headers=auth_header, json=body)

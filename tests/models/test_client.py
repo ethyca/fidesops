@@ -20,17 +20,17 @@ class TestClientModel:
         )
 
     def test_get_client(self, db: Session, oauth_client) -> None:
-        client = ClientDetail.get(db, id=config.security.OAUTH_ROOT_CLIENT_ID)
+        client = ClientDetail.get(db, object_id=config.security.OAUTH_ROOT_CLIENT_ID)
         hashed_access_key = hash_with_salt(
             config.security.OAUTH_ROOT_CLIENT_SECRET.encode(config.security.ENCODING),
             client.salt.encode(config.security.ENCODING),
         )
 
         assert "fidesopsadmin" == client.id
-        assert client.scopes == SCOPE_REGISTRY
+        assert client.scopes == SCOPES
         assert client.hashed_secret == hashed_access_key
 
-        client = ClientDetail.get(db, id=oauth_client.id)
+        client = ClientDetail.get(db, object_id=oauth_client.id)
         assert oauth_client.id == client.id
         assert oauth_client.hashed_secret == "thisisatest"
 

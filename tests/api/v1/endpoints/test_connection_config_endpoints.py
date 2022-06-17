@@ -24,7 +24,7 @@ page_size = Params().size
 
 class TestPatchConnections:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, policy) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + CONNECTIONS
 
     @pytest.fixture(scope="function")
@@ -40,7 +40,7 @@ class TestPatchConnections:
         ]
 
     def test_patch_connections_not_authenticated(
-        self, api_client: TestClient, generate_auth_header, url, payload
+        self, api_client: TestClient, url, payload
     ) -> None:
         response = api_client.patch(url, headers={}, json=payload)
         assert 401 == response.status_code
@@ -131,7 +131,7 @@ class TestPatchConnections:
         mongo_resource.delete(db)
 
     def test_patch_connections_bulk_update_key_error(
-        self, url, api_client: TestClient, db: Session, generate_auth_header, payload
+        self, url, api_client: TestClient, generate_auth_header, payload
     ) -> None:
         # Create resources first
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])

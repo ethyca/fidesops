@@ -6,9 +6,18 @@ from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fideslib.models.client import ClientDetail
+from fideslib.models.client import ADMIN_UI_ROOT, ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
+from fideslib.oauth.schemas.oauth import AccessToken
+from fideslib.oauth.schemas.user import (
+    UserCreate,
+    UserCreateResponse,
+    UserLogin,
+    UserLoginResponse,
+    UserResponse,
+    UserUpdate,
+)
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
 from starlette.status import (
@@ -32,17 +41,8 @@ from fidesops.api.v1.scope_registry import (
     USER_UPDATE,
 )
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesops.models.client import ADMIN_UI_ROOT
-from fidesops.schemas.oauth import AccessToken
-from fidesops.schemas.user import (
-    UserCreate,
-    UserCreateResponse,
-    UserLogin,
-    UserLoginResponse,
-    UserPasswordReset,
-    UserResponse,
-    UserUpdate,
-)
+from fidesops.core.config import config
+from fidesops.schemas.user import UserPasswordReset
 from fidesops.util.oauth_util import get_current_user, verify_oauth_client
 
 logger = logging.getLogger(__name__)
@@ -57,7 +57,11 @@ def perform_login(db: Session, user: FidesUser) -> ClientDetail:
     if not client:
         logger.info("Creating client for login")
         client, _ = ClientDetail.create_client_and_secret(
-            db, user.permissions.scopes, user_id=user.id
+            db,
+            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
+            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+            scopes=user.permissions.scopes,
+            user_id=user.id,
         )
 
     user.last_login_at = datetime.utcnow()
@@ -121,7 +125,7 @@ def update_user(
     Update a user given a `user_id`. By default this is limited to users
     updating their own data.
     """
-    user = FidesUser.get(db=db, id=user_id)
+    user = FidesUser.get(db=db, object_id=user_id)
     if not user:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found."

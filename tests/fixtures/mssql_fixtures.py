@@ -3,9 +3,9 @@ from typing import Dict, Generator, List
 from uuid import uuid4
 
 import pytest
+from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 
-from fidesops.db.session import get_db_engine, get_db_session
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
