@@ -41,7 +41,7 @@ class TestStatus(Enum):
         for filtering ConnectionConfig.last_test_succeeded field"""
         if self == self.passed:
             return True
-        elif self == self.failed:
+        if self == self.failed:
             return False
         return None
 
