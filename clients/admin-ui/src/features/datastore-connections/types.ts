@@ -12,6 +12,18 @@ export enum ConnectionType {
   MANUAL = "manual",
 }
 
+export enum SystemType {
+  SAAS = "saas",
+  DATABASE = "databse",
+  MANUAL = "manual",
+}
+
+export enum TestingStatus {
+  PASSED = "passed",
+  FAILED = "failed",
+  UNTESTED = "untested",
+}
+
 export enum AccessLevel {
   READ = "read",
   WRITE = "write",

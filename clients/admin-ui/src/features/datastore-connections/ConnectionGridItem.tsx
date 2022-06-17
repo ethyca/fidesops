@@ -2,6 +2,7 @@ import { Box, Button, Flex, Spacer, Text } from "@fidesui/react";
 import { format } from "date-fns-tz";
 import React from "react";
 
+import { capitalize } from "../common/utils";
 import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
@@ -20,8 +21,7 @@ function getConnectorDisplayName(connectionType: ConnectionType): string {
   ];
 
   if (databases.includes(connectionType)) {
-    const databaseName = connectionType.replace(/^\w/, (c) => c.toUpperCase());
-    return `${databaseName} Database Connector`;
+    return `${capitalize(connectionType)} Database Connector`;
   }
 
   if (connectionType === ConnectionType.SAAS) {

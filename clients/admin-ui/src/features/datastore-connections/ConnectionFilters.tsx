@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { selectToken } from "../auth";
 import { SearchLineIcon } from "../common/Icon";
-import { statusPropMap } from "../common/RequestStatusBadge";
+import { capitalize } from "../common/utils";
 import {
   clearAllFilters,
   requestCSVDownload,
@@ -22,6 +22,7 @@ import {
   setRequestTo,
 } from "../privacy-requests";
 import { PrivacyRequestStatus } from "../privacy-requests/types";
+import { ConnectionType, SystemType, TestingStatus } from "./types";
 
 const useConstantFilters = () => {
   const filters = useSelector(selectPrivacyRequestFilters);
@@ -68,9 +69,17 @@ const useConstantFilters = () => {
   };
 };
 
-const StatusOption: React.FC<{ status: PrivacyRequestStatus }> = ({
+const DataStoreTypeOption: React.FC<{ status: ConnectionType }> = ({
   status,
-}) => <option value={status}>{statusPropMap[status].label}</option>;
+}) => <option value={status}>{capitalize(status)}</option>;
+
+const SystemTypeOption: React.FC<{ status: SystemType }> = ({ status }) => (
+  <option value={status}>{capitalize(status)}</option>
+);
+
+const TestingStatusOption: React.FC<{ status: TestingStatus }> = ({
+  status,
+}) => <option value={status}>{capitalize(status)}</option>;
 
 const ConnectionFilters: React.FC = () => {
   const { status, handleSearchChange, handleStatusChange, id } =
@@ -100,13 +109,17 @@ const ConnectionFilters: React.FC = () => {
         onChange={handleStatusChange}
         borderRadius="md"
       >
-        <StatusOption status="approved" />
-        <StatusOption status="complete" />
-        <StatusOption status="denied" />
-        <StatusOption status="error" />
-        <StatusOption status="in_processing" />
-        <StatusOption status="paused" />
-        <StatusOption status="pending" />
+        <DataStoreTypeOption status={ConnectionType.POSTGRES} />
+        <DataStoreTypeOption status={ConnectionType.MONGODB} />
+        <DataStoreTypeOption status={ConnectionType.MYSQL} />
+        <DataStoreTypeOption status={ConnectionType.HTTPS} />
+        <DataStoreTypeOption status={ConnectionType.SAAS} />
+        <DataStoreTypeOption status={ConnectionType.REDSHIFT} />
+        <DataStoreTypeOption status={ConnectionType.SNOWFLAKE} />
+        <DataStoreTypeOption status={ConnectionType.MSSQL} />
+        <DataStoreTypeOption status={ConnectionType.MARIADB} />
+        <DataStoreTypeOption status={ConnectionType.BIGQUERY} />
+        <DataStoreTypeOption status={ConnectionType.MANUAL} />
       </Select>
       <Select
         placeholder="System Type"
@@ -116,30 +129,26 @@ const ConnectionFilters: React.FC = () => {
         onChange={handleStatusChange}
         borderRadius="md"
       >
-        <StatusOption status="approved" />
-        <StatusOption status="complete" />
-        <StatusOption status="denied" />
-        <StatusOption status="error" />
-        <StatusOption status="in_processing" />
-        <StatusOption status="paused" />
-        <StatusOption status="pending" />
+        <SystemTypeOption status={SystemType.SAAS} />
+        <SystemTypeOption status={SystemType.DATABASE} />
+        <SystemTypeOption status={SystemType.MANUAL} />
       </Select>
-      <Select
-        placeholder="Data Category"
-        size="sm"
-        minWidth="144px"
-        value={status || ""}
-        onChange={handleStatusChange}
-        borderRadius="md"
-      >
-        <StatusOption status="approved" />
-        <StatusOption status="complete" />
-        <StatusOption status="denied" />
-        <StatusOption status="error" />
-        <StatusOption status="in_processing" />
-        <StatusOption status="paused" />
-        <StatusOption status="pending" />
-      </Select>
+      {/* <Select */}
+      {/*   placeholder="Data Category" */}
+      {/*   size="sm" */}
+      {/*   minWidth="144px" */}
+      {/*   value={status || ""} */}
+      {/*   onChange={handleStatusChange} */}
+      {/*   borderRadius="md" */}
+      {/* > */}
+      {/*   <StatusOption status="approved" /> */}
+      {/*   <StatusOption status="complete" /> */}
+      {/*   <StatusOption status="denied" /> */}
+      {/*   <StatusOption status="error" /> */}
+      {/*   <StatusOption status="in_processing" /> */}
+      {/*   <StatusOption status="paused" /> */}
+      {/*   <StatusOption status="pending" /> */}
+      {/* </Select> */}
       <Select
         placeholder="Testing Status"
         size="sm"
@@ -148,13 +157,9 @@ const ConnectionFilters: React.FC = () => {
         onChange={handleStatusChange}
         borderRadius="md"
       >
-        <StatusOption status="approved" />
-        <StatusOption status="complete" />
-        <StatusOption status="denied" />
-        <StatusOption status="error" />
-        <StatusOption status="in_processing" />
-        <StatusOption status="paused" />
-        <StatusOption status="pending" />
+        <TestingStatusOption status={TestingStatus.PASSED} />
+        <TestingStatusOption status={TestingStatus.FAILED} />
+        <TestingStatusOption status={TestingStatus.UNTESTED} />
       </Select>
       <Select
         placeholder="Status"
@@ -164,13 +169,8 @@ const ConnectionFilters: React.FC = () => {
         onChange={handleStatusChange}
         borderRadius="md"
       >
-        <StatusOption status="approved" />
-        <StatusOption status="complete" />
-        <StatusOption status="denied" />
-        <StatusOption status="error" />
-        <StatusOption status="in_processing" />
-        <StatusOption status="paused" />
-        <StatusOption status="pending" />
+        <option value="false">Enabled</option>
+        <option value="true">Disabled</option>
       </Select>
     </Stack>
   );
