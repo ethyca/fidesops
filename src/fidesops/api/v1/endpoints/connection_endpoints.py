@@ -133,6 +133,10 @@ def get_connections(
             query = query.filter(
                 ConnectionConfig.connection_type == ConnectionType.saas
             )
+        elif system_type == SystemType.manual:
+            query = query.filter(
+                ConnectionConfig.connection_type == ConnectionType.manual
+            )
         elif system_type == SystemType.database:
             query = query.filter(
                 ConnectionConfig.connection_type.notin_(

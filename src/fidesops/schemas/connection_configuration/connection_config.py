@@ -49,6 +49,7 @@ class TestStatus(Enum):
 class SystemType(Enum):
     saas = "saas"
     database = "database"
+    manual = "manual"
 
 
 class ConnectionConfigurationResponse(BaseModel):

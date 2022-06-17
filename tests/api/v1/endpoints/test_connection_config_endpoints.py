@@ -559,6 +559,13 @@ class TestGetConnections:
         assert resp.status_code == 200
         assert len(items) == 5
 
+        resp = api_client.get(url + "?system_type=manual", headers=auth_header)
+        items = resp.json()["items"]
+        assert resp.status_code == 200
+        assert len(items) == 1
+        assert items[0]["connection_type"] == "manual"
+        assert items[0]["key"] == integration_manual_config.key
+
         # Conflicting filters
         resp = api_client.get(
             url + "?system_type=saas&connection_type=mongodb", headers=auth_header
