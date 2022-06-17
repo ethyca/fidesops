@@ -17,6 +17,7 @@ RUN apt-get update && \
     gcc
 
 
+RUN echo "Building fidesops celery worker"
 RUN echo "ENVIRONMENT VAR:  $MSSQL_REQUIRED"
 
 # SQL Server (MS SQL)

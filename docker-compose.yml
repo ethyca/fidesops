@@ -1,5 +1,5 @@
 services:
-  fidesops:
+  webserver:
     container_name: fidesops
     build:
       context: .
@@ -58,14 +58,12 @@ services:
     ports:
       - "0.0.0.0:6379:6379"
 
-  celery:
+  worker:
     build:
       context: .
       dockerfile: Dockerfile.worker
     command: fidesops worker
     depends_on:
-      fidesops:
-        condition: service_healthy
       db:
         condition: service_started
       redis:
