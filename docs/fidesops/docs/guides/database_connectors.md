@@ -349,6 +349,59 @@ The `disabled` filter can show which datastores are skipped as part of privacy r
 
 ```
 
+### Example 3: Testing Status Filter
+The `testing_status` filter queries on the status of the last successful test:
+
+```json title="<code>GET api/v1/connection/?test_status=false</code>"
+{
+    "items": [
+        {
+            "name": "My Mongo DB",
+            "key": "app_mongo_db",
+            "description": "Primary Mongo DB",
+            "connection_type": "mongodb",
+            "access": "write",
+            "created_at": "2022-06-16T22:20:34.122212+00:00",
+            "updated_at": "2022-06-16T22:20:34.122212+00:00",
+            "disabled": true,
+            "last_test_timestamp": 2022-06-16T22:20:34.122212+00:00,
+            "last_test_succeeded": false
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+
+```
+
+### Example 4: System Status Filter
+The `system_status` filter surfaces either `database` or `saas`-type connectors:
+
+```json title="<code>GET api/v1/connection/?system_type=database</code>"
+{
+    "items": [
+        {
+            "name": "My Mongo DB",
+            "key": "app_mongo_db",
+            "description": "Primary Mongo DB",
+            "connection_type": "mongodb",
+            "access": "write",
+            "created_at": "2022-06-16T22:20:34.122212+00:00",
+            "updated_at": "2022-06-16T22:20:34.122212+00:00",
+            "disabled": true,
+            "last_test_timestamp": 2022-06-16T22:20:34.122212+00:00,
+            "last_test_succeeded": false
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+
+```
+
+
 ## Searching ConnectionConfigs
 
 You can search the `name`, `key`, and `description` fields of your ConnectionConfigs with the `search` query parameter.

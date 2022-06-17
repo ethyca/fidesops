@@ -46,6 +46,8 @@ from fidesops.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
     CreateConnectionConfiguration,
+    SystemType,
+    TestStatus,
 )
 from fidesops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
@@ -87,19 +89,25 @@ def get_connections(
     params: Params = Depends(),
     search: Optional[str] = None,
     disabled: Optional[bool] = None,
-    connection_type: Optional[List[str]] = Query(default=None),  # type:ignore
+    test_status: Optional[TestStatus] = None,
+    system_type: Optional[SystemType] = None,
+    connection_type: Optional[List[ConnectionType]] = Query(
+        default=None
+    ),  # type:ignore
 ) -> AbstractPage[ConnectionConfig]:
     """Returns all connection configurations in the database.
     Optionally filter the key, name, and description with a search query param.
-    Can also filter on disabled and connection_type.
+
+    Can also filter on disabled, connection_type, test_status, and system_type.
 
     Connection_type supports "or" filtering:
     ?connection_type=postgres&connection_type=mongo will be translated into an "or" query.
     """
     logger.info(
-        f"Finding all connection configurations with pagination params {params} and search query: '{search if search else ''}'."
+        f"Finding connection configurations with pagination params {params} and search query: '{search if search else ''}'."
     )
     query = ConnectionConfig.query(db)
+
     if search:
         query = query.filter(
             or_(
@@ -114,6 +122,23 @@ def get_connections(
 
     if disabled is not None:
         query = query.filter(ConnectionConfig.disabled == disabled)
+
+    if test_status:
+        query = query.filter(
+            ConnectionConfig.last_test_succeeded.is_(test_status.str_to_bool())
+        )
+
+    if system_type:
+        if system_type == SystemType.saas:
+            query = query.filter(
+                ConnectionConfig.connection_type == ConnectionType.saas
+            )
+        elif system_type == SystemType.database:
+            query = query.filter(
+                ConnectionConfig.connection_type.notin_(
+                    [ConnectionType.saas, ConnectionType.manual]
+                )
+            )
 
     return paginate(
         query.order_by(ConnectionConfig.name.asc()),
