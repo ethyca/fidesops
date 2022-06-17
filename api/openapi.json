@@ -41,7 +41,7 @@
           "Connections"
         ],
         "summary": "Get Connections",
-        "description": "Returns all connection configurations in the database.\nOptionally filter the key, name, and description with a search query param",
+        "description": "Returns all connection configurations in the database.\nOptionally filter the key, name, and description with a search query param.\n\nCan also filter on disabled, connection_type, test_status, and system_type.\n\nConnection_type supports \"or\" filtering:\n?connection_type=postgres&connection_type=mongo will be translated into an \"or\" query.",
         "operationId": "get_connections_api_v1_connection_get",
         "parameters": [
           {
@@ -51,6 +51,42 @@
               "type": "string"
             },
             "name": "search",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Disabled",
+              "type": "boolean"
+            },
+            "name": "disabled",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/TestStatus"
+            },
+            "name": "test_status",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/SystemType"
+            },
+            "name": "system_type",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ConnectionType"
+              }
+            },
+            "name": "connection_type",
             "in": "query"
           },
           {
@@ -7535,6 +7571,24 @@
           }
         },
         "description": "General shape for swappable strategies (ex: auth, processors, pagination, etc.)"
+      },
+      "SystemType": {
+        "title": "SystemType",
+        "enum": [
+          "saas",
+          "database",
+          "manual"
+        ],
+        "description": "An enumeration."
+      },
+      "TestStatus": {
+        "title": "TestStatus",
+        "enum": [
+          "passed",
+          "failed",
+          "untested"
+        ],
+        "description": "An enumeration."
       },
       "TestStatusMessage": {
         "title": "TestStatusMessage",
