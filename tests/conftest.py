@@ -14,7 +14,9 @@ from fideslib.cryptography.schemas.jwt import (
 )
 from fideslib.db.base_class import Base
 from fideslib.db.session import Session, get_db_engine, get_db_session
+from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
@@ -88,6 +90,34 @@ def db() -> Generator:
     logger.debug(f"Database at: {engine.url} successfully dropped")
 
 
+@pytest.fixture(autouse=True)
+def clear_db_tables(db):
+    """Clear data from tables between tests.
+
+    If relationships are not set to cascade on delete they will fail with an
+    IntegrityError if there are relationsips present. This function stores tables
+    that fail with this error then recursively deletes until no more IntegrityErrors
+    are present.
+    """
+    yield
+
+    def delete_data(tables):
+        redo = []
+        for table in tables:
+            try:
+                db.execute(table.delete())
+            except IntegrityError:
+                redo.append(table)
+            finally:
+                db.commit()
+
+        if redo:
+            delete_data(redo)
+
+    db.commit()  # make sure all transactions are closed before starting deletes
+    delete_data(Base.metadata.sorted_tables)
+
+
 @pytest.fixture(scope="session")
 def cache() -> Generator:
     yield get_cache()
@@ -104,6 +134,7 @@ def api_client() -> Generator:
 def oauth_client(db: Session) -> Generator:
     """Return a client for authentication purposes"""
     client = ClientDetail(
+        id=config.security.OAUTH_ROOT_CLIENT_ID,
         hashed_secret="thisisatest",
         salt="thisisstillatest",
         scopes=SCOPE_REGISTRY,
@@ -112,7 +143,6 @@ def oauth_client(db: Session) -> Generator:
     db.commit()
     db.refresh(client)
     yield client
-    client.delete(db)
 
 
 def generate_auth_header_for_user(user, scopes) -> Dict[str, str]:

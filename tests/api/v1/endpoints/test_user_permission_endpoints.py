@@ -56,6 +56,7 @@ class TestCreateUserPermissions:
         body = {"user_id": user.id, "scopes": ["not a real scope"]}
 
         response = api_client.post(url, headers=auth_header, json=body)
+        print(response.json())
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         user.delete(db)
 

@@ -8,7 +8,11 @@ from fidesops.util.cryptographic_util import hash_with_salt
 
 class TestClientModel:
     def test_create_client_and_secret(self, db: Session) -> None:
-        new_client, secret = ClientDetail.create_client_and_secret(db)
+        new_client, secret = ClientDetail.create_client_and_secret(
+            db,
+            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
+            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+        )
 
         assert new_client.hashed_secret is not None
         assert (
@@ -21,13 +25,21 @@ class TestClientModel:
 
     def test_get_client(self, db: Session, oauth_client) -> None:
         client = ClientDetail.get(db, object_id=config.security.OAUTH_ROOT_CLIENT_ID)
+        print(client.__dict__)
+        print("\n")
+        print(ClientDetail.all(db)[0].__dict__)
+        print(f"{config.security.OAUTH_ROOT_CLIENT_ID=}")
+        print(f"{client.hashed_secret=}")
+
         hashed_access_key = hash_with_salt(
             config.security.OAUTH_ROOT_CLIENT_SECRET.encode(config.security.ENCODING),
             client.salt.encode(config.security.ENCODING),
         )
 
+        print(f"{hashed_access_key=}")
+
         assert "fidesopsadmin" == client.id
-        assert client.scopes == SCOPES
+        assert client.scopes == SCOPE_REGISTRY
         assert client.hashed_secret == hashed_access_key
 
         client = ClientDetail.get(db, object_id=oauth_client.id)
@@ -35,7 +47,11 @@ class TestClientModel:
         assert oauth_client.hashed_secret == "thisisatest"
 
     def test_credentials_valid(self, db: Session) -> None:
-        new_client, secret = ClientDetail.create_client_and_secret(db)
+        new_client, secret = ClientDetail.create_client_and_secret(
+            db,
+            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
+            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+        )
 
         assert new_client.credentials_valid("this-is-not-the-right-secret") is False
         assert new_client.credentials_valid(secret) is True
