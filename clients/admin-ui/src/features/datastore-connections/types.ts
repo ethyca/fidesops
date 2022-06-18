@@ -55,12 +55,6 @@ export type DatastoreConnectionParams = {
   size: number;
 };
 
-export const temp: DatastoreConnectionParams = {
-  search: "",
-  page: 1,
-  size: 20,
-};
-
 export enum ConnectionTestStatus {
   SUCCEEDED = "succeeded",
   FAILED = "failed",
