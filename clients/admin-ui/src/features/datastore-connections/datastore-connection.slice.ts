@@ -9,7 +9,6 @@ import {
   DatastoreConnectionParams,
   DatastoreConnectionResponse,
   DatastoreConnectionStatus,
-  temp,
 } from "./types";
 
 function mapFiltersToSearchParams({
@@ -23,6 +22,43 @@ function mapFiltersToSearchParams({
     ...(typeof size !== "undefined" ? { size: `${size}` } : {}),
   };
 }
+const initialState: DatastoreConnectionParams = {
+  search: "",
+  page: 1,
+  size: 25,
+};
+
+export const datastoreConnectionSlice = createSlice({
+  name: "datastoreConnections",
+  initialState,
+  reducers: {
+    setSearch: (state, action: PayloadAction<string>) => ({
+      ...state,
+      page: initialState.page,
+      search: action.payload,
+    }),
+    setPage: (state, action: PayloadAction<number>) => ({
+      ...state,
+      page: action.payload,
+    }),
+    setSize: (state, action: PayloadAction<number>) => ({
+      ...state,
+      page: initialState.page,
+      size: action.payload,
+    }),
+  },
+});
+
+export const { setSearch, setSize, setPage } = datastoreConnectionSlice.actions;
+export const selectDatastoreConnectionFilters = (
+  state: RootState
+): DatastoreConnectionParams => ({
+  search: state.datastoreConnections.search,
+  page: state.datastoreConnections.page,
+  size: state.datastoreConnections.size,
+});
+
+export const { reducer } = datastoreConnectionSlice;
 
 export const datastoreConnectionApi = createApi({
   reducerPath: "datastoreConnectionApi",
@@ -66,9 +102,10 @@ export const datastoreConnectionApi = createApi({
         url: `${CONNECTION_ROUTE}/${id}/test`,
       }),
       providesTags: () => ["DatastoreConnection"],
-      async onQueryStarted(key, { dispatch, queryFulfilled }) {
+      async onQueryStarted(key, { dispatch, queryFulfilled, getState }) {
         try {
           await queryFulfilled;
+
           const request = dispatch(
             datastoreConnectionApi.endpoints.getDatastoreConnectionByKey.initiate(
               key
@@ -77,11 +114,13 @@ export const datastoreConnectionApi = createApi({
           const result = await request.unwrap();
           request.unsubscribe();
 
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const patchResult = dispatch(
+          const state = getState() as RootState;
+          const filters = selectDatastoreConnectionFilters(state);
+
+          dispatch(
             datastoreConnectionApi.util.updateQueryData(
               "getAllDatastoreConnections",
-              temp,
+              filters,
               (draft) => {
                 const newList = draft.items.map((d) => {
                   if (d.key === key) {
@@ -129,41 +168,3 @@ export const {
   useGetAllDatastoreConnectionsQuery,
   useLazyGetDatastoreConnectionStatusQuery,
 } = datastoreConnectionApi;
-
-const initialState: DatastoreConnectionParams = {
-  search: "",
-  page: 1,
-  size: 25,
-};
-
-export const datastoreConnectionSlice = createSlice({
-  name: "datastoreConnections",
-  initialState,
-  reducers: {
-    setSearch: (state, action: PayloadAction<string>) => ({
-      ...state,
-      page: initialState.page,
-      search: action.payload,
-    }),
-    setPage: (state, action: PayloadAction<number>) => ({
-      ...state,
-      page: action.payload,
-    }),
-    setSize: (state, action: PayloadAction<number>) => ({
-      ...state,
-      page: initialState.page,
-      size: action.payload,
-    }),
-  },
-});
-
-export const { setSearch, setSize, setPage } = datastoreConnectionSlice.actions;
-export const selectDatastoreConnectionFilters = (
-  state: RootState
-): DatastoreConnectionParams => ({
-  search: state.datastoreConnections.search,
-  page: state.datastoreConnections.page,
-  size: state.datastoreConnections.size,
-});
-
-export const { reducer } = datastoreConnectionSlice;

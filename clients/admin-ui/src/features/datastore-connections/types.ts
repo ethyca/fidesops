@@ -32,6 +32,7 @@ export enum AccessLevel {
 export type DatastoreConnection = {
   name: string;
   key: string;
+  description?: string;
   disabled: boolean;
   connection_type: ConnectionType;
   access: AccessLevel;
