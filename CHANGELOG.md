@@ -46,6 +46,7 @@ The types of changes are:
 ### Developer Experience
 
 * Add celerybeat-schedule file to gitignore [#639](https://github.com/ethyca/fidesops/pull/639)
+* Add fixture to clear tables between test [#680](https://github.com/ethyca/fidesops/pull/680)
 
 ### Fixed
 * Fixed error with running mypy on M1 Macs [#630](https://github.com/ethyca/fidesops/pull/630)
