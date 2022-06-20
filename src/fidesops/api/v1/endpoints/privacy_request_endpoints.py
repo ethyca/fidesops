@@ -838,7 +838,7 @@ def restart_privacy_request_from_failure(
 def review_privacy_request(
     db: Session,
     request_ids: List[str],
-    process_request: Callable,
+    process_request_function: Callable,
 ) -> BulkReviewResponse:
     """Helper method shared between the approve and deny privacy request endpoints"""
     succeeded: List[PrivacyRequest] = []
@@ -865,7 +865,7 @@ def review_privacy_request(
             continue
 
         try:
-            process_request(privacy_request)
+            process_request_function(privacy_request)
         except Exception:
             failure = {
                 "message": "Privacy request could not be updated",
@@ -898,7 +898,7 @@ def approve_privacy_request(
     """Approve and dispatch a list of privacy requests and/or report failure"""
     user_id = client.user_id
 
-    def _process_request(privacy_request: PrivacyRequest) -> None:
+    def _approve_request(privacy_request: PrivacyRequest) -> None:
         """Method for how to process requests - approved"""
         privacy_request.status = PrivacyRequestStatus.approved
         privacy_request.reviewed_at = datetime.utcnow()
@@ -907,7 +907,11 @@ def approve_privacy_request(
 
         run_privacy_request.delay(privacy_request_id=privacy_request.id)
 
-    return review_privacy_request(db, privacy_requests.request_ids, _process_request)
+    return review_privacy_request(
+        db=db,
+        request_ids=privacy_requests.request_ids,
+        process_request_function=_approve_request,
+    )
 
 
 @router.patch(
@@ -927,8 +931,8 @@ def deny_privacy_request(
     """Deny a list of privacy requests and/or report failure"""
     user_id = client.user_id
 
-    def _process_denial_request(
-        privacy_request: PrivacyRequest, _: FidesopsRedis
+    def _deny_request(
+        privacy_request: PrivacyRequest,
     ) -> None:
         """Method for how to process requests - denied"""
 
@@ -947,5 +951,7 @@ def deny_privacy_request(
         privacy_request.save(db=db)
 
     return review_privacy_request(
-        db, privacy_requests.request_ids, _process_denial_request
+        db=db,
+        request_ids=privacy_requests.request_ids,
+        process_request_function=_deny_request,
     )
