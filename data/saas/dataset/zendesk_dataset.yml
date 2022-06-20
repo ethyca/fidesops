@@ -6,154 +6,252 @@ dataset:
       - name: users
         fields:
           - name: id
-            data_categories: [user.derived.identifiable.unique_id]
-          - name: name
             data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: url
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
           - name: email
             data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: created_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: updated_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: time_zone
             data_categories: [system.operations]
-          - name: phone
-            data_categories: [user.provided.identifiable.contact.phone_number]
-          - name: shared_phone_number
-            data_categories: [user.provided.identifiable.contact.phone_number]
-          - name: photo
+            fidesops_meta:
+              data_type: string
+          - name: iana_time_zone
             data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: locale_id
             data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: locale
             data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: role
             data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: verified
             data_categories: [system.operations]
-          - name: external_id
-            data_categories: [system.operations]
-          - name: tags
-            data_categories: [system.operations]
-          - name: alias
-            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: active
             data_categories: [system.operations]
-          - name: shared
-            data_categories: [system.operations]
-          - name: shared_agent
-            data_categories: [system.operations]
-          - name: last_login_at
-            data_categories: [system.operations]
-          - name: two_factor_auth_enabled
-            data_categories: [system.operations]
-          - name: signature
-            data_categories: [system.operations]
-          - name: details
-            data_categories: [system.operations]
-          - name: notes
-            data_categories: [system.operations]
-          - name: role_type
-            data_categories: [system.operations]
-          - name: custom_role_id
-            data_categories: [system.operations]
-          - name: moderator
-            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: ticket_restriction
             data_categories: [system.operations]
-          - name: only_private_comments
-            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: restricted_agent
             data_categories: [system.operations]
-          - name: suspended
-            data_categories: [system.operations]
-          - name: chat_only
-            data_categories: [system.operations]
-          - name: default_group_id
-            data_categories: [system.operations]
-          - name: report_csv
-            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
       - name: user_identities
         fields:
+          - name: url
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: user_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: type
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: value
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: verified
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: primary
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: created_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: updated_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: deliverable_state
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
       - name: group_memberships
         fields:
           - name: id
             data_categories: [system.operations]
       - name: tickets
         fields:
+          - name: url
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: id
             data_categories: [system.operations]
-          - name: external_id
-            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: via
+            fields:
+              - name: channel
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
           - name: created_at
             data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: updated_at
             data_categories: [system.operations]
-          - name: type
-            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: subject
             data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: raw_subject
             data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: description
             data_categories: [system.operations]
-          - name: priority
-            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: status
             data_categories: [system.operations]
-          - name: recipient
-            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: requester_id
-            data_categories: [user.derived.identifiable.unique_id]
-          - name: submitter_id
-            data_categories: [user.derived.identifiable.unique_id]
-          - name: assignee_id
-            data_categories: [user.derived.identifiable.unique_id]
-          - name: organization_id
             data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: submitter_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: group_id
             data_categories: [system.operations]
-          - name: collaborator_ids
-            data_categories: [user.derived.identifiable.unique_id]
-          - name: follower_ids
-            data_categories: [user.derived.identifiable.unique_id]
-          - name: email_cc_ids
-            data_categories: [user.derived.identifiable.unique_id]
-          - name: forum_topic_id
-            data_categories: [system.operations]
-          - name: problem_id
-            data_categories: [system.operations]
-          - name: has_incidents
-            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: is_public
             data_categories: [system.operations]
-          - name: due_at
-            data_categories: [system.operations]
-          - name: tags
-            data_categories: [system.operations]
-          - name: custom_fields
-            fields:
-              - name: id
-                data_categories: [system.operations]
-              - name: value
-                data_categories: [system.operations]
-          - name: satisfaction_rating
-            data_categories: [system.operations]
-          - name: sharing_agreement_ids
-            data_categories: [system.operations]
-          - name: fields
-            fields:
-              - name: id
-                data_categories: [system.operations]
-              - name: value
-                data_categories: [system.operations]
-          - name: followup_ids
-            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: brand_id
             data_categories: [system.operations]
-          - name: allow_channelback
-            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: allow_attachments
             data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
       - name: ticket_comments
         fields:
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: type
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: author_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: body
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: html_body
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: plain_body
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: public
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: audit_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: via
+            fields:
+              - name: channel
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: source
+                fields:
+                  - name: to
+                    fields:
+                      - name: name
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: string
+                      - name: address
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: string
+          - name: created_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: metadata
+            fields:
+              - name: system
+                fields:
+                  - name: client
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: ip_address
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: location
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: latitude
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: longitude
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
