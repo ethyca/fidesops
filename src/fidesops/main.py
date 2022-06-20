@@ -80,7 +80,7 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
 
 def prepare_and_log_request(
     endpoint: str,
-    hostname: str,
+    hostname: Optional[str],
     status_code: int,
     event_created_at: datetime,
     fides_source: Optional[str],
