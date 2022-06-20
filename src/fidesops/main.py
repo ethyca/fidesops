@@ -11,8 +11,8 @@ from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 
 from fidesops.analytics import (
-    in_docker_container,
     accessed_through_local_host,
+    in_docker_container,
     send_analytics_event,
 )
 from fidesops.api.v1.api import api_router
