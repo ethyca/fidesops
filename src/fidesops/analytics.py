@@ -1,7 +1,6 @@
 import logging
 import os
 from platform import system
-from typing import Optional
 
 from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
