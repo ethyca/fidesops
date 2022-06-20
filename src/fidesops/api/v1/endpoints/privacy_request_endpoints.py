@@ -712,7 +712,7 @@ def resume_privacy_request_with_manual_input(
 
     run_privacy_request.delay(
         privacy_request_id=privacy_request.id,
-        from_step=paused_step,
+        from_step=paused_step.value,
     )
 
     return privacy_request
@@ -819,7 +819,7 @@ def restart_privacy_request_from_failure(
     privacy_request.save(db=db)
     run_privacy_request.delay(
         privacy_request_id=privacy_request.id,
-        from_step=failed_step,
+        from_step=failed_step.value,
     )
 
     privacy_request.cache_failed_collection_details()  # Reset failed step and collection to None
@@ -828,7 +828,9 @@ def restart_privacy_request_from_failure(
 
 
 def review_privacy_request(
-    db: Session, cache: FidesopsRedis, request_ids: List[str], process_request: Callable
+    db: Session,
+    request_ids: List[str],
+    process_request: Callable,
 ) -> BulkReviewResponse:
     """Helper method shared between the approve and deny privacy request endpoints"""
     succeeded: List[PrivacyRequest] = []
@@ -855,7 +857,7 @@ def review_privacy_request(
             continue
 
         try:
-            process_request(privacy_request, cache)
+            process_request(privacy_request)
         except Exception:
             failure = {
                 "message": "Privacy request could not be updated",
@@ -879,7 +881,6 @@ def review_privacy_request(
 def approve_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
-    cache: FidesopsRedis = Depends(deps.get_cache),
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_REVIEW],
@@ -889,7 +890,7 @@ def approve_privacy_request(
     """Approve and dispatch a list of privacy requests and/or report failure"""
     user_id = client.user_id
 
-    def _process_request(privacy_request: PrivacyRequest, cache: FidesopsRedis) -> None:
+    def _process_request(privacy_request: PrivacyRequest) -> None:
         """Method for how to process requests - approved"""
         privacy_request.status = PrivacyRequestStatus.approved
         privacy_request.reviewed_at = datetime.utcnow()
@@ -898,9 +899,7 @@ def approve_privacy_request(
 
         run_privacy_request.delay(privacy_request_id=privacy_request.id)
 
-    return review_privacy_request(
-        db, cache, privacy_requests.request_ids, _process_request
-    )
+    return review_privacy_request(db, privacy_requests.request_ids, _process_request)
 
 
 @router.patch(
@@ -911,7 +910,6 @@ def approve_privacy_request(
 def deny_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
-    cache: FidesopsRedis = Depends(deps.get_cache),
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_REVIEW],
@@ -941,5 +939,5 @@ def deny_privacy_request(
         privacy_request.save(db=db)
 
     return review_privacy_request(
-        db, cache, privacy_requests.request_ids, _process_denial_request
+        db, privacy_requests.request_ids, _process_denial_request
     )
