@@ -40,7 +40,11 @@ from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUEST_RETRY,
     REQUEST_PREVIEW,
 )
-from fidesops.common_exceptions import TraversalError, ValidationError
+from fidesops.common_exceptions import (
+    FunctionalityNotConfigured,
+    TraversalError,
+    ValidationError,
+)
 from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph, Node
@@ -118,6 +122,11 @@ def create_privacy_request(
 
     You cannot update privacy requests after they've been created.
     """
+    if not config.redis.ENABLED:
+        raise FunctionalityNotConfigured(
+            "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
+        )
+
     created = []
     failed = []
     # Optional fields to validate here are those that are both nullable in the DB, and exist
