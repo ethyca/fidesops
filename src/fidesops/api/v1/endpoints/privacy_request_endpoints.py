@@ -109,7 +109,6 @@ def get_privacy_request_or_error(
 )
 def create_privacy_request(
     *,
-    cache: FidesopsRedis = Depends(deps.get_cache),
     db: Session = Depends(deps.get_db),
     data: conlist(PrivacyRequestCreate, max_items=50) = Body(...),  # type: ignore
 ) -> BulkPostPrivacyRequests:
