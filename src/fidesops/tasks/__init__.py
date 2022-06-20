@@ -1,7 +1,12 @@
 from celery import Celery
 
+from fidesops.core.config import config
+
 app = Celery("tasks")
-app.config_from_object("fidesops.core.config", namespace="EXECUTION")
+app.conf.update(
+    broker_url=config.execution.CELERY_BROKER_URL
+    # result_backend=config.CELERY_RESULT_BACKEND
+)
 app.autodiscover_tasks(
     [
         "fidesops.tasks",
