@@ -4926,6 +4926,10 @@
             "title": "Name",
             "type": "string"
           },
+          "default_value": {
+            "title": "Default Value",
+            "type": "string"
+          },
           "description": {
             "title": "Description",
             "type": "string"

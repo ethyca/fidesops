@@ -1836,14 +1836,20 @@
 <li><code>data_protection_request</code></li>
 </ul>
 <h4 id="connector-params">Connector params</h4>
-<p>The <code>connector_params</code> field is used to describe a list of settings which a user must configure as part of the setup. This section should just include the name of the parameter but not the actual value. These are added as part of the ConnectionConfig <a href="/docs/fidesops/docs/guides/database_connectors.md#set-the-connectionconfigs-secrets">secrets</a>.</p>
+<p>The <code>connector_params</code> field is used to describe a list of settings which a user must configure as part of the setup. A <code>default_value</code> can also be used to include values such as a standard base domain for an API or a recommended page size for pagination. Make sure to not include confidential values such as passwords or API keys, these values are added as part of the ConnectionConfig <a href="/docs/fidesops/docs/guides/database_connectors.md#set-the-connectionconfigs-secrets">secrets</a>. When configuring a connector's secrets for the first time, the default values will be used if a value is not provided.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">connector_params</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">host</span><span class="w"></span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">connector_params</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">domain</span><span class="w"></span>
+<span class="w">    </span><span class="nt">default_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api.stripe.com</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">username</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">password</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">page_size</span><span class="w"></span>
+<span class="w">    </span><span class="nt">default_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 <h4 id="client-config">Client config</h4>
 <p>The <code>client_config</code> describes the necessary information to be able to create a base HTTP client. Notice that the values for host, username, and password are not defined here, only references in the form of a <code>connector_param</code> which Fidesops uses to insert the actual value from the stored secrets.</p>
