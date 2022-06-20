@@ -72,7 +72,9 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
         return response
 
     except Exception as e:
-        prepare_and_log_request(endpoint, request.url.hostname, 500, now, fides_source, e.__class__.__name__)
+        prepare_and_log_request(
+            endpoint, request.url.hostname, 500, now, fides_source, e.__class__.__name__
+        )
         raise
 
 
