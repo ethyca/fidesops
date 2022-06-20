@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set
 
+from celery.utils.log import get_task_logger
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
@@ -33,7 +34,7 @@ from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.util.collection_util import Row
 from fidesops.util.logger import _log_exception, _log_warning
 
-logger = logging.getLogger(__name__)
+logger = get_task_logger(__name__)
 
 
 def run_webhooks_and_report_status(
@@ -135,6 +136,7 @@ def run_privacy_request(
         3. Start the access request / erasure request execution
         4. When finished, upload the results to the configured storage destination if applicable
     """
+    logger.info("Executing request with ID: {privacy_request_id}")
     if from_step is not None:
         # Re-cast `from_step` into an Enum to enforce the validation since unserializable objects
         # can't be passed into and between tasks
