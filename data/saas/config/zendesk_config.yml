@@ -61,28 +61,6 @@ saas_config:
             configuration:
               source: body
               path: links.next
-    - name: group_memberships
-      requests:
-        read:
-          method: GET
-          path: /api/v2/users/<user_id>/group_memberships.json
-          query_params:
-            - name: page[size]
-              value: <page_size>
-          param_values:
-            - name: user_id
-              references:
-                - dataset: zendesk_connector_example
-                  field: users.id
-                  direction: from
-            - name: page_size
-              connector_param: page_size
-          data_path: group_memberships
-          pagination:
-            strategy: link
-            configuration:
-              source: body
-              path: links.next
     - name: tickets
       requests:
         read:
