@@ -12,7 +12,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from fidesops.analytics import (
     in_docker_container,
-    running_on_local_host,
+    accessed_through_local_host,
     send_analytics_event,
 )
 from fidesops.api.v1.api import api_router
@@ -45,15 +45,15 @@ if config.security.CORS_ORIGINS:
 
 @app.middleware("http")
 async def dispatch_log_request(request: Request, call_next: Callable) -> Response:
+    """
+    HTTP Middleware that logs analytics events for each call to Fidesops endpoints.
+    :param request: Request to fidesops api
+    :param call_next: Callable api endpoint
+    :return: Response
+    """
     fides_source: Optional[str] = request.headers.get("X-Fides-Source")
     now: datetime = datetime.now(tz=timezone.utc)
-    valid_hostname = request.url.hostname
-    # only needed until we implement validator fix in fideslog
-    if valid_hostname == "0.0.0.0":
-        valid_hostname = "localhost"
-    endpoint = (
-        f"{request.method}: {request.url.scheme}://{valid_hostname}{request.url.path}"
-    )
+    endpoint = f"{request.method}: {request.url}"
 
     try:
         response = await call_next(request)
@@ -63,6 +63,7 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
         response.background = BackgroundTask(
             prepare_and_log_request,
             endpoint,
+            request.url.hostname,
             response.status_code,
             now,
             fides_source,
@@ -71,17 +72,22 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
         return response
 
     except Exception as e:
-        prepare_and_log_request(endpoint, 500, now, fides_source, e.__class__.__name__)
+        prepare_and_log_request(endpoint, request.url.hostname, 500, now, fides_source, e.__class__.__name__)
         raise
 
 
 def prepare_and_log_request(
     endpoint: str,
+    hostname: str,
     status_code: int,
     event_created_at: datetime,
     fides_source: Optional[str],
     error_class: Optional[str],
 ) -> None:
+    """
+    Prepares and sends analytics event provided the user is not opted out of analytics.
+    """
+
     # this check prevents AnalyticsEvent from being called with invalid endpoint during unit tests
     if config.root_user.ANALYTICS_OPT_OUT:
         return
@@ -90,7 +96,7 @@ def prepare_and_log_request(
             docker=in_docker_container(),
             event=Event.endpoint_call.value,
             event_created_at=event_created_at,
-            local_host=running_on_local_host(),
+            local_host=accessed_through_local_host(hostname),
             endpoint=endpoint,
             status_code=status_code,
             error=error_class or None,
@@ -147,7 +153,6 @@ def start_webserver() -> None:
             docker=in_docker_container(),
             event=Event.server_start.value,
             event_created_at=datetime.now(tz=timezone.utc),
-            local_host=running_on_local_host(),
         )
     )
 
