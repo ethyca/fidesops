@@ -60,3 +60,9 @@ access_token = ""
 username = ""
 password = ""
 identity_email = ""
+
+[zendesk]
+domain = ""
+username = ""
+api_key = ""
+identity_email = ""
