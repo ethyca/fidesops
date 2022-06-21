@@ -7,10 +7,10 @@ import {
   Spacer,
   Text,
 } from "@fidesui/react";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useDispatch } from "react-redux";
 
-import { useAppSelector } from "../../app/hooks";
+import { useOutsideClick } from "../common/hooks";
 import { ArrowDownLineIcon } from "../common/Icon";
 import { capitalize } from "../common/utils";
 import { setConnectionType } from "./datastore-connection.slice";
@@ -71,6 +71,14 @@ const useConnectionStatusMenu = () => {
     initialCheckListState
   );
 
+  const handleClick = useCallback(() => {
+    if (isOpen) {
+      setIsOpen(false);
+    }
+  }, [isOpen, setIsOpen]);
+
+  const { ref } = useOutsideClick(handleClick);
+
   const updateCheckBoxStates = (data: CheckBoxData) => {
     const idx = checkboxStates.findIndex((d) => d.type === data.type);
     const newList = [...checkboxStates];
@@ -103,6 +111,7 @@ const useConnectionStatusMenu = () => {
     updateCheckBoxStates,
     resetCheckboxStates,
     updateConnectionTypeFilter,
+    ref,
   };
 };
 
@@ -115,6 +124,7 @@ const ConnectionStatusMenu: React.FC = () => {
     updateCheckBoxStates,
     resetCheckboxStates,
     updateConnectionTypeFilter,
+    ref,
   } = useConnectionStatusMenu();
   const checkboxes = checkboxStates.map((d) => (
     <ConnectionCheckbox
@@ -126,8 +136,10 @@ const ConnectionStatusMenu: React.FC = () => {
       }}
     />
   ));
+
+  const totalChecked = checkboxStates.filter((d) => d.checked).length;
   return (
-    <Box width="100%" position="relative">
+    <Box width="100%" position="relative" ref={ref}>
       <Flex
         borderRadius="6px"
         border="1px"
@@ -145,6 +157,18 @@ const ConnectionStatusMenu: React.FC = () => {
         >
           Datastore Type
         </Text>
+        {totalChecked ? (
+          <Text
+            paddingLeft="7px"
+            fontSize="14px"
+            fontWeight="400"
+            lineHeight="20px"
+            color="complimentary.500"
+          >
+            {totalChecked}
+          </Text>
+        ) : null}
+
         <Spacer />
         <IconButton
           variant="ghost"

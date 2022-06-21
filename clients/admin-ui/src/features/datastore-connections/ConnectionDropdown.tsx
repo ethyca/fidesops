@@ -1,11 +1,19 @@
 import { Box, Flex, IconButton, Spacer, Text } from "@fidesui/react";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 
+import { useOutsideClick } from "../common/hooks";
 import { ArrowDownLineIcon } from "../common/Icon";
 import { capitalize } from "../common/utils";
 
 const useConnectionStatusMenu = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const handleClick = useCallback(() => {
+    if (isOpen) {
+      setIsOpen(false);
+    }
+  }, [isOpen, setIsOpen]);
+
+  const { ref } = useOutsideClick(handleClick);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -14,6 +22,7 @@ const useConnectionStatusMenu = () => {
   return {
     isOpen,
     toggleMenu,
+    ref,
   };
 };
 
@@ -31,7 +40,7 @@ const ConnectionDropdown: React.FC<ConnectionDropdownProps> = ({
   setValue,
   title,
 }) => {
-  const { isOpen, toggleMenu } = useConnectionStatusMenu();
+  const { isOpen, toggleMenu, ref } = useConnectionStatusMenu();
   const options = filterOptions.map((d) => (
     <Flex
       key={d}
@@ -41,8 +50,8 @@ const ConnectionDropdown: React.FC<ConnectionDropdownProps> = ({
       padding="8px"
       cursor="pointer"
       onClick={() => {
-        console.log("setting the value to ", d);
         setValue(d);
+        toggleMenu();
       }}
     >
       <Text
@@ -58,7 +67,7 @@ const ConnectionDropdown: React.FC<ConnectionDropdownProps> = ({
   ));
 
   return (
-    <Box width="100%" position="relative">
+    <Box width="100%" position="relative" ref={ref}>
       <Flex
         borderRadius="6px"
         border="1px"
@@ -72,9 +81,9 @@ const ConnectionDropdown: React.FC<ConnectionDropdownProps> = ({
           fontSize="14px"
           fontWeight="400"
           lineHeight="20px"
-          color="gray.700"
+          color={value ? "complimentary.500" : "gray.700"}
         >
-          {title}
+          {value ? capitalize(value) : title}
         </Text>
         <Spacer />
         <IconButton

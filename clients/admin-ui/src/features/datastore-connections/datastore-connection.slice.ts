@@ -58,7 +58,6 @@ function mapFiltersToSearchParams({
     const value = disabled_status === DisabledStatus.DISABLED;
     queryString += queryString ? `&disabled=${value}` : `disabled=${value}`;
   }
-  console.log(queryString);
 
   return queryString ? `?${queryString}` : "";
 }
