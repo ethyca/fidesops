@@ -41,7 +41,7 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
       >
         <Text fontSize="sm">Delete</Text>
       </MenuItem>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isCentered isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Delete Connection</ModalHeader>
