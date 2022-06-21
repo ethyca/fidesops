@@ -16,12 +16,13 @@ from fidesops.analytics import (
 from fidesops.api.v1.api import api_router
 from fidesops.api.v1.exception_handlers import ExceptionHandlers
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesops.common_exceptions import FunctionalityNotConfigured
+from fidesops.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
 from fidesops.core.config import config
 from fidesops.db.database import init_db
 from fidesops.schemas.analytics import EVENT
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
+from fidesops.util.cache import get_cache
 from fidesops.util.logger import get_fides_log_record_factory
 
 logging.basicConfig(level=config.security.LOG_LEVEL)
@@ -73,7 +74,16 @@ def start_webserver() -> None:
 
     if config.database.ENABLED:
         logger.info("Running any pending DB migrations...")
-        init_db(config.database.SQLALCHEMY_DATABASE_URI)
+        try:
+            init_db(config.database.SQLALCHEMY_DATABASE_URI)
+        except Exception as error:  # pylint: disable=broad-except
+            logger.error(f"Connection to database failed: {error}")
+
+    logger.info("Running Redis connection test...")
+    try:
+        get_cache()
+    except RedisConnectionError as e:
+        logger.error(e)
 
     scheduler.start()
 
