@@ -5,11 +5,11 @@ from typing import Dict, Final, List, Optional, Union
 
 import requests
 from fideslib.db.session import get_db_session
+from fideslib.exceptions import AuthenticationError
 from requests import Response
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import (
-    AuthenticationException,
     PolicyNotFoundException,
     StorageConfigNotFoundException,
 )
@@ -79,7 +79,7 @@ class OneTrustService:
             hostname=hostname,
         )
         if not access_token:
-            raise AuthenticationException(
+            raise AuthenticationError(
                 f"Authentication denied for storage config with key: {config_key}"
             )
         all_requests: Final[List[OneTrustRequest]] = OneTrustService._get_all_requests(

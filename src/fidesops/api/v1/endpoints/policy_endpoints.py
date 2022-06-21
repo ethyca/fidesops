@@ -5,6 +5,7 @@ from fastapi import APIRouter, Body, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslib.exceptions import KeyOrNameAlreadyExists
 from fideslib.models.client import ClientDetail
 from fideslib.oauth import scopes
 from pydantic import conlist
@@ -18,7 +19,6 @@ from fidesops.api.v1 import urn_registry as urls
 from fidesops.common_exceptions import (
     DataCategoryNotSupported,
     DrpActionValidationError,
-    KeyOrNameAlreadyExists,
     PolicyValidationError,
     RuleTargetValidationError,
     RuleValidationError,

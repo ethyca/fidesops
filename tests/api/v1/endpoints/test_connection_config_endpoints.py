@@ -147,6 +147,7 @@ class TestPatchConnections:
 
         succeeded = response_body["succeeded"]
         failed = response_body["failed"]
+        print(failed)
 
         # key supplied matches existing key, so the rest of the configs are updated
         assert succeeded[0]["key"] == "postgres_db_1"
@@ -323,7 +324,7 @@ class TestPatchConnections:
         mssql_resource.delete(db)
         bigquery_resource.delete(db)
 
-    @mock.patch("fidesops.db.base_class.OrmWrappedFidesopsBase.create_or_update")
+    @mock.patch("fideslib.db.base_class.OrmWrappedFidesBase.create_or_update")
     def test_patch_connections_failed_response(
         self, mock_create: Mock, api_client: TestClient, generate_auth_header, url
     ) -> None:

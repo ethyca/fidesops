@@ -4,6 +4,7 @@ import getpass
 from typing import List
 
 from fideslib.db.session import get_db_session
+from fideslib.exceptions import KeyOrNameAlreadyExists
 from fideslib.models.client import ADMIN_UI_ROOT, ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
@@ -11,7 +12,6 @@ from fideslib.oauth.schemas.user import UserCreate
 from sqlalchemy.orm import Session
 
 from fidesops.api.v1.scope_registry import CLIENT_CREATE, SCOPE_REGISTRY
-from fidesops.common_exceptions import KeyOrNameAlreadyExists
 from fidesops.core.config import config
 from fidesops.db.database import init_db
 

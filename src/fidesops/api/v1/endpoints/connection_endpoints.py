@@ -6,6 +6,7 @@ from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslib.exceptions import KeyOrNameAlreadyExists
 from pydantic import ValidationError, conlist
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -29,11 +30,7 @@ from fidesops.api.v1.urn_registry import (
     SAAS_CONFIG,
     V1_URL_PREFIX,
 )
-from fidesops.common_exceptions import (
-    ClientUnsuccessfulException,
-    ConnectionException,
-    KeyOrNameAlreadyExists,
-)
+from fidesops.common_exceptions import ClientUnsuccessfulException, ConnectionException
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.schemas.api import BulkUpdateFailed
 from fidesops.schemas.connection_configuration import (
