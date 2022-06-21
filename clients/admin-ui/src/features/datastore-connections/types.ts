@@ -14,7 +14,7 @@ export enum ConnectionType {
 
 export enum SystemType {
   SAAS = "saas",
-  DATABASE = "databse",
+  DATABASE = "database",
   MANUAL = "manual",
 }
 
@@ -27,6 +27,11 @@ export enum TestingStatus {
 export enum AccessLevel {
   READ = "read",
   WRITE = "write",
+}
+
+export enum DisabledStatus {
+  ACTIVE = "active",
+  DISABLED = "disabled",
 }
 
 export type DatastoreConnection = {
@@ -51,6 +56,10 @@ export type DatastoreConnectionResponse = {
 
 export type DatastoreConnectionParams = {
   search: string;
+  connection_type?: ConnectionType[];
+  test_status?: TestingStatus;
+  system_type?: SystemType;
+  disabled_status?: DisabledStatus;
   page: number;
   size: number;
 };
