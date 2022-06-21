@@ -33,6 +33,7 @@ The types of changes are:
 * Prettier formatting CI check for frontend code [#655](https://github.com/ethyca/fidesops/pull/655)
 * Adds default policies [#654](https://github.com/ethyca/fidesops/pull/654)
 * Added ConnectionConfig `connection_type` and `disabled` filters [#675](https://github.com/ethyca/fidesops/pull/675)
+* Adds Postgres and Redis health checks to health endpoint [#690](https://github.com/ethyca/fidesops/pull/690)
 
 ### Changed
 
