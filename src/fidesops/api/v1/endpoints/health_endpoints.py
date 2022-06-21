@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, Optional, Union
 
-from alembic import script, migration
+from alembic import migration, script
 from fastapi import APIRouter
 from redis.exceptions import ResponseError
 from sqlalchemy import create_engine
@@ -52,6 +52,8 @@ def get_db_health(database_url: Optional[str]) -> str:
 
 def get_cache_health() -> str:
     """Checks if the cache is reachable"""
+    if not config.redis.ENABLED:
+        return "no cache configured"
     try:
         get_cache()
         return "healthy"
