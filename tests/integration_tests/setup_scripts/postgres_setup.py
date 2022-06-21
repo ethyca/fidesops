@@ -6,6 +6,7 @@ from fideslib.core.config import load_toml
 from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
+from fidesops.core.config import config
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -42,7 +43,7 @@ def setup():
         )
     ).build_uri()
 
-    engine = get_db_engine(database_uri=uri)
+    engine = get_db_engine(config, database_uri=uri)
     SessionLocal = get_db_session(
         engine=engine,
         autocommit=True,

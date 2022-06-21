@@ -6,6 +6,7 @@ import pytest
 from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 
+from fidesops.core.config import config
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -61,7 +62,7 @@ def connection_config_mssql(db: Session) -> Generator:
 @pytest.fixture(scope="function")
 def mssql_integration_session_cls(connection_config_mssql):
     uri = MicrosoftSQLServerConnector(connection_config_mssql).build_uri()
-    engine = get_db_engine(database_uri=uri)
+    engine = get_db_engine(config, database_uri=uri)
     SessionLocal = get_db_session(
         engine=engine,
         autocommit=True,

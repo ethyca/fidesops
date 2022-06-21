@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
+from fidesops.core.config import config
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -167,7 +168,7 @@ def read_connection_config(
 @pytest.fixture(scope="function")
 def postgres_integration_session_cls(connection_config):
     example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
-    engine = get_db_engine(database_uri=example_postgres_uri)
+    engine = get_db_engine(config, database_uri=example_postgres_uri)
     SessionLocal = get_db_session(
         engine=engine,
         autocommit=True,

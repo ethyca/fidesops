@@ -7,6 +7,7 @@ import sqlalchemy
 from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 
+from fidesops.core.config import config
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -42,7 +43,7 @@ def mariadb_example_db() -> Generator:
     example_mariadb_uri = (
         "mariadb+pymysql://mariadb_user:mariadb_pw@mariadb_example/mariadb_example"
     )
-    engine = get_db_engine(database_uri=example_mariadb_uri)
+    engine = get_db_engine(config, database_uri=example_mariadb_uri)
     logger.debug(f"Connecting to MariaDB example database at: {engine.url}")
     SessionLocal = get_db_session(
         engine=engine,
@@ -83,7 +84,7 @@ def mariadb_example_test_dataset_config(
 @pytest.fixture(scope="function")
 def mariadb_integration_session(connection_config_mariadb):
     example_mariadb_uri = MariaDBConnector(connection_config_mariadb).build_uri()
-    engine = get_db_engine(database_uri=example_mariadb_uri)
+    engine = get_db_engine(config, database_uri=example_mariadb_uri)
     SessionLocal = get_db_session(
         engine=engine,
         autocommit=True,

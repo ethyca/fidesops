@@ -5,12 +5,12 @@ from datetime import datetime, timedelta
 from uuid import uuid4
 
 from fideslib.db.session import get_db_session
+from fideslib.models.client import ClientDetail
+from fideslib.models.fides_user import FidesUser
 from sqlalchemy import orm
 
 from fidesops.core.config import config
 from fidesops.db.database import init_db
-from fideslib.models.client import ClientDetail
-from fideslib.models.fides_user import FidesUser
 from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.models.storage import ResponseFormat, StorageConfig
@@ -142,6 +142,6 @@ def create_test_data(db: orm.Session) -> FidesUser:
 
 if __name__ == "__main__":
     init_db(config.database.SQLALCHEMY_DATABASE_URI)
-    session_local = get_db_session()
+    session_local = get_db_session(config)
     with session_local() as session:
         create_test_data(session)

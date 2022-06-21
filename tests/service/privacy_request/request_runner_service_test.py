@@ -62,7 +62,7 @@ def test_start_processing_sets_started_processing_at(
     privacy_request.started_processing_at = None
     wait_for(privacy_request_runner.submit())
 
-    _sessionmaker = get_db_session()
+    _sessionmaker = get_db_session(config)
     db = _sessionmaker()
     privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert privacy_request.started_processing_at is not None
@@ -102,7 +102,7 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     privacy_request.started_processing_at = None
     wait_for(privacy_request_runner.submit(from_step=PausedStep.access))
 
-    _sessionmaker = get_db_session()
+    _sessionmaker = get_db_session(config)
     db = _sessionmaker()
 
     privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request.id)
@@ -138,7 +138,7 @@ def test_resume_privacy_request_from_erasure(
 
     wait_for(privacy_request_runner.submit(from_step=PausedStep.erasure))
 
-    _sessionmaker = get_db_session()
+    _sessionmaker = get_db_session(config)
     db = _sessionmaker()
 
     privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request.id)

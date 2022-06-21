@@ -138,7 +138,16 @@ async def verify_oauth_client(
     if not client_id:
         raise AuthorizationError(detail="Not Authorized for this action 4")
 
-    client = ClientDetail.get(db, object_id=client_id)
+    # breakpoint()
+    client = ClientDetail.get(
+        db, object_id=client_id, config=config, scopes=security_scopes.scopes
+    )
+
+    # print(config)
+    # print(f"{client=}")
+    # print(ClientDetail.all(db))
+    # print(f"{ClientDetail.all(db)[0].id=}")
+    # print(f"{client_id=}")
     if not client:
         raise AuthorizationError(detail="Not Authorized for this action 5")
 

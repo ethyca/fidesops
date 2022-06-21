@@ -64,8 +64,10 @@ def db() -> Generator:
     # Create the test DB enginge
     assert config.is_test_mode
     engine = get_db_engine(
+        config,
         database_uri=config.database.SQLALCHEMY_TEST_DATABASE_URI,
     )
+
     logger.debug(f"Configuring database at: {engine.url}")
     if not database_exists(engine.url):
         logger.debug(f"Creating database at: {engine.url}")
@@ -134,7 +136,6 @@ def api_client() -> Generator:
 def oauth_client(db: Session) -> Generator:
     """Return a client for authentication purposes"""
     client = ClientDetail(
-        id=config.security.OAUTH_ROOT_CLIENT_ID,
         hashed_secret="thisisatest",
         salt="thisisstillatest",
         scopes=SCOPE_REGISTRY,
