@@ -6,10 +6,8 @@ import {
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "../../app/store";
-
 import { BASE_URL, STORED_CREDENTIALS_KEY } from "../../constants";
 import { addCommonHeaders } from "../common/CommonHeaders";
-
 import { User } from "../user-management/types";
 import { LoginRequest, LoginResponse } from "./types";
 
