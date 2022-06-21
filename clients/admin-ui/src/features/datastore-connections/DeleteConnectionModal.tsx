@@ -24,12 +24,12 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
   connection_key,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [deleteConnection] = useDeleteDatastoreConnectionMutation();
+  const [deleteConnection, deleteConnectionResult] =
+    useDeleteDatastoreConnectionMutation();
 
   const handleDeleteConnection = () => {
     if (connection_key) {
       deleteConnection(connection_key);
-      onClose();
     }
   };
 
@@ -73,12 +73,21 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
             </Button>
             <Button
               onClick={handleDeleteConnection}
+              isLoading={deleteConnectionResult.isLoading}
               mr={3}
               size="sm"
               variant="solid"
               bg="primary.800"
               color="white"
               width="50%"
+              _loading={{
+                opacity: 1,
+                div: { opacity: 0.4 },
+              }}
+              _hover={{
+                bg: "gray.100",
+                color: "gray.600",
+              }}
             >
               Delete Connection
             </Button>
