@@ -150,12 +150,13 @@ def start_webserver() -> None:
             logger.error(f"Connection to database failed: {error}")
             return
 
-    logger.info("Running Redis connection test...")
-    try:
-        get_cache()
-    except (RedisConnectionError, ResponseError) as e:
-        logger.error(f"Connection to cache failed: {e}")
-        return
+    if config.redis.ENABLED:
+        logger.info("Running Redis connection test...")
+        try:
+            get_cache()
+        except (RedisConnectionError, ResponseError) as e:
+            logger.error(f"Connection to cache failed: {e}")
+            return
 
     scheduler.start()
 
