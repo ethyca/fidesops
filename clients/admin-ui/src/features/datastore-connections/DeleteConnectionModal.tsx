@@ -33,6 +33,12 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
     }
   };
 
+  const closeIfComplete = () => {
+    if (!deleteConnectionResult.isLoading) {
+      onClose();
+    }
+  };
+
   return (
     <>
       <MenuItem
@@ -41,7 +47,7 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
       >
         <Text fontSize="sm">Delete</Text>
       </MenuItem>
-      <Modal isCentered isOpen={isOpen} onClose={onClose}>
+      <Modal isCentered isOpen={isOpen} onClose={closeIfComplete}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Delete Connection</ModalHeader>
@@ -62,7 +68,7 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
 
           <ModalFooter>
             <Button
-              onClick={onClose}
+              onClick={closeIfComplete}
               marginRight="10px"
               size="sm"
               variant="solid"
