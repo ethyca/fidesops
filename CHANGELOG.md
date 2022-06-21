@@ -37,6 +37,7 @@ The types of changes are:
 * Adds endpoint analytics events [#622](https://github.com/ethyca/fidesops/pull/622)
 * Sample dataset and access configuration for Zendesk (ticket endpoints) [#677](https://github.com/ethyca/fidesops/pull/677)
 * Datastore Connection Landing Page [#674](https://github.com/ethyca/fidesops/pull/674)
+* Datastore Connection Filters [#691](https://github.com/ethyca/fidesops/pull/691)
 
 
 ### Changed
