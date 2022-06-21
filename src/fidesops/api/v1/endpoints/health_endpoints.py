@@ -1,8 +1,9 @@
 import logging
-from typing import Dict
+from typing import Dict, Optional, Union
 
 from alembic import script, migration
 from fastapi import APIRouter
+from redis.exceptions import ResponseError
 from sqlalchemy import create_engine
 
 from fidesops.api.v1.urn_registry import HEALTH
@@ -14,10 +15,13 @@ from fidesops.util.cache import get_cache
 router = APIRouter(tags=["Public"])
 
 logger = logging.getLogger(__name__)
+# stops polluting logs with sqlalchemy / alembic info-level logs
+logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
+logging.getLogger("alembic").setLevel(logging.WARNING)
 
 
-@router.get(HEALTH, response_model=Dict[str, bool])
-def health_check() -> Dict[str, bool]:
+@router.get(HEALTH, response_model=Dict[str, Union[bool, str]])
+def health_check() -> Dict[str, Union[bool, str]]:
     return {
         "healthy": True,
         "database": get_db_health(config.database.SQLALCHEMY_DATABASE_URI),
@@ -25,7 +29,7 @@ def health_check() -> Dict[str, bool]:
     }
 
 
-def get_db_health(database_url: str) -> str:
+def get_db_health(database_url: Optional[str]) -> str:
     """Checks if the db is reachable and up to date in alembic migrations"""
     if not database_url or not config.database.ENABLED:
         return "no db configured"
@@ -51,6 +55,6 @@ def get_cache_health() -> str:
     try:
         get_cache()
         return "healthy"
-    except RedisConnectionError as e:
+    except (RedisConnectionError, ResponseError) as e:
         logger.error(f"Unable to reach cache: {e}")
         return "unhealthy"
