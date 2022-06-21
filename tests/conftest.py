@@ -40,6 +40,7 @@ from .fixtures.saas.outreach_fixtures import *
 from .fixtures.saas.segment_fixtures import *
 from .fixtures.saas.sentry_fixtures import *
 from .fixtures.saas.stripe_fixtures import *
+from .fixtures.saas.zendesk_fixtures import *
 from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
 
@@ -183,3 +184,12 @@ def run_privacy_request_task(celery_session_app):
     yield celery_session_app.tasks[
         "fidesops.service.privacy_request.request_runner_service.run_privacy_request"
     ]
+
+
+@pytest.fixture(autouse=True, scope="session")
+def analytics_opt_out():
+    """Disable sending analytics when running tests."""
+    original_value = config.root_user.ANALYTICS_OPT_OUT
+    config.root_user.ANALYTICS_OPT_OUT = True
+    yield
+    config.root_user.ANALYTICS_OPT_OUT = original_value

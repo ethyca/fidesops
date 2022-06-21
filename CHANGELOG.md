@@ -31,6 +31,12 @@ The types of changes are:
 * Adds searching of ConnectionConfigs [#641](https://github.com/ethyca/fidesops/pull/641)
 * Added `AdminUiSettings` to the `log_all_config_values` helper method [#647](https://github.com/ethyca/fidesops/pull/647)
 * Prettier formatting CI check for frontend code [#655](https://github.com/ethyca/fidesops/pull/655)
+* Adds default policies [#654](https://github.com/ethyca/fidesops/pull/654)
+* Added ConnectionConfig `connection_type` and `disabled` filters [#675](https://github.com/ethyca/fidesops/pull/675)
+* Adds Fideslog integration [#541](https://github.com/ethyca/fidesops/pull/541)
+* Adds endpoint analytics events [#622](https://github.com/ethyca/fidesops/pull/622)
+* Sample dataset and access configuration for Zendesk (ticket endpoints) [#677](https://github.com/ethyca/fidesops/pull/677)
+* Include number of records to be masked in masking endpoint's log message [#692](https://github.com/ethyca/fidesops/pull/692)
 
 ### Changed
 
@@ -38,6 +44,8 @@ The types of changes are:
 * Bumped mypy to version 0.961 [#630](https://github.com/ethyca/fidesops/pull/630)
 * Bumped Python to version 3.9.13 in the `Dockerfile` [#630](https://github.com/ethyca/fidesops/pull/630)
 * Matched the path to the migrations in the mypy settings with the new location [#634](https://github.com/ethyca/fidesops/pull/634)
+* Sort ConnectionConfig by name ascending [#668](https://github.com/ethyca/fidesops/pull/672)
+* Install MSSQL By Default [#664] (https://github.com/ethyca/fidesops/pull/664)
 
 ### Developer Experience
 
@@ -142,7 +150,6 @@ The types of changes are:
 * Frontend for privacy request denial reaons [#480](https://github.com/ethyca/fidesops/pull/480)
 * Publish Fidesops to Pypi [#491](https://github.com/ethyca/fidesops/pull/491)
 * DRP data rights endpoint [#526](https://github.com/ethyca/fidesops/pull/526)
-* ADDS Fideslog integration [#541](https://github.com/ethyca/fidesops/pull/541)
 
 
 ### Changed
