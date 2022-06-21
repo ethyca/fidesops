@@ -6,6 +6,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fideslog.sdk.python.event import AnalyticsEvent
+from redis.exceptions import ResponseError
 from starlette.middleware.cors import CORSMiddleware
 
 from fidesops.analytics import (
@@ -78,12 +79,14 @@ def start_webserver() -> None:
             init_db(config.database.SQLALCHEMY_DATABASE_URI)
         except Exception as error:  # pylint: disable=broad-except
             logger.error(f"Connection to database failed: {error}")
+            return
 
     logger.info("Running Redis connection test...")
     try:
         get_cache()
-    except RedisConnectionError as e:
-        logger.error(e)
+    except (RedisConnectionError, ResponseError) as e:
+        logger.error(f"Connection to cache failed: {e}")
+        return
 
     scheduler.start()
 
