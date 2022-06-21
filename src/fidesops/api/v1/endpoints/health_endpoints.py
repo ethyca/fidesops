@@ -25,7 +25,7 @@ def health_check() -> Dict[str, Union[bool, str]]:
     return {
         "healthy": True,
         "database": get_db_health(config.database.SQLALCHEMY_DATABASE_URI),
-        "cache": get_cache_health()
+        "cache": get_cache_health(),
     }
 
 
@@ -40,8 +40,8 @@ def get_db_health(database_url: Optional[str]) -> str:
         with engine.begin() as conn:
             context = migration.MigrationContext.configure(conn)
             if (
-                    context.get_current_revision()
-                    != alembic_script_directory.get_current_head()
+                context.get_current_revision()
+                != alembic_script_directory.get_current_head()
             ):
                 return "needs migration"
         return "healthy"
