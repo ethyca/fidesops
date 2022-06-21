@@ -123,7 +123,7 @@ def salesforce_dataset_config(
 
 
 @pytest.fixture(scope="function")
-def stripe_create_erasure_data(
+def salesforce_create_erasure_data(
     salesforce_identity_email, salesforce_secrets
 ) -> Generator:
     """
