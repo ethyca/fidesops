@@ -23,13 +23,13 @@ from fidesops.models.policy import (
 )
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.service.storage.storage_uploader_service import upload
+from fidesops.tasks import celery_app
 from fidesops.task.filter_results import filter_data_categories
 from fidesops.task.graph_task import (
     get_cached_data_for_erasures,
     run_access_request,
     run_erasure,
 )
-from fidesops.tasks import app as celery_app
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.util.collection_util import Row
 from fidesops.util.logger import _log_exception, _log_warning
@@ -136,7 +136,7 @@ def run_privacy_request(
         3. Start the access request / erasure request execution
         4. When finished, upload the results to the configured storage destination if applicable
     """
-    logger.info("Executing request with ID: {privacy_request_id}")
+    logger.info(f"Executing request with ID: {privacy_request_id}")
     if from_step is not None:
         # Re-cast `from_step` into an Enum to enforce the validation since unserializable objects
         # can't be passed into and between tasks
