@@ -29,7 +29,9 @@ def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
         strategy = MaskingStrategyFactory.get_strategy(
             masking_strategy.strategy, masking_strategy.configuration
         )
-        logger.info(f"Starting masking with strategy {masking_strategy.strategy}")
+        logger.info(
+            f"Starting masking of {values.__len__()} values with strategy {masking_strategy.strategy}"
+        )
         masked_values = strategy.mask(values, None)
         return MaskingAPIResponse(plain=values, masked_values=masked_values)
     except NoSuchStrategyException as e:
