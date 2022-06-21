@@ -40,6 +40,7 @@ from .fixtures.saas.outreach_fixtures import *
 from .fixtures.saas.segment_fixtures import *
 from .fixtures.saas.sentry_fixtures import *
 from .fixtures.saas.stripe_fixtures import *
+from .fixtures.saas.zendesk_fixtures import *
 from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
 
@@ -162,3 +163,12 @@ def integration_config() -> MutableMapping[str, Any]:
 def celery_enable_logging():
     """Turns on celery output logs."""
     return True
+
+
+@pytest.fixture(autouse=True, scope="session")
+def analytics_opt_out():
+    """Disable sending analytics when running tests."""
+    original_value = config.root_user.ANALYTICS_OPT_OUT
+    config.root_user.ANALYTICS_OPT_OUT = True
+    yield
+    config.root_user.ANALYTICS_OPT_OUT = original_value
