@@ -45,6 +45,7 @@ nav:
       - Overview: ui/overview.md
       - Privacy Center: ui/privacy_center.md
       - Admin UI: 
+        - Datastores: ui/datastores.md
         - User Management: ui/user_management.md
   - Deployment Guide: deployment.md
   - Glossary: glossary.md
