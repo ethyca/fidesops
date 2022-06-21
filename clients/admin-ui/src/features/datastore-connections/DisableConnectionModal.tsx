@@ -87,7 +87,7 @@ const DisableConnectionModal: React.FC<DataConnectionProps> = ({
 
           <ModalFooter>
             <Button
-              onClick={onClose}
+              onClick={closeIfComplete}
               marginRight="10px"
               size="sm"
               variant="solid"
