@@ -33,7 +33,10 @@ The types of changes are:
 * Prettier formatting CI check for frontend code [#655](https://github.com/ethyca/fidesops/pull/655)
 * Adds default policies [#654](https://github.com/ethyca/fidesops/pull/654)
 * Added ConnectionConfig `connection_type` and `disabled` filters [#675](https://github.com/ethyca/fidesops/pull/675)
+* Adds Fideslog integration [#541](https://github.com/ethyca/fidesops/pull/541)
+* Adds endpoint analytics events [#622](https://github.com/ethyca/fidesops/pull/622)
 * Datastore Connection Landing Page [#674](https://github.com/ethyca/fidesops/pull/674)
+
 
 ### Changed
 
@@ -144,7 +147,6 @@ The types of changes are:
 * Frontend for privacy request denial reaons [#480](https://github.com/ethyca/fidesops/pull/480)
 * Publish Fidesops to Pypi [#491](https://github.com/ethyca/fidesops/pull/491)
 * DRP data rights endpoint [#526](https://github.com/ethyca/fidesops/pull/526)
-* ADDS Fideslog integration [#541](https://github.com/ethyca/fidesops/pull/541)
 
 
 ### Changed

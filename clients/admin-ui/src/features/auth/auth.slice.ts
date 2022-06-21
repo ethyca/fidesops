@@ -6,7 +6,10 @@ import {
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "../../app/store";
+
 import { BASE_URL, STORED_CREDENTIALS_KEY } from "../../constants";
+import { addCommonHeaders } from "../common/CommonHeaders";
+
 import { User } from "../user-management/types";
 import { LoginRequest, LoginResponse } from "./types";
 
@@ -71,17 +74,13 @@ credentialStorage.startListening({
 });
 
 // Auth API
-export const authApi = createApi({
+export const authApi: any = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
-      const token = selectToken(getState() as RootState);
-      headers.set("Access-Control-Allow-Origin", "*");
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-      return headers;
+      const token: string | null = selectToken(getState() as RootState);
+      return addCommonHeaders(headers, token);
     },
   }),
   tagTypes: ["Auth"],
