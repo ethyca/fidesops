@@ -381,6 +381,29 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["failed"]
         assert len(response_data) == 1
 
+    def test_create_privacy_request_registers_async_task(
+        self,
+        db,
+        url,
+        api_client,
+        policy,
+    ):
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": "test@example.com"},
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        assert pr.get_cached_task_id() is not None
+        assert pr.get_async_execution_task() is not None
+        pr.delete(db=db)
+
 
 class TestGetPrivacyRequests:
     @pytest.fixture(scope="function")
