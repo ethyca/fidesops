@@ -136,7 +136,6 @@ def run_privacy_request(
         3. Start the access request / erasure request execution
         4. When finished, upload the results to the configured storage destination if applicable
     """
-    logger.info(f"Executing request with ID: {privacy_request_id}")
     if from_step is not None:
         # Re-cast `from_step` into an Enum to enforce the validation since unserializable objects
         # can't be passed into and between tasks

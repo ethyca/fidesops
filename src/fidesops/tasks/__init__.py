@@ -27,5 +27,4 @@ celery_app = create_celery()
 
 if __name__ == "__main__":
     logger.info("Running Celery worker...")
-    print("running celery worker")
     celery_app.worker_main()
