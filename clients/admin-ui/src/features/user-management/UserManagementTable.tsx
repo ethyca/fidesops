@@ -7,17 +7,17 @@ import {
   Th,
   Thead,
   Tr,
-} from '@fidesui/react';
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+} from "@fidesui/react";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-import { User } from '../user/types';
+import { User } from "./types";
 import {
   selectUserFilters,
   setPage,
   useGetAllUsersQuery,
-} from '../user/user.slice';
-import UserManagementRow from './UserManagementRow';
+} from "./user-management.slice";
+import UserManagementRow from "./UserManagementRow";
 
 interface UsersTableProps {
   users?: User[];
@@ -66,7 +66,7 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
           </Tr>
         </Thead>
         <Tbody>
-          {users?.map((user) => (
+          {users?.map((user: any) => (
             <UserManagementRow user={user} key={user.id} />
           ))}
         </Tbody>
@@ -75,12 +75,12 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
         <Text fontSize="xs" color="gray.600">
           {total > 0 ? (
             <>
-              Showing {Number.isNaN(startingItem) ? 0 : startingItem} to{' '}
-              {Number.isNaN(endingItem) ? 0 : endingItem} of{' '}
+              Showing {Number.isNaN(startingItem) ? 0 : startingItem} to{" "}
+              {Number.isNaN(endingItem) ? 0 : endingItem} of{" "}
               {Number.isNaN(total) ? 0 : total} results
             </>
           ) : (
-            '0 results'
+            "0 results"
           )}
         </Text>
         <div>

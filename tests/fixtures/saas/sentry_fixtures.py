@@ -3,9 +3,9 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
 
-from fidesops.core.config import load_toml
 from fidesops.db import session
 from fidesops.models.connectionconfig import (
     AccessLevel,
@@ -16,13 +16,14 @@ from fidesops.models.datasetconfig import DatasetConfig
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 
-saas_config = load_toml("saas_config.toml")
+saas_config = load_toml(["saas_config.toml"])
 
 
 @pytest.fixture(scope="function")
 def sentry_secrets():
     return {
-        "host": pydash.get(saas_config, "sentry.host") or os.environ.get("SENTRY_HOST"),
+        "domain": pydash.get(saas_config, "sentry.domain")
+        or os.environ.get("SENTRY_DOMAIN"),
         "access_token": pydash.get(saas_config, "sentry.access_token")
         or os.environ.get("SENTRY_ACCESS_TOKEN"),
         "erasure_access_token": pydash.get(saas_config, "sentry.erasure_access_token")

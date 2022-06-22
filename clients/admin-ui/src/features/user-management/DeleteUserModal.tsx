@@ -13,37 +13,37 @@ import {
   Stack,
   Text,
   useDisclosure,
-} from '@fidesui/react';
-import React, { useState } from 'react';
+} from "@fidesui/react";
+import React, { useState } from "react";
 
-import { User } from '../user/types';
-import { useDeleteUserMutation } from '../user/user.slice';
+import { User } from "./types";
+import { useDeleteUserMutation } from "./user-management.slice";
 
-const DeleteUserModal = (user: User) => {
-  const [usernameValue, setUsernameValue] = useState('');
-  const [confirmValue, setConfirmValue] = useState('');
+const DeleteUserModal: React.FC<User> = ({ id, username }) => {
+  const [usernameValue, setUsernameValue] = useState("");
+  const [confirmValue, setConfirmValue] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [deleteUser,] = useDeleteUserMutation();
+  const [deleteUser] = useDeleteUserMutation();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.name === 'username') {
+    if (event.target.name === "username") {
       setUsernameValue(event.target.value);
     } else {
       setConfirmValue(event.target.value);
     }
   };
-  const {id: userId, username} = user;
 
-  const deletionValidation =
-    !!(userId &&
+  const deletionValidation = !!(
+    id &&
     confirmValue &&
     usernameValue &&
     username === usernameValue &&
-    username === confirmValue);
+    username === confirmValue
+  );
 
   const handleDeleteUser = () => {
-    if (deletionValidation && userId) {
-      deleteUser(userId);
+    if (deletionValidation && id) {
+      deleteUser(id);
       onClose();
     }
   };
@@ -51,12 +51,12 @@ const DeleteUserModal = (user: User) => {
   return (
     <>
       <MenuItem
-        _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
+        _focus={{ color: "complimentary.500", bg: "gray.100" }}
         onClick={onOpen}
       >
         <Text fontSize="sm">Delete</Text>
       </MenuItem>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isCentered isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Delete User</ModalHeader>
@@ -112,6 +112,6 @@ const DeleteUserModal = (user: User) => {
       </Modal>
     </>
   );
-}
+};
 
 export default DeleteUserModal;

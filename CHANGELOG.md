@@ -17,7 +17,64 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.1...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.3...main)
+
+### Added
+* Subject Request Details page [#563](https://github.com/ethyca/fidesops/pull/563)
+* Restart Graph from Failure [#578](https://github.com/ethyca/fidesops/pull/578)
+* Redis SSL Support [#611](https://github.com/ethyca/fidesops/pull/611)
+* Celery as a dependency for use in the execution layer [#610](https://github.com/ethyca/fidesops/pull/610)
+* Cache and Surface Resume/Restart Instructions [#591](https://github.com/ethyca/fidesops/pull/591)
+* Build and deploy Admin UI from webserver [#625](https://github.com/ethyca/fidesops/pull/625)
+* Allow disabling a ConnectionConfig [#637](https://github.com/ethyca/fidesops/pull/637)
+* Erasure support for Outreach connector [#619](https://github.com/ethyca/fidesops/pull/619)
+* Adds searching of ConnectionConfigs [#641](https://github.com/ethyca/fidesops/pull/641)
+* Added `AdminUiSettings` to the `log_all_config_values` helper method [#647](https://github.com/ethyca/fidesops/pull/647)
+* Prettier formatting CI check for frontend code [#655](https://github.com/ethyca/fidesops/pull/655)
+* Adds default policies [#654](https://github.com/ethyca/fidesops/pull/654)
+* Added ConnectionConfig `connection_type` and `disabled` filters [#675](https://github.com/ethyca/fidesops/pull/675)
+* Adds Fideslog integration [#541](https://github.com/ethyca/fidesops/pull/541)
+* Adds endpoint analytics events [#622](https://github.com/ethyca/fidesops/pull/622)
+* Sample dataset and access configuration for Zendesk (ticket endpoints) [#677](https://github.com/ethyca/fidesops/pull/677)
+* Include number of records to be masked in masking endpoint's log message [#692](https://github.com/ethyca/fidesops/pull/692)
+* Datastore Connection Landing Page [#674](https://github.com/ethyca/fidesops/pull/674)
+* Added the ability to delete a datastore from the frontend [#683] https://github.com/ethyca/fidesops/pull/683
+* Added the ability to disable/enable a datastore from the frontend [#693] https://github.com/ethyca/fidesops/pull/693
+* Adds Postgres and Redis health checks to health endpoint [#690](https://github.com/ethyca/fidesops/pull/690)
+
+### Changed
+
+* Refactor auth and enable static file serving [#577](https://github.com/ethyca/fidesops/pull/577)
+* Bumped mypy to version 0.961 [#630](https://github.com/ethyca/fidesops/pull/630)
+* Bumped Python to version 3.9.13 in the `Dockerfile` [#630](https://github.com/ethyca/fidesops/pull/630)
+* Matched the path to the migrations in the mypy settings with the new location [#634](https://github.com/ethyca/fidesops/pull/634)
+* Sort ConnectionConfig by name ascending [#668](https://github.com/ethyca/fidesops/pull/672)
+* Install MSSQL By Default [#664](https://github.com/ethyca/fidesops/pull/664)
+* [Admin UI] Change "Policy Name" to "Request Type" on SR list page.[#546](https://github.com/ethyca/fidesops/pull/696)
+* Queue PrivacyRequests into a Celery queue for execution [#621](https://github.com/ethyca/fidesops/pull/621)
+
+### Developer Experience
+
+* Add celerybeat-schedule file to gitignore [#639](https://github.com/ethyca/fidesops/pull/639)
+
+### Fixed
+* Fixed error with running mypy on M1 Macs [#630](https://github.com/ethyca/fidesops/pull/630)
+* Fixed error with mypy on Python versions greater than 3.9.6 [#630](https://github.com/ethyca/fidesops/pull/630)
+* Bumped fideslib to 2.0.4. This fixes the issue where alembic couldn't find the `fidesops.toml` file from its new location [#643](https://github.com/ethyca/fidesops/pull/643)
+
+## [1.5.3](https://github.com/ethyca/fidesops/compare/1.5.2...1.5.3)
+
+### Changed
+* Database migrations now exist as part of the core `fidesops` package [#620](https://github.com/ethyca/fidesops/pull/620)
+
+### Removed
+* The `[package]` config section no longer exists [#620](https://github.com/ethyca/fidesops/pull/620)
+
+
+### Changed
+* Process privacy requests as Celery tasks and not background processes [#621](https://github.com/ethyca/fidesops/pull/621)
+
+## [1.5.2](https://github.com/ethyca/fidesops/compare/1.5.1...1.5.2)
 
 ### Added
 * Added OAuth2 authentication strategy for SaaS connectors [#555](https://github.com/ethyca/fidesops/pull/555)
@@ -26,13 +83,16 @@ The types of changes are:
 * Modified `filter` post-processor to include toggles for exact and case sensitive matching [#584](https://github.com/ethyca/fidesops/pull/584)
 * Added dataset for Outreach with access configuration [#588](https://github.com/ethyca/fidesops/pull/588)
 * All directories containing `*.py` files now also contain `__init__.py` files [#590](https://github.com/ethyca/fidesops/pull/590)
+* Pause Erasure Request Execution / Resume on Manual Input in [#571](https://github.com/ethyca/fidesops/pull/571/)
 
 ### Changed
 * Use the `RuleResponse` schema within the `PrivacyRequestReposnse` schema [#580](https://github.com/ethyca/fidesops/pull/580)
 * Updated the webserver to use `PORT` config variable from the `fidesops.toml` file [#586](https://github.com/ethyca/fidesops/pull/586)
+* Updated `black-ci` makefile command to also check `tests/` directory [#594](https://github.com/ethyca/fidesops/pull/594)
 
 ### Developer Experience
 * Adds a script for MSSQL schema exploration [#557](https://github.com/ethyca/fidesops/pull/581)
+
 
 ## [1.5.1](https://github.com/ethyca/fidesops/compare/1.5.0...1.5.1) - 2022-05-27
 
@@ -40,7 +100,6 @@ The types of changes are:
 * Added `FIDESOPS__DATABASE__ENABLED` and `FIDESOPS__REDIS__ENABLED` configuration variables to allow `fidesops` to run cleanly in a "stateless" mode without any database or redis cache integration [#550](https://github.com/ethyca/fidesops/pull/550)
 * Pause Access Request Execution / Resume on Manual Input in [#554](https://github.com/ethyca/fidesops/pull/554)
 * A `[package]` section of the `fidesops.toml` configuration file may specify the path to the `fidesops` package itself [#566](https://github.com/ethyca/fidesops/pull/566)
-* Pause Erasure Request Execution / Resume on Manual Input in [#571](https://github.com/ethyca/fidesops/pull/571/)
 
 ### Changed
 * `MaskingStrategyFactory` and associated `MaskingStrategy` implementations now use a decorator-based registration system, to improve extensibility [#560](https://github.com/ethyca/fidesops/pull/560)

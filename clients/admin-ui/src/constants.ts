@@ -1,51 +1,16 @@
-export interface User {
-  id?: string;
-  first_name?: string;
-  last_name?: string;
-  username?: string;
-  password?: string;
-  created_at?: string;
-}
+import { UserPrivileges } from "./features/user-management/types";
 
-export interface UserResponse {
-  id: string;
-}
+export const BASE_API_URN = "/api/v1";
+export const BASE_ASSET_URN =
+  process.env.NODE_ENV === "development" ? "" : "/static";
+const API_URL = process.env.NEXT_PUBLIC_FIDESOPS_API
+  ? process.env.NEXT_PUBLIC_FIDESOPS_API
+  : "";
+export const BASE_URL = API_URL + BASE_API_URN;
 
-export interface UsersResponse {
-  items: User[];
-  total: number;
-}
+export const STORED_CREDENTIALS_KEY = "auth.fidesops-admin-ui";
 
-export interface UsersListParams {
-  page: number;
-  size: number;
-  user: User;
-}
-
-export interface UserPasswordUpdate {
-  id: string | null;
-  old_password: string;
-  new_password: string;
-}
-
-export interface UserPermissionsUpdate {
-  id: string | null;
-  scopes: never[];
-}
-
-export interface UserPermissionsResponse {
-  data: {
-    id: string;
-  };
-  scope: string[];
-}
-
-export interface UserPrivileges {
-  privilege: string;
-  scope: string;
-}
-
-export const userPrivilegesArray: UserPrivileges[] = [
+export const USER_PRIVILEGES: UserPrivileges[] = [
   {
     privilege: "View subject requests",
     scope: "privacy-request:read",
@@ -91,3 +56,12 @@ export const userPrivilegesArray: UserPrivileges[] = [
     scope: "user-permission:read",
   },
 ];
+
+// API ROUTES
+export const INDEX_ROUTE = "/";
+export const LOGIN_ROUTE = "/login";
+export const USER_MANAGEMENT_ROUTE = "/user-management";
+export const CONNECTION_ROUTE = "/connection";
+
+// UI ROUTES
+export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";

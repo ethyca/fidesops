@@ -4,10 +4,10 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
+from fideslib.core.config import load_toml
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from sqlalchemy.orm import Session
 
-from fidesops.core.config import load_toml
 from fidesops.db import session
 from fidesops.models.connectionconfig import (
     AccessLevel,
@@ -18,19 +18,20 @@ from fidesops.models.datasetconfig import DatasetConfig
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 
-saas_config = load_toml("saas_config.toml")
+saas_config = load_toml(["saas_config.toml"])
 
 
 @pytest.fixture(scope="function")
 def stripe_secrets():
     return {
-        "host": pydash.get(saas_config, "stripe.host") or os.environ.get("STRIPE_HOST"),
+        "domain": pydash.get(saas_config, "stripe.domain")
+        or os.environ.get("STRIPE_DOMAIN"),
         "api_key": pydash.get(saas_config, "stripe.api_key")
         or os.environ.get("STRIPE_API_KEY"),
         "payment_types": pydash.get(saas_config, "stripe.payment_types")
         or os.environ.get("STRIPE_PAYMENT_TYPES"),
-        "items_per_page": pydash.get(saas_config, "stripe.items_per_page")
-        or os.environ.get("STRIPE_ITEMS_PER_PAGE"),
+        "page_size": pydash.get(saas_config, "stripe.page_size")
+        or os.environ.get("STRIPE_PAGE_SIZE"),
     }
 
 

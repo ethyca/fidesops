@@ -125,13 +125,16 @@ And the following complex fields which we will cover in detail below:
 - `data_protection_request`
 
 #### Connector params
-The `connector_params` field is used to describe a list of settings which a user must configure as part of the setup. This section should just include the name of the parameter but not the actual value. These are added as part of the ConnectionConfig [secrets](/docs/fidesops/docs/guides/database_connectors.md#set-the-connectionconfigs-secrets).
+The `connector_params` field is used to describe a list of settings which a user must configure as part of the setup. A `default_value` can also be used to include values such as a standard base domain for an API or a recommended page size for pagination. Make sure to not include confidential values such as passwords or API keys, these values are added as part of the ConnectionConfig [secrets](/docs/fidesops/docs/guides/database_connectors.md#set-the-connectionconfigs-secrets). When configuring a connector's secrets for the first time, the default values will be used if a value is not provided.
 
 ```yaml
 connector_params:
-  - name: host
+  - name: domain
+    default_value: api.stripe.com
   - name: username
   - name: password
+  - name: page_size
+    default_value: 100
 ```
 
 #### Client config
@@ -158,31 +161,31 @@ authentication:
 
 #### Test request
 Once the base client is defined we can use a `test_request` to verify our hostname and credentials. This is in the form of an idempotent request (usually a read). The testing approach is the same for any [ConnectionConfig test](../guides/database_connectors.md#testing-your-connection).
+
+```yaml
 test_request:
   method: GET
   path: /3.0/lists
 ```
-
-#### Data Protection Request
+#### Data protection request
 If your third party integration supports something like a GDPR delete endpoint, that can be configured as a `data_protection_request`.  It has similar attributes to the test request or endpoint requests, but it is generally one endpoint that removes all user PII in one go. 
 ```yaml
-  data_protection_request:
-    method: POST
-    path: /v1beta/workspaces/<workspace_name>/regulations
-    param_values:
-      - name: workspace_name
-        connector_param: workspace
-      - name: user_id
-        identity: email
-    body: '{"regulation_type": "Suppress_With_Delete", "attributes": {"name": "userId", "values": ["<user_id>",]}}'
-    client_config:
-      protocol: https
-      host: <config_domain>
-      authentication:
-        strategy: bearer
-        configuration:
-          username: <access_token>
-
+data_protection_request:
+  method: POST
+  path: /v1beta/workspaces/<workspace_name>/regulations
+  param_values:
+    - name: workspace_name
+      connector_param: workspace
+    - name: user_id
+      identity: email
+  body: '{"regulation_type": "Suppress_With_Delete", "attributes": {"name": "userId", "values": ["<user_id>",]}}'
+  client_config:
+    protocol: https
+    host: <config_domain>
+    authentication:
+      strategy: bearer
+      configuration:
+        username: <access_token>
 ```
 #### Endpoints
 This is where we define how we are going to access and update each collection in the corresponding Dataset. The endpoint section contains the following members:

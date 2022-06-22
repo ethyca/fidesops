@@ -37,9 +37,14 @@ from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_ERASURE,
     PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_RESUME,
+    PRIVACY_REQUEST_RETRY,
     REQUEST_PREVIEW,
 )
-from fidesops.common_exceptions import TraversalError, ValidationError
+from fidesops.common_exceptions import (
+    FunctionalityNotConfigured,
+    TraversalError,
+    ValidationError,
+)
 from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph, Node
@@ -66,8 +71,11 @@ from fidesops.schemas.privacy_request import (
     PrivacyRequestVerboseResponse,
     ReviewPrivacyRequestIds,
     RowCountRequest,
+    StoppedCollection,
 )
-from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
+from fidesops.service.privacy_request.request_runner_service import (
+    queue_privacy_request,
+)
 from fidesops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
@@ -107,7 +115,6 @@ def get_privacy_request_or_error(
 )
 def create_privacy_request(
     *,
-    cache: FidesopsRedis = Depends(deps.get_cache),
     db: Session = Depends(deps.get_db),
     data: conlist(PrivacyRequestCreate, max_items=50) = Body(...),  # type: ignore
 ) -> BulkPostPrivacyRequests:
@@ -117,6 +124,11 @@ def create_privacy_request(
 
     You cannot update privacy requests after they've been created.
     """
+    if not config.redis.ENABLED:
+        raise FunctionalityNotConfigured(
+            "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
+        )
+
     created = []
     failed = []
     # Optional fields to validate here are those that are both nullable in the DB, and exist
@@ -175,10 +187,7 @@ def create_privacy_request(
             )
 
             if not config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL:
-                PrivacyRequestRunner(
-                    cache=cache,
-                    privacy_request=privacy_request,
-                ).submit()
+                queue_privacy_request(privacy_request.id)
 
         except common_exceptions.RedisConnectionError as exc:
             logger.error("RedisConnectionError: %s", exc)
@@ -280,7 +289,6 @@ def execution_logs_by_dataset_name(
 
 def _filter_privacy_request_queryset(
     query: Query,
-    db: Session = Depends(deps.get_db),
     request_id: Optional[str] = None,
     status: Optional[PrivacyRequestStatus] = None,
     created_lt: Optional[datetime] = None,
@@ -305,7 +313,7 @@ def _filter_privacy_request_queryset(
     for end, start, field_name in [
         [created_lt, created_gt, "created"],
         [completed_lt, completed_gt, "completed"],
-        [errored_lt, errored_gt, "errorer"],
+        [errored_lt, errored_gt, "errored"],
         [started_lt, started_gt, "started"],
     ]:
         if end is None or start is None:
@@ -361,6 +369,47 @@ def _filter_privacy_request_queryset(
     return query.order_by(PrivacyRequest.created_at.desc())
 
 
+def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
+    """
+    Temporarily update a paused or errored privacy request object with instructions from the Redis cache
+    about how to resume manually if applicable.
+    """
+    resume_endpoint: Optional[str] = None
+    stopped_collection_details: Optional[StoppedCollection] = None
+
+    if privacy_request.status == PrivacyRequestStatus.paused:
+        stopped_collection_details = privacy_request.get_paused_collection_details()
+
+        if stopped_collection_details:
+            # Graph is paused on a specific collection
+            resume_endpoint = (
+                PRIVACY_REQUEST_MANUAL_ERASURE
+                if stopped_collection_details.step == PausedStep.erasure
+                else PRIVACY_REQUEST_MANUAL_INPUT
+            )
+        else:
+            # Graph is paused on a pre-processing webhook
+            resume_endpoint = PRIVACY_REQUEST_RESUME
+
+    elif privacy_request.status == PrivacyRequestStatus.error:
+        stopped_collection_details = privacy_request.get_failed_collection_details()
+        resume_endpoint = PRIVACY_REQUEST_RETRY
+
+    if stopped_collection_details:
+        stopped_collection_details.step = stopped_collection_details.step.value
+        stopped_collection_details.collection = (
+            stopped_collection_details.collection.value
+        )
+
+    privacy_request.stopped_collection_details = stopped_collection_details
+    # replaces the placeholder in the url with the privacy request id
+    privacy_request.resume_endpoint = (
+        resume_endpoint.format(privacy_request_id=privacy_request.id)
+        if resume_endpoint
+        else None
+    )
+
+
 @router.get(
     urls.PRIVACY_REQUESTS,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
@@ -400,7 +449,6 @@ def get_request_status(
     query = db.query(PrivacyRequest)
     query = _filter_privacy_request_queryset(
         query,
-        db,
         request_id,
         status,
         created_lt,
@@ -432,8 +480,12 @@ def get_request_status(
     if include_identities:
         # Conditionally include the cached identity data in the response if
         # it is explicitly requested
-        for item in paginated.items:
+        for item in paginated.items:  # type: ignore
             item.identity = item.get_cached_identity_data()
+            attach_resume_instructions(item)
+    else:
+        for item in paginated.items:  # type: ignore
+            attach_resume_instructions(item)
 
     return paginated
 
@@ -570,11 +622,10 @@ def resume_privacy_request(
     privacy_request.status = PrivacyRequestStatus.in_processing
     privacy_request.save(db=db)
 
-    PrivacyRequestRunner(
-        cache=cache,
-        privacy_request=privacy_request,
-    ).submit(from_webhook=webhook)
-
+    queue_privacy_request(
+        privacy_request_id=privacy_request.id,
+        from_webhook_id=webhook.id,
+    )
     return privacy_request
 
 
@@ -617,14 +668,17 @@ def resume_privacy_request_with_manual_input(
             f"status = {privacy_request.status.value}. Privacy request is not paused.",
         )
 
-    paused_step: Optional[PausedStep]
-    paused_collection: Optional[CollectionAddress]
-    paused_step, paused_collection = privacy_request.get_paused_step_and_collection()
-    if not paused_collection or not paused_step:
+    paused_details: Optional[
+        StoppedCollection
+    ] = privacy_request.get_paused_collection_details()
+    if not paused_details:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Cannot resume privacy request '{privacy_request.id}'; no paused collection or no paused step.",
+            detail=f"Cannot resume privacy request '{privacy_request.id}'; no paused details.",
         )
+
+    paused_step: PausedStep = paused_details.step
+    paused_collection: CollectionAddress = paused_details.collection
 
     if paused_step != expected_paused_step:
         raise HTTPException(
@@ -665,10 +719,10 @@ def resume_privacy_request_with_manual_input(
     privacy_request.status = PrivacyRequestStatus.in_processing
     privacy_request.save(db=db)
 
-    PrivacyRequestRunner(
-        cache=cache,
-        privacy_request=privacy_request,
-    ).submit(from_step=paused_step)
+    queue_privacy_request(
+        privacy_request_id=privacy_request.id,
+        from_step=paused_step.value,
+    )
 
     return privacy_request
 
@@ -729,8 +783,63 @@ def resume_with_erasure_confirmation(
     )
 
 
+@router.post(
+    PRIVACY_REQUEST_RETRY,
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestResponse,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+    ],
+)
+def restart_privacy_request_from_failure(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    cache: FidesopsRedis = Depends(deps.get_cache),
+) -> PrivacyRequestResponse:
+    """Restart a privacy request from failure"""
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+
+    if privacy_request.status != PrivacyRequestStatus.error:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+        )
+
+    failed_details: Optional[
+        StoppedCollection
+    ] = privacy_request.get_failed_collection_details()
+    if not failed_details:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection.",
+        )
+
+    failed_step: PausedStep = failed_details.step
+    failed_collection: CollectionAddress = failed_details.collection
+
+    logger.info(
+        f"Restarting failed privacy request '{privacy_request_id}' from '{failed_step} step, 'collection '{failed_collection}'"
+    )
+
+    privacy_request.status = PrivacyRequestStatus.in_processing
+    privacy_request.save(db=db)
+    queue_privacy_request(
+        privacy_request_id=privacy_request.id,
+        from_step=failed_step.value,
+    )
+
+    privacy_request.cache_failed_collection_details()  # Reset failed step and collection to None
+
+    return privacy_request
+
+
 def review_privacy_request(
-    db: Session, cache: FidesopsRedis, request_ids: List[str], process_request: Callable
+    db: Session,
+    request_ids: List[str],
+    process_request_function: Callable,
 ) -> BulkReviewResponse:
     """Helper method shared between the approve and deny privacy request endpoints"""
     succeeded: List[PrivacyRequest] = []
@@ -757,7 +866,7 @@ def review_privacy_request(
             continue
 
         try:
-            process_request(privacy_request, cache)
+            process_request_function(privacy_request)
         except Exception:
             failure = {
                 "message": "Privacy request could not be updated",
@@ -781,7 +890,6 @@ def review_privacy_request(
 def approve_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
-    cache: FidesopsRedis = Depends(deps.get_cache),
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_REVIEW],
@@ -791,20 +899,19 @@ def approve_privacy_request(
     """Approve and dispatch a list of privacy requests and/or report failure"""
     user_id = client.user_id
 
-    def _process_request(privacy_request: PrivacyRequest, cache: FidesopsRedis) -> None:
+    def _approve_request(privacy_request: PrivacyRequest) -> None:
         """Method for how to process requests - approved"""
         privacy_request.status = PrivacyRequestStatus.approved
         privacy_request.reviewed_at = datetime.utcnow()
         privacy_request.reviewed_by = user_id
         privacy_request.save(db=db)
 
-        PrivacyRequestRunner(
-            cache=cache,
-            privacy_request=privacy_request,
-        ).submit()
+        queue_privacy_request(privacy_request_id=privacy_request.id)
 
     return review_privacy_request(
-        db, cache, privacy_requests.request_ids, _process_request
+        db=db,
+        request_ids=privacy_requests.request_ids,
+        process_request_function=_approve_request,
     )
 
 
@@ -816,7 +923,6 @@ def approve_privacy_request(
 def deny_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
-    cache: FidesopsRedis = Depends(deps.get_cache),
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_REVIEW],
@@ -826,8 +932,8 @@ def deny_privacy_request(
     """Deny a list of privacy requests and/or report failure"""
     user_id = client.user_id
 
-    def _process_denial_request(
-        privacy_request: PrivacyRequest, _: FidesopsRedis
+    def _deny_request(
+        privacy_request: PrivacyRequest,
     ) -> None:
         """Method for how to process requests - denied"""
 
@@ -846,5 +952,7 @@ def deny_privacy_request(
         privacy_request.save(db=db)
 
     return review_privacy_request(
-        db, cache, privacy_requests.request_ids, _process_denial_request
+        db=db,
+        request_ids=privacy_requests.request_ids,
+        process_request_function=_deny_request,
     )

@@ -4,19 +4,20 @@ import {
   InputGroup,
   InputLeftElement,
   Stack,
-} from '@fidesui/react';
-import NextLink from 'next/link';
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+} from "@fidesui/react";
+import NextLink from "next/link";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-import { SearchLineIcon } from '../common/Icon';
-import { selectUserFilters, setUser } from '../user/user.slice';
+import { USER_MANAGEMENT_ROUTE } from "../../constants";
+import { SearchLineIcon } from "../common/Icon";
+import { selectUserFilters, setUsernameSearch } from "./user-management.slice";
 
 const useUserManagementTableActions = () => {
   const filters = useSelector(selectUserFilters);
   const dispatch = useDispatch();
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(setUser({ username: event.target.value }));
+    dispatch(setUsernameSearch(event.target.value));
   };
 
   return {
@@ -26,7 +27,7 @@ const useUserManagementTableActions = () => {
 };
 
 const UserManagementTableActions: React.FC = () => {
-  const { handleSearchChange, user } = useUserManagementTableActions();
+  const { handleSearchChange, username } = useUserManagementTableActions();
 
   return (
     <Stack direction="row" spacing={4} mb={6}>
@@ -40,12 +41,12 @@ const UserManagementTableActions: React.FC = () => {
           placeholder="Search by Username"
           size="sm"
           borderRadius="md"
-          value={user.username}
+          value={username}
           name="search"
           onChange={handleSearchChange}
         />
       </InputGroup>
-      <NextLink href="/user-management/new" passHref>
+      <NextLink href={`${USER_MANAGEMENT_ROUTE}/new`} passHref>
         <Button
           variant="solid"
           bg="primary.800"

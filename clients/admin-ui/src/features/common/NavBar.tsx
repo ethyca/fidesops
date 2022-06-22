@@ -1,20 +1,22 @@
-import { Button,Flex } from '@fidesui/react';
-import NextLink from 'next/link';
-import { useRouter } from 'next/router';
-import { useSession } from 'next-auth/react';
-import React from 'react';
+import { Button, Flex } from "@fidesui/react";
+import NextLink from "next/link";
+import { useRouter } from "next/router";
+import React from "react";
 
-import Header from './Header';
+import {
+  DATASTORE_CONNECTION_ROUTE,
+  INDEX_ROUTE,
+  USER_MANAGEMENT_ROUTE,
+} from "../../constants";
+import Header from "./Header";
 import { ArrowDownLineIcon } from "./Icon";
 
 const NavBar = () => {
-  const { data: session } = useSession();
   const router = useRouter();
-  const username: string | any = session?.username;
 
   return (
     <>
-      <Header username={username} />
+      <Header />
       <Flex
         borderBottom="1px"
         borderTop="1px"
@@ -22,34 +24,45 @@ const NavBar = () => {
         py={1}
         borderColor="gray.100"
       >
-        <NextLink href="/" passHref>
+        <NextLink href={INDEX_ROUTE} passHref>
           <Button
             as="a"
             variant="ghost"
             mr={4}
             colorScheme={
-              router && router.pathname === '/' ? 'complimentary' : 'ghost'
+              router && router.pathname === INDEX_ROUTE
+                ? "complimentary"
+                : "ghost"
             }
           >
             Subject Requests
           </Button>
         </NextLink>
 
-        <NextLink href="#" passHref>
-          <Button as="a" variant="ghost" disabled mr={4}>
-            Datastore Connections
-          </Button>
-        </NextLink>
-
-        <NextLink href="/user-management" passHref>
+        <NextLink href={DATASTORE_CONNECTION_ROUTE} passHref>
           <Button
             as="a"
             variant="ghost"
             mr={4}
             colorScheme={
-              router && router.pathname.startsWith('/user-management')
-                ? 'complimentary'
-                : 'ghost'
+              router && router.pathname.startsWith(DATASTORE_CONNECTION_ROUTE)
+                ? "complimentary"
+                : "ghost"
+            }
+          >
+            Datastore Connections
+          </Button>
+        </NextLink>
+
+        <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
+          <Button
+            as="a"
+            variant="ghost"
+            mr={4}
+            colorScheme={
+              router && router.pathname.startsWith(USER_MANAGEMENT_ROUTE)
+                ? "complimentary"
+                : "ghost"
             }
           >
             User Management

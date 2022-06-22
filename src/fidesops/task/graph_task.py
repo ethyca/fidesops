@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 import dask
 from dask.threaded import get
 
-from fidesops.common_exceptions import PrivacyRequestPaused
+from fidesops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
 from fidesops.core.config import config
 from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -51,6 +51,8 @@ def retry(
 
     If an exception is raised, we retry the function `count` times with exponential backoff. After the number of
     retries have expired, we call GraphTask.end() with the appropriate `action_type` and `default_return`.
+
+    If we exceed the number of TASK_RETRY_COUNT retries, we re-raise the exception to stop execution of the privacy request.
     """
 
     def decorator(func: Callable) -> Callable:
@@ -61,11 +63,9 @@ def retry(
             self = args[0]
 
             raised_ex = None
-            if config.dev_mode:
-                # If dev mode, return here so exception isn't caught
-                return func(*args, **kwargs)
             for attempt in range(config.execution.TASK_RETRY_COUNT + 1):
                 try:
+                    self.skip_if_disabled()
                     # Create ExecutionLog with status in_processing or retrying
                     if attempt:
                         self.log_retry(action_type)
@@ -78,8 +78,15 @@ def retry(
                         f"Privacy request {method_name} paused {self.traversal_node.address}"
                     )
                     self.log_paused(action_type, ex)
-                    # Re-raise to stop privacy request execution.
+                    # Re-raise to stop privacy request execution on pause.
                     raise
+                except CollectionDisabled as exc:
+                    logger.warning(
+                        f"Skipping disabled collection {self.traversal_node.address} "
+                        f"for privacy_request: {self.resources.request.id}"
+                    )
+                    self.log_skipped(action_type, exc)
+                    return default_return
                 except BaseException as ex:  # pylint: disable=W0703
                     func_delay *= config.execution.TASK_RETRY_BACKOFF
                     logger.warning(
@@ -87,8 +94,13 @@ def retry(
                     )
                     sleep(func_delay)
                     raised_ex = ex
+
             self.log_end(action_type, raised_ex)
-            return default_return
+            self.resources.request.cache_failed_collection_details(
+                step=action_type, collection=self.traversal_node.address
+            )
+            # Re-raise to stop privacy request execution on failure.
+            raise raised_ex  # type: ignore
 
         return result
 
@@ -328,6 +340,12 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         self.update_status(str(ex), [], action_type, ExecutionLogStatus.paused)
 
+    def log_skipped(self, action_type: ActionType, ex: str) -> None:
+        """Log that a collection was skipped.  For now, this is because a collection has been disabled."""
+        logger.info(f"Skipping {self.resources.request.id}, node {self.key}")
+
+        self.update_status(str(ex), [], action_type, ExecutionLogStatus.skipped)
+
     def log_end(
         self, action_type: ActionType, ex: Optional[BaseException] = None
     ) -> None:
@@ -425,6 +443,15 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         # Return filtered rows with non-matched array data removed.
         return output
+
+    def skip_if_disabled(self) -> None:
+        """Skip execution for the given collection if it is attached to a disabled ConnectionConfig."""
+        connection_config: ConnectionConfig = self.connector.configuration
+        if connection_config.disabled:
+            raise CollectionDisabled(
+                f"Skipping collection {self.traversal_node.node.address}. "
+                f"ConnectionConfig {connection_config.key} is disabled.",
+            )
 
     @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:

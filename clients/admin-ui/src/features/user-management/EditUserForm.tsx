@@ -11,45 +11,45 @@ import {
   Stack,
   Text,
   useToast,
-} from '@fidesui/react';
-import { useFormik } from 'formik';
-import type { NextPage } from 'next';
-import NextLink from 'next/link';
-import { useRouter } from 'next/router';
-import React from 'react';
+} from "@fidesui/react";
+import { useFormik } from "formik";
+import NextLink from "next/link";
+import { useRouter } from "next/router";
+import React from "react";
+import { useSelector } from "react-redux";
 
-import { User,userPrivilegesArray } from '../user/types';
+import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from "../../constants";
+import { selectUser } from "../auth";
+import { User } from "./types";
+import UpdatePasswordModal from "./UpdatePasswordModal";
 import {
   useEditUserMutation,
   useGetUserByIdQuery,
   useGetUserPermissionsQuery,
   useUpdateUserPermissionsMutation,
-} from '../user/user.slice';
-import UpdatePasswordModal from './UpdatePasswordModal';
+} from "./user-management.slice";
 
 const useUserForm = () => {
   const router = useRouter();
-  const { id } = router.query;
-  const [updateUserPermissions, ] =
-    useUpdateUserPermissionsMutation();
-  const [editUser, ] = useEditUserMutation(id as string);
-  const { data: existingUser } = useGetUserByIdQuery(id as string);
-  const { data: existingScopes } =
-    useGetUserPermissionsQuery(id as string);
+  const { id: profileId } = router.query;
+  const currentUser: User = useSelector(selectUser) ?? {};
+  const [updateUserPermissions] = useUpdateUserPermissionsMutation();
+  const [editUser] = useEditUserMutation(profileId);
+  const { data: existingUser } = useGetUserByIdQuery(profileId);
+  const { data: existingScopes } = useGetUserPermissionsQuery(profileId);
   const toast = useToast();
 
   const formik = useFormik({
     initialValues: {
-      username: existingUser?.username ?? '',
-      first_name: existingUser?.first_name ?? '',
-      last_name: existingUser?.last_name ?? '',
-      password: existingUser?.password ?? '',
-      scopes: existingScopes?.scopes ?? '',
-      id: existingUser?.id ?? '',
+      username: existingUser?.username ?? "",
+      first_name: existingUser?.first_name ?? "",
+      last_name: existingUser?.last_name ?? "",
+      password: existingUser?.password ?? "",
+      scopes: existingScopes?.scopes ?? "",
+      id: existingUser?.id ?? "",
     },
     enableReinitialize: true,
     onSubmit: async (values) => {
-
       const userBody = {
         username: values.username ? values.username : existingUser?.username,
         first_name: values.first_name
@@ -66,26 +66,26 @@ const useUserForm = () => {
 
       if (editUserError) {
         toast({
-          status: 'error',
+          status: "error",
           description: editUserError.data.detail.length
             ? `${editUserError.data.detail[0].msg}`
-            : 'An unexpected error occurred. Please try again.',
+            : "An unexpected error occurred. Please try again.",
         });
         return;
       }
 
       if (editUserError && editUserError.status === 422) {
         toast({
-          status: 'error',
+          status: "error",
           description: editUserError.data.detail.length
             ? `${editUserError.data.detail[0].msg}`
-            : 'An unexpected error occurred. Please try again.',
+            : "An unexpected error occurred. Please try again.",
         });
       }
 
       const userWithPrivileges = {
         id: data ? data.id : null,
-        scopes: [...new Set(values.scopes, 'privacy-request:read')],
+        scopes: [...new Set(values.scopes, "privacy-request:read")],
       };
 
       const { error: updatePermissionsError } = await updateUserPermissions(
@@ -93,7 +93,7 @@ const useUserForm = () => {
       );
 
       if (!updatePermissionsError) {
-        router.push('/user-management');
+        router.push(USER_MANAGEMENT_ROUTE);
       }
     },
     validate: () => {
@@ -108,33 +108,36 @@ const useUserForm = () => {
     },
   });
 
+  let canUpdateUser = false;
+  const { data: userPermissions = { scopes: [] } } = useGetUserPermissionsQuery(
+    currentUser.id
+  );
+  canUpdateUser = userPermissions.scopes.includes("user:update");
+
   return {
     ...formik,
     existingScopes,
     existingUser,
-    id,
+    profileId,
+    isOwnProfile: profileId === currentUser.id,
+    canUpdateUser,
   };
 };
 
-const EditUserForm: NextPage<{
-  user?: User;
-}> = ({user}) => {
+const EditUserForm: React.FC = () => {
   const {
     dirty,
     existingUser,
-    id,
+    profileId,
+    isOwnProfile,
     handleBlur,
     handleChange,
     handleSubmit,
     isValid,
-    values,
     setFieldValue,
+    canUpdateUser,
+    values,
   } = useUserForm();
-
-  const { data: loggedInUser } =
-    useGetUserPermissionsQuery(user.id as string);
-
-  const hasAdminPermission = loggedInUser?.scopes?.includes('user:update');
 
   return (
     <div>
@@ -145,7 +148,7 @@ const EditUserForm: NextPage<{
         <Divider mb={7} />
         <chakra.form
           onSubmit={handleSubmit}
-          maxW={['xs', 'xs', '100%']}
+          maxW={["xs", "xs", "100%"]}
           width="100%"
         >
           <Stack mb={8} spacing={6}>
@@ -180,8 +183,8 @@ const EditUserForm: NextPage<{
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.first_name}
-                isReadOnly={!hasAdminPermission}
-                isDisabled={!hasAdminPermission}
+                isReadOnly={!canUpdateUser}
+                isDisabled={!canUpdateUser}
               />
             </FormControl>
 
@@ -198,13 +201,13 @@ const EditUserForm: NextPage<{
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.last_name}
-                isReadOnly={!hasAdminPermission}
-                isDisabled={!hasAdminPermission}
+                isReadOnly={!canUpdateUser}
+                isDisabled={!canUpdateUser}
               />
             </FormControl>
 
-            {/* Only the associated user can change their own password */}
-            {id === user.id && <UpdatePasswordModal id={id} />}
+            {/* Only the owner of this profile can change their password */}
+            {isOwnProfile ? <UpdatePasswordModal id={profileId} /> : null}
 
             <Divider mb={7} mt={7} />
 
@@ -215,7 +218,7 @@ const EditUserForm: NextPage<{
             <Divider mb={2} mt={2} />
 
             <Stack spacing={[1, 5]} direction="column">
-              {userPrivilegesArray.map(policy => {
+              {USER_PRIVILEGES.map((policy) => {
                 const isChecked = values.scopes
                   ? values.scopes.indexOf(policy.scope) >= 0
                   : false;
@@ -232,7 +235,7 @@ const EditUserForm: NextPage<{
                         ]);
                       } else {
                         setFieldValue(
-                          'scopes',
+                          "scopes",
                           values.scopes.filter(
                             (scope) => scope !== policy.scope
                           )
@@ -242,8 +245,8 @@ const EditUserForm: NextPage<{
                     id={`scopes-${policy.privilege}`}
                     name="scopes"
                     value={policy.scope}
-                    isDisabled={policy.scope === 'privacy-request:read'}
-                    isReadOnly={policy.scope === 'privacy-request:read'}
+                    isDisabled={policy.scope === "privacy-request:read"}
+                    isReadOnly={policy.scope === "privacy-request:read"}
                   >
                     {policy.privilege}
                   </Checkbox>
@@ -252,7 +255,7 @@ const EditUserForm: NextPage<{
             </Stack>
           </Stack>
 
-          <NextLink href="/user-management" passHref>
+          <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
             <Button mr={3} variant="outline" size="sm">
               Cancel
             </Button>
@@ -260,8 +263,8 @@ const EditUserForm: NextPage<{
           <Button
             type="submit"
             bg="primary.800"
-            _hover={{ bg: 'primary.400' }}
-            _active={{ bg: 'primary.500' }}
+            _hover={{ bg: "primary.400" }}
+            _active={{ bg: "primary.500" }}
             colorScheme="primary"
             disabled={!existingUser && !(isValid && dirty)}
             size="sm"
