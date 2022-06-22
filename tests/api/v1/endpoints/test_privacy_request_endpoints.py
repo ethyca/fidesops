@@ -2186,4 +2186,5 @@ class TestRestartFromFailure:
         submit_mock.assert_called_with(
             privacy_request_id=privacy_request.id,
             from_step=PausedStep.access.value,
+            from_webhook_id=None,
         )
