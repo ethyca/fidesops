@@ -14,7 +14,7 @@ export enum ConnectionType {
 
 export enum SystemType {
   SAAS = "saas",
-  DATABASE = "databse",
+  DATABASE = "database",
   MANUAL = "manual",
 }
 
