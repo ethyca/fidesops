@@ -133,22 +133,6 @@ const ConnectionFilters: React.FC = () => {
         <SystemTypeOption status={SystemType.DATABASE} />
         <SystemTypeOption status={SystemType.MANUAL} />
       </Select>
-      {/* <Select */}
-      {/*   placeholder="Data Category" */}
-      {/*   size="sm" */}
-      {/*   minWidth="144px" */}
-      {/*   value={status || ""} */}
-      {/*   onChange={handleStatusChange} */}
-      {/*   borderRadius="md" */}
-      {/* > */}
-      {/*   <StatusOption status="approved" /> */}
-      {/*   <StatusOption status="complete" /> */}
-      {/*   <StatusOption status="denied" /> */}
-      {/*   <StatusOption status="error" /> */}
-      {/*   <StatusOption status="in_processing" /> */}
-      {/*   <StatusOption status="paused" /> */}
-      {/*   <StatusOption status="pending" /> */}
-      {/* </Select> */}
       <Select
         placeholder="Testing Status"
         size="sm"
