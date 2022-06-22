@@ -39,7 +39,7 @@ class TestExceptionHandlers:
 
         # health endpoint should still work
         expected_response = {
-            "healthy": True,
+            "webserver": "healthy",
             "database": "no db configured",
             "cache": "healthy",
         }
@@ -71,7 +71,7 @@ class TestExceptionHandlers:
 
         # health endpoint should still work
         expected_response = {
-            "healthy": True,
+            "webserver": "healthy",
             "database": "healthy",
             "cache": "no cache configured",
         }

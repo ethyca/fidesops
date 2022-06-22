@@ -23,7 +23,7 @@ logging.getLogger("alembic").setLevel(logging.WARNING)
 @router.get(HEALTH, response_model=Dict[str, Union[bool, str]])
 def health_check() -> Dict[str, Union[bool, str]]:
     return {
-        "healthy": True,
+        "webserver": "healthy",
         "database": get_db_health(config.database.SQLALCHEMY_DATABASE_URI),
         "cache": get_cache_health(),
     }
