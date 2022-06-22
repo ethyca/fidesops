@@ -1,4 +1,4 @@
-# Subject Access Requests
+#Admin UI
 
 FidesOps provides a built-in control panel for managing privacy requests, [system users](user_management.md), and datastore connections.
 
