@@ -144,9 +144,8 @@ def queue_privacy_request(
             get_async_task_tracking_cache_key(privacy_request_id),
             task.task_id,
         )
-    except DataError as exc:
+    except DataError:
         logger.debug(f"Error tracking task_id for request with id {privacy_request_id}")
-        pass
 
     return task.task_id
 

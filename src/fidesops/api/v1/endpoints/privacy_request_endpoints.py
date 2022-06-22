@@ -626,8 +626,6 @@ def resume_privacy_request(
         privacy_request_id=privacy_request.id,
         from_webhook_id=webhook.id,
     )
-    privacy_request.cache_task_id(task.task_id)
-
     return privacy_request
 
 

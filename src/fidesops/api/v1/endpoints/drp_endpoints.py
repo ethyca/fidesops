@@ -100,7 +100,7 @@ def create_drp_privacy_request(
 
         cache_data(privacy_request, policy, mapped_identity, None, data)
 
-        task = queue_privacy_request(privacy_request.id)
+        queue_privacy_request(privacy_request.id)
 
         return PrivacyRequestDRPStatusResponse(
             request_id=privacy_request.id,
