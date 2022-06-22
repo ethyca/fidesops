@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Set
 
 from celery.utils.log import get_task_logger
 from pydantic import ValidationError
+from redis.exceptions import DataError
 from sqlalchemy.orm import Session
 
 from fidesops import common_exceptions
@@ -31,6 +32,11 @@ from fidesops.task.graph_task import (
 )
 from fidesops.tasks import celery_app
 from fidesops.tasks.scheduled.scheduler import scheduler
+from fidesops.util.cache import (
+    FidesopsRedis,
+    get_cache,
+    get_async_task_tracking_cache_key,
+)
 from fidesops.util.collection_util import Row
 from fidesops.util.logger import _log_exception, _log_warning
 
@@ -120,6 +126,29 @@ def upload_access_results(
                 f"Error uploading subject access data for rule {rule.key} on policy {policy.key} and privacy request {privacy_request.id} : {exc}"
             )
             privacy_request.status = PrivacyRequestStatus.error
+
+
+def queue_privacy_request(
+    privacy_request_id: str,
+    from_webhook_id: Optional[str] = None,
+    from_step: Optional[str] = None,
+) -> str:
+    cache: FidesopsRedis = get_cache()
+    task = run_privacy_request.delay(
+        privacy_request_id=privacy_request_id,
+        from_webhook_id=from_webhook_id,
+        from_step=from_step,
+    )
+    try:
+        cache.set(
+            get_async_task_tracking_cache_key(privacy_request_id),
+            task.task_id,
+        )
+    except DataError as exc:
+        logger.debug(f"Error tracking task_id for request with id {privacy_request_id}")
+        pass
+
+    return task.task_id
 
 
 @celery_app.task()
