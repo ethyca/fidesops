@@ -6,20 +6,20 @@ from fidesops.core.config import config
 logger = get_task_logger(__name__)
 
 
-def create_celery():
+def create_celery() -> Celery:
     logger.info("Creating Celery app...")
-    celery_app = Celery(__name__)
-    celery_app.conf.update(broker_url=config.execution.CELERY_BROKER_URL)
-    celery_app.conf.update(result_backend=config.execution.CELERY_RESULT_BACKEND)
+    app = Celery(__name__)
+    app.conf.update(broker_url=config.execution.CELERY_BROKER_URL)
+    app.conf.update(result_backend=config.execution.CELERY_RESULT_BACKEND)
     logger.info("Autodiscovering tasks...")
-    celery_app.autodiscover_tasks(
+    app.autodiscover_tasks(
         [
             "fidesops.tasks",
             "fidesops.tasks.scheduled",
             "fidesops.service.privacy_request",
         ]
     )
-    return celery_app
+    return app
 
 
 celery_app = create_celery()
