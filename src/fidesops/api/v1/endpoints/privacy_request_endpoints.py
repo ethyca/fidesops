@@ -620,10 +620,11 @@ def resume_privacy_request(
     privacy_request.status = PrivacyRequestStatus.in_processing
     privacy_request.save(db=db)
 
-    run_privacy_request.delay(
+    task = run_privacy_request.delay(
         privacy_request_id=privacy_request.id,
         from_webhook_id=webhook.id,
     )
+    privacy_request.cache_task_id(task.task_id)
 
     return privacy_request
 
@@ -718,10 +719,11 @@ def resume_privacy_request_with_manual_input(
     privacy_request.status = PrivacyRequestStatus.in_processing
     privacy_request.save(db=db)
 
-    run_privacy_request.delay(
+    task = run_privacy_request.delay(
         privacy_request_id=privacy_request.id,
         from_step=paused_step.value,
     )
+    privacy_request.cache_task_id(task.task_id)
 
     return privacy_request
 
@@ -825,10 +827,11 @@ def restart_privacy_request_from_failure(
 
     privacy_request.status = PrivacyRequestStatus.in_processing
     privacy_request.save(db=db)
-    run_privacy_request.delay(
+    task = run_privacy_request.delay(
         privacy_request_id=privacy_request.id,
         from_step=failed_step.value,
     )
+    privacy_request.cache_task_id(task.task_id)
 
     privacy_request.cache_failed_collection_details()  # Reset failed step and collection to None
 
@@ -905,7 +908,8 @@ def approve_privacy_request(
         privacy_request.reviewed_by = user_id
         privacy_request.save(db=db)
 
-        run_privacy_request.delay(privacy_request_id=privacy_request.id)
+        task = run_privacy_request.delay(privacy_request_id=privacy_request.id)
+        privacy_request.cache_task_id(task.task_id)
 
     return review_privacy_request(
         db=db,

@@ -98,7 +98,8 @@ def create_drp_privacy_request(
 
         cache_data(privacy_request, policy, mapped_identity, None, data)
 
-        run_privacy_request.delay(privacy_request.id)
+        task = run_privacy_request.delay(privacy_request.id)
+        privacy_request.cache_task_id(task.task_id)
 
         return PrivacyRequestDRPStatusResponse(
             request_id=privacy_request.id,
