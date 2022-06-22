@@ -1386,7 +1386,7 @@
 <p>Run <code>docker compose up</code> from the root of the Fidesops project directory. The provided <code>docker-compose.yml</code> will create the necessary databases and spin up the server.</p>
 </li>
 <li>
-<p>Visit <code>http://0.0.0.0:8080/health</code> in your browser. A response of <code>{ "healthy": true }</code> indicates a successful deployment.</p>
+<p>Visit <code>http://0.0.0.0:8080/health</code> in your browser. A response of <code>{"webserver": "healthy", "database": "healthy", "cache": "healthy"}</code> indicates a successful deployment.</p>
 </li>
 </ol>
 <h2 id="build-from-your-project">Build From Your Project</h2>
@@ -1511,7 +1511,7 @@
 <p>Ensure Docker is running, and run <code>docker compose up</code> from the project's root directory. This will pull the latest Fidesops Docker image, create the sample databases, and start the server.</p>
 </li>
 <li>
-<p>Visit <code>http://0.0.0.0:8080/health</code> in your browser. A response of <code>{ "healthy": true }</code> indicates a successful deployment.</p>
+<p>Visit <code>http://0.0.0.0:8080/health</code> in your browser. A response of <code>{"webserver": "healthy", "database": "healthy", "cache": "healthy"}</code> indicates a successful deployment.</p>
 </li>
 </ol>
 <h2 id="next-steps">Next Steps</h2>

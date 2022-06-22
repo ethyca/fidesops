@@ -1659,7 +1659,7 @@ FIDESOPS__REDIS__PASSWORD=&quot;fidesopssecret&quot;
 <p>Now, for most Docker hosts, you won't be calling <code>docker run</code> directly, and instead will be providing configuration variables to Kubernetes/Swarm/ECS/etc. As you can see in the <code>docker run</code> example above, this config is quite minimal and should just involve specifying (1) the image, (2) the port mapping, (3) all the various environment variables for configuration.</p>
 <p>Note that there's no need for a persistent volume mount for the web server, it's fully ephemeral and relies on the database for all it's permanent state.</p>
 <h3 id="test-the-web-server">Test the Web Server</h3>
-<p>To test that your server is running, visit <code>http://{server_url}/health</code> in your browser (e.g. http://0.0.0.0:8080/health) and you should see <code>{ "healthy": true }</code>.</p>
+<p>To test that your server is running, visit <code>http://{server_url}/health</code> in your browser (e.g. http://0.0.0.0:8080/health) and you should see <code>{"webserver": "healthy", "database": "healthy", "cache": "healthy"}</code>.</p>
 <p>You now have a functional <code>fidesops</code> server running! Now you can use the API to set up your OAuth clients, connect to databases, configure policies, execute privacy requests, etc. To learn more, head to the <a href="../guides/oauth/">How-To Guides</a> for details.</p>
 
               
