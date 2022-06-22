@@ -7,6 +7,7 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.task import graph_task
 from tests.graph.graph_test_util import assert_rows_match
+from tests.test_helpers.dataset_utils import populate_dataset
 
 
 @pytest.mark.integration_saas
@@ -170,3 +171,10 @@ def test_zendesk_access_request_task(
 
     for ticket_comment in v[f"{dataset_name}:ticket_comments"]:
         assert ticket_comment["author_id"] == user_id
+
+    populate_dataset(
+        zendesk_connection_config,
+        zendesk_dataset_config,
+        v,
+        "zendesk_dataset.yml",
+    )

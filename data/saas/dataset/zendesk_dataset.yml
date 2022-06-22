@@ -210,11 +210,21 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: via
+            fidesops_meta:
+              data_type: object
             fields:
               - name: channel
                 data_categories: [system.operations]
                 fidesops_meta:
                   data_type: string
+              - name: source
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: rel
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
           - name: created_at
             data_categories: [system.operations]
             fidesops_meta:
@@ -378,14 +388,20 @@ dataset:
             fidesops_meta:
               data_type: integer
           - name: via
+            fidesops_meta:
+              data_type: object
             fields:
               - name: channel
                 data_categories: [system.operations]
                 fidesops_meta:
                   data_type: string
               - name: source
+                fidesops_meta:
+                  data_type: object
                 fields:
                   - name: to
+                    fidesops_meta:
+                      data_type: object
                     fields:
                       - name: name
                         data_categories: [user.provided.identifiable.name]
@@ -405,8 +421,12 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: metadata
+            fidesops_meta:
+              data_type: object
             fields:
               - name: system
+                fidesops_meta:
+                  data_type: object
                 fields:
                   - name: client
                     data_categories: [system.operations]
