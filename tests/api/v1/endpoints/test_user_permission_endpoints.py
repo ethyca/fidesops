@@ -21,6 +21,7 @@ from fidesops.api.v1.scope_registry import (
     USER_PERMISSION_UPDATE,
 )
 from fidesops.api.v1.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
+from fidesops.core.config import config
 
 
 class TestCreateUserPermissions:
@@ -56,7 +57,6 @@ class TestCreateUserPermissions:
         body = {"user_id": user.id, "scopes": ["not a real scope"]}
 
         response = api_client.post(url, headers=auth_header, json=body)
-        print(response.json())
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         user.delete(db)
 
@@ -88,6 +88,7 @@ class TestCreateUserPermissions:
         )
         permissions = FidesUserPermissions.get_by(db, field="user_id", value=user.id)
         response_body = json.loads(response.text)
+        print(response.json())
         assert HTTP_201_CREATED == response.status_code
         assert response_body["id"] == permissions.id
         assert permissions.scopes == [PRIVACY_REQUEST_READ]
@@ -162,7 +163,11 @@ class TestEditUserPermissions:
         )
 
         ClientDetail.create_client_and_secret(
-            db, [PRIVACY_REQUEST_READ], user_id=user.id
+            db,
+            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
+            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+            scopes=[PRIVACY_REQUEST_READ],
+            user_id=user.id,
         )
 
         updated_scopes = [PRIVACY_REQUEST_READ, SAAS_CONFIG_READ]

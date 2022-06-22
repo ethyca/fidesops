@@ -224,7 +224,11 @@ class TestDeleteUser:
         saved_permissions_id = user.permissions.id
 
         client, _ = ClientDetail.create_client_and_secret(
-            db, [USER_DELETE], user_id=user.id
+            db,
+            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
+            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+            scopes=[USER_DELETE],
+            user_id=user.id,
         )
         assert client.user == user
         saved_client_id = client.id
@@ -269,7 +273,11 @@ class TestDeleteUser:
         )
 
         user_client, _ = ClientDetail.create_client_and_secret(
-            db, [USER_DELETE], user_id=other_user.id
+            db,
+            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
+            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+            scopes=[USER_DELETE],
+            user_id=other_user.id,
         )
         client_id = user_client.id
         saved_user_id = other_user.id

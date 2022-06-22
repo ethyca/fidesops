@@ -1685,7 +1685,9 @@ class TestResumePrivacyRequest:
     ):
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps({"unexpected": "format"}))
+            + generate_jwe(
+                json.dumps({"unexpected": "format"}), config.security.APP_ENCRYPTION_KEY
+            )
         }
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == 403
@@ -1711,7 +1713,8 @@ class TestResumePrivacyRequest:
                         "scopes": [PRIVACY_REQUEST_READ],
                         "iat": datetime.now().isoformat(),
                     }
-                )
+                ),
+                config.security.APP_ENCRYPTION_KEY,
             )
         }
         response = api_client.post(url, headers=auth_header, json={})
@@ -1734,7 +1737,8 @@ class TestResumePrivacyRequest:
                         "scopes": [PRIVACY_REQUEST_CALLBACK_RESUME],
                         "iat": datetime.now().isoformat(),
                     }
-                )
+                ),
+                config.security.APP_ENCRYPTION_KEY,
             )
         }
         response = api_client.post(url, headers=auth_header, json={})

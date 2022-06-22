@@ -106,8 +106,9 @@ def connection_config_mysql(db: Session) -> Generator:
 @pytest.fixture(scope="function")
 def mysql_integration_session_cls(connection_config_mysql):
     example_postgres_uri = MySQLConnector(connection_config_mysql).build_uri()
-    engine = get_db_engine(config, database_uri=example_postgres_uri)
+    engine = get_db_engine(database_uri=example_postgres_uri)
     SessionLocal = get_db_session(
+        config=config,
         engine=engine,
         autocommit=True,
         autoflush=True,

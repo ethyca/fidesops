@@ -64,7 +64,6 @@ def db() -> Generator:
     # Create the test DB enginge
     assert config.is_test_mode
     engine = get_db_engine(
-        config,
         database_uri=config.database.SQLALCHEMY_TEST_DATABASE_URI,
     )
 
@@ -144,6 +143,7 @@ def oauth_client(db: Session) -> Generator:
     db.commit()
     db.refresh(client)
     yield client
+    client.delete(db)
 
 
 def generate_auth_header_for_user(user, scopes) -> Dict[str, str]:
@@ -152,7 +152,7 @@ def generate_auth_header_for_user(user, scopes) -> Dict[str, str]:
         JWE_PAYLOAD_CLIENT_ID: user.client.id,
         JWE_ISSUED_AT: datetime.now().isoformat(),
     }
-    jwe = generate_jwe(json.dumps(payload))
+    jwe = generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
     return {"Authorization": "Bearer " + jwe}
 
 

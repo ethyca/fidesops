@@ -96,7 +96,9 @@ class TestCreateClient:
         assert 200 == response.status_code
         assert list(response_body.keys()) == ["client_id", "client_secret"]
 
-        new_client = ClientDetail.get(db, object_id=response_body["client_id"])
+        new_client = ClientDetail.get(
+            db, object_id=response_body["client_id"], config=config
+        )
         assert new_client.hashed_secret != response_body["client_secret"]
 
         new_client.delete(db)
@@ -124,7 +126,9 @@ class TestCreateClient:
         assert 200 == response.status_code
         assert list(response_body.keys()) == ["client_id", "client_secret"]
 
-        new_client = ClientDetail.get(db, object_id=response_body["client_id"])
+        new_client = ClientDetail.get(
+            db, object_id=response_body["client_id"], config=config
+        )
         assert new_client.scopes == scopes
 
         new_client.delete(db)
@@ -354,7 +358,7 @@ class TestDeleteClient:
         assert response_body is None
 
         db.expunge_all()
-        client = ClientDetail.get(db, object_id=oauth_client.id)
+        client = ClientDetail.get(db, object_id=oauth_client.id, config=config)
         assert client is None
 
 
@@ -374,7 +378,11 @@ class TestAcquireAccessToken:
         assert response.status_code == 401
 
     def test_invalid_client_secret(self, db, url, api_client):
-        new_client, _ = ClientDetail.create_client_and_secret(db)
+        new_client, _ = ClientDetail.create_client_and_secret(
+            db,
+            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
+            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+        )
         response = api_client.post(
             url, data={"client_id": new_client.id, "secret": "badsecret"}
         )
@@ -383,7 +391,11 @@ class TestAcquireAccessToken:
         new_client.delete(db)
 
     def test_get_access_token(self, db, url, api_client):
-        new_client, secret = ClientDetail.create_client_and_secret(db)
+        new_client, secret = ClientDetail.create_client_and_secret(
+            db,
+            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
+            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+        )
 
         data = {
             "client_id": new_client.id,
@@ -395,12 +407,12 @@ class TestAcquireAccessToken:
         assert 200 == response.status_code
         assert (
             data["client_id"]
-            == json.loads(extract_payload(jwt, config.security.APP_SECURITY_KEY))[
+            == json.loads(extract_payload(jwt, config.security.APP_ENCRYPTION_KEY))[
                 JWE_PAYLOAD_CLIENT_ID
             ]
         )
         assert (
-            json.loads(extract_payload(jwt, config.security.APP_SECURITY_KEY))[
+            json.loads(extract_payload(jwt, config.security.APP_ENCRYPTION_KEY))[
                 JWE_PAYLOAD_SCOPES
             ]
             == []

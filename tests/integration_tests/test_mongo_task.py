@@ -402,6 +402,7 @@ def test_composite_key_erasure(
     # re-run access request. Description has been
     # nullified here.
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+    breakpoint()
     access_request_data = graph_task.run_access_request(
         privacy_request,
         policy,

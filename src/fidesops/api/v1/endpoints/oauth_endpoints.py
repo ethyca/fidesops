@@ -76,7 +76,7 @@ async def acquire_access_token(
     else:
         raise AuthenticationFailure(detail="Authentication Failure")
 
-    client_detail = ClientDetail.get(db, object_id=client_id)
+    client_detail = ClientDetail.get(db, object_id=client_id, config=config)
 
     if client_detail is None:
         raise AuthenticationFailure(detail="Authentication Failure")
@@ -85,7 +85,9 @@ async def acquire_access_token(
         raise AuthenticationFailure(detail="Authentication Failure")
 
     logger.info("Creating access token")
-    access_code = client_detail.create_access_code_jwe()
+    access_code = client_detail.create_access_code_jwe(
+        config.security.APP_ENCRYPTION_KEY
+    )
     return AccessToken(access_token=access_code)
 
 
@@ -122,7 +124,7 @@ def create_client(
 def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
     """Deletes the client associated with the client_id. Does nothing if the client does
     not exist"""
-    client = ClientDetail.get(db, object_id=client_id)
+    client = ClientDetail.get(db, object_id=client_id, config=config)
     if not client:
         return
     logging.info("Deleting client")
@@ -136,7 +138,7 @@ def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
 )
 def get_client_scopes(client_id: str, db: Session = Depends(get_db)) -> List[str]:
     """Returns a list of the scopes associated with the client. Returns an empty list if client does not exist."""
-    client = ClientDetail.get(db, object_id=client_id)
+    client = ClientDetail.get(db, object_id=client_id, config=config)
     if not client:
         return []
 
@@ -155,7 +157,7 @@ def set_client_scopes(
     db: Session = Depends(get_db),
 ) -> None:
     """Overwrites the client's scopes with those provided. Does nothing if the client doesn't exist"""
-    client = ClientDetail.get(db, object_id=client_id)
+    client = ClientDetail.get(db, object_id=client_id, config=config)
     if not client:
         return
 

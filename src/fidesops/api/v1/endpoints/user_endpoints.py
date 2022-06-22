@@ -255,7 +255,7 @@ def user_login(
     client: ClientDetail = perform_login(db, user)
 
     logger.info("Creating login access token")
-    access_code = client.create_access_code_jwe()
+    access_code = client.create_access_code_jwe(config.security.APP_ENCRYPTION_KEY)
     return UserLoginResponse(
         user_data=user,
         token_data=AccessToken(access_token=access_code),

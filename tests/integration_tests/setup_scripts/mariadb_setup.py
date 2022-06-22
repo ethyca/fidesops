@@ -60,8 +60,9 @@ def setup():
         )
     ).build_uri()
 
-    engine = get_db_engine(config, database_uri=uri)
+    engine = get_db_engine(database_uri=uri)
     SessionLocal = get_db_session(
+        config=config,
         engine=engine,
         autocommit=True,
         autoflush=True,
