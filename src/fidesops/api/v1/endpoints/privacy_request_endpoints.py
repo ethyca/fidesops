@@ -185,7 +185,8 @@ def create_privacy_request(
             )
 
             if not config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL:
-                run_privacy_request.delay(privacy_request.id)
+                task = run_privacy_request.delay(privacy_request.id)
+                privacy_request.cache_task_id(task.task_id)
 
         except common_exceptions.RedisConnectionError as exc:
             logger.error("RedisConnectionError: %s", exc)
