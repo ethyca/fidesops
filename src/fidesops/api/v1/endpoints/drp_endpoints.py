@@ -28,7 +28,9 @@ from fidesops.schemas.drp_privacy_request import (
 from fidesops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
-from fidesops.service.privacy_request.request_runner_service import run_privacy_request
+from fidesops.service.privacy_request.request_runner_service import (
+    queue_privacy_request,
+)
 from fidesops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
@@ -98,8 +100,7 @@ def create_drp_privacy_request(
 
         cache_data(privacy_request, policy, mapped_identity, None, data)
 
-        task = run_privacy_request.delay(privacy_request.id)
-        privacy_request.cache_task_id(task.task_id)
+        task = queue_privacy_request(privacy_request.id)
 
         return PrivacyRequestDRPStatusResponse(
             request_id=privacy_request.id,
