@@ -113,7 +113,6 @@ const ConnectionFilters: React.FC = () => {
         <DataStoreTypeOption status={ConnectionType.MONGODB} />
         <DataStoreTypeOption status={ConnectionType.MYSQL} />
         <DataStoreTypeOption status={ConnectionType.HTTPS} />
-        <DataStoreTypeOption status={ConnectionType.SAAS} />
         <DataStoreTypeOption status={ConnectionType.REDSHIFT} />
         <DataStoreTypeOption status={ConnectionType.SNOWFLAKE} />
         <DataStoreTypeOption status={ConnectionType.MSSQL} />
