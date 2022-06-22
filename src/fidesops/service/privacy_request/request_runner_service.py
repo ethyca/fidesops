@@ -34,8 +34,8 @@ from fidesops.tasks import celery_app
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.util.cache import (
     FidesopsRedis,
-    get_cache,
     get_async_task_tracking_cache_key,
+    get_cache,
 )
 from fidesops.util.collection_util import Row
 from fidesops.util.logger import _log_exception, _log_warning
