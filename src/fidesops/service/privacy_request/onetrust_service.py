@@ -152,7 +152,8 @@ class OneTrustService:
         privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
         privacy_request.cache_identity(identity)
         try:
-            run_privacy_request.delay(privacy_request_id=privacy_request.id)
+            task = run_privacy_request.delay(privacy_request_id=privacy_request.id)
+            privacy_request.cache_task_id(task.task_id)
             request_status = OneTrustSubtaskStatus.COMPLETED
         except BaseException:  # pylint: disable=W0703
             request_status = OneTrustSubtaskStatus.FAILED
