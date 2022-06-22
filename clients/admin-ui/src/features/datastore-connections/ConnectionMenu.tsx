@@ -1,12 +1,4 @@
-import {
-  Button,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Portal,
-  Text,
-} from "@fidesui/react";
+import { Button, Menu, MenuButton, MenuList, Portal } from "@fidesui/react";
 import React from "react";
 
 import { MoreIcon } from "../common/Icon";
