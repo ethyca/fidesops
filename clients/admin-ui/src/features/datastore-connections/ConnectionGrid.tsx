@@ -85,6 +85,7 @@ const ConnectionGrid: React.FC = () => {
       <Button
         variant="solid"
         bg="primary.800"
+        _hover={{ bg: "primary.800" }}
         color="white"
         flexShrink={0}
         size="sm"
