@@ -37,6 +37,10 @@ The types of changes are:
 * Adds endpoint analytics events [#622](https://github.com/ethyca/fidesops/pull/622)
 * Sample dataset and access configuration for Zendesk (ticket endpoints) [#677](https://github.com/ethyca/fidesops/pull/677)
 * Include number of records to be masked in masking endpoint's log message [#692](https://github.com/ethyca/fidesops/pull/692)
+* Datastore Connection Landing Page [#674](https://github.com/ethyca/fidesops/pull/674)
+* Added the ability to delete a datastore from the frontend [#683] https://github.com/ethyca/fidesops/pull/683
+* Added the ability to disable/enable a datastore from the frontend [#693] https://github.com/ethyca/fidesops/pull/693
+* Adds Postgres and Redis health checks to health endpoint [#690](https://github.com/ethyca/fidesops/pull/690)
 
 ### Changed
 
@@ -46,7 +50,7 @@ The types of changes are:
 * Matched the path to the migrations in the mypy settings with the new location [#634](https://github.com/ethyca/fidesops/pull/634)
 * Sort ConnectionConfig by name ascending [#668](https://github.com/ethyca/fidesops/pull/672)
 * Install MSSQL By Default [#664](https://github.com/ethyca/fidesops/pull/664)
-* ...
+* [Admin UI] Change "Policy Name" to "Request Type" on SR list page.[#546](https://github.com/ethyca/fidesops/pull/696)
 * Queue PrivacyRequests into a Celery queue for execution [#621](https://github.com/ethyca/fidesops/pull/621)
 
 ### Developer Experience
