@@ -6,7 +6,10 @@ from fidesops.core.config import config
 logger = get_task_logger(__name__)
 
 
-def create_celery() -> Celery:
+def _create_celery() -> Celery:
+    """
+    Returns a configured version of the Celery application
+    """
     logger.info("Creating Celery app...")
     app = Celery(__name__)
     app.conf.update(broker_url=config.execution.CELERY_BROKER_URL)
@@ -22,7 +25,7 @@ def create_celery() -> Celery:
     return app
 
 
-celery_app = create_celery()
+celery_app = _create_celery()
 
 
 if __name__ == "__main__":
