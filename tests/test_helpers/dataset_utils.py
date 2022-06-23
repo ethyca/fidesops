@@ -3,14 +3,7 @@ from typing import Any, Dict, Iterable, List, Optional
 
 import yaml
 
-from fidesops.graph.config import (
-    Collection,
-    Dataset,
-    Field,
-    FieldPath,
-    ObjectField,
-    ScalarField,
-)
+from fidesops.graph.config import Collection, Field, FieldPath, ObjectField, ScalarField
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
 from fidesops.schemas.dataset import FidesopsDataset
@@ -85,8 +78,10 @@ def generate_collections(
 
     collections = []
     for key, rows in response.items():
+
         collection_name = key.replace(f"{fides_key}:", "")
         fields = None
+
         if len(rows):
             fields = generate_fields(rows[0], collection_name, field_map)
         elif field_map.get(collection_name):
@@ -95,6 +90,7 @@ def generate_collections(
         if fields:
             collection = {"name": collection_name, "fields": fields}
             collections.append(collection)
+
     return collections
 
 
