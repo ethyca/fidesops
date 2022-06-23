@@ -873,6 +873,55 @@
         ]
       }
     },
+    "/api/v1/drp/revoke": {
+      "post": {
+        "tags": [
+          "DRP"
+        ],
+        "summary": "Revoke Request",
+        "description": "Revoke a pending privacy request.",
+        "operationId": "revoke_request_api_v1_drp_revoke_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DrpRevokeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestDRPStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:review"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/cryptography/encryption/key": {
       "get": {
         "tags": [
@@ -5181,6 +5230,24 @@
         ],
         "description": "Enum to hold Drp Regime. Only ccpa supported at this time"
       },
+      "DrpRevokeRequest": {
+        "title": "DrpRevokeRequest",
+        "required": [
+          "request_id"
+        ],
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "title": "Request Id",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "description": "DRP Data Rights Revoke Request Body"
+      },
       "DryRunDatasetResponse": {
         "title": "DryRunDatasetResponse",
         "required": [
@@ -6874,6 +6941,7 @@
           "in_processing",
           "complete",
           "paused",
+          "canceled",
           "error"
         ],
         "type": "string",
