@@ -38,6 +38,11 @@ The types of changes are:
 * Sample dataset and access configuration for Zendesk (ticket endpoints) [#677](https://github.com/ethyca/fidesops/pull/677)
 * Include number of records to be masked in masking endpoint's log message [#692](https://github.com/ethyca/fidesops/pull/692)
 * Datastore Connection Landing Page [#674](https://github.com/ethyca/fidesops/pull/674)
+* Added the ability to delete a datastore from the frontend [#683] https://github.com/ethyca/fidesops/pull/683
+* Added the ability to disable/enable a datastore from the frontend [#693] https://github.com/ethyca/fidesops/pull/693
+* Adds Postgres and Redis health checks to health endpoint [#690](https://github.com/ethyca/fidesops/pull/690)
+* Added health checks and better error messages on app startup for both db and cache [#686](https://github.com/ethyca/fidesops/pull/686)
+* Datastore Connection Filters [#691](https://github.com/ethyca/fidesops/pull/691)
 
 ### Changed
 
@@ -46,7 +51,9 @@ The types of changes are:
 * Bumped Python to version 3.9.13 in the `Dockerfile` [#630](https://github.com/ethyca/fidesops/pull/630)
 * Matched the path to the migrations in the mypy settings with the new location [#634](https://github.com/ethyca/fidesops/pull/634)
 * Sort ConnectionConfig by name ascending [#668](https://github.com/ethyca/fidesops/pull/672)
-* Install MSSQL By Default [#664] (https://github.com/ethyca/fidesops/pull/664)
+* Install MSSQL By Default [#664](https://github.com/ethyca/fidesops/pull/664)
+* [Admin UI] Change "Policy Name" to "Request Type" on SR list page.[#546](https://github.com/ethyca/fidesops/pull/696)
+* Queue PrivacyRequests into a Celery queue for execution [#621](https://github.com/ethyca/fidesops/pull/621)
 
 ### Developer Experience
 
@@ -65,6 +72,9 @@ The types of changes are:
 ### Removed
 * The `[package]` config section no longer exists [#620](https://github.com/ethyca/fidesops/pull/620)
 
+
+### Changed
+* Process privacy requests as Celery tasks and not background processes [#621](https://github.com/ethyca/fidesops/pull/621)
 
 ## [1.5.2](https://github.com/ethyca/fidesops/compare/1.5.1...1.5.2)
 
