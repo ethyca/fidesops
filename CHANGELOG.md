@@ -59,6 +59,8 @@ The types of changes are:
 
 * Add celerybeat-schedule file to gitignore [#639](https://github.com/ethyca/fidesops/pull/639)
 
+### Docs
+* Subject Request detail documentation for the UI [#702](https://github.com/ethyca/fidesops/pull/702)
 ### Fixed
 * Fixed error with running mypy on M1 Macs [#630](https://github.com/ethyca/fidesops/pull/630)
 * Fixed error with mypy on Python versions greater than 3.9.6 [#630](https://github.com/ethyca/fidesops/pull/630)
