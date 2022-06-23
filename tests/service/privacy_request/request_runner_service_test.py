@@ -99,6 +99,22 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
     assert privacy_request.started_processing_at == before
 
 
+def test_halts_proceeding_if_cancelled(
+    db: Session,
+    privacy_request_status_canceled: PrivacyRequest,
+    run_privacy_request_task,
+) -> None:
+    assert privacy_request_status_canceled.status == PrivacyRequestStatus.canceled
+    run_privacy_request_task.delay(privacy_request_status_canceled.id).get(
+        timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+    )
+    _sessionmaker = get_db_session()
+    db = _sessionmaker()
+    reloaded_pr = PrivacyRequest.get(db=db, id=privacy_request_status_canceled.id)
+    assert reloaded_pr.started_processing_at is None
+    assert reloaded_pr.status == PrivacyRequestStatus.canceled
+
+
 @mock.patch(
     "fidesops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
