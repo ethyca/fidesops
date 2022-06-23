@@ -17,7 +17,7 @@ depends_on = None
 
 def upgrade():
     op.add_column(
-        "privacyrequest", sa.Column("cancel_reason", sa.String(), nullable=True)
+        "privacyrequest", sa.Column("cancel_reason", sa.String(200), nullable=True)
     )
     op.add_column(
         "privacyrequest",

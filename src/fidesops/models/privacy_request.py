@@ -160,7 +160,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         backref="privacy_requests",
     )
 
-    cancel_reason = Column(String)
+    cancel_reason = Column(String(200))
     canceled_at = Column(DateTime(timezone=True), nullable=True)
 
     # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
