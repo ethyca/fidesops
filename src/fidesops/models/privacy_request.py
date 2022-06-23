@@ -38,6 +38,7 @@ from fidesops.schemas.external_https import (
 )
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.tasks import celery_app
 from fidesops.util.cache import (
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
@@ -473,7 +474,11 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             self.canceled_at = datetime.utcnow()
             self.save(db)
 
-        # TODO cancel celery task PrivacyRequestRunner.submit
+            task_id = self.get_cached_task_id()
+            if task_id:
+                logger.info(f"Revoking task {task_id} for request {self.id}")
+                # Only revokes if execution is not already in progress
+                celery_app.control.revoke(task_id, terminate=False)
 
     def error_processing(self, db: Session) -> None:
         """Mark privacy request as errored, and note time processing was finished"""
