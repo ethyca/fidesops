@@ -15,8 +15,6 @@ import {
   TestingStatus,
 } from "./types";
 
-// function appendToQueryString(queryString:string, )
-
 function mapFiltersToSearchParams({
   search,
   page,
