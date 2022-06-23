@@ -41,6 +41,8 @@ The types of changes are:
 * Added the ability to delete a datastore from the frontend [#683] https://github.com/ethyca/fidesops/pull/683
 * Added the ability to disable/enable a datastore from the frontend [#693] https://github.com/ethyca/fidesops/pull/693
 * Adds Postgres and Redis health checks to health endpoint [#690](https://github.com/ethyca/fidesops/pull/690)
+* Adds the ability to revoke a pending privacy request [#592](https://github.com/ethyca/fidesops/pull/592/files)
+
 
 ### Changed
 
