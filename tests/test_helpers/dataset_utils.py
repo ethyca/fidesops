@@ -193,8 +193,8 @@ def get_data_type(value) -> Optional[str]:
 
     data_type = None
 
-    # cannot assume data type for falsy values
-    if not value:
+    # cannot assume data type for missing or empty values
+    if value in (None, "", [], {}):
         return data_type
 
     if isinstance(value, bool):
