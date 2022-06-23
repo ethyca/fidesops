@@ -56,4 +56,5 @@ jobs:
           ZENDESK_DOMAIN: ${{ secrets.ZENDESK_DOMAIN }}
           ZENDESK_USERNAME: ${{ secrets.ZENDESK_USERNAME }}
           ZENDESK_API_KEY: ${{ secrets.ZENDESK_API_KEY }}
+          ZENDESK_IDENTITY_EMAIL: ${{ secrets.ZENDESK_IDENTITY_EMAIL }}
         run: make pytest-saas
