@@ -28,8 +28,10 @@ Hovering over a request row will provide access to the **approve** and **deny** 
 
 ## View Request Details
 ![subject request details](../img/admin_ui/subject_request_details.png)
-Double-clicking a request row will display the request detail page.
+Double-clicking a request row will display the request detail page, which allows access to additional information about the request, as well as the request ID and status. 
 
-The request detail page provides access to additional PII, as well as the request ID and status. Importantly, this page displays a log of all actions taken on the individual request, from the original submission time through the approve/deny process. This log also includes processing through any third party applications or connectors.
+<!---
+Importantly, this page displays a log of all actions taken on the individual request, from the original submission time through the approve/deny process. This log also includes processing through any third party applications or connectors.
 
 Event details can be viewed by hovering on any individual event.
+-->
