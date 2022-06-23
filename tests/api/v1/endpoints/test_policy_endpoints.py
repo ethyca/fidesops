@@ -264,7 +264,6 @@ class TestCreatePolicies:
 
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
         response = api_client.patch(url, headers=auth_header, json=payload)
-
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]

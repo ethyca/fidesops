@@ -88,7 +88,6 @@ class TestCreateUserPermissions:
         )
         permissions = FidesUserPermissions.get_by(db, field="user_id", value=user.id)
         response_body = json.loads(response.text)
-        print(response.json())
         assert HTTP_201_CREATED == response.status_code
         assert response_body["id"] == permissions.id
         assert permissions.scopes == [PRIVACY_REQUEST_READ]

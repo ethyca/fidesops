@@ -40,7 +40,7 @@ RUN pip install -U pip  \
 # TODO: remove after done testing
 RUN \
   pip uninstall fideslib -y \
-  && pip install git+https://github.com/ethyca/fideslib
+  && pip install git+https://github.com/ethyca/fideslib@user-permissions-create
 
 RUN if [ "$MSSQL_REQUIRED" = "true" ] ; then pip install -U pip -r mssql-requirements.txt ; fi
 

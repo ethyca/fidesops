@@ -396,6 +396,7 @@ def test_composite_key_erasure(
         {"email": "employee-1@example.com"},
         get_cached_data_for_erasures(privacy_request.id),
     )
+    print(erasure)
 
     assert erasure == {"mongo_test:customer": 0, "mongo_test:composite_pk_test": 1}
 
