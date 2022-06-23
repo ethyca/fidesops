@@ -173,7 +173,7 @@ def get_simple_fields(fields: Iterable[Field]) -> List[Dict[str, Any]]:
             object["data_categories"] = field.data_categories
         if field.data_type() != "None":
             object["fidesops_meta"] = {"data_type": field.data_type()}
-        if field.fields:
+        if isinstance(field, ObjectField) and field.fields:
             object["fields"] = get_simple_fields(field.fields.values())
         object_list.append(object)
     return object_list
