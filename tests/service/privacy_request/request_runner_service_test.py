@@ -70,14 +70,8 @@ def test_start_processing_sets_started_processing_at(
     run_privacy_request_task.delay(privacy_request_status_pending.id).get(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
-    _sessionmaker = get_db_session()
-    db = _sessionmaker()
-    assert (
-        PrivacyRequest.get(
-            db=db, id=privacy_request_status_pending.id
-        ).started_processing_at
-        is not None
-    )
+    db.refresh(privacy_request_status_pending)
+    assert privacy_request_status_pending.started_processing_at is not None
 
 
 def test_start_processing_doesnt_overwrite_started_processing_at(
@@ -92,10 +86,7 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
 
-    _sessionmaker = get_db_session()
-    db = _sessionmaker()
-
-    privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
+    db.refresh(privacy_request)
     assert privacy_request.started_processing_at == before
 
 
@@ -108,8 +99,7 @@ def test_halts_proceeding_if_cancelled(
     run_privacy_request_task.delay(privacy_request_status_canceled.id).get(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
-    _sessionmaker = get_db_session()
-    db = _sessionmaker()
+    db.refresh(privacy_request_status_canceled)
     reloaded_pr = PrivacyRequest.get(db=db, id=privacy_request_status_canceled.id)
     assert reloaded_pr.started_processing_at is None
     assert reloaded_pr.status == PrivacyRequestStatus.canceled
@@ -140,10 +130,7 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
         from_step=PausedStep.access.value,
     ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
 
-    _sessionmaker = get_db_session()
-    db = _sessionmaker()
-
-    privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
+    db.refresh(privacy_request)
     assert privacy_request.started_processing_at is not None
 
     # Starting privacy request in the middle of the graph means we don't run pre-webhooks again
@@ -179,10 +166,7 @@ def test_resume_privacy_request_from_erasure(
         from_step=PausedStep.erasure.value,
     ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
 
-    _sessionmaker = get_db_session()
-    db = _sessionmaker()
-
-    privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
+    db.refresh(privacy_request)
     assert privacy_request.started_processing_at is not None
 
     # Starting privacy request in the middle of the graph means we don't run pre-webhooks again
