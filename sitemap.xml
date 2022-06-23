@@ -271,11 +271,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://ethyca.github.io/fidesops/ui/admin_ui/</loc>
-         <lastmod>2022-06-23</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://ethyca.github.io/fidesops/ui/datastores/</loc>
          <lastmod>2022-06-23</lastmod>
          <changefreq>daily</changefreq>
@@ -297,6 +292,11 @@
     </url>
     <url>
          <loc>https://ethyca.github.io/fidesops/ui/privacy_center/</loc>
+         <lastmod>2022-06-23</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fidesops/ui/subject_requests/</loc>
          <lastmod>2022-06-23</lastmod>
          <changefreq>daily</changefreq>
     </url>

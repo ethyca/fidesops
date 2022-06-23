@@ -8,14 +8,14 @@
       
       
       
-        <link rel="canonical" href="https://ethyca.github.io/fidesops/ui/admin_ui/">
+        <link rel="canonical" href="https://ethyca.github.io/fidesops/ui/subject_requests/">
       
       <link rel="icon" href="../../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.7">
     
     
       
-        <title>Subject Access Requests - Fidesops</title>
+        <title>Subject Requests - Fidesops</title>
       
     
     
@@ -73,7 +73,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#subject-access-requests" class="md-skip">
+        <a href="#subject-requests" class="md-skip">
           Skip to content
         </a>
       
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Subject Access Requests
+              Subject Requests
             
           </span>
         </div>
@@ -852,12 +852,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" checked>
       
       
       
@@ -906,12 +908,14 @@
               
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7_3" type="checkbox" id="__nav_7_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7_3" type="checkbox" id="__nav_7_3" checked>
       
       
       
@@ -927,6 +931,89 @@
           Admin UI
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Subject Requests
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Subject Requests
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#panel-options" class="md-nav__link">
+    Panel Options
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#approve-or-deny-requests" class="md-nav__link">
+    Approve or Deny Requests
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#view-request-details" class="md-nav__link">
+    View Request Details
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datastores/" class="md-nav__link">
+        Managing Datastores
+      </a>
+    </li>
+  
+
+            
           
             
               
@@ -1258,6 +1345,35 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#panel-options" class="md-nav__link">
+    Panel Options
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#approve-or-deny-requests" class="md-nav__link">
+    Approve or Deny Requests
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#view-request-details" class="md-nav__link">
+    View Request Details
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1270,9 +1386,53 @@
                 
 
 
-<h1 id="subject-access-requests">Subject Access Requests</h1>
-<p>FidesOps provides a built-in control panel for managing privacy requests, <a href="../user_management/">system users</a>, and datastore connections.</p>
-<p><img alt="admin ui" src="../../img/admin_ui/admin_ui.png" /></p>
+<h1 id="subject-requests">Subject Requests</h1>
+<p>The FidesOps Admin UI is designed to provide easy, at-a-glance access to submitted Subject Requests. The Subject Request panel provides search and sort capabilities, quick approve and deny functions, and in-depth details on a request's history and status.</p>
+<p><img alt="subject requests" src="../../img/admin_ui/admin_ui.png" /></p>
+<h3 id="panel-options">Panel Options</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Status</td>
+<td>Requests can be filtered by their current status: <strong>Error</strong>, <strong>Denied</strong>, <strong>In Progress</strong>, <strong>New</strong>, <em>Cancelled</em>, and <strong>Complete</strong>.</td>
+</tr>
+<tr>
+<td>Search</td>
+<td>The search bar filters on a given field: status, reviewer, etc.</td>
+</tr>
+<tr>
+<td>Date Filter</td>
+<td>Retrieve requests received within a certain date window.</td>
+</tr>
+<tr>
+<td>Reveal PII</td>
+<td>Toggling <strong>Reveal PII</strong> will display all personal information for the shown requests.</td>
+</tr>
+<tr>
+<td>Download</td>
+<td>Download a <code>.csv</code> of the shown requests.</td>
+</tr>
+<tr>
+<td>Clear</td>
+<td>Remove all search options and filters.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="approve-or-deny-requests">Approve or Deny Requests</h2>
+<p><img alt="approve or deny requests" src="../../img/admin_ui/approve_deny.png" /></p>
+<p>Hovering over a request row will provide access to the <strong>approve</strong> and <strong>deny</strong> options for that request.</p>
+<p><strong>Approving</strong> a request will log the action, the approver's account, and begin the process of executing the request based on the associated <a href="../../guides/policies/">policy</a>.</p>
+<p><strong>Denying</strong> a request allows the user to input a denial reason before confirming the action.</p>
+<p><img alt="request denial" src="../request_denial.png" /></p>
+<h2 id="view-request-details">View Request Details</h2>
+<p><img alt="subject request details" src="../../img/admin_ui/subject_request_details.png" />
+Double-clicking a request row will display the request detail page, which allows access to additional information about the request, as well as the request ID and status. </p>
 
               
             </article>
@@ -1314,6 +1474,59 @@
 <footer class="md-footer">
 
   <!-- Link to previous and/or next page -->
+  
+    <nav
+      class="md-footer__inner md-grid"
+      aria-label="Footer"
+    >
+      <div class="nav-wrap">
+      <!-- Link to previous page -->
+      
+        
+        <a
+          href="../privacy_center/"
+          class="md-footer__link md-footer__link--prev"
+          aria-label="Previous: Privacy Center"
+          rel="prev"
+        >
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Privacy Center
+            </div>
+          </div>
+        </a>
+      
+
+      <!-- Link to next page -->
+      
+        
+        <a
+          href="../datastores/"
+          class="md-footer__link md-footer__link--next"
+          aria-label="Next: Managing Datastores"
+          rel="next"
+        >
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Managing Datastores
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </div>
+    </nav>
   
 
   </div>
