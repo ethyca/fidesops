@@ -2,13 +2,15 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.params import Security
+from fastapi.params import Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslib.exceptions import KeyOrNameAlreadyExists
 from pydantic import ValidationError, conlist
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
+from sqlalchemy_utils import escape_like
 from starlette.status import (
     HTTP_200_OK,
     HTTP_204_NO_CONTENT,
@@ -41,6 +43,8 @@ from fidesops.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
     CreateConnectionConfiguration,
+    SystemType,
+    TestStatus,
 )
 from fidesops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
@@ -77,14 +81,68 @@ def get_connection_config_or_error(
     response_model=Page[ConnectionConfigurationResponse],
 )
 def get_connections(
-    *, db: Session = Depends(deps.get_db), params: Params = Depends()
+    *,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+    search: Optional[str] = None,
+    disabled: Optional[bool] = None,
+    test_status: Optional[TestStatus] = None,
+    system_type: Optional[SystemType] = None,
+    connection_type: Optional[List[ConnectionType]] = Query(
+        default=None
+    ),  # type:ignore
 ) -> AbstractPage[ConnectionConfig]:
-    """Returns all connection configurations in the database."""
+    """Returns all connection configurations in the database.
+    Optionally filter the key, name, and description with a search query param.
+
+    Can also filter on disabled, connection_type, test_status, and system_type.
+
+    Connection_type supports "or" filtering:
+    ?connection_type=postgres&connection_type=mongo will be translated into an "or" query.
+    """
     logger.info(
-        f"Finding all connection configurations with pagination params {params}"
+        f"Finding connection configurations with pagination params {params} and search query: '{search if search else ''}'."
     )
+    query = ConnectionConfig.query(db)
+
+    if search:
+        query = query.filter(
+            or_(
+                ConnectionConfig.key.ilike(f"%{escape_like(search)}%"),
+                ConnectionConfig.name.ilike(f"%{escape_like(search)}%"),
+                ConnectionConfig.description.ilike(f"%{escape_like(search)}%"),
+            )
+        )
+
+    if connection_type:
+        query = query.filter(ConnectionConfig.connection_type.in_(connection_type))
+
+    if disabled is not None:
+        query = query.filter(ConnectionConfig.disabled == disabled)
+
+    if test_status:
+        query = query.filter(
+            ConnectionConfig.last_test_succeeded.is_(test_status.str_to_bool())
+        )
+
+    if system_type:
+        if system_type == SystemType.saas:
+            query = query.filter(
+                ConnectionConfig.connection_type == ConnectionType.saas
+            )
+        elif system_type == SystemType.manual:
+            query = query.filter(
+                ConnectionConfig.connection_type == ConnectionType.manual
+            )
+        elif system_type == SystemType.database:
+            query = query.filter(
+                ConnectionConfig.connection_type.notin_(
+                    [ConnectionType.saas, ConnectionType.manual]
+                )
+            )
+
     return paginate(
-        ConnectionConfig.query(db).order_by(ConnectionConfig.created_at.desc()),
+        query.order_by(ConnectionConfig.name.asc()),
         params=params,
     )
 

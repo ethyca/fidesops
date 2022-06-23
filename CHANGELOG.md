@@ -25,6 +25,24 @@ The types of changes are:
 * Redis SSL Support [#611](https://github.com/ethyca/fidesops/pull/611)
 * Celery as a dependency for use in the execution layer [#610](https://github.com/ethyca/fidesops/pull/610)
 * Cache and Surface Resume/Restart Instructions [#591](https://github.com/ethyca/fidesops/pull/591)
+* Build and deploy Admin UI from webserver [#625](https://github.com/ethyca/fidesops/pull/625)
+* Allow disabling a ConnectionConfig [#637](https://github.com/ethyca/fidesops/pull/637)
+* Erasure support for Outreach connector [#619](https://github.com/ethyca/fidesops/pull/619)
+* Adds searching of ConnectionConfigs [#641](https://github.com/ethyca/fidesops/pull/641)
+* Added `AdminUiSettings` to the `log_all_config_values` helper method [#647](https://github.com/ethyca/fidesops/pull/647)
+* Prettier formatting CI check for frontend code [#655](https://github.com/ethyca/fidesops/pull/655)
+* Adds default policies [#654](https://github.com/ethyca/fidesops/pull/654)
+* Added ConnectionConfig `connection_type` and `disabled` filters [#675](https://github.com/ethyca/fidesops/pull/675)
+* Adds Fideslog integration [#541](https://github.com/ethyca/fidesops/pull/541)
+* Adds endpoint analytics events [#622](https://github.com/ethyca/fidesops/pull/622)
+* Sample dataset and access configuration for Zendesk (ticket endpoints) [#677](https://github.com/ethyca/fidesops/pull/677)
+* Include number of records to be masked in masking endpoint's log message [#692](https://github.com/ethyca/fidesops/pull/692)
+* Datastore Connection Landing Page [#674](https://github.com/ethyca/fidesops/pull/674)
+* Added the ability to delete a datastore from the frontend [#683] https://github.com/ethyca/fidesops/pull/683
+* Added the ability to disable/enable a datastore from the frontend [#693] https://github.com/ethyca/fidesops/pull/693
+* Adds Postgres and Redis health checks to health endpoint [#690](https://github.com/ethyca/fidesops/pull/690)
+* Added health checks and better error messages on app startup for both db and cache [#686](https://github.com/ethyca/fidesops/pull/686)
+* Datastore Connection Filters [#691](https://github.com/ethyca/fidesops/pull/691)
 
 ### Changed
 
@@ -32,6 +50,10 @@ The types of changes are:
 * Bumped mypy to version 0.961 [#630](https://github.com/ethyca/fidesops/pull/630)
 * Bumped Python to version 3.9.13 in the `Dockerfile` [#630](https://github.com/ethyca/fidesops/pull/630)
 * Matched the path to the migrations in the mypy settings with the new location [#634](https://github.com/ethyca/fidesops/pull/634)
+* Sort ConnectionConfig by name ascending [#668](https://github.com/ethyca/fidesops/pull/672)
+* Install MSSQL By Default [#664](https://github.com/ethyca/fidesops/pull/664)
+* [Admin UI] Change "Policy Name" to "Request Type" on SR list page.[#546](https://github.com/ethyca/fidesops/pull/696)
+* Queue PrivacyRequests into a Celery queue for execution [#621](https://github.com/ethyca/fidesops/pull/621)
 
 ### Developer Experience
 
@@ -40,6 +62,7 @@ The types of changes are:
 ### Fixed
 * Fixed error with running mypy on M1 Macs [#630](https://github.com/ethyca/fidesops/pull/630)
 * Fixed error with mypy on Python versions greater than 3.9.6 [#630](https://github.com/ethyca/fidesops/pull/630)
+* Bumped fideslib to 2.0.4. This fixes the issue where alembic couldn't find the `fidesops.toml` file from its new location [#643](https://github.com/ethyca/fidesops/pull/643)
 
 ## [1.5.3](https://github.com/ethyca/fidesops/compare/1.5.2...1.5.3)
 
@@ -49,6 +72,9 @@ The types of changes are:
 ### Removed
 * The `[package]` config section no longer exists [#620](https://github.com/ethyca/fidesops/pull/620)
 
+
+### Changed
+* Process privacy requests as Celery tasks and not background processes [#621](https://github.com/ethyca/fidesops/pull/621)
 
 ## [1.5.2](https://github.com/ethyca/fidesops/compare/1.5.1...1.5.2)
 
@@ -132,7 +158,6 @@ The types of changes are:
 * Frontend for privacy request denial reaons [#480](https://github.com/ethyca/fidesops/pull/480)
 * Publish Fidesops to Pypi [#491](https://github.com/ethyca/fidesops/pull/491)
 * DRP data rights endpoint [#526](https://github.com/ethyca/fidesops/pull/526)
-* ADDS Fideslog integration [#541](https://github.com/ethyca/fidesops/pull/541)
 
 
 ### Changed

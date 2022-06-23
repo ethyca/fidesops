@@ -7,6 +7,8 @@ In this section we'll cover:
 - How do you create a ConnectionConfig object?
 - How do you identify the database that a ConnectionConfig connects to?
 - How do you test and update a ConnectionConfig's Secrets?
+- How do you filter your ConnectionConfigs?
+- How do you search your ConnectionConfigs?
 - How does a ConnectionConfig differ from a Dataset?
 
 
@@ -44,6 +46,10 @@ The connection between Fidesops and your database is represented by a _Connectio
 
 * `access` sets the connection's permissions, one of "read" (Fidesops may only read from your database) or "write" (Fidesops can read from and write to your database).
 
+* `disabled` determines whether the ConnectionConfig is active.  If True, we skip running queries for any collection associated with that ConnectionConfig.
+
+* `description` is an extra field to add further details about your connection. 
+
 While the ConnectionConfig object contains meta information about the database, you'll notice that it doesn't actually identify the database itself. We'll get to that when we set the ConnectionConfig's "secrets".
 
 
@@ -74,7 +80,8 @@ PATCH api/v1/connection
     "name": "My Mongo DB",
     "key": "my_mongo_db",
     "connection_type": "mongodb",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
@@ -88,7 +95,8 @@ PATCH api/v1/connection
     "name": "My MySQL DB",
     "key": "my_mysql_db",
     "connection_type": "mysql",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
@@ -102,7 +110,8 @@ PATCH api/v1/connection
     "name": "My Maria DB",
     "key": "my_maria_db",
     "connection_type": "mariadb",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
@@ -116,7 +125,8 @@ PATCH api/v1/connection
     "name": "My MsSQL DB",
     "key": "my_mssql_db",
     "connection_type": "mssql",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
@@ -130,7 +140,9 @@ PATCH api/v1/connection
     "name": "Manual connector",
     "key": "manual_connector",
     "connection_type": "manual",
-    "access": "read"
+    "access": "read",
+    "disabled": false,
+    "description": "Connector describing manual actions"
   }
 ]
 ``` 
@@ -264,6 +276,156 @@ Once you have a working ConnectionConfig, it can be associated to an existing [d
     "description": "Example of a dataset containing a variety of related tables like customers, products, addresses, etc.",
     "collections": [...]
 }]
+```
+
+## Filtering ConnectionConfigs
+
+Current available filters are the `connection_type` and whether the connection is `disabled`.
+
+### Example 1: Connection type filter
+
+Including multiple `connection_type` query params and values will result in a query that looks for 
+*any* connections with that type.
+
+```json title="<code>GET api/v1//connection/?connection_type=mariadb&connection_type=postgres</code>"
+{
+    "items": [
+        {
+            "name": "Application Maria DB",
+            "key": "app_mariadb_db",
+            "description": null,
+            "connection_type": "mariadb",
+            "access": "write",
+            "created_at": "2022-06-16T22:21:02.353226+00:00",
+            "updated_at": "2022-06-16T22:21:02.353226+00:00",
+            "disabled": false,
+            "last_test_timestamp": null,
+            "last_test_succeeded": null
+        },
+        {
+            "name": "Application PostgreSQL DB",
+            "key": "app_postgres_db",
+            "description": "postgres backup",
+            "connection_type": "postgres",
+            "access": "write",
+            "created_at": "2022-06-16T22:20:24.972539+00:00",
+            "updated_at": "2022-06-16T22:20:24.972539+00:00",
+            "disabled": false,
+            "last_test_timestamp": null,
+            "last_test_succeeded": null
+        }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 50
+}
+
+```
+
+### Example 2: Disabled filter
+
+The `disabled` filter can show which datastores are skipped as part of privacy request execution.
+
+```json title="<code>GET api/v1/connection/?disabled=true</code>"
+{
+    "items": [
+        {
+            "name": "My Mongo DB",
+            "key": "app_mongo_db",
+            "description": "Primary Mongo DB",
+            "connection_type": "mongodb",
+            "access": "write",
+            "created_at": "2022-06-16T22:20:34.122212+00:00",
+            "updated_at": "2022-06-16T22:20:34.122212+00:00",
+            "disabled": true,
+            "last_test_timestamp": null,
+            "last_test_succeeded": null
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+
+```
+
+### Example 3: Testing Status Filter
+The `testing_status` filter queries on the status of the last successful test:
+
+```json title="<code>GET api/v1/connection/?test_status=false</code>"
+{
+    "items": [
+        {
+            "name": "My Mongo DB",
+            "key": "app_mongo_db",
+            "description": "Primary Mongo DB",
+            "connection_type": "mongodb",
+            "access": "write",
+            "created_at": "2022-06-16T22:20:34.122212+00:00",
+            "updated_at": "2022-06-16T22:20:34.122212+00:00",
+            "disabled": true,
+            "last_test_timestamp": 2022-06-16T22:20:34.122212+00:00,
+            "last_test_succeeded": false
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+
+```
+
+### Example 4: System Status Filter
+The `system_status` filter surfaces either `database` or `saas`-type connectors:
+
+```json title="<code>GET api/v1/connection/?system_type=database</code>"
+{
+    "items": [
+        {
+            "name": "My Mongo DB",
+            "key": "app_mongo_db",
+            "description": "Primary Mongo DB",
+            "connection_type": "mongodb",
+            "access": "write",
+            "created_at": "2022-06-16T22:20:34.122212+00:00",
+            "updated_at": "2022-06-16T22:20:34.122212+00:00",
+            "disabled": true,
+            "last_test_timestamp": 2022-06-16T22:20:34.122212+00:00,
+            "last_test_succeeded": false
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+
+```
+
+
+## Searching ConnectionConfigs
+
+You can search the `name`, `key`, and `description` fields of your ConnectionConfigs with the `search` query parameter.
+
+### Example 1
+```json title="<code>GET /api/v1/connection/?search=application mysql</code>"
+{
+    "items": [
+        {
+            "name": "Application MySQL DB",
+            "key": "app_mysql_db",
+            "description": "My Backup MySQL DB",
+            "connection_type": "mysql",
+            "access": "read",
+            "created_at": "2022-06-13T18:03:28.404091+00:00",
+            "updated_at": "2022-06-13T18:03:28.404091+00:00",
+            "last_test_timestamp": null,
+            "last_test_succeeded": null
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
 ```
 
 ## How do ConnectionConfigs differ from Datasets?

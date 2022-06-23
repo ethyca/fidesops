@@ -60,8 +60,8 @@ The `fidesops.toml` file should specify the following variables:
 |`MASKING_STRICT` | `FIDESOPS__EXECUTION__MASKING_STRICT` | bool | True | True | If MASKING_STRICT is True, we only use "update" requests to mask data. (For third-party integrations, you should define an `update` endpoint to use.)  If MASKING_STRICT is False, you are allowing fidesops to use any defined DELETE or GDPR DELETE endpoints to remove PII. In this case, you should define `delete` or `data_protection_request` endpoints for your third-party integrations.  Note that setting MASKING_STRICT to False means that data may be deleted beyond the specific data categories that you've configured in your Policy.
 |---|---|---|---|---|---|
 |`ANALYTICS_OPT_OUT` | `FIDESOPS__USER__ANALYTICS_OPT_OUT` | bool | False | False | Opt out of sending anonymous usage data to Ethyca to improve the product experience
-
-
+| Admin UI Variables|---|---|---|---|---|
+|`ENABLED` | `FIDESOPS__ADMIN_UI__ENABLED` | bool | False | True | Toggle whether the `/static` file directory is mounted to serve the Admin UI
 
 ## An example `fidesops.toml` configuration file
 
@@ -101,6 +101,9 @@ MASKING_STRICT=true
 
 [root_user]
 ANALYTICS_OPT_OUT=false
+
+[admin_ui]
+ENABLED = true
 ```
 
 Please note: The configuration is case-sensitive, so the variables must be specified in UPPERCASE.
@@ -113,7 +116,9 @@ Please note: The configuration is case-sensitive, so the variables must be speci
 | `FIDESOPS__HOT_RELOAD` | False | If "True", the fidesops server will reload code changes without you needing to restart the server. This variable should always be set to "False" in production systems.|
 | `FIDESOPS__DEV_MODE` | False | If "True", the fidesops server will log error tracebacks, and log details of third party requests. This variable should always be set to "False" in production systems.|
 | `FIDESOPS__CONFIG_PATH` | None | If this variable is set to a path, that path will be used to load .toml files first. That is, any .toml files on this path will override any installed .toml files. |
-| `FIDESOPS__DATABASE__SQLALCHEMY_DATABASE_URI` | None | An optional override for the URI used for the database connection. |
+| `FIDESOPS__DATABASE__SQLALCHEMY_DATABASE_URI` | None | An optional override for the URI used for the database connection, in the form of `postgresql://<user>:<password>@<hostname>:<port>/<database>`. |
+| `TESTING` | False | This variable does not need to be set - Pytest will set it to True when running unit tests, so we run against the test database. |
+
 
 ## - Reporting a running application's configuration
 

@@ -39,8 +39,8 @@ class ExecutionSettings(FidesSettings):
     TASK_RETRY_BACKOFF: int
     REQUIRE_MANUAL_REQUEST_APPROVAL: bool = False
     MASKING_STRICT: bool = True
-    CELERY_BROKER_URL: str
-    CELERY_RESULT_BACKEND: str
+    CELERY_BROKER_URL: str = "redis://:testpassword@redis:6379/1"
+    CELERY_RESULT_BACKEND: str = "redis://:testpassword@redis:6379/1"
 
     class Config:
         env_prefix = "FIDESOPS__EXECUTION__"
@@ -120,6 +120,15 @@ class RootUserSettings(FidesSettings):
         env_prefix = "FIDESOPS__ROOT_USER__"
 
 
+class AdminUiSettings(FidesSettings):
+    """Configuration settings for Analytics variables."""
+
+    ENABLED: bool
+
+    class Config:
+        env_prefix = "FIDESOPS__ADMIN_UI__"
+
+
 class FidesopsConfig(FidesSettings):
     """Configuration variables for the FastAPI project"""
 
@@ -128,6 +137,7 @@ class FidesopsConfig(FidesSettings):
     security: FidesopsSecuritySettings
     execution: ExecutionSettings
     root_user: RootUserSettings
+    admin_ui: AdminUiSettings
 
     PORT: int
     is_test_mode: bool = os.getenv("TESTING") == "True"
@@ -146,7 +156,13 @@ class FidesopsConfig(FidesSettings):
 
     def log_all_config_values(self) -> None:
         """Output DEBUG logs of all the config values."""
-        for settings in [self.database, self.redis, self.security, self.execution]:
+        for settings in [
+            self.database,
+            self.redis,
+            self.security,
+            self.execution,
+            self.admin_ui,
+        ]:
             for key, value in settings.dict().items():  # type: ignore
                 logger.debug(
                     "Using config: %s%s = %s",
