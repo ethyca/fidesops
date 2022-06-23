@@ -18,7 +18,6 @@ class TestGetConnections:
     ) -> None:
         auth_header = generate_auth_header(scopes=[scopes.CONFIG_READ])
         resp = api_client.get(url, headers=auth_header)
-        print(resp.json())
         assert resp.status_code == 200
 
         config = resp.json()

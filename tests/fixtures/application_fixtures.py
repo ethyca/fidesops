@@ -861,7 +861,7 @@ def user(db: Session):
         client.delete(db)
     except ObjectDeletedError:
         pass
-    # user.delete(db)  # TODO: Fix. failing with integrity error
+    user.delete(db)
 
 
 @pytest.fixture(scope="function")

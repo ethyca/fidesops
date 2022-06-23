@@ -432,6 +432,7 @@ class TestGetPrivacyRequests:
         assert reviewer
         assert user.id == reviewer["id"]
         assert user.username == reviewer["username"]
+        privacy_request.delete(db)
 
     def test_get_privacy_requests_accept_datetime(
         self,
@@ -1009,6 +1010,8 @@ class TestGetPrivacyRequests:
         assert parse(first_row["Time approved/denied"], ignoretz=True) == reviewed_at
         assert first_row["Denial reason"] == ""
 
+        privacy_request.delete(db)
+
     def test_get_paused_access_privacy_request_resume_info(
         self, db, privacy_request, generate_auth_header, api_client, url
     ):
@@ -1501,6 +1504,8 @@ class TestApprovePrivacyRequest:
 
         assert submit_mock.called
 
+        privacy_request.delete(db)
+
 
 class TestDenyPrivacyRequest:
     @pytest.fixture(scope="function")
@@ -1609,6 +1614,8 @@ class TestDenyPrivacyRequest:
 
         assert not submit_mock.called  # Shouldn't run! Privacy request was denied
 
+        privacy_request.delete(db)
+
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
@@ -1657,6 +1664,8 @@ class TestDenyPrivacyRequest:
         assert denial_audit_log.message == denial_reason
 
         assert not submit_mock.called  # Shouldn't run! Privacy request was denied
+
+        privacy_request.delete(db)
 
 
 class TestResumePrivacyRequest:
@@ -1761,6 +1770,8 @@ class TestResumePrivacyRequest:
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == 400
 
+        privacy_request.delete(db)
+
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
@@ -1812,6 +1823,8 @@ class TestResumePrivacyRequest:
             "resume_endpoint": None,
         }
 
+        privacy_request.delete(db)
+
 
 class TestResumeAccessRequestWithManualInput:
     @pytest.fixture(scope="function")
@@ -1855,6 +1868,8 @@ class TestResumeAccessRequestWithManualInput:
             == f"Cannot resume privacy request '{privacy_request.id}'; no paused details."
         )
 
+        privacy_request.delete(db)
+
     def test_resume_with_manual_input_collection_has_changed(
         self, db, api_client, url, generate_auth_header, privacy_request
     ):
@@ -1874,6 +1889,8 @@ class TestResumeAccessRequestWithManualInput:
             response.json()["detail"]
             == "Cannot save manual data. No collection in graph with name: 'manual_example:filing_cabinet'."
         )
+
+        privacy_request.delete(db)
 
     @pytest.mark.usefixtures(
         "postgres_example_test_dataset_config", "manual_dataset_config"
@@ -1902,6 +1919,8 @@ class TestResumeAccessRequestWithManualInput:
             response.json()["detail"]
             == "Cannot save manual rows. No 'mock' field defined on the 'manual_input:filing_cabinet' collection."
         )
+
+        privacy_request.delete(db)
 
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
@@ -1943,6 +1962,8 @@ class TestResumeAccessRequestWithManualInput:
 
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+        privacy_request.delete(db)
 
 
 class TestValidateManualInput:
@@ -2033,6 +2054,8 @@ class TestResumeErasureRequestWithManualConfirmation:
             == f"Cannot resume privacy request '{privacy_request.id}'; no paused details."
         )
 
+        privacy_request.delete(db)
+
     def test_resume_with_manual_erasure_confirmation_collection_has_changed(
         self, db, api_client, url, generate_auth_header, privacy_request
     ):
@@ -2053,6 +2076,8 @@ class TestResumeErasureRequestWithManualConfirmation:
             == "Cannot save manual data. No collection in graph with name: 'manual_example:filing_cabinet'."
         )
 
+        privacy_request.delete(db)
+
     def test_resume_still_paused_at_access_request(
         self, db, api_client, url, generate_auth_header, privacy_request
     ):
@@ -2072,6 +2097,8 @@ class TestResumeErasureRequestWithManualConfirmation:
             response.json()["detail"]
             == "Collection 'manual_example:filing_cabinet' is paused at the access step. Pass in manual data instead to '/privacy-request/{privacy_request_id}/manual_input' to resume."
         )
+
+        privacy_request.delete(db)
 
     @pytest.mark.usefixtures(
         "postgres_example_test_dataset_config", "manual_dataset_config"
@@ -2105,6 +2132,8 @@ class TestResumeErasureRequestWithManualConfirmation:
 
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+        privacy_request.delete(db)
 
 
 class TestRestartFromFailure:
@@ -2152,6 +2181,8 @@ class TestRestartFromFailure:
             == f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection."
         )
 
+        privacy_request.delete(db)
+
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
@@ -2174,3 +2205,5 @@ class TestRestartFromFailure:
         assert privacy_request.status == PrivacyRequestStatus.in_processing
 
         submit_mock.assert_called_with(from_step=PausedStep.access)
+
+        privacy_request.delete(db)

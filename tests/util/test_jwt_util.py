@@ -50,7 +50,6 @@ def test_token_expired(oauth_client):
     extracted = json.loads(
         extract_payload(access_token, config.security.APP_ENCRYPTION_KEY)
     )
-    print(extracted)
     assert (
         is_token_expired(
             datetime.fromisoformat(extracted[JWE_ISSUED_AT]),

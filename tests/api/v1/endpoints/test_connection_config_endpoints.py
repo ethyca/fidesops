@@ -147,7 +147,6 @@ class TestPatchConnections:
 
         succeeded = response_body["succeeded"]
         failed = response_body["failed"]
-        print(failed)
 
         # key supplied matches existing key, so the rest of the configs are updated
         assert succeeded[0]["key"] == "postgres_db_1"
