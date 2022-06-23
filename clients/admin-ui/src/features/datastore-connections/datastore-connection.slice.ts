@@ -141,7 +141,8 @@ export const datastoreConnectionApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
-      addCommonHeaders(headers, selectToken(getState() as RootState));
+      const token: string | null = selectToken(getState() as RootState);
+      addCommonHeaders(headers, token);
       return headers;
     },
   }),
