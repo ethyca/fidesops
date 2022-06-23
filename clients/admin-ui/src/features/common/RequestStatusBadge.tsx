@@ -19,8 +19,8 @@ export const statusPropMap: {
     label: "Denied",
   },
   canceled: {
-    bg: 'red.600',
-    label: 'Canceled',
+    bg: "red.600",
+    label: "Canceled",
   },
   error: {
     bg: "red.800",
