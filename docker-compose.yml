@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     depends_on:
+      - celery
       - db
       - redis
     expose:
@@ -62,12 +63,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A fidesops.tasks beat -l info --logfile=/var/log/celery.log
+    command: celery -A fidesops.tasks.celery_app worker --loglevel=info
     depends_on:
-      fidesops:
-        condition: service_healthy
-      db:
-        condition: service_started
       redis:
         condition: service_started
     restart: always
