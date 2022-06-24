@@ -172,7 +172,7 @@ def run_privacy_request(
     SessionLocal = get_db_session(config)
     with SessionLocal() as session:
 
-        privacy_request = PrivacyRequest.get(db=session, id=privacy_request_id)
+        privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
         logging.info(f"Dispatching privacy request {privacy_request.id}")
         privacy_request.start_processing(session)
 

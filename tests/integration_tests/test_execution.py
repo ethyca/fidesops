@@ -71,7 +71,6 @@ class TestDeleteCollection:
         """Delete the connection config before execution starts which also
         deletes its dataset config. The graph is built with nothing in it, and no results are returned.
         """
-
         customer_email = "customer-1@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",

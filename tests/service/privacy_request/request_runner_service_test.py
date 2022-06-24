@@ -95,7 +95,7 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
     _sessionmaker = get_db_session(config)
     db = _sessionmaker()
 
-    privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
+    privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert privacy_request.started_processing_at == before
 
 
