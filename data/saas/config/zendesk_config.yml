@@ -105,3 +105,91 @@ saas_config:
             configuration:
               source: body
               path: links.next
+    - name: help_center_posts
+      requests:
+        read:
+          method: GET
+          path: /api/v2/community/users/<user_id>/posts.json
+          param_values:
+            - name: user_id
+              references:
+                - dataset: zendesk_connector_example
+                  field: users.id
+                  direction: from
+          data_path: posts
+    - name: help_center_post_comments
+      requests:
+        read:
+          method: GET
+          path: /api/v2/community/posts/<post_id>/comments.json
+          param_values:
+            - name: post_id
+              references:
+                - dataset: zendesk_connector_example
+                  field: help_center_posts.id
+                  direction: from
+          data_path: comments
+    - name: help_center_content_subscriptions
+      requests:
+        read:
+          method: GET
+          ignore_errors: true
+          path: /api/v2/help_center/users/<user_id>/subscriptions.json
+          param_values:
+            - name: user_id
+              references:
+                - dataset: zendesk_connector_example
+                  field: users.id
+                  direction: from
+          data_path: subscriptions
+    - name: help_center_articles
+      requests:
+        read:
+          method: GET
+          ignore_errors: true
+          path: /api/v2/help_center/users/<user_id>/articles
+          param_values:
+            - name: user_id
+              references:
+                - dataset: zendesk_connector_example
+                  field: users.id
+                  direction: from
+          data_path: articles
+    - name: help_center_article_comments
+      requests:
+        read:
+          method: GET
+          path: /api/v2/help_center/users/<user_id>/comments
+          param_values:
+            - name: user_id
+              references:
+                - dataset: zendesk_connector_example
+                  field: users.id
+                  direction: from
+          data_path: article_comments
+    - name: help_center_article_attachments
+      requests:
+        read:
+          method: GET
+          ignore_errors: true
+          path: /api/v2/help_center/articles/<article_id>/attachments
+          param_values:
+            - name: article_id
+              references:
+                - dataset: zendesk_connector_example
+                  field: help_center_articles.id
+                  direction: from
+          data_path: article_attachments
+    # - name: help_center_user_subscriptions
+    #   requests:
+    #     read:
+    #       method: GET
+    #       ignore_errors: true
+    #       path: /api/v2/help_center/users/<user_id>/user_subscriptions
+    #       param_values:
+    #         - name: user_id
+    #           references:
+    #             - dataset: zendesk_connector_example
+    #               field: users.id
+    #               direction: from
+    #       data_path: subscriptions

@@ -429,3 +429,378 @@ dataset:
                     data_categories: [user.derived.identifiable.location]
                     fidesops_meta:
                       data_type: string
+      - name: help_center_posts
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: title
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: details
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: author_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: vote_sum
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: vote_count
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: comment_count
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: follower_count
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: topic_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: html_url
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: created_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: updated_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: url
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: featured
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: pinned
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: closed
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: frozen
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: status
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: non_author_editor_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: non_author_updated_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+      - name: help_center_post_comments
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: body
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: author_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: vote_sum
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: vote_count
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: official
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: html_url
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: created_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: updated_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: url
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: post_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: non_author_editor_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: non_author_updated_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+      - name: help_center_content_subscriptions
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: url
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: user_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: content_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: content_type
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: locale
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: created_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: updated_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+      - name: help_center_articles
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: url
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: html_url
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: author_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: comments_disabled
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: draft
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: promoted
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: position
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: vote_sum
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: vote_count
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: section_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: created_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: updated_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: title
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: source_locale
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: locale
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: outdated
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: outdated_locales
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string[]
+          - name: edited_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: user_segment_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: permission_group_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: body
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+      - name: help_center_article_comments
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: url
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: author_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: source_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: source_type
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: html_url
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: locale
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: created_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: updated_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: vote_sum
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: vote_count
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: non_author_editor_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: non_author_updated_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+      - name: help_center_article_attachments
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: url
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: article_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: display_file_name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: file_name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: content_url
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: relative_path
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: content_type
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: size
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: inline
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: created_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: updated_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+
+      # - name: help_center_user_subscriptions
+      #   fields:
+      #     - name: id
+      #       data_categories: [system.operations]
+      #       fidesops_meta:
+      #         data_type: integer
