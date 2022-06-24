@@ -93,6 +93,7 @@ def test_zendesk_access_request_task(
             "verified",
             "primary",
             "created_at",
+            "updated_at",
             "undeliverable_count",
             "deliverable_state",
         ],
