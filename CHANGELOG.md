@@ -21,6 +21,7 @@ The types of changes are:
 
 ### Developer Experience
 * Add fixture to clear tables between test [#680](https://github.com/ethyca/fidesops/pull/680)
+* Reduce the size of the docker image [#707](https://github.com/ethyca/fidesops/pull/707)
 
 ## [1.6.0](https://github.com/ethyca/fidesops/compare/1.5.3...1.6.0)
 
