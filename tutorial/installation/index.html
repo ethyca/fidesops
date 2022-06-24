@@ -1408,16 +1408,12 @@
 <li>pg_config (<code>brew install libpq</code> or <code>brew install postgres</code> on Mac)</li>
 </ul>
 <h2 id="clone-the-fidesdemo-repo">Clone the fidesdemo repo</h2>
-<p>Let's clone <a href="https://github.com/ethyca/fidesdemo">Fides Demo</a>, and rewind to an earlier tag, so we can build out 
-the later commits together. Among other things, this will give us a Flask App to 
-mimic your application and some YAML files that annotate the Flask App's databases. 
+<p>Clone <a href="https://github.com/ethyca/fidesdemo">Fides Demo</a>, and run <code>make install</code> to begin setup. Among other things, this will create a <a href="https://flask.palletsprojects.com/">Flask</a> app to mimic your application, and provide several YAML files that annotate the Flask app's databases. 
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>git clone https://github.com/ethyca/fidesdemo
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>git clone https://github.com/ethyca/fidesdemo
 <span class="nb">cd</span> fidesdemo
-git checkout fidesctl-demo
 make install
 <span class="nb">source</span> venv/bin/activate
 </code></pre></div></td></tr></table></div></p>
