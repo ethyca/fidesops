@@ -17,14 +17,14 @@ hapikey = ""
 identity_email = ""
 
 [stripe]
-host = ""
+domain = ""
 api_key = ""
 payment_types = ""
 page_size = ""
 identity_email = ""
 
 [sentry]
-host = ""
+domain = ""
 access_token = ""
 identity_email = ""
 erasure_access_token = ""

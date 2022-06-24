@@ -83,7 +83,7 @@ def test_zendesk_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:user_identities"],
-        min_size=1,
+        min_size=2,
         keys=[
             "url",
             "id",
@@ -94,8 +94,6 @@ def test_zendesk_access_request_task(
             "primary",
             "created_at",
             "updated_at",
-            "undeliverable_count",
-            "deliverable_state",
         ],
     )
 
