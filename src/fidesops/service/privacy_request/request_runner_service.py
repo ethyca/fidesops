@@ -58,7 +58,7 @@ def run_webhooks_and_report_status(
 
     if after_webhook_id:
         # Only run webhooks configured to run after this Pre-Execution webhook
-        pre_webhook = PolicyPreWebhook.get(db=db, id=after_webhook_id)
+        pre_webhook = PolicyPreWebhook.get(db=db, object_id=after_webhook_id)
         webhooks = webhooks.filter(
             webhook_cls.order > pre_webhook.order,
         )
@@ -169,7 +169,7 @@ def run_privacy_request(
         # can't be passed into and between tasks
         from_step = PausedStep(from_step)
 
-    SessionLocal = get_db_session()
+    SessionLocal = get_db_session(config)
     with SessionLocal() as session:
 
         privacy_request = PrivacyRequest.get(db=session, id=privacy_request_id)

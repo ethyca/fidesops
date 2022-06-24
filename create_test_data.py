@@ -18,7 +18,6 @@ from fidesops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.models.storage import ResponseFormat, StorageConfig
@@ -144,8 +143,7 @@ def _create_connection_configs(db: orm.Session) -> None:
     )
 
 
-def create_test_data(db: orm.Session) -> FidesopsUser:
->>>>>>> origin/main
+def create_test_data(db: orm.Session) -> FidesUser:
     """Script to create test data for the Admin UI"""
     print("Seeding database with privacy requests")
     _, client = ClientDetail.get_or_create(

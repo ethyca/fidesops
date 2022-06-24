@@ -398,7 +398,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         assert pr.get_cached_task_id() is not None
         assert pr.get_async_execution_task() is not None
         pr.delete(db=db)

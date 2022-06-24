@@ -70,11 +70,11 @@ def test_start_processing_sets_started_processing_at(
     run_privacy_request_task.delay(privacy_request_status_pending.id).get(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
-    _sessionmaker = get_db_session()
+    _sessionmaker = get_db_session(config)
     db = _sessionmaker()
     assert (
         PrivacyRequest.get(
-            db=db, id=privacy_request_status_pending.id
+            db=db, object_id=privacy_request_status_pending.id
         ).started_processing_at
         is not None
     )
@@ -89,10 +89,10 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
     assert before is not None
 
     run_privacy_request_task.delay(privacy_request.id).get(
-        timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        config=config, timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
 
-    _sessionmaker = get_db_session()
+    _sessionmaker = get_db_session(config)
     db = _sessionmaker()
 
     privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
