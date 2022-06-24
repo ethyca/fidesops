@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from celery import Celery
 from celery.utils.log import get_task_logger
 
@@ -29,9 +31,9 @@ def _create_celery() -> Celery:
 celery_app = _create_celery()
 
 
-def start_worker():
+def start_worker(argv: Optional[List[str]] = None):
     logger.info("Running Celery worker...")
-    celery_app.worker_main()
+    celery_app.worker_main(argv)
 
 
 if __name__ == "__main__":
