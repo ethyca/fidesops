@@ -1,6 +1,5 @@
 services:
-  fidesops:
-    container_name: fidesops
+  webserver:
     build:
       context: .
       dockerfile: Dockerfile.app

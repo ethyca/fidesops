@@ -1,11 +1,10 @@
 services:
   webserver:
-    container_name: fidesops
     build:
       context: .
       dockerfile: Dockerfile.app
     depends_on:
-      - celery
+      - worker
       - db
       - redis
     expose:
@@ -63,7 +62,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.worker
-    command: celery -A fidesops.tasks.celery_app worker --loglevel=info
+    command: fidesops worker
     depends_on:
       redis:
         condition: service_started
