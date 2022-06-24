@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
+    HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_424_FAILED_DEPENDENCY,
@@ -16,19 +17,25 @@ from fidesops import common_exceptions
 from fidesops.api import deps
 from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
+from fidesops.api.v1.endpoints.privacy_request_endpoints import (
+    get_privacy_request_or_error,
+)
 from fidesops.core.config import config
 from fidesops.models.policy import DrpAction, Policy
-from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.schemas.drp_privacy_request import (
     DRP_VERSION,
     DrpDataRightsResponse,
     DrpIdentity,
     DrpPrivacyRequestCreate,
+    DrpRevokeRequest,
 )
 from fidesops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
-from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
+from fidesops.service.privacy_request.request_runner_service import (
+    queue_privacy_request,
+)
 from fidesops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
@@ -98,10 +105,7 @@ def create_drp_privacy_request(
 
         cache_data(privacy_request, policy, mapped_identity, None, data)
 
-        PrivacyRequestRunner(
-            cache=cache,
-            privacy_request=privacy_request,
-        ).submit()
+        queue_privacy_request(privacy_request.id)
 
         return PrivacyRequestDRPStatusResponse(
             request_id=privacy_request.id,
@@ -176,4 +180,37 @@ def get_drp_data_rights(*, db: Session = Depends(deps.get_db)) -> DrpDataRightsR
 
     return DrpDataRightsResponse(
         version=DRP_VERSION, api_base=None, actions=actions, user_relationships=None
+    )
+
+
+@router.post(
+    urls.DRP_REVOKE,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_REVIEW])
+    ],
+    response_model=PrivacyRequestDRPStatusResponse,
+)
+def revoke_request(
+    *, db: Session = Depends(deps.get_db), data: DrpRevokeRequest
+) -> PrivacyRequestDRPStatusResponse:
+    """
+    Revoke a pending privacy request.
+    """
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(db, data.request_id)
+
+    if privacy_request.status != PrivacyRequestStatus.pending:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid revoke request. Can only revoke `pending` requests. "
+            f"Privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+        )
+
+    logger.info(f"Canceling privacy request '{privacy_request.id}'")
+    privacy_request.cancel_processing(db, cancel_reason=data.reason)
+
+    return PrivacyRequestDRPStatusResponse(
+        request_id=privacy_request.id,
+        received_at=privacy_request.requested_at,
+        status=DrpFidesopsMapper.map_status(privacy_request.status),
+        reason=data.reason,
     )
