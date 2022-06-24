@@ -19,6 +19,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.0...main)
 
+### Fixed
+* Make reading of environment variables case insensitive [712](https://github.com/ethyca/fidesops/pull/712)
+
 
 ## [1.6.0](https://github.com/ethyca/fidesops/compare/1.5.3...1.6.0)
 
