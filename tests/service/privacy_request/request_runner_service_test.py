@@ -6,7 +6,6 @@ from uuid import uuid4
 
 import pydash
 import pytest
-from fideslib.db.session import get_db_session
 from pydantic import ValidationError
 from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session
@@ -39,12 +38,11 @@ from fidesops.service.masking.strategy.masking_strategy_factory import (
 )
 from fidesops.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 from fidesops.service.privacy_request.request_runner_service import (
-    run_privacy_request,
     run_webhooks_and_report_status,
 )
 from fidesops.util.data_category import DataCategory
 
-PRIVACY_REQUEST_TASK_TIMEOUT = 2
+PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 15
 
@@ -87,7 +85,7 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
     updated_at = privacy_request.updated_at
 
     run_privacy_request_task.delay(privacy_request.id).get(
-        config=config, timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
 
     db.refresh(privacy_request)
@@ -109,7 +107,9 @@ def test_halts_proceeding_if_cancelled(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
     db.refresh(privacy_request_status_canceled)
-    reloaded_pr = PrivacyRequest.get(db=db, id=privacy_request_status_canceled.id)
+    reloaded_pr = PrivacyRequest.get(
+        db=db, object_id=privacy_request_status_canceled.id
+    )
     assert reloaded_pr.started_processing_at is None
     assert reloaded_pr.status == PrivacyRequestStatus.canceled
     assert not upload_access_results_mock.called

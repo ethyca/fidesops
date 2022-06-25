@@ -663,11 +663,13 @@ def test_restart_graph_from_failure(
             CollectionAddress(log.dataset_name, log.collection_name).value,
             log.status.value,
         )
-        for log in db.query(ExecutionLog).filter_by(
+        for log in db.query(ExecutionLog)
+        .filter_by(
             privacy_request_id=privacy_request.id,
             dataset_name="mongo_test",
             collection_name="customer_details",
         )
+        .order_by("created_at")
     ]
 
     assert customer_detail_logs == [
