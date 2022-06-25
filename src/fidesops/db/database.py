@@ -45,7 +45,7 @@ def check_missing_migrations(database_url: PostgresDsn) -> None:
     was generated.
     """
 
-    engine = get_db_engine(database_url)
+    engine = get_db_engine(database_uri=database_url)
     connection = engine.connect()
 
     migration_context = MigrationContext.configure(connection)
