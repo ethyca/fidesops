@@ -20,7 +20,7 @@ jobs:
         pip install -U pip
         pip install -r dev-requirements.txt
         pip install -e .
-    - name: run iort
+    - name: run isort
       run: isort --check-only src tests
 
   Black:
