@@ -1,15 +1,16 @@
 export type PrivacyRequestStatus =
-  | 'approved'
-  | 'complete'
-  | 'denied'
-  | 'error'
-  | 'in_processing'
-  | 'paused'
-  | 'pending';
+  | "approved"
+  | "complete"
+  | "denied"
+  | "error"
+  | "in_processing"
+  | "paused"
+  | "canceled"
+  | "pending";
 
 export enum ActionType {
-  ACCESS = 'access',
-  ERASURE = 'erasure',
+  ACCESS = "access",
+  ERASURE = "erasure",
 }
 
 export interface DenyPrivacyRequest {

@@ -1,15 +1,17 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import type { RootState } from '../../app/store';
-import { selectToken } from '../auth';
+import type { RootState } from "../../app/store";
+import { BASE_API_URN, BASE_URL } from "../../constants";
+import { selectToken } from "../auth";
+import { addCommonHeaders } from "../common/CommonHeaders";
 import {
   DenyPrivacyRequest,
   PrivacyRequest,
   PrivacyRequestParams,
   PrivacyRequestResponse,
   PrivacyRequestStatus,
-} from './types';
+} from "./types";
 
 // Helpers
 export function mapFiltersToSearchParams({
@@ -34,32 +36,29 @@ export function mapFiltersToSearchParams({
   }
 
   return {
-    include_identities: 'true',
+    include_identities: "true",
     ...(status ? { status } : {}),
     ...(id ? { request_id: id } : {}),
     ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
     ...(toISO ? { created_lt: toISO.toISOString() } : {}),
     ...(page ? { page: `${page}` } : {}),
-    ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
+    ...(typeof size !== "undefined" ? { size: `${size}` } : {}),
     ...(verbose ? { verbose } : {}),
   };
 }
 
 // Subject requests API
 export const privacyRequestApi = createApi({
-  reducerPath: 'privacyRequestApi',
+  reducerPath: "privacyRequestApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_FIDESOPS_API!,
+    baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
-      const token = selectToken(getState() as RootState);
-      headers.set('Access-Control-Allow-Origin', '*');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
+      const token: string | null = selectToken(getState() as RootState);
+      addCommonHeaders(headers, token);
       return headers;
     },
   }),
-  tagTypes: ['Request'],
+  tagTypes: ["Request"],
   endpoints: (build) => ({
     getAllPrivacyRequests: build.query<
       PrivacyRequestResponse,
@@ -69,31 +68,31 @@ export const privacyRequestApi = createApi({
         url: `privacy-request`,
         params: mapFiltersToSearchParams(filters),
       }),
-      providesTags: () => ['Request'],
+      providesTags: () => ["Request"],
     }),
     approveRequest: build.mutation<
       PrivacyRequest,
-      Partial<PrivacyRequest> & Pick<PrivacyRequest, 'id'>
+      Partial<PrivacyRequest> & Pick<PrivacyRequest, "id">
     >({
       query: ({ id }) => ({
-        url: 'privacy-request/administrate/approve',
-        method: 'PATCH',
+        url: "privacy-request/administrate/approve",
+        method: "PATCH",
         body: {
           request_ids: [id],
         },
       }),
-      invalidatesTags: ['Request'],
+      invalidatesTags: ["Request"],
     }),
     denyRequest: build.mutation<PrivacyRequest, DenyPrivacyRequest>({
       query: ({ id, reason }) => ({
-        url: 'privacy-request/administrate/deny',
-        method: 'PATCH',
+        url: "privacy-request/administrate/deny",
+        method: "PATCH",
         body: {
           request_ids: [id],
           reason,
         },
       }),
-      invalidatesTags: ['Request'],
+      invalidatesTags: ["Request"],
     }),
   }),
 });
@@ -116,34 +115,33 @@ export const requestCSVDownload = async ({
   }
 
   return fetch(
-    `${
-      process.env.NEXT_PUBLIC_FIDESOPS_API
-    }/privacy-request?${new URLSearchParams({
+    `${BASE_API_URN}/privacy-request?${new URLSearchParams({
       ...mapFiltersToSearchParams({
         id,
         from,
         to,
         status,
       }),
-      download_csv: 'true',
+      download_csv: "true",
     })}`,
     {
       headers: {
-        'Access-Control-Allow-Origin': '*',
+        "Access-Control-Allow-Origin": "*",
         Authorization: `Bearer ${token}`,
+        "X-Fides-Source": "fidesops-admin-ui",
       },
     }
   )
     .then((response) => {
       if (!response.ok) {
-        throw new Error('Got a bad response from the server');
+        throw new Error("Got a bad response from the server");
       }
       return response.blob();
     })
     .then((data) => {
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = window.URL.createObjectURL(data);
-      a.download = 'privacy-requests.csv';
+      a.download = "privacy-requests.csv";
       a.click();
     })
     .catch((error) => Promise.reject(error));
@@ -163,15 +161,15 @@ interface SubjectRequestsState {
 
 const initialState: SubjectRequestsState = {
   revealPII: false,
-  id: '',
-  from: '',
-  to: '',
+  id: "",
+  from: "",
+  to: "",
   page: 1,
   size: 25,
 };
 
 export const subjectRequestsSlice = createSlice({
-  name: 'subjectRequests',
+  name: "subjectRequests",
   initialState,
   reducers: {
     setRevealPII: (state, action: PayloadAction<boolean>) => ({

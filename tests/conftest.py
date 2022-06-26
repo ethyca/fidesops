@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, Generator, List, MutableMapping
 
 import pytest
 from fastapi.testclient import TestClient
+from fideslib.core.config import load_toml
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
@@ -36,9 +37,11 @@ from .fixtures.redshift_fixtures import *
 from .fixtures.saas.hubspot_fixtures import *
 from .fixtures.saas.mailchimp_fixtures import *
 from .fixtures.saas.outreach_fixtures import *
+from .fixtures.saas.salesforce_fixtures import *
 from .fixtures.saas.segment_fixtures import *
 from .fixtures.saas.sentry_fixtures import *
 from .fixtures.saas.stripe_fixtures import *
+from .fixtures.saas.zendesk_fixtures import *
 from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
 
@@ -154,4 +157,40 @@ def generate_webhook_auth_header() -> Callable[[Any], Dict[str, str]]:
 
 @pytest.fixture(scope="session")
 def integration_config() -> MutableMapping[str, Any]:
-    yield load_toml("fidesops-integration.toml")
+    yield load_toml(["fidesops-integration.toml"])
+
+
+@pytest.fixture(autouse=True, scope="session")
+def celery_enable_logging():
+    """Turns on celery output logs."""
+    return True
+
+
+@pytest.fixture(autouse=True, scope="session")
+def celery_use_virtual_worker(celery_session_worker):
+    """
+    This is a catch-all fixture that forces all of our
+    tests to use a virtual celery worker if a registered
+    task is executed within the scope of the test.
+    """
+    yield celery_session_worker
+
+
+@pytest.fixture(scope="session")
+def run_privacy_request_task(celery_session_app):
+    """
+    This fixture is the version of the run_privacy_request task that is
+    registered to the `celery_app` fixture which uses the virtualised `celery_worker`
+    """
+    yield celery_session_app.tasks[
+        "fidesops.service.privacy_request.request_runner_service.run_privacy_request"
+    ]
+
+
+@pytest.fixture(autouse=True, scope="session")
+def analytics_opt_out():
+    """Disable sending analytics when running tests."""
+    original_value = config.root_user.ANALYTICS_OPT_OUT
+    config.root_user.ANALYTICS_OPT_OUT = True
+    yield
+    config.root_user.ANALYTICS_OPT_OUT = original_value

@@ -8,11 +8,11 @@ import pydash
 import pytest
 import yaml
 from faker import Faker
+from fideslib.core.config import load_file, load_toml
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
-from fidesops.core.config import load_file, load_toml
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import (
     AccessLevel,
@@ -45,14 +45,12 @@ from fidesops.service.masking.strategy.masking_strategy_nullify import (
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE_STRATEGY_NAME,
 )
-from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
-from fidesops.util.cache import FidesopsRedis
 from fidesops.util.data_category import DataCategory
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
-integration_config = load_toml("fidesops-integration.toml")
+integration_config = load_toml(["fidesops-integration.toml"])
 
 logger = logging.getLogger(__name__)
 
@@ -744,42 +742,72 @@ def privacy_requests(db: Session, policy: Policy) -> Generator:
 def _create_privacy_request_for_policy(
     db: Session,
     policy: Policy,
+    status: PrivacyRequestStatus = PrivacyRequestStatus.in_processing,
 ) -> PrivacyRequest:
+    data = {
+        "external_id": f"ext-{str(uuid4())}",
+        "requested_at": datetime(
+            2018,
+            12,
+            31,
+            hour=2,
+            minute=30,
+            second=23,
+            microsecond=916482,
+            tzinfo=timezone.utc,
+        ),
+        "status": status,
+        "origin": f"https://example.com/",
+        "policy_id": policy.id,
+        "client_id": policy.client_id,
+    }
+    if status != PrivacyRequestStatus.pending:
+        data["started_processing_at"] = datetime(
+            2019,
+            1,
+            1,
+            hour=1,
+            minute=45,
+            second=55,
+            microsecond=393185,
+            tzinfo=timezone.utc,
+        )
     return PrivacyRequest.create(
         db=db,
-        data={
-            "external_id": f"ext-{str(uuid4())}",
-            "started_processing_at": datetime(
-                2019,
-                1,
-                1,
-                hour=1,
-                minute=45,
-                second=55,
-                microsecond=393185,
-                tzinfo=timezone.utc,
-            ),
-            "requested_at": datetime(
-                2018,
-                12,
-                31,
-                hour=2,
-                minute=30,
-                second=23,
-                microsecond=916482,
-                tzinfo=timezone.utc,
-            ),
-            "status": PrivacyRequestStatus.in_processing,
-            "origin": f"https://example.com/",
-            "policy_id": policy.id,
-            "client_id": policy.client_id,
-        },
+        data=data,
     )
 
 
 @pytest.fixture(scope="function")
 def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
-    privacy_request = _create_privacy_request_for_policy(db, policy)
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+    )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_status_pending(db: Session, policy: Policy) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+        PrivacyRequestStatus.pending,
+    )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_status_canceled(db: Session, policy: Policy) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+        PrivacyRequestStatus.canceled,
+    )
+    privacy_request.started_processing_at = None
+    privacy_request.save(db)
     yield privacy_request
     privacy_request.delete(db)
 
@@ -952,13 +980,13 @@ def dataset_config_preview(
 
 
 def load_dataset(filename: str) -> Dict:
-    yaml_file = load_file(filename)
+    yaml_file = load_file([filename])
     with open(yaml_file, "r") as file:
         return yaml.safe_load(file).get("dataset", [])
 
 
 def load_dataset_as_string(filename: str) -> str:
-    yaml_file = load_file(filename)
+    yaml_file = load_file([filename])
     with open(yaml_file, "r") as file:
         return file.read()
 
@@ -998,17 +1026,6 @@ def example_yaml_dataset() -> str:
 def example_invalid_yaml_dataset() -> str:
     example_filename = "data/dataset/example_test_dataset.invalid"
     return load_dataset_as_string(example_filename)
-
-
-@pytest.fixture
-def privacy_request_runner(
-    cache: FidesopsRedis,
-    privacy_request: PrivacyRequest,
-) -> Generator:
-    yield PrivacyRequestRunner(
-        cache=cache,
-        privacy_request=privacy_request,
-    )
 
 
 @pytest.fixture(scope="function")
