@@ -5,6 +5,7 @@ from typing import Callable, Optional
 
 import uvicorn
 from fastapi import FastAPI, Request, Response
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fideslog.sdk.python.event import AnalyticsEvent
 from redis.exceptions import ResponseError
@@ -27,6 +28,7 @@ from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.util.cache import get_cache
 from fidesops.util.logger import get_fides_log_record_factory
+import os
 
 logging.basicConfig(level=config.security.LOG_LEVEL)
 logging.setLogRecordFactory(get_fides_log_record_factory())
@@ -115,20 +117,38 @@ app.include_router(api_router)
 for handler in ExceptionHandlers.get_handlers():
     app.add_exception_handler(FunctionalityNotConfigured, handler)
 
-
+WEBAPP_DIRECTORY = Path("src/fidesops/build/static")
+WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 @app.on_event("startup")
 async def create_webapp_dir_if_not_exists() -> None:
     """Creates the webapp directory if it doesn't exist."""
     if config.admin_ui.ENABLED:
-        WEBAPP_DIRECTORY = Path("src/fidesops/build/static")
-        WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
         if not WEBAPP_INDEX.is_file():
             WEBAPP_DIRECTORY.mkdir(parents=True, exist_ok=True)
             with open(WEBAPP_DIRECTORY / "index.html", "w") as index_file:
                 index_file.write("<h1>Privacy is a Human Right!</h1>")
 
-        app.mount("/", StaticFiles(directory=WEBAPP_DIRECTORY, html=True), name="static")
+        app.mount("/static", StaticFiles(directory=WEBAPP_DIRECTORY), name="static")
         logger.info("Mounted static file directory...")
+
+@app.get("/", response_class=FileResponse)
+def read_index():
+    return FileResponse(WEBAPP_INDEX)
+
+@app.get("/{catchall:path}", response_class=FileResponse)
+def read_index(request: Request):
+    # check first if requested file exists
+    path = request.path_params["catchall"]
+    path = path + '.html' if path.find('.') == -1  else path
+    file = WEBAPP_DIRECTORY / path
+
+    logger.info(f'look for: {path} ----- {file}')
+
+    if os.path.exists(file):
+        return FileResponse(file)
+
+    # otherwise return index files
+    return FileResponse(WEBAPP_INDEX)
 
 
 def start_webserver() -> None:
