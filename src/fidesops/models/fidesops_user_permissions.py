@@ -2,7 +2,7 @@ from sqlalchemy import ARRAY, Column, ForeignKey, String
 from sqlalchemy.orm import backref, relationship
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ
-from fidesops.db.base_class import Base
+from fidesops.db.base_class import Base  # type: ignore
 from fidesops.models.fidesops_user import FidesopsUser
 
 

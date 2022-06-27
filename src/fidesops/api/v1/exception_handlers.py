@@ -17,5 +17,7 @@ class ExceptionHandlers:
         )
 
     @classmethod
-    def get_handlers(cls) -> List[Callable[[Request, Exception], Response]]:
+    def get_handlers(
+        cls,
+    ) -> List[Callable[[Request, FunctionalityNotConfigured], JSONResponse]]:
         return [ExceptionHandlers.functionality_not_configured_handler]

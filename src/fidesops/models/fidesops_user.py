@@ -5,7 +5,7 @@ from sqlalchemy import Column, DateTime, String
 from sqlalchemy.orm import Session, relationship
 
 from fidesops.core.config import config
-from fidesops.db.base_class import Base
+from fidesops.db.base_class import Base  # type: ignore
 from fidesops.models.audit_log import AuditLog
 from fidesops.util.cryptographic_util import generate_salt, hash_with_salt
 

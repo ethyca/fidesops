@@ -344,7 +344,7 @@ class ObjectField(Field):
             *[field.collect_matching(func) for field in self.fields.values()]
         )
         return merge_dicts(
-            base,
+            base,  # type: ignore
             {
                 field_path.prepend(self.name): field  # pylint: disable=no-member
                 for field_path, field in child_dicts.items()
