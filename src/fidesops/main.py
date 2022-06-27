@@ -142,7 +142,7 @@ def read_index() -> FileResponse:
 
 @app.get("/{catchall:path}", response_class=FileResponse)
 def read_ui_files(request: Request) -> FileResponse:
-    """Return request UI  file or return index.html file if request file doesn't exist"""
+    """Return requested UI  file or return index.html file if requested file doesn't exist"""
     path = request.path_params["catchall"]
     path = path + ".html" if path.find(".") == -1 else path
     file = WEBAPP_DIRECTORY / path
