@@ -30,7 +30,7 @@ def _create_celery() -> Celery:
 celery_app = _create_celery()
 
 
-def start_worker(argv: Optional[List[str]] = None):
+def start_worker(argv: Optional[List[str]] = None) -> None:
     logger.info("Running Celery worker...")
     celery_app.worker_main(argv)
 
