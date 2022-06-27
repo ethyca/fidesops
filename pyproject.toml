@@ -20,6 +20,7 @@ disallow_untyped_defs = false
 module = [
   "alembic.*",
   "apscheduler.*",
+  "celery.*",
   "dask.*",
   "fideslang.*",
   "fideslog.*",

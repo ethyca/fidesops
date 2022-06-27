@@ -194,11 +194,21 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 saas_request.pagination.strategy,
                 saas_request.pagination.configuration,
             )
+
+            if not saas_request.data_path:
+                raise ValueError("No data path present")
+
+            if not response:
+                raise ConnectionError("Request received no response")
+
             next_request = strategy.get_next_request(
-                prepared_request, self.secrets, response, saas_request.data_path
+                prepared_request, self.secrets, response, saas_request.data_path  # type: ignore
             )
 
         if next_request:
+            if not saas_request.pagination:
+                raise ValueError("No pagination strategy present")
+
             logger.info(
                 f"Using '{saas_request.pagination.strategy}' "
                 f"pagination strategy to get next page for '{self.collection_name}'."
@@ -222,17 +232,17 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         processed_data = response_data
         for postprocessor in postprocessors or []:
             strategy: PostProcessorStrategy = get_postprocessor_strategy(
-                postprocessor.strategy, postprocessor.configuration
+                postprocessor.strategy, postprocessor.configuration  # type: ignore
             )
             logger.info(
-                f"Starting postprocessing of '{self.collection_name}' collection with "
+                f"Starting postprocessing of '{self.collection_name}' collection with "  # type: ignore
                 f"'{postprocessor.strategy}' strategy."
             )
             try:
                 processed_data = strategy.process(processed_data, identity_data)
             except Exception as exc:
                 raise PostProcessingException(
-                    f"Exception occurred during the '{postprocessor.strategy}' postprocessor "
+                    f"Exception occurred during the '{postprocessor.strategy}' postprocessor "  # type: ignore
                     f"on the '{self.collection_name}' collection: {exc}"
                 )
         if not processed_data:
@@ -280,7 +290,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         rows = self.process_response_data(
             rows,
             privacy_request.get_cached_identity_data(),
-            masking_request.postprocessors,
+            masking_request.postprocessors,  # type: ignore
         )
 
         prepared_requests = [

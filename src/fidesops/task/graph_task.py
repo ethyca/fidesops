@@ -4,7 +4,7 @@ import traceback
 from abc import ABC
 from functools import wraps
 from time import sleep
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import dask
 from dask.threaded import get
@@ -62,7 +62,7 @@ def retry(
             method_name = func.__name__
             self = args[0]
 
-            raised_ex: Optional[Exception] = None
+            raised_ex: Optional[Union[BaseException, Exception]] = None
             for attempt in range(config.execution.TASK_RETRY_COUNT + 1):
                 try:
                     self.skip_if_disabled()
@@ -143,7 +143,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return f"{type(self)}:{self.key}"
 
     @property
-    def grouped_fields(self) -> Set[Optional[str]]:
+    def grouped_fields(self) -> Set[str]:
         """Convenience property - returns a set of fields that have been specified on the collection as dependent
         upon one another
         """
@@ -154,8 +154,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """If the current collection needs inputs from other collections, in addition to its seed data."""
         collection = self.traversal_node.node.collection
         for field in self.grouped_fields:
-            if collection.field(FieldPath(field)).identity:
-                return True
+            if field:
+                field_path = collection.field(FieldPath(field))
+                if field_path and field_path.identity:
+                    return True
         return False
 
     def build_incoming_field_path_maps(
@@ -189,7 +191,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         return field_map(lambda string_path: True), field_map(lambda string_path: False)
 
-    def generate_dry_run_query(self) -> str:
+    def generate_dry_run_query(self) -> Optional[str]:
         """Type-specific query generated for this traversal_node."""
         return self.connector.dry_run_query(self.traversal_node)
 
@@ -213,8 +215,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         for (foreign_field_path, local_field_path) in dependent_field_mappings[
             ROOT_COLLECTION_ADDRESS
         ]:
-            dependent_values: List = consolidate_query_matches(
-                row=seed_data, target_path=foreign_field_path
+            dependent_values = consolidate_query_matches(
+                row=seed_data, target_path=foreign_field_path  # type: ignore
             )
             grouped_data[local_field_path.string_path] = dependent_values
         return grouped_data
@@ -387,7 +389,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         out: FieldPathNodeInput = {}
         for key, values in pre_processed_inputs.items():
             path: FieldPath = FieldPath.parse(key)
-            field: Field = self.traversal_node.node.collection.field(path)
+            field: Optional[Field] = self.traversal_node.node.collection.field(path)
             if (
                 field
                 and path in self.traversal_node.query_field_paths
@@ -523,7 +525,10 @@ def collect_queries(
         tn: TraversalNode, data: Dict[CollectionAddress, str]
     ) -> None:
         if not tn.is_root_node():
-            data[tn.address] = GraphTask(tn, resources).generate_dry_run_query()
+            graph_task = GraphTask(tn, resources).generate_dry_run_query()
+            if not graph_task:
+                raise ValueError("Dry run has no value")
+            data[tn.address] = graph_task
 
     env: Dict[CollectionAddress, str] = {}
     traversal.traverse(env, collect_queries_fn)
@@ -709,7 +714,7 @@ def build_affected_field_logs(
 
         collection_categories: Dict[
             str, List[FieldPath]
-        ] = node.collection.field_paths_by_category
+        ] = node.collection.field_paths_by_category  # type: ignore
         for rule_cat in rule_categories:
             for collection_cat, field_paths in collection_categories.items():
                 if collection_cat.startswith(rule_cat):

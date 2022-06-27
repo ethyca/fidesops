@@ -92,12 +92,18 @@ class OneTrustService:
         for request in all_requests:
             identity_kwargs = {"email": request.email}
             identity = PrivacyRequestIdentity(**identity_kwargs)
+            if not request.requestQueueRefId:
+                raise ValueError("Request has no queue reference ID")
             fides_task: Optional[OneTrustSubtask] = OneTrustService._get_fides_subtask(
                 hostname, request.requestQueueRefId, access_token
             )
             if fides_task is None:
                 # no fides task associated with this request
                 continue
+            if not fides_task.subTaskId:
+                raise ValueError(f"Task id missing")
+            if not request.dateCreated:
+                raise ValueError("Request is missing a date created")
             OneTrustService._create_privacy_request(
                 fides_task.subTaskId,
                 request.dateCreated,
