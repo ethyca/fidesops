@@ -44,12 +44,7 @@ const Header: React.FC = () => {
         <NextLink href={INDEX_ROUTE} passHref>
           {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
           <Link display="flex">
-            <Image
-              src="/logo.svg"
-              width={83}
-              height={26}
-              alt="FidesOps Logo"
-            />
+            <Image src="/logo.svg" width={83} height={26} alt="FidesOps Logo" />
           </Link>
         </NextLink>
         <Flex alignItems="center">
