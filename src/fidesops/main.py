@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Optional
@@ -28,7 +29,6 @@ from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.util.cache import get_cache
 from fidesops.util.logger import get_fides_log_record_factory
-import os
 
 logging.basicConfig(level=config.security.LOG_LEVEL)
 logging.setLogRecordFactory(get_fides_log_record_factory())
@@ -119,6 +119,8 @@ for handler in ExceptionHandlers.get_handlers():
 
 WEBAPP_DIRECTORY = Path("src/fidesops/build/static")
 WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
+
+
 @app.on_event("startup")
 async def create_webapp_dir_if_not_exists() -> None:
     """Creates the webapp directory if it doesn't exist."""
@@ -131,23 +133,23 @@ async def create_webapp_dir_if_not_exists() -> None:
         app.mount("/static", StaticFiles(directory=WEBAPP_DIRECTORY), name="static")
         logger.info("Mounted static file directory...")
 
+
 @app.get("/", response_class=FileResponse)
-def read_index():
+def read_index() -> FileResponse:
+    """Returns index.html file"""
     return FileResponse(WEBAPP_INDEX)
 
-@app.get("/{catchall:path}", response_class=FileResponse)
-def read_index(request: Request):
-    # check first if requested file exists
-    path = request.path_params["catchall"]
-    path = path + '.html' if path.find('.') == -1  else path
-    file = WEBAPP_DIRECTORY / path
 
-    logger.info(f'look for: {path} ----- {file}')
+@app.get("/{catchall:path}", response_class=FileResponse)
+def read_ui_files(request: Request) -> FileResponse:
+    """Return request UI  file or return index.html file if request file doesn't exist"""
+    path = request.path_params["catchall"]
+    path = path + ".html" if path.find(".") == -1 else path
+    file = WEBAPP_DIRECTORY / path
 
     if os.path.exists(file):
         return FileResponse(file)
 
-    # otherwise return index files
     return FileResponse(WEBAPP_INDEX)
 
 
