@@ -127,7 +127,7 @@ async def create_webapp_dir_if_not_exists() -> None:
             with open(WEBAPP_DIRECTORY / "index.html", "w") as index_file:
                 index_file.write("<h1>Privacy is a Human Right!</h1>")
 
-        app.mount("/static", StaticFiles(directory=WEBAPP_DIRECTORY), name="static")
+        app.mount("/", StaticFiles(directory=WEBAPP_DIRECTORY, html=True), name="static")
         logger.info("Mounted static file directory...")
 
 
