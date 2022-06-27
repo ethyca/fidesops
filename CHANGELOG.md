@@ -20,11 +20,8 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.0...main)
 ### Developer Experience
 * Reduce the size of the docker image [#707](https://github.com/ethyca/fidesops/pull/707)
-<<<<<<< HEAD
-* Add dependabot to keep dependencies up to date [#718](https://github.com/ethyca/fidesops/pull/718)
-=======
 * Parallelize CI safe checks to reduce run time [#717](https://github.com/ethyca/fidesops/pull/717)
->>>>>>> origin/main
+* Add dependabot to keep dependencies up to date [#718](https://github.com/ethyca/fidesops/pull/718)
 
 * ### Docs
 * Updated the tutorial installation to use main in fidesdemo [#715](https://github.com/ethyca/fidesops/pull/715)
