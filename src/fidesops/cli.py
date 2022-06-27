@@ -27,5 +27,4 @@ def worker(ctx: click.Context) -> None:
     """
     Starts a Celery worker
     """
-    celery_args = ["worker", "--loglevel=info"]
-    start_worker(celery_args)
+    start_worker()

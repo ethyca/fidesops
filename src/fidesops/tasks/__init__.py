@@ -1,3 +1,4 @@
+import sys
 from typing import List, Optional
 
 from celery import Celery
@@ -30,9 +31,9 @@ def _create_celery() -> Celery:
 celery_app = _create_celery()
 
 
-def start_worker(argv: Optional[List[str]] = None) -> None:
+def start_worker() -> None:
     logger.info("Running Celery worker...")
-    celery_app.worker_main(argv)
+    celery_app.worker_main(argv=["worker", "--loglevel=info"])
 
 
 if __name__ == "__main__":
