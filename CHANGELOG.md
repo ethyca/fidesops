@@ -18,9 +18,12 @@ The types of changes are:
 
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.0...main)
-
-### Devloper Experience
+### Developer Experience
 * Reduce the size of the docker image [#707](https://github.com/ethyca/fidesops/pull/707)
+* Parallelize CI safe checks to reduce run time [#717](https://github.com/ethyca/fidesops/pull/717)
+
+* ### Docs
+* Updated the tutorial installation to use main in fidesdemo [#715](https://github.com/ethyca/fidesops/pull/715)
 
 
 ## [1.6.0](https://github.com/ethyca/fidesops/compare/1.5.3...1.6.0)
@@ -41,6 +44,7 @@ The types of changes are:
 * Added ConnectionConfig `connection_type` and `disabled` filters [#675](https://github.com/ethyca/fidesops/pull/675)
 * Adds Fideslog integration [#541](https://github.com/ethyca/fidesops/pull/541)
 * Adds endpoint analytics events [#622](https://github.com/ethyca/fidesops/pull/622)
+* Sample dataset for Salesforce with access configuration [#676](https://github.com/ethyca/fidesops/pull/676)
 * Sample dataset and access configuration for Zendesk (ticket endpoints) [#677](https://github.com/ethyca/fidesops/pull/677)
 * Include number of records to be masked in masking endpoint's log message [#692](https://github.com/ethyca/fidesops/pull/692)
 * Datastore Connection Landing Page [#674](https://github.com/ethyca/fidesops/pull/674)
