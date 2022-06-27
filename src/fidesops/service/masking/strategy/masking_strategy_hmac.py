@@ -75,7 +75,7 @@ class HmacMaskingStrategy(MaskingStrategy):
 
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
-        return HmacMaskingConfiguration
+        return HmacMaskingConfiguration  # type: ignore
 
     @staticmethod
     def get_description() -> MaskingStrategyDescription:

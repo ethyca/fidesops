@@ -78,7 +78,12 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                     f"strategy: {self.get_strategy_name()}"
                 )
                 return []
-            filter_value = identity_data.get(self.value.identity)
+            identity = identity_data.get(self.value.identity)
+
+            if not identity:
+                raise FidesopsException("No identity present")
+
+            filter_value = identity
 
         try:
             if isinstance(data, list):
@@ -88,7 +93,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                     if self._matches(
                         self.exact,
                         self.case_sensitive,
-                        filter_value,
+                        filter_value,  # type: ignore
                         pydash.get(item, self.field),
                     )
                 ]
@@ -97,7 +102,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                 if self._matches(
                     self.exact,
                     self.case_sensitive,
-                    filter_value,
+                    filter_value,  # type: ignore
                     pydash.get(data, self.field),
                 )
                 else []
@@ -160,4 +165,4 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
-        return FilterPostProcessorConfiguration
+        return FilterPostProcessorConfiguration  # type: ignore

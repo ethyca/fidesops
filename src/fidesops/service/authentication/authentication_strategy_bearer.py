@@ -1,5 +1,6 @@
 from requests import PreparedRequest
 
+from fidesops.common_exceptions import FidesopsException
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.strategy_configuration import (
     BearerAuthenticationConfiguration,
@@ -26,7 +27,7 @@ class BearerAuthenticationStrategy(AuthenticationStrategy):
         self, request: PreparedRequest, connection_config: ConnectionConfig
     ) -> PreparedRequest:
         if not connection_config.secrets:
-            raise ValueError("No connection secret present")
+            raise FidesopsException("No connection secret present")
 
         placeholders = assign_placeholders(self.token, connection_config.secrets)
 

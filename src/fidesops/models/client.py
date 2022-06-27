@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.core.config import config
-from fidesops.db.base_class import Base
+from fidesops.db.base_class import Base  # type: ignore
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.schemas.jwt import (
     JWE_ISSUED_AT,

@@ -367,7 +367,7 @@ def generate_field(
     data_categories: Optional[List[str]],
     identity: Optional[str],
     data_type_name: str,
-    references: List[Tuple[FieldAddress, EdgeDirection]],
+    references: List[Tuple[FieldAddress, Optional[EdgeDirection]]],
     is_pk: bool,
     length: Optional[int],
     is_array: bool,
@@ -452,7 +452,7 @@ class Collection(BaseModel):
             if field.references
         }
 
-    def identities(self) -> Dict[FieldPath, Tuple[str, ...]]:
+    def identities(self) -> Dict[FieldPath, str]:
         """return identity pointers included in the table"""
         return {
             field_path: field.identity  # type: ignore

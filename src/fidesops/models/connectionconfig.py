@@ -14,7 +14,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fidesops.core.config import config
-from fidesops.db.base_class import Base, JSONTypeOverride
+from fidesops.db.base_class import Base, JSONTypeOverride  # type: ignore
 from fidesops.schemas.saas.saas_config import SaaSConfig
 
 

@@ -1,5 +1,6 @@
 from requests import PreparedRequest
 
+from fidesops.common_exceptions import FidesopsException
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.strategy_configuration import (
     QueryParamAuthenticationConfiguration,
@@ -28,13 +29,19 @@ class QueryParamAuthenticationStrategy(AuthenticationStrategy):
         self, request: PreparedRequest, connection_config: ConnectionConfig
     ) -> PreparedRequest:
         """Add token to the request as a query param"""
+        if not request.url:
+            raise ValueError("Request has no URL")
+
+        if not connection_config.secrets:
+            raise FidesopsException("No connection configuration secrets present")
+
         request.url = set_query_parameter(
             request.url,
             self.name,
-            assign_placeholders(self.value, connection_config.secrets),
+            assign_placeholders(self.value, connection_config.secrets),  # type: ignore
         )
         return request
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
-        return QueryParamAuthenticationConfiguration
+        return QueryParamAuthenticationConfiguration  # type: ignore

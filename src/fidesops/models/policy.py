@@ -17,7 +17,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fidesops import common_exceptions
 from fidesops.common_exceptions import WebhookOrderException
 from fidesops.core.config import config
-from fidesops.db.base_class import Base, FidesopsBase, JSONTypeOverride
+from fidesops.db.base_class import Base, FidesopsBase, JSONTypeOverride  # type: ignore
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.storage import StorageConfig
@@ -190,7 +190,7 @@ def _validate_rule_target_collection(target_categories: List[str]) -> None:
     for cat in target_categories:
         # Here we check that `cat` is not an ancestor of any other category within `target_categories`
         is_ancestor, ancestor_fides_key = _is_ancestor_of_contained_categories(
-            fides_key=cat,
+            fides_key=FidesOpsKey(cat),
             data_categories=target_categories,
         )
         if is_ancestor:

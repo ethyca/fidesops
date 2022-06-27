@@ -7,7 +7,8 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 
-from fidesops.db.base_class import Base
+from fidesops.common_exceptions import FidesopsException
+from fidesops.db.base_class import Base  # type: ignore
 from fidesops.graph.config import (
     Collection,
     CollectionAddress,
@@ -77,16 +78,20 @@ class DatasetConfig(Base):
         the corresponding SaaS config is merged in as well
         """
         dataset_graph = convert_dataset_to_graph(
-            FidesopsDataset(**self.dataset), self.connection_config.key
+            FidesopsDataset(**self.dataset), self.connection_config.key  # type: ignore
         )
         if (
             self.connection_config.connection_type == ConnectionType.saas
             and self.connection_config.saas_config is not None
             and self.connection_config.saas_config["fides_key"] == self.fides_key
         ):
+            saas_config = self.connection.get_saas_config()
+            if not saas_config:
+                raise FidesopsException("A SAAS configuration is required")
+
             dataset_graph = merge_datasets(
                 dataset_graph,
-                self.connection_config.get_saas_config().get_graph(),
+                saas_config.get_graph(),
             )
         else:
             logger.debug(
@@ -160,6 +165,13 @@ def to_graph_field(
 
     if field.fields:
         sub_fields = [to_graph_field(fld, return_all_elements) for fld in field.fields]
+
+    if not references:
+        raise FidesopsException("No references present")
+
+    if not data_type_name:
+        raise FidesopsException("No data type name present")
+
     return generate_field(
         name=field.name,
         data_categories=field.data_categories,

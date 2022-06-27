@@ -79,7 +79,7 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
         """Used to get the configuration model to configure the strategy"""
-        return AesEncryptionMaskingConfiguration
+        return AesEncryptionMaskingConfiguration  # type: ignore
 
     @staticmethod
     def get_description() -> MaskingStrategyDescription:
@@ -108,7 +108,7 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
 
     @staticmethod
     def _generate_nonce(
-        value: Optional[str],
+        value: str,
         key: str,
         privacy_request_id: Optional[str],
         masking_meta: Dict[SecretType, MaskingSecretMeta],

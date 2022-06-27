@@ -51,7 +51,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         self._check_required_secrets(connection_config)
 
         if not connection_config.secrets:
-            raise ValueError("No connection secret present")
+            raise FidesopsException("No connection secret present")
 
         access_token = connection_config.secrets.get("access_token")
         if not access_token:
@@ -121,7 +121,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         )
 
         if not connection_config.secrets:
-            raise ValueError("No connection secret present")
+            raise FidesopsException("No connection secret present")
 
         client = AuthenticatedClient(
             (
@@ -213,7 +213,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         # get the session from the connection_config as a fallback
 
         if not connection_config.secrets:
-            raise ValueError("No connection secret present")
+            raise FidesopsException("No connection secret present")
 
         if not db:
             db = Session.object_session(connection_config)
@@ -243,13 +243,13 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         )
 
         if not connection_config.secrets:
-            raise ValueError("No connection secret present")
+            raise FidesopsException("No connection secret present")
 
         # add state to secrets
         connection_config.secrets["state"] = state
 
         if not connection_config.secrets:
-            raise ValueError("No connection secret present")
+            raise FidesopsException("No connection secret present")
 
         # assign placeholders in the authorization request config
         prepared_authorization_request = map_param_values(
@@ -290,7 +290,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
 
         self._check_required_secrets(connection_config)
         if not connection_config.secrets:
-            raise ValueError("No connection secret present")
+            raise FidesopsException("No connection secret present")
 
         connection_config.secrets = {**connection_config.secrets, "code": code}
         access_response = self._call_token_request(
