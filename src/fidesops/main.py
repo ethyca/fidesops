@@ -120,11 +120,11 @@ for handler in ExceptionHandlers.get_handlers():
 WEBAPP_DIRECTORY = Path("src/fidesops/build/static")
 WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
+if config.admin_ui.ENABLED:
 
-@app.on_event("startup")
-async def create_webapp_dir_if_not_exists() -> None:
-    """Creates the webapp directory if it doesn't exist."""
-    if config.admin_ui.ENABLED:
+    @app.on_event("startup")
+    async def create_webapp_dir_if_not_exists() -> None:
+        """Creates the webapp directory if it doesn't exist."""
         if not WEBAPP_INDEX.is_file():
             WEBAPP_DIRECTORY.mkdir(parents=True, exist_ok=True)
             with open(WEBAPP_DIRECTORY / "index.html", "w") as index_file:
@@ -133,24 +133,22 @@ async def create_webapp_dir_if_not_exists() -> None:
         app.mount("/static", StaticFiles(directory=WEBAPP_DIRECTORY), name="static")
         logger.info("Mounted static file directory...")
 
+    @app.get("/", response_class=FileResponse)
+    def read_index() -> FileResponse:
+        """Returns index.html file"""
+        return FileResponse(WEBAPP_INDEX)
 
-@app.get("/", response_class=FileResponse)
-def read_index() -> FileResponse:
-    """Returns index.html file"""
-    return FileResponse(WEBAPP_INDEX)
+    @app.get("/{catchall:path}", response_class=FileResponse)
+    def read_ui_files(request: Request) -> FileResponse:
+        """Return requested UI  file or return index.html file if requested file doesn't exist"""
+        path = request.path_params["catchall"]
+        path = path + ".html" if path.find(".") == -1 else path
+        file = WEBAPP_DIRECTORY / path
 
+        if os.path.exists(file):
+            return FileResponse(file)
 
-@app.get("/{catchall:path}", response_class=FileResponse)
-def read_ui_files(request: Request) -> FileResponse:
-    """Return requested UI  file or return index.html file if requested file doesn't exist"""
-    path = request.path_params["catchall"]
-    path = path + ".html" if path.find(".") == -1 else path
-    file = WEBAPP_DIRECTORY / path
-
-    if os.path.exists(file):
-        return FileResponse(file)
-
-    return FileResponse(WEBAPP_INDEX)
+        return FileResponse(WEBAPP_INDEX)
 
 
 def start_webserver() -> None:
