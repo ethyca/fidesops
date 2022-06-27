@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session, backref, relationship
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.common_exceptions import PrivacyRequestPaused
-from fidesops.db.base_class import Base, FidesopsBase
+from fidesops.db.base_class import Base, FidesopsBase  # type: ignore
 from fidesops.graph.config import CollectionAddress
 from fidesops.models.audit_log import AuditLog
 from fidesops.models.client import ClientDetail

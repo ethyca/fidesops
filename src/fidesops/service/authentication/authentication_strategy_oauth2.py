@@ -50,6 +50,9 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         # make sure required secrets have been provided
         self._check_required_secrets(connection_config)
 
+        if not connection_config.secrets:
+            raise ValueError("No connection secret present")
+
         access_token = connection_config.secrets.get("access_token")
         if not access_token:
             raise FidesopsException(
@@ -102,9 +105,13 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
 
         logger.info(f"Attempting {action} token request for {connection_config.key}")
 
+        saas_config = connection_config.get_saas_config()
+        if not saas_config:
+            raise ValueError("No SAAS configuration")
+
         # get the client config from the token request or default to the
         # protocol and host specified by the root client config (no auth)
-        root_client_config = connection_config.get_saas_config().client_config
+        root_client_config = saas_config.client_config
         oauth_client_config = (
             token_request.client_config
             if token_request.client_config
@@ -112,6 +119,9 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
                 protocol=root_client_config.protocol, host=root_client_config.host
             )
         )
+
+        if not connection_config.secrets:
+            raise ValueError("No connection secret present")
 
         client = AuthenticatedClient(
             (
@@ -201,6 +211,10 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         # persist new tokens to the database
         # ideally we use a passed in database session but we can
         # get the session from the connection_config as a fallback
+
+        if not connection_config.secrets:
+            raise ValueError("No connection secret present")
+
         if not db:
             db = Session.object_session(connection_config)
         updated_secrets = {**connection_config.secrets, **data}
@@ -227,8 +241,15 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         AuthenticationRequest.create_or_update(
             db, data={"connection_key": connection_config.key, "state": state}
         )
+
+        if not connection_config.secrets:
+            raise ValueError("No connection secret present")
+
         # add state to secrets
         connection_config.secrets["state"] = state
+
+        if not connection_config.secrets:
+            raise ValueError("No connection secret present")
 
         # assign placeholders in the authorization request config
         prepared_authorization_request = map_param_values(
@@ -238,12 +259,17 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
             connection_config.secrets,
         )
 
+        saas_config = connection_config.get_saas_config()
+
+        if not saas_config:
+            raise ValueError("No SAAS configuration")
+
         # get the client config from the authorization request or default
         # to the base client config if one isn't provided
         client_config = (
             self.authorization_request.client_config
             if self.authorization_request.client_config
-            else connection_config.get_saas_config().client_config
+            else saas_config.client_config
         )
 
         # build the complete URL with query params
@@ -263,6 +289,9 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         """
 
         self._check_required_secrets(connection_config)
+        if not connection_config.secrets:
+            raise ValueError("No connection secret present")
+
         connection_config.secrets = {**connection_config.secrets, "code": code}
         access_response = self._call_token_request(
             "access", self.token_request, connection_config
@@ -288,4 +317,4 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
-        return OAuth2AuthenticationConfiguration
+        return OAuth2AuthenticationConfiguration  # type: ignore

@@ -25,6 +25,10 @@ class AuthenticatedClient:
         configuration: ConnectionConfig,
         request_client_config: ClientConfig = None,
     ):
+        saas_config = configuration.get_saas_config()
+        if not saas_config:
+
+            raise ValueError("No SAAS configuration")
         self.configuration = configuration
         self.session = Session()
         self.uri = uri
@@ -32,7 +36,7 @@ class AuthenticatedClient:
         self.client_config = (
             request_client_config
             if request_client_config
-            else configuration.get_saas_config().client_config
+            else saas_config.client_config
         )
         self.secrets = configuration.secrets
 

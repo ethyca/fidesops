@@ -25,6 +25,7 @@ module = [
   "fideslang.*",
   "fideslog.*",
   "jose.*",
+  "jwt.*",
   "pandas.*",
   "pydash.*",
   "pymongo.*",
