@@ -18,12 +18,16 @@ The types of changes are:
 
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.0...main)
+
+### Changed
+* Update admin ui to be served from the root route `/` [#720](https://github.com/ethyca/fidesops/pull/720)
+
 ### Developer Experience
 * Reduce the size of the docker image [#707](https://github.com/ethyca/fidesops/pull/707)
 * Parallelize CI safe checks to reduce run time [#717](https://github.com/ethyca/fidesops/pull/717)
 * Add dependabot to keep dependencies up to date [#718](https://github.com/ethyca/fidesops/pull/718)
 
-* ### Docs
+### Docs
 * Updated the tutorial installation to use main in fidesdemo [#715](https://github.com/ethyca/fidesops/pull/715)
 
 ### Fixed
