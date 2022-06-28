@@ -17,7 +17,21 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.3...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.0...main)
+### Developer Experience
+* Reduce the size of the docker image [#707](https://github.com/ethyca/fidesops/pull/707)
+* Parallelize CI safe checks to reduce run time [#717](https://github.com/ethyca/fidesops/pull/717)
+* Add dependabot to keep dependencies up to date [#718](https://github.com/ethyca/fidesops/pull/718)
+
+* ### Docs
+* Updated the tutorial installation to use main in fidesdemo [#715](https://github.com/ethyca/fidesops/pull/715)
+* Added a page on how to use the datastore UI [#742](https://github.com/ethyca/fidesops/pull/742)
+
+### Fixed
+* Make reading of environment variables case insensitive [712](https://github.com/ethyca/fidesops/pull/712)
+
+
+## [1.6.0](https://github.com/ethyca/fidesops/compare/1.5.3...1.6.0)
 
 ### Added
 * Subject Request Details page [#563](https://github.com/ethyca/fidesops/pull/563)
@@ -35,12 +49,14 @@ The types of changes are:
 * Added ConnectionConfig `connection_type` and `disabled` filters [#675](https://github.com/ethyca/fidesops/pull/675)
 * Adds Fideslog integration [#541](https://github.com/ethyca/fidesops/pull/541)
 * Adds endpoint analytics events [#622](https://github.com/ethyca/fidesops/pull/622)
+* Sample dataset for Salesforce with access configuration [#676](https://github.com/ethyca/fidesops/pull/676)
 * Sample dataset and access configuration for Zendesk (ticket endpoints) [#677](https://github.com/ethyca/fidesops/pull/677)
 * Include number of records to be masked in masking endpoint's log message [#692](https://github.com/ethyca/fidesops/pull/692)
 * Datastore Connection Landing Page [#674](https://github.com/ethyca/fidesops/pull/674)
 * Added the ability to delete a datastore from the frontend [#683] https://github.com/ethyca/fidesops/pull/683
 * Added the ability to disable/enable a datastore from the frontend [#693] https://github.com/ethyca/fidesops/pull/693
 * Adds Postgres and Redis health checks to health endpoint [#690](https://github.com/ethyca/fidesops/pull/690)
+* Adds the ability to revoke a pending privacy request [#592](https://github.com/ethyca/fidesops/pull/592/files)
 * Added health checks and better error messages on app startup for both db and cache [#686](https://github.com/ethyca/fidesops/pull/686)
 * Datastore Connection Filters [#691](https://github.com/ethyca/fidesops/pull/691)
 
@@ -54,15 +70,20 @@ The types of changes are:
 * Install MSSQL By Default [#664](https://github.com/ethyca/fidesops/pull/664)
 * [Admin UI] Change "Policy Name" to "Request Type" on SR list page.[#546](https://github.com/ethyca/fidesops/pull/696)
 * Queue PrivacyRequests into a Celery queue for execution [#621](https://github.com/ethyca/fidesops/pull/621)
+* Added filtering clearing in datastore connections [#701](https://github.com/ethyca/fidesops/pull/701)
 
 ### Developer Experience
 
 * Add celerybeat-schedule file to gitignore [#639](https://github.com/ethyca/fidesops/pull/639)
+* Use `v2.1.0` of `fideslib` [#705](https://github.com/ethyca/fidesops/pull/705)
 
+### Docs
+* Subject Request detail documentation for the UI [#702](https://github.com/ethyca/fidesops/pull/702)
 ### Fixed
 * Fixed error with running mypy on M1 Macs [#630](https://github.com/ethyca/fidesops/pull/630)
 * Fixed error with mypy on Python versions greater than 3.9.6 [#630](https://github.com/ethyca/fidesops/pull/630)
 * Bumped fideslib to 2.0.4. This fixes the issue where alembic couldn't find the `fidesops.toml` file from its new location [#643](https://github.com/ethyca/fidesops/pull/643)
+* Fixes Postman Collection inconsistencies [#704](https://github.com/ethyca/fidesops/pull/704)
 
 ## [1.5.3](https://github.com/ethyca/fidesops/compare/1.5.2...1.5.3)
 
