@@ -7,7 +7,7 @@ Datastores represent connections to third party applications, databases and data
 
 ## Viewing Datastores
 
-All currently configured datastores will appear in the pagenated Datastore Connections panel. For systems with larger collections of datastores, search options are available to filter results.
+All currently configured datastores will appear in the paginated Datastore Connections panel. Search options are available to filter the datastore list.
 
 `Active` datastores are included when fulfilling privacy requests.
 
@@ -28,6 +28,8 @@ Each configured datastore includes an option to `Test` its connection. Fidesops 
 
 `Red` connections have failed.
 
+`Grey` connections have not been tested.
+
 ![failed test](../img/admin_ui/failed_test.png)
 
 
@@ -37,6 +39,6 @@ Selecting the three dots menu `[...]` beside a datastore's connection status wil
 
 ![datastore options](../img/admin_ui/datastore_options.png)
 
-Selecting either Disable or Delete will display a warning to confirm the action. Deleted datastores will have their connection information removed entirely from Fidesops, while Disabled datastores may be reenabled from the same menu at a later date.
+Selecting either Disable or Delete will display a warning to confirm the action. Deleted datastores will have their connection information removed entirely from Fidesops, while Disabled datastores may be enabled again from the same menu at a later date.
 
 ![delete datastore](../img/admin_ui/delete_datastore.png)
