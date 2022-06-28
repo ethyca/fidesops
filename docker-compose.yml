@@ -72,6 +72,7 @@ services:
         source: ./
         target: /fidesops
         read_only: False
+      - /fidesops/src/fidesops.egg-info
 
   docs:
     build:
