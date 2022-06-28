@@ -44,7 +44,7 @@ const DisableConnectionModal: React.FC<DataConnectionProps> = ({
       disabled: shouldDisable,
       access: access_type,
       connection_type,
-    })
+    });
   };
 
   const closeIfComplete = () => {
