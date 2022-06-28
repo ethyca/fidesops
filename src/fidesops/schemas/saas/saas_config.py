@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Set, Union
 
 from pydantic import BaseModel, Extra, root_validator, validator
@@ -173,6 +174,21 @@ class ConnectorParam(BaseModel):
     description: Optional[str]
 
 
+class SaaSType(Enum):
+    """
+    Enum to store saas connection type in Fidesops
+    """
+
+    mailchimp = "mailchimp"
+    hubspot = "hubspot"
+    outreach = "outreach"
+    segment = "segment"
+    sentry = "sentry"
+    stripe = "stripe"
+    zendesk = "zendesk"
+    custom = "custom"
+
+
 class SaaSConfig(BaseModel):
     """
     Used to store endpoint and param configurations for a SaaS connector.
@@ -186,6 +202,7 @@ class SaaSConfig(BaseModel):
 
     fides_key: FidesOpsKey
     name: str
+    type: SaaSType
     description: str
     version: str
     connector_params: List[ConnectorParam]
@@ -193,6 +210,17 @@ class SaaSConfig(BaseModel):
     endpoints: List[Endpoint]
     test_request: SaaSRequest
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
+
+    @validator("type", pre=True)
+    def validate_log_level(cls, value: str) -> str:
+        """Ensure the provided type is a valid value."""
+        valid_values = [item.value for item in SaaSType]
+        value = value.lower()  # force lowercase, for safety
+
+        if value not in valid_values:
+            raise ValueError(f"Invalid type provided '{value}'.")
+
+        return value
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:
@@ -238,6 +266,11 @@ class SaaSConfig(BaseModel):
             collections=collections,
             connection_key=self.fides_key,
         )
+
+    class Config:
+        """Populate models with the raw value of enum fields, rather than the enum itself"""
+
+        use_enum_values = True
 
 
 class SaaSConfigValidationDetails(BaseSchema):
