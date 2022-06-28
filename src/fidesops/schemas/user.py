@@ -35,7 +35,6 @@ class UserCreate(UserUpdate):
     def validate_password(cls, password: str) -> str:
         """Add some password requirements"""
         decoded_password = b64_str_to_str(password)
-
         if len(decoded_password) < 8:
             raise ValueError("Password must have at least eight characters.")
         if re.search("[0-9]", decoded_password) is None:
@@ -56,12 +55,27 @@ class UserLogin(BaseSchema):
     username: str
     password: str
 
+    @validator("password")
+    def validate_password(cls, password: str) -> str:
+        """Convert b64 encoded password to normal string"""
+        return b64_str_to_str(password)
+
 
 class UserPasswordReset(BaseSchema):
     """Contains both old and new passwords when resetting a password"""
 
     old_password: str
     new_password: str
+
+    @validator("old_password")
+    def validate_old_password(cls, old_password: str) -> str:
+        """Convert b64 encoded old_password to normal string"""
+        return b64_str_to_str(old_password)
+
+    @validator("new_password")
+    def validate_new_password(cls, new_password: str) -> str:
+        """Convert b64 encoded new_password to normal string"""
+        return b64_str_to_str(new_password)
 
 
 class UserResponse(BaseSchema):
