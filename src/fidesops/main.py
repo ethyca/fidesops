@@ -7,7 +7,6 @@ from typing import Callable, Optional
 import uvicorn
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 from fideslog.sdk.python.event import AnalyticsEvent
 from redis.exceptions import ResponseError
 from starlette.background import BackgroundTask
