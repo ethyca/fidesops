@@ -1,6 +1,3 @@
-import sys
-from typing import List, Optional
-
 from celery import Celery
 from celery.utils.log import get_task_logger
 
