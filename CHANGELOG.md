@@ -30,6 +30,9 @@ The types of changes are:
 ### Fixed
 * Make reading of environment variables case insensitive [712](https://github.com/ethyca/fidesops/pull/712)
 
+### Added
+* Adds SaaS connection type to SaaS yaml config [748](https://github.com/ethyca/fidesops/pull/748)
+
 
 ## [1.6.0](https://github.com/ethyca/fidesops/compare/1.5.3...1.6.0)
 
