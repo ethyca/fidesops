@@ -122,17 +122,6 @@ WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
 if config.admin_ui.ENABLED:
 
-    @app.on_event("startup")
-    async def create_webapp_dir_if_not_exists() -> None:
-        """Creates the webapp directory if it doesn't exist."""
-        if not WEBAPP_INDEX.is_file():
-            WEBAPP_DIRECTORY.mkdir(parents=True, exist_ok=True)
-            with open(WEBAPP_DIRECTORY / "index.html", "w") as index_file:
-                index_file.write("<h1>Privacy is a Human Right!</h1>")
-
-        app.mount("/static", StaticFiles(directory=WEBAPP_DIRECTORY), name="static")
-        logger.info("Mounted static file directory...")
-
     @app.get("/", response_class=FileResponse)
     def read_index() -> FileResponse:
         """Returns index.html file"""
