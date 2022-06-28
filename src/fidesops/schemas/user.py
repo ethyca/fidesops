@@ -6,6 +6,7 @@ from pydantic import validator
 
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.oauth import AccessToken
+from fidesops.util.cryptographic_util import b64_str_to_str
 
 
 class UserUpdate(BaseSchema):
@@ -33,18 +34,20 @@ class UserCreate(UserUpdate):
     @validator("password")
     def validate_password(cls, password: str) -> str:
         """Add some password requirements"""
-        if len(password) < 8:
+        decoded_password = b64_str_to_str(password)
+
+        if len(decoded_password) < 8:
             raise ValueError("Password must have at least eight characters.")
-        if re.search("[0-9]", password) is None:
+        if re.search("[0-9]", decoded_password) is None:
             raise ValueError("Password must have at least one number.")
-        if re.search("[A-Z]", password) is None:
+        if re.search("[A-Z]", decoded_password) is None:
             raise ValueError("Password must have at least one capital letter.")
-        if re.search("[a-z]", password) is None:
+        if re.search("[a-z]", decoded_password) is None:
             raise ValueError("Password must have at least one lowercase letter.")
-        if re.search(r"[\W]", password) is None:
+        if re.search(r"[\W]", decoded_password) is None:
             raise ValueError("Password must have at least one symbol.")
 
-        return password
+        return decoded_password
 
 
 class UserLogin(BaseSchema):
