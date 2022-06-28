@@ -69,7 +69,7 @@ quickstart:
 ####################
 
 docker-build:
-	docker build --tag $(IMAGE) .
+	docker build --tag $(IMAGE) -f Dockerfile.app .
 
 docker-push:
 	docker tag $(IMAGE) $(IMAGE_LATEST)
