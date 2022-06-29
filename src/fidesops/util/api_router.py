@@ -14,7 +14,7 @@ class APIRouter(FastAPIRouter):
     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
         """
         Updated api_route function that automatically configures routes to have 2 versions.
-        One without and trailing slash and another with it.
+        One without a trailing slash and another with it.
         """
         if path.endswith("/"):
             path = path[:-1]
