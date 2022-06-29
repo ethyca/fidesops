@@ -1,7 +1,7 @@
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Depends, HTTPException
 from fastapi.params import Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -56,6 +56,7 @@ from fidesops.schemas.connection_configuration.connection_secrets import (
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.connectors import get_connector
+from fidesops.util.api_router import APIRouter
 from fidesops.util.logger import NotPii
 from fidesops.util.oauth_util import verify_oauth_client
 

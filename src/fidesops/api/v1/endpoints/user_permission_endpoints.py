@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Security
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
@@ -19,6 +19,7 @@ from fidesops.schemas.user_permission import (
     UserPermissionsEdit,
     UserPermissionsResponse,
 )
+from fidesops.util.api_router import APIRouter
 from fidesops.util.oauth_util import verify_oauth_client
 
 logger = logging.getLogger(__name__)

@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -42,6 +42,7 @@ from fidesops.schemas.user import (
     UserResponse,
     UserUpdate,
 )
+from fidesops.util.api_router import APIRouter
 from fidesops.util.oauth_util import get_current_user, verify_oauth_client
 
 logger = logging.getLogger(__name__)
