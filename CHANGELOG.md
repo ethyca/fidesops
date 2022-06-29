@@ -34,6 +34,7 @@ The types of changes are:
 ### Fixed
 * Make reading of environment variables case insensitive [712](https://github.com/ethyca/fidesops/pull/712)
 * Fix console warning in disable connection modal [750](https://github.com/ethyca/fidesops/pull/750)
+* Fix no such container error with docker-compose [758](https://github.com/ethyca/fidesops/pull/758)
 
 ### Fixed
 * Fixed issue with extending the configuration [#721](https://github.com/ethyca/fidesops/pull/721)
