@@ -37,7 +37,6 @@ TASK_RETRY_BACKOFF = 1
 
 [root_user]
 ANALYTICS_OPT_OUT = false
-ANALYTICS_ID = "91fbafc8ef088428337922c03f97e4ad"
 
 [admin_ui]
 ENABLED = true
