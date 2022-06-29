@@ -7,7 +7,8 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.task import graph_task
 from tests.graph.graph_test_util import assert_rows_match
-
+from fidesops.core.config import config
+from fidesops.task.graph_task import get_cached_data_for_erasures
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_zendesk
@@ -170,3 +171,50 @@ def test_zendesk_access_request_task(
 
     for ticket_comment in v[f"{dataset_name}:ticket_comments"]:
         assert ticket_comment["author_id"] == user_id
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_zendesk
+def test_zendesk_erasure_request_task(
+    db,
+    policy,
+    erasure_policy_string_rewrite,
+    zendesk_connection_config,
+    zendesk_dataset_config,
+    zendesk_erasure_identity_email,
+    zendesk_create_erasure_data,
+) -> None:
+    """Full erasure request based on the zendesk SaaS config"""
+    config.execution.MASKING_STRICT = False  # Allow Delete
+
+    privacy_request = PrivacyRequest(
+        id=f"test_zendesk_erasure_request_task_{random.randint(0, 1000)}"
+    )
+    identity = PrivacyRequestIdentity(**{"email": zendesk_erasure_identity_email})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = zendesk_connection_config.get_saas_config().fides_key
+    merged_graph = zendesk_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+    
+    v = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [zendesk_connection_config],
+        {"email": zendesk_erasure_identity_email},
+    )
+    
+    config.execution.MASKING_STRICT = False
+    
+    x = graph_task.run_erasure(
+        privacy_request,
+        erasure_policy_string_rewrite,
+        graph,
+        [zendesk_connection_config],
+        {"email": zendesk_erasure_identity_email},
+        get_cached_data_for_erasures(privacy_request.id),
+    )
+    # import pdb;
+    # pdb.set_trace()
+    
+    config.execution.MASKING_STRICT = True

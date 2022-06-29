@@ -1,8 +1,10 @@
+import base64
 import os
 from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+import requests
 from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
 
@@ -13,6 +15,7 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.util import cryptographic_util
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 
@@ -37,6 +40,11 @@ def zendesk_identity_email():
         "ZENDESK_IDENTITY_EMAIL"
     )
 
+@pytest.fixture(scope="function")
+def zendesk_erasure_identity_email() -> str:
+    return pydash.get(saas_config, "zendesk.identity_email") or os.environ.get(
+        "ZENDESK_IDENTITY_EMAIL"
+    )
 
 @pytest.fixture
 def zendesk_config() -> Dict[str, Any]:
@@ -88,3 +96,40 @@ def zendesk_dataset_config(
     )
     yield dataset
     dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def zendesk_create_erasure_data(
+    zendesk_connection_config: ConnectionConfig, zendesk_identity_email: str
+) -> None:
+
+    zendesk_secrets = zendesk_connection_config.secrets
+    base_url = f"https://{zendesk_secrets['domain']}"
+    headers = {
+        "Authorization": "Basic {}".format(
+        base64.b64encode(bytes(f"{zendesk_secrets['username']}:{zendesk_secrets['api_key']}", "utf-8")).decode("ascii")      )
+    }
+
+    #ticket
+    ticket_data ={
+        "ticket": {
+            "comment":{
+                    "body": "Test Comment"
+            },
+            "priority": "urgent",
+            "subject": "Test Ticket",
+            "requester_id": 7055913309460,
+            "submitter_id": 7055913309460,
+            "description": "Test Description"
+        }
+    }
+    response = requests.post(
+        url=f"{base_url}/api/v2/tickets",
+        headers=headers,
+        json=ticket_data
+    )
+
+    assert response.ok
+    ticket = response.json()["ticket"]
+    ticket_id = ticket["id"]
+    yield ticket

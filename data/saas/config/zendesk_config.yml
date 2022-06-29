@@ -83,6 +83,20 @@ saas_config:
             configuration:
               source: body
               path: links.next
+        delete:
+          method: DELETE
+          path: /api/v2/users/<user_id>/tickets/destroy_many.json?id=<ticket_id>
+          param_values:
+            - name: user_id
+              references:
+                - dataset: zendesk_connector_example
+                  field: users.id
+                  direction: from
+            - name: ticket_id
+              references:
+                - dataset: zendesk_connector_example
+                  field: tickets.id
+                  direction: from
     - name: ticket_comments
       requests:
         read:
@@ -105,3 +119,17 @@ saas_config:
             configuration:
               source: body
               path: links.next
+        update:
+          method: PUT
+          path: /api/v2/tickets/<ticket_id>/comments/<ticket_comment_id>/redact
+          param_values:
+            - name: ticket_id
+              references:
+                - dataset: stripe_connector_example
+                  field: tickets.id
+                  direction: from
+            - name: ticket_comment_id
+              references:
+                - dataset: stripe_connector_example
+                  field: ticket_comments.id
+                  direction: from
