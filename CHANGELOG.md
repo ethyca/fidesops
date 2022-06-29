@@ -17,7 +17,9 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.0...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.1...main)
+
+## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
 
 ### Added
 * `fidesops worker` command for running a Celery worker [#673](https://github.com/ethyca/fidesops/pull/673/)
