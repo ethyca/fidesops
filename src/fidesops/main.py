@@ -119,12 +119,24 @@ for handler in ExceptionHandlers.get_handlers():
 WEBAPP_DIRECTORY = Path("src/fidesops/build/static")
 WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
+
+def return_admin_ui_index() -> FileResponse:
+    if not WEBAPP_INDEX.is_file():
+        WEBAPP_DIRECTORY.mkdir(parents=True, exist_ok=True)
+        with open(WEBAPP_DIRECTORY / "index.html", "w") as index_file:
+            heading = "<h1>No src/fidesops/build/static/index.html found</h1>"
+            help_message = "<h2>A docker-compose.yml volume may be overwriting the built in Admin UI files</h2>"
+            index_file.write(f"{heading}{help_message}")
+
+    return FileResponse(WEBAPP_INDEX)
+
+
 if config.admin_ui.ENABLED:
 
     @app.get("/", response_class=FileResponse)
     def read_index() -> FileResponse:
         """Returns index.html file"""
-        return FileResponse(WEBAPP_INDEX)
+        return return_admin_ui_index()
 
     @app.get("/{catchall:path}", response_class=FileResponse)
     def read_ui_files(request: Request) -> FileResponse:
@@ -136,7 +148,7 @@ if config.admin_ui.ENABLED:
         if os.path.exists(file):
             return FileResponse(file)
 
-        return FileResponse(WEBAPP_INDEX)
+        return return_admin_ui_index()
 
 
 def start_webserver() -> None:
