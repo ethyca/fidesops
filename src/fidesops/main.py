@@ -130,7 +130,7 @@ if config.admin_ui.ENABLED:
                 help_message = "<h2>A docker-compose.yml volume may be overwriting the built in Admin UI files</h2>"
                 index_file.write(f"{heading}{help_message}")
                 logger.info(
-                    "No Admin UI are bundled in the docker image. Creating diagnostic help index.html"
+                    "No Admin UI files are bundled in the docker image. Creating diagnostic help index.html"
                 )
 
     @app.get("/", response_class=FileResponse)
