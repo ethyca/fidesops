@@ -1,5 +1,6 @@
 services:
   webserver:
+    container_name: fidesops_webserver
     build:
       context: .
       dockerfile: Dockerfile.app
@@ -59,6 +60,7 @@ services:
       - "0.0.0.0:6379:6379"
 
   worker:
+    container_name: fidesops_worker
     build:
       context: .
       dockerfile: Dockerfile.worker
