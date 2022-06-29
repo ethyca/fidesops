@@ -7,7 +7,7 @@
 REGISTRY := ethyca
 IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
 
-IMAGE_NAME := fidesops_webserver
+IMAGE_NAME := webserver
 IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
