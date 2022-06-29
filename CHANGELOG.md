@@ -18,11 +18,22 @@ The types of changes are:
 
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.0...main)
+
+### Added
+* `fidesops worker` command for running a Celery worker [#673](https://github.com/ethyca/fidesops/pull/673/)
+
 ### Developer Experience
 * Reduce the size of the docker image [#707](https://github.com/ethyca/fidesops/pull/707)
+* Parallelize CI safe checks to reduce run time [#717](https://github.com/ethyca/fidesops/pull/717)
+* Add dependabot to keep dependencies up to date [#718](https://github.com/ethyca/fidesops/pull/718)
 
 * ### Docs
 * Updated the tutorial installation to use main in fidesdemo [#715](https://github.com/ethyca/fidesops/pull/715)
+* Added a page on how to use the datastore UI [#742](https://github.com/ethyca/fidesops/pull/742)
+
+### Fixed
+* Make reading of environment variables case insensitive [712](https://github.com/ethyca/fidesops/pull/712)
+* Fix console warning in disable connection modal [750](https://github.com/ethyca/fidesops/pull/750)
 
 ### Fixed
 * Fixed issue with extending the configuration [#721](https://github.com/ethyca/fidesops/pull/721)
