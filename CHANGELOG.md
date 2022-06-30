@@ -26,6 +26,7 @@ The types of changes are:
 * Reduce the size of the docker image [#707](https://github.com/ethyca/fidesops/pull/707)
 * Parallelize CI safe checks to reduce run time [#717](https://github.com/ethyca/fidesops/pull/717)
 * Add dependabot to keep dependencies up to date [#718](https://github.com/ethyca/fidesops/pull/718)
+* Update the way `make clean` works [#767](https://github.com/ethyca/fidesops/pull/767)
 
 ### Changed
 * Base64 encode passwords on frontend [#749](https://github.com/ethyca/fidesops/pull/749)
