@@ -5,7 +5,6 @@ import {
   InputGroup,
   InputLeftAddon,
   InputLeftElement,
-  Select,
   Stack,
   Text,
   useToast,
@@ -14,13 +13,13 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectToken } from "../auth";
+import DropdownCheckbox from "../common/DropdownCheckbox/DropdownCheckbox";
 import {
   CloseSolidIcon,
   DownloadSolidIcon,
   SearchLineIcon,
 } from "../common/Icon";
 import PIIToggle from "../common/PIIToggle";
-import { statusPropMap } from "../common/RequestStatusBadge";
 import {
   clearAllFilters,
   requestCSVDownload,
@@ -29,8 +28,8 @@ import {
   setRequestId,
   setRequestStatus,
   setRequestTo,
-} from "./privacy-requests.slice";
-import { PrivacyRequestStatus } from "./types";
+} from "../privacy-requests/privacy-requests.slice";
+import { SubjectRequestStatusMap } from "./constants";
 
 const useRequestFilters = () => {
   const filters = useSelector(selectPrivacyRequestFilters);
@@ -39,8 +38,18 @@ const useRequestFilters = () => {
   const toast = useToast();
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setRequestId(event.target.value));
-  const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) =>
-    dispatch(setRequestStatus(event.target.value as PrivacyRequestStatus));
+  const handleStatusChange = (values: string[]) => {
+    const list: string[] = [];
+    values.forEach((v) => {
+      for (const [key, value] of SubjectRequestStatusMap) {
+        if (key === v) {
+          list.push(value);
+          break;
+        }
+      }
+    });
+    dispatch(setRequestStatus(list.join(",")));
+  };
   const handleFromChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setRequestFrom(event?.target.value));
   const handleToChange = (event: React.ChangeEvent<HTMLInputElement>) =>
@@ -77,10 +86,6 @@ const useRequestFilters = () => {
   };
 };
 
-const StatusOption: React.FC<{ status: PrivacyRequestStatus }> = ({
-  status,
-}) => <option value={status}>{statusPropMap[status].label}</option>;
-
 const RequestFilters: React.FC = () => {
   const {
     status,
@@ -94,24 +99,25 @@ const RequestFilters: React.FC = () => {
     from,
     to,
   } = useRequestFilters();
+
+  const getSubjectRequstStatusMap = (): Map<string, boolean> => {
+    const list = new Map<string, boolean>();
+    SubjectRequestStatusMap.forEach((value, key) => {
+      list.set(key, false);
+    });
+    return list;
+  };
+
   return (
     <Stack direction="row" spacing={4} mb={6}>
-      <Select
-        placeholder="Select status"
-        size="sm"
+      <DropdownCheckbox
+        closeOnSelect={false}
+        list={getSubjectRequstStatusMap()}
         minWidth="144px"
-        value={status || ""}
         onChange={handleStatusChange}
-        borderRadius="md"
-      >
-        <StatusOption status="approved" />
-        <StatusOption status="complete" />
-        <StatusOption status="denied" />
-        <StatusOption status="error" />
-        <StatusOption status="in_processing" />
-        <StatusOption status="paused" />
-        <StatusOption status="pending" />
-      </Select>
+        title={"Select Status"}
+        tooltipPlacement="top"
+      />
       <InputGroup size="sm">
         <InputLeftElement pointerEvents="none">
           <SearchLineIcon color="gray.300" w="17px" h="17px" />

@@ -149,7 +149,7 @@ export const requestCSVDownload = async ({
 // Subject requests state (filters, etc.)
 interface SubjectRequestsState {
   revealPII: boolean;
-  status?: PrivacyRequestStatus;
+  status?: string;
   id: string;
   from: string;
   to: string;
@@ -175,7 +175,7 @@ export const subjectRequestsSlice = createSlice({
       ...state,
       revealPII: action.payload,
     }),
-    setRequestStatus: (state, action: PayloadAction<PrivacyRequestStatus>) => ({
+    setRequestStatus: (state, action: PayloadAction<string>) => ({
       ...state,
       page: initialState.page,
       status: action.payload,

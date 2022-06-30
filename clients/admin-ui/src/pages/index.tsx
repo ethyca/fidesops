@@ -5,7 +5,7 @@ import { LOGIN_ROUTE } from "../constants";
 import ProtectedRoute from "../features/auth/ProtectedRoute";
 import Head from "../features/common/Head";
 import NavBar from "../features/common/NavBar";
-import RequestFilters from "../features/privacy-requests/RequestFilters";
+import RequestFilters from "../features/subject-request/RequestFilters";
 import RequestTable from "../features/privacy-requests/RequestTable";
 
 const Home: NextPage = () => (
