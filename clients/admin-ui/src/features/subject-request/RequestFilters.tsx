@@ -7,7 +7,7 @@ import {
   InputLeftElement,
   Stack,
   Text,
-  useToast
+  useToast,
 } from "@fidesui/react";
 import React, { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,7 +17,7 @@ import DropdownCheckbox from "../common/DropdownCheckbox/DropdownCheckbox";
 import {
   CloseSolidIcon,
   DownloadSolidIcon,
-  SearchLineIcon
+  SearchLineIcon,
 } from "../common/Icon";
 import PIIToggle from "../common/PIIToggle";
 import {
@@ -27,7 +27,7 @@ import {
   setRequestFrom,
   setRequestId,
   setRequestStatus,
-  setRequestTo
+  setRequestTo,
 } from "../privacy-requests/privacy-requests.slice";
 import { SubjectRequestStatusMap } from "./constants";
 

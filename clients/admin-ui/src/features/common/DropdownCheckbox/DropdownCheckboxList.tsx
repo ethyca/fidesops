@@ -6,7 +6,7 @@ import {
   MenuItem,
   MenuList,
   Spacer,
-  Text
+  Text,
 } from "@fidesui/react";
 import React, { useState } from "react";
 
