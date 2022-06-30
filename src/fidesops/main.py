@@ -1,4 +1,5 @@
 import logging
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Optional
@@ -23,6 +24,7 @@ from fidesops.common_exceptions import FunctionalityNotConfigured, RedisConnecti
 from fidesops.core.config import config
 from fidesops.db.database import init_db
 from fidesops.schemas.analytics import Event, ExtraData
+from fidesops.tasks import start_worker
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.util.cache import get_cache
@@ -171,6 +173,10 @@ def start_webserver() -> None:
             event_created_at=datetime.now(tz=timezone.utc),
         )
     )
+
+    if not config.execution.USE_DEDICATED_WORKER:
+        logger.info("Starting worker...")
+        subprocess.Popen(["fidesops", "worker"])
 
     logger.info("Starting web server...")
     uvicorn.run(
