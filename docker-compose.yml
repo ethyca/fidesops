@@ -60,7 +60,6 @@ services:
       - "0.0.0.0:6379:6379"
 
   worker:
-    container_name: worker
     build:
       context: .
       dockerfile: Dockerfile.worker
