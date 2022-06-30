@@ -32,7 +32,7 @@ The types of changes are:
 
 ### Added
 * Adds SaaS connection type to SaaS yaml config [748](https://github.com/ethyca/fidesops/pull/748)
-
+* Adds endpoint to get available connectors (database and saas) [#768](https://github.com/ethyca/fidesops/pull/768)
 
 ## [1.6.0](https://github.com/ethyca/fidesops/compare/1.5.3...1.6.0)
 
