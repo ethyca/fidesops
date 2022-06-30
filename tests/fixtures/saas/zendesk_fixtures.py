@@ -2,7 +2,6 @@ import base64
 import json
 import os
 from typing import Any, Dict, Generator
-from fidesops.service.connectors.saas_connector import SaaSConnector
 
 import pydash
 import pytest
@@ -18,6 +17,7 @@ from fidesops.models.connectionconfig import (
 )
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fidesops.service.connectors.saas_connector import SaaSConnector
 from fidesops.util import cryptographic_util
 from fidesops.util.saas_util import format_body
 from tests.fixtures.application_fixtures import load_dataset
@@ -44,9 +44,11 @@ def zendesk_identity_email():
         "ZENDESK_IDENTITY_EMAIL"
     )
 
+
 @pytest.fixture(scope="function")
 def zendesk_erasure_identity_email() -> str:
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+
 
 @pytest.fixture
 def zendesk_config() -> Dict[str, Any]:
@@ -110,23 +112,29 @@ def zendesk_create_erasure_data(
     headers = {
         "Content-Type": "application/json",
         "Authorization": "Basic {}".format(
-        base64.b64encode(bytes(f"{zendesk_secrets['username']}:{zendesk_secrets['api_key']}", "utf-8")).decode("ascii"))
+            base64.b64encode(
+                bytes(
+                    f"{zendesk_secrets['username']}:{zendesk_secrets['api_key']}",
+                    "utf-8",
+                )
+            ).decode("ascii")
+        ),
     }
 
     connector = SaaSConnector(zendesk_connection_config)
-    
+
     # user
     body = json.dumps(
         {
             "user": {
                 "name": "Ethyca Test Erasure",
                 "email": zendesk_erasure_identity_email,
-                "verified": "true"
+                "verified": "true",
             }
         }
     )
     updated_headers, formatted_body = format_body({}, body)
-    
+
     # create user
     users_request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,
@@ -135,28 +143,23 @@ def zendesk_create_erasure_data(
         body=body,
     )
     users_response = connector.create_client().send(users_request)
-    user = users_response.json()["user"]  
+    user = users_response.json()["user"]
     user_id = user["id"]
-    
-    # #ticket
-    ticket_data ={
+
+    # ticket
+    ticket_data = {
         "ticket": {
-            "comment":{
-                    "body": "Test Comment"
-            },
+            "comment": {"body": "Test Comment"},
             "priority": "urgent",
             "subject": "Test Ticket",
             "requester_id": user_id,
             "submitter_id": user_id,
-            "description": "Test Description"
+            "description": "Test Description",
         }
     }
     response = requests.post(
-        url=f"{base_url}/api/v2/tickets",
-        headers=headers,
-        json=ticket_data
+        url=f"{base_url}/api/v2/tickets", headers=headers, json=ticket_data
     )
     ticket = response.json()["ticket"]
     ticket_id = ticket["id"]
-    yield ticket,user
-    
+    yield ticket, user
