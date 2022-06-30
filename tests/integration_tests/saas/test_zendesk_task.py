@@ -203,9 +203,6 @@ def test_zendesk_erasure_request_task(
         [zendesk_connection_config],
         {"email": zendesk_erasure_identity_email},
     )
-    
-    config.execution.MASKING_STRICT = False
-    
     x = graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,

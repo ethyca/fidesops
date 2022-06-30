@@ -39,6 +39,15 @@ saas_config:
             - name: email
               identity: email
           data_path: users
+        delete:
+          method: DELETE
+          path: /api/v2/users/<user_id>.json
+          param_values:
+            - name: user_id
+              references:
+                - dataset: zendesk_connector_example
+                  field: users.id
+                  direction: from
     - name: user_identities
       requests:
         read:
@@ -85,7 +94,7 @@ saas_config:
               path: links.next
         delete:
           method: DELETE
-          path: /api/v2/users/<user_id>/tickets/destroy_many.json?id=<ticket_id>
+          path: /api/v2/users/<user_id>/tickets/<ticket_id>.json
           param_values:
             - name: user_id
               references:

@@ -1,6 +1,8 @@
 import base64
+import json
 import os
 from typing import Any, Dict, Generator
+from fidesops.service.connectors.saas_connector import SaaSConnector
 
 import pydash
 import pytest
@@ -15,7 +17,9 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.util import cryptographic_util
+from fidesops.util.saas_util import format_body
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 
@@ -42,9 +46,7 @@ def zendesk_identity_email():
 
 @pytest.fixture(scope="function")
 def zendesk_erasure_identity_email() -> str:
-    return pydash.get(saas_config, "zendesk.identity_email") or os.environ.get(
-        "ZENDESK_IDENTITY_EMAIL"
-    )
+    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 @pytest.fixture
 def zendesk_config() -> Dict[str, Any]:
@@ -100,17 +102,43 @@ def zendesk_dataset_config(
 
 @pytest.fixture(scope="function")
 def zendesk_create_erasure_data(
-    zendesk_connection_config: ConnectionConfig, zendesk_identity_email: str
+    zendesk_connection_config: ConnectionConfig, zendesk_erasure_identity_email: str
 ) -> None:
 
     zendesk_secrets = zendesk_connection_config.secrets
     base_url = f"https://{zendesk_secrets['domain']}"
     headers = {
+        "Content-Type": "application/json",
         "Authorization": "Basic {}".format(
-        base64.b64encode(bytes(f"{zendesk_secrets['username']}:{zendesk_secrets['api_key']}", "utf-8")).decode("ascii")      )
+        base64.b64encode(bytes(f"{zendesk_secrets['username']}:{zendesk_secrets['api_key']}", "utf-8")).decode("ascii"))
     }
 
-    #ticket
+    connector = SaaSConnector(zendesk_connection_config)
+    
+    # user
+    body = json.dumps(
+        {
+            "user": {
+                "name": "Ethyca Test Erasure",
+                "email": zendesk_erasure_identity_email,
+                "verified": "true"
+            }
+        }
+    )
+    updated_headers, formatted_body = format_body({}, body)
+    
+    # create user
+    users_request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path=f"/api/v2/users",
+        headers=headers,
+        body=body,
+    )
+    users_response = connector.create_client().send(users_request)
+    user = users_response.json()["user"]  
+    user_id = user["id"]
+    
+    # #ticket
     ticket_data ={
         "ticket": {
             "comment":{
@@ -118,8 +146,8 @@ def zendesk_create_erasure_data(
             },
             "priority": "urgent",
             "subject": "Test Ticket",
-            "requester_id": 7055913309460,
-            "submitter_id": 7055913309460,
+            "requester_id": user_id,
+            "submitter_id": user_id,
             "description": "Test Description"
         }
     }
@@ -128,8 +156,7 @@ def zendesk_create_erasure_data(
         headers=headers,
         json=ticket_data
     )
-
-    assert response.ok
     ticket = response.json()["ticket"]
     ticket_id = ticket["id"]
-    yield ticket
+    yield ticket,user
+    
