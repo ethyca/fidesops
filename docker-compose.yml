@@ -25,7 +25,7 @@ services:
       - /fidesops/src/fidesops.egg-info
     environment:
       - FIDESOPS__DEV_MODE=True
-      - FIDESOPS__LOG_PII=${FIDESOPS__LOG_PII}
+      - FIDESOPS__LOG_PII=True
       - FIDESOPS__HOT_RELOAD=${FIDESOPS__HOT_RELOAD}
       - FIDESOPS__ROOT_USER__ANALYTICS_ID=${FIDESOPS__ROOT_USER__ANALYTICS_ID}
 
