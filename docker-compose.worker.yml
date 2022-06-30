@@ -3,7 +3,7 @@ services:
     depends_on:
       - worker
     environment:
-      - FIDESOPS__EXECUTION__USE_DEDICATED_WORKER=True
+      - FIDESOPS__EXECUTION__WORKER_ENABLED=True
 
   worker:
     build:

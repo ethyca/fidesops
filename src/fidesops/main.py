@@ -174,7 +174,7 @@ def start_webserver() -> None:
         )
     )
 
-    if not config.execution.USE_DEDICATED_WORKER:
+    if not config.execution.WORKER_ENABLED:
         logger.info("Starting worker...")
         subprocess.Popen(["fidesops", "worker"])
 
