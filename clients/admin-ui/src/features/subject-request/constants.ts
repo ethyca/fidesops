@@ -3,6 +3,7 @@
  */
 export const SubjectRequestStatusMap = new Map<string, string>([
   ["Approved", "approved"],
+  ["Canceled", "canceled"],
   ["Completed", "complete"],
   ["Denied", "denied"],
   ["Error", "error"],
@@ -10,5 +11,3 @@ export const SubjectRequestStatusMap = new Map<string, string>([
   ["New", "pending"],
   ["Paused", "paused"],
 ]);
-
-

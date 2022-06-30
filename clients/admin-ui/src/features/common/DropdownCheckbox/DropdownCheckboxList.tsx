@@ -6,24 +6,41 @@ import {
   MenuItem,
   MenuList,
   Spacer,
-  Text,
+  Text
 } from "@fidesui/react";
 import React, { useState } from "react";
 
-interface Props {
-  defaultValues?: string[]; // List of default item values
-  items: Map<string, boolean>; // List of key/value pair items
+export type DropdownCheckboxListProps = {
+  /**
+   * List of default item values
+   */
+  defaultValues?: string[];
+  /**
+   * List of key/value pair items
+   */
+  items: Map<string, boolean>;
+  /**
+   * Minimum width of an element
+   */
   minWidth?: string;
+  /**
+   * Event handler invoked when user item selections are applied
+   */
   onSelection: (items: Map<string, boolean>) => void;
-}
+};
 
-const DropdownCheckboxList: React.FC<Props> = (props) => {
-  const [pendingItems, setPendingItems] = useState(props.items);
+const DropdownCheckboxList: React.FC<DropdownCheckboxListProps> = ({
+  defaultValues,
+  items,
+  minWidth,
+  onSelection,
+}) => {
+  const [pendingItems, setPendingItems] = useState(items);
 
   // Listeners
   const changeHandler = (values: string[]) => {
     // Copy items
-    let temp = new Map(pendingItems);
+    const temp = new Map(pendingItems);
 
     // Uncheck all items
     temp.forEach((value, key) => {
@@ -38,14 +55,14 @@ const DropdownCheckboxList: React.FC<Props> = (props) => {
     setPendingItems(temp);
   };
   const clearHandler = () => {
-    setPendingItems(props.items);
-    props.onSelection(new Map<string, boolean>());
+    setPendingItems(items);
+    onSelection(new Map<string, boolean>());
   };
   const doneHandler = () => {
-    props.onSelection(pendingItems);
+    onSelection(pendingItems);
   };
   return (
-    <MenuList lineHeight="1rem" minWidth={props.minWidth} p="0">
+    <MenuList lineHeight="1rem" minWidth={minWidth} p="0">
       <Flex
         borderBottom="1px"
         borderColor="gray.200"
@@ -71,10 +88,10 @@ const DropdownCheckboxList: React.FC<Props> = (props) => {
       {/* MenuItems are not rendered unless Menu is open */}
       <CheckboxGroup
         colorScheme="purple"
-        defaultValue={props.defaultValues}
+        defaultValue={defaultValues}
         onChange={changeHandler}
       >
-        {[...props.items].sort().map(([key]) => (
+        {[...items].sort().map(([key]) => (
           <MenuItem
             key={key}
             paddingTop="10px"
@@ -87,7 +104,7 @@ const DropdownCheckboxList: React.FC<Props> = (props) => {
           >
             <Checkbox
               aria-label={key}
-              isChecked={props.items.get(key)}
+              isChecked={items.get(key)}
               spacing=".5rem"
               value={key}
               width="100%"

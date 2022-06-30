@@ -10,7 +10,6 @@ import {
   PrivacyRequest,
   PrivacyRequestParams,
   PrivacyRequestResponse,
-  PrivacyRequestStatus,
 } from "./types";
 
 // Helpers

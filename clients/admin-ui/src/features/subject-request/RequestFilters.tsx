@@ -7,9 +7,9 @@ import {
   InputLeftElement,
   Stack,
   Text,
-  useToast,
+  useToast
 } from "@fidesui/react";
-import React from "react";
+import React, { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectToken } from "../auth";
@@ -17,7 +17,7 @@ import DropdownCheckbox from "../common/DropdownCheckbox/DropdownCheckbox";
 import {
   CloseSolidIcon,
   DownloadSolidIcon,
-  SearchLineIcon,
+  SearchLineIcon
 } from "../common/Icon";
 import PIIToggle from "../common/PIIToggle";
 import {
@@ -27,7 +27,7 @@ import {
   setRequestFrom,
   setRequestId,
   setRequestStatus,
-  setRequestTo,
+  setRequestTo
 } from "../privacy-requests/privacy-requests.slice";
 import { SubjectRequestStatusMap } from "./constants";
 
@@ -38,18 +38,20 @@ const useRequestFilters = () => {
   const toast = useToast();
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setRequestId(event.target.value));
-  const handleStatusChange = (values: string[]) => {
-    const list: string[] = [];
-    values.forEach((v) => {
-      for (const [key, value] of SubjectRequestStatusMap) {
-        if (key === v) {
-          list.push(value);
-          break;
-        }
-      }
-    });
-    dispatch(setRequestStatus(list.join(",")));
-  };
+  const handleStatusChange = useCallback(
+    (values: string[]) => {
+      const list: string[] = [];
+      values.forEach((v) => {
+        SubjectRequestStatusMap.forEach((value, key) => {
+          if (key === v) {
+            list.push(value);
+          }
+        });
+      });
+      dispatch(setRequestStatus(list.join(",")));
+    },
+    [dispatch]
+  );
   const handleFromChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setRequestFrom(event?.target.value));
   const handleToChange = (event: React.ChangeEvent<HTMLInputElement>) =>
@@ -88,7 +90,6 @@ const useRequestFilters = () => {
 
 const RequestFilters: React.FC = () => {
   const {
-    status,
     handleSearchChange,
     handleStatusChange,
     handleFromChange,
@@ -115,7 +116,7 @@ const RequestFilters: React.FC = () => {
         list={getSubjectRequstStatusMap()}
         minWidth="144px"
         onChange={handleStatusChange}
-        title={"Select Status"}
+        title="Select Status"
         tooltipPlacement="top"
       />
       <InputGroup size="sm">
