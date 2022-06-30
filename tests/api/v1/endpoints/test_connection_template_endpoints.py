@@ -36,12 +36,12 @@ class TestGetConnections:
         assert data["size"] == Params().size
 
         assert "postgres" in data["items"]
-        assert "manual" in data["items"]
-        assert "custom" in data["items"]
         assert "stripe" in data["items"]
 
         assert "saas" not in data["items"]
         assert "https" not in data["items"]
+        assert "custom" not in data["items"]
+        assert "manual" not in data["items"]
 
     def test_search_connection_types(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
