@@ -43,6 +43,7 @@ The types of changes are:
 * Adds Postgres and Redis health checks to health endpoint [#690](https://github.com/ethyca/fidesops/pull/690)
 * Added health checks and better error messages on app startup for both db and cache [#686](https://github.com/ethyca/fidesops/pull/686)
 * Datastore Connection Filters [#691](https://github.com/ethyca/fidesops/pull/691)
+* [Admin UI] Update Subject Request status filter to be a multiselect dropdown [#513](https://github.com/ethyca/fidesops/pull/764)
 
 ### Changed
 
