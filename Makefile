@@ -13,6 +13,9 @@ IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
 DOCKERFILE_ENVIRONMENTS := postgres mysql mongodb mssql
 
+DOCKER_CONTAINER_IDS := $(shell docker ps -a -q)
+DOCKER_VOLUME_IDS := $(shell docker volume ls -q)
+
 
 ####################
 # Defaults
@@ -176,6 +179,8 @@ black: compose-build
 .PHONY: clean
 clean:
 	@echo "Cleaning project temporary files and installed dependencies..."
+	@docker rm -f $(DOCKER_CONTAINER_IDS) || echo "no containers to remove"
+	@docker volume rm $(DOCKER_VOLUME_IDS) || echo "no volumes to remove"
 	@docker system prune -a --volumes
 	@echo "Clean complete!"
 
