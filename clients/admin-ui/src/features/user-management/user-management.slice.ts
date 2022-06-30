@@ -5,6 +5,7 @@ import type { RootState } from "../../app/store";
 import { BASE_URL } from "../../constants";
 import { selectToken } from "../auth";
 import { addCommonHeaders } from "../common/CommonHeaders";
+import { utf8ToB64 } from "../common/utils";
 import {
   User,
   UserPasswordUpdate,
@@ -77,13 +78,14 @@ export const mapFiltersToSearchParams = ({
   ...(username ? { username } : {}),
 });
 
-export const userApi: any = createApi({
+export const userApi = createApi({
   reducerPath: "userApi",
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const token: string | null = selectToken(getState() as RootState);
-      return addCommonHeaders(headers, token);
+      addCommonHeaders(headers, token);
+      return headers;
     },
   }),
   tagTypes: ["User"],
@@ -156,7 +158,10 @@ export const userApi: any = createApi({
       query: ({ id, old_password, new_password }) => ({
         url: `user/${id}/reset-password`,
         method: "POST",
-        body: { old_password, new_password },
+        body: {
+          old_password: utf8ToB64(old_password!),
+          new_password: utf8ToB64(new_password!),
+        },
       }),
       invalidatesTags: ["User"],
     }),
