@@ -24,7 +24,6 @@ from fidesops.common_exceptions import FunctionalityNotConfigured, RedisConnecti
 from fidesops.core.config import config
 from fidesops.db.database import init_db
 from fidesops.schemas.analytics import Event, ExtraData
-from fidesops.tasks import start_worker
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.util.cache import get_cache
