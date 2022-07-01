@@ -1,5 +1,3 @@
-import base64
-import json
 import os
 from typing import Any, Dict, Generator
 
@@ -16,8 +14,6 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.service.connectors.saas_connector import SaaSConnector
 from fidesops.util import cryptographic_util
 from fidesops.util.saas_util import format_body
 from tests.fixtures.application_fixtures import load_dataset
@@ -108,41 +104,19 @@ def zendesk_create_erasure_data(
 ) -> None:
 
     zendesk_secrets = zendesk_connection_config.secrets
+    auth = zendesk_secrets["username"], zendesk_secrets["api_key"]
     base_url = f"https://{zendesk_secrets['domain']}"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": "Basic {}".format(
-            base64.b64encode(
-                bytes(
-                    f"{zendesk_secrets['username']}:{zendesk_secrets['api_key']}",
-                    "utf-8",
-                )
-            ).decode("ascii")
-        ),
-    }
-
-    connector = SaaSConnector(zendesk_connection_config)
 
     # user
-    body = json.dumps(
-        {
-            "user": {
-                "name": "Ethyca Test Erasure",
-                "email": zendesk_erasure_identity_email,
-                "verified": "true",
-            }
+    body = {
+        "user": {
+            "name": "Ethyca Test Erasure",
+            "email": zendesk_erasure_identity_email,
+            "verified": "true",
         }
-    )
-    updated_headers, formatted_body = format_body({}, body)
+    }
 
-    # create user
-    users_request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.POST,
-        path=f"/api/v2/users",
-        headers=headers,
-        body=body,
-    )
-    users_response = connector.create_client().send(users_request)
+    users_response = requests.post(url=f"{base_url}/api/v2/users", auth=auth, json=body)
     user = users_response.json()["user"]
     user_id = user["id"]
 
@@ -158,7 +132,7 @@ def zendesk_create_erasure_data(
         }
     }
     response = requests.post(
-        url=f"{base_url}/api/v2/tickets", headers=headers, json=ticket_data
+        url=f"{base_url}/api/v2/tickets", auth=auth, json=ticket_data
     )
     ticket = response.json()["ticket"]
     ticket_id = ticket["id"]

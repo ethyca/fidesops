@@ -1,4 +1,3 @@
-import base64
 import random
 import time
 
@@ -312,35 +311,25 @@ def test_zendesk_erasure_request_task(
     }
 
     zendesk_secrets = zendesk_connection_config.secrets
+    auth = zendesk_secrets["username"], zendesk_secrets["api_key"]
     base_url = f"https://{zendesk_secrets['domain']}"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": "Basic {}".format(
-            base64.b64encode(
-                bytes(
-                    f"{zendesk_secrets['username']}:{zendesk_secrets['api_key']}",
-                    "utf-8",
-                )
-            ).decode("ascii")
-        ),
-    }
 
     # user
     response = requests.get(
         url=f"{base_url}/v2/users",
-        headers=headers,
+        auth=auth,
         params={"email": zendesk_erasure_identity_email},
     )
     # Since user is deleted, it won't be available so response is 404
     assert response.status_code == 404
 
-    tickets = x[f"{dataset_name}:tickets"]
-    ticket_id = v[f"{dataset_name}:tickets"][0]["id"]
-    response = requests.get(
-        url=f"{base_url}/v2/tickets/f{ticket_id}.json",
-        headers=headers,
-    )
-    # Since ticket is deleted, it won't be available so response is 404
-    assert response.status_code == 404
+    for ticket in v[f"{dataset_name}:tickets"]:
+        ticket_id = ticket["id"]
+        response = requests.get(
+            url=f"{base_url}/v2/tickets/{ticket_id}.json",
+            auth=auth,
+        )
+        # Since ticket is deleted, it won't be available so response is 404
+        assert response.status_code == 404
 
     config.execution.MASKING_STRICT = True
