@@ -2,9 +2,8 @@ import base64
 import random
 import time
 
-import requests
-
 import pytest
+import requests
 
 from fidesops.core.config import config
 from fidesops.graph.graph import DatasetGraph
@@ -311,8 +310,7 @@ def test_zendesk_erasure_request_task(
         f"{dataset_name}:tickets": 1,
         f"{dataset_name}:ticket_comments": 0,
     }
-    
-    
+
     zendesk_secrets = zendesk_connection_config.secrets
     base_url = f"https://{zendesk_secrets['domain']}"
     headers = {
@@ -326,24 +324,23 @@ def test_zendesk_erasure_request_task(
             ).decode("ascii")
         ),
     }
-    
+
     # user
     response = requests.get(
         url=f"{base_url}/v2/users",
         headers=headers,
         params={"email": zendesk_erasure_identity_email},
     )
-    #Since user is deleted, it won't be available so response is 404
+    # Since user is deleted, it won't be available so response is 404
     assert response.status_code == 404
-    
+
     tickets = x[f"{dataset_name}:tickets"]
     ticket_id = v[f"{dataset_name}:tickets"][0]["id"]
     response = requests.get(
         url=f"{base_url}/v2/tickets/f{ticket_id}.json",
         headers=headers,
     )
-    #Since ticket is deleted, it won't be available so response is 404
+    # Since ticket is deleted, it won't be available so response is 404
     assert response.status_code == 404
-    
 
     config.execution.MASKING_STRICT = True
