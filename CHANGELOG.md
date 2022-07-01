@@ -18,7 +18,7 @@ The types of changes are:
 
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.1...main)
-* Changed wording on Admin UI login page
+* Changed wording on Admin UI login page [#774](https://github.com/ethyca/fidesops/pull/774)
 
 ## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
 
