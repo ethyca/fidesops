@@ -1,4 +1,8 @@
+import base64
 import random
+import time
+
+import requests
 
 import pytest
 
@@ -197,6 +201,8 @@ def test_zendesk_erasure_request_task(
     merged_graph = zendesk_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
+    # Since we sometimes get response: b'Number of allowed API requests per minute exceeded' so adding this line to avoid it
+    time.sleep(60)
     v = graph_task.run_access_request(
         privacy_request,
         policy,
@@ -305,5 +311,39 @@ def test_zendesk_erasure_request_task(
         f"{dataset_name}:tickets": 1,
         f"{dataset_name}:ticket_comments": 0,
     }
+    
+    
+    zendesk_secrets = zendesk_connection_config.secrets
+    base_url = f"https://{zendesk_secrets['domain']}"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Basic {}".format(
+            base64.b64encode(
+                bytes(
+                    f"{zendesk_secrets['username']}:{zendesk_secrets['api_key']}",
+                    "utf-8",
+                )
+            ).decode("ascii")
+        ),
+    }
+    
+    # user
+    response = requests.get(
+        url=f"{base_url}/v2/users",
+        headers=headers,
+        params={"email": zendesk_erasure_identity_email},
+    )
+    #Since user is deleted, it won't be available so response is 404
+    assert response.status_code == 404
+    
+    tickets = x[f"{dataset_name}:tickets"]
+    ticket_id = v[f"{dataset_name}:tickets"][0]["id"]
+    response = requests.get(
+        url=f"{base_url}/v2/tickets/f{ticket_id}.json",
+        headers=headers,
+    )
+    #Since ticket is deleted, it won't be available so response is 404
+    assert response.status_code == 404
+    
 
     config.execution.MASKING_STRICT = True
