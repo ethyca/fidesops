@@ -12,38 +12,22 @@ from fidesops.util.collection_util import Row
 SAAS_DATASET_DIRECTORY = "data/saas/dataset/"
 
 
-def populate_dataset(
+def update_dataset(
     connection_config: ConnectionConfig,
     dataset_config: DatasetConfig,
-    response: Dict[str, List[Row]],
+    api_data: Dict[str, List[Row]],
     file_name: str,
 ):
     """
-    Populates the given dataset with missing collections and
-    fields from the map of API responses. Preserves any
-    existing/user-overwritten data categories.
+    Helper function to update the dataset in the given dataset_config
+    with api_data and write the formatted result to the specified file.
     """
 
-    # convert to Dataset to be able to use the Collection helpers
-    dataset = FidesopsDataset(**dataset_config.dataset)
-    graph = convert_dataset_to_graph(dataset, dataset.fides_key)
-    field_map = {collection.name: collection for collection in graph.collections}
-
-    # use endpoint order in the SaaS config as the collection order in the dataset
-    generated_collections = generate_collections(dataset.fides_key, response, field_map)
-    collection_order = [
-        endpoint["name"] for endpoint in connection_config.saas_config["endpoints"]
-    ]
-    generated_collections.sort(
-        key=lambda collection: collection_order.index(collection["name"])
+    generated_dataset = generate_dataset(
+        dict(**dataset_config.dataset),
+        api_data,
+        [endpoint["name"] for endpoint in connection_config.saas_config["endpoints"]],
     )
-
-    generated_dataset = {
-        "fides_key": dataset.fides_key,
-        "name": dataset.name,
-        "description": dataset.description,
-        "collections": generated_collections,
-    }
 
     # the yaml library doesn't allow us to just reformat
     # the data_categories field so we fix it with a regex
@@ -68,24 +52,65 @@ def populate_dataset(
         )
 
 
+def generate_dataset(
+    existing_dataset: Dict[str, Any],
+    api_data: Dict[str, List[Row]],
+    collection_order: List[str],
+):
+    """
+    Generates a dataset which is an aggregate of the existing dataset and
+    any new fields generated from the API data. Orders the collections
+    based on the order of collection_order.
+    """
+
+    fides_key = existing_dataset["fides_key"]
+
+    # convert FidesopsDataset to Dataset to be able to use the Collection helpers
+    existing_graph = convert_dataset_to_graph(
+        FidesopsDataset(**existing_dataset), fides_key
+    )
+    collection_map = {
+        collection.name: collection for collection in existing_graph.collections
+    }
+    generated_collections = generate_collections(fides_key, api_data, collection_map)
+
+    return {
+        "fides_key": existing_dataset["fides_key"],
+        "name": existing_dataset["name"],
+        "description": existing_dataset["description"],
+        "collections": [
+            {
+                "name": collection["name"],
+                "fields": collection["fields"],
+            }
+            for collection in sorted(
+                generated_collections,
+                key=lambda collection: collection_order.index(collection["name"]),
+            )
+        ],
+    }
+
+
 def generate_collections(
-    fides_key: str, response: Dict[str, List[Row]], field_map: Dict[str, Collection]
+    fides_key: str,
+    api_data: Dict[str, List[Row]],
+    collection_map: Dict[str, Collection],
 ) -> List[Dict[str, Any]]:
     """
     Generates a list of collections based on the response data or returns
-    the existing collections if no row data is available.
+    the existing collections if no API data is available.
     """
 
     collections = []
-    for key, rows in response.items():
+    for key, rows in api_data.items():
 
         collection_name = key.replace(f"{fides_key}:", "")
         fields = None
 
         if len(rows):
-            fields = generate_fields(rows[0], collection_name, field_map)
-        elif field_map.get(collection_name):
-            fields = field_map[collection_name]
+            fields = generate_fields(rows[0], collection_name, collection_map)
+        elif collection_map.get(collection_name):
+            fields = collection_map[collection_name]
 
         if fields:
             collection = {"name": collection_name, "fields": fields}
@@ -100,7 +125,7 @@ def generate_fields(
     """
     Generates a simplified version of dataset fields based on the row data.
     Maintains the current path of the traversal to determine if the field
-    exists in the existing dataset. If it does, the existing attributes
+    exists in the existing dataset. If it does, some existing attributes
     are preserved instead of generating them from the row data.
     """
 
@@ -122,8 +147,7 @@ def generate_fields(
             field["fidesops_meta"] = {"data_type": data_type}
             field["fields"] = generate_fields(value[0], current_path, field_map)
         else:
-            existing_field = get_existing_field(field_map, current_path)
-            if existing_field:
+            if existing_field := get_existing_field(field_map, current_path):
                 if isinstance(existing_field, ScalarField):
                     # field exists, copy existing data categories and data_type (if available)
                     field["data_categories"] = existing_field.data_categories or [
@@ -138,7 +162,7 @@ def generate_fields(
                         field["fidesops_meta"] = {"data_type": data_type}
                 elif isinstance(existing_field, ObjectField):
                     # the existing field has a more complex type than what we could derive
-                    # from the API response, we need to copy the fields instead of just
+                    # from the API response, we need to copy the fields too instead of just
                     # the data_categories and data_type
                     field["fidesops_meta"] = {
                         "data_type": "object[]" if isinstance(value, list) else "object"
@@ -154,6 +178,16 @@ def generate_fields(
                     field["fidesops_meta"] = {"data_type": data_type}
         fields.append(field)
     return fields
+
+
+def get_existing_field(field_map: Dict[str, Collection], path: str) -> Optional[Field]:
+    """
+    Lookup existing field by collection name and field path.
+    """
+    collection_name, field_path = path.split(".", 1)
+    if collection := field_map.get(collection_name):
+        return collection.field_dict.get(FieldPath.parse((field_path)))
+    return None
 
 
 def get_simple_fields(fields: Iterable[Field]) -> List[Dict[str, Any]]:
@@ -173,17 +207,6 @@ def get_simple_fields(fields: Iterable[Field]) -> List[Dict[str, Any]]:
             object["fields"] = get_simple_fields(field.fields.values())
         object_list.append(object)
     return object_list
-
-
-def get_existing_field(field_map: Dict[str, Collection], path: str) -> Optional[Field]:
-    """
-    Lookup existing field by collection name and field path.
-    """
-    collection_name, field_path = path.split(".", 1)
-    collection = field_map.get(collection_name)
-    if collection:
-        return collection.field_dict.get(FieldPath.parse((field_path)))
-    return None
 
 
 def get_data_type(value) -> Optional[str]:
