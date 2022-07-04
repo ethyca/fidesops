@@ -103,7 +103,7 @@ class TestCreateUser:
     ) -> None:
         auth_header = generate_auth_header([USER_CREATE])
 
-        body = {"username": "test_user", "password": "short"}
+        body = {"username": "test_user", "password": str_to_b64_str("short")}
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
@@ -111,7 +111,7 @@ class TestCreateUser:
             == "Password must have at least eight characters."
         )
 
-        body = {"username": "test_user", "password": "longerpassword"}
+        body = {"username": "test_user", "password": str_to_b64_str("longerpassword")}
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
@@ -119,7 +119,7 @@ class TestCreateUser:
             == "Password must have at least one number."
         )
 
-        body = {"username": "test_user", "password": "longer55password"}
+        body = {"username": "test_user", "password": str_to_b64_str("longer55password")}
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
@@ -127,7 +127,7 @@ class TestCreateUser:
             == "Password must have at least one capital letter."
         )
 
-        body = {"username": "test_user", "password": "LoNgEr55paSSworD"}
+        body = {"username": "test_user", "password": str_to_b64_str("LoNgEr55paSSworD")}
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
@@ -143,7 +143,7 @@ class TestCreateUser:
         url,
     ) -> None:
         auth_header = generate_auth_header([USER_CREATE])
-        body = {"username": "test_user", "password": "TestP@ssword9"}
+        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
 
         response = api_client.post(url, headers=auth_header, json=body)
 
@@ -164,7 +164,7 @@ class TestCreateUser:
         auth_header = generate_auth_header([USER_CREATE])
         body = {
             "username": "test_user",
-            "password": "TestP@ssword9",
+            "password": str_to_b64_str("TestP@ssword9"),
             "first_name": "Test",
             "last_name": "User",
         }
@@ -362,7 +362,7 @@ class TestGetUsers:
         for i in range(total_users):
             body = {
                 "username": f"user{i}@example.com",
-                "password": "Password123!",
+                "password": str_to_b64_str("Password123!"),
                 "first_name": "Test",
                 "last_name": "User",
             }
@@ -397,7 +397,10 @@ class TestGetUsers:
         saved_users: List[FidesUser] = []
         total_users = 50
         for i in range(total_users):
-            body = {"username": f"user{i}@example.com", "password": "Password123!"}
+            body = {
+                "username": f"user{i}@example.com",
+                "password": str_to_b64_str("Password123!"),
+            }
             resp = api_client.post(url, headers=create_auth_header, json=body)
             assert resp.status_code == HTTP_201_CREATED
             user = FidesUser.get_by(db, field="username", value=body["username"])
@@ -574,8 +577,8 @@ class TestUpdateUserPassword:
             f"{url_no_id}/{user.id}/reset-password",
             headers=auth_header,
             json={
-                "old_password": OLD_PASSWORD,
-                "new_password": NEW_PASSWORD,
+                "old_password": str_to_b64_str(OLD_PASSWORD),
+                "new_password": str_to_b64_str(NEW_PASSWORD),
             },
         )
         assert resp.status_code == HTTP_401_UNAUTHORIZED
@@ -607,8 +610,8 @@ class TestUpdateUserPassword:
             f"{url_no_id}/{application_user.id}/reset-password",
             headers=auth_header,
             json={
-                "old_password": "mismatching password",
-                "new_password": NEW_PASSWORD,
+                "old_password": str_to_b64_str("mismatching password"),
+                "new_password": str_to_b64_str(NEW_PASSWORD),
             },
         )
         assert resp.status_code == HTTP_401_UNAUTHORIZED
@@ -637,8 +640,8 @@ class TestUpdateUserPassword:
             f"{url_no_id}/{application_user.id}/reset-password",
             headers=auth_header,
             json={
-                "old_password": OLD_PASSWORD,
-                "new_password": NEW_PASSWORD,
+                "old_password": str_to_b64_str(OLD_PASSWORD),
+                "new_password": str_to_b64_str(NEW_PASSWORD),
             },
         )
         assert resp.status_code == HTTP_200_OK
@@ -654,19 +657,28 @@ class TestUserLogin:
         return V1_URL_PREFIX + LOGIN
 
     def test_user_does_not_exist(self, db, url, api_client):
-        body = {"username": "does not exist", "password": "idonotknowmypassword"}
+        body = {
+            "username": "does not exist",
+            "password": str_to_b64_str("idonotknowmypassword"),
+        }
         response = api_client.post(url, headers={}, json=body)
         assert response.status_code == HTTP_404_NOT_FOUND
 
     def test_bad_login(self, db, url, user, api_client):
-        body = {"username": user.username, "password": "idonotknowmypassword"}
+        body = {
+            "username": user.username,
+            "password": str_to_b64_str("idonotknowmypassword"),
+        }
         response = api_client.post(url, headers={}, json=body)
         assert response.status_code == HTTP_403_FORBIDDEN
 
     def test_login_creates_client(self, db, url, user, api_client):
         # Delete existing client for test purposes
         user.client.delete(db)
-        body = {"username": user.username, "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"}
+        body = {
+            "username": user.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
 
         assert user.client is None  # client does not exist
         assert user.permissions is not None
@@ -691,7 +703,10 @@ class TestUserLogin:
         user.client.delete(db)
 
     def test_login_updates_last_login_date(self, db, url, user, api_client):
-        body = {"username": user.username, "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"}
+        body = {
+            "username": user.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
 
         response = api_client.post(url, headers={}, json=body)
         assert response.status_code == HTTP_200_OK
@@ -700,7 +715,10 @@ class TestUserLogin:
         assert user.last_login_at is not None
 
     def test_login_uses_existing_client(self, db, url, user, api_client):
-        body = {"username": user.username, "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"}
+        body = {
+            "username": user.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
 
         existing_client_id = user.client.id
         user.client.scopes = [PRIVACY_REQUEST_READ]

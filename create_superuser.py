@@ -14,6 +14,8 @@ from sqlalchemy.orm import Session
 from fidesops.api.v1.scope_registry import CLIENT_CREATE, SCOPE_REGISTRY
 from fidesops.core.config import config
 from fidesops.db.database import init_db
+from fidesops.schemas.user import UserCreate
+from fidesops.util.cryptographic_util import str_to_b64_str
 
 
 def get_username(prompt: str) -> str:
@@ -25,7 +27,7 @@ def get_username(prompt: str) -> str:
 def get_password(prompt: str) -> str:
     """Prompt the user for a password"""
     password = getpass.getpass(prompt)
-    return password
+    return str_to_b64_str(password)
 
 
 def get_input(prompt: str) -> str:

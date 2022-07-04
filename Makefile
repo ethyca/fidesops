@@ -7,7 +7,10 @@
 REGISTRY := ethyca
 IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
 
-IMAGE_NAME := fidesops
+# IMAGE_NAME is webserver rather than fidesops_webserver because commands that don't
+# use docker-compose fail with fidesops_webserver. When left as webserver here both
+# sets of commands work.
+IMAGE_NAME := webserver
 IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
@@ -69,7 +72,7 @@ quickstart:
 ####################
 
 docker-build:
-	docker build --tag $(IMAGE) .
+	docker build --tag $(IMAGE) -f Dockerfile.app .
 
 docker-push:
 	docker tag $(IMAGE) $(IMAGE_LATEST)
@@ -156,7 +159,8 @@ pytest-saas: compose-build
 		-e HUBSPOT_DOMAIN -e HUBSPOT_HAPIKEY -e HUBSPOT_IDENTITY_EMAIL \
 		-e ZENDESK_DOMAIN -e ZENDESK_USERNAME -e ZENDESK_API_KEY -e ZENDESK_IDENTITY_EMAIL \
 		-e SEGMENT_DOMAIN -e SEGMENT_PERSONAS_DOMAIN -e SEGMENT_WORKSPACE -e SEGMENT_ACCESS_TOKEN -e SEGMENT_API_DOMAIN -e SEGMENT_NAMESPACE_ID -e SEGMENT_ACCESS_SECRET -e SEGMENT_USER_TOKEN -e SEGMENT_IDENTITY_EMAIL \
-		-e STRIPE_DOMAIN -e STRIPE_API_KEY -e STRIPE_PAYMENT_TYPES -e STRIPE_ITEMS_PER_PAGE -e STRIPE_IDENTITY_EMAIL \
+		-e STRIPE_DOMAIN -e STRIPE_API_KEY -e STRIPE_PAYMENT_TYPES -e STRIPE_PAGE_SIZE -e STRIPE_IDENTITY_EMAIL \
+		-e SALESFORCE_DOMAIN -e SALESFORCE_CLIENT_ID -e SALESFORCE_CLIENT_SECRET -e SALESFORCE_ACCESS_TOKEN -e SALESFORCE_USERNAME -e SALESFORCE_PASSWORD -e SALESFORCE_IDENTITY_EMAIL \
 		$(IMAGE_NAME) pytest $(pytestpath) -m "integration_saas"
 	@make teardown
 

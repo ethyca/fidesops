@@ -9,6 +9,9 @@ from fideslib.models.fides_user_permissions import FidesUserPermissions
 from fideslib.oauth.schemas.user import UserCreate
 
 from fidesops.api.v1.scope_registry import CLIENT_CREATE
+from fidesops.common_exceptions import KeyOrNameAlreadyExists
+from fidesops.schemas.user import UserCreate
+from fidesops.util.cryptographic_util import str_to_b64_str
 
 
 class TestCreateSuperuserScript:
@@ -23,7 +26,7 @@ class TestCreateSuperuserScript:
         db,
     ):
         GENERIC_INPUT = "some_input"
-        mock_pass.return_value = "TESTP@ssword9"
+        mock_pass.return_value = str_to_b64_str("TESTP@ssword9")
         mock_user.return_value = "test_user"
         mock_input.return_value = GENERIC_INPUT
         user: UserCreate = collect_username_and_password(db)
@@ -47,7 +50,7 @@ class TestCreateSuperuserScript:
             db=db,
             data={"username": "test_user", "password": "test_password"},
         )
-        mock_pass.return_value = "TESTP@ssword9"
+        mock_pass.return_value = str_to_b64_str("TESTP@ssword9")
         mock_user.return_value = "test_user"
         mock_input.return_value = "some_input"
 
@@ -66,7 +69,7 @@ class TestCreateSuperuserScript:
         mock_user,
         db,
     ):
-        mock_pass.return_value = "bad_password"
+        mock_pass.return_value = str_to_b64_str("bad_password")
         mock_user.return_value = "test_user"
         mock_input.return_value = "some_input"
 
@@ -83,7 +86,7 @@ class TestCreateSuperuserScript:
         mock_user,
         db,
     ):
-        mock_pass.return_value = "TESTP@ssword9"
+        mock_pass.return_value = str_to_b64_str("TESTP@ssword9")
         mock_user.return_value = "test_user"
         mock_input.return_value = "some_input"
 
