@@ -15,7 +15,6 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-    HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
 from fidesops.api import deps
@@ -107,18 +106,10 @@ def validate_dataset(
 
         # Datasets for SaaS connections need to be merged with a SaaS config to
         # be able to generate a valid traversal
-        saas_config = connection_config.saas_config
-        if not saas_config:
-            raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="No SAAS configuration",
-            )
-
         if connection_config.connection_type == ConnectionType.saas:
             _validate_saas_dataset(connection_config, dataset)
             graph = merge_datasets(
-                graph,
-                saas_config.get_graph(),
+                graph, connection_config.get_saas_config().get_graph()  # type: ignore
             )
         complete_graph = DatasetGraph(graph)
         unique_identities = set(complete_graph.identity_keys.values())

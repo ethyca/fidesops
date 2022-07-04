@@ -92,14 +92,6 @@ def _onetrust_uploader(
             f"Request could not be found for request_id: {request_id}"
         )
 
-    if not request_details.external_id:
-        raise StorageUploadError(
-            f"External id could not be found for request_id: {request_id}"
-        )
-
-    if not config.secrets:
-        raise StorageUploadError("Configurations secrets are required")
-
     payload_data = {
         "language": "en-us",
         "system": config.details[StorageDetails.SERVICE_NAME.value],
@@ -107,8 +99,8 @@ def _onetrust_uploader(
     }
     return upload_to_onetrust(
         payload_data,
-        config.secrets,
-        request_details.external_id,
+        config.secrets,  # type: ignore
+        request_details.external_id,  # type: ignore
     )
 
 

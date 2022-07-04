@@ -5,13 +5,12 @@ from typing import Any, Callable, Dict, List, Set, Tuple, cast
 
 import pydash.collections
 
-from fidesops.common_exceptions import FidesopsException, TraversalError
+from fidesops.common_exceptions import TraversalError
 from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     Collection,
     CollectionAddress,
     Dataset,
-    Field,
     FieldAddress,
     FieldPath,
 )
@@ -101,8 +100,6 @@ class TraversalNode:
 
         The values are cast based on field types, if those types are specified.
         """
-        if not self.node.collection.field:
-            raise FidesopsException("Collection does not have a field")
         out = {}
         for key, values in input_data.items():
             path: FieldPath = FieldPath.parse(key)

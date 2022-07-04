@@ -13,7 +13,6 @@ from fidesops.graph.config import (
     Field,
     FieldAddress,
     FieldPath,
-    SeedAddress,
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
@@ -256,4 +255,4 @@ class DatasetGraph:
         return mapping
 
     def __repr__(self) -> str:
-        return "Graph: nodes = %s" % self.nodes.keys()
+        return f"Graph: nodes = {self.nodes.keys()}"

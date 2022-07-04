@@ -233,23 +233,11 @@ def authorize_connection(
     """Returns the authorization URL for the SaaS Connector (if available)"""
 
     verify_oauth_connection_config(connection_config)
-    saas_config = connection_config.get_saas_config()
-    if not saas_config:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail="No SAAS config available"
-        )
-
-    authentication = saas_config.client_config.authentication
-
-    if not authentication:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="No authentication information",
-        )
+    authentication = connection_config.get_saas_config().client_config.authentication  # type: ignore
 
     try:
-        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(  # type: ignore
-            authentication.strategy, authentication.configuration
+        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
+            authentication.strategy, authentication.configuration  # type: ignore
         )
         return auth_strategy.get_authorization_url(db, connection_config)
     except FidesopsException as exc:

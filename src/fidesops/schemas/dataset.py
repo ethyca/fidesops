@@ -4,7 +4,6 @@ from fideslang.models import Dataset, DatasetCollection, DatasetFieldBase
 from pydantic import BaseModel, ConstrainedStr, validator
 
 from fidesops.common_exceptions import (
-    FidesopsException,
     InvalidDataLengthValidationError,
     InvalidDataTypeValidationError,
 )
@@ -34,13 +33,7 @@ def _valid_data_type(data_type_str: Optional[str]) -> Optional[str]:
     """If the data_type is provided ensure that it is a member of DataType."""
 
     dt, _ = parse_data_type_string(data_type_str)
-
-    if not dt:
-        raise FidesopsException(
-            f"The data type {data_type_str} does not contain a data type"
-        )
-
-    if not is_valid_data_type(dt):
+    if not is_valid_data_type(dt):  # type: ignore
         raise InvalidDataTypeValidationError(
             f"The data type {data_type_str} is not supported."
         )

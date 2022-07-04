@@ -270,8 +270,6 @@ def connection_status(
     connector = get_connector(connection_config)
     try:
         status = connector.test_connection()
-        if not status:
-            raise ConnectionException("No connection")
 
     except (ConnectionException, ClientUnsuccessfulException) as exc:
         logger.warning(
@@ -288,8 +286,8 @@ def connection_status(
             failure_reason=str(exc),
         )
 
-    logger.info(f"Connection test {status.value} on {connection_config.key}")
-    connection_config.update_test_status(test_status=status, db=db)
+    logger.info(f"Connection test {status.value} on {connection_config.key}")  # type: ignore
+    connection_config.update_test_status(test_status=status, db=db)  # type: ignore
 
     return TestStatusMessage(
         msg=msg,

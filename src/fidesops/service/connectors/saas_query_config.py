@@ -151,11 +151,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 )
 
         # map param values to placeholders in path, headers, and query params
-        if not self.action:
-            raise FidesopsException(f"No action is defined")
-
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
-            self.action, self.collection_name, current_request, param_values
+            self.action, self.collection_name, current_request, param_values  # type: ignore
         )
 
         logger.info(f"Populated request params for {current_request.path}")
@@ -171,16 +168,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         if specified by the body field of the masking request.
         """
 
-        current_request = self.get_masking_request()
-        if not current_request:
-            raise FidesopsException("There are currently no masking requests")
-
-        if not current_request.param_values:
-            raise FidesopsException("The current request has no parameter values")
-
-        collection_name = self.node.address.collection
-        collection_values = {collection_name: row}
-        identity_data = request.get_cached_identity_data()
+        current_request: SaaSRequest = self.get_masking_request()  # type: ignore
+        collection_name: str = self.node.address.collection
+        collection_values: Dict[str, Row] = {collection_name: row}
+        identity_data: Dict[str, Any] = request.get_cached_identity_data()
 
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
@@ -215,12 +206,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         param_values["masked_object_fields"] = json.dumps(masked_object)[1:-1]
         param_values["all_object_fields"] = json.dumps(complete_object)[1:-1]
 
-        if not self.action:
-            raise FidesopsException(f"No action is defined")
-
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
-            self.action, self.collection_name, current_request, param_values
+            self.action, self.collection_name, current_request, param_values  # type: ignore
         )
 
         logger.info(f"Populated request params for {current_request.path}")

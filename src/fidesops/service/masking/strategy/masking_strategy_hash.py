@@ -1,7 +1,6 @@
 import hashlib
 from typing import Dict, List, Optional
 
-from fidesops.common_exceptions import FidesopsException
 from fidesops.core.config import config
 from fidesops.schemas.masking.masking_configuration import (
     HashMaskingConfiguration,
@@ -57,12 +56,9 @@ class HashMaskingStrategy(MaskingStrategy):
             masking_meta[SecretType.salt],
         )
 
-        if not salt:
-            raise FidesopsException("No secrets present to geneate encryption")
-
         masked_values: List[str] = []
         for value in values:
-            masked: str = self.algorithm_function(value, salt)
+            masked: str = self.algorithm_function(value, salt)  # type: ignore
             if self.format_preservation is not None:
                 formatter = FormatPreservation(self.format_preservation)
                 masked = formatter.format(masked)

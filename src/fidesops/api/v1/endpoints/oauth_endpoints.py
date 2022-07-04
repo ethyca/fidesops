@@ -100,7 +100,7 @@ def create_client(
 ) -> ClientCreatedResponse:
     """Creates a new client and returns the credentials"""
     logging.info("Creating new client")
-    if not all([scope in SCOPE_REGISTRY for scope in scopes]):
+    if not all(scope in SCOPE_REGISTRY for scope in scopes):
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Invalid Scope. Scopes must be one of {SCOPE_REGISTRY}.",
@@ -200,19 +200,12 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None
     verify_oauth_connection_config(connection_config)
 
     try:
-        saas_config = connection_config.get_saas_config()
-        if not saas_config:
-            raise FidesopsException("No SAAS configuration found")
-
-        authentication = saas_config.client_config.authentication
-        if not authentication:
-            raise FidesopsException("No strategy found")
-
-        strategy = get_strategy(authentication.strategy, authentication.configuration)
-        if not strategy:
-            raise FidesopsException("No authentication strategy found")
-
-        auth_strategy: OAuth2AuthenticationStrategy = strategy  # type: ignore
+        authentication = (
+            connection_config.get_saas_config().client_config.authentication  # type: ignore
+        )
+        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(  # type: ignore
+            authentication.strategy, authentication.configuration  # type: ignore
+        )
         auth_strategy.get_access_token(db, code, connection_config)
     except (OAuth2TokenException, FidesopsException) as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc))

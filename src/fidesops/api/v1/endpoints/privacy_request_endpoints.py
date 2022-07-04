@@ -607,15 +607,7 @@ def resume_privacy_request(
 ) -> PrivacyRequestResponse:
     """Resume running a privacy request after it was paused by a Pre-Execution webhook"""
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
-    derived_identity = webhook_callback.derived_identity
-
-    if not derived_identity:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="No cache identity found",
-        )
-
-    privacy_request.cache_identity(derived_identity)
+    privacy_request.cache_identity(webhook_callback.derived_identity)  # type: ignore
 
     if privacy_request.status != PrivacyRequestStatus.paused:
         raise HTTPException(
@@ -714,16 +706,10 @@ def resume_privacy_request_with_manual_input(
         privacy_request.cache_manual_input(paused_collection, manual_rows)
 
     elif paused_step == PausedStep.erasure:
-        if not manual_count:
-            raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Cannot save manual data. No manual count provided",
-            )
-
         logger.info(
             f"Caching manually erased row count for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
         )
-        privacy_request.cache_manual_erasure_count(paused_collection, manual_count)
+        privacy_request.cache_manual_erasure_count(paused_collection, manual_count)  # type: ignore
 
     logger.info(
         f"Resuming privacy request '{privacy_request_id}', {paused_step.value} step, from collection "

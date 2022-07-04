@@ -78,12 +78,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                     f"strategy: {self.get_strategy_name()}"
                 )
                 return []
-            identity = identity_data.get(self.value.identity)
-
-            if not identity:
-                raise FidesopsException("No identity present")
-
-            filter_value = identity
+            filter_value = identity_data.get(self.value.identity)  # type: ignore
 
         try:
             if isinstance(data, list):

@@ -183,7 +183,7 @@ def assign_placeholders(value: Any, param_values: Dict[str, Any]) -> Optional[An
         for placeholder in placeholders:
             placeholder_value = param_values.get(placeholder)
             if placeholder_value:
-                return value.replace(f"<{placeholder}>", str(placeholder_value))
+                value = value.replace(f"<{placeholder}>", str(placeholder_value))
             else:
                 return None
     return value

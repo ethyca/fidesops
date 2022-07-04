@@ -91,7 +91,7 @@ class ClientDetail(Base):
 
     def create_access_code_jwe(self) -> str:
         """Generates a JWE from the client detail provided"""
-        from fidesops.util.oauth_util import generate_jwe
+        from fidesops.util.oauth_util import generate_jwe  # pylint: disable=R0401
 
         payload = {
             # client id may not be necessary

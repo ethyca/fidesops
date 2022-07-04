@@ -37,12 +37,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         super().__init__(configuration)
         self.secrets = configuration.secrets
         self.saas_config = configuration.get_saas_config()
-
-        if not self.saas_config:
-            raise FidesopsException("No SaaS configuration present")
-
-        self.client_config = self.saas_config.client_config
-        self.endpoints = self.saas_config.top_level_endpoint_dict
+        self.client_config = self.saas_config.client_config  # type: ignore
+        self.endpoints = self.saas_config.top_level_endpoint_dict  # type: ignore
         self.collection_name: Optional[str] = None
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
@@ -50,24 +46,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Returns the query config for a given node which includes the endpoints
         and connector param values for the current collection.
         """
-        if not self.saas_config:
-            raise FidesopsException("No SaaS configuration present")
-
-        if not self.secrets:
-            raise FidesopsException("No connection configuration secrets present")
-
         # store collection_name for logging purposes
         self.collection_name = node.address.collection
         return SaaSQueryConfig(
-            node, self.endpoints, self.secrets, self.saas_config.data_protection_request
+            node, self.endpoints, self.secrets, self.saas_config.data_protection_request  # type: ignore
         )
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
-        if not self.saas_config:
-            raise FidesopsException("No SaaS configuration present")
-
-        test_request: SaaSRequest = self.saas_config.test_request
+        test_request: SaaSRequest = self.saas_config.test_request  # type: ignore
         prepared_request: SaaSRequestParams = SaaSRequestParams(
             method=test_request.method, path=test_request.path
         )
@@ -77,13 +64,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def build_uri(self) -> str:
         """Build base URI for the given connector"""
-        if not self.secrets:
-            raise FidesopsException("No connection configuration secrets present")
-
         host = self.client_config.host
-        return (
-            f"{self.client_config.protocol}://{assign_placeholders(host, self.secrets)}"
-        )
+        return f"{self.client_config.protocol}://{assign_placeholders(host, self.secrets)}"  # type: ignore
 
     def create_client(self) -> AuthenticatedClient:
         """Creates an authenticated request builder"""
@@ -111,10 +93,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         if saas_request.client_config:
             return self._build_client_with_config(saas_request.client_config)
 
-        if not self.saas_config:
-            raise FidesopsException("No SaaS configuration present")
-
-        return self._build_client_with_config(self.saas_config.client_config)
+        return self._build_client_with_config(self.saas_config.client_config)  # type: ignore
 
     def retrieve_data(
         self,
@@ -124,20 +103,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
-
         # generate initial set of requests if read request is defined, otherwise raise an exception
         query_config: SaaSQueryConfig = self.query_config(node)
         read_request: Optional[SaaSRequest] = query_config.get_request_by_action("read")
         if not read_request:
-            if self.saas_config:
-                raise FidesopsException(
-                    f"The 'read' action is not defined for the '{self.collection_name}' "
-                    f"endpoint in {self.saas_config.fides_key}"
-                )
             raise FidesopsException(
-                f"The 'read' action is not defined for the '{self.collection_name}'"
+                f"The 'read' action is not defined for the '{self.collection_name}' "  # type: ignore
+                f"endpoint in {self.saas_config.fides_key}"
             )
-
         prepared_requests: List[SaaSRequestParams] = query_config.generate_requests(
             input_data, policy
         )
@@ -147,18 +120,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         # list of rows after each request.
         rows: List[Row] = []
         for next_request in prepared_requests:
-            request: Optional[SaaSRequestParams]
-            while request:
-                processed_rows: Optional[List[Row]]
-                processed_rows, request = self.execute_prepared_request(
+            while next_request:
+                processed_rows, next_request = self.execute_prepared_request(  # type: ignore
                     next_request,
                     privacy_request.get_cached_identity_data(),
                     read_request,
-                ) or (None, None)
-
-                if processed_rows:
-                    rows.extend(processed_rows)
-
+                )
+                rows.extend(processed_rows)
         return rows
 
     def execute_prepared_request(
@@ -194,23 +162,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 saas_request.pagination.strategy,
                 saas_request.pagination.configuration,
             )
-
-            if not saas_request.data_path:
-                raise ValueError("No data path present")
-
-            if not response:
-                raise ConnectionError("Request received no response")
-
             next_request = strategy.get_next_request(
                 prepared_request, self.secrets, response, saas_request.data_path  # type: ignore
             )
 
         if next_request:
-            if not saas_request.pagination:
-                raise ValueError("No pagination strategy present")
-
             logger.info(
-                f"Using '{saas_request.pagination.strategy}' "
+                f"Using '{saas_request.pagination.strategy}' "  # type: ignore
                 f"pagination strategy to get next page for '{self.collection_name}'."
             )
 
@@ -248,7 +206,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         if not processed_data:
             return rows
         if isinstance(processed_data, list):
-            if not all([isinstance(item, dict) for item in processed_data]):
+            if not all(isinstance(item, dict) for item in processed_data):
                 raise PostProcessingException(
                     "The list returned after postprocessing did not contain elements of the same type."
                 )

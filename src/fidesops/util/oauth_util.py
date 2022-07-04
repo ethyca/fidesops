@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import json
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
@@ -14,8 +16,7 @@ from fidesops.api import deps
 from fidesops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fidesops.common_exceptions import AuthenticationFailure, AuthorizationError
 from fidesops.core.config import config
-from fidesops.models.client import ClientDetail
-from fidesops.models.fidesops_user import FidesopsUser
+from fidesops.models.client import ClientDetail  # pylint: disable=R0401
 from fidesops.models.policy import PolicyPreWebhook
 from fidesops.schemas.external_https import WebhookJWE
 from fidesops.schemas.jwt import (
@@ -24,6 +25,9 @@ from fidesops.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
 )
 from fidesops.schemas.oauth import OAuth2ClientCredentialsBearer
+
+if TYPE_CHECKING:
+    from fidesops.models.fidesops_user import FidesopsUser
 
 __JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 

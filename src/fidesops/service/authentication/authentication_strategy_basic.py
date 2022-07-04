@@ -29,13 +29,10 @@ class BasicAuthenticationStrategy(AuthenticationStrategy):
         """Add basic authentication to the request"""
         secrets = connection_config.secrets
 
-        if not secrets:
-            raise ValueError("No connection secret present")
-
         request.prepare_auth(
             auth=(
-                assign_placeholders(self.username, secrets),
-                assign_placeholders(self.password, secrets),
+                assign_placeholders(self.username, secrets),  # type: ignore
+                assign_placeholders(self.password, secrets),  # type: ignore
             )
         )
         return request

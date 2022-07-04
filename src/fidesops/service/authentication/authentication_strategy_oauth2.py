@@ -50,10 +50,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         # make sure required secrets have been provided
         self._check_required_secrets(connection_config)
 
-        if not connection_config.secrets:
-            raise FidesopsException("No connection secret present")
-
-        access_token = connection_config.secrets.get("access_token")
+        access_token = connection_config.secrets.get("access_token")  # type: ignore
         if not access_token:
             raise FidesopsException(
                 f"OAuth2 access token not found for {connection_config.key}, please "
@@ -66,7 +63,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         # https://datatracker.ietf.org/doc/html/rfc6749#section-5.1
 
         if self.refresh_request:
-            expires_at = connection_config.secrets.get("expires_at")
+            expires_at = connection_config.secrets.get("expires_at")  # type: ignore
             if self._close_to_expiration(expires_at, connection_config):
                 refresh_response = self._call_token_request(
                     "refresh", self.refresh_request, connection_config
@@ -105,13 +102,9 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
 
         logger.info(f"Attempting {action} token request for {connection_config.key}")
 
-        saas_config = connection_config.get_saas_config()
-        if not saas_config:
-            raise ValueError("No SAAS configuration")
-
         # get the client config from the token request or default to the
         # protocol and host specified by the root client config (no auth)
-        root_client_config = saas_config.client_config
+        root_client_config = connection_config.get_saas_config().client_config  # type: ignore
         oauth_client_config = (
             token_request.client_config
             if token_request.client_config
@@ -120,13 +113,10 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
             )
         )
 
-        if not connection_config.secrets:
-            raise FidesopsException("No connection secret present")
-
         client = AuthenticatedClient(
             (
                 f"{oauth_client_config.protocol}://"
-                f"{assign_placeholders(oauth_client_config.host, connection_config.secrets)}"
+                f"{assign_placeholders(oauth_client_config.host, connection_config.secrets)}"  # type: ignore
             ),
             connection_config,
             oauth_client_config,
@@ -138,7 +128,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
                 action,
                 f"{connection_config.name} OAuth2",
                 token_request,
-                connection_config.secrets,
+                connection_config.secrets,  # type: ignore
             )
             # ignore errors so we can return the error message in the response
             response = client.send(prepared_request, ignore_errors=True)
@@ -211,13 +201,9 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         # persist new tokens to the database
         # ideally we use a passed in database session but we can
         # get the session from the connection_config as a fallback
-
-        if not connection_config.secrets:
-            raise FidesopsException("No connection secret present")
-
         if not db:
             db = Session.object_session(connection_config)
-        updated_secrets = {**connection_config.secrets, **data}
+        updated_secrets = {**connection_config.secrets, **data}  # type: ignore
         connection_config.update(db, data={"secrets": updated_secrets})
         logger.info(
             f"Successfully updated the OAuth2 token(s) for {connection_config.key}"
@@ -241,40 +227,28 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         AuthenticationRequest.create_or_update(
             db, data={"connection_key": connection_config.key, "state": state}
         )
-
-        if not connection_config.secrets:
-            raise FidesopsException("No connection secret present")
-
         # add state to secrets
-        connection_config.secrets["state"] = state
-
-        if not connection_config.secrets:
-            raise FidesopsException("No connection secret present")
+        connection_config.secrets["state"] = state  # type: ignore
 
         # assign placeholders in the authorization request config
         prepared_authorization_request = map_param_values(
             "authorize",
             f"{connection_config.name} OAuth2",
             self.authorization_request,
-            connection_config.secrets,
+            connection_config.secrets,  # type: ignore
         )
-
-        saas_config = connection_config.get_saas_config()
-
-        if not saas_config:
-            raise ValueError("No SAAS configuration")
 
         # get the client config from the authorization request or default
         # to the base client config if one isn't provided
         client_config = (
             self.authorization_request.client_config
             if self.authorization_request.client_config
-            else saas_config.client_config
+            else connection_config.get_saas_config().client_config  # type: ignore
         )
 
         # build the complete URL with query params
         return (
-            f"{client_config.protocol}://{assign_placeholders(client_config.host, connection_config.secrets)}"
+            f"{client_config.protocol}://{assign_placeholders(client_config.host, connection_config.secrets)}"  # type: ignore
             f"{prepared_authorization_request.path}"
             f"?{urlencode(prepared_authorization_request.query_params)}"
         )
@@ -289,10 +263,8 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         """
 
         self._check_required_secrets(connection_config)
-        if not connection_config.secrets:
-            raise FidesopsException("No connection secret present")
 
-        connection_config.secrets = {**connection_config.secrets, "code": code}
+        connection_config.secrets = {**connection_config.secrets, "code": code}  # type: ignore
         access_response = self._call_token_request(
             "access", self.token_request, connection_config
         )

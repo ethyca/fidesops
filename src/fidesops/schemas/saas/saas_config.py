@@ -113,8 +113,10 @@ class SaaSRequest(BaseModel):
         before any field validation.
         """
 
-        # delay import to avoid cyclic-dependency error
-        from fidesops.service.pagination.pagination_strategy_factory import get_strategy
+        # delay import to avoid cyclic-dependency error - This delay doesn't work, error still happens
+        from fidesops.service.pagination.pagination_strategy_factory import (  # pylint: disable=R0401
+            get_strategy,
+        )
 
         pagination = values.get("pagination")
         if pagination is not None:

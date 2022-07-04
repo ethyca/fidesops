@@ -5,9 +5,7 @@ from typing import Any, Dict, List, Optional, Set
 from fidesops.models.policy import ActionType, Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
-from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
-from fidesops.schemas.policy import Rule
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
@@ -45,11 +43,8 @@ def cache_data(
     erasure_rules = policy.get_rules_for_action(action_type=ActionType.erasure)
     unique_masking_strategies_by_name: Set[str] = set()
     for rule in erasure_rules:
-        if not rule.masking_strategy:
-            raise ValueError(f"No masking strategy round for {rule['name']}")
-
-        strategy_name = rule.masking_strategy["strategy"]
-        configuration = rule.masking_strategy["configuration"]
+        strategy_name: str = rule.masking_strategy["strategy"]  # type: ignore
+        configuration = rule.masking_strategy["configuration"]  # type: ignore
         if strategy_name in unique_masking_strategies_by_name:
             continue
         unique_masking_strategies_by_name.add(strategy_name)

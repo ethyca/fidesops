@@ -1,6 +1,5 @@
 from typing import Dict, List, Optional
 
-from fidesops.common_exceptions import FidesopsException
 from fidesops.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
     MaskingConfiguration,
@@ -57,12 +56,9 @@ class HmacMaskingStrategy(MaskingStrategy):
             request_id, SecretType.salt, masking_meta[SecretType.salt]
         )
 
-        if not key or not salt:
-            raise FidesopsException("No secrets present to geneate encryption")
-
         masked_values: List[str] = []
         for value in values:
-            masked: str = hmac_encrypt_return_str(value, key, salt, self.algorithm)
+            masked: str = hmac_encrypt_return_str(value, key, salt, self.algorithm)  # type: ignore
             if self.format_preservation is not None:
                 formatter = FormatPreservation(self.format_preservation)
                 masked = formatter.format(masked)

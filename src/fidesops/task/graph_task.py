@@ -154,10 +154,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """If the current collection needs inputs from other collections, in addition to its seed data."""
         collection = self.traversal_node.node.collection
         for field in self.grouped_fields:
-            if field:
-                field_path = collection.field(FieldPath(field))
-                if field_path and field_path.identity:
-                    return True
+            if collection.field(FieldPath(field)).identity:  # type: ignore
+                return True
         return False
 
     def build_incoming_field_path_maps(
@@ -525,10 +523,7 @@ def collect_queries(
         tn: TraversalNode, data: Dict[CollectionAddress, str]
     ) -> None:
         if not tn.is_root_node():
-            graph_task = GraphTask(tn, resources).generate_dry_run_query()
-            if not graph_task:
-                raise ValueError("Dry run has no value")
-            data[tn.address] = graph_task
+            data[tn.address] = GraphTask(tn, resources).generate_dry_run_query()  # type: ignore
 
     env: Dict[CollectionAddress, str] = {}
     traversal.traverse(env, collect_queries_fn)

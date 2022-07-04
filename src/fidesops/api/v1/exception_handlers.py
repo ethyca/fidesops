@@ -1,7 +1,7 @@
 from typing import Callable, List
 
 from fastapi import Request
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from fidesops.common_exceptions import FunctionalityNotConfigured

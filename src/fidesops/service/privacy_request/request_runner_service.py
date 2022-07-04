@@ -209,7 +209,7 @@ def run_privacy_request(
             connection_configs = ConnectionConfig.all(db=session)
 
             if (
-                not from_step == PausedStep.erasure
+                from_step != PausedStep.erasure
             ):  # Skip if we're resuming from erasure step
                 access_result: Dict[str, List[Row]] = run_access_request(
                     privacy_request=privacy_request,

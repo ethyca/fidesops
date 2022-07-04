@@ -125,7 +125,7 @@ class QueryConfig(Generic[T], ABC):
 
         return data
 
-    def update_value_map(
+    def update_value_map(  # pylint: disable=R0914
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> Dict[str, Any]:
         """Map the relevant field (as strings) to be updated on the row with their masked values from Policy Rules
@@ -161,17 +161,10 @@ class QueryConfig(Generic[T], ABC):
                 if not self._supported_data_type(
                     masking_override, null_masking, strategy
                 ):
-                    data_type_converter = masking_override.data_type_converter
-                    if not data_type_converter:
-                        logger.warning(
-                            f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not "
-                            f"present on the field or not supported for the {strategy_config['strategy']} masking."
-                        )
-
                     logger.warning(
-                        f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not "
+                        f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not "  # type: ignore
                         f"present on the field or not supported for the {strategy_config['strategy']} masking "
-                        f"strategy. Received data type: {data_type_converter.name}"  # type: ignore
+                        f"strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
                     continue
 
@@ -217,12 +210,7 @@ class QueryConfig(Generic[T], ABC):
         str_field_path: str,
     ) -> T:
         # masking API takes and returns lists, but here we are only leveraging single elements
-        masking_strategy = strategy.mask([val], request_id)
-
-        if not masking_strategy:
-            raise ValueError("No masking strategy")
-
-        masked_val = masking_strategy[0]
+        masked_val = strategy.mask([val], request_id)[0]  # type: ignore
 
         logger.debug(
             f"Generated the following masked val for field {str_field_path}: {masked_val}"
@@ -238,11 +226,7 @@ class QueryConfig(Generic[T], ABC):
                 f"of masked value to match, regardless of masking strategy"
             )
             #  for strategies other than null masking we assume that masked data type is the same as specified data type
-
-            if not masking_override.data_type_converter:
-                raise ValueError("No data type converter")
-
-            masked_val = masking_override.data_type_converter.truncate(
+            masked_val = masking_override.data_type_converter.truncate(  # type: ignore
                 masking_override.length, masked_val
             )
         return masked_val

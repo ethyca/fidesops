@@ -1,6 +1,5 @@
 from typing import Dict, List, Optional
 
-from fidesops.common_exceptions import FidesopsException
 from fidesops.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
     HmacMaskingConfiguration,
@@ -51,17 +50,14 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
                 masking_meta[SecretType.key_hmac],
             )
 
-            if not key or not key_hmac:
-                raise FidesopsException("No secrets present to geneate encryption")
-
             # The nonce is generated deterministically such that the same input val will result in same nonce
             # and therefore the same masked val through the aes strategy. This is called convergent encryption, with this
             # implementation loosely based on https://www.vaultproject.io/docs/secrets/transit#convergent-encryption
 
             masked_values: List[str] = []
             for value in values:
-                nonce = self._generate_nonce(value, key_hmac, request_id, masking_meta)
-                masked: str = encrypt(value, key, nonce)
+                nonce = self._generate_nonce(value, key_hmac, request_id, masking_meta)  # type: ignore
+                masked: str = encrypt(value, key, nonce)  # type: ignore
                 if self.format_preservation is not None:
                     formatter = FormatPreservation(self.format_preservation)
                     masked = formatter.format(masked)
@@ -119,12 +115,10 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         salt = SecretsUtil.get_or_generate_secret(
             privacy_request_id, SecretType.salt_hmac, masking_meta[SecretType.salt_hmac]
         )
-        if not salt:
-            raise FidesopsException("No secrets present to geneate encryption")
         # Trim to 12 bytes, which is recommended length from aes gcm lib:
         # https://cryptography.io/en/latest/hazmat/primitives/aead/#cryptography.hazmat.primitives.ciphers.aead.AESGCM.encrypt
         return hmac_encrypt_return_bytes(
-            value, key, salt, HmacMaskingConfiguration.Algorithm.sha_256
+            value, key, salt, HmacMaskingConfiguration.Algorithm.sha_256  # type: ignore
         )[:12]
 
     @staticmethod
