@@ -49,11 +49,6 @@ RUN pip install -U pip  \
     && pip install snowflake-connector-python --no-use-pep517  \
     && pip install -r requirements.txt -r dev-requirements.txt
 
-# TODO: remove after done testing
-RUN \
-  pip uninstall fideslib -y \
-  && pip install git+https://github.com/ethyca/fideslib
-
 RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then pip install -U pip -r mssql-requirements.txt ; fi
 
 # Copy in the application files and install it locally

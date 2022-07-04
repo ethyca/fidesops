@@ -9,8 +9,6 @@ from fideslib.models.fides_user_permissions import FidesUserPermissions
 from fideslib.oauth.schemas.user import UserCreate
 
 from fidesops.api.v1.scope_registry import CLIENT_CREATE
-from fidesops.common_exceptions import KeyOrNameAlreadyExists
-from fidesops.schemas.user import UserCreate
 from fidesops.util.cryptographic_util import str_to_b64_str
 
 

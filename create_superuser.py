@@ -14,7 +14,6 @@ from sqlalchemy.orm import Session
 from fidesops.api.v1.scope_registry import CLIENT_CREATE, SCOPE_REGISTRY
 from fidesops.core.config import config
 from fidesops.db.database import init_db
-from fidesops.schemas.user import UserCreate
 from fidesops.util.cryptographic_util import str_to_b64_str
 
 

@@ -103,7 +103,7 @@ def create_client(
 ) -> ClientCreatedResponse:
     """Creates a new client and returns the credentials"""
     logging.info("Creating new client")
-    if not all([scope in SCOPE_REGISTRY for scope in scopes]):
+    if not all(scope in SCOPE_REGISTRY for scope in scopes):
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Invalid Scope. Scopes must be one of {SCOPE_REGISTRY}.",
