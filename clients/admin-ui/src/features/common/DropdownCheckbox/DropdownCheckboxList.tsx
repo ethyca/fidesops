@@ -61,6 +61,7 @@ const DropdownCheckboxList: React.FC<DropdownCheckboxListProps> = ({
   const doneHandler = () => {
     onSelection(pendingItems);
   };
+
   return (
     <MenuList lineHeight="1rem" minWidth={minWidth} p="0">
       <Flex

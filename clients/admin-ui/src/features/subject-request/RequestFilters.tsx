@@ -9,7 +9,7 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectToken } from "../auth";
@@ -98,22 +98,38 @@ const RequestFilters: React.FC = () => {
     handleDownloadClick,
     id,
     from,
+    status,
     to,
   } = useRequestFilters();
 
-  const getSubjectRequstStatusMap = (): Map<string, boolean> => {
+  const loadStatusList = (values: string[]): Map<string, boolean> => {
     const list = new Map<string, boolean>();
     SubjectRequestStatusMap.forEach((value, key) => {
-      list.set(key, false);
+      let result = false;
+      if (values.includes(value)) {
+        result = true;
+      }
+      list.set(key, result);
     });
     return list;
   };
 
+  // Load the status list
+  const statusList = useMemo(
+    () => loadStatusList(status ? status.split(",") : []),
+    [status]
+  );
+
+  // Filter the selected status list
+  const selectedStatusList = new Map(
+    [...statusList].filter(([, v]) => v === true)
+  );
+
   return (
     <Stack direction="row" spacing={4} mb={6}>
       <DropdownCheckbox
-        closeOnSelect={false}
-        list={getSubjectRequstStatusMap()}
+        list={statusList}
+        selectedList={selectedStatusList}
         minWidth="144px"
         onChange={handleStatusChange}
         title="Select Status"

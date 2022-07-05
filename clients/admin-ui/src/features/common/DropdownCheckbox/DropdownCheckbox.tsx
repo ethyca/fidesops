@@ -1,31 +1,35 @@
 import { PlacementWithLogical } from "@chakra-ui/react";
 import { Button, Grid, Menu, MenuButton, Text, Tooltip } from "@fidesui/react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 
 import { ArrowDownLineIcon } from "../Icon";
 import DropdownCheckboxList from "./DropdownCheckboxList";
 
 export type DropdownCheckboxProps = {
   /**
-   * List of key/value pairs to be rendered as a checkbox list
-   */
-  list: Map<string, boolean>;
-  /**
-   * Placeholder
-   */
-  title: string;
-  /**
    * Boolean to determine if the dropdown is to be immediately close on a user selection
    */
   closeOnSelect?: boolean;
+  /**
+   * List of key/value pairs to be rendered as a checkbox list
+   */
+  list: Map<string, boolean>;
   /**
    * Minimum width of an element
    */
   minWidth?: string;
   /**
-   * Event handler invoked when list of selection values have changed
+   * Parent callback event handler invoked when list of selection values have changed
    */
   onChange: (values: string[]) => void;
+  /**
+   * List of key/value pairs which are marked for selection
+   */
+  selectedList: Map<string, boolean>;
+  /**
+   * Placeholder
+   */
+  title: string;
   /**
    * Position of the tooltip
    */
@@ -33,52 +37,31 @@ export type DropdownCheckboxProps = {
 };
 
 const DropdownCheckbox: React.FC<DropdownCheckboxProps> = ({
-  closeOnSelect,
+  closeOnSelect = false,
   list,
   minWidth,
   onChange,
+  selectedList,
   title,
-  tooltipPlacement,
+  tooltipPlacement = "auto",
 }) => {
   const defaultItems = new Map(list);
 
   // Hooks
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedItems, setSelectedItems] = useState(
-    new Map<string, boolean>()
-  );
-  const didMount = useRef(false);
-  useEffect(() => {
-    // Only execute the following if the component is mounted
-    if (didMount.current) {
-      onChange([...selectedItems.keys()]);
-    } else {
-      didMount.current = true;
-    }
-  }, [onChange, selectedItems]);
 
   // Listeners
-  const changeHandler = (items: Map<string, boolean>) => {
-    // Filter out the selected items
-    const temp = new Map<string, boolean>();
-    items.forEach((value, key) => {
-      if (value) {
-        temp.set(key, value);
-      }
-    });
-    setSelectedItems(temp);
-  };
   const selectionHandler = (items: Map<string, boolean>) => {
+    const temp = new Map([...items].filter(([, v]) => v === true));
+    onChange([...temp.keys()]);
     setIsOpen(false);
-    changeHandler(items);
   };
   const openHandler = () => {
     setIsOpen(true);
   };
+
   const selectedItemsText =
-    selectedItems.size > 0
-      ? [...selectedItems.keys()].sort().join(", ")
-      : title;
+    selectedList.size > 0 ? [...selectedList.keys()].sort().join(", ") : title;
 
   return (
     <Grid>
@@ -94,7 +77,7 @@ const DropdownCheckbox: React.FC<DropdownCheckboxProps> = ({
           aria-label=""
           label={selectedItemsText}
           lineHeight="1.25rem"
-          isDisabled={!(selectedItems.size > 0)}
+          isDisabled={!(selectedList.size > 0)}
           placement={tooltipPlacement}
         >
           <MenuButton
@@ -117,7 +100,7 @@ const DropdownCheckbox: React.FC<DropdownCheckboxProps> = ({
         </Tooltip>
         {isOpen ? (
           <DropdownCheckboxList
-            defaultValues={[...selectedItems.keys()]}
+            defaultValues={[...selectedList.keys()]}
             items={defaultItems}
             minWidth={minWidth}
             onSelection={selectionHandler}
