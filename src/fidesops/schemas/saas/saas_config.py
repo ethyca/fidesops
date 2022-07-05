@@ -212,7 +212,7 @@ class SaaSConfig(BaseModel):
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
 
     @validator("type", pre=True)
-    def validate_log_level(cls, value: str) -> str:
+    def validate_saas_type(cls, value: str) -> str:
         """Ensure the provided type is a valid value."""
         valid_values = [item.value for item in SaaSType]
         value = value.lower()  # force lowercase, for safety
