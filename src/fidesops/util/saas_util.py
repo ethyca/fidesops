@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 import re
@@ -44,7 +46,7 @@ def get_collection_grouped_inputs(
     collections: List[Collection], name: str
 ) -> Optional[Set[str]]:
     """Get collection grouped inputs"""
-    collection = next(
+    collection: Collection | None = next(
         (collect for collect in collections if collect.name == name), None
     )
     if not collection:
@@ -56,7 +58,7 @@ def get_collection_after(
     collections: List[Collection], name: str
 ) -> Set[CollectionAddress]:
     """If specified, return the collections that need to run before the current collection for saas configs"""
-    collection = next(
+    collection: Collection | None = next(
         (collect for collect in collections if collect.name == name), None
     )
     if not collection:

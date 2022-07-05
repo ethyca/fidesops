@@ -13,6 +13,7 @@ from fidesops.graph.config import (
     Field,
     FieldAddress,
     FieldPath,
+    SeedAddress,
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
@@ -217,7 +218,7 @@ class DatasetGraph:
                     )
 
         # collect all seed references
-        self.identity_keys = {
+        self.identity_keys: dict[FieldAddress, SeedAddress] = {
             FieldAddress(
                 node.address.dataset,
                 node.address.collection,

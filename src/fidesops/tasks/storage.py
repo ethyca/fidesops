@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 import os
@@ -40,7 +42,7 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
     if isinstance(data, bytes):
         data = data.decode(config.security.ENCODING)
 
-    encryption_key = cache.get(encryption_cache_key)
+    encryption_key: str | None = cache.get(encryption_cache_key)
     if not encryption_key:
         return data
 

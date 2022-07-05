@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Dict, List, Optional
 
 from fidesops.schemas.masking.masking_configuration import (
@@ -49,10 +51,10 @@ class HmacMaskingStrategy(MaskingStrategy):
         masking_meta: Dict[
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
-        key = SecretsUtil.get_or_generate_secret(
+        key: str | None = SecretsUtil.get_or_generate_secret(
             request_id, SecretType.key, masking_meta[SecretType.key]
         )
-        salt = SecretsUtil.get_or_generate_secret(
+        salt: str | None = SecretsUtil.get_or_generate_secret(
             request_id, SecretType.salt, masking_meta[SecretType.salt]
         )
 

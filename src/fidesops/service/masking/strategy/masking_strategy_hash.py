@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import hashlib
 from typing import Dict, List, Optional
 
@@ -50,7 +52,7 @@ class HashMaskingStrategy(MaskingStrategy):
         masking_meta: Dict[
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
-        salt = SecretsUtil.get_or_generate_secret(
+        salt: str | None = SecretsUtil.get_or_generate_secret(
             request_id,
             SecretType.salt,
             masking_meta[SecretType.salt],

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from typing import List, Optional
 
@@ -269,7 +271,7 @@ def connection_status(
 
     connector = get_connector(connection_config)
     try:
-        status = connector.test_connection()
+        status: ConnectionTestStatus | None = connector.test_connection()
 
     except (ConnectionException, ClientUnsuccessfulException) as exc:
         logger.warning(

@@ -11,6 +11,7 @@ from fidesops.graph.config import (
     Collection,
     CollectionAddress,
     Dataset,
+    Field,
     FieldAddress,
     FieldPath,
 )
@@ -103,7 +104,7 @@ class TraversalNode:
         out = {}
         for key, values in input_data.items():
             path: FieldPath = FieldPath.parse(key)
-            field = self.node.collection.field(path)
+            field: Field | None = self.node.collection.field(path)
 
             if field and path in self.query_field_paths and isinstance(values, list):
                 cast_values = [field.cast(v) for v in values]

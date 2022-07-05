@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 from typing import Any, Dict, List, Optional, TypeVar
@@ -128,7 +130,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         query statement (select statement, where clause, limit, offset, etc.)
         """
 
-        current_request = self.get_request_by_action("read")
+        current_request: SaaSRequest | None = self.get_request_by_action("read")
         if not current_request:
             raise FidesopsException(
                 f"The 'read' action is not defined for the '{self.collection_name}' "

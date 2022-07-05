@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Dict, List, Optional
 
 from fidesops.schemas.masking.masking_configuration import (
@@ -41,10 +43,10 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
             masking_meta: Dict[
                 SecretType, MaskingSecretMeta
             ] = self._build_masking_secret_meta()
-            key = SecretsUtil.get_or_generate_secret(
+            key: bytes | None = SecretsUtil.get_or_generate_secret(
                 request_id, SecretType.key, masking_meta[SecretType.key]
             )
-            key_hmac = SecretsUtil.get_or_generate_secret(
+            key_hmac: str | None = SecretsUtil.get_or_generate_secret(
                 request_id,
                 SecretType.key_hmac,
                 masking_meta[SecretType.key_hmac],
@@ -56,7 +58,9 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
 
             masked_values: List[str] = []
             for value in values:
-                nonce = self._generate_nonce(value, key_hmac, request_id, masking_meta)  # type: ignore
+                nonce: bytes | None = self._generate_nonce(
+                    value, key_hmac, request_id, masking_meta  # type: ignore
+                )
                 masked: str = encrypt(value, key, nonce)  # type: ignore
                 if self.format_preservation is not None:
                     formatter = FormatPreservation(self.format_preservation)
