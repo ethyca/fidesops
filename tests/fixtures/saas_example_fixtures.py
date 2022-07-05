@@ -14,6 +14,7 @@ from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
 )
+from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
 
 saas_config = load_toml(["saas_config.toml"])
