@@ -7,7 +7,7 @@ All collected analytics are anonymized, and only used in either product roadmap 
 More information on use, implementation, and configuration can be found in the [fideslog repository](https://github.com/ethyca/fideslog#readme).
 
 ## Collected Data
-Fideslog collects information on instances of fidesops by recording internal events. Starting the server and calling an endpoint will result in sending any or all of the following analytics data to Ethyca:  
+Fideslog collects information on instances of fidesops by recording internal events. Using fidesops may result in sending any or all of the following analytics data to Ethyca:  
 
 | Parameter | Description |
 |----|----|
