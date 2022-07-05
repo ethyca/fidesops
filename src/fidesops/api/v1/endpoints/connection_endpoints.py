@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from typing import List, Optional
 
@@ -6,6 +8,7 @@ from fastapi.params import Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslib.exceptions import KeyOrNameAlreadyExists
 from pydantic import ValidationError, conlist
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -31,11 +34,7 @@ from fidesops.api.v1.urn_registry import (
     SAAS_CONFIG,
     V1_URL_PREFIX,
 )
-from fidesops.common_exceptions import (
-    ClientUnsuccessfulException,
-    ConnectionException,
-    KeyOrNameAlreadyExists,
-)
+from fidesops.common_exceptions import ClientUnsuccessfulException, ConnectionException
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.schemas.api import BulkUpdateFailed
 from fidesops.schemas.connection_configuration import (
@@ -249,7 +248,7 @@ def validate_secrets(
         )
 
     try:
-        schema = get_connection_secrets_validator(connection_type.value, saas_config)
+        schema = get_connection_secrets_validator(connection_type.value, saas_config)  # type: ignore
         logger.info(
             f"Validating secrets on connection config with key '{connection_config.key}'"
         )
@@ -269,7 +268,8 @@ def connection_status(
 
     connector = get_connector(connection_config)
     try:
-        status: ConnectionTestStatus = connector.test_connection()
+        status: ConnectionTestStatus | None = connector.test_connection()
+
     except (ConnectionException, ClientUnsuccessfulException) as exc:
         logger.warning(
             "Connection test failed on %s: %s",
@@ -285,8 +285,8 @@ def connection_status(
             failure_reason=str(exc),
         )
 
-    logger.info(f"Connection test {status.value} on {connection_config.key}")
-    connection_config.update_test_status(test_status=status, db=db)
+    logger.info(f"Connection test {status.value} on {connection_config.key}")  # type: ignore
+    connection_config.update_test_status(test_status=status, db=db)  # type: ignore
 
     return TestStatusMessage(
         msg=msg,

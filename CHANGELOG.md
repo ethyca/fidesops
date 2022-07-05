@@ -17,11 +17,18 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.0...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.1...main)
+### Added
+* Add support for multiple statuses to be selected for filtering subject requests [#660](https://github.com/ethyca/fidesops/pull/802)
+* Erasure support for Zendesk [#775](https://github.com/ethyca/fidesops/pull/775)
+
+### Fixed
+* Resolve issue with MyPy seeing files in fidesops as missing imports [719](https://github.com/ethyca/fidesops/pull/719)
+
+## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
 
 ### Added
 * `fidesops worker` command for running a Celery worker [#673](https://github.com/ethyca/fidesops/pull/673/)
-* Erasure support for Zendesk [#775](https://github.com/ethyca/fidesops/pull/775)
 
 ### Developer Experience
 * Reduce the size of the docker image [#707](https://github.com/ethyca/fidesops/pull/707)
@@ -34,11 +41,14 @@ The types of changes are:
 ### Docs
 * Updated the tutorial installation to use main in fidesdemo [#715](https://github.com/ethyca/fidesops/pull/715)
 * Added a page on how to use the datastore UI [#742](https://github.com/ethyca/fidesops/pull/742)
+* Added a page on implementing and opting out of fideslog analytics [#751](https://github.com/ethyca/fidesops/pull/751)
 
 ### Fixed
 * Make reading of environment variables case insensitive [#712](https://github.com/ethyca/fidesops/pull/712)
-* Fixed issue with extending the configuration [#721](https://github.com/ethyca/fidesops/pull/721)
 * Fix console warning in disable connection modal [#750](https://github.com/ethyca/fidesops/pull/750)
+* Fix no such container error with docker-compose [#758](https://github.com/ethyca/fidesops/pull/758)
+* Fixed issue with extending the configuration [#721](https://github.com/ethyca/fidesops/pull/721)
+* Fix no such container error with docker-compose [#758](https://github.com/ethyca/fidesops/pull/758)
 
 ## [1.6.0](https://github.com/ethyca/fidesops/compare/1.5.3...1.6.0)
 
@@ -179,7 +189,7 @@ The types of changes are:
 * Username based search on GET route [#444](https://github.com/ethyca/fidesops/pull/444)
 * FIDESOPS__DEV_MODE for Easier SaaS Request Debugging [#363](https://github.com/ethyca/fidesops/pull/363)
 * Track user privileges across sessions [#425](https://github.com/ethyca/fidesops/pull/425)
-* Add first_name and last_name fields. Also add them along with created_at to FidesopsUser response [#465](https://github.com/ethyca/fidesops/pull/465)
+* Add first_name and last_name fields. Also add them along with created_at to FidesUser response [#465](https://github.com/ethyca/fidesops/pull/465)
 * Denial reasons for DSR and user `AuditLog` [#463](https://github.com/ethyca/fidesops/pull/463)
 * DRP action to Policy [#453](https://github.com/ethyca/fidesops/pull/453)
 * `CHANGELOG.md` file[#484](https://github.com/ethyca/fidesops/pull/484)
