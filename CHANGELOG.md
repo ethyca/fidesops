@@ -38,6 +38,7 @@ The types of changes are:
 ### Docs
 * Updated the tutorial installation to use main in fidesdemo [#715](https://github.com/ethyca/fidesops/pull/715)
 * Added a page on how to use the datastore UI [#742](https://github.com/ethyca/fidesops/pull/742)
+* Added a page on implementing and opting out of fideslog analytics [#751](https://github.com/ethyca/fidesops/pull/751)
 
 ### Fixed
 * Make reading of environment variables case insensitive [712](https://github.com/ethyca/fidesops/pull/712)
@@ -185,7 +186,7 @@ The types of changes are:
 * Username based search on GET route [#444](https://github.com/ethyca/fidesops/pull/444)
 * FIDESOPS__DEV_MODE for Easier SaaS Request Debugging [#363](https://github.com/ethyca/fidesops/pull/363)
 * Track user privileges across sessions [#425](https://github.com/ethyca/fidesops/pull/425)
-* Add first_name and last_name fields. Also add them along with created_at to FidesopsUser response [#465](https://github.com/ethyca/fidesops/pull/465)
+* Add first_name and last_name fields. Also add them along with created_at to FidesUser response [#465](https://github.com/ethyca/fidesops/pull/465)
 * Denial reasons for DSR and user `AuditLog` [#463](https://github.com/ethyca/fidesops/pull/463)
 * DRP action to Policy [#453](https://github.com/ethyca/fidesops/pull/453)
 * `CHANGELOG.md` file[#484](https://github.com/ethyca/fidesops/pull/484)
