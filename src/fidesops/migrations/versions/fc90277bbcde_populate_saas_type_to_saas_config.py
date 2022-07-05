@@ -20,7 +20,7 @@ depends_on = None
 
 
 query = text(
-    """select datasetconfig.id, dataset from datasetconfig, connectionconfig where connectionconfig.id = datasetconfig.connection_config_id and connectionconfig.connection_type = 'saas';
+    """select datasetconfig.id, dataset from datasetconfig, connectionconfig where connectionconfig.id = datasetconfig.connection_config_id and connectionconfig.connection_type = ConnectionType.saas;
     """
 )
 update_query = text(
