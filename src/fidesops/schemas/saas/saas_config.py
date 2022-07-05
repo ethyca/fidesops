@@ -212,15 +212,9 @@ class SaaSConfig(BaseModel):
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
 
     @validator("type", pre=True)
-    def validate_saas_type(cls, value: str) -> str:
-        """Ensure the provided type is a valid value."""
-        valid_values = [item.value for item in SaaSType]
-        value = value.lower()  # force lowercase, for safety
-
-        if value not in valid_values:
-            raise ValueError(f"Invalid type provided '{value}'.")
-
-        return value
+    def lowercase_saas_type(cls, value: str) -> str:
+        """Enforce lowercase on saas type."""
+        return value.lower()
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:
