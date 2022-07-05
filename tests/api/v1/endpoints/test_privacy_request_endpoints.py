@@ -48,7 +48,6 @@ from fidesops.models.privacy_request import (
     ManualAction,
     PrivacyRequest,
     PrivacyRequestStatus,
-    StoppedCollection,
 )
 from fidesops.schemas.dataset import DryRunDatasetResponse
 from fidesops.schemas.jwt import (
@@ -649,6 +648,25 @@ class TestGetPrivacyRequests:
         resp = response.json()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == failed_privacy_request.id
+
+    def test_filter_privacy_request_by_multiple_statuses(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_request,
+        succeeded_privacy_request,
+        failed_privacy_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            url + f"?status=complete&status=error", headers=auth_header
+        )
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 2
+        assert resp["items"][0]["id"] == failed_privacy_request.id
+        assert resp["items"][1]["id"] == succeeded_privacy_request.id
 
     def test_filter_privacy_requests_by_internal_id(
         self,
