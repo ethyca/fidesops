@@ -24,7 +24,7 @@ def update_dataset(
     """
 
     generated_dataset = generate_dataset(
-        dict(**dataset_config.dataset),
+        dataset_config.dataset,
         api_data,
         [endpoint["name"] for endpoint in connection_config.saas_config["endpoints"]],
     )
@@ -55,13 +55,19 @@ def update_dataset(
 def generate_dataset(
     existing_dataset: Dict[str, Any],
     api_data: Dict[str, List[Row]],
-    collection_order: List[str],
+    collection_order: List[str] = None,
 ):
     """
     Generates a dataset which is an aggregate of the existing dataset and
     any new fields generated from the API data. Orders the collections
     based on the order of collection_order.
     """
+
+    # preserve the collection order in the dataset if a collection order is not provided
+    if not collection_order:
+        collection_order = [
+            collection["name"] for collection in existing_dataset["collections"]
+        ]
 
     fides_key = existing_dataset["fides_key"]
 
@@ -72,7 +78,16 @@ def generate_dataset(
     collection_map = {
         collection.name: collection for collection in existing_graph.collections
     }
-    generated_collections = generate_collections(fides_key, api_data, collection_map)
+
+    # remove the dataset name from the keys in the api_data map before passing
+    # into generate_collections
+    generated_collections = generate_collections(
+        {
+            collection_name.replace(f"{fides_key}:", ""): collection
+            for collection_name, collection in api_data.items()
+        },
+        collection_map,
+    )
 
     return {
         "fides_key": existing_dataset["fides_key"],
@@ -92,19 +107,18 @@ def generate_dataset(
 
 
 def generate_collections(
-    fides_key: str,
-    api_data: Dict[str, List[Row]],
-    collection_map: Dict[str, Collection],
+    api_data: Dict[str, List[Row]], collection_map: Dict[str, Collection] = None
 ) -> List[Dict[str, Any]]:
     """
     Generates a list of collections based on the response data or returns
     the existing collections if no API data is available.
     """
 
-    collections = []
-    for key, rows in api_data.items():
+    if not collection_map:
+        collection_map = {}
 
-        collection_name = key.replace(f"{fides_key}:", "")
+    collections = []
+    for collection_name, rows in api_data.items():
         fields = None
 
         if len(rows):
@@ -113,8 +127,7 @@ def generate_collections(
             fields = collection_map[collection_name]
 
         if fields:
-            collection = {"name": collection_name, "fields": fields}
-            collections.append(collection)
+            collections.append({"name": collection_name, "fields": fields})
 
     return collections
 

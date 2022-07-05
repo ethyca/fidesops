@@ -3,8 +3,8 @@ from tests.test_helpers.dataset_utils import generate_collections, generate_data
 
 class TestGenerateCollections:
     def test_empty_values(self):
-        api_data = {"example:user": [{"a": None, "b": "", "c": [], "d": {}}]}
-        assert generate_collections("example", api_data, {}) == [
+        api_data = {"user": [{"a": None, "b": "", "c": [], "d": {}}]}
+        assert generate_collections(api_data) == [
             {
                 "name": "user",
                 "fields": [
@@ -17,8 +17,8 @@ class TestGenerateCollections:
         ]
 
     def test_boolean_true(self):
-        api_data = {"example:user": [{"active": True}]}
-        assert generate_collections("example", api_data, {}) == [
+        api_data = {"user": [{"active": True}]}
+        assert generate_collections(api_data) == [
             {
                 "name": "user",
                 "fields": [
@@ -32,8 +32,8 @@ class TestGenerateCollections:
         ]
 
     def test_boolean_false(self):
-        api_data = {"example:user": [{"active": False}]}
-        assert generate_collections("example", api_data, {}) == [
+        api_data = {"user": [{"active": False}]}
+        assert generate_collections(api_data) == [
             {
                 "name": "user",
                 "fields": [
@@ -47,8 +47,8 @@ class TestGenerateCollections:
         ]
 
     def test_integer(self):
-        api_data = {"example:user": [{"id": 1}]}
-        assert generate_collections("example", api_data, {}) == [
+        api_data = {"user": [{"id": 1}]}
+        assert generate_collections(api_data) == [
             {
                 "name": "user",
                 "fields": [
@@ -62,8 +62,8 @@ class TestGenerateCollections:
         ]
 
     def test_zero(self):
-        api_data = {"example:user": [{"id": 0}]}
-        assert generate_collections("example", api_data, {}) == [
+        api_data = {"user": [{"id": 0}]}
+        assert generate_collections(api_data) == [
             {
                 "name": "user",
                 "fields": [
@@ -77,8 +77,8 @@ class TestGenerateCollections:
         ]
 
     def test_float(self):
-        api_data = {"example:user": [{"balance": 2.0}]}
-        assert generate_collections("example", api_data, {}) == [
+        api_data = {"user": [{"balance": 2.0}]}
+        assert generate_collections(api_data) == [
             {
                 "name": "user",
                 "fields": [
@@ -92,8 +92,8 @@ class TestGenerateCollections:
         ]
 
     def test_float_zero(self):
-        api_data = {"example:user": [{"balance": 0.0}]}
-        assert generate_collections("example", api_data, {}) == [
+        api_data = {"user": [{"balance": 0.0}]}
+        assert generate_collections(api_data) == [
             {
                 "name": "user",
                 "fields": [
@@ -107,8 +107,8 @@ class TestGenerateCollections:
         ]
 
     def test_string(self):
-        api_data = {"example:user": [{"first_name": "test"}]}
-        assert generate_collections("example", api_data, {}) == [
+        api_data = {"user": [{"first_name": "test"}]}
+        assert generate_collections(api_data) == [
             {
                 "name": "user",
                 "fields": [
@@ -123,11 +123,9 @@ class TestGenerateCollections:
 
     def test_object(self):
         api_data = {
-            "example:user": [
-                {"address": {"street1": "123 Fake St.", "city": "Springfield"}}
-            ]
+            "user": [{"address": {"street1": "123 Fake St.", "city": "Springfield"}}]
         }
-        assert generate_collections("example", api_data, {}) == [
+        assert generate_collections(api_data) == [
             {
                 "name": "user",
                 "fields": [
@@ -152,8 +150,8 @@ class TestGenerateCollections:
         ]
 
     def test_integer_list(self):
-        api_data = {"example:user": [{"ids": [1]}]}
-        assert generate_collections("example", api_data, {}) == [
+        api_data = {"user": [{"ids": [1]}]}
+        assert generate_collections(api_data) == [
             {
                 "name": "user",
                 "fields": [
@@ -167,8 +165,8 @@ class TestGenerateCollections:
         ]
 
     def test_float_list(self):
-        api_data = {"example:user": [{"times": [2.0]}]}
-        assert generate_collections("example", api_data, {}) == [
+        api_data = {"user": [{"times": [2.0]}]}
+        assert generate_collections(api_data) == [
             {
                 "name": "user",
                 "fields": [
@@ -182,8 +180,8 @@ class TestGenerateCollections:
         ]
 
     def test_string_list(self):
-        api_data = {"example:user": [{"names": ["first last"]}]}
-        assert generate_collections("example", api_data, {}) == [
+        api_data = {"user": [{"names": ["first last"]}]}
+        assert generate_collections(api_data) == [
             {
                 "name": "user",
                 "fields": [
@@ -198,7 +196,7 @@ class TestGenerateCollections:
 
     def test_object_list(self):
         api_data = {
-            "example:user": [
+            "user": [
                 {
                     "bank_accounts": [
                         {"bank_name": "Wells Fargo", "status": "active"},
@@ -207,7 +205,7 @@ class TestGenerateCollections:
                 }
             ]
         }
-        assert generate_collections("example", api_data, {}) == [
+        assert generate_collections(api_data) == [
             {
                 "name": "user",
                 "fields": [
@@ -251,9 +249,9 @@ class TestGenerateDataset:
                 }
             ],
         }
-        api_data = {"example:user": [{"a": None, "b": "", "c": [], "d": {}}]}
+        api_data = {"user": [{"a": None, "b": "", "c": [], "d": {}}]}
 
-        generated_dataset = generate_dataset(existing_dataset, api_data, ["user"])
+        generated_dataset = generate_dataset(existing_dataset, api_data)
 
         assert generated_dataset == {
             "fides_key": "example",
@@ -300,9 +298,9 @@ class TestGenerateDataset:
                 }
             ],
         }
-        api_data = {"example:user": [{"a": None, "b": "", "c": [], "d": {}}]}
+        api_data = {"user": [{"a": None, "b": "", "c": [], "d": {}}]}
 
-        assert generate_dataset(existing_dataset, api_data, ["user"]) == {
+        assert generate_dataset(existing_dataset, api_data) == {
             "fides_key": "example",
             "name": "Example Dataset",
             "description": "An example dataset",
