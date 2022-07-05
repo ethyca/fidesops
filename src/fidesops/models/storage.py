@@ -1,5 +1,6 @@
 import logging
 
+from fideslib.db.base import Base
 from pydantic import ValidationError
 from sqlalchemy import Column, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -11,7 +12,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fidesops.core.config import config
-from fidesops.db.base_class import Base, JSONTypeOverride
+from fidesops.db.base_class import JSONTypeOverride
 from fidesops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
     ResponseFormat,
@@ -43,7 +44,7 @@ def get_schema_for_secrets(
         )
 
     try:
-        return schema.parse_obj(secrets)
+        return schema.parse_obj(secrets)  # type: ignore
     except ValidationError as exc:
         # Pydantic requires validators raise either a ValueError, TypeError, or AssertionError
         # so this exception is cast into a `ValueError`.
@@ -89,7 +90,7 @@ class StorageConfig(Base):
 
         try:
             get_schema_for_secrets(
-                storage_type=storage_type,
+                storage_type=storage_type,  # type: ignore
                 secrets=storage_secrets,
             )
         except (
