@@ -9,8 +9,8 @@ from typing import List
 
 from alembic import op
 from sqlalchemy import text
-from fidesops.schemas.saas.saas_config import SaaSType
 
+from fidesops.schemas.saas.saas_config import SaaSType
 
 # revision identifiers, used by Alembic.
 revision = "fc90277bbcde"
