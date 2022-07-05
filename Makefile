@@ -7,7 +7,10 @@
 REGISTRY := ethyca
 IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
 
-IMAGE_NAME := fidesops
+# IMAGE_NAME is webserver rather than fidesops_webserver because commands that don't
+# use docker-compose fail with fidesops_webserver. When left as webserver here both
+# sets of commands work.
+IMAGE_NAME := webserver
 IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
@@ -69,7 +72,7 @@ quickstart:
 ####################
 
 docker-build:
-	docker build --tag $(IMAGE) .
+	docker build --tag $(IMAGE) -f Dockerfile.app .
 
 docker-push:
 	docker tag $(IMAGE) $(IMAGE_LATEST)

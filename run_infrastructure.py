@@ -5,10 +5,7 @@ and related workflows.
 import argparse
 import subprocess
 import sys
-from typing import (
-    List,
-)
-
+from typing import List
 
 DOCKER_WAIT = 5
 DOCKERFILE_DATASTORES = [
@@ -24,7 +21,7 @@ EXTERNAL_DATASTORE_CONFIG = {
     "bigquery": ["BIGQUERY_KEYFILE_CREDS", "BIGQUERY_DATASET"],
 }
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
-IMAGE_NAME = "fidesops"
+IMAGE_NAME = "webserver"
 
 
 def run_infrastructure(
