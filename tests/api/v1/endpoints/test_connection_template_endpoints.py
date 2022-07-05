@@ -124,9 +124,10 @@ class TestGetConnectionSecretSchema:
         resp = api_client.get(
             base_url.format(connection_type="hubspot"), headers=auth_header
         )
+
         assert resp.json() == {
             "title": "hubspot_connector_example_schema",
-            "description": "Abstract base schema for updating SaaS connection configuration secrets.\nFields are added during runtime based on the connector_params in the\npassed in saas_config",
+            "description": "Hubspot secrets schema",
             "type": "object",
             "properties": {
                 "hapikey": {"title": "Hapikey", "type": "string"},
