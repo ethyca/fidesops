@@ -11,8 +11,6 @@ from typing import List
 from alembic import op
 from sqlalchemy import text
 
-from fidesops.schemas.saas.saas_config import SaaSType
-
 # revision identifiers, used by Alembic.
 revision = "fc90277bbcde"
 down_revision = "c7cc36820d4b"
@@ -20,40 +18,35 @@ branch_labels = None
 depends_on = None
 
 
-class ConnectionType(enum.Enum):
+class SaaSType(enum.Enum):
     """
-    Supported types to which we can connect fidesops.
+    Enum to store saas connection type in Fidesops
     """
 
-    postgres = "postgres"
-    mongodb = "mongodb"
-    mysql = "mysql"
-    https = "https"
-    saas = "saas"
-    redshift = "redshift"
-    snowflake = "snowflake"
-    mssql = "mssql"
-    mariadb = "mariadb"
-    bigquery = "bigquery"
-    manual = "manual"
+    mailchimp = "mailchimp"
+    hubspot = "hubspot"
+    outreach = "outreach"
+    segment = "segment"
+    sentry = "sentry"
+    stripe = "stripe"
+    zendesk = "zendesk"
+    custom = "custom"
 
 
 query = text(
-    """select datasetconfig.id, dataset from datasetconfig INNER JOIN connectionconfig ON connectionconfig.id = datasetconfig.connection_config_id WHERE connectionconfig.connection_type = :connection_type"""
+    """select connectionconfig.id, connectionconfig.saas_config from connectionconfig WHERE connectionconfig.connection_type = :connection_type"""
 )
 update_query = text(
-    """update datasetconfig set dataset = jsonb_set(dataset, '{type}', :saas_type) where id = :id"""
+    """update connectionconfig set saas_config = jsonb_set(saas_config, '{type}', :saas_type) where id = :id"""
 )
 
 
 def upgrade():
     connection = op.get_bind()
     saas_options: List[str] = [saas_type.value for saas_type in SaaSType]
-    for id, dataset in connection.execute(
-        query, {"connection_type": ConnectionType.saas.value}
-    ):
-        fides_key: str = dataset["fides_key"]
-        saas_name: str = dataset["name"]
+    for id, saas_config in connection.execute(query, {"connection_type": "saas"}):
+        fides_key: str = saas_config["fides_key"]
+        saas_name: str = saas_config["name"]
         try:
             saas_type: str = next(
                 (
@@ -76,7 +69,5 @@ def upgrade():
 
 def downgrade():
     connection = op.get_bind()
-    for id, dataset in connection.execute(
-        query, {"connection_type": ConnectionType.saas.value}
-    ):
+    for id, saas_config in connection.execute(query, {"connection_type": "saas"}):
         connection.execute(update_query, {"saas_type": f'"custom"', "id": id})
