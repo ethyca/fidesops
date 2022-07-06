@@ -18,6 +18,15 @@ The types of changes are:
 
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.1...main)
+### Added
+* [Admin UI] Update Subject Request status filter to be a multiselect dropdown [#513](https://github.com/ethyca/fidesops/pull/764)
+* Add support for multiple statuses to be selected for filtering subject requests [#660](https://github.com/ethyca/fidesops/pull/802)
+* Erasure support for Zendesk [#775](https://github.com/ethyca/fidesops/pull/775)
+
+### Fixed
+* Resolve issue with MyPy seeing files in fidesops as missing imports [#719](https://github.com/ethyca/fidesops/pull/719)
+* Fixed `check-migrations` Make command [#806](https://github.com/ethyca/fidesops/pull/806)
+* Fix issue requiring separate install of snowflake-connector-python [#807](https://github.com/ethyca/fidesops/pull/807)
 
 ### Added
 * Adds SaaS connection type to SaaS yaml config [748](https://github.com/ethyca/fidesops/pull/748)
@@ -42,11 +51,10 @@ The types of changes are:
 * Added a page on implementing and opting out of fideslog analytics [#751](https://github.com/ethyca/fidesops/pull/751)
 
 ### Fixed
-* Make reading of environment variables case insensitive [712](https://github.com/ethyca/fidesops/pull/712)
-* Fix console warning in disable connection modal [750](https://github.com/ethyca/fidesops/pull/750)
-* Fix no such container error with docker-compose [758](https://github.com/ethyca/fidesops/pull/758)
+* Make reading of environment variables case insensitive [#712](https://github.com/ethyca/fidesops/pull/712)
+* Fix console warning in disable connection modal [#750](https://github.com/ethyca/fidesops/pull/750)
+* Fix no such container error with docker-compose [#758](https://github.com/ethyca/fidesops/pull/758)
 * Fixed issue with extending the configuration [#721](https://github.com/ethyca/fidesops/pull/721)
-* Fix no such container error with docker-compose [758](https://github.com/ethyca/fidesops/pull/758)
 
 
 ## [1.6.0](https://github.com/ethyca/fidesops/compare/1.5.3...1.6.0)
