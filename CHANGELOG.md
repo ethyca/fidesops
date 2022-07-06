@@ -22,6 +22,9 @@ The types of changes are:
 * Add support for multiple statuses to be selected for filtering subject requests [#660](https://github.com/ethyca/fidesops/pull/802)
 * Erasure support for Zendesk [#775](https://github.com/ethyca/fidesops/pull/775)
 
+### Developer Experience
+* Replace user authentication routes with fideslib routes [#811](https://github.com/ethyca/fidesops/pull/811)
+
 ### Fixed
 * Resolve issue with MyPy seeing files in fidesops as missing imports [#719](https://github.com/ethyca/fidesops/pull/719)
 * Fixed `check-migrations` Make command [#806](https://github.com/ethyca/fidesops/pull/806)
