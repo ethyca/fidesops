@@ -39,10 +39,10 @@ class ConnectionType(enum.Enum):
 
 
 query = text(
-    """select datasetconfig.id, dataset from datasetconfig INNER JOIN connectionconfig ON connectionconfig.id = datasetconfig.connection_config_id WHERE connectionconfig.connection_type = :connection_type"""
+    """select connectionconfig.id, connectionconfig.saas_config from connectionconfig WHERE connectionconfig.connection_type = :connection_type"""
 )
 update_query = text(
-    """update datasetconfig set dataset = jsonb_set(dataset, '{type}', :saas_type) where id = :id"""
+    """update connectionconfig set saas_config = jsonb_set(saas_config, '{type}', :saas_type) where id = :id"""
 )
 
 
