@@ -71,7 +71,11 @@ def get_all_connection_types(
 def get_connection_type_secret_schema(
     *, connection_type: str
 ) -> Optional[Dict[str, Any]]:
-    """Returns the secret fields that should be supplied to authenticate with a particular connection type"""
+    """Returns the secret fields that should be supplied to authenticate with a particular connection type
+
+    Note that this endpoint should never return actual secrets, we return the *types* of secret fields needed
+    to authenticate.
+    """
     connection_types: List[str] = get_connection_types()
     if connection_type not in connection_types:
         raise HTTPException(
