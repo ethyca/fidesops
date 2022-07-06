@@ -10,6 +10,7 @@ from typing import List
 from alembic import op
 from sqlalchemy import text
 
+from fidesops.models.connectionconfig import ConnectionType
 from fidesops.schemas.saas.saas_config import SaaSType
 
 # revision identifiers, used by Alembic.
@@ -30,7 +31,7 @@ update_query = text(
 def upgrade():
     connection = op.get_bind()
     saas_options: List[str] = [saas_type.value for saas_type in SaaSType]
-    for id, dataset in connection.execute(query, {"connection_type": "saas"}):
+    for id, dataset in connection.execute(query, {"connection_type": ConnectionType.saas.value}):
         fides_key: str = dataset["fides_key"]
         saas_name: str = dataset["name"]
         try:
@@ -55,5 +56,5 @@ def upgrade():
 
 def downgrade():
     connection = op.get_bind()
-    for id, dataset in connection.execute(query, {"connection_type": "saas"}):
+    for id, dataset in connection.execute(query, {"connection_type": ConnectionType.saas.value}):
         connection.execute(update_query, {"saas_type": f'"custom"', "id": id})
