@@ -53,7 +53,10 @@ The types of changes are:
 * Added a page on implementing and opting out of fideslog analytics [#751](https://github.com/ethyca/fidesops/pull/751)
 
 ### Fixed
-* Make reading of environment variables case insensitive [712](https://github.com/ethyca/fidesops/pull/712)
+* Make reading of environment variables case insensitive [#712](https://github.com/ethyca/fidesops/pull/712)
+* Fix console warning in disable connection modal [#750](https://github.com/ethyca/fidesops/pull/750)
+* Fix no such container error with docker-compose [#758](https://github.com/ethyca/fidesops/pull/758)
+* Fixed issue with extending the configuration [#721](https://github.com/ethyca/fidesops/pull/721)
 
 ## [1.6.0](https://github.com/ethyca/fidesops/compare/1.5.3...1.6.0)
 
