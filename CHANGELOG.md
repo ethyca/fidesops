@@ -17,22 +17,43 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.0...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.1...main)
+### Added
+* [Admin UI] Update Subject Request status filter to be a multiselect dropdown [#513](https://github.com/ethyca/fidesops/pull/764)
+* Add support for multiple statuses to be selected for filtering subject requests [#660](https://github.com/ethyca/fidesops/pull/802)
+* Erasure support for Zendesk [#775](https://github.com/ethyca/fidesops/pull/775)
+* Adds SaaS connection type to SaaS yaml config [748](https://github.com/ethyca/fidesops/pull/748)
+* Adds endpoint to get available connectors (database and saas) [#768](https://github.com/ethyca/fidesops/pull/768)
+
+### Fixed
+* Resolve issue with MyPy seeing files in fidesops as missing imports [#719](https://github.com/ethyca/fidesops/pull/719)
+* Fixed `check-migrations` Make command [#806](https://github.com/ethyca/fidesops/pull/806)
+* Fix issue requiring separate install of snowflake-connector-python [#807](https://github.com/ethyca/fidesops/pull/807)
+
+
+## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
+
+### Added
+* `fidesops worker` command for running a Celery worker [#673](https://github.com/ethyca/fidesops/pull/673/)
+
 ### Developer Experience
 * Reduce the size of the docker image [#707](https://github.com/ethyca/fidesops/pull/707)
 * Parallelize CI safe checks to reduce run time [#717](https://github.com/ethyca/fidesops/pull/717)
 * Add dependabot to keep dependencies up to date [#718](https://github.com/ethyca/fidesops/pull/718)
 
-* ### Docs
+### Changed
+* Base64 encode passwords on frontend [#749](https://github.com/ethyca/fidesops/pull/749)
+
+### Docs
 * Updated the tutorial installation to use main in fidesdemo [#715](https://github.com/ethyca/fidesops/pull/715)
 * Added a page on how to use the datastore UI [#742](https://github.com/ethyca/fidesops/pull/742)
+* Added a page on implementing and opting out of fideslog analytics [#751](https://github.com/ethyca/fidesops/pull/751)
 
 ### Fixed
-* Make reading of environment variables case insensitive [712](https://github.com/ethyca/fidesops/pull/712)
-
-### Added
-* Adds SaaS connection type to SaaS yaml config [748](https://github.com/ethyca/fidesops/pull/748)
-* Adds endpoint to get available connectors (database and saas) [#768](https://github.com/ethyca/fidesops/pull/768)
+* Make reading of environment variables case insensitive [#712](https://github.com/ethyca/fidesops/pull/712)
+* Fix console warning in disable connection modal [#750](https://github.com/ethyca/fidesops/pull/750)
+* Fix no such container error with docker-compose [#758](https://github.com/ethyca/fidesops/pull/758)
+* Fixed issue with extending the configuration [#721](https://github.com/ethyca/fidesops/pull/721)
 
 ## [1.6.0](https://github.com/ethyca/fidesops/compare/1.5.3...1.6.0)
 
@@ -173,7 +194,7 @@ The types of changes are:
 * Username based search on GET route [#444](https://github.com/ethyca/fidesops/pull/444)
 * FIDESOPS__DEV_MODE for Easier SaaS Request Debugging [#363](https://github.com/ethyca/fidesops/pull/363)
 * Track user privileges across sessions [#425](https://github.com/ethyca/fidesops/pull/425)
-* Add first_name and last_name fields. Also add them along with created_at to FidesopsUser response [#465](https://github.com/ethyca/fidesops/pull/465)
+* Add first_name and last_name fields. Also add them along with created_at to FidesUser response [#465](https://github.com/ethyca/fidesops/pull/465)
 * Denial reasons for DSR and user `AuditLog` [#463](https://github.com/ethyca/fidesops/pull/463)
 * DRP action to Policy [#453](https://github.com/ethyca/fidesops/pull/453)
 * `CHANGELOG.md` file[#484](https://github.com/ethyca/fidesops/pull/484)
