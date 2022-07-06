@@ -1,8 +1,10 @@
 import logging
 from typing import Any, Dict, List, Optional
 
+from fideslib.db.session import get_db_session
+
 from fidesops.common_exceptions import ConnectorNotFoundException
-from fidesops.db.session import get_db_session
+from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.models.policy import ActionType, Policy
@@ -144,7 +146,7 @@ class TaskResources:
             f"{self.request.id}__erasure_request"
         )
         # extract request id to return a map of address:value
-        return {k.split("__")[-1]: v for k, v in value_dict.items()}
+        return {k.split("__")[-1]: v for k, v in value_dict.items()}  # type: ignore
 
     def write_execution_log(  # pylint: disable=too-many-arguments
         self,
@@ -155,7 +157,7 @@ class TaskResources:
         message: str = None,
     ) -> Any:
         """Store in application db. Return the created or written-to id field value."""
-        SessionLocal = get_db_session()
+        SessionLocal = get_db_session(config)
         db = SessionLocal()
 
         ExecutionLog.create(

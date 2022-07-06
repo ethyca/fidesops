@@ -6,9 +6,8 @@ from os import path
 from alembic import command
 from alembic.config import Config
 from alembic.migration import MigrationContext
+from fideslib.db.session import get_db_engine
 from pydantic import PostgresDsn
-
-from fidesops.db.session import get_db_engine
 
 from .base import Base
 
@@ -47,7 +46,7 @@ def check_missing_migrations(database_url: PostgresDsn) -> None:
     was generated.
     """
 
-    engine = get_db_engine(database_url)
+    engine = get_db_engine(database_uri=database_url)
     connection = engine.connect()
 
     migration_context = MigrationContext.configure(connection)
@@ -61,7 +60,7 @@ def reset_db(database_url: PostgresDsn) -> None:
     """
     Drops all tables/metadata from the database.
     """
-    engine = get_db_engine(database_url)
+    engine = get_db_engine(database_uri=database_url)
     connection = engine.connect()
     Base.metadata.drop_all(connection)
 
