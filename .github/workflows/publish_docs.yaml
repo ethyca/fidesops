@@ -3,7 +3,6 @@ name: Publish updated docs to gh-pages
 on:
   push:
     branches:
-      - main
       - docs_test_branch
     paths:
       - "docs/**"
