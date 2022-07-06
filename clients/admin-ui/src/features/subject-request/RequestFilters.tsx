@@ -29,6 +29,7 @@ import {
   setRequestStatus,
   setRequestTo,
 } from "../privacy-requests/privacy-requests.slice";
+import { PrivacyRequestStatus } from "../privacy-requests/types";
 import { SubjectRequestStatusMap } from "./constants";
 
 const useRequestFilters = () => {
@@ -40,15 +41,15 @@ const useRequestFilters = () => {
     dispatch(setRequestId(event.target.value));
   const handleStatusChange = useCallback(
     (values: string[]) => {
-      const list: string[] = [];
+      const list: PrivacyRequestStatus[] = [];
       values.forEach((v) => {
         SubjectRequestStatusMap.forEach((value, key) => {
           if (key === v) {
-            list.push(value);
+            list.push(value as PrivacyRequestStatus);
           }
         });
       });
-      dispatch(setRequestStatus(list.join(",")));
+      dispatch(setRequestStatus(list));
     },
     [dispatch]
   );
@@ -115,10 +116,7 @@ const RequestFilters: React.FC = () => {
   };
 
   // Load the status list
-  const statusList = useMemo(
-    () => loadStatusList(status ? status.split(",") : []),
-    [status]
-  );
+  const statusList = useMemo(() => loadStatusList(status || []), [status]);
 
   // Filter the selected status list
   const selectedStatusList = new Map(
