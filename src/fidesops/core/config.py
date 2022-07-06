@@ -55,7 +55,7 @@ class RedisSettings(FidesSettings):
     CHARSET: str = "utf8"
     DECODE_RESPONSES: bool = True
     DEFAULT_TTL_SECONDS: int = 604800
-    DB_INDEX: int
+    DB_INDEX: Optional[int]
     ENABLED: bool = True
     SSL: bool = False
     SSL_CERT_REQS: Optional[str] = "required"
@@ -73,12 +73,7 @@ class RedisSettings(FidesSettings):
             # If the whole URL is provided via the config, preference that
             return v
 
-        return "redis://:{password}@{host}:{port}/{db_index}".format(
-            password=values["PASSWORD"],
-            host=values["HOST"],
-            port=values["PORT"],
-            db_index=values.get("DB_INDEX"),
-        )
+        return f"redis://:{values['PASSWORD']}@{values['HOST']}:{values['PORT']}/{values.get('DB_INDEX')}"
 
     class Config:
         env_prefix = "FIDESOPS__REDIS__"
