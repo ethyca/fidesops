@@ -20,8 +20,7 @@ depends_on = None
 
 
 query = text(
-    """select datasetconfig.id, dataset from datasetconfig INNER JOIN connectionconfig ON connectionconfig.id = datasetconfig.connection_config_id WHERE connectionconfig.connection_type = "saas";
-    """
+    """select datasetconfig.id, dataset from datasetconfig INNER JOIN connectionconfig ON connectionconfig.id = datasetconfig.connection_config_id WHERE connectionconfig.connection_type = :connection_type"""
 )
 update_query = text(
     """update datasetconfig set dataset = jsonb_set(dataset, '{type}', :saas_type) where id = :id"""
@@ -31,7 +30,7 @@ update_query = text(
 def upgrade():
     connection = op.get_bind()
     saas_options: List[str] = [saas_type.value for saas_type in SaaSType]
-    for id, dataset in connection.execute(query):
+    for id, dataset in connection.execute(query, {"saas_type": "saas"}):
         fides_key: str = dataset["fides_key"]
         saas_name: str = dataset["name"]
         try:
@@ -56,5 +55,5 @@ def upgrade():
 
 def downgrade():
     connection = op.get_bind()
-    for id, dataset in connection.execute(query):
+    for id, dataset in connection.execute(query, {"saas_type": "saas"}):
         connection.execute(update_query, {"saas_type": f'"custom"', "id": id})
