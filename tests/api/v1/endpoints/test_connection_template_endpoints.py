@@ -1,10 +1,10 @@
 import pytest
 from fastapi_pagination import Params
+from fideslib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.scope_registry import CONNECTION_READ, CONNECTION_TYPE_READ
 from fidesops.api.v1.urn_registry import CONNECTION_TYPES, V1_URL_PREFIX
-from fideslib.models.client import ClientDetail
 
 
 class TestGetConnections:
