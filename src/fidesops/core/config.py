@@ -39,8 +39,8 @@ class ExecutionSettings(FidesSettings):
     TASK_RETRY_BACKOFF: int
     REQUIRE_MANUAL_REQUEST_APPROVAL: bool = False
     MASKING_STRICT: bool = True
-    CELERY_BROKER_URL: str = "redis://:testpassword@redis:6379/1"
-    CELERY_RESULT_BACKEND: str = "redis://:testpassword@redis:6379/1"
+    CELERY_BROKER_URL: Optional[str] = None
+    CELERY_RESULT_BACKEND: Optional[str] = None
 
     class Config:
         env_prefix = "FIDESOPS__EXECUTION__"
@@ -59,6 +59,26 @@ class RedisSettings(FidesSettings):
     ENABLED: bool = True
     SSL: bool = False
     SSL_CERT_REQS: Optional[str] = "required"
+    REDIS_CONNECTION_URL: Optional[str] = None
+
+    @validator("REDIS_CONNECTION_URL", pre=True)
+    @classmethod
+    def assemble_redis_connection_url(
+        cls,
+        v: Optional[str],
+        values: Dict[str, str],
+    ) -> str:
+        """Join Redis connection credentials into a connection string"""
+        if isinstance(v, str):
+            # If the whole URL is provided via the config, preference that
+            return v
+
+        return "redis://:{password}@{host}:{port}/{db_index}".format(
+            password=values["PASSWORD"],
+            host=values["HOST"],
+            port=values["PORT"],
+            db_index=values.get("DB_INDEX"),
+        )
 
     class Config:
         env_prefix = "FIDESOPS__REDIS__"
