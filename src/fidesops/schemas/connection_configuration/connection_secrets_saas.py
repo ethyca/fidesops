@@ -58,7 +58,7 @@ class SaaSSchemaFactory:
                 if connector_param.default_value
                 else (str, ...)
             )
-        SaaSSchema.__doc__ = f"{self.saas_config.type.capitalize()} secrets schema"  # Dynamically override the docstring
+        SaaSSchema.__doc__ = f"{str(self.saas_config.type).capitalize()} secrets schema"  # Dynamically override the docstring
         model: Type[SaaSSchema] = create_model(
             f"{self.saas_config.fides_key}_schema",
             **field_definitions,
