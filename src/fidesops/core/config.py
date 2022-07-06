@@ -74,7 +74,7 @@ class RedisSettings(FidesSettings):
             # If the whole URL is provided via the config, preference that
             return v
 
-        return f"redis://{values.get('USER', '')}:{values['PASSWORD']}@{values['HOST']}:{values['PORT']}/{values.get('DB_INDEX')}"
+        return f"redis://{values.get('USER', '')}:{values['PASSWORD']}@{values['HOST']}:{values['PORT']}/{values.get('DB_INDEX', '')}"
 
     class Config:
         env_prefix = "FIDESOPS__REDIS__"
