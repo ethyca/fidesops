@@ -11,6 +11,7 @@ import { Formik } from "formik";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
+import Yup from "yup";
 
 import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from "../../constants";
 import { CustomTextInput } from "./form/inputs";
@@ -25,6 +26,21 @@ const defaultInitialValues = {
 };
 
 type FormValues = typeof defaultInitialValues;
+
+const ValidationSchema = Yup.object().shape({
+  username: Yup.string().required().label("Username"),
+  first_name: Yup.string().label("Secret"),
+  last_name: Yup.string().label("Secret"),
+  password: Yup.string()
+    .required()
+    .min(8, "Password must have at least eight characters.")
+    .matches(/[0-9]/, "Password must have at least one number.")
+    .matches(/[A-Z]/, "Password must have at least one capital letter.")
+    .matches(/[a-z]/, "Password must have at least one lowercase letter.")
+    .matches(/[\W]/, "Password must have at least one symbol.")
+    .label("Secret"),
+  scopes: Yup.array().of(Yup.string()),
+});
 
 interface Props {
   onSubmit: (values: FormValues) => void;
@@ -48,6 +64,7 @@ const UserForm = ({
   <Formik
     onSubmit={onSubmit}
     initialValues={initialValues ?? defaultInitialValues}
+    validationSchema={ValidationSchema}
   >
     {({ values, setFieldValue }) => (
       <chakra.form maxW={["xs", "xs", "100%"]} width="100%">
