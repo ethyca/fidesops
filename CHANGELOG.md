@@ -19,6 +19,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.1...main)
 
+### Added
+* Adds SaaS connection type to SaaS yaml config [748](https://github.com/ethyca/fidesops/pull/748)
+
+
 ## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
 
 ### Added
@@ -43,9 +47,6 @@ The types of changes are:
 * Fix no such container error with docker-compose [758](https://github.com/ethyca/fidesops/pull/758)
 * Fixed issue with extending the configuration [#721](https://github.com/ethyca/fidesops/pull/721)
 * Fix no such container error with docker-compose [758](https://github.com/ethyca/fidesops/pull/758)
-
-### Added
-* Adds SaaS connection type to SaaS yaml config [748](https://github.com/ethyca/fidesops/pull/748)
 
 
 ## [1.6.0](https://github.com/ethyca/fidesops/compare/1.5.3...1.6.0)
