@@ -32,7 +32,6 @@ database options and third party API services with which Fidesops can communicat
 }
 ```
 
-
 ## Required Connection Secrets
 
 To view the secrets needed to authenticate with a given connection, visit `GET /api/v1/connection_type/<connection_type>/secret`.
