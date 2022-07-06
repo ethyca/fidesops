@@ -5,12 +5,12 @@ Revises: ed1b00ff963d
 Create Date: 2022-07-05 19:20:59.384767
 
 """
+import enum
 from typing import List
 
 from alembic import op
 from sqlalchemy import text
 
-from fidesops.models.connectionconfig import ConnectionType
 from fidesops.schemas.saas.saas_config import SaaSType
 
 # revision identifiers, used by Alembic.
@@ -18,6 +18,24 @@ revision = "fc90277bbcde"
 down_revision = "c7cc36820d4b"
 branch_labels = None
 depends_on = None
+
+
+class ConnectionType(enum.Enum):
+    """
+    Supported types to which we can connect fidesops.
+    """
+
+    postgres = "postgres"
+    mongodb = "mongodb"
+    mysql = "mysql"
+    https = "https"
+    saas = "saas"
+    redshift = "redshift"
+    snowflake = "snowflake"
+    mssql = "mssql"
+    mariadb = "mariadb"
+    bigquery = "bigquery"
+    manual = "manual"
 
 
 query = text(
@@ -32,7 +50,7 @@ def upgrade():
     connection = op.get_bind()
     saas_options: List[str] = [saas_type.value for saas_type in SaaSType]
     for id, dataset in connection.execute(
-        query, {"connection_type": ConnectionType.saas}
+        query, {"connection_type": ConnectionType.saas.value}
     ):
         fides_key: str = dataset["fides_key"]
         saas_name: str = dataset["name"]
@@ -59,6 +77,6 @@ def upgrade():
 def downgrade():
     connection = op.get_bind()
     for id, dataset in connection.execute(
-        query, {"connection_type": ConnectionType.saas}
+        query, {"connection_type": ConnectionType.saas.value}
     ):
         connection.execute(update_query, {"saas_type": f'"custom"', "id": id})
