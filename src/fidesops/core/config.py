@@ -59,11 +59,11 @@ class RedisSettings(FidesSettings):
     ENABLED: bool = True
     SSL: bool = False
     SSL_CERT_REQS: Optional[str] = "required"
-    REDIS_CONNECTION_URL: Optional[str] = None
+    CONNECTION_URL: Optional[str] = None
 
-    @validator("REDIS_CONNECTION_URL", pre=True)
+    @validator("CONNECTION_URL", pre=True)
     @classmethod
-    def assemble_redis_connection_url(
+    def assemble_connection_url(
         cls,
         v: Optional[str],
         values: Dict[str, str],

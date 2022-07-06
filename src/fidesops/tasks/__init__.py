@@ -13,11 +13,11 @@ def _create_celery() -> Celery:
     logger.info("Creating Celery app...")
     app = Celery(__name__)
 
-    broker_url = config.execution.CELERY_BROKER_URL or config.redis.REDIS_CONNECTION_URL
+    broker_url = config.execution.CELERY_BROKER_URL or config.redis.CONNECTION_URL
     app.conf.update(broker_url=broker_url)
 
     result_backend = (
-        config.execution.CELERY_RESULT_BACKEND or config.redis.REDIS_CONNECTION_URL
+        config.execution.CELERY_RESULT_BACKEND or config.redis.CONNECTION_URL
     )
     app.conf.update(result_backend=result_backend)
     logger.info("Autodiscovering tasks...")
