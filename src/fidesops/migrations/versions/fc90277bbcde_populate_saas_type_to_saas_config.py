@@ -45,8 +45,11 @@ def upgrade():
     connection = op.get_bind()
     saas_options: List[str] = [saas_type.value for saas_type in SaaSType]
     for id, saas_config in connection.execute(query, {"connection_type": "saas"}):
-        fides_key: str = saas_config["fides_key"]
-        saas_name: str = saas_config["name"]
+        if not saas_config:
+            continue
+        fides_key: str = saas_config.get("fides_key", "")
+        saas_name: str = saas_config.get("name", "")
+
         try:
             saas_type: str = next(
                 (
