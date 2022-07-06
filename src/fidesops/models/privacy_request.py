@@ -6,6 +6,12 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional
 
 from celery.result import AsyncResult
+from fideslib.db.base import Base
+from fideslib.db.base_class import FidesBase
+from fideslib.models.audit_log import AuditLog
+from fideslib.models.client import ClientDetail
+from fideslib.models.fides_user import FidesUser
+from fideslib.oauth.jwt import generate_jwe
 from pydantic import root_validator
 from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as EnumColumn
@@ -16,11 +22,8 @@ from sqlalchemy.orm import Session, backref, relationship
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.common_exceptions import PrivacyRequestPaused
-from fidesops.db.base_class import Base, FidesopsBase
+from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
-from fidesops.models.audit_log import AuditLog
-from fidesops.models.client import ClientDetail
-from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.policy import (
     ActionType,
     PausedStep,
@@ -50,7 +53,6 @@ from fidesops.util.cache import (
     get_masking_secret_cache_key,
 )
 from fidesops.util.collection_util import Row
-from fidesops.util.oauth_util import generate_jwe
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +71,7 @@ class ManualAction(BaseSchema):
 
     @root_validator
     @classmethod
-    def get_or_update_details(
+    def get_or_update_details(  # type: ignore
         cls: BaseSchema, values: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Validate that 'get' or 'update' details are supplied."""
@@ -112,7 +114,7 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
         scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
         iat=datetime.now().isoformat(),
     )
-    return generate_jwe(json.dumps(jwe.dict()))
+    return generate_jwe(json.dumps(jwe.dict()), config.security.APP_ENCRYPTION_KEY)
 
 
 class PrivacyRequest(Base):  # pylint: disable=R0904
@@ -138,7 +140,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     # Who approved/denied the request
     reviewed_by = Column(
         String,
-        ForeignKey(FidesopsUser.id_field_path, ondelete="SET NULL"),
+        ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
         nullable=True,
     )
     client_id = Column(
@@ -184,12 +186,12 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     )
 
     reviewer = relationship(
-        FidesopsUser, backref=backref("privacy_request", passive_deletes=True)
+        FidesUser, backref=backref("privacy_request", passive_deletes=True)
     )
     paused_at = Column(DateTime(timezone=True), nullable=True)
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
+    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
         """
         Check whether this object has been passed a `requested_at` value. Default to
         the current datetime if not.
@@ -388,7 +390,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         """
         cache: FidesopsRedis = get_cache()
         prefix = f"MANUAL_MASK__{self.id}__{collection.value}"
-        value_dict: Optional[Dict[str, int]] = cache.get_encoded_objects_by_prefix(
+        value_dict: Optional[Dict[str, int]] = cache.get_encoded_objects_by_prefix(  # type: ignore
             prefix
         )
         return list(value_dict.values())[0] if value_dict else None
@@ -403,10 +405,10 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         # temp fix for circular dependency
         from fidesops.service.connectors import HTTPSConnector, get_connector
 
-        https_connector: HTTPSConnector = get_connector(webhook.connection_config)
+        https_connector: HTTPSConnector = get_connector(webhook.connection_config)  # type: ignore
         request_body = SecondPartyRequestFormat(
             privacy_request_id=self.id,
-            direction=webhook.direction.value,
+            direction=webhook.direction.value,  # type: ignore
             callback_type=webhook.prefix,
             identity=self.get_cached_identity_data(),
         )
@@ -421,7 +423,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             }
 
         logger.info(f"Calling webhook {webhook.key} for privacy_request {self.id}")
-        response: Optional[SecondPartyResponseFormat] = https_connector.execute(
+        response: Optional[SecondPartyResponseFormat] = https_connector.execute(  # type: ignore
             request_body.dict(),
             response_expected=response_expected,
             additional_headers=headers,
@@ -429,7 +431,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         if not response:
             return
 
-        response_body = SecondPartyResponseFormat(**response)
+        response_body = SecondPartyResponseFormat(**response)  # type: ignore
 
         # Cache any new identities
         if response_body.derived_identity and any(
