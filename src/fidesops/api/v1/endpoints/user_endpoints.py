@@ -1,13 +1,10 @@
 import logging
-from datetime import datetime
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.schemas.user import UserResponse, UserUpdate
 from sqlalchemy.orm import Session
-from sqlalchemy_utils import escape_like
 from starlette.status import (
     HTTP_200_OK,
     HTTP_204_NO_CONTENT,
@@ -19,7 +16,6 @@ from fidesops.api import deps
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.scope_registry import USER_PASSWORD_RESET, USER_UPDATE
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesops.core.config import config
 from fidesops.schemas.user import UserPasswordReset
 from fidesops.util.oauth_util import get_current_user, verify_oauth_client
 
