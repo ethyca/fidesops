@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - docs_test_branch
     paths:
       - "docs/**"
   
