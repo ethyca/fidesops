@@ -1308,6 +1308,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../../development/fideslog/" class="md-nav__link">
+        Fideslog Analytics
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../development/testing/" class="md-nav__link">
         Testing
       </a>
@@ -1758,9 +1772,11 @@
 <span class="normal">86</span>
 <span class="normal">87</span>
 <span class="normal">88</span>
-<span class="normal">89</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">saas_config</span><span class="p">:</span><span class="w"></span>
+<span class="normal">89</span>
+<span class="normal">90</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">saas_config</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mailchimp_connector_example</span><span class="w"></span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Mailchimp SaaS Config</span><span class="w"></span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mailchimp</span><span class="w"></span>
 <span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A sample schema representing the Mailchimp connector for Fidesops</span><span class="w"></span>
 <span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0.1</span><span class="w"></span>
 
@@ -1852,6 +1868,7 @@
 <ul>
 <li><code>fides_key</code> Used to uniquely identify the connector, this field is used to link a SaaS config to a dataset.</li>
 <li><code>name</code> A human-readable name for the connector.</li>
+<li><code>type</code> Type of SaaS connector. Choose from <code>hubspot</code>, <code>mailchimp</code>, <code>outreach</code>, <code>segment</code>, <code>sentry</code>, <code>stripe</code>, <code>zendesk</code> or use <code>custom</code> for other types.</li>
 <li><code>description</code> Used to add a useful description.</li>
 <li><code>version</code> Used to track different versions of the SaaS config.</li>
 </ul>

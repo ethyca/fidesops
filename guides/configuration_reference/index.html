@@ -1223,6 +1223,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../../development/fideslog/" class="md-nav__link">
+        Fideslog Analytics
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../development/testing/" class="md-nav__link">
         Testing
       </a>
@@ -1745,6 +1759,30 @@
 <td>If MASKING_STRICT is True, we only use "update" requests to mask data. (For third-party integrations, you should define an <code>update</code> endpoint to use.)  If MASKING_STRICT is False, you are allowing fidesops to use any defined DELETE or GDPR DELETE endpoints to remove PII. In this case, you should define <code>delete</code> or <code>data_protection_request</code> endpoints for your third-party integrations.  Note that setting MASKING_STRICT to False means that data may be deleted beyond the specific data categories that you've configured in your Policy.</td>
 </tr>
 <tr>
+<td><code>CELERY_BROKER_URL</code></td>
+<td><code>FIDESOPS__EXECUTION__CELERY_BROKER_URL</code></td>
+<td>str</td>
+<td>redis://:testpassword@redis:6379/1</td>
+<td>N/A</td>
+<td>The datastore to maintain ordered queues of tasks.</td>
+</tr>
+<tr>
+<td><code>CELERY_RESULT_BACKEND</code></td>
+<td><code>FIDESOPS__EXECUTION__RESULT_BACKEND</code></td>
+<td>str</td>
+<td>redis://:testpassword@redis:6379/1</td>
+<td>N/A</td>
+<td>The datastore to put results from asynchronously processed tasks.</td>
+</tr>
+<tr>
+<td><code>WORKER_ENABLED</code></td>
+<td><code>FIDESOPS__EXECUTION__WORKER_ENABLED</code></td>
+<td>bool</td>
+<td>True</td>
+<td>True</td>
+<td>Whether Fidesops is running with a dedicated worker to process privacy requests asynchronously.</td>
+</tr>
+<tr>
 <td>---</td>
 <td>---</td>
 <td>---</td>
@@ -1816,7 +1854,11 @@
 <span class="normal">35</span>
 <span class="normal">36</span>
 <span class="normal">37</span>
-<span class="normal">38</span></pre></div></td><td class="code"><div><pre><span></span><code>PORT=8080
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span></pre></div></td><td class="code"><div><pre><span></span><code>PORT=8080
 
 [database]
 SERVER=&quot;db&quot;
@@ -1848,6 +1890,10 @@ TASK_RETRY_DELAY=20
 TASK_RETRY_BACKOFF=2
 REQUIRE_MANUAL_REQUEST_APPROVAL=true
 MASKING_STRICT=true
+CELERY_BROKER_URL=&quot;redis://:testpassword@redis:6379/1&quot;
+CELERY_RESULT_BACKEND=&quot;redis://:testpassword@redis:6379/1&quot;
+WORKER_ENABLED=true
+
 
 [root_user]
 ANALYTICS_OPT_OUT=false

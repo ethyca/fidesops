@@ -961,9 +961,67 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Managing Datastores
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         Managing Datastores
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#viewing-datastores" class="md-nav__link">
+    Viewing Datastores
+  </a>
+  
+    <nav class="md-nav" aria-label="Viewing Datastores">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#panel-options" class="md-nav__link">
+    Panel Options
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-datastores" class="md-nav__link">
+    Testing datastores
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#disabling-and-deleting-datastores" class="md-nav__link">
+    Disabling and deleting datastores
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1120,6 +1178,20 @@
     <li class="md-nav__item">
       <a href="../../development/documentation/" class="md-nav__link">
         Documentation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/fideslog/" class="md-nav__link">
+        Fideslog Analytics
       </a>
     </li>
   
@@ -1300,6 +1372,48 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#viewing-datastores" class="md-nav__link">
+    Viewing Datastores
+  </a>
+  
+    <nav class="md-nav" aria-label="Viewing Datastores">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#panel-options" class="md-nav__link">
+    Panel Options
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-datastores" class="md-nav__link">
+    Testing datastores
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#disabling-and-deleting-datastores" class="md-nav__link">
+    Disabling and deleting datastores
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1313,8 +1427,54 @@
 
 
 <h1 id="managing-datastores">Managing Datastores</h1>
-<p>Datastores represent connections to third party applications, databases, or manual storage. Configuring a datastore allows Fidesops to include these connections when fulfilling privacy requests.</p>
-<p><img alt="datastore" src="../../img/admin_ui/datastore.png" /></p>
+<p>Datastores represent connections to third party applications, databases and datasets, or manual storage locations.</p>
+<p><img alt="datastore" src="../../img/admin_ui/datastore_list.png" /></p>
+<h2 id="viewing-datastores">Viewing Datastores</h2>
+<p>All currently configured datastores will appear in the paginated Datastore Connections panel. Search options are available to filter the datastore list.</p>
+<p><code>Active</code> datastores are included when fulfilling privacy requests.</p>
+<p><code>Disabled</code> datastores have their connection information saved, but are not included when privacy requests are executed.</p>
+<h3 id="panel-options">Panel Options</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Search</td>
+<td>Retrieve a datastore by name.</td>
+</tr>
+<tr>
+<td>Datastore Type</td>
+<td>Filter datastores by type: SaaS, Postgres, Mongo, etc.</td>
+</tr>
+<tr>
+<td>System Type</td>
+<td>Filter datastores by system: SaaS, Database, or Manual.</td>
+</tr>
+<tr>
+<td>Testing Status</td>
+<td>Filter stores by the result of their last test: Passed, Failed, or Untested.</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>Filter datastores by status: Active or Disabled.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="testing-datastores">Testing datastores</h2>
+<p>Each configured datastore includes an option to <code>Test</code> its connection. Fidesops will record the last tested time to the datastore's card, and update the current connection status. </p>
+<p><code>Green</code> connections have passed their most recent test. </p>
+<p><code>Red</code> connections have failed.</p>
+<p><code>Grey</code> connections have not been tested.</p>
+<p><img alt="failed test" src="../../img/admin_ui/failed_test.png" /></p>
+<h2 id="disabling-and-deleting-datastores">Disabling and deleting datastores</h2>
+<p>Selecting the three dots menu <code>[...]</code> beside a datastore's connection status will bring up <code>Disable</code> and <code>Delete</code> options for that datastore.</p>
+<p><img alt="datastore options" src="../../img/admin_ui/datastore_options.png" /></p>
+<p>Selecting either Disable or Delete will display a warning to confirm the action. Deleted datastores will have their connection information removed entirely from Fidesops, while Disabled datastores may be enabled again from the same menu at a later date.</p>
+<p><img alt="delete datastore" src="../../img/admin_ui/delete_datastore.png" /></p>
 
               
             </article>

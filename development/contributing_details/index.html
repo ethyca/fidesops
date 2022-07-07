@@ -1250,6 +1250,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../fideslog/" class="md-nav__link">
+        Fideslog Analytics
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../testing/" class="md-nav__link">
         Testing
       </a>
@@ -1574,7 +1588,7 @@ When models are added to the project, we must then add them to the database in a
 <li>Import our application's database session: <code>from fidesops.db.session import get_db_session</code></li>
 <li>Instantiate the database interaction object:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>SessionLocal = get_db_session()
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>SessionLocal = get_db_session(config)
 db = SessionLocal()
 </code></pre></div></td></tr></table></div></li>
 <li>Create a new row in a table:
@@ -1620,7 +1634,7 @@ db.refresh()
 <h3 id="alembic-migrations">Alembic migrations</h3>
 <p>Some common Alembic commands are listed below. For a comprehensive guide see: https://alembic.sqlalchemy.org/en/latest/tutorial.html. </p>
 <p>The commands will need to be run inside a shell on your Docker containers, which can be opened with <code>make server-shell</code>.</p>
-<p>In the <code>/src</code> directory:</p>
+<p>In the <code>/src/fidesops</code> directory:</p>
 <ul>
 <li>Migrate your database to the latest state: <code>alembic upgrade head</code></li>
 <li>Get revision id of previous migration: <code>alembic current</code></li>

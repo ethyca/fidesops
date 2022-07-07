@@ -35,6 +35,127 @@
         ]
       }
     },
+    "/api/v1/connection_type": {
+      "get": {
+        "tags": [
+          "Connection Types"
+        ],
+        "summary": "Get All Connection Types",
+        "description": "Returns a list of connection options in Fidesops - includes only database and saas options here.",
+        "operationId": "get_all_connection_types_api_v1_connection_type_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Search",
+              "type": "string"
+            },
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_str_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection_type:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/connection_type/{connection_type}/secret": {
+      "get": {
+        "tags": [
+          "Connection Types"
+        ],
+        "summary": "Get Connection Type Secret Schema",
+        "description": "Returns the secret fields that should be supplied to authenticate with a particular connection type\n\nNote that this endpoint should never return actual secrets, we return the *types* of secret fields needed\nto authenticate.",
+        "operationId": "get_connection_type_secret_schema_api_v1_connection_type__connection_type__secret_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Connection Type",
+              "type": "string"
+            },
+            "name": "connection_type",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection_type:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/connection": {
       "get": {
         "tags": [
@@ -2596,7 +2717,10 @@
           {
             "required": false,
             "schema": {
-              "$ref": "#/components/schemas/PrivacyRequestStatus"
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/PrivacyRequestStatus"
+              }
             },
             "name": "status",
             "in": "query"
@@ -6431,6 +6555,40 @@
           }
         }
       },
+      "Page_str_": {
+        "title": "Page[str]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
       "ParamValue": {
         "title": "ParamValue",
         "required": [
@@ -7218,6 +7376,7 @@
         "required": [
           "fides_key",
           "name",
+          "type",
           "description",
           "version",
           "connector_params",
@@ -7235,6 +7394,9 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/SaaSType"
           },
           "description": {
             "title": "Description",
@@ -7363,6 +7525,20 @@
         "properties": {},
         "additionalProperties": false,
         "description": "Abstract base schema for updating SaaS connection configuration secrets.\nFields are added during runtime based on the connector_params in the\npassed in saas_config"
+      },
+      "SaaSType": {
+        "title": "SaaSType",
+        "enum": [
+          "mailchimp",
+          "hubspot",
+          "outreach",
+          "segment",
+          "sentry",
+          "stripe",
+          "zendesk",
+          "custom"
+        ],
+        "description": "Enum to store saas connection type in Fidesops"
       },
       "SnowflakeDocsSchema": {
         "title": "SnowflakeDocsSchema",
@@ -7698,14 +7874,6 @@
         ],
         "type": "object",
         "properties": {
-          "first_name": {
-            "title": "First Name",
-            "type": "string"
-          },
-          "last_name": {
-            "title": "Last Name",
-            "type": "string"
-          },
           "username": {
             "title": "Username",
             "type": "string"
@@ -7713,9 +7881,17 @@
           "password": {
             "title": "Password",
             "type": "string"
+          },
+          "first_name": {
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "title": "Last Name",
+            "type": "string"
           }
         },
-        "description": "Data required to create a FidesopsUser"
+        "description": "Data required to create a FidesUser."
       },
       "UserCreateResponse": {
         "title": "UserCreateResponse",
@@ -7729,7 +7905,7 @@
             "type": "string"
           }
         },
-        "description": "Response after creating a FidesopsUser"
+        "description": "Response after creating a FidesUser"
       },
       "UserLogin": {
         "title": "UserLogin",
@@ -7748,7 +7924,7 @@
             "type": "string"
           }
         },
-        "description": "Similar to UserCreate except we do not need the extra validation on username and password"
+        "description": "Similar to UserCreate except we do not need the extra validation on\nusername and password."
       },
       "UserLoginResponse": {
         "title": "UserLoginResponse",
@@ -7801,7 +7977,7 @@
             }
           }
         },
-        "description": "Data required to create a FidesopsUserPermissions record"
+        "description": "Data required to create a FidesUserPermissions record"
       },
       "UserPermissionsEdit": {
         "title": "UserPermissionsEdit",
@@ -7823,7 +7999,7 @@
             "type": "string"
           }
         },
-        "description": "Data required to edit a FidesopsUserPermissions record"
+        "description": "Data required to edit a FidesUserPermissions record"
       },
       "UserPermissionsResponse": {
         "title": "UserPermissionsResponse",
@@ -7850,7 +8026,7 @@
             "type": "string"
           }
         },
-        "description": "Response after creating, editing, or retrieving a FidesopsUserPermissions record"
+        "description": "Response after creating, editing, or retrieving a FidesUserPermissions record"
       },
       "UserResponse": {
         "title": "UserResponse",

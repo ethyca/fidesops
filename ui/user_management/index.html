@@ -1062,6 +1062,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#user-passwords" class="md-nav__link">
+    User Passwords
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#logging-in" class="md-nav__link">
     Logging in
   </a>
@@ -1239,6 +1246,20 @@
     <li class="md-nav__item">
       <a href="../../development/documentation/" class="md-nav__link">
         Documentation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/fideslog/" class="md-nav__link">
+        Fideslog Analytics
       </a>
     </li>
   
@@ -1488,6 +1509,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#user-passwords" class="md-nav__link">
+    User Passwords
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#logging-in" class="md-nav__link">
     Logging in
   </a>
@@ -1608,6 +1636,8 @@
 <h3 id="user-and-endpoint-scopes">User and Endpoint Scopes</h3>
 <p>User permissions are managed through access tokens, which contain scopes associated to individual endpoints. Endpoint access can be restricted by removing their scope from an access token.</p>
 <p>Creating a user currently provides access to all scopes.</p>
+<h3 id="user-passwords">User Passwords</h3>
+<p>All user passwords must by Base64 encoded before creating a new user, logging in, or changing a users password. This can be done with <a href="https://www.base64encode.org/">base64encode.org</a>. After Base64 encoding, the password <code>Suitablylongwithnumber8andsymbol$</code> would become <code>U3VpdGFibHlsb25nd2l0aG51bWJlcjhhbmRzeW1ib2wk</code>.</p>
 <h3 id="logging-in">Logging in</h3>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>POST api/v1/login
 </code></pre></div></td></tr></table></div>
@@ -1616,7 +1646,7 @@
 <span class="normal">3</span>
 <span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;username&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test_username&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;password&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Suitablylongwithnumber8andsymbol$&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;password&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;U3VpdGFibHlsb25nd2l0aG51bWJlcjhhbmRzeW1ib2wk&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 <p>Successful POST requests to the <code>login</code> endpoint will return an <code>access_token</code> with all available scopes. This token can be used to make subsequent requests to the Users endpoints.</p>
@@ -1648,7 +1678,7 @@
 <span class="normal">3</span>
 <span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;username&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;new_username&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;password&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;new_Suitablylongwithnumber8andsymbol$&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;password&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;U3VpdGFibHlsb25nd2l0aG51bWJlcjhhbmRzeW1ib2wk&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 <table>

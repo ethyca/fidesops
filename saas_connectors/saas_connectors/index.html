@@ -1182,6 +1182,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../../development/fideslog/" class="md-nav__link">
+        Fideslog Analytics
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../development/testing/" class="md-nav__link">
         Testing
       </a>
@@ -1446,11 +1460,13 @@
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection/{saas_key}/saas_config
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH api/v1/connection/{saas_key}/saas_config
 
 {
     &quot;fides_key&quot;: &quot;mailchimp_connector_example&quot;,
     &quot;name&quot;: &quot;Mailchimp SaaS Config&quot;,
+    &quot;type&quot;: &quot;mailchimp&quot;,
     &quot;description&quot;: &quot;A sample schema representing the Mailchimp connector for Fidesops&quot;
     ...
 </code></pre></div></td></tr></table></div></li>

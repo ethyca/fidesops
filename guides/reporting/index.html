@@ -1250,6 +1250,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../../development/fideslog/" class="md-nav__link">
+        Fideslog Analytics
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../development/testing/" class="md-nav__link">
         Testing
       </a>
@@ -1599,6 +1613,8 @@ information, or get more detailed information about the status of the requests o
 <li>errored_lt</li>
 <li>errored_gt</li>
 </ul>
+<p>You can filter for multiple statuses by repeating the status query param:</p>
+<p><code>GET api/v1/privacy-request?status=paused&amp;status=complete</code></p>
 <h2 id="view-all-privacy-request-logs">View All Privacy Request Logs</h2>
 <p>To view all the execution logs for a Privacy Request, visit <code>/api/v1/privacy-request/{privacy_request_id}/logs</code>.
 Embedded logs in the previous endpoints are truncated at 50 logs.</p>
