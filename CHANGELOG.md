@@ -31,6 +31,8 @@ The types of changes are:
 * Fixed `check-migrations` Make command [#806](https://github.com/ethyca/fidesops/pull/806)
 * Fix issue requiring separate install of snowflake-connector-python [#807](https://github.com/ethyca/fidesops/pull/807)
 
+### Docs
+* Backend UI deployment [#827](https://github.com/ethyca/fidesops/pull/827)
 
 ## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
 
