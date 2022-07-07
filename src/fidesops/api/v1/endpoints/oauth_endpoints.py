@@ -76,7 +76,9 @@ async def acquire_access_token(
     else:
         raise AuthenticationFailure(detail="Authentication Failure")
 
-    client_detail = ClientDetail.get(db, object_id=client_id, config=config, scopes=SCOPE_REGISTRY)
+    client_detail = ClientDetail.get(
+        db, object_id=client_id, config=config, scopes=SCOPE_REGISTRY
+    )
 
     if client_detail is None:
         raise AuthenticationFailure(detail="Authentication Failure")
