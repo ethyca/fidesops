@@ -1615,6 +1615,14 @@
 <td>The port at which the Fidesops application cache will be accessible</td>
 </tr>
 <tr>
+<td><code>USER</code></td>
+<td><code>FIDESOPS__REDIS__USER</code></td>
+<td>string</td>
+<td>testuser</td>
+<td>N/A</td>
+<td>The user with which to login to the Redis cache</td>
+</tr>
+<tr>
 <td><code>PASSWORD</code></td>
 <td><code>FIDESOPS__REDIS__PASSWORD</code></td>
 <td>string</td>
@@ -1627,8 +1635,16 @@
 <td><code>FIDESOPS__REDIS__DB_INDEX</code></td>
 <td>int</td>
 <td>0</td>
-<td>0</td>
+<td>N/A</td>
 <td>The Fidesops application will use this index in the Redis cache to cache data</td>
+</tr>
+<tr>
+<td><code>CONNECTION_URL</code></td>
+<td><code>FIDESOPS__REDIS__CONNECTION_URL</code></td>
+<td>string</td>
+<td>redis://:testpassword@redis:6379/0</td>
+<td>N/A</td>
+<td>If not specified this URL is automatically assembled from the <code>HOST</code>, <code>PORT</code>, <code>PASSWORD</code> and <code>DB_INDEX</code> specified above</td>
 </tr>
 <tr>
 <td><code>DEFAULT_TTL_SECONDS</code></td>
