@@ -20,7 +20,7 @@ from sqlalchemy_utils.functions import create_database, database_exists, drop_da
 
 from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.core.config import config
-from fidesops.db.base_class import Base
+from fidesops.db.base import Base
 from fidesops.db.database import init_db
 from fidesops.main import app
 from fidesops.models.privacy_request import generate_request_callback_jwe
