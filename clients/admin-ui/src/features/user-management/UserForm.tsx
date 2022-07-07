@@ -72,34 +72,36 @@ const UserForm = ({
         <Form>
           <Box maxW={["xs", "xs", "100%"]} width="100%">
             <Stack mb={8} spacing={6}>
-              <CustomTextInput
-                name="username"
-                label="Username"
-                placeholder="Enter new username"
-              />
-              <CustomTextInput
-                name="first_name"
-                label="First Name"
-                placeholder="Enter first name of user"
-                disabled={nameDisabled}
-              />
-              <CustomTextInput
-                name="last_name"
-                label="Last Name"
-                placeholder="Enter last name of user"
-                disabled={nameDisabled}
-              />
-              {isNewUser ? (
+              <Stack mb={8} spacing={6} maxWidth="40%">
                 <CustomTextInput
-                  name="password"
-                  label="Password"
-                  placeholder="********"
-                  type="password"
+                  name="username"
+                  label="Username"
+                  placeholder="Enter new username"
                 />
-              ) : (
-                canChangePassword &&
-                profileId != null && <UpdatePasswordModal id={profileId} />
-              )}
+                <CustomTextInput
+                  name="first_name"
+                  label="First Name"
+                  placeholder="Enter first name of user"
+                  disabled={nameDisabled}
+                />
+                <CustomTextInput
+                  name="last_name"
+                  label="Last Name"
+                  placeholder="Enter last name of user"
+                  disabled={nameDisabled}
+                />
+                {isNewUser ? (
+                  <CustomTextInput
+                    name="password"
+                    label="Password"
+                    placeholder="********"
+                    type="password"
+                  />
+                ) : (
+                  canChangePassword &&
+                  profileId != null && <UpdatePasswordModal id={profileId} />
+                )}
+              </Stack>
               <Divider mb={7} mt={7} />
               <Heading fontSize="xl" colorScheme="primary">
                 Privileges
