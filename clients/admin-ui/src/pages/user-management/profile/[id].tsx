@@ -1,3 +1,4 @@
+import { Spinner } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React from "react";
 
@@ -15,7 +16,16 @@ const Profile = () => {
   } else {
     profileId = "";
   }
-  const { data: existingUser } = useGetUserByIdQuery(profileId);
+  const { data: existingUser, isLoading } = useGetUserByIdQuery(profileId);
+
+  if (isLoading) {
+    return (
+      <UserManagementLayout title="Edit User">
+        <Spinner />
+      </UserManagementLayout>
+    );
+  }
+
   if (existingUser == null) {
     return (
       <UserManagementLayout title="Edit User">
@@ -26,7 +36,7 @@ const Profile = () => {
 
   return (
     <UserManagementLayout title="Edit User">
-      <EditUserForm profileId={profileId} />
+      <EditUserForm user={existingUser} />
     </UserManagementLayout>
   );
 };

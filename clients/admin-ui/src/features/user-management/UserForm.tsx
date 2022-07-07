@@ -60,7 +60,7 @@ const UserForm = ({
     ? router.query.id[0]
     : router.query.id;
   const isNewUser = profileId == null;
-  const nameDisabled = isNewUser ? false : canEditNames;
+  const nameDisabled = isNewUser ? false : !canEditNames;
 
   return (
     <Formik

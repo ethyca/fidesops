@@ -5,99 +5,95 @@ import { useSelector } from "react-redux";
 
 import { USER_MANAGEMENT_ROUTE } from "../../constants";
 import { selectUser } from "../auth";
+import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import { User } from "./types";
 import {
   useEditUserMutation,
-  useGetUserByIdQuery,
   useGetUserPermissionsQuery,
   useUpdateUserPermissionsMutation,
 } from "./user-management.slice";
-import UserForm from "./UserForm";
+import UserForm, { FormValues } from "./UserForm";
 
-const useUserForm = (profileId: string) => {
+const useUserForm = (profile: User) => {
   const router = useRouter();
   const currentUser = useSelector(selectUser);
   const [updateUserPermissions] = useUpdateUserPermissionsMutation();
-  const [editUser] = useEditUserMutation({ id: profileId });
-  const { data: existingUser } = useGetUserByIdQuery(profileId);
-  const { data: existingScopes } = useGetUserPermissionsQuery(profileId);
+  const [editUser] = useEditUserMutation();
+  const { data: profileScopes } = useGetUserPermissionsQuery(profile.id);
   const toast = useToast();
 
   const initialValues = {
-    username: existingUser?.username ?? "",
-    first_name: existingUser?.first_name ?? "",
-    last_name: existingUser?.last_name ?? "",
-    password: existingUser?.password ?? "",
-    scopes: existingScopes?.scopes ?? "",
-    id: existingUser?.id ?? "",
+    username: profile.username ?? "",
+    first_name: profile.first_name ?? "",
+    last_name: profile.last_name ?? "",
+    password: profile.password ?? "",
+    scopes: profileScopes?.scopes ?? [],
+    id: profile.id,
   };
 
-  const handleSubmit = async (values) => {
-    const userBody = {
-      username: values.username ? values.username : existingUser?.username,
-      first_name: values.first_name
-        ? values.first_name
-        : existingUser?.first_name,
-      last_name: values.last_name ? values.last_name : existingUser?.last_name,
-      password: values.password ? values.password : existingUser?.password,
-      id: existingUser?.id,
-    };
+  const handleSubmit = async (values: FormValues) => {
+    // first update the user object
+    const userBody = Object.assign(profile, values);
+    const editUserResult = await editUser(userBody);
 
-    const { error: editUserError, data } = await editUser(userBody);
-
-    if (editUserError) {
+    if ("error" in editUserResult) {
+      let errorMsg = "An unexpected error occurred. Please try again.";
+      if (isErrorWithDetail(editUserResult.error)) {
+        errorMsg = editUserResult.error.data.detail;
+      } else if (isErrorWithDetailArray(editUserResult.error)) {
+        const { error } = editUserResult;
+        errorMsg = error.data.detail[0].msg;
+      }
       toast({
         status: "error",
-        description: editUserError.data.detail.length
-          ? `${editUserError.data.detail[0].msg}`
-          : "An unexpected error occurred. Please try again.",
+        description: errorMsg,
       });
       return;
     }
 
-    if (editUserError && editUserError.status === 422) {
-      toast({
-        status: "error",
-        description: editUserError.data.detail.length
-          ? `${editUserError.data.detail[0].msg}`
-          : "An unexpected error occurred. Please try again.",
-      });
-    }
+    const { data } = editUserResult;
 
+    // then issue a separate call to update their permissions
     const userWithPrivileges = {
-      id: data ? data.id : null,
-      scopes: [...new Set(values.scopes, "privacy-request:read")],
+      id: data.id,
+      scopes: [...new Set([...values.scopes, "privacy-request:read"])],
     };
-
-    const { error: updatePermissionsError } = await updateUserPermissions(
+    const updateUserPermissionsResult = await updateUserPermissions(
       userWithPrivileges
     );
 
-    if (!updatePermissionsError) {
+    if (!("error" in updateUserPermissionsResult)) {
       router.push(USER_MANAGEMENT_ROUTE);
     }
   };
 
+  const isOwnProfile = currentUser ? currentUser.id === profile.id : false;
   let canUpdateUser = false;
-  const { data: userPermissions = { scopes: [] } } = useGetUserPermissionsQuery(
-    currentUser.id
+  const { data: userPermissions } = useGetUserPermissionsQuery(
+    currentUser?.id ?? ""
   );
-  canUpdateUser = userPermissions.scopes.includes("user:update");
+  if (isOwnProfile) {
+    canUpdateUser = true;
+  } else {
+    canUpdateUser = userPermissions
+      ? userPermissions.scopes.includes("user:update")
+      : false;
+  }
 
   return {
     handleSubmit,
-    isOwnProfile: profileId === currentUser.id,
+    isOwnProfile,
     canUpdateUser,
     initialValues,
   };
 };
 
 interface Props {
-  profileId: string;
+  user: User;
 }
-const EditUserForm: React.FC = ({ profileId }: Props) => {
+const EditUserForm = ({ user }: Props) => {
   const { isOwnProfile, handleSubmit, canUpdateUser, initialValues } =
-    useUserForm(profileId);
+    useUserForm(user);
 
   return (
     <div>
