@@ -69,24 +69,14 @@ def generate_dataset(
             collection["name"] for collection in existing_dataset["collections"]
         ]
 
-    fides_key = existing_dataset["fides_key"]
-
-    # convert FidesopsDataset to Dataset to be able to use the Collection helpers
-    existing_graph = convert_dataset_to_graph(
-        FidesopsDataset(**existing_dataset), fides_key
-    )
-    collection_map = {
-        collection.name: collection for collection in existing_graph.collections
-    }
-
     # remove the dataset name from the keys in the api_data map before passing
     # into generate_collections
     generated_collections = generate_collections(
         {
-            collection_name.replace(f"{fides_key}:", ""): collection
+            collection_name.replace(f"{existing_dataset['fides_key']}:", ""): collection
             for collection_name, collection in api_data.items()
         },
-        collection_map,
+        existing_dataset,
     )
 
     return {
@@ -107,27 +97,39 @@ def generate_dataset(
 
 
 def generate_collections(
-    api_data: Dict[str, List[Row]], collection_map: Dict[str, Collection] = None
+    api_data: Dict[str, List[Row]], dataset: Dict[str, Any] = None
 ) -> List[Dict[str, Any]]:
     """
     Generates a list of collections based on the response data or returns
     the existing collections if no API data is available.
     """
 
-    if not collection_map:
-        collection_map = {}
+    # convert FidesopsDataset to Dataset to be able to use the Collection helpers
+    collection_map = {}
+    if dataset:
+        graph = convert_dataset_to_graph(
+            FidesopsDataset(**dataset), dataset["fides_key"]
+        )
+        collection_map = {
+            collection.name: collection for collection in graph.collections
+        }
 
     collections = []
-    for collection_name, rows in api_data.items():
-        fields = None
-
-        if len(rows):
+    for collection_name in set().union(
+        api_data.keys(),
+        collection_map.keys(),
+    ):
+        if len(rows := api_data.get(collection_name, [])):
             fields = generate_fields(rows[0], collection_name, collection_map)
-        elif collection_map.get(collection_name):
-            fields = collection_map[collection_name]
+        else:
+            fields = get_simple_fields(collection_map.get(collection_name).fields)
 
-        if fields:
-            collections.append({"name": collection_name, "fields": fields})
+        collections.append(
+            {
+                "name": collection_name,
+                "fields": fields,
+            }
+        )
 
     return collections
 
@@ -138,7 +140,7 @@ def generate_fields(
     """
     Generates a simplified version of dataset fields based on the row data.
     Maintains the current path of the traversal to determine if the field
-    exists in the existing dataset. If it does, some existing attributes
+    exists in the existing dataset. If it does, existing attributes
     are preserved instead of generating them from the row data.
     """
 

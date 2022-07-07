@@ -231,7 +231,12 @@ class TestGenerateCollections:
 
 
 class TestGenerateDataset:
-    def test_dataset_merge(self):
+    def test_update_existing_name_only_field(self):
+        """
+        Ensures that an existing field with only a name is updated
+        with a default data_category and data_type
+        """
+
         existing_dataset = {
             "fides_key": "example",
             "name": "Example Dataset",
@@ -239,17 +244,11 @@ class TestGenerateDataset:
             "collections": [
                 {
                     "name": "user",
-                    "fields": [
-                        {
-                            "name": "a",
-                            "data_categories": ["user.provided"],
-                            "fidesops_meta": {"data_type": "string"},
-                        }
-                    ],
+                    "fields": [{"name": "a"}],
                 }
             ],
         }
-        api_data = {"user": [{"a": None, "b": "", "c": [], "d": {}}]}
+        api_data = {"user": [{"a": "property"}]}
 
         generated_dataset = generate_dataset(existing_dataset, api_data)
 
@@ -263,24 +262,56 @@ class TestGenerateDataset:
                     "fields": [
                         {
                             "name": "a",
-                            "data_categories": ["user.provided"],
+                            "data_categories": ["system.operations"],
                             "fidesops_meta": {"data_type": "string"},
-                        },
-                        {
-                            "name": "b",
-                            "data_categories": ["system.operations"],
-                        },
-                        {
-                            "name": "c",
-                            "data_categories": ["system.operations"],
-                        },
-                        {"name": "d", "data_categories": ["system.operations"]},
+                        }
                     ],
                 }
             ],
         }
 
-    def test_empty_values(self):
+    def test_update_existing_field_with_category(self):
+        """
+        Ensures that an existing field with an already defined data_category isn't overwritten
+        """
+
+        existing_dataset = {
+            "fides_key": "example",
+            "name": "Example Dataset",
+            "description": "An example dataset",
+            "collections": [
+                {
+                    "name": "user",
+                    "fields": [{"name": "a", "data_categories": ["user.provided"]}],
+                }
+            ],
+        }
+        api_data = {"user": [{"a": "property"}]}
+
+        assert generate_dataset(existing_dataset, api_data) == {
+            "fides_key": "example",
+            "name": "Example Dataset",
+            "description": "An example dataset",
+            "collections": [
+                {
+                    "name": "user",
+                    "fields": [
+                        {
+                            "name": "a",
+                            "data_categories": ["user.provided"],
+                            "fidesops_meta": {"data_type": "string"},
+                        }
+                    ],
+                }
+            ],
+        }
+
+    def test_update_existing_scalar_field_to_object_field(self):
+        """
+        Ensures that an existing scalar field's data type and data_category are updated
+        if the generated field is an object type
+        """
+
         existing_dataset = {
             "fides_key": "example",
             "name": "Example Dataset",
@@ -298,7 +329,158 @@ class TestGenerateDataset:
                 }
             ],
         }
-        api_data = {"user": [{"a": None, "b": "", "c": [], "d": {}}]}
+        api_data = {"user": [{"a": {"first": "A", "last": "B"}}]}
+
+        assert generate_dataset(existing_dataset, api_data) == {
+            "fides_key": "example",
+            "name": "Example Dataset",
+            "description": "An example dataset",
+            "collections": [
+                {
+                    "name": "user",
+                    "fields": [
+                        {
+                            "name": "a",
+                            "fidesops_meta": {"data_type": "object"},
+                            "fields": [
+                                {
+                                    "name": "first",
+                                    "data_categories": ["system.operations"],
+                                    "fidesops_meta": {"data_type": "string"},
+                                },
+                                {
+                                    "name": "last",
+                                    "data_categories": ["system.operations"],
+                                    "fidesops_meta": {"data_type": "string"},
+                                },
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+    def test_keep_existing_object_field(self):
+        """
+        Ensures that an existing object field isn't overwritten if the field
+        from the API response is empty
+        """
+
+        existing_dataset = {
+            "fides_key": "example",
+            "name": "Example Dataset",
+            "description": "An example dataset",
+            "collections": [
+                {
+                    "name": "user",
+                    "fields": [
+                        {
+                            "name": "a",
+                            "fidesops_meta": {"data_type": "object"},
+                            "fields": [
+                                {
+                                    "name": "first",
+                                    "data_categories": ["system.operations"],
+                                    "fidesops_meta": {"data_type": "string"},
+                                },
+                                {
+                                    "name": "last",
+                                    "data_categories": ["system.operations"],
+                                    "fidesops_meta": {"data_type": "string"},
+                                },
+                                {
+                                    "name": "address",
+                                    "fidesops_meta": {"data_type": "object"},
+                                    "fields": [
+                                        {
+                                            "name": "city",
+                                            "data_categories": ["system.operations"],
+                                            "fidesops_meta": {"data_type": "string"},
+                                        },
+                                        {
+                                            "name": "state",
+                                            "data_categories": ["system.operations"],
+                                            "fidesops_meta": {"data_type": "string"},
+                                        },
+                                    ],
+                                },
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+        api_data = {"user": [{"a": None}]}
+
+        assert generate_dataset(existing_dataset, api_data) == {
+            "fides_key": "example",
+            "name": "Example Dataset",
+            "description": "An example dataset",
+            "collections": [
+                {
+                    "name": "user",
+                    "fields": [
+                        {
+                            "name": "a",
+                            "fidesops_meta": {"data_type": "object"},
+                            "fields": [
+                                {
+                                    "name": "first",
+                                    "data_categories": ["system.operations"],
+                                    "fidesops_meta": {"data_type": "string"},
+                                },
+                                {
+                                    "name": "last",
+                                    "data_categories": ["system.operations"],
+                                    "fidesops_meta": {"data_type": "string"},
+                                },
+                                {
+                                    "name": "address",
+                                    "fidesops_meta": {"data_type": "object"},
+                                    "fields": [
+                                        {
+                                            "name": "city",
+                                            "data_categories": ["system.operations"],
+                                            "fidesops_meta": {"data_type": "string"},
+                                        },
+                                        {
+                                            "name": "state",
+                                            "data_categories": ["system.operations"],
+                                            "fidesops_meta": {"data_type": "string"},
+                                        },
+                                    ],
+                                },
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+    def test_keep_existing_scalar_field(self):
+        """
+        Ensures that an existing scalar field isn't overwritten if the field
+        from the API response is empty
+        """
+
+        existing_dataset = {
+            "fides_key": "example",
+            "name": "Example Dataset",
+            "description": "An example dataset",
+            "collections": [
+                {
+                    "name": "user",
+                    "fields": [
+                        {
+                            "name": "a",
+                            "data_categories": ["user.provided"],
+                            "fidesops_meta": {"data_type": "string"},
+                        }
+                    ],
+                }
+            ],
+        }
+        api_data = {"user": [{"a": None}]}
 
         assert generate_dataset(existing_dataset, api_data) == {
             "fides_key": "example",
@@ -312,17 +494,174 @@ class TestGenerateDataset:
                             "name": "a",
                             "data_categories": ["user.provided"],
                             "fidesops_meta": {"data_type": "string"},
-                        },
-                        {
-                            "name": "b",
-                            "data_categories": ["system.operations"],
-                        },
-                        {
-                            "name": "c",
-                            "data_categories": ["system.operations"],
-                        },
-                        {"name": "d", "data_categories": ["system.operations"]},
+                        }
                     ],
                 }
+            ],
+        }
+
+    def test_missing_collection(self):
+        """
+        Ensures that an existing collection is preserved if the API data is empty for a collection
+        """
+
+        existing_dataset = {
+            "fides_key": "example",
+            "name": "Example Dataset",
+            "description": "An example dataset",
+            "collections": [
+                {
+                    "name": "user",
+                    "fields": [
+                        {
+                            "name": "a",
+                            "data_categories": ["user.provided"],
+                            "fidesops_meta": {"data_type": "string"},
+                        }
+                    ],
+                }
+            ],
+        }
+        api_data = {}
+
+        assert generate_dataset(existing_dataset, api_data) == {
+            "fides_key": "example",
+            "name": "Example Dataset",
+            "description": "An example dataset",
+            "collections": [
+                {
+                    "name": "user",
+                    "fields": [
+                        {
+                            "name": "a",
+                            "data_categories": ["user.provided"],
+                            "fidesops_meta": {"data_type": "string"},
+                        }
+                    ],
+                }
+            ],
+        }
+
+    def test_collection_order(self):
+        """
+        Ensures that the collection matches the collection order in the existing dataset
+        """
+
+        existing_dataset = {
+            "fides_key": "example",
+            "name": "Example Dataset",
+            "description": "An example dataset",
+            "collections": [
+                {
+                    "name": "user",
+                    "fields": [
+                        {
+                            "name": "a",
+                            "data_categories": ["user.provided"],
+                            "fidesops_meta": {"data_type": "string"},
+                        }
+                    ],
+                },
+                {
+                    "name": "posts",
+                    "fields": [
+                        {
+                            "name": "b",
+                            "data_categories": ["user.provided"],
+                            "fidesops_meta": {"data_type": "string"},
+                        }
+                    ],
+                },
+            ],
+        }
+        api_data = {}
+
+        assert generate_dataset(existing_dataset, api_data) == {
+            "fides_key": "example",
+            "name": "Example Dataset",
+            "description": "An example dataset",
+            "collections": [
+                {
+                    "name": "user",
+                    "fields": [
+                        {
+                            "name": "a",
+                            "data_categories": ["user.provided"],
+                            "fidesops_meta": {"data_type": "string"},
+                        }
+                    ],
+                },
+                {
+                    "name": "posts",
+                    "fields": [
+                        {
+                            "name": "b",
+                            "data_categories": ["user.provided"],
+                            "fidesops_meta": {"data_type": "string"},
+                        }
+                    ],
+                },
+            ],
+        }
+
+    def test_collection_order_override(self):
+        """
+        Ensures that the collection order matches the provided order
+        """
+
+        existing_dataset = {
+            "fides_key": "example",
+            "name": "Example Dataset",
+            "description": "An example dataset",
+            "collections": [
+                {
+                    "name": "user",
+                    "fields": [
+                        {
+                            "name": "a",
+                            "data_categories": ["user.provided"],
+                            "fidesops_meta": {"data_type": "string"},
+                        }
+                    ],
+                },
+                {
+                    "name": "posts",
+                    "fields": [
+                        {
+                            "name": "b",
+                            "data_categories": ["user.provided"],
+                            "fidesops_meta": {"data_type": "string"},
+                        }
+                    ],
+                },
+            ],
+        }
+        api_data = {}
+
+        assert generate_dataset(existing_dataset, api_data, ["posts", "user"]) == {
+            "fides_key": "example",
+            "name": "Example Dataset",
+            "description": "An example dataset",
+            "collections": [
+                {
+                    "name": "posts",
+                    "fields": [
+                        {
+                            "name": "b",
+                            "data_categories": ["user.provided"],
+                            "fidesops_meta": {"data_type": "string"},
+                        }
+                    ],
+                },
+                {
+                    "name": "user",
+                    "fields": [
+                        {
+                            "name": "a",
+                            "data_categories": ["user.provided"],
+                            "fidesops_meta": {"data_type": "string"},
+                        }
+                    ],
+                },
             ],
         }
