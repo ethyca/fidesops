@@ -35,6 +35,7 @@ The types of changes are:
 * Fix issue requiring separate install of snowflake-connector-python [#807](https://github.com/ethyca/fidesops/pull/807)
 * Fix publish_docs CI action [#818](https://github.com/ethyca/fidesops/pull/818)
 * Bump fideslib to handle base64 encoded password [#820](https://github.com/ethyca/fidesops/pull/820)
+* Fix error when there are no scopes in `ClientDetail` [#830](https://github.com/ethyca/fidesops/pull/830)
 
 ## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
 
