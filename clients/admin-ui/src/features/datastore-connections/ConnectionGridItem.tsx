@@ -1,43 +1,17 @@
-import { Box, Button, Flex, Spacer, Text } from "@fidesui/react";
+import { Box, Button, Flex, Image, Spacer, Text } from "@fidesui/react";
 import { format } from "date-fns-tz";
 import React from "react";
 
 import { capitalize } from "../common/utils";
 import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
+import {
+  ConnectionTypeImageMap,
+  CONNECTOR_IMAGE_PATH,
+  FALLBACK_CONNECTOR_IMAGE_PATH
+} from "./constants";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
 import { ConnectionType, DatastoreConnection } from "./types";
-
-function getConnectorDisplayName(connectionType: ConnectionType): string {
-  const databases = [
-    ConnectionType.POSTGRES,
-    ConnectionType.MONGODB,
-    ConnectionType.MYSQL,
-    ConnectionType.REDSHIFT,
-    ConnectionType.SNOWFLAKE,
-    ConnectionType.MSSQL,
-    ConnectionType.MARIADB,
-    ConnectionType.BIGQUERY,
-  ];
-
-  if (databases.includes(connectionType)) {
-    return `${capitalize(connectionType)} Database Connector`;
-  }
-
-  if (connectionType === ConnectionType.SAAS) {
-    return "Sass Connector";
-  }
-
-  if (connectionType === ConnectionType.HTTPS) {
-    return "HTTPS Connector";
-  }
-
-  if (connectionType === ConnectionType.MANUAL) {
-    return "Manual Connector";
-  }
-
-  return "Unknown Connector";
-}
 
 type TestDataProps = {
   succeeded: boolean | null;
@@ -76,6 +50,47 @@ const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {
   );
 };
 
+const useConnectionGridItem = () => {
+  const getConnectorDisplayName = (connectionType: ConnectionType): string => {
+    if (Object.values(ConnectionType).includes(connectionType)) {
+      return `${capitalize(connectionType)} Database Connector`;
+    }
+
+    let value: string;
+    switch (connectionType) {
+      case ConnectionType.HTTPS:
+        value = "HTTPS Connector";
+        break;
+      case ConnectionType.MANUAL:
+        value = "Manual Connector";
+        break;
+      case ConnectionType.SAAS:
+        value = "Sass Connector";
+        break;
+      default:
+        value = "Unknown Connector";
+        break;
+    }
+
+    return value;
+  };
+
+  const getImageSrc = (connectionType: string): string => {
+    const item = [...ConnectionTypeImageMap].find(
+      ([k]) => k.toLowerCase() === connectionType.toLowerCase()
+    );
+    const path = item
+      ? CONNECTOR_IMAGE_PATH + item[1]
+      : FALLBACK_CONNECTOR_IMAGE_PATH;
+    return path;
+  };
+
+  return {
+    getConnectorDisplayName,
+    getImageSrc,
+  };
+};
+
 type ConnectionGridItemProps = {
   connectionData: DatastoreConnection;
 };
@@ -84,6 +99,8 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
   connectionData,
 }) => {
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
+  const { getConnectorDisplayName, getImageSrc } = useConnectionGridItem();
+
   return (
     <Box
       width="100%"
@@ -94,11 +111,12 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
       p="18px 16px 16px 16px"
     >
       <Flex justifyContent="center" alignItems="center">
-        <Box
-          width="32px"
-          height="32px"
-          backgroundColor="aliceblue"
-          minWidth="32px"
+        <Image
+          boxSize="32px"
+          objectFit="cover"
+          src={getImageSrc(connectionData.connection_type)}
+          fallbackSrc={FALLBACK_CONNECTOR_IMAGE_PATH}
+          alt={connectionData.name}
         />
         <Text
           color="gray.900"
