@@ -106,11 +106,7 @@ const UserForm = ({
               <Heading fontSize="xl" colorScheme="primary">
                 Privileges
               </Heading>
-              <Text>
-                {isNewUser
-                  ? "Select privileges assigned to this user"
-                  : "Edit privileges assigned to this user"}
-              </Text>
+              <Text>Select privileges to assign to this user</Text>
               <Divider mb={2} mt={2} />
 
               <Stack spacing={[1, 5]} direction="column">
