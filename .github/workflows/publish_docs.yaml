@@ -3,9 +3,9 @@ name: Publish updated docs to gh-pages
 on:
   push:
     branches:
-      - docs_test_branch
-        # paths:
-        #   - "docs/**"
+      - main
+    paths:
+      - "docs/**"
 jobs:
   publish_docs:
     runs-on: ubuntu-latest
