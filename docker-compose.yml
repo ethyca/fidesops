@@ -1,11 +1,10 @@
 services:
-  fidesops:
-    container_name: fidesops
+  webserver:
+    container_name: webserver
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.app
     depends_on:
-      - celery
       - db
       - redis
     expose:
@@ -29,6 +28,7 @@ services:
       - FIDESOPS__LOG_PII=${FIDESOPS__LOG_PII}
       - FIDESOPS__HOT_RELOAD=${FIDESOPS__HOT_RELOAD}
       - FIDESOPS__ROOT_USER__ANALYTICS_ID=${FIDESOPS__ROOT_USER__ANALYTICS_ID}
+      - FIDESOPS__EXECUTION__WORKER_ENABLED=False
 
   db:
     image: postgres:12
@@ -59,25 +59,10 @@ services:
     ports:
       - "0.0.0.0:6379:6379"
 
-  celery:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: celery -A fidesops.tasks.celery_app worker --loglevel=info
-    depends_on:
-      redis:
-        condition: service_started
-    restart: always
-    volumes:
-      - type: bind
-        source: ./
-        target: /fidesops
-        read_only: False
-
   docs:
     build:
       context: docs/fidesops/
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.docs
     volumes:
       - ./docs/fidesops:/docs
     expose:

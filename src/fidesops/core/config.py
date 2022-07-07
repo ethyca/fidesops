@@ -41,6 +41,7 @@ class ExecutionSettings(FidesSettings):
     MASKING_STRICT: bool = True
     CELERY_BROKER_URL: str = "redis://:testpassword@redis:6379/1"
     CELERY_RESULT_BACKEND: str = "redis://:testpassword@redis:6379/1"
+    WORKER_ENABLED: bool = True
 
     class Config:
         env_prefix = "FIDESOPS__EXECUTION__"
@@ -140,9 +141,9 @@ class FidesopsConfig(FidesSettings):
     admin_ui: AdminUiSettings
 
     PORT: int
-    is_test_mode: bool = os.getenv("TESTING") == "True"
-    hot_reloading: bool = os.getenv("FIDESOPS__HOT_RELOAD") == "True"
-    dev_mode: bool = os.getenv("FIDESOPS__DEV_MODE") == "True"
+    is_test_mode: bool = os.getenv("TESTING", "").lower() == "true"
+    hot_reloading: bool = os.getenv("FIDESOPS__HOT_RELOAD", "").lower() == "true"
+    dev_mode: bool = os.getenv("FIDESOPS__DEV_MODE", "").lower() == "true"
 
     class Config:  # pylint: disable=C0115
         case_sensitive = True
@@ -151,7 +152,7 @@ class FidesopsConfig(FidesSettings):
         f"Startup configuration: reloading = {hot_reloading}, dev_mode = {dev_mode}"
     )
     logger.warning(
-        f'Startup configuration: pii logging = {os.getenv("FIDESOPS__LOG_PII") == "True"}'
+        f'Startup configuration: pii logging = {os.getenv("FIDESOPS__LOG_PII", "").lower() == "true"}'
     )
 
     def log_all_config_values(self) -> None:
@@ -235,7 +236,7 @@ def update_config_file(updates: Dict[str, Dict[str, Any]]) -> None:
         else:
             current_config.update({key: value})
 
-    with open(config_path, "w") as config_file:
+    with open(config_path, "w") as config_file:  # pylint: disable=W1514
         toml.dump(current_config, config_file)
 
     logger.info(f"Updated {config_path}:")
