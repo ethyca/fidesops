@@ -38,7 +38,6 @@ WORKER_ENABLED = false
 
 [root_user]
 ANALYTICS_OPT_OUT = false
-ANALYTICS_ID = "eaa09bfca9b196bafe17fd4e85ff72ef"
 
 [admin_ui]
 ENABLED = true
