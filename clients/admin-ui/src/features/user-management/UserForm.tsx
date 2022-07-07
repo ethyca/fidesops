@@ -6,7 +6,10 @@ import {
   Heading,
   Stack,
   Text,
+  useToast,
 } from "@fidesui/react";
+import { SerializedError } from "@reduxjs/toolkit";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -14,8 +17,11 @@ import React from "react";
 import * as Yup from "yup";
 
 import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from "../../constants";
+import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import { CustomTextInput } from "./form/inputs";
+import { User } from "./types";
 import UpdatePasswordModal from "./UpdatePasswordModal";
+import { useUpdateUserPermissionsMutation } from "./user-management.slice";
 
 const defaultInitialValues = {
   username: "",
@@ -43,7 +49,14 @@ const ValidationSchema = Yup.object().shape({
 });
 
 interface Props {
-  onSubmit: (values: FormValues) => void;
+  onSubmit: (values: FormValues) => Promise<
+    | {
+        data: User;
+      }
+    | {
+        error: FetchBaseQueryError | SerializedError;
+      }
+  >;
   initialValues?: FormValues;
   canEditNames?: boolean;
   canChangePassword?: boolean;
@@ -56,15 +69,52 @@ const UserForm = ({
   canChangePassword,
 }: Props) => {
   const router = useRouter();
+  const toast = useToast();
   const profileId = Array.isArray(router.query.id)
     ? router.query.id[0]
     : router.query.id;
   const isNewUser = profileId == null;
   const nameDisabled = isNewUser ? false : !canEditNames;
+  const [updateUserPermissions] = useUpdateUserPermissionsMutation();
+
+  const handleErrors = (error: unknown) => {
+    let errorMsg = "An unexpected error occurred. Please try again.";
+    if (isErrorWithDetail(error)) {
+      errorMsg = error.data.detail;
+    } else if (isErrorWithDetailArray(error)) {
+      errorMsg = error.data.detail[0].msg;
+    }
+    toast({
+      status: "error",
+      description: errorMsg,
+    });
+  };
+
+  const handleSubmit = async (values: FormValues) => {
+    // first either update or create the user
+    const result = await onSubmit(values);
+    if ("error" in result) {
+      handleErrors(result.error);
+      return;
+    }
+
+    // then issue a separate call to update their permissions
+    const { data } = result;
+    const userWithPrivileges = {
+      id: data.id,
+      scopes: [...new Set([...values.scopes, "privacy-request:read"])],
+    };
+    const updateUserPermissionsResult = await updateUserPermissions(
+      userWithPrivileges
+    );
+    if (!("error" in updateUserPermissionsResult)) {
+      router.push(USER_MANAGEMENT_ROUTE);
+    }
+  };
 
   return (
     <Formik
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
       initialValues={initialValues ?? defaultInitialValues}
       validationSchema={ValidationSchema}
     >
