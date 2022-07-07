@@ -408,8 +408,7 @@ class TestAcquireAccessToken:
         assert (
             json.loads(extract_payload(jwt, config.security.APP_ENCRYPTION_KEY))[
                 JWE_PAYLOAD_SCOPES
-            ]
-            == []
+            ] is None
         )
 
     def test_get_access_token(self, db, url, api_client):
@@ -437,7 +436,7 @@ class TestAcquireAccessToken:
             json.loads(extract_payload(jwt, config.security.APP_ENCRYPTION_KEY))[
                 JWE_PAYLOAD_SCOPES
             ]
-            == None
+            == []
         )
 
         new_client.delete(db)
