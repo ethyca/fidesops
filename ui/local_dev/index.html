@@ -1338,6 +1338,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#backend-deployment" class="md-nav__link">
+    Backend deployment
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1376,6 +1383,17 @@ variable. The best way to do this is by creating a <code>.env.local</code> file,
 will automatically pick up:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">echo</span> <span class="nv">NEXTAUTH_SECRET</span><span class="o">=</span><span class="sb">`</span>openssl rand -base64 <span class="m">32</span><span class="sb">`</span> &gt;&gt; .env.local
 </code></pre></div></td></tr></table></div>
+<h2 id="backend-deployment">Backend deployment</h2>
+<p>Fidesops automatically serves a version of the UI when running <code>make server</code>. </p>
+<p>To deploy a full version of the UI from a backend, run the following from the root fidesops directory:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>    <span class="nb">cd</span> clients/admin-ui
+    npm install
+    npm run prod-export
+</code></pre></div></td></tr></table></div>
+<p>This will build and place the Admin UI files into a location accessible by backend fidesops deployments.</p>
+<p>To test the UI, run <code>make server</code> from the root directory, and visit <code>http://0.0.0.0:8080/static/index.html</code>.</p>
 
               
             </article>
