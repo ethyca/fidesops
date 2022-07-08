@@ -89,12 +89,6 @@ def create_drp_privacy_request(
     )
 
     try:
-        privacy_request: PrivacyRequest = PrivacyRequest.create(
-            db=db, data=privacy_request_kwargs
-        )
-
-        logger.info(f"Decrypting identity for DRP privacy request {privacy_request.id}")
-
         decrypted_identity: DrpIdentity = DrpIdentity(
             **jwt.decode(data.identity, jwt_key, algorithms=["HS256"])
         )
@@ -102,6 +96,21 @@ def create_drp_privacy_request(
         mapped_identity: PrivacyRequestIdentity = DrpFidesopsMapper.map_identity(
             drp_identity=decrypted_identity
         )
+
+        if mapped_identity.email:
+            privacy_request_kwargs["identity_email"] = mapped_identity.email
+
+        if mapped_identity.phone_number:
+            privacy_request_kwargs[
+                "identity_phone_number"
+            ] = mapped_identity.phone_number
+
+        privacy_request: PrivacyRequest = PrivacyRequest.create(
+            db=db,
+            data=privacy_request_kwargs,
+        )
+
+        logger.info(f"Decrypting identity for DRP privacy request {privacy_request.id}")
 
         cache_data(privacy_request, policy, mapped_identity, None, data)
 
