@@ -116,7 +116,8 @@ def test_intake_onetrust_requests_success(
         field="external_id",
         value=mock_subtask_1.subTaskId,
     )
-    assert pr.identity_email == TEST_EMAIL
+    persisted_identity = pr.get_persisted_identity()
+    assert persisted_identity.email == TEST_EMAIL
     assert pr is not None
     assert finish_processing_mock.called
     # clean up
