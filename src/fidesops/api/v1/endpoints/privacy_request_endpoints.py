@@ -176,6 +176,8 @@ def create_privacy_request(
             if attr is not None:
                 kwargs[field] = attr
 
+        kwargs["provided_identity"] = privacy_request_data.identity.dict()
+
         try:
             privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
 
