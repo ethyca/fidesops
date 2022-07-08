@@ -33,8 +33,12 @@ The types of changes are:
 * Resolve issue with MyPy seeing files in fidesops as missing imports [#719](https://github.com/ethyca/fidesops/pull/719)
 * Fixed `check-migrations` Make command [#806](https://github.com/ethyca/fidesops/pull/806)
 * Fix issue requiring separate install of snowflake-connector-python [#807](https://github.com/ethyca/fidesops/pull/807)
+
+### Docs
+* Backend UI deployment [#827](https://github.com/ethyca/fidesops/pull/827)
 * Fix publish_docs CI action [#818](https://github.com/ethyca/fidesops/pull/818)
 * Bump fideslib to handle base64 encoded password [#820](https://github.com/ethyca/fidesops/pull/820)
+* Stop masking uvicorn logs by default [#831](https://github.com/ethyca/fidesops/pull/831)
 * Fix error when there are no scopes in `ClientDetail` [#830](https://github.com/ethyca/fidesops/pull/830)
 
 ## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
