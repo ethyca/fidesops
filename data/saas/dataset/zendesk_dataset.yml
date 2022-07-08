@@ -455,3 +455,5 @@ dataset:
                     data_categories: [user.derived.identifiable.location]
                     fidesops_meta:
                       data_type: string
+                  - name: custom
+                    data_categories: [system.operations]
