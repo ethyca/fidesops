@@ -544,6 +544,10 @@ class ProvidedIdentityType(EnumType):
 
 
 class ProvidedIdentity(Base):  # pylint: disable=R0904
+    """
+    A table for storing identity fields and values provided at privacy request
+    creation time.
+    """
 
     privacy_request_id = Column(
         String,
@@ -555,9 +559,6 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         backref="provided_identities",
     )  # Which privacy request this identity belongs to
 
-    # Provided PII fields at request creation, stored to facilitate searching by identity in the UIs
-    # In the future these can be moved into a JSON field, but for now since there are only two fields
-    # supported as identities it's simpler for indexing and searching to leave them on the table
     field_name = Column(
         EnumColumn(ProvidedIdentityType),
         index=False,
