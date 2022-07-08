@@ -111,12 +111,15 @@ const UserForm = ({
       router.push(USER_MANAGEMENT_ROUTE);
     }
   };
+  const validationSchema = canChangePassword
+    ? ValidationSchema
+    : ValidationSchema.omit(["password"]);
 
   return (
     <Formik
       onSubmit={handleSubmit}
       initialValues={initialValues ?? defaultInitialValues}
-      validationSchema={ValidationSchema}
+      validationSchema={validationSchema}
     >
       {({ values, setFieldValue }) => (
         <Form>
@@ -198,7 +201,6 @@ const UserForm = ({
                 })}
               </Stack>
             </Stack>
-
             <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
               <Button variant="outline" mr={3} size="sm">
                 Cancel

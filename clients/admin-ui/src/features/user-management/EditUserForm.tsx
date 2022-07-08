@@ -25,8 +25,7 @@ const useUserForm = (profile: User) => {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    // first update the user object
-    const userBody = Object.assign(profile, values);
+    const userBody = { ...profile, ...values };
     return editUser(userBody);
   };
 
