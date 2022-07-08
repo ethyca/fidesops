@@ -3,7 +3,10 @@ import { useRouter } from "next/router";
 import React from "react";
 
 import EditUserForm from "../../../features/user-management/EditUserForm";
-import { useGetUserByIdQuery } from "../../../features/user-management/user-management.slice";
+import {
+  useGetUserByIdQuery,
+  useGetUserPermissionsQuery,
+} from "../../../features/user-management/user-management.slice";
 import UserManagementLayout from "../../../features/user-management/UserManagementLayout";
 
 const Profile = () => {
@@ -16,9 +19,12 @@ const Profile = () => {
   } else {
     profileId = "";
   }
-  const { data: existingUser, isLoading } = useGetUserByIdQuery(profileId);
+  const { data: existingUser, isLoading: isLoadingUser } =
+    useGetUserByIdQuery(profileId);
+  const { data: userPermissions, isLoading: isLoadingPermissions } =
+    useGetUserPermissionsQuery(profileId);
 
-  if (isLoading) {
+  if (isLoadingUser || isLoadingPermissions) {
     return (
       <UserManagementLayout title="Edit User">
         <Spinner />
@@ -26,7 +32,7 @@ const Profile = () => {
     );
   }
 
-  if (existingUser == null) {
+  if (existingUser == null || userPermissions == null) {
     return (
       <UserManagementLayout title="Edit User">
         Could not find profile ID.
@@ -36,7 +42,7 @@ const Profile = () => {
 
   return (
     <UserManagementLayout title="Edit User">
-      <EditUserForm user={existingUser} />
+      <EditUserForm user={existingUser} permissions={userPermissions} />
     </UserManagementLayout>
   );
 };

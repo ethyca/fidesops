@@ -3,24 +3,23 @@ import React from "react";
 import { useSelector } from "react-redux";
 
 import { selectUser } from "../auth";
-import { User } from "./types";
+import { User, UserPermissions } from "./types";
 import {
   useEditUserMutation,
   useGetUserPermissionsQuery,
 } from "./user-management.slice";
 import UserForm, { FormValues } from "./UserForm";
 
-const useUserForm = (profile: User) => {
+const useUserForm = (profile: User, permissions: UserPermissions) => {
   const currentUser = useSelector(selectUser);
   const [editUser] = useEditUserMutation();
-  const { data: profileScopes } = useGetUserPermissionsQuery(profile.id);
 
   const initialValues = {
     username: profile.username ?? "",
     first_name: profile.first_name ?? "",
     last_name: profile.last_name ?? "",
     password: profile.password ?? "",
-    scopes: profileScopes?.scopes ?? [],
+    scopes: permissions.scopes ?? [],
     id: profile.id,
   };
 
@@ -30,6 +29,7 @@ const useUserForm = (profile: User) => {
   };
 
   const isOwnProfile = currentUser ? currentUser.id === profile.id : false;
+
   let canUpdateUser = false;
   const { data: userPermissions } = useGetUserPermissionsQuery(
     currentUser?.id ?? ""
@@ -52,10 +52,11 @@ const useUserForm = (profile: User) => {
 
 interface Props {
   user: User;
+  permissions: UserPermissions;
 }
-const EditUserForm = ({ user }: Props) => {
+const EditUserForm = ({ user, permissions }: Props) => {
   const { isOwnProfile, handleSubmit, canUpdateUser, initialValues } =
-    useUserForm(user);
+    useUserForm(user, permissions);
 
   return (
     <div>
