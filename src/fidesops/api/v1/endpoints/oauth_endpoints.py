@@ -76,6 +76,7 @@ async def acquire_access_token(
     else:
         raise AuthenticationFailure(detail="Authentication Failure")
 
+    # scopes param is only used if client is root client, otherwise we use the client's associated scopes
     client_detail = ClientDetail.get(
         db, object_id=client_id, config=config, scopes=SCOPE_REGISTRY
     )
