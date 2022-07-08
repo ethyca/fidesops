@@ -152,6 +152,9 @@ class OneTrustService:
             "client_id": onetrust_policy.client_id,
             "external_id": subtask_id,
         }
+        if identity.email:
+            kwargs["identity_email"] = identity.email
+
         privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
         privacy_request.cache_identity(identity)
         try:
