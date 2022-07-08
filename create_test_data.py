@@ -186,6 +186,8 @@ def create_test_data(db: orm.Session) -> FidesUser:
                     "origin": f"https://example.com/{status.value}/",
                     "policy_id": policy.id,
                     "client_id": policy.client_id,
+                    "identity_email": "test@example.com",
+                    "identity_phone_number": "+1 234 567 8910",
                 },
             )
 
