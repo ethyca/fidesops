@@ -5,6 +5,13 @@ from datetime import datetime
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional
 
+from celery.result import AsyncResult
+from fideslib.db.base import Base
+from fideslib.db.base_class import FidesBase
+from fideslib.models.audit_log import AuditLog
+from fideslib.models.client import ClientDetail
+from fideslib.models.fides_user import FidesUser
+from fideslib.oauth.jwt import generate_jwe
 from pydantic import root_validator
 from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as EnumColumn
@@ -15,11 +22,8 @@ from sqlalchemy.orm import Session, backref, relationship
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.common_exceptions import PrivacyRequestPaused
-from fidesops.db.base_class import Base, FidesopsBase
+from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
-from fidesops.models.audit_log import AuditLog
-from fidesops.models.client import ClientDetail
-from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.policy import (
     ActionType,
     PausedStep,
@@ -37,9 +41,11 @@ from fidesops.schemas.external_https import (
 )
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.tasks import celery_app
 from fidesops.util.cache import (
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
+    get_async_task_tracking_cache_key,
     get_cache,
     get_drp_request_body_cache_key,
     get_encryption_cache_key,
@@ -47,7 +53,6 @@ from fidesops.util.cache import (
     get_masking_secret_cache_key,
 )
 from fidesops.util.collection_util import Row
-from fidesops.util.oauth_util import generate_jwe
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +71,7 @@ class ManualAction(BaseSchema):
 
     @root_validator
     @classmethod
-    def get_or_update_details(
+    def get_or_update_details(  # type: ignore
         cls: BaseSchema, values: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Validate that 'get' or 'update' details are supplied."""
@@ -98,6 +103,7 @@ class PrivacyRequestStatus(str, EnumType):
     in_processing = "in_processing"
     complete = "complete"
     paused = "paused"
+    canceled = "canceled"
     error = "error"
 
 
@@ -108,7 +114,7 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
         scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
         iat=datetime.now().isoformat(),
     )
-    return generate_jwe(json.dumps(jwe.dict()))
+    return generate_jwe(json.dumps(jwe.dict()), config.security.APP_ENCRYPTION_KEY)
 
 
 class PrivacyRequest(Base):  # pylint: disable=R0904
@@ -134,7 +140,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     # Who approved/denied the request
     reviewed_by = Column(
         String,
-        ForeignKey(FidesopsUser.id_field_path, ondelete="SET NULL"),
+        ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
         nullable=True,
     )
     client_id = Column(
@@ -155,6 +161,9 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         Policy,
         backref="privacy_requests",
     )
+
+    cancel_reason = Column(String(200))
+    canceled_at = Column(DateTime(timezone=True), nullable=True)
 
     # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.
@@ -177,12 +186,12 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     )
 
     reviewer = relationship(
-        FidesopsUser, backref=backref("privacy_request", passive_deletes=True)
+        FidesUser, backref=backref("privacy_request", passive_deletes=True)
     )
     paused_at = Column(DateTime(timezone=True), nullable=True)
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
+    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
         """
         Check whether this object has been passed a `requested_at` value. Default to
         the current datetime if not.
@@ -212,6 +221,26 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                     get_identity_cache_key(self.id, key),
                     value,
                 )
+
+    def cache_task_id(self, task_id: str) -> None:
+        """Sets a task_id for this privacy request's asynchronous execution."""
+        cache: FidesopsRedis = get_cache()
+        cache.set(
+            get_async_task_tracking_cache_key(self.id),
+            task_id,
+        )
+
+    def get_cached_task_id(self) -> Optional[str]:
+        """Gets the cached task ID for this privacy request."""
+        cache: FidesopsRedis = get_cache()
+        task_id = cache.get(get_async_task_tracking_cache_key(self.id))
+        return task_id
+
+    def get_async_execution_task(self) -> Optional[AsyncResult]:
+        """Returns a task reflecting the state of this privacy request's asynchronous execution."""
+        task_id = self.get_cached_task_id()
+        res: AsyncResult = AsyncResult(task_id)
+        return res
 
     def cache_drp_request_body(self, drp_request_body: DrpPrivacyRequestCreate) -> None:
         """Sets the identity's values at their specific locations in the Fidesops app cache"""
@@ -361,7 +390,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         """
         cache: FidesopsRedis = get_cache()
         prefix = f"MANUAL_MASK__{self.id}__{collection.value}"
-        value_dict: Optional[Dict[str, int]] = cache.get_encoded_objects_by_prefix(
+        value_dict: Optional[Dict[str, int]] = cache.get_encoded_objects_by_prefix(  # type: ignore
             prefix
         )
         return list(value_dict.values())[0] if value_dict else None
@@ -376,10 +405,10 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         # temp fix for circular dependency
         from fidesops.service.connectors import HTTPSConnector, get_connector
 
-        https_connector: HTTPSConnector = get_connector(webhook.connection_config)
+        https_connector: HTTPSConnector = get_connector(webhook.connection_config)  # type: ignore
         request_body = SecondPartyRequestFormat(
             privacy_request_id=self.id,
-            direction=webhook.direction.value,
+            direction=webhook.direction.value,  # type: ignore
             callback_type=webhook.prefix,
             identity=self.get_cached_identity_data(),
         )
@@ -394,7 +423,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             }
 
         logger.info(f"Calling webhook {webhook.key} for privacy_request {self.id}")
-        response: Optional[SecondPartyResponseFormat] = https_connector.execute(
+        response: Optional[SecondPartyResponseFormat] = https_connector.execute(  # type: ignore
             request_body.dict(),
             response_expected=response_expected,
             additional_headers=headers,
@@ -402,7 +431,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         if not response:
             return
 
-        response_body = SecondPartyResponseFormat(**response)
+        response_body = SecondPartyResponseFormat(**response)  # type: ignore
 
         # Cache any new identities
         if response_body.derived_identity and any(
@@ -438,6 +467,20 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                 "paused_at": datetime.utcnow(),
             },
         )
+
+    def cancel_processing(self, db: Session, cancel_reason: Optional[str]) -> None:
+        """Cancels a privacy request.  Currently should only cancel 'pending' tasks"""
+        if self.canceled_at is None:
+            self.status = PrivacyRequestStatus.canceled
+            self.cancel_reason = cancel_reason
+            self.canceled_at = datetime.utcnow()
+            self.save(db)
+
+            task_id = self.get_cached_task_id()
+            if task_id:
+                logger.info(f"Revoking task {task_id} for request {self.id}")
+                # Only revokes if execution is not already in progress
+                celery_app.control.revoke(task_id, terminate=False)
 
     def error_processing(self, db: Session) -> None:
         """Mark privacy request as errored, and note time processing was finished"""

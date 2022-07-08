@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "../../app/store";
-import { BASE_API_URN } from "../../constants";
+import { BASE_API_URN, BASE_URL } from "../../constants";
 import { selectToken } from "../auth";
 import { addCommonHeaders } from "../common/CommonHeaders";
 import {
@@ -37,7 +37,7 @@ export function mapFiltersToSearchParams({
 
   return {
     include_identities: "true",
-    ...(status ? { status } : {}),
+    ...(status && status.length > 0 ? { status: status.join("&status=") } : {}),
     ...(id ? { request_id: id } : {}),
     ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
     ...(toISO ? { created_lt: toISO.toISOString() } : {}),
@@ -48,13 +48,14 @@ export function mapFiltersToSearchParams({
 }
 
 // Subject requests API
-export const privacyRequestApi: any = createApi({
+export const privacyRequestApi = createApi({
   reducerPath: "privacyRequestApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: BASE_API_URN,
+    baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const token: string | null = selectToken(getState() as RootState);
-      return addCommonHeaders(headers, token);
+      addCommonHeaders(headers, token);
+      return headers;
     },
   }),
   tagTypes: ["Request"],
@@ -64,8 +65,9 @@ export const privacyRequestApi: any = createApi({
       Partial<PrivacyRequestParams>
     >({
       query: (filters) => ({
-        url: `privacy-request`,
-        params: mapFiltersToSearchParams(filters),
+        url: `privacy-request?${decodeURIComponent(
+          new URLSearchParams(mapFiltersToSearchParams(filters)).toString()
+        )}`,
       }),
       providesTags: () => ["Request"],
     }),
@@ -149,7 +151,7 @@ export const requestCSVDownload = async ({
 // Subject requests state (filters, etc.)
 interface SubjectRequestsState {
   revealPII: boolean;
-  status?: PrivacyRequestStatus;
+  status?: PrivacyRequestStatus[];
   id: string;
   from: string;
   to: string;
@@ -175,7 +177,10 @@ export const subjectRequestsSlice = createSlice({
       ...state,
       revealPII: action.payload,
     }),
-    setRequestStatus: (state, action: PayloadAction<PrivacyRequestStatus>) => ({
+    setRequestStatus: (
+      state,
+      action: PayloadAction<PrivacyRequestStatus[]>
+    ) => ({
       ...state,
       page: initialState.page,
       status: action.payload,

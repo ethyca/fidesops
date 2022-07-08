@@ -45,6 +45,8 @@ nav:
       - Overview: ui/overview.md
       - Privacy Center: ui/privacy_center.md
       - Admin UI: 
+        - Subject Requests: ui/subject_requests.md
+        - Managing Datastores: ui/datastores.md
         - User Management: ui/user_management.md
   - Deployment Guide: deployment.md
   - Glossary: glossary.md
@@ -54,6 +56,7 @@ nav:
       - Contributing Details: development/contributing_details.md
       - Code Style: development/code_style.md
       - Documentation: development/documentation.md
+      - Fideslog Analytics: development/fideslog.md
       - Testing: development/testing.md
       - Pull Requests: development/pull_requests.md
       - Releases: development/releases.md

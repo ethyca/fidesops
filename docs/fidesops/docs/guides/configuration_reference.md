@@ -40,8 +40,10 @@ The `fidesops.toml` file should specify the following variables:
 | Redis Variables |---|---|---|---|---|
 | `HOST` | `FIDESOPS__REDIS__HOST` | string | redis.internal | N/A | The networking address for the Fidesops application Redis cache |
 | `PORT` | `FIDESOPS__REDIS__PORT` | int | 6379 | 6379 | The port at which the Fidesops application cache will be accessible |
+| `USER` | `FIDESOPS__REDIS__USER` | string | testuser | N/A | The user with which to login to the Redis cache |
 | `PASSWORD` | `FIDESOPS__REDIS__PASSWORD` | string | anotherpassword | N/A | The password with which to login to the Fidesops application cache |
-| `DB_INDEX` | `FIDESOPS__REDIS__DB_INDEX` | int | 0 | 0 | The Fidesops application will use this index in the Redis cache to cache data |
+| `DB_INDEX` | `FIDESOPS__REDIS__DB_INDEX` | int | 0 | N/A | The Fidesops application will use this index in the Redis cache to cache data |
+| `CONNECTION_URL` | `FIDESOPS__REDIS__CONNECTION_URL` | string | redis://:testpassword@redis:6379/0 | N/A | If not specified this URL is automatically assembled from the `HOST`, `PORT`, `PASSWORD` and `DB_INDEX` specified above |
 | `DEFAULT_TTL_SECONDS` | `FIDESOPS__REDIS__DEFAULT_TTL_SECONDS` | int | 3600 | 604800 | The number of seconds for which data will live in Redis before automatically expiring |
 | `ENABLED` | `FIDESOPS__REDIS__ENABLED` | bool | True | True | Whether the application's redis cache should be enabled. Only set to false for certain narrow uses of the application that do not require a backing redis cache. |
 | Security Variables |---|---|---|---|---|
@@ -58,6 +60,9 @@ The `fidesops.toml` file should specify the following variables:
 |`TASK_RETRY_BACKOFF` | `FIDESOPS__EXECUTION__TASK_RETRY_BACKOFF` | int | 2 | 1 | The backoff factor for retries, to space out repeated retries.
 |`REQUIRE_MANUAL_REQUEST_APPROVAL` | `FIDESOPS__EXECUTION__REQUIRE_MANUAL_REQUEST_APPROVAL` | bool | False | False | Whether privacy requests require explicit approval to execute
 |`MASKING_STRICT` | `FIDESOPS__EXECUTION__MASKING_STRICT` | bool | True | True | If MASKING_STRICT is True, we only use "update" requests to mask data. (For third-party integrations, you should define an `update` endpoint to use.)  If MASKING_STRICT is False, you are allowing fidesops to use any defined DELETE or GDPR DELETE endpoints to remove PII. In this case, you should define `delete` or `data_protection_request` endpoints for your third-party integrations.  Note that setting MASKING_STRICT to False means that data may be deleted beyond the specific data categories that you've configured in your Policy.
+|`CELERY_BROKER_URL` | `FIDESOPS__EXECUTION__CELERY_BROKER_URL` | str | redis://:testpassword@redis:6379/1 | N/A | The datastore to maintain ordered queues of tasks.
+|`CELERY_RESULT_BACKEND` | `FIDESOPS__EXECUTION__RESULT_BACKEND` | str | redis://:testpassword@redis:6379/1 | N/A | The datastore to put results from asynchronously processed tasks.
+|`WORKER_ENABLED` | `FIDESOPS__EXECUTION__WORKER_ENABLED` | bool | True | True | Whether Fidesops is running with a dedicated worker to process privacy requests asynchronously.
 |---|---|---|---|---|---|
 |`ANALYTICS_OPT_OUT` | `FIDESOPS__USER__ANALYTICS_OPT_OUT` | bool | False | False | Opt out of sending anonymous usage data to Ethyca to improve the product experience
 | Admin UI Variables|---|---|---|---|---|
@@ -98,6 +103,10 @@ TASK_RETRY_DELAY=20
 TASK_RETRY_BACKOFF=2
 REQUIRE_MANUAL_REQUEST_APPROVAL=true
 MASKING_STRICT=true
+CELERY_BROKER_URL="redis://:testpassword@redis:6379/1"
+CELERY_RESULT_BACKEND="redis://:testpassword@redis:6379/1"
+WORKER_ENABLED=true
+
 
 [root_user]
 ANALYTICS_OPT_OUT=false
@@ -120,7 +129,7 @@ Please note: The configuration is case-sensitive, so the variables must be speci
 | `TESTING` | False | This variable does not need to be set - Pytest will set it to True when running unit tests, so we run against the test database. |
 
 
-## - Reporting a running application's configuration
+## Reporting a running application's configuration
 
 You can view the currently running configuration of a Fidesops application with the following request:
 

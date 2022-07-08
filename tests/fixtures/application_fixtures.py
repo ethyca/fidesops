@@ -9,19 +9,19 @@ import pytest
 import yaml
 from faker import Faker
 from fideslib.core.config import load_file, load_toml
+from fideslib.models.client import ClientDetail
+from fideslib.models.fides_user import FidesUser
+from fideslib.models.fides_user_permissions import FidesUserPermissions
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
-from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.fidesops_user import FidesopsUser
-from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.models.policy import (
     ActionType,
     Policy,
@@ -45,8 +45,6 @@ from fidesops.service.masking.strategy.masking_strategy_nullify import (
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE_STRATEGY_NAME,
 )
-from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
-from fidesops.util.cache import FidesopsRedis
 from fidesops.util.data_category import DataCategory
 
 logging.getLogger("faker").setLevel(logging.ERROR)
@@ -802,6 +800,19 @@ def privacy_request_status_pending(db: Session, policy: Policy) -> PrivacyReques
 
 
 @pytest.fixture(scope="function")
+def privacy_request_status_canceled(db: Session, policy: Policy) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+        PrivacyRequestStatus.canceled,
+    )
+    privacy_request.started_processing_at = None
+    privacy_request.save(db)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_request_with_drp_action(
     db: Session, policy_drp_action: Policy
 ) -> PrivacyRequest:
@@ -835,7 +846,7 @@ def succeeded_privacy_request(cache, db: Session, policy: Policy) -> PrivacyRequ
 
 @pytest.fixture(scope="function")
 def user(db: Session):
-    user = FidesopsUser.create(
+    user = FidesUser.create(
         db=db,
         data={
             "username": "test_fidesops_user",
@@ -849,7 +860,7 @@ def user(db: Session):
         user_id=user.id,
     )
 
-    FidesopsUserPermissions.create(
+    FidesUserPermissions.create(
         db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
     )
 
@@ -1017,17 +1028,6 @@ def example_invalid_yaml_dataset() -> str:
     return load_dataset_as_string(example_filename)
 
 
-@pytest.fixture
-def privacy_request_runner(
-    cache: FidesopsRedis,
-    privacy_request: PrivacyRequest,
-) -> Generator:
-    yield PrivacyRequestRunner(
-        cache=cache,
-        privacy_request=privacy_request,
-    )
-
-
 @pytest.fixture(scope="function")
 def sample_data():
     return {
@@ -1095,9 +1095,9 @@ def sample_data():
 def application_user(
     db,
     oauth_client,
-) -> FidesopsUser:
+) -> FidesUser:
     unique_username = f"user-{uuid4()}"
-    user = FidesopsUser.create(
+    user = FidesUser.create(
         db=db,
         data={
             "username": unique_username,

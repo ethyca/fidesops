@@ -61,6 +61,9 @@ POLICY_POST_WEBHOOK_DETAIL = (
     "/policy/{policy_key}/webhook/post_execution/{post_webhook_key}"
 )
 
+# Connection Type URLs
+CONNECTION_TYPES = "/connection_type"
+CONNECTION_TYPE_SECRETS = "/connection_type/{connection_type}/secret"
 
 # Connection Configurations URLs
 CONNECTIONS = "/connection"
@@ -101,3 +104,4 @@ HEALTH = "/health"
 DRP_EXERCISE = "/drp/exercise"
 DRP_STATUS = "/drp/status"
 DRP_DATA_RIGHTS = "/drp/data-rights"
+DRP_REVOKE = "/drp/revoke"

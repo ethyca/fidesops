@@ -5,18 +5,18 @@ import pydash
 import pytest
 import requests
 from fideslib.core.config import load_toml
+from fideslib.db import session
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from sqlalchemy.orm import Session
 
-from fidesops.db import session
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
-from tests.fixtures.saas_example_fixtures import load_config
 
 saas_config = load_toml(["saas_config.toml"])
 
@@ -104,7 +104,7 @@ def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Ge
 
     stripe_secrets = stripe_connection_config.secrets
 
-    base_url = f"https://{stripe_secrets['host']}"
+    base_url = f"https://{stripe_secrets['domain']}"
 
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",

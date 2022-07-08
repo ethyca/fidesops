@@ -23,7 +23,7 @@ class SaaSSchema(BaseModel, abc.ABC):
             name for name, attributes in cls.__fields__.items() if attributes.required
         ]
         min_fields_present = all(
-            [values.get(component) for component in required_components]
+            values.get(component) for component in required_components
         )
         if not min_fields_present:
             raise ValueError(
@@ -58,8 +58,11 @@ class SaaSSchemaFactory:
                 if connector_param.default_value
                 else (str, ...)
             )
-        return create_model(
+        SaaSSchema.__doc__ = f"{str(self.saas_config.type).capitalize()} secrets schema"  # Dynamically override the docstring
+        model: Type[SaaSSchema] = create_model(
             f"{self.saas_config.fides_key}_schema",
             **field_definitions,
             __base__=SaaSSchema,
         )
+
+        return model

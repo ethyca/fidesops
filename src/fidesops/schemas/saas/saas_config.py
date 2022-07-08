@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Set, Union
 
 from pydantic import BaseModel, Extra, root_validator, validator
@@ -113,8 +114,10 @@ class SaaSRequest(BaseModel):
         before any field validation.
         """
 
-        # delay import to avoid cyclic-dependency error
-        from fidesops.service.pagination.pagination_strategy_factory import get_strategy
+        # delay import to avoid cyclic-dependency error - We still ignore the pylint error
+        from fidesops.service.pagination.pagination_strategy_factory import (  # pylint: disable=R0401
+            get_strategy,
+        )
 
         pagination = values.get("pagination")
         if pagination is not None:
@@ -173,6 +176,21 @@ class ConnectorParam(BaseModel):
     description: Optional[str]
 
 
+class SaaSType(Enum):
+    """
+    Enum to store saas connection type in Fidesops
+    """
+
+    mailchimp = "mailchimp"
+    hubspot = "hubspot"
+    outreach = "outreach"
+    segment = "segment"
+    sentry = "sentry"
+    stripe = "stripe"
+    zendesk = "zendesk"
+    custom = "custom"
+
+
 class SaaSConfig(BaseModel):
     """
     Used to store endpoint and param configurations for a SaaS connector.
@@ -186,6 +204,7 @@ class SaaSConfig(BaseModel):
 
     fides_key: FidesOpsKey
     name: str
+    type: SaaSType
     description: str
     version: str
     connector_params: List[ConnectorParam]
@@ -193,6 +212,11 @@ class SaaSConfig(BaseModel):
     endpoints: List[Endpoint]
     test_request: SaaSRequest
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
+
+    @validator("type", pre=True)
+    def lowercase_saas_type(cls, value: str) -> str:
+        """Enforce lowercase on saas type."""
+        return value.lower()
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:
@@ -238,6 +262,11 @@ class SaaSConfig(BaseModel):
             collections=collections,
             connection_key=self.fides_key,
         )
+
+    class Config:
+        """Populate models with the raw value of enum fields, rather than the enum itself"""
+
+        use_enum_values = True
 
 
 class SaaSConfigValidationDetails(BaseSchema):

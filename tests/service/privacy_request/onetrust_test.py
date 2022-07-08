@@ -2,14 +2,14 @@ from unittest import mock
 from unittest.mock import Mock, call
 
 import pytest
+from fideslib.exceptions import AuthenticationError
+from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import (
-    AuthenticationException,
     PolicyNotFoundException,
     StorageConfigNotFoundException,
 )
-from fidesops.models.client import ClientDetail
 from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.models.storage import StorageConfig
@@ -40,7 +40,7 @@ from fidesops.util.data_category import DataCategory
     "fidesops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
 )
 @mock.patch(
-    "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.run"
+    "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
 )
 def test_intake_onetrust_requests_success(
     finish_processing_mock: Mock,
@@ -133,7 +133,7 @@ def test_intake_onetrust_requests_success(
     "fidesops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
 )
 @mock.patch(
-    "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.run"
+    "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
 )
 def test_intake_onetrust_requests_no_config(
     finish_processing_mock: Mock,
@@ -190,7 +190,7 @@ def test_intake_onetrust_requests_no_config(
     "fidesops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
 )
 @mock.patch(
-    "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.run"
+    "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
 )
 def test_intake_onetrust_requests_no_policy(
     finish_processing_mock: Mock,
@@ -249,7 +249,7 @@ def test_intake_onetrust_requests_no_policy(
     "fidesops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
 )
 @mock.patch(
-    "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.run"
+    "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
 )
 def test_intake_onetrust_requests_auth_fail(
     finish_processing_mock: Mock,
@@ -285,7 +285,7 @@ def test_intake_onetrust_requests_auth_fail(
     mock_subtask_2.subTaskId = "4444"
     mock_get_all_subtasks.side_effect = [[mock_subtask_1], [mock_subtask_2]]
 
-    with pytest.raises(AuthenticationException):
+    with pytest.raises(AuthenticationError):
         OneTrustService.intake_onetrust_requests(storage_config_onetrust.key)
 
     pr = PrivacyRequest.get_by(
@@ -310,7 +310,7 @@ def test_intake_onetrust_requests_auth_fail(
     "fidesops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
 )
 @mock.patch(
-    "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.run"
+    "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
 )
 def test_intake_onetrust_requests_no_fides_tasks(
     finish_processing_mock: Mock,

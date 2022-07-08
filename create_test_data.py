@@ -4,13 +4,20 @@ import string
 from datetime import datetime, timedelta
 from uuid import uuid4
 
+from fideslib.db.session import get_db_session
+from fideslib.models.client import ClientDetail
+from fideslib.models.fides_user import FidesUser
 from sqlalchemy import orm
 
 from fidesops.core.config import config
 from fidesops.db.database import init_db
 from fidesops.db.session import get_db_session
 from fidesops.models.client import ClientDetail
-from fidesops.models.fidesops_user import FidesopsUser
+from fidesops.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.models.storage import ResponseFormat, StorageConfig
@@ -30,15 +37,17 @@ def _create_policy(
     created, policy = Policy.get_or_create(
         db=db,
         data={
-            "name": policy_key,
             "key": policy_key,
-            "client_id": client_id,
         },
     )
 
     if not created:
         # If the Policy is already created, don't create it again
         return policy
+    else:
+        policy.client_id = client_id
+        policy.name = policy_key
+        policy.save(db=db)
 
     rand = string.ascii_lowercase[:5]
     data = {}
@@ -91,7 +100,50 @@ def _create_policy(
     return policy
 
 
-def create_test_data(db: orm.Session) -> FidesopsUser:
+def _create_connection_configs(db: orm.Session) -> None:
+    ConnectionConfig.get_or_create(
+        db=db,
+        data={
+            "key": "ci_create_test_data_datastore_connection",
+            "name": "seed datastore connection",
+            "connection_type": ConnectionType.postgres,
+            "access": AccessLevel.read,
+        },
+    )
+    ConnectionConfig.get_or_create(
+        db=db,
+        data={
+            "key": "ci_create_test_data_datastore_connection_disabled",
+            "name": "seed datastore connection disabled",
+            "connection_type": ConnectionType.mysql,
+            "access": AccessLevel.read,
+            "disabled": True,
+            "disabled_at": datetime.utcnow(),
+        },
+    )
+    ConnectionConfig.get_or_create(
+        db=db,
+        data={
+            "key": "ci_create_test_data_saas_connection",
+            "name": "seed saas connection",
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+        },
+    )
+    ConnectionConfig.get_or_create(
+        db=db,
+        data={
+            "key": "ci_create_test_data_saas_connection_disabled",
+            "name": "seed saas connection disabled",
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "disabled": True,
+            "disabled_at": datetime.utcnow(),
+        },
+    )
+
+
+def create_test_data(db: orm.Session) -> FidesUser:
     """Script to create test data for the Admin UI"""
     print("Seeding database with privacy requests")
     _, client = ClientDetail.get_or_create(
@@ -137,11 +189,13 @@ def create_test_data(db: orm.Session) -> FidesopsUser:
                 },
             )
 
+    print("Adding connection configs")
+    _create_connection_configs(db)
     print("Data seeding complete!")
 
 
 if __name__ == "__main__":
     init_db(config.database.SQLALCHEMY_DATABASE_URI)
-    session_local = get_db_session()
+    session_local = get_db_session(config)
     with session_local() as session:
         create_test_data(session)

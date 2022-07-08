@@ -17,6 +17,7 @@ import { useRouter } from "next/router";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import { INDEX_ROUTE } from "../constants";
 import { login, selectToken, useLoginMutation } from "../features/auth";
 import Head from "../features/common/Head";
 import Image from "../features/common/Image";
@@ -70,7 +71,7 @@ const useLogin = () => {
   };
 
   if (token) {
-    router.push("/");
+    router.push(INDEX_ROUTE);
   }
 
   return {
@@ -121,7 +122,7 @@ const Login: NextPage = () => {
                   colorScheme="primary"
                   display={["none", "none", "block"]}
                 >
-                  Sign into your account
+                  Sign in to your account
                 </Heading>
                 <Box
                   bg="white"
@@ -147,7 +148,7 @@ const Login: NextPage = () => {
                         />
                       </Flex>
                       <Heading fontSize="3xl" colorScheme="primary">
-                        Sign into your account
+                        Sign in to your account
                       </Heading>
                     </Stack>
                     <chakra.form
