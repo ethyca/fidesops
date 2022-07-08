@@ -1,0 +1,82 @@
+saas_config:
+    fides_key: logiid_connector_example
+    name: Logiid SaaS Config
+    description: A sample schema representing the Logiid connector for Fidesops
+    version: 0.0.1
+  
+    connector_params:
+    - name: domain
+    - name: client_id
+    - name: client_secret
+    - name: access_token
+  
+    # client_config:
+    # protocol: https
+    # host: <domain>
+    # authentication:
+    #   strategy: oauth2
+    #   configuration:
+    #     authorization_request:
+    #       method: GET
+    #       path: /auth/authorize
+    #       query_params:
+    #         - name: client_id
+    #           value: <client_id>
+    #         - name: redirect_uri
+    #           value: <redirect_uri>
+    #     token_request:
+    #       method: POST
+    #       path: /identity/oauth2/token
+    #       headers:
+    #         - name: Content-Type
+    #           value: application/x-www-form-urlencoded
+    #       query_params:
+    #         - name: client_id
+    #           value: <client_id>
+    #         - name: client_secret
+    #           value: <client_secret>
+    #         - name: grant_type
+    #           value: authorization_code
+    #         - name: redirect_uri
+    #           value: <redirect_uri>
+    #     refresh_request:
+    #       method: POST
+    #       path: /refresh
+    #       headers:
+    #         - name: Content-Type
+    #           value: application/x-www-form-urlencoded
+    #       query_params:
+    #         - name: client_id
+    #           value: <client_id>
+    #         - name: redirect_uri
+    #           value: <redirect_uri>
+    #         - name: grant_type
+    #           value: refresh_token
+    #         - name: refresh_token
+    #           value: <refresh_token>
+
+    client_config:
+      protocol: https
+      host: <domain>
+      authentication:
+        strategy: bearer
+        configuration:
+          token: <access_token>
+
+    test_request:
+      method: GET
+      path: /health
+
+    endpoints:
+      - name: users
+        requests:
+          read:
+            method: GET
+            path: /identity/search
+            query_params:
+              - name: email
+                value: <email>
+            param_values:
+              - name: email
+                identity: email
+            data_path: users

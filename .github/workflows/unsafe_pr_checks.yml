@@ -44,6 +44,11 @@ jobs:
           HUBSPOT_DOMAIN: ${{ secrets.HUBSPOT_DOMAIN }}
           HUBSPOT_HAPIKEY: ${{ secrets.HUBSPOT_HAPIKEY }}
           HUBSPOT_IDENTITY_EMAIL: ${{ secrets.HUBSPOT_IDENTITY_EMAIL }}
+          LOGIID_DOMAIN: ${{ secrets.LOGIID_DOMAIN }}
+          LOGIID_CLIENT_ID: ${{ secrets.LOGIID_CLIENT_ID }}
+          LOGIID_CLIENT_SECRET: ${{ secrets.LOGIID_CLIENT_SECRET }}
+          LOGIID_ACCESS_TOKEN: ${{ secrets.LOGIID_ACCESS_TOKEN }}
+          LOGIID_IDENTITY_EMAIL: ${{ secrets.LOGIID_IDENTITY_EMAIL }}
           SEGMENT_DOMAIN: ${{ secrets.SEGMENT_DOMAIN }}
           SEGMENT_API_DOMAIN: ${{ secrets.SEGMENT_API_DOMAIN }}
           SEGMENT_USER_TOKEN: ${{ secrets.SEGMENT_USER_TOKEN }}

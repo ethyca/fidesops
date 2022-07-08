@@ -1,0 +1,63 @@
+dataset:
+  - fides_key: logiid_connector_example
+    name: Logiid Example Dataset
+    description: A sample dataset representing the Logiid connector for Fidesops
+    collections:
+      - name: users
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: password
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: salt
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: algorithm
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: parameters
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: email-status
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: first-name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: last-name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: parameters
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: country
+            data_categories: [user.provided.identifiable.contact.country]
+            fidesops_meta:
+              data_type: string
+          - name: language
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: <additional-claims>
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: status
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string

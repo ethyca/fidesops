@@ -66,3 +66,10 @@ domain = ""
 username = ""
 api_key = ""
 identity_email = ""
+
+[logiid]
+domain = ""
+client_id = ""
+client_secret = ""
+access_token = ""
+identity_email = ""
