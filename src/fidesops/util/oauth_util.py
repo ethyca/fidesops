@@ -21,7 +21,6 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND
 
 from fidesops.api.deps import get_db
-from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fidesops.core.config import config
 from fidesops.models.policy import PolicyPreWebhook
@@ -140,7 +139,7 @@ async def verify_oauth_client(
         raise AuthorizationError(detail="Not Authorized for this action")
 
     client = ClientDetail.get(
-        db, object_id=client_id, config=config, scopes=SCOPE_REGISTRY
+        db, object_id=client_id, config=config, scopes=security_scopes.scopes
     )
 
     if not client:
