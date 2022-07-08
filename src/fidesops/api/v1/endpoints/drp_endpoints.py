@@ -97,17 +97,13 @@ def create_drp_privacy_request(
             drp_identity=decrypted_identity
         )
 
-        if mapped_identity.email:
-            privacy_request_kwargs["identity_email"] = mapped_identity.email
-
-        if mapped_identity.phone_number:
-            privacy_request_kwargs[
-                "identity_phone_number"
-            ] = mapped_identity.phone_number
-
         privacy_request: PrivacyRequest = PrivacyRequest.create(
             db=db,
             data=privacy_request_kwargs,
+        )
+        privacy_request.persist_identity(
+            db=db,
+            identity=mapped_identity,
         )
 
         logger.info(f"Decrypting identity for DRP privacy request {privacy_request.id}")
