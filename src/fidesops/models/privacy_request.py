@@ -190,6 +190,22 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     )
     paused_at = Column(DateTime(timezone=True), nullable=True)
 
+    # Provided PII fields at request creation, stored to facilitate searching by identity in the UIs
+    # In the future these can be moved into a JSON field, but for now since there are only two fields
+    # supported as identities it's simpler for indexing and searching to leave them on the table
+    identity_email = Column(
+        String,
+        index=True,
+        unique=False,
+        nullable=True,
+    )
+    identity_phone_number = Column(
+        String,
+        index=True,
+        unique=False,
+        nullable=True,
+    )
+
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
         """
