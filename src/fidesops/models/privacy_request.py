@@ -17,12 +17,17 @@ from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.mutable import MutableList
+from sqlalchemy.ext.mutable import MutableList, MutableDict
 from sqlalchemy.orm import Session, backref, relationship
+from sqlalchemy_utils.types.encrypted.encrypted_type import (
+    AesGcmEngine,
+    StringEncryptedType,
+)
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.core.config import config
+from fidesops.db.base_class import JSONTypeOverride
 from fidesops.graph.config import CollectionAddress
 from fidesops.models.policy import (
     ActionType,
@@ -189,6 +194,21 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         FidesUser, backref=backref("privacy_request", passive_deletes=True)
     )
     paused_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Provided PII fields at request creation, stored to facilitate searching by identity in the UIs
+    # In the future these can be moved into a JSON field, but for now since there are only two fields
+    # supported as identities it's simpler for indexing and searching to leave them on the table
+    provided_identity = Column(
+        MutableDict.as_mutable(
+            StringEncryptedType(
+                JSONTypeOverride,
+                config.security.APP_ENCRYPTION_KEY,
+                AesGcmEngine,
+                "pkcs5",
+            )
+        ),
+        nullable=True,
+    )  # Type bytea in the db
 
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
