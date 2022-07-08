@@ -176,14 +176,11 @@ def create_privacy_request(
             if attr is not None:
                 kwargs[field] = attr
 
-        if privacy_request_data.identity.email:
-            kwargs["identity_email"] = privacy_request_data.identity.email
-
-        if privacy_request_data.identity.phone_number:
-            kwargs["identity_phone_number"] = privacy_request_data.identity.phone_number
-
         try:
             privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
+            privacy_request.persist_identity(
+                db=db, identity=privacy_request_data.identity
+            )
 
             cache_data(
                 privacy_request,

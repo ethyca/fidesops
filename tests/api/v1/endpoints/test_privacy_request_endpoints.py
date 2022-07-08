@@ -130,8 +130,9 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        assert pr.identity_email == TEST_EMAIL
-        assert pr.identity_phone_number == TEST_PHONE_NUMBER
+        persisted_identity = pr.get_persisted_identity()
+        assert persisted_identity.email == TEST_EMAIL
+        assert persisted_identity.phone_number == TEST_PHONE_NUMBER
         pr.delete(db=db)
         assert run_access_request_mock.called
 
