@@ -18,7 +18,7 @@ from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.mutable import MutableList, MutableDict
+from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Session, backref, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
