@@ -22,9 +22,11 @@ class DrpFidesopsMapper:
         This class also allows us to implement custom logic to handle "verified" id props.
         """
         fidesops_identity_kwargs: Dict[str, str] = {}
+        email: str = ProvidedIdentityType.email.value
+        phone_number: str = ProvidedIdentityType.phone_number.value
         DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP: Dict[str, str] = {
-            "email": ProvidedIdentityType.email.value,
-            "phone_number": ProvidedIdentityType.phone_number.value,
+            "email": email,
+            "phone_number": phone_number,
         }
         for attr, val in drp_identity.__dict__.items():
             if attr not in DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP:
