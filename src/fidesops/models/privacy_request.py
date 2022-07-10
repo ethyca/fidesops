@@ -592,9 +592,12 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         cls,
         value: str,
         encoding: str = "UTF-8",
+        salt: Optional[str] = None,
     ) -> tuple[str, str]:
         """Utility function to hash a user's password with a generated salt"""
-        salt = generate_salt()
+        if not salt:
+            salt = generate_salt()
+
         hashed_value = hash_with_salt(
             value.encode(encoding),
             salt.encode(encoding),
