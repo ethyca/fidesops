@@ -6,7 +6,7 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional
 
 from celery.result import AsyncResult
-from fideslib.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fideslib.cryptography.cryptographic_util import hash_with_salt
 from fideslib.db.base import Base
 from fideslib.db.base_class import FidesBase
 from fideslib.models.audit_log import AuditLog
