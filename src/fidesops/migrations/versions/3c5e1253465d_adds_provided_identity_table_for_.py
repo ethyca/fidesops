@@ -40,7 +40,6 @@ def upgrade():
             nullable=False,
         ),
         sa.Column("hashed_value", sa.String(), nullable=True),
-        sa.Column("salt", sa.String(), nullable=False),
         sa.Column(
             "encrypted_value",
             sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),

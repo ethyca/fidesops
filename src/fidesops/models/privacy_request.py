@@ -239,7 +239,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         identity_dict: Dict[str, Any] = dict(identity)
         for key, value in identity_dict.items():
             if value is not None:
-                hashed_value, salt = ProvidedIdentity.hash_value(value)
+                hashed_value = ProvidedIdentity.hash_value(value)
                 ProvidedIdentity.create(
                     db=db,
                     data={
@@ -248,7 +248,6 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                         # We don't need to manually encrypt this field, it's done at the ORM level
                         "encrypted_value": {"value": value},
                         "hashed_value": hashed_value,
-                        "salt": salt,
                     },
                 )
 
@@ -570,11 +569,6 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         unique=False,
         nullable=True,
     )  # This field is used as a blind index for exact match searches
-    salt = Column(
-        String,
-        index=False,
-        nullable=False,
-    )
     encrypted_value = Column(
         MutableDict.as_mutable(
             StringEncryptedType(
@@ -592,17 +586,14 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         cls,
         value: str,
         encoding: str = "UTF-8",
-        salt: Optional[str] = None,
     ) -> tuple[str, str]:
         """Utility function to hash a user's password with a generated salt"""
-        if not salt:
-            salt = generate_salt()
-
+        SALT = "a-salt"
         hashed_value = hash_with_salt(
             value.encode(encoding),
-            salt.encode(encoding),
+            SALT.encode(encoding),
         )
-        return hashed_value, salt
+        return hashed_value
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.
