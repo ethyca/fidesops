@@ -5,15 +5,12 @@ import type { RootState } from "../../app/store";
 import { BASE_URL, CONNECTION_ROUTE } from "../../constants";
 import { selectToken } from "../auth";
 import { addCommonHeaders } from "../common/CommonHeaders";
+import { DisabledStatus, SystemType, TestingStatus } from "./constants";
 import {
-  ConnectionType,
   DatastoreConnection,
   DatastoreConnectionParams,
   DatastoreConnectionResponse,
   DatastoreConnectionStatus,
-  DisabledStatus,
-  SystemType,
-  TestingStatus,
 } from "./types";
 
 function mapFiltersToSearchParams({
