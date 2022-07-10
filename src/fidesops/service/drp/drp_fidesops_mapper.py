@@ -1,7 +1,7 @@
 import logging
 from typing import Dict
 
-from fidesops.models.privacy_request import PrivacyRequestStatus
+from fidesops.models.privacy_request import PrivacyRequestStatus, ProvidedIdentityType
 from fidesops.schemas.drp_privacy_request import DrpIdentity
 from fidesops.schemas.privacy_request import PrivacyRequestDRPStatus
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
@@ -23,8 +23,8 @@ class DrpFidesopsMapper:
         """
         fidesops_identity_kwargs: Dict[str, str] = {}
         DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP: Dict[str, str] = {
-            "email": "email",
-            "phone_number": "phone_number",
+            "email": ProvidedIdentityType.email.value,
+            "phone_number": ProvidedIdentityType.phone_number.value,
         }
         for attr, val in drp_identity.__dict__.items():
             if attr not in DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP:
