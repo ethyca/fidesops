@@ -6,12 +6,13 @@ import { capitalize } from "../common/utils";
 import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import {
+  ConnectionType,
   ConnectionTypeImageMap,
   CONNECTOR_IMAGE_PATH,
-  FALLBACK_CONNECTOR_IMAGE_PATH
+  FALLBACK_CONNECTOR_IMAGE_PATH,
 } from "./constants";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
-import { ConnectionType, DatastoreConnection } from "./types";
+import { DatastoreConnection } from "./types";
 
 type TestDataProps = {
   succeeded: boolean | null;
@@ -75,10 +76,18 @@ const useConnectionGridItem = () => {
     return value;
   };
 
-  const getImageSrc = (connectionType: string): string => {
-    const item = [...ConnectionTypeImageMap].find(
-      ([k]) => k.toLowerCase() === connectionType.toLowerCase()
-    );
+  const getImageSrc = (data: DatastoreConnection): string => {
+    const item = [...ConnectionTypeImageMap].find(([k]) => {
+      if (
+        (data.connection_type.toString() !== ConnectionType.SAAS &&
+          data.connection_type.toString() === k) ||
+        (data.connection_type.toString() === ConnectionType.SAAS &&
+          data.saas_config?.type?.toString() === k.toString())
+      ) {
+        return true;
+      }
+      return false;
+    });
     const path = item
       ? CONNECTOR_IMAGE_PATH + item[1]
       : FALLBACK_CONNECTOR_IMAGE_PATH;
@@ -114,7 +123,7 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
         <Image
           boxSize="32px"
           objectFit="cover"
-          src={getImageSrc(connectionData.connection_type)}
+          src={getImageSrc(connectionData)}
           fallbackSrc={FALLBACK_CONNECTOR_IMAGE_PATH}
           alt={connectionData.name}
         />
@@ -140,7 +149,9 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
         />
       </Flex>
       <Text color="gray.600" fontSize="sm" fontWeight="sm" lineHeight="20px">
-        {getConnectorDisplayName(connectionData.connection_type)}
+        {getConnectorDisplayName(
+          connectionData.connection_type as ConnectionType
+        )}
       </Text>
       <Text color="gray.600" fontSize="sm" fontWeight="sm" lineHeight="20px">
         Edited on{" "}
