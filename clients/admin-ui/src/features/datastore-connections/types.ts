@@ -1,6 +1,7 @@
 import {
   AccessLevel,
   ConnectionTestStatus,
+  ConnectionType,
   DisabledStatus,
   SassType,
   SystemType,
