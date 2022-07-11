@@ -14,9 +14,9 @@ _A part of the [greater Fides ecosystem](https://github.com/ethyca/fides)._
 
 ![Fidesops overview](docs/fidesops/docs/img/fidesops-overview-diagram.png "Fidesops overview")
 ## :rocket: Quick Start
-If you're looking for a more detailed introduction to Fidesops, we recommend following [our tutorial here](https://ethyca.github.io/fidesops/tutorial/). 
+If you're looking for a more detailed introduction to fidesops, we recommend following [our tutorial here](https://ethyca.github.io/fidesops/tutorial/). 
 
-Run the quickstart in your terminal to give Fidesops a test drive:
+Run the quickstart in your terminal to give fidesops a test drive:
 
 ```
 Install Docker: https://docs.docker.com/desktop/#download-and-install
@@ -165,13 +165,13 @@ related to "jane@example.com". Then we'll re-run step #3 again to see what data 
 This returns an empty dictionary confirming Jane's fields with data category `user.provided.identifiable` have been removed.
 
 
-You've learned how to use the Fidesops API to connect a database and a final storage location, define policies that describe
+You've learned how to use the fidesops API to connect a database and a final storage location, define policies that describe
 how to handle user data, and execute access and erasure requests.  But there's a lot more to discover,
 so we'd recommend following [the tutorial](https://ethyca.github.io/fidesops/tutorial/) to keep learning.
 
 ### Documentation
 
-For more information on getting started with Fidesops, how to configure and set up Fidesops, and more about the Fides ecosystem of open source projects: 
+For more information on getting started with fidesops, how to configure and set up fidesops, and more about the Fides ecosystem of open source projects: 
 
 - Documentation: https://ethyca.github.io/fidesops/
 - How-to guides: https://ethyca.github.io/fidesops/guides/oauth/
