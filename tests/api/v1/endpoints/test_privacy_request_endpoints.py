@@ -5,7 +5,6 @@ import json
 from datetime import datetime
 from typing import List
 from unittest import mock
-from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 
 import pytest
 from dateutil.parser import parse
@@ -59,6 +58,7 @@ from fidesops.models.privacy_request import (
 from fidesops.schemas.dataset import DryRunDatasetResponse
 from fidesops.schemas.masking.masking_secrets import SecretType
 from fidesops.schemas.policy import PolicyResponse
+from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
