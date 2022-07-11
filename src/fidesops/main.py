@@ -7,6 +7,7 @@ from typing import Callable, Optional
 
 import uvicorn
 from fastapi import FastAPI, Request, Response
+from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
 from fideslib.oauth.api.deps import get_db as lib_get_db
 from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
@@ -15,6 +16,7 @@ from fideslog.sdk.python.event import AnalyticsEvent
 from redis.exceptions import ResponseError
 from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
+from starlette.status import HTTP_404_NOT_FOUND
 
 from fidesops.analytics import (
     accessed_through_local_host,
@@ -149,7 +151,10 @@ if config.admin_ui.ENABLED:
     @app.get("/{catchall:path}", response_class=FileResponse)
     def read_ui_files(request: Request) -> FileResponse:
         """Return requested UI  file or return index.html file if requested file doesn't exist"""
-        path = request.path_params["catchall"]
+        path: str = request.path_params["catchall"]
+        if V1_URL_PREFIX in "/" + path:
+            raise HTTPException(status_code=HTTP_404_NOT_FOUND)
+
         path = path + ".html" if path.find(".") == -1 else path
         file = WEBAPP_DIRECTORY / path
 
