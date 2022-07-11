@@ -27,27 +27,28 @@ The types of changes are:
 * Adds endpoint to get the secrets required for different connectors [#795](https://github.com/ethyca/fidesops/pull/795)
 * Store provided identity data in the privacy request table [#743](https://github.com/ethyca/fidesops/pull/834)
 
+## Changed
+* Changed wording on Admin UI login page [#774](https://github.com/ethyca/fidesops/pull/774)
+* Fixed typos in Admin UI [#774](https://github.com/ethyca/fidesops/pull/774)
+* Update clipboard icon in Admin UI [#838](https://github.com/ethyca/fidesops/pull/838)
+* Stop masking uvicorn logs by default [#831](https://github.com/ethyca/fidesops/pull/831)
+* Bump fideslib to handle base64 encoded password [#820](https://github.com/ethyca/fidesops/pull/820)
+
 ### Developer Experience
 * Replace user authentication routes with fideslib routes [#811](https://github.com/ethyca/fidesops/pull/811)
 * Reduce docker image size [846](https://github.com/ethyca/fidesops/pull/846)
+
+### Docs
+* Backend UI deployment [#827](https://github.com/ethyca/fidesops/pull/827)
+* Fix publish_docs CI action [#818](https://github.com/ethyca/fidesops/pull/818)
+* Reorganize docs and standardize formatting [#858](https://github.com/ethyca/fidesops/pull/858)
 
 ### Fixed
 * Resolve issue with MyPy seeing files in fidesops as missing imports [#719](https://github.com/ethyca/fidesops/pull/719)
 * Fixed `check-migrations` Make command [#806](https://github.com/ethyca/fidesops/pull/806)
 * Fix issue requiring separate install of snowflake-connector-python [#807](https://github.com/ethyca/fidesops/pull/807)
 * [User Management] Create new user gives HTTP 422 Unprocessable Entity exception [#832] (https://github.com/ethyca/fidesops/pull/833)
-
-### Docs
-* Backend UI deployment [#827](https://github.com/ethyca/fidesops/pull/827)
-* Fix publish_docs CI action [#818](https://github.com/ethyca/fidesops/pull/818)
-* Bump fideslib to handle base64 encoded password [#820](https://github.com/ethyca/fidesops/pull/820)
-* Stop masking uvicorn logs by default [#831](https://github.com/ethyca/fidesops/pull/831)
 * Fix error when there are no scopes in `ClientDetail` [#830](https://github.com/ethyca/fidesops/pull/830)
-
-## Changed
-* Changed wording on Admin UI login page [#774](https://github.com/ethyca/fidesops/pull/774)
-* Fixed typos in Admin UI [#774](https://github.com/ethyca/fidesops/pull/774)
-* Update clipboard icon in Admin UI [#838](https://github.com/ethyca/fidesops/pull/838)
 
 
 ## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
