@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 from typing import List
 from unittest import mock
+from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 
 import pytest
 from dateutil.parser import parse
@@ -727,6 +728,31 @@ class TestGetPrivacyRequests:
             url + f"?request_id={new_request_id}", headers=auth_header
         )
         assert response.status_code == status.HTTP_200_OK
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == privacy_request.id
+
+    def test_filter_privacy_requests_by_identity_exact(
+        self,
+        db,
+        api_client,
+        url,
+        generate_auth_header,
+        privacy_request,
+    ):
+        TEST_EMAIL = "test-12345678910@example.com"
+        privacy_request.persist_identity(
+            db=db,
+            identity=PrivacyRequestIdentity(
+                email=TEST_EMAIL,
+            ),
+        )
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            url + f"?identity={TEST_EMAIL}",
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == privacy_request.id
