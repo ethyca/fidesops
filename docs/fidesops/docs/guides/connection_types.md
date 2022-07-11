@@ -20,6 +20,7 @@ database options and third party API services with which fidesops can communicat
         "outreach",
         "postgres",
         "redshift",
+        "salesforce",
         "segment",
         "sentry",
         "snowflake",
