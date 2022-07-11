@@ -17,8 +17,8 @@ from fidesops.api import deps
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.scope_registry import USER_PASSWORD_RESET, USER_UPDATE
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesops.util.api_router import APIRouter
 from fidesops.core.config import config
+from fidesops.util.api_router import APIRouter
 from fidesops.util.oauth_util import get_current_user, verify_oauth_client
 
 logger = logging.getLogger(__name__)
