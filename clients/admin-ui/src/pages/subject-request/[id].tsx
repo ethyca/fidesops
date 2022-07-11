@@ -47,7 +47,7 @@ const SubjectRequestDetails: NextPage = () => {
   if (isLoading || isUninitialized) {
     body = (
       <Center>
-        <Spinner color="secondary.500" size="xl" />
+        <Spinner />
       </Center>
     );
   }

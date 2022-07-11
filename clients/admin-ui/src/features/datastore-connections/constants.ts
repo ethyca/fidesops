@@ -35,6 +35,7 @@ export enum SassType {
   MAILCHIMP = "mailchimp",
   HUB_SPOT = "hubspot",
   OUTREACH = "outreach",
+  SALES_FORCE = "salesforce",
   SEGMENT = "segment",
   SENTRY = "sentry",
   STRIPE = "stripe",
@@ -62,14 +63,25 @@ export const CONNECTOR_IMAGE_PATH = "images/connectors/";
 /**
  * List of connection type image key/value pairs
  */
-export const ConnectionTypeImageMap = new Map<ConnectionType, string>([
-  [ConnectionType.MARIADB, "maria-db.svg"],
-  [ConnectionType.MONGODB, "mongo-db.svg"],
-  [ConnectionType.MSSQL, "sql-server.svg"],
-  [ConnectionType.MYSQL, "my-sql.svg"],
-  [ConnectionType.POSTGRES, "postgre-sql.svg"],
+export const ConnectionTypeImageMap = new Map<
+  ConnectionType | SassType,
+  string
+>([
+  [ConnectionType.MARIADB, "mariadb.svg"],
+  [ConnectionType.MONGODB, "mongodb.svg"],
+  [ConnectionType.MSSQL, "sqlserver.svg"],
+  [ConnectionType.MYSQL, "mysql.svg"], // TODO: Get an updated 32x32 svg image
+  [ConnectionType.POSTGRES, "postgres.svg"],
   [ConnectionType.REDSHIFT, "redshift.svg"],
   [ConnectionType.SNOWFLAKE, "snowflake.svg"],
+  [SassType.HUB_SPOT, "hubspot.svg"],
+  [SassType.MAILCHIMP, "mailchimp.svg"],
+  [SassType.OUTREACH, "outreach.svg"], // TODO: Follow up with Simon to get this svg which does not exist
+  [SassType.SALES_FORCE, "salesforce.svg"],
+  [SassType.SEGMENT, "segment.svg"],
+  [SassType.SENTRY, "sentry.svg"],
+  [SassType.STRIPE, "stripe.svg"],
+  [SassType.ZENDESK, "zendesk.svg"],
 ]);
 
 /**

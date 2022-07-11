@@ -82,7 +82,7 @@ const ConnectionGrid: React.FC = () => {
   if (isUninitialized || isLoading || isFetching) {
     return (
       <Center>
-        <Spinner color="secondary.500" size="xl" />
+        <Spinner />
       </Center>
     );
   }
