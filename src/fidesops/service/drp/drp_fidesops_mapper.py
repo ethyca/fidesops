@@ -25,8 +25,8 @@ class DrpFidesopsMapper:
         DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP: Dict[
             str, ProvidedIdentityType
         ] = {
-            "email": ProvidedIdentityType.email.value,
-            "phone_number": ProvidedIdentityType.phone_number.value,
+            "email": ProvidedIdentityType.email,
+            "phone_number": ProvidedIdentityType.phone_number,
         }
         for attr, val in drp_identity.__dict__.items():
             if attr not in DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP:
@@ -34,7 +34,9 @@ class DrpFidesopsMapper:
                     f"Identity attribute of {attr} is not supported by Fidesops at this time. Continuing to use other identity props, if provided."
                 )
             else:
-                fidesops_prop: str = DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP[attr]
+                fidesops_prop: str = DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP[
+                    attr
+                ].value
                 fidesops_identity_kwargs[fidesops_prop] = val
         return PrivacyRequestIdentity(**fidesops_identity_kwargs)
 
