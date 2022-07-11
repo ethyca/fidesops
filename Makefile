@@ -7,6 +7,9 @@
 REGISTRY := ethyca
 IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
 
+# IMAGE_NAME is webserver rather than fidesops_webserver because commands that don't
+# use docker-compose fail with fidesops_webserver. When left as webserver here both
+# sets of commands work.
 IMAGE_NAME := webserver
 IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
@@ -42,6 +45,9 @@ reset-db:
 
 server: compose-build
 	@docker-compose up
+
+server-with-worker: compose-build
+	@docker-compose -f docker-compose.yml -f docker-compose.worker.yml up
 
 server-no-db: compose-build
 	@docker-compose -f docker-compose.no-db.yml up

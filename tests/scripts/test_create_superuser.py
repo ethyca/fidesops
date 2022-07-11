@@ -2,13 +2,14 @@ from unittest import mock
 
 import pytest
 from create_superuser import collect_username_and_password, create_user_and_client
+from fideslib.cryptography.cryptographic_util import str_to_b64_str
+from fideslib.exceptions import KeyOrNameAlreadyExists
+from fideslib.models.client import ADMIN_UI_ROOT, ClientDetail
+from fideslib.models.fides_user import FidesUser
+from fideslib.models.fides_user_permissions import FidesUserPermissions
+from fideslib.oauth.schemas.user import UserCreate
 
 from fidesops.api.v1.scope_registry import CLIENT_CREATE
-from fidesops.common_exceptions import KeyOrNameAlreadyExists
-from fidesops.models.client import ADMIN_UI_ROOT, ClientDetail
-from fidesops.models.fidesops_user import FidesopsUser
-from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
-from fidesops.schemas.user import UserCreate
 
 
 class TestCreateSuperuserScript:
@@ -23,7 +24,7 @@ class TestCreateSuperuserScript:
         db,
     ):
         GENERIC_INPUT = "some_input"
-        mock_pass.return_value = "TESTP@ssword9"
+        mock_pass.return_value = str_to_b64_str("TESTP@ssword9")
         mock_user.return_value = "test_user"
         mock_input.return_value = GENERIC_INPUT
         user: UserCreate = collect_username_and_password(db)
@@ -43,11 +44,11 @@ class TestCreateSuperuserScript:
         mock_user,
         db,
     ):
-        user = FidesopsUser.create(
+        user = FidesUser.create(
             db=db,
             data={"username": "test_user", "password": "test_password"},
         )
-        mock_pass.return_value = "TESTP@ssword9"
+        mock_pass.return_value = str_to_b64_str("TESTP@ssword9")
         mock_user.return_value = "test_user"
         mock_input.return_value = "some_input"
 
@@ -66,7 +67,7 @@ class TestCreateSuperuserScript:
         mock_user,
         db,
     ):
-        mock_pass.return_value = "bad_password"
+        mock_pass.return_value = str_to_b64_str("bad_password")
         mock_user.return_value = "test_user"
         mock_input.return_value = "some_input"
 
@@ -83,7 +84,7 @@ class TestCreateSuperuserScript:
         mock_user,
         db,
     ):
-        mock_pass.return_value = "TESTP@ssword9"
+        mock_pass.return_value = str_to_b64_str("TESTP@ssword9")
         mock_user.return_value = "test_user"
         mock_input.return_value = "some_input"
 
@@ -98,7 +99,7 @@ class TestCreateSuperuserScript:
         assert client_detail.fides_key == ADMIN_UI_ROOT
         assert CLIENT_CREATE not in client_detail.scopes
 
-        user_permissions = FidesopsUserPermissions.get_by(
+        user_permissions = FidesUserPermissions.get_by(
             db=db, field="user_id", value=superuser.id
         )
         assert user_permissions is not None
