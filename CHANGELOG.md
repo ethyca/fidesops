@@ -26,6 +26,7 @@ The types of changes are:
 * Adds endpoint to get available connectors (database and saas) [#768](https://github.com/ethyca/fidesops/pull/768)
 * Adds endpoint to get the secrets required for different connectors [#795](https://github.com/ethyca/fidesops/pull/795)
 * Store provided identity data in the privacy request table [#743](https://github.com/ethyca/fidesops/pull/834)
+* Adds exact match identity search to the privacy request status endpoint [#765](https://github.com/ethyca/fidesops/pull/847/)
 
 ### Developer Experience
 * Replace user authentication routes with fideslib routes [#811](https://github.com/ethyca/fidesops/pull/811)
@@ -37,6 +38,7 @@ The types of changes are:
 * Fix issue requiring separate install of snowflake-connector-python [#807](https://github.com/ethyca/fidesops/pull/807)
 * [User Management] Create new user gives HTTP 422 Unprocessable Entity exception [#832] (https://github.com/ethyca/fidesops/pull/833)
 * Fix error when running `make test-data` [862](https://github.com/ethyca/fidesops/pull/862)
+* [User Management] Refactored New and Edit user pages to reduce duplicate code [#839]https://github.com/ethyca/fidesops/pull/839
 
 ### Docs
 * Backend UI deployment [#827](https://github.com/ethyca/fidesops/pull/827)
@@ -49,6 +51,7 @@ The types of changes are:
 * Changed wording on Admin UI login page [#774](https://github.com/ethyca/fidesops/pull/774)
 * Fixed typos in Admin UI [#774](https://github.com/ethyca/fidesops/pull/774)
 * Update clipboard icon in Admin UI [#838](https://github.com/ethyca/fidesops/pull/838)
+* Update admin ui to be served from the root route `/` [#720](https://github.com/ethyca/fidesops/pull/720)
 
 
 ## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
@@ -61,7 +64,6 @@ The types of changes are:
 * Reduce the size of the docker image [#707](https://github.com/ethyca/fidesops/pull/707)
 * Parallelize CI safe checks to reduce run time [#717](https://github.com/ethyca/fidesops/pull/717)
 * Add dependabot to keep dependencies up to date [#718](https://github.com/ethyca/fidesops/pull/718)
-
 * Make running a worker node optional [#770](https://github.com/ethyca/fidesops/pull/770)
 
 ### Changed
