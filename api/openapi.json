@@ -2717,6 +2717,15 @@
           {
             "required": false,
             "schema": {
+              "title": "Identity",
+              "type": "string"
+            },
+            "name": "identity",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
               "type": "array",
               "items": {
                 "$ref": "#/components/schemas/PrivacyRequestStatus"
