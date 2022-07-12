@@ -56,35 +56,34 @@ export enum TestingStatus {
 }
 
 /**
- * Relative folder path for connector images
+ * Relative folder path for connector logo images
  */
-export const CONNECTOR_IMAGE_PATH = "images/connectors/";
+export const CONNECTOR_LOGOS_PATH = "images/connector-logos/";
 
 /**
  * List of connection type image key/value pairs
  */
-export const ConnectionTypeImageMap = new Map<
-  ConnectionType | SassType,
-  string
->([
-  [ConnectionType.MARIADB, "mariadb.svg"],
-  [ConnectionType.MONGODB, "mongodb.svg"],
-  [ConnectionType.MSSQL, "sqlserver.svg"],
-  [ConnectionType.MYSQL, "mysql.svg"],
-  [ConnectionType.POSTGRES, "postgres.svg"],
-  [ConnectionType.REDSHIFT, "redshift.svg"],
-  [ConnectionType.SNOWFLAKE, "snowflake.svg"],
-  [SassType.HUB_SPOT, "hubspot.svg"],
-  [SassType.MAILCHIMP, "mailchimp.svg"],
-  [SassType.OUTREACH, "outreach.svg"],
-  [SassType.SALES_FORCE, "salesforce.svg"],
-  [SassType.SEGMENT, "segment.svg"],
-  [SassType.SENTRY, "sentry.svg"],
-  [SassType.STRIPE, "stripe.svg"],
-  [SassType.ZENDESK, "zendesk.svg"],
-]);
+export const ConnectionTypeLogoMap = new Map<ConnectionType | SassType, string>(
+  [
+    [ConnectionType.MARIADB, "mariadb.svg"],
+    [ConnectionType.MONGODB, "mongodb.svg"],
+    [ConnectionType.MSSQL, "sqlserver.svg"],
+    [ConnectionType.MYSQL, "mysql.svg"],
+    [ConnectionType.POSTGRES, "postgres.svg"],
+    [ConnectionType.REDSHIFT, "redshift.svg"],
+    [ConnectionType.SNOWFLAKE, "snowflake.svg"],
+    [SassType.HUB_SPOT, "hubspot.svg"],
+    [SassType.MAILCHIMP, "mailchimp.svg"],
+    [SassType.OUTREACH, "outreach.svg"],
+    [SassType.SALES_FORCE, "salesforce.svg"],
+    [SassType.SEGMENT, "segment.svg"],
+    [SassType.SENTRY, "sentry.svg"],
+    [SassType.STRIPE, "stripe.svg"],
+    [SassType.ZENDESK, "zendesk.svg"],
+  ]
+);
 
 /**
  * Fallback connector image path if original src path doesn't exist
  */
-export const FALLBACK_CONNECTOR_IMAGE_PATH = `${CONNECTOR_IMAGE_PATH}ethyca.svg`;
+export const FALLBACK_CONNECTOR_LOGOS_PATH = `${CONNECTOR_LOGOS_PATH}ethyca.svg`;

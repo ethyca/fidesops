@@ -7,9 +7,9 @@ import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import {
   ConnectionType,
-  ConnectionTypeImageMap,
-  CONNECTOR_IMAGE_PATH,
-  FALLBACK_CONNECTOR_IMAGE_PATH,
+  ConnectionTypeLogoMap,
+  CONNECTOR_LOGO_PATH,
+  FALLBACK_CONNECTOR_LOGO_PATH,
 } from "./constants";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
 import { DatastoreConnection } from "./types";
@@ -77,7 +77,7 @@ const useConnectionGridItem = () => {
   };
 
   const getImageSrc = (data: DatastoreConnection): string => {
-    const item = [...ConnectionTypeImageMap].find(([k]) => {
+    const item = [...ConnectionTypeLogoMap].find(([k]) => {
       if (
         (data.connection_type.toString() !== ConnectionType.SAAS &&
           data.connection_type.toString() === k) ||
@@ -89,8 +89,8 @@ const useConnectionGridItem = () => {
       return false;
     });
     const path = item
-      ? CONNECTOR_IMAGE_PATH + item[1]
-      : FALLBACK_CONNECTOR_IMAGE_PATH;
+      ? CONNECTOR_LOGO_PATH + item[1]
+      : FALLBACK_CONNECTOR_LOGO_PATH;
     return path;
   };
 
@@ -124,7 +124,7 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
           boxSize="32px"
           objectFit="cover"
           src={getImageSrc(connectionData)}
-          fallbackSrc={FALLBACK_CONNECTOR_IMAGE_PATH}
+          fallbackSrc={FALLBACK_CONNECTOR_LOGO_PATH}
           alt={connectionData.name}
         />
         <Text
