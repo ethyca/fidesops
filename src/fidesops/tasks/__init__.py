@@ -21,6 +21,9 @@ def _create_celery() -> Celery:
     )
     app.conf.update(result_backend=result_backend)
 
+    celery_default_queue_name = config.execution.CELERY_DEFAULT_QUEUE_NAME or "fidesops"
+    app.conf.update(task_default_queue=celery_default_queue_name)
+
     if config.execution.CELERY_EVENT_QUEUE_PREFIX:
         app.conf.update(event_queue_prefix=config.execution.CELERY_EVENT_QUEUE_PREFIX)
 
