@@ -41,6 +41,7 @@ class ExecutionSettings(FidesSettings):
     MASKING_STRICT: bool = True
     CELERY_BROKER_URL: Optional[str] = None
     CELERY_RESULT_BACKEND: Optional[str] = None
+    CELERY_EVENT_QUEUE_PREFIX: Optional[str] = None
     WORKER_ENABLED: bool = True
 
     class Config:

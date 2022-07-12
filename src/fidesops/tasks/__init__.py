@@ -20,6 +20,10 @@ def _create_celery() -> Celery:
         config.execution.CELERY_RESULT_BACKEND or config.redis.CONNECTION_URL
     )
     app.conf.update(result_backend=result_backend)
+
+    if config.execution.CELERY_EVENT_QUEUE_PREFIX:
+        app.conf.update(event_queue_prefix=config.execution.CELERY_EVENT_QUEUE_PREFIX)
+
     logger.info("Autodiscovering tasks...")
     app.autodiscover_tasks(
         [
