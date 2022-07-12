@@ -8,8 +8,8 @@ import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import {
   ConnectionType,
   ConnectionTypeLogoMap,
-  CONNECTOR_LOGO_PATH,
-  FALLBACK_CONNECTOR_LOGO_PATH,
+  CONNECTOR_LOGOS_PATH,
+  FALLBACK_CONNECTOR_LOGOS_PATH,
 } from "./constants";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
 import { DatastoreConnection } from "./types";
@@ -89,8 +89,8 @@ const useConnectionGridItem = () => {
       return false;
     });
     const path = item
-      ? CONNECTOR_LOGO_PATH + item[1]
-      : FALLBACK_CONNECTOR_LOGO_PATH;
+      ? CONNECTOR_LOGOS_PATH + item[1]
+      : FALLBACK_CONNECTOR_LOGOS_PATH;
     return path;
   };
 
@@ -124,7 +124,7 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
           boxSize="32px"
           objectFit="cover"
           src={getImageSrc(connectionData)}
-          fallbackSrc={FALLBACK_CONNECTOR_LOGO_PATH}
+          fallbackSrc={FALLBACK_CONNECTOR_LOGOS_PATH}
           alt={connectionData.name}
         />
         <Text
