@@ -84,7 +84,7 @@ In order to submit code to fidesops, please:
     ```
 * [Open a Pull Request](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork) once your work is ready for review
   * Submit the pull request from *your* repo. Pull requests should be submitted with a clear description of the issue being handled, including links to any external specifications or Github issues. PRs should not be merged by the person submitting them, except in rare and urgent circumstances.
-  * Once automated tests have passed, a maintainer will review your PR and provide feedback on any changes it requires to be approved. Once approved, your PR will be merged into Fidesops.
+  * Once automated tests have passed, a maintainer will review your PR and provide feedback on any changes it requires to be approved. Once approved, your PR will be merged into fidesops.
   
 
 ## Congratulations

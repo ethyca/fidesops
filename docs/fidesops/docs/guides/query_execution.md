@@ -2,7 +2,7 @@
 
 ## Graphs and Traversals
 
-Fidesops uses your Datasets to generate a _graph_ of the resources. Based on the identity data you provide, f then generates a specific _traversal_, which is the order of steps that will be taken to fulfill a specific request. 
+Fidesops uses your Datasets to generate a _graph_ of the resources. Based on the identity data you provide, fidesops then generates a specific _traversal_, which is the order of steps that will be taken to fulfill a specific request. 
 
 The graph supports both directed and non-directed edges using the optional `direction` parameter on the relation (non-directional edges may be traversed in either direction). You can preview the queries that will be generated or manually control the order of operations by making relations explicitly directional and with the `after` Collection parameters. If you specify a Collection that can't be reached, fidesops generates an error.
 

@@ -140,7 +140,7 @@ connector_params:
 ```
 
 #### Client config
-The `client_config` describes the necessary information to be able to create a base HTTP client. Notice that the values for host, username, and password are not defined here, only references in the form of a `connector_param` which Fidesops uses to insert the actual value from the stored secrets.
+The `client_config` describes the necessary information to be able to create a base HTTP client. Notice that the values for host, username, and password are not defined here, only references in the form of a `connector_param` which fidesops uses to insert the actual value from the stored secrets.
 
 ```yaml
 client_config:

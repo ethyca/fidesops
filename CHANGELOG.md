@@ -27,7 +27,7 @@ The types of changes are:
 * Adds endpoint to get the secrets required for different connectors [#795](https://github.com/ethyca/fidesops/pull/795)
 * Store provided identity data in the privacy request table [#743](https://github.com/ethyca/fidesops/pull/834)
 
-## Changed
+### Changed
 * Changed wording on Admin UI login page [#774](https://github.com/ethyca/fidesops/pull/774)
 * Fixed typos in Admin UI [#774](https://github.com/ethyca/fidesops/pull/774)
 * Update clipboard icon in Admin UI [#838](https://github.com/ethyca/fidesops/pull/838)

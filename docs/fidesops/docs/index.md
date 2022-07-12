@@ -10,13 +10,13 @@ Fidesops (fee-dez-äps, combination of the Latin term "Fidēs" + "operations") i
 Fidesops connects and orchestrates calls to all of your connected databases and third party systems in order to access, update and delete sensitive data per your policy configuration written in Fideslang.
 
 ### Handle Dependencies Between Datastores
-Fidesops works by integrating all your datasets into a unified graph and automatically traversing them in order. We know that sensitive data is stored all around your dynamic ecosystem, so Fidesops builds these dependencies automatically for each request.
+Fidesops works by integrating all your datasets into a unified graph and automatically traversing them in order. We know that sensitive data is stored all around your dynamic ecosystem, so fidesops builds these dependencies automatically for each request.
 
 ### Integrate with Compliance Tools
 Fidesops is open & extensible, meaning it can easily be integrated into your existing privacy compliance management tools like OneTrust to fulfill data subject requests and return results, automatically.
 
 ### Built to Scale
-Lots of databases? Tons of microservices? Connect as many databases and services as you'd like, and let Fidesops do the heavy lifting.
+Lots of databases? Tons of microservices? Connect as many databases and services as you'd like, and let fidesops do the heavy lifting.
 
 ## How does fidesops work with fidesctl and fideslang?
 In a software organization, the team that writes and delivers software is normally the same team responsible for executing a privacy request when it comes in from customer support or legal teams. When your organization receives a privacy request, fidesops will automatically fulfill it per the execution policies your legal and business owners have created by querying your databases directly. 
