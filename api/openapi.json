@@ -4559,6 +4559,30 @@
           }
         }
       }
+    },
+    "/": {
+      "get": {
+        "summary": "Read Index",
+        "description": "Returns index.html file",
+        "operationId": "read_index__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        }
+      }
+    },
+    "/{catchall}": {
+      "get": {
+        "summary": "Read Ui Files",
+        "description": "Return requested UI  file or return index.html file if requested file doesn't exist",
+        "operationId": "read_ui_files__catchall__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        }
+      }
     }
   },
   "components": {
