@@ -70,13 +70,13 @@ export const ConnectionTypeImageMap = new Map<
   [ConnectionType.MARIADB, "mariadb.svg"],
   [ConnectionType.MONGODB, "mongodb.svg"],
   [ConnectionType.MSSQL, "sqlserver.svg"],
-  [ConnectionType.MYSQL, "mysql.svg"], // TODO: Get an updated 32x32 svg image
+  [ConnectionType.MYSQL, "mysql.svg"],
   [ConnectionType.POSTGRES, "postgres.svg"],
   [ConnectionType.REDSHIFT, "redshift.svg"],
   [ConnectionType.SNOWFLAKE, "snowflake.svg"],
   [SassType.HUB_SPOT, "hubspot.svg"],
   [SassType.MAILCHIMP, "mailchimp.svg"],
-  [SassType.OUTREACH, "outreach.svg"], // TODO: Follow up with Simon to get this svg which does not exist
+  [SassType.OUTREACH, "outreach.svg"],
   [SassType.SALES_FORCE, "salesforce.svg"],
   [SassType.SEGMENT, "segment.svg"],
   [SassType.SENTRY, "sentry.svg"],
