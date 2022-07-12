@@ -46,12 +46,10 @@ The types of changes are:
 * Changed wording on Admin UI login page [#774](https://github.com/ethyca/fidesops/pull/774)
 * Fixed typos in Admin UI [#774](https://github.com/ethyca/fidesops/pull/774)
 * Update clipboard icon in Admin UI [#838](https://github.com/ethyca/fidesops/pull/838)
+* Update admin ui to be served from the root route `/` [#720](https://github.com/ethyca/fidesops/pull/720)
 
 
 ## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
-
-### Changed
-* Update admin ui to be served from the root route `/` [#720](https://github.com/ethyca/fidesops/pull/720)
 
 ### Added
 * `fidesops worker` command for running a Celery worker [#673](https://github.com/ethyca/fidesops/pull/673/)
