@@ -639,7 +639,7 @@ class TestGetPrivacyRequests:
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
         assert (
             resp["items"][0]["identity"]
-            == succeeded_privacy_request.get_cached_identity_data()
+            == succeeded_privacy_request.get_persisted_identity()
         )
 
         assert resp["items"][0]["policy"]["key"] == privacy_request.policy.key
