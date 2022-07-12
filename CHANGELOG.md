@@ -49,7 +49,7 @@ The types of changes are:
 * Fix issue requiring separate install of snowflake-connector-python [#807](https://github.com/ethyca/fidesops/pull/807)
 * [User Management] Create new user gives HTTP 422 Unprocessable Entity exception [#832] (https://github.com/ethyca/fidesops/pull/833)
 * Fix error when there are no scopes in `ClientDetail` [#830](https://github.com/ethyca/fidesops/pull/830)
-
+* [User Management] Refactored New and Edit user pages to reduce duplicate code [#839]https://github.com/ethyca/fidesops/pull/839
 
 ## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
 
@@ -61,7 +61,6 @@ The types of changes are:
 * Reduce the size of the docker image [#707](https://github.com/ethyca/fidesops/pull/707)
 * Parallelize CI safe checks to reduce run time [#717](https://github.com/ethyca/fidesops/pull/717)
 * Add dependabot to keep dependencies up to date [#718](https://github.com/ethyca/fidesops/pull/718)
-
 * Make running a worker node optional [#770](https://github.com/ethyca/fidesops/pull/770)
 
 ### Changed
