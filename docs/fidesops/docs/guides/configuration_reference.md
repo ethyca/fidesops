@@ -63,8 +63,8 @@ The `fidesops.toml` file should specify the following variables:
 |`CELERY_BROKER_URL` | `FIDESOPS__EXECUTION__CELERY_BROKER_URL` | str | redis://:testpassword@redis:6379/1 | N/A | The datastore to maintain ordered queues of tasks.
 |`CELERY_RESULT_BACKEND` | `FIDESOPS__EXECUTION__RESULT_BACKEND` | str | redis://:testpassword@redis:6379/1 | N/A | The datastore to put results from asynchronously processed tasks.
 |`WORKER_ENABLED` | `FIDESOPS__EXECUTION__WORKER_ENABLED` | bool | True | True | Whether Fidesops is running with a dedicated worker to process privacy requests asynchronously.
-|---|---|---|---|---|---|
-|`ANALYTICS_OPT_OUT` | `FIDESOPS__USER__ANALYTICS_OPT_OUT` | bool | False | False | Opt out of sending anonymous usage data to Ethyca to improve the product experience
+|Analytics |---|---|---|---|---|
+|`ANALYTICS_OPT_OUT` | `FIDESOPS__USER__ANALYTICS_OPT_OUT` | bool | False | False | Opt out of sending anonymous usage data to Ethyca to improve the product experience.
 | Admin UI Variables|---|---|---|---|---|
 |`ENABLED` | `FIDESOPS__ADMIN_UI__ENABLED` | bool | False | True | Toggle whether the `/static` file directory is mounted to serve the Admin UI
 
