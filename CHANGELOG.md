@@ -26,6 +26,7 @@ The types of changes are:
 * Adds endpoint to get available connectors (database and saas) [#768](https://github.com/ethyca/fidesops/pull/768)
 * Adds endpoint to get the secrets required for different connectors [#795](https://github.com/ethyca/fidesops/pull/795)
 * Store provided identity data in the privacy request table [#743](https://github.com/ethyca/fidesops/pull/834)
+* [Datastore Management] Keep datastore cards in 1/3 screen pattern [#745](https://github.com/ethyca/fidesops/pull/873)
 * Adds exact match identity search to the privacy request status endpoint [#765](https://github.com/ethyca/fidesops/pull/847/)
 
 ### Changed
