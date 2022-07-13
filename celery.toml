@@ -1,0 +1,2 @@
+event_queue_prefix = "test"
+default_queue_name = "fidesops"

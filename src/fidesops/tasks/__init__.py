@@ -1,7 +1,11 @@
+from typing import Any, MutableMapping
+
 from celery import Celery
 from celery.utils.log import get_task_logger
+from fideslib.core.config import load_toml
 
 from fidesops.core.config import config
+from fidesops.util.logger import NotPii
 
 logger = get_task_logger(__name__)
 
@@ -13,19 +17,20 @@ def _create_celery() -> Celery:
     logger.info("Creating Celery app...")
     app = Celery(__name__)
 
-    broker_url = config.execution.CELERY_BROKER_URL or config.redis.CONNECTION_URL
-    app.conf.update(broker_url=broker_url)
+    celery_config = {
+        # Defaults for the celery config
+        "broker_url": config.redis.CONNECTION_URL,
+        "result_backend": config.redis.CONNECTION_URL,
+    }
 
-    result_backend = (
-        config.execution.CELERY_RESULT_BACKEND or config.redis.CONNECTION_URL
-    )
-    app.conf.update(result_backend=result_backend)
+    try:
+        celery_config_overrides: MutableMapping[str, Any] = load_toml(["celery.toml"])
+    except FileNotFoundError as e:
+        logger.warning("celery.toml could not be loaded: %s", NotPii(e))
+    else:
+        celery_config.update(celery_config_overrides)
 
-    celery_default_queue_name = config.execution.CELERY_DEFAULT_QUEUE_NAME or "fidesops"
-    app.conf.update(task_default_queue=celery_default_queue_name)
-
-    if config.execution.CELERY_EVENT_QUEUE_PREFIX:
-        app.conf.update(event_queue_prefix=config.execution.CELERY_EVENT_QUEUE_PREFIX)
+    app.conf.update(celery_config)
 
     logger.info("Autodiscovering tasks...")
     app.autodiscover_tasks(
