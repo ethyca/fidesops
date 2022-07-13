@@ -84,10 +84,9 @@ const useConnectionGridItem = () => {
         (data.connection_type.toString() === ConnectionType.SAAS &&
           data.saas_config?.type?.toString() === k.toString())
     );
-    const path = item
+    return item
       ? CONNECTOR_LOGOS_PATH + item[1]
       : FALLBACK_CONNECTOR_LOGOS_PATH;
-    return path;
   };
 
   return {
