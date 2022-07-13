@@ -40,6 +40,7 @@ class ExecutionSettings(FidesSettings):
     REQUIRE_MANUAL_REQUEST_APPROVAL: bool = False
     MASKING_STRICT: bool = True
     WORKER_ENABLED: bool = True
+    CELERY_CONFIG_PATH: Optional[str] = "celery.toml"
 
     class Config:
         env_prefix = "FIDESOPS__EXECUTION__"
