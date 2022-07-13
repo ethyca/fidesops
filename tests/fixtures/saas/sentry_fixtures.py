@@ -1,9 +1,6 @@
-import os
 from typing import Any, Dict, Generator
 
-import pydash
 import pytest
-from fideslib.core.config import load_toml
 from fideslib.db import session
 from sqlalchemy.orm import Session
 
@@ -16,34 +13,26 @@ from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
 
-saas_config = load_toml(["saas_config.toml"])
+from test_helpers.vault_client import get_secrets
+
+secrets = get_secrets("sentry")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def sentry_secrets():
     return {
-        "domain": pydash.get(saas_config, "sentry.domain")
-        or os.environ.get("SENTRY_DOMAIN"),
-        "access_token": pydash.get(saas_config, "sentry.access_token")
-        or os.environ.get("SENTRY_ACCESS_TOKEN"),
-        "erasure_access_token": pydash.get(saas_config, "sentry.erasure_access_token")
-        or os.environ.get("SENTRY_ERASURE_TOKEN"),
-        "erasure_identity_email": pydash.get(
-            saas_config, "sentry.erasure_identity_email"
-        )
-        or os.environ.get("SENTRY_ERASURE_IDENTITY"),
-        "user_id_erasure": pydash.get(saas_config, "sentry.user_id_erasure")
-        or os.environ.get("SENTRY_USER_ID"),
-        "issue_url": pydash.get(saas_config, "sentry.issue_url")
-        or os.environ.get("SENTRY_ISSUE_URL"),
+        "domain": secrets["sentry.domain"],
+        "access_token": secrets["access_token"],
+        "erasure_access_token": secrets["erasure_access_token"],
+        "erasure_identity_email": secrets["erasure_identity_email"],
+        "user_id_erasure": secrets["user_id_erasure"],
+        "issue_url": secrets["issue_url"],
     }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def sentry_identity_email():
-    return pydash.get(saas_config, "sentry.identity_email") or os.environ.get(
-        "SENTRY_IDENTITY_EMAIL"
-    )
+    return secrets["identity_email"]
 
 
 @pytest.fixture
