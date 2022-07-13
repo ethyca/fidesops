@@ -34,7 +34,7 @@ class ExecutionSettings(FidesSettings):
     """Configuration settings for execution."""
 
     PRIVACY_REQUEST_DELAY_TIMEOUT: int = 3600
-    TASK_RETRY_COUNT: int
+    task_retry_count: int
     TASK_RETRY_DELAY: int  # In seconds
     TASK_RETRY_BACKOFF: int
     REQUIRE_MANUAL_REQUEST_APPROVAL: bool = False
