@@ -253,7 +253,7 @@ def privacy_request_csv_download(
         csv_file.writerow(
             [
                 pr.created_at,
-                pr.get_cached_identity_data(),
+                pr.get_persisted_identity().dict(),
                 pr.policy.key if pr.policy else None,
                 pr.status.value if pr.status else None,
                 pr.reviewed_by,
