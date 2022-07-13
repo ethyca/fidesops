@@ -4,6 +4,7 @@ from typing import Any, Dict, Iterable, List, Optional
 import yaml
 
 from fidesops.graph.config import Collection, Field, FieldPath, ObjectField, ScalarField
+from fidesops.graph.data_type import DataType, get_data_type
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
 from fidesops.schemas.dataset import FidesopsDataset
@@ -155,10 +156,10 @@ def generate_fields(
 
         # only values of type object or object[] should have sub-fields defined
         # additionally object and object[] cannot have data_categories
-        if data_type == "object":
+        if data_type == DataType.object.name:
             field["fidesops_meta"] = {"data_type": data_type}
             field["fields"] = generate_fields(value, current_path, field_map)
-        elif data_type == "object[]":
+        elif data_type == f"{DataType.object.name}[]":
             field["fidesops_meta"] = {"data_type": data_type}
             field["fields"] = generate_fields(value[0], current_path, field_map)
         else:
@@ -179,9 +180,10 @@ def generate_fields(
                     # the existing field has a more complex type than what we could derive
                     # from the API response, we need to copy the fields too instead of just
                     # the data_categories and data_type
-                    field["fidesops_meta"] = {
-                        "data_type": "object[]" if isinstance(value, list) else "object"
-                    }
+                    data_type = DataType.object.name
+                    if isinstance(value, list):
+                        data_type += "[]"
+                    field["fidesops_meta"] = {"data_type": data_type}
                     field["fields"] = get_simple_fields(existing_field.fields.values())
             else:
                 # we don't have this field in our dataset, use the default category
@@ -222,37 +224,3 @@ def get_simple_fields(fields: Iterable[Field]) -> List[Dict[str, Any]]:
             object["fields"] = get_simple_fields(field.fields.values())
         object_list.append(object)
     return object_list
-
-
-def get_data_type(value) -> Optional[str]:
-    """
-    Returns the simple or array type of the given value.
-    """
-
-    data_type = None
-
-    # cannot assume data type for missing or empty values
-    if value in (None, "", [], {}):
-        return data_type
-
-    if isinstance(value, bool):
-        data_type = "boolean"
-    elif isinstance(value, int):
-        data_type = "integer"
-    elif isinstance(value, float):
-        data_type = "float"
-    elif isinstance(value, str):
-        data_type = "string"
-    elif isinstance(value, dict):
-        data_type = "object"
-    elif isinstance(value, list):
-        if all(isinstance(item, int) for item in value):
-            data_type = "integer[]"
-        elif all(isinstance(item, float) for item in value):
-            data_type = "float[]"
-        elif all(isinstance(item, str) for item in value):
-            data_type = "string[]"
-        elif all(isinstance(item, dict) for item in value):
-            data_type = "object[]"
-
-    return data_type
