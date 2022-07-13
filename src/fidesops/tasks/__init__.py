@@ -1,4 +1,4 @@
-from typing import Any, MutableMapping
+from typing import Any, Dict, MutableMapping
 
 from celery import Celery
 from celery.utils.log import get_task_logger
@@ -17,7 +17,7 @@ def _create_celery(config_path: str = config.execution.CELERY_CONFIG_PATH) -> Ce
     logger.info("Creating Celery app...")
     app = Celery(__name__)
 
-    celery_config = {
+    celery_config: Dict[str, Any] = {
         # Defaults for the celery config
         "broker_url": config.redis.CONNECTION_URL,
         "result_backend": config.redis.CONNECTION_URL,
