@@ -3,7 +3,7 @@ import {
   ConnectionTestStatus,
   ConnectionType,
   DisabledStatus,
-  SassType,
+  SaasType,
   SystemType,
   TestingStatus,
 } from "./constants";
@@ -19,7 +19,7 @@ export type DatastoreConnection = {
   updated_at?: string;
   last_test_timestamp: string;
   last_test_succeeded: boolean;
-  saas_config?: SassConfig;
+  saas_config?: SaasConfig;
 };
 
 export type DatastoreConnectionParams = {
@@ -53,6 +53,6 @@ export type DatastoreConnectionUpdate = {
   access: AccessLevel;
 };
 
-export type SassConfig = {
-  type: SassType;
+export type SaasConfig = {
+  type: SaasType;
 };

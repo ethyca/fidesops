@@ -66,7 +66,7 @@ const useConnectionGridItem = () => {
         value = "Manual Connector";
         break;
       case ConnectionType.SAAS:
-        value = "Sass Connector";
+        value = "Saas Connector";
         break;
       default:
         value = "Unknown Connector";
@@ -77,17 +77,13 @@ const useConnectionGridItem = () => {
   };
 
   const getImageSrc = (data: DatastoreConnection): string => {
-    const item = [...ConnectionTypeLogoMap].find(([k]) => {
-      if (
+    const item = [...ConnectionTypeLogoMap].find(
+      ([k]) =>
         (data.connection_type.toString() !== ConnectionType.SAAS &&
           data.connection_type.toString() === k) ||
         (data.connection_type.toString() === ConnectionType.SAAS &&
           data.saas_config?.type?.toString() === k.toString())
-      ) {
-        return true;
-      }
-      return false;
-    });
+    );
     const path = item
       ? CONNECTOR_LOGOS_PATH + item[1]
       : FALLBACK_CONNECTOR_LOGOS_PATH;

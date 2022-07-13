@@ -31,7 +31,7 @@ export enum DisabledStatus {
   DISABLED = "disabled",
 }
 
-export enum SassType {
+export enum SaasType {
   MAILCHIMP = "mailchimp",
   HUB_SPOT = "hubspot",
   OUTREACH = "outreach",
@@ -63,7 +63,7 @@ export const CONNECTOR_LOGOS_PATH = "images/connector-logos/";
 /**
  * List of connection type image key/value pairs
  */
-export const ConnectionTypeLogoMap = new Map<ConnectionType | SassType, string>(
+export const ConnectionTypeLogoMap = new Map<ConnectionType | SaasType, string>(
   [
     [ConnectionType.MARIADB, "mariadb.svg"],
     [ConnectionType.MONGODB, "mongodb.svg"],
@@ -72,14 +72,14 @@ export const ConnectionTypeLogoMap = new Map<ConnectionType | SassType, string>(
     [ConnectionType.POSTGRES, "postgres.svg"],
     [ConnectionType.REDSHIFT, "redshift.svg"],
     [ConnectionType.SNOWFLAKE, "snowflake.svg"],
-    [SassType.HUB_SPOT, "hubspot.svg"],
-    [SassType.MAILCHIMP, "mailchimp.svg"],
-    [SassType.OUTREACH, "outreach.svg"],
-    [SassType.SALES_FORCE, "salesforce.svg"],
-    [SassType.SEGMENT, "segment.svg"],
-    [SassType.SENTRY, "sentry.svg"],
-    [SassType.STRIPE, "stripe.svg"],
-    [SassType.ZENDESK, "zendesk.svg"],
+    [SaasType.HUB_SPOT, "hubspot.svg"],
+    [SaasType.MAILCHIMP, "mailchimp.svg"],
+    [SaasType.OUTREACH, "outreach.svg"],
+    [SaasType.SALES_FORCE, "salesforce.svg"],
+    [SaasType.SEGMENT, "segment.svg"],
+    [SaasType.SENTRY, "sentry.svg"],
+    [SaasType.STRIPE, "stripe.svg"],
+    [SaasType.ZENDESK, "zendesk.svg"],
   ]
 );
 
