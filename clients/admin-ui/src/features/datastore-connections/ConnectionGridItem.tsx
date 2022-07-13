@@ -88,9 +88,6 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
     <Box
       width="100%"
       height={136}
-      border="1px"
-      borderColor="blackAlpha.300"
-      boxSizing="border-box"
       p="18px 16px 16px 16px"
     >
       <Flex justifyContent="center" alignItems="center">

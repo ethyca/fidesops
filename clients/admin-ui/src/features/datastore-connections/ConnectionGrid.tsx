@@ -1,10 +1,11 @@
-import { Button, Flex, SimpleGrid, Spinner, Text } from "@fidesui/react";
+import { Box, Button, Flex, SimpleGrid, Spinner, Text } from "@fidesui/react";
 import debounce from "lodash.debounce";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "../../app/hooks";
 import PaginationFooter from "../common/PaginationFooter";
+import classes from "./ConnectionGrid.module.css";
 import ConnectionGridItem from "./ConnectionGridItem";
 import {
   selectDatastoreConnectionFilters,
@@ -113,13 +114,15 @@ const ConnectionGrid: React.FC = () => {
     );
   }
 
-  // @ts-ignore
-  const gridItems = data!.items.map((d) => (
-    <ConnectionGridItem key={d.key} connectionData={d} />
-  ));
   return (
     <>
-      <SimpleGrid minChildWidth={400}>{gridItems}</SimpleGrid>
+      <SimpleGrid columns={3}>
+        {data!.items.map((item) => (
+          <Box key={item.key} className={classes["grid-item"]}>
+            <ConnectionGridItem connectionData={item} />
+          </Box>
+        ))}
+      </SimpleGrid>
       <PaginationFooter
         page={page}
         size={size}
