@@ -1083,8 +1083,13 @@ class TestGetPrivacyRequests:
         privacy_request.status = PrivacyRequestStatus.approved
         privacy_request.reviewed_by = user.id
         privacy_request.reviewed_at = reviewed_at
+        TEST_EMAIL = "test@example.com"
+        TEST_PHONE = "+1 234 567 8910"
         privacy_request.cache_identity(
-            {"email": "email@example.com", "phone_number": "111-111-1111"}
+            {
+                "email": TEST_EMAIL,
+                "phone_number": TEST_PHONE,
+            }
         )
         privacy_request.save(db)
 
@@ -1105,8 +1110,8 @@ class TestGetPrivacyRequests:
         first_row = next(csv_file)
         assert parse(first_row["Time received"], ignoretz=True) == created_at
         assert ast.literal_eval(first_row["Subject identity"]) == {
-            "email": "email@example.com",
-            "phone_number": "111-111-1111",
+            "email": TEST_EMAIL,
+            "phone_number": TEST_PHONE,
         }
         assert first_row["Policy key"] == "example_access_request_policy"
         assert first_row["Request status"] == "approved"
