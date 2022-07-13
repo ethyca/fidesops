@@ -1,13 +1,11 @@
-.grid-item {
-  border-width: 0.5px 0.5px 0px 0px;
+.grid-row {
+  border-top-width: 0.5px;
   border-color: var(--chakra-colors-blackAlpha-300);
   box-sizing: border-box;
 }
 
-.grid-item::after {
-  display: block;
-  content: "";
-  border-bottom-width: 0.5px;
+.grid-item {
+  border-right-width: 0.5px;
   border-color: var(--chakra-colors-blackAlpha-300);
   box-sizing: border-box;
 }
@@ -15,9 +13,3 @@
 .grid-item:nth-child(3n) {
   border-right-width: 0px;
 }
-
-/* .grid-item:nth-child(3n + 1):not(:first-child) {
-  border-top-width: 0.5px;
-} */
-
-

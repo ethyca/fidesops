@@ -1,3 +1,4 @@
+import { chunk } from "@chakra-ui/utils";
 import { Box, Button, Flex, SimpleGrid, Spinner, Text } from "@fidesui/react";
 import debounce from "lodash.debounce";
 import React, { useEffect, useRef, useState } from "react";
@@ -73,6 +74,7 @@ const ConnectionGrid: React.FC = () => {
     handleNextPage,
     handlePreviousPage,
   } = useConnectionGrid();
+
   if (isUninitialized || isLoading || isFetching) {
     return <Spinner />;
   }
@@ -114,15 +116,21 @@ const ConnectionGrid: React.FC = () => {
     );
   }
 
+  const columns = 3;
+
   return (
     <>
-      <SimpleGrid columns={3}>
-        {data!.items.map((item) => (
-          <Box key={item.key} className={classes["grid-item"]}>
-            <ConnectionGridItem connectionData={item} />
-          </Box>
-        ))}
-      </SimpleGrid>
+      {chunk(data!.items, columns).map((parent) => (
+        <Box key={JSON.stringify(parent)} className={classes["grid-row"]}>
+          <SimpleGrid columns={columns}>
+            {parent.map((child) => (
+              <Box key={child.key} className={classes["grid-item"]}>
+                <ConnectionGridItem connectionData={child} />
+              </Box>
+            ))}
+          </SimpleGrid>
+        </Box>
+      ))}
       <PaginationFooter
         page={page}
         size={size}
