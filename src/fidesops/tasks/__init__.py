@@ -10,7 +10,7 @@ from fidesops.util.logger import NotPii
 logger = get_task_logger(__name__)
 
 
-def _create_celery() -> Celery:
+def _create_celery(config_path: str = config.execution.CELERY_CONFIG_PATH) -> Celery:
     """
     Returns a configured version of the Celery application
     """
@@ -24,7 +24,7 @@ def _create_celery() -> Celery:
     }
 
     try:
-        celery_config_overrides: MutableMapping[str, Any] = load_toml(["celery.toml"])
+        celery_config_overrides: MutableMapping[str, Any] = load_toml([config_path])
     except FileNotFoundError as e:
         logger.warning("celery.toml could not be loaded: %s", NotPii(e))
     else:
