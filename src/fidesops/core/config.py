@@ -33,15 +33,15 @@ class FidesopsDatabaseSettings(DatabaseSettings):
 class ExecutionSettings(FidesSettings):
     """Configuration settings for execution."""
 
-    PRIVACY_REQUEST_DELAY_TIMEOUT: int = 3600
+    privacy_request_delay_timeout: int = 3600
     task_retry_count: int
-    TASK_RETRY_DELAY: int  # In seconds
-    TASK_RETRY_BACKOFF: int
-    REQUIRE_MANUAL_REQUEST_APPROVAL: bool = False
-    MASKING_STRICT: bool = True
-    CELERY_BROKER_URL: Optional[str] = None
-    CELERY_RESULT_BACKEND: Optional[str] = None
-    WORKER_ENABLED: bool = True
+    task_retry_delay: int  # In seconds
+    task_retry_backoff: int
+    require_manual_request_approval: bool = False
+    masking_strict: bool = True
+    celery_broker_url: Optional[str] = None
+    celery_result_backend: Optional[str] = None
+    worker_enabled: bool = True
 
     class Config:
         env_prefix = "FIDESOPS__EXECUTION__"
@@ -50,18 +50,18 @@ class ExecutionSettings(FidesSettings):
 class RedisSettings(FidesSettings):
     """Configuration settings for Redis."""
 
-    HOST: str
-    PORT: int = 6379
-    USER: Optional[str] = ""
-    PASSWORD: str
-    CHARSET: str = "utf8"
-    DECODE_RESPONSES: bool = True
-    DEFAULT_TTL_SECONDS: int = 604800
-    DB_INDEX: Optional[int]
-    ENABLED: bool = True
-    SSL: bool = False
-    SSL_CERT_REQS: Optional[str] = "required"
-    CONNECTION_URL: Optional[str] = None
+    host: str
+    port: int = 6379
+    user: Optional[str] = ""
+    password: str
+    charset: str = "utf8"
+    decode_responses: bool = True
+    default_ttl_seconds: int = 604800
+    db_index: Optional[int]
+    enabled: bool = True
+    ssl: bool = False
+    ssl_cert_reqs: Optional[str] = "required"
+    connection_url: Optional[str] = None
 
     @validator("CONNECTION_URL", pre=True)
     @classmethod
@@ -114,8 +114,8 @@ class FidesopsSecuritySettings(SecuritySettings):
 class RootUserSettings(FidesSettings):
     """Configuration settings for Analytics variables."""
 
-    ANALYTICS_OPT_OUT: Optional[bool]
-    ANALYTICS_ID: Optional[str]
+    analytics_opt_out: Optional[bool]
+    analytics_id: Optional[str]
 
     @validator("ANALYTICS_ID", pre=True)
     def populate_analytics_id(cls, v: Optional[str]) -> str:
@@ -140,7 +140,7 @@ class RootUserSettings(FidesSettings):
 class AdminUiSettings(FidesSettings):
     """Configuration settings for Analytics variables."""
 
-    ENABLED: bool
+    enabled: bool
 
     class Config:
         env_prefix = "FIDESOPS__ADMIN_UI__"
@@ -156,7 +156,7 @@ class FidesopsConfig(FidesSettings):
     root_user: RootUserSettings
     admin_ui: AdminUiSettings
 
-    PORT: int
+    port: int
     is_test_mode: bool = os.getenv("TESTING", "").lower() == "true"
     hot_reloading: bool = os.getenv("FIDESOPS__HOT_RELOAD", "").lower() == "true"
     dev_mode: bool = os.getenv("FIDESOPS__DEV_MODE", "").lower() == "true"

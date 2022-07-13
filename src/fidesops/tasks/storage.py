@@ -40,7 +40,7 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
         encryption_attr="key",
     )
     if isinstance(data, bytes):
-        data = data.decode(config.security.ENCODING)
+        data = data.decode(config.security.encoding)
 
     encryption_key: str | None = cache.get(encryption_cache_key)
     if not encryption_key:
@@ -49,7 +49,7 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
     bytes_encryption_key: bytes = encryption_key.encode(
         encoding=config.security.ENCODING
     )
-    nonce: bytes = secrets.token_bytes(config.security.AES_GCM_NONCE_LENGTH)
+    nonce: bytes = secrets.token_bytes(config.security.aes_gcm_nonce_length)
     # b64encode the entire nonce and the encrypted message together
     return bytes_to_b64_str(
         nonce
@@ -83,7 +83,7 @@ def write_to_in_memory_buffer(
             for key in data:
                 df = pd.json_normalize(data[key])
                 buffer = BytesIO()
-                df.to_csv(buffer, index=False, encoding=config.security.ENCODING)
+                df.to_csv(buffer, index=false, encoding=config.security.encoding)
                 buffer.seek(0)
                 f.writestr(
                     f"{key}.csv",

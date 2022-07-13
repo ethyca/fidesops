@@ -21,26 +21,26 @@ def generate_secure_random_string(length: int) -> str:
 
 def generate_salt() -> str:
     """Generates a salt using bcrypt and returns a string using the configured default encoding"""
-    return bcrypt.gensalt().decode(config.security.ENCODING)
+    return bcrypt.gensalt().decode(config.security.encoding)
 
 
 def bytes_to_b64_str(bytestring: bytes) -> str:
     """Converts random bytes into a utf-8 encoded string"""
-    return b64encode(bytestring).decode(config.security.ENCODING)
+    return b64encode(bytestring).decode(config.security.encoding)
 
 
 def b64_str_to_bytes(encoded_str: str) -> bytes:
     """Converts encoded string into bytes"""
-    return b64decode(encoded_str.encode(config.security.ENCODING))
+    return b64decode(encoded_str.encode(config.security.encoding))
 
 
 def b64_str_to_str(encoded_str: str) -> str:
     """Converts encoded string into str"""
-    return b64decode(encoded_str).decode(config.security.ENCODING)
+    return b64decode(encoded_str).decode(config.security.encoding)
 
 
 def str_to_b64_str(string: str) -> str:
     """Converts str into a utf-8 encoded string"""
-    return b64encode(string.encode(config.security.ENCODING)).decode(
-        config.security.ENCODING
+    return b64encode(string.encode(config.security.encoding)).decode(
+        config.security.encoding
     )
