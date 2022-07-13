@@ -12,9 +12,8 @@ from fidesops.models.connectionconfig import (
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.util import cryptographic_util
 from fidesops.util.saas_util import load_config
-from tests.fixtures.application_fixtures import load_dataset
-
 from test_helpers.vault_client import get_secrets
+from tests.fixtures.application_fixtures import load_dataset
 
 secrets = get_secrets("zendesk")
 

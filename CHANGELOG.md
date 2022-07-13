@@ -27,6 +27,7 @@ The types of changes are:
 * Adds endpoint to get the secrets required for different connectors [#795](https://github.com/ethyca/fidesops/pull/795)
 * Store provided identity data in the privacy request table [#743](https://github.com/ethyca/fidesops/pull/834)
 * Adds exact match identity search to the privacy request status endpoint [#765](https://github.com/ethyca/fidesops/pull/847/)
+* Adds Vault for secrets management [#688](https://github.com/ethyca/fidesops/pull/869)
 
 ### Changed
 * Changed wording on Admin UI login page [#774](https://github.com/ethyca/fidesops/pull/774)
