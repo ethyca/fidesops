@@ -4,7 +4,7 @@ from typing import Any, Dict, Iterable, List, Optional
 import yaml
 
 from fidesops.graph.config import Collection, Field, FieldPath, ObjectField, ScalarField
-from fidesops.graph.data_type import DataType, get_data_type
+from fidesops.graph.data_type import DataType, get_data_type, to_data_type_string
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
 from fidesops.schemas.dataset import FidesopsDataset
@@ -152,15 +152,15 @@ def generate_fields(
         # initialize field
         field = {"name": key}
         # derive data_type based on row data
-        data_type = get_data_type(value)
+        data_type, is_array = get_data_type(value)
 
         # only values of type object or object[] should have sub-fields defined
         # additionally object and object[] cannot have data_categories
-        if data_type == DataType.object.name:
+        if data_type == DataType.object.name and not is_array:
             field["fidesops_meta"] = {"data_type": data_type}
             field["fields"] = generate_fields(value, current_path, field_map)
-        elif data_type == f"{DataType.object.name}[]":
-            field["fidesops_meta"] = {"data_type": data_type}
+        elif data_type == DataType.object.name and is_array:
+            field["fidesops_meta"] = {"data_type": to_data_type_string(data_type, True)}
             field["fields"] = generate_fields(value[0], current_path, field_map)
         else:
             if existing_field := get_existing_field(field_map, current_path):
@@ -180,10 +180,11 @@ def generate_fields(
                     # the existing field has a more complex type than what we could derive
                     # from the API response, we need to copy the fields too instead of just
                     # the data_categories and data_type
-                    data_type = DataType.object.name
-                    if isinstance(value, list):
-                        data_type += "[]"
-                    field["fidesops_meta"] = {"data_type": data_type}
+                    field["fidesops_meta"] = {
+                        "data_type": to_data_type_string(
+                            DataType.object.name, isinstance(value, list)
+                        )
+                    }
                     field["fields"] = get_simple_fields(existing_field.fields.values())
             else:
                 # we don't have this field in our dataset, use the default category
@@ -191,8 +192,10 @@ def generate_fields(
                 field["data_categories"] = ["system.operations"]
                 # we don't assume the data_type for empty strings, empty lists,
                 # empty dicts, or nulls
-                if data_type:
-                    field["fidesops_meta"] = {"data_type": data_type}
+                if data_type != DataType.no_op.name:
+                    field["fidesops_meta"] = {
+                        "data_type": to_data_type_string(data_type, is_array)
+                    }
         fields.append(field)
     return fields
 

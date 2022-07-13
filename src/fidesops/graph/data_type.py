@@ -221,16 +221,26 @@ def parse_data_type_string(type_string: Optional[str]) -> Tuple[Optional[str], b
     return type_string[:idx], True
 
 
-def get_data_type(value: Any) -> Optional[str]:
+def to_data_type_string(data_type: str, is_array: bool) -> str:
+    """
+    Appends [] to the data type if it is an array.
+    """
+    if data_type == DataType.no_op.name:
+        return data_type
+    return data_type + "[]" if is_array else data_type
+
+
+def get_data_type(value: Any) -> Tuple[Optional[str], bool]:
     """
     Returns the simple or array type of the given value.
     """
 
-    data_type = None
+    data_type = DataType.no_op.name
+    is_array = False
 
     # cannot assume data type for missing or empty values
     if value in (None, "", [], {}):
-        return data_type
+        return data_type, is_array
 
     if isinstance(value, bool):
         data_type = DataType.boolean.name
@@ -243,16 +253,16 @@ def get_data_type(value: Any) -> Optional[str]:
     elif isinstance(value, dict):
         data_type = DataType.object.name
     elif isinstance(value, list):
+        is_array = True
         if all(isinstance(item, int) for item in value):
-            data_type = f"{DataType.integer}[]"
+            data_type = DataType.integer.name
         elif all(isinstance(item, float) for item in value):
-            data_type = f"{DataType.float}[]"
+            data_type = DataType.float.name
         elif all(isinstance(item, str) for item in value):
-            data_type = f"{DataType.string}[]"
+            data_type = DataType.string.name
         elif all(isinstance(item, dict) for item in value):
-            data_type = f"{DataType.object}[]"
-
-    return data_type
+            data_type = DataType.object.name
+    return data_type, is_array
 
 
 if __name__ == "__main__":
