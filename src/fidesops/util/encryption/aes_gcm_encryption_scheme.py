@@ -4,7 +4,7 @@ from typing import Optional
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from fidesops.core.config import config
-from fidesops.util.cryptographic_util import bytes_to_b64_str
+from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 
 
 def encrypt_to_bytes_verify_secrets_length(

@@ -13,7 +13,7 @@ from fidesops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.core.config import config
-from fidesops.util.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
+from fideslib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 from fidesops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     encrypt_verify_secret_length,

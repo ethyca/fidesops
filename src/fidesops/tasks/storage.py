@@ -17,7 +17,7 @@ from fidesops.core.config import config
 from fidesops.models.storage import ResponseFormat
 from fidesops.schemas.storage.storage import StorageSecrets
 from fidesops.util.cache import get_cache, get_encryption_cache_key
-from fidesops.util.cryptographic_util import bytes_to_b64_str
+from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 from fidesops.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
 )

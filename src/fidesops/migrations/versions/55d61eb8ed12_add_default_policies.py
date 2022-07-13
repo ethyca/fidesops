@@ -28,7 +28,7 @@ from fidesops.schemas.storage.storage import StorageType
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE_STRATEGY_NAME,
 )
-from fidesops.util.cryptographic_util import (
+from fideslib.cryptography.cryptographic_util import (
     generate_salt,
     generate_secure_random_string,
     hash_with_salt,
