@@ -47,10 +47,18 @@ server: compose-build
 	@docker-compose up
 
 server-with-worker: compose-build
-	@docker-compose -f docker-compose.yml -f docker-compose.worker.yml up
+	@docker-compose up worker -d
+	@docker-compose run \
+	-e FIDESOPS__EXECUTION__WORKER_ENABLED=True \
+	webserver
 
 server-no-db: compose-build
-	@docker-compose -f docker-compose.no-db.yml up
+	@docker-compose run \
+	-e FIDESOPS__DATABASE__ENABLED=false \
+    -e FIDESOPS__REDIS__ENABLED=false \
+	--no-deps \
+	--service-ports \
+	webserver	
 
 server-shell: compose-build
 	@docker-compose run $(IMAGE_NAME) /bin/bash

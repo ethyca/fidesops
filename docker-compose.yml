@@ -59,6 +59,22 @@ services:
     ports:
       - "0.0.0.0:6379:6379"
 
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    command: fidesops worker
+    depends_on:
+      redis:
+        condition: service_started
+    restart: always
+    volumes:
+      - type: bind
+        source: ./
+        target: /fidesops
+        read_only: False
+      - /fidesops/src/fidesops.egg-info
+
   docs:
     build:
       context: docs/fidesops/
