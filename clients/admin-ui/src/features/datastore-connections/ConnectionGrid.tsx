@@ -117,14 +117,21 @@ const ConnectionGrid: React.FC = () => {
   }
 
   const columns = 3;
+  const chunks = chunk(data!.items, columns);
 
   return (
     <>
-      {chunk(data!.items, columns).map((parent) => (
+      {chunks.map((parent, index) => (
         <Box key={JSON.stringify(parent)} className={classes["grid-row"]}>
           <SimpleGrid columns={columns}>
             {parent.map((child) => (
-              <Box key={child.key} className={classes["grid-item"]}>
+              <Box
+                key={child.key}
+                className={classes["grid-item"]}
+                borderBottomWidth={
+                  index + 1 >= chunks.length ? "0.5px" : undefined
+                }
+              >
                 <ConnectionGridItem connectionData={child} />
               </Box>
             ))}
