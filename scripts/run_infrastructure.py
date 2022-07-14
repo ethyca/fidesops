@@ -5,6 +5,7 @@ and related workflows.
 import argparse
 import subprocess
 import sys
+from time import sleep
 from typing import List
 
 DOCKER_WAIT = 5
@@ -63,10 +64,10 @@ def run_infrastructure(
             f'docker-compose {path} build --build-arg SKIP_MSSQL_INSTALLATION="true"'
         )
     _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f'echo "sleeping for: {DOCKER_WAIT} while infrastructure loads"')
 
     wait = min(DOCKER_WAIT * len(datastores), 15)
-    _run_cmd_or_err(f"sleep {wait}")
+    print(f"Sleeping for: {wait} while infrastructure loads...")
+    sleep(wait)
 
     seed_initial_data(
         datastores,
@@ -166,7 +167,7 @@ def _run_create_superuser(
     """
     _run_cmd_or_err(f'echo "Running create superuser..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f"docker exec -it {image_name} python create_superuser.py")
+    _run_cmd_or_err(f"docker exec -it {image_name} python scripts/create_superuser.py")
 
 
 def _run_create_test_data(
@@ -178,7 +179,7 @@ def _run_create_test_data(
     """
     _run_cmd_or_err(f'echo "Running create superuser..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f"docker exec -it {image_name} python create_test_data.py")
+    _run_cmd_or_err(f"docker exec -it {image_name} python scripts/create_test_data.py")
 
 
 def _open_shell(
