@@ -1,13 +1,23 @@
-import { extendTheme } from '@fidesui/react';
+import { extendTheme } from "@fidesui/react";
 
 const theme = extendTheme({
   styles: {
     global: {
       body: {
-        bg: 'white',
+        bg: "white",
       },
       html: {
-        height: '100%',
+        height: "100%",
+      },
+    },
+  },
+  components: {
+    Spinner: {
+      baseStyle: {
+        color: "secondary.500",
+      },
+      defaultProps: {
+        size: "xl",
       },
     },
   },

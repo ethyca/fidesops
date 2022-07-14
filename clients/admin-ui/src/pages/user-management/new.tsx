@@ -1,47 +1,12 @@
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Heading,
-} from '@fidesui/react';
-import type { NextPage } from 'next';
-import Link from 'next/link';
-import React from 'react';
+import React from "react";
 
-import ProtectedRoute from '../../features/auth/ProtectedRoute';
-import NavBar from '../../features/common/NavBar';
-import NewUserForm from '../../features/user-management/NewUserForm';
+import NewUserForm from "../../features/user-management/NewUserForm";
+import UserManagementLayout from "../../features/user-management/UserManagementLayout";
 
-const CreateNewUser: NextPage = () => (
-  <ProtectedRoute>
-    <div>
-      <NavBar />
-      <main>
-        <Box px={9} py={10}>
-          <Heading fontSize="2xl" fontWeight="semibold">
-            User Management
-            <Box mt={2} mb={7}>
-              <Breadcrumb fontWeight="medium" fontSize="sm">
-                <BreadcrumbItem>
-                  <Link href="/user-management" passHref>
-                    <BreadcrumbLink href="/user-management">
-                      User Management
-                    </BreadcrumbLink>
-                  </Link>
-                </BreadcrumbItem>
-
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="#">Add New User</BreadcrumbLink>
-                </BreadcrumbItem>
-              </Breadcrumb>
-            </Box>
-          </Heading>
-          <NewUserForm />
-        </Box>
-      </main>
-    </div>
-  </ProtectedRoute>
+const CreateNewUser = () => (
+  <UserManagementLayout title="New User">
+    <NewUserForm />
+  </UserManagementLayout>
 );
 
 export default CreateNewUser;

@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel, Extra
@@ -19,6 +20,8 @@ class CreateConnectionConfiguration(BaseModel):
     key: Optional[FidesOpsKey]
     connection_type: ConnectionType
     access: AccessLevel
+    disabled: Optional[bool] = False
+    description: Optional[str]
 
     class Config:
         """Restrict adding other fields through this schema and set orm_mode to support mapping to ConnectionConfig"""
@@ -26,6 +29,27 @@ class CreateConnectionConfiguration(BaseModel):
         orm_mode = True
         use_enum_values = True
         extra = Extra.forbid
+
+
+class TestStatus(Enum):
+    passed = "passed"
+    failed = "failed"
+    untested = "untested"
+
+    def str_to_bool(self) -> Optional[bool]:
+        """Translates query param string to optional/bool value
+        for filtering ConnectionConfig.last_test_succeeded field"""
+        if self == self.passed:
+            return True
+        if self == self.failed:
+            return False
+        return None
+
+
+class SystemType(Enum):
+    saas = "saas"
+    database = "database"
+    manual = "manual"
 
 
 class ConnectionConfigurationResponse(BaseModel):
@@ -37,10 +61,12 @@ class ConnectionConfigurationResponse(BaseModel):
 
     name: str
     key: FidesOpsKey
+    description: Optional[str]
     connection_type: ConnectionType
     access: AccessLevel
     created_at: datetime
     updated_at: Optional[datetime]
+    disabled: Optional[bool] = False
     last_test_timestamp: Optional[datetime]
     last_test_succeeded: Optional[bool]
 

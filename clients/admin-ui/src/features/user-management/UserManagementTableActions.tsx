@@ -4,13 +4,14 @@ import {
   InputGroup,
   InputLeftElement,
   Stack,
-} from '@fidesui/react';
-import NextLink from 'next/link';
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+} from "@fidesui/react";
+import NextLink from "next/link";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-import { SearchLineIcon } from '../common/Icon';
-import { selectUserFilters, setUsernameSearch } from './user-management.slice';
+import { USER_MANAGEMENT_ROUTE } from "../../constants";
+import { SearchLineIcon } from "../common/Icon";
+import { selectUserFilters, setUsernameSearch } from "./user-management.slice";
 
 const useUserManagementTableActions = () => {
   const filters = useSelector(selectUserFilters);
@@ -29,13 +30,13 @@ const UserManagementTableActions: React.FC = () => {
   const { handleSearchChange, username } = useUserManagementTableActions();
 
   return (
-    <Stack direction='row' spacing={4} mb={6}>
-      <InputGroup size='sm'>
-        <InputLeftElement pointerEvents='none'>
-          <SearchLineIcon color='gray.300' w='17px' h='17px' />
+    <Stack direction="row" spacing={4} mb={6}>
+      <InputGroup size="sm">
+        <InputLeftElement pointerEvents="none">
+          <SearchLineIcon color="gray.300" w="17px" h="17px" />
         </InputLeftElement>
         <Input
-          type='search'
+          type="search"
           minWidth={200}
           placeholder="Search by Username"
           size="sm"
@@ -45,13 +46,13 @@ const UserManagementTableActions: React.FC = () => {
           onChange={handleSearchChange}
         />
       </InputGroup>
-      <NextLink href='/user-management/new' passHref>
+      <NextLink href={`${USER_MANAGEMENT_ROUTE}/new`} passHref>
         <Button
-          variant='solid'
-          bg='primary.800'
-          color='white'
+          variant="solid"
+          bg="primary.800"
+          color="white"
           flexShrink={0}
-          size='sm'
+          size="sm"
         >
           Add New User
         </Button>

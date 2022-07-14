@@ -1,20 +1,8 @@
-# How-To: Connect to SQL and NoSQL Databases
-
-In this section we'll cover:
-
-- What's a "connection"?
-- Which databases does Fidesops support?
-- How do you create a ConnectionConfig object?
-- How do you identify the database that a ConnectionConfig connects to?
-- How do you test and update a ConnectionConfig's Secrets?
-- How does a ConnectionConfig differ from a Dataset?
-
-
-Take me directly to the [ConnectionConfig API documentation](/fidesops/api#operations-tag-Connections).
+# Connect to SQL and NoSQL Databases
 
 ## What is a connection?
 
-A _connection_ links your databases to Fidesops, so you can gather and update selected PII 
+A _connection_ links your databases to fidesops, so you can gather and update selected PII 
 categories.
 
 ## Supported databases
@@ -32,9 +20,9 @@ Fidesops supports connections to the following databases:
 
 Other platforms will be added in future releases.
 
-## Creating a ConnectionConfig object 
+## Create a ConnectionConfig object 
 
-The connection between Fidesops and your database is represented by a _ConnectionConfig_ object. To create a ConnectionConfig, you issue a request to the [Create a ConnectionConfig](/fidesops/api/#operations-Connections-put_connections_api_v1_connection_put) operation, passing a payload that contains the properties listed below. 
+The connection between fidesops and your database is represented by a _ConnectionConfig_ object. To create a ConnectionConfig, you issue a request to the [Create a ConnectionConfig](/fidesops/api/#operations-Connections-put_connections_api_v1_connection_put) operation, passing a payload that contains the properties listed below. 
 
 * `name`  is a human-readable name for your database.
 
@@ -42,16 +30,18 @@ The connection between Fidesops and your database is represented by a _Connectio
 
 * `connection-type` specifies the type of database. Valid values are `postgres`, `mongodb`, `mysql`, `mariadb`, `mssql`, `redshift`, `snowflake`, and `bigquery`.
 
-* `access` sets the connection's permissions, one of "read" (Fidesops may only read from your database) or "write" (Fidesops can read from and write to your database).
+* `access` sets the connection's permissions, one of "read" (fidesops may only read from your database) or "write" (fidesops can read from and write to your database).
+
+* `disabled` determines whether the ConnectionConfig is active.  If True, we skip running queries for any collection associated with that ConnectionConfig.
+
+* `description` is an extra field to add further details about your connection. 
 
 While the ConnectionConfig object contains meta information about the database, you'll notice that it doesn't actually identify the database itself. We'll get to that when we set the ConnectionConfig's "secrets".
 
 
-#### Example 1: PostgreSQL ConnectionConfig
+### PostgreSQL
 
-``` 
-PATCH api/v1/connection
-
+```json title="<code>PATCH api/v1/connection</code>"
 [
   { 
     "name": "Application PostgreSQL DB",
@@ -62,80 +52,78 @@ PATCH api/v1/connection
 ]
 ```
 
-#### Example 2: MongoDB ConnectionConfig
+### MongoDB
 
-
-
-```
-PATCH api/v1/connection
-
+```json title="<code>PATCH api/v1/connection</code>"
 [
   { 
     "name": "My Mongo DB",
     "key": "my_mongo_db",
     "connection_type": "mongodb",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
 
-#### Example 3: MySQL ConnectionConfig 
+### MySQL 
 
-```
-PATCH api/v1/connection 
+```json title="<code>PATCH api/v1/connection</code>"
 [
   { 
     "name": "My MySQL DB",
     "key": "my_mysql_db",
     "connection_type": "mysql",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
 
-#### Example 4: MariaDB ConnectionConfig
+### MariaDB
 
-```
-PATCH api/v1/connection 
+```json title="<code>PATCH api/v1/connection</code>"
 [
   { 
     "name": "My Maria DB",
     "key": "my_maria_db",
     "connection_type": "mariadb",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
 
-#### Example 5: MsSQL ConnectionConfig
+### MsSQL
 
-```
-PATCH api/v1/connection 
+```json title="<code>PATCH api/v1/connection </code>"
 [
   { 
     "name": "My MsSQL DB",
     "key": "my_mssql_db",
     "connection_type": "mssql",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
 
-#### Example 6: Manual ConnectionConfig
+### Manual connections
 
-```
-PATCH api/v1/connection 
+```json title="<code>PATCH api/v1/connection </code>"
 [
   {
     "name": "Manual connector",
     "key": "manual_connector",
     "connection_type": "manual",
-    "access": "read"
+    "access": "read",
+    "disabled": false,
+    "description": "Connector describing manual actions"
   }
 ]
 ``` 
 
-### Set the ConnectionConfig's Secrets
+## Set ConnectionConfig secrets
 
 After you create a ConnectionConfig, you explain how to connect to it by setting its "secrets": host, port, user, and password (note that the secrets used are specific to the DB connector). You do this by creating a ConnectionConfig Secrets object by calling the [Set a ConnectionConfig's Secrets](/fidesops/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put) operation. You can set the object's attributes separately, or supply a single `url` string that encodes them all.
 
@@ -143,16 +131,13 @@ If you set the `verify` query parameter to `true`, the operation  will  test the
 
 To skip the connection test, set `verify` to `false`.
 
-Note: Fidesops encrypts all ConnectionConfig Secrets values before they're stored.
+Note: fidesops encrypts all ConnectionConfig secrets values before they're stored.
 
-
-#### Example 1: Set the secrets separately
+### Set the secrets separately
 
 This example sets the database secrets through separate properties and then tests the connection.
 
-```
-PUT /api/v1/connection/application-postgresql-db/secret?verify=true`
-
+```json title="<code>PUT /api/v1/connection/application-postgresql-db/secret?verify=true</code>"
 {
    "host": "host.docker.internal",
    "port": 5432,
@@ -162,36 +147,32 @@ PUT /api/v1/connection/application-postgresql-db/secret?verify=true`
 }
 ```
 
-#### Example 2: Set the secrets as a URL
+### Set the secrets as a URL
 
 This example sets the database secrets as a single `url` property, and skips the connection test.
 
 
-```
-PUT api/v1/connection/my_mongo_db/secret?verify=false`
- 
+```json title="<code>PUT api/v1/connection/my_mongo_db/secret?verify=false</code>" 
 {
     "url": "mongodb://mongo_user:mongo_pass@mongodb_example/mongo_test"
 }
 ```
 
-#### Example 3: Amazon Redshift: Set URL and Schema
+### Amazon Redshift
 
 This Amazon Redshift example sets the database secrets as a `url` property and a `db_schema` property.  Redshift
 databases have one or more schemas, with the default being named `public`.  If you need to set a different schema,
 specify `db_schema` for Redshift, and it will be set as the `search_path` when querying.
 
 
-```
-PUT api/v1/connection/my_redshift_db/secret`
- 
+```json title="<code>PUT api/v1/connection/my_redshift_db/secret</code>" 
 {
     "url": "redshift+psycopg2://username@host.amazonaws.com:5439/database",
     "db_schema": "my_test_schema"
 }
 ```
 
-#### Example 4: Google BigQuery
+### Google BigQuery
 
 For Google BigQuery, there are 2 items needed for secrets: 
 
@@ -201,9 +182,7 @@ For Google BigQuery, there are 2 items needed for secrets:
 
 Here's an example of what this looks like:
 
-```
-PUT api/v1/connection/my_bigquery_db/secret`
-
+```json title="<code>PUT api/v1/connection/my_bigquery_db/secret</code>"
 {
     "dataset": "some-dataset",
     "keyfile_creds": {
@@ -221,7 +200,7 @@ PUT api/v1/connection/my_bigquery_db/secret`
 }
 ```
 
-### Testing your connection 
+### Test your connection 
 
 You can verify that a ConnectionConfig's secrets are valid at any time by calling the [Test a ConnectionConfig's Secrets](/fidesops/api#operations-Connections-test_connection_config_secrets_api_v1_connection__connection_key__test_get) operation:
 
@@ -234,7 +213,7 @@ Once again, the `test_status` and `failure_reason` properties describe the succe
 you should adjust the ConnectionConfig Secrets properties through additional calls to [Set a ConnectionConfig's Secrets](/fidesops/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put)
 
 
-#### Example 1: Connection Succeeded
+#### Connection succeeded
 
 ```json
 {
@@ -244,7 +223,7 @@ you should adjust the ConnectionConfig Secrets properties through additional cal
 }
 ```
 
-#### Example 2: Connection Failed
+### Connection failed
 
 ```json
 {
@@ -266,16 +245,165 @@ Once you have a working ConnectionConfig, it can be associated to an existing [d
 }]
 ```
 
+## Filtering ConnectionConfigs
+
+Current available filters are the `connection_type` and whether the connection is `disabled`.
+
+### Connection type filter
+
+Including multiple `connection_type` query params and values will result in a query that looks for 
+*any* connections with that type.
+
+```json title="<code>GET api/v1//connection/?connection_type=mariadb&connection_type=postgres</code>"
+{
+    "items": [
+        {
+            "name": "Application Maria DB",
+            "key": "app_mariadb_db",
+            "description": null,
+            "connection_type": "mariadb",
+            "access": "write",
+            "created_at": "2022-06-16T22:21:02.353226+00:00",
+            "updated_at": "2022-06-16T22:21:02.353226+00:00",
+            "disabled": false,
+            "last_test_timestamp": null,
+            "last_test_succeeded": null
+        },
+        {
+            "name": "Application PostgreSQL DB",
+            "key": "app_postgres_db",
+            "description": "postgres backup",
+            "connection_type": "postgres",
+            "access": "write",
+            "created_at": "2022-06-16T22:20:24.972539+00:00",
+            "updated_at": "2022-06-16T22:20:24.972539+00:00",
+            "disabled": false,
+            "last_test_timestamp": null,
+            "last_test_succeeded": null
+        }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 50
+}
+
+```
+
+### Disabled filter
+
+The `disabled` filter can show which datastores are skipped as part of privacy request execution.
+
+```json title="<code>GET api/v1/connection/?disabled=true</code>"
+{
+    "items": [
+        {
+            "name": "My Mongo DB",
+            "key": "app_mongo_db",
+            "description": "Primary Mongo DB",
+            "connection_type": "mongodb",
+            "access": "write",
+            "created_at": "2022-06-16T22:20:34.122212+00:00",
+            "updated_at": "2022-06-16T22:20:34.122212+00:00",
+            "disabled": true,
+            "last_test_timestamp": null,
+            "last_test_succeeded": null
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+
+```
+
+### Testing_Status filter
+The `testing_status` filter queries on the status of the last successful test:
+
+```json title="<code>GET api/v1/connection/?test_status=false</code>"
+{
+    "items": [
+        {
+            "name": "My Mongo DB",
+            "key": "app_mongo_db",
+            "description": "Primary Mongo DB",
+            "connection_type": "mongodb",
+            "access": "write",
+            "created_at": "2022-06-16T22:20:34.122212+00:00",
+            "updated_at": "2022-06-16T22:20:34.122212+00:00",
+            "disabled": true,
+            "last_test_timestamp": 2022-06-16T22:20:34.122212+00:00,
+            "last_test_succeeded": false
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+
+```
+
+### System_Status filter
+The `system_status` filter surfaces either `database` or `saas`-type connectors:
+
+```json title="<code>GET api/v1/connection/?system_type=database</code>"
+{
+    "items": [
+        {
+            "name": "My Mongo DB",
+            "key": "app_mongo_db",
+            "description": "Primary Mongo DB",
+            "connection_type": "mongodb",
+            "access": "write",
+            "created_at": "2022-06-16T22:20:34.122212+00:00",
+            "updated_at": "2022-06-16T22:20:34.122212+00:00",
+            "disabled": true,
+            "last_test_timestamp": 2022-06-16T22:20:34.122212+00:00,
+            "last_test_succeeded": false
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+
+```
+
+
+## Search a ConnectionConfig
+
+You can search the `name`, `key`, and `description` fields of your ConnectionConfigs with the `search` query parameter.
+
+```json title="<code>GET /api/v1/connection/?search=application mysql</code>"
+{
+    "items": [
+        {
+            "name": "Application MySQL DB",
+            "key": "app_mysql_db",
+            "description": "My Backup MySQL DB",
+            "connection_type": "mysql",
+            "access": "read",
+            "created_at": "2022-06-13T18:03:28.404091+00:00",
+            "updated_at": "2022-06-13T18:03:28.404091+00:00",
+            "last_test_timestamp": null,
+            "last_test_succeeded": null
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+```
+
 ## How do ConnectionConfigs differ from Datasets?
 
 A Dataset is an annotation of your database schema; it describes the PII category (or Data Categories) for each field that the database contains. A ConnectionConfig holds the secrets to connect to the database. Each Dataset has a foreign key to a ConnectionConfig.
 
-After Fidesops connects to your database, it generates valid queries by consulting the annotations in the Dataset.
+After fidesops connects to your database, it generates valid queries by consulting the annotations in the Dataset.
 
-Here is an example of how a "person" table in your PostgreSQL database might map to a Fidesops
+Here is an example of how a "person" table in your PostgreSQL database might map to a fidesops
 Dataset:
 
-```
+```yaml
 Person:
   id: str
   name: str
@@ -297,4 +425,4 @@ dataset:
 ```
 
 
-See [How-To: Configure Datasets](datasets.md) for more information.
+See [Configuring Datasets](datasets.md) for more information.

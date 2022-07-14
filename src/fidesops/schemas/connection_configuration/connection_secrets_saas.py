@@ -19,9 +19,11 @@ class SaaSSchema(BaseModel, abc.ABC):
     ) -> Dict[str, Any]:
         """Validate that the minimum required components have been supplied."""
 
-        required_components = cls.__fields__.keys()
+        required_components = [
+            name for name, attributes in cls.__fields__.items() if attributes.required
+        ]
         min_fields_present = all(
-            [values.get(component) for component in required_components]
+            values.get(component) for component in required_components
         )
         if not min_fields_present:
             raise ValueError(
@@ -49,12 +51,18 @@ class SaaSSchemaFactory:
     # Pydantic uses the shorthand of (str, ...) to denote a required field of type str
     def get_saas_schema(self) -> Type[SaaSSchema]:
         """Returns the schema for the current configuration"""
-        field_definitions: Dict[str, Any] = {
-            connector_param.name: (str, ...)
-            for connector_param in self.saas_config.connector_params
-        }
-        return create_model(
+        field_definitions: Dict[str, Any] = {}
+        for connector_param in self.saas_config.connector_params:
+            field_definitions[connector_param.name] = (
+                connector_param.default_value
+                if connector_param.default_value
+                else (str, ...)
+            )
+        SaaSSchema.__doc__ = f"{str(self.saas_config.type).capitalize()} secrets schema"  # Dynamically override the docstring
+        model: Type[SaaSSchema] = create_model(
             f"{self.saas_config.fides_key}_schema",
             **field_definitions,
             __base__=SaaSSchema,
         )
+
+        return model

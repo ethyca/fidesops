@@ -26,8 +26,6 @@ DRP_JWT_SECRET = "testdrpsecret"
 LOG_LEVEL = "DEBUG"
 
 [execution]
-CELERY_BROKER_URL = "redis://:testpassword@redis:6379"
-CELERY_RESULT_BACKEND = "redis://:testpassword@redis:6379"
 TASK_RETRY_COUNT = 0
 TASK_RETRY_DELAY = 1
 TASK_RETRY_BACKOFF = 1
@@ -37,3 +35,6 @@ MASKING_STRICT = true
 [root_user]
 ANALYTICS_OPT_OUT = true
 ANALYTICS_ID = "internal"
+
+[admin_ui]
+ENABLED = true

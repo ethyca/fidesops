@@ -1,13 +1,12 @@
 import json
 import os
-import time
 from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
 
-from fidesops.core.config import load_toml
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -17,11 +16,11 @@ from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors import SaaSConnector
 from fidesops.util import cryptographic_util
-from fidesops.util.saas_util import format_body
+from fidesops.util.saas_util import format_body, load_config
 from tests.fixtures.application_fixtures import load_dataset
-from tests.fixtures.saas_example_fixtures import load_config
+from tests.test_helpers.saas_test_utils import poll_for_existence
 
-saas_config = load_toml("saas_config.toml")
+saas_config = load_toml(["saas_config.toml"])
 
 HUBSPOT_FIRSTNAME = "SomeoneFirstname"
 
@@ -143,14 +142,14 @@ def hubspot_erasure_data(
     # no need to subscribe contact, since creating a contact auto-subscribes them
 
     # Allows contact to be propagated in Hubspot before calling access / erasure requests
-    retries = 10
-    while _contact_exists(hubspot_erasure_identity_email, connector) is False:
-        if not retries:
-            raise Exception(
-                f"Contact with contact id {contact_id} could not be added to Hubspot"
-            )
-        retries -= 1
-        time.sleep(5)
+    error_message = (
+        f"Contact with contact id {contact_id} could not be added to Hubspot"
+    )
+    poll_for_existence(
+        _contact_exists,
+        (hubspot_erasure_identity_email, connector),
+        error_message=error_message,
+    )
 
     yield contact_id
 
@@ -162,19 +161,20 @@ def hubspot_erasure_data(
     connector.create_client().send(delete_request)
 
     # verify contact is deleted
-    retries = 10
-    while _contact_exists(hubspot_erasure_identity_email, connector) is True:
-        if not retries:
-            raise Exception(
-                f"Contact with contact id {contact_id} could not be deleted from Hubspot"
-            )
-        retries -= 1
-        time.sleep(5)  # Ensures contact is deleted
+    error_message = (
+        f"Contact with contact id {contact_id} could not be deleted from Hubspot"
+    )
+    poll_for_existence(
+        _contact_exists,
+        (hubspot_erasure_identity_email, connector),
+        error_message=error_message,
+        existence_desired=False,
+    )
 
 
 def _contact_exists(
     hubspot_erasure_identity_email: str, connector: SaaSConnector
-) -> bool:
+) -> Any:
     """
     Confirm whether contact exists by calling search api and comparing firstname str.
     """
@@ -204,7 +204,8 @@ def _contact_exists(
     )
     contact_response = connector.create_client().send(contact_request)
     contact_body = contact_response.json()
-    return bool(
+    if (
         contact_body["results"]
         and contact_body["results"][0]["properties"]["firstname"] == HUBSPOT_FIRSTNAME
-    )
+    ):
+        return contact_body

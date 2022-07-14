@@ -29,14 +29,15 @@ DRP_JWT_SECRET = "secret"
 LOG_LEVEL = "INFO"
 
 [execution]
-CELERY_BROKER_URL = "redis://:testpassword@redis:6379"
-CELERY_RESULT_BACKEND = "redis://:testpassword@redis:6379"
 MASKING_STRICT = true
 REQUIRE_MANUAL_REQUEST_APPROVAL = false
 TASK_RETRY_COUNT = 0
 TASK_RETRY_DELAY = 1
 TASK_RETRY_BACKOFF = 1
+WORKER_ENABLED = false
 
 [root_user]
 ANALYTICS_OPT_OUT = false
-ANALYTICS_ID = "89187e1f107ebe56c35e4f864af83a90"
+
+[admin_ui]
+ENABLED = true

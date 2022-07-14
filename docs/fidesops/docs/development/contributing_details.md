@@ -5,7 +5,7 @@
 ## API Endpoints
 
 ### Postman API Collection
-Our [Fidesops Postman Collection](../postman/Fidesops.postman_collection.json) can be used to test Fidesops endpoints.
+Our [fidesops Postman Collection](../postman/Fidesops.postman_collection.json) can be used to test fidesops endpoints.
 
 Follow our [Using Postman](../postman/using_postman.md) guide to learn more about the how to use the collection.
 
@@ -51,7 +51,7 @@ Once you've added database tables via project models, you're ready to read, writ
 - Import our application's database session: `from fidesops.db.session import get_db_session`
 - Instantiate the database interaction object:
 ```
-SessionLocal = get_db_session()
+SessionLocal = get_db_session(config)
 db = SessionLocal()
 ```
 - Create a new row in a table:
@@ -92,7 +92,7 @@ Some common Alembic commands are listed below. For a comprehensive guide see: ht
 
 The commands will need to be run inside a shell on your Docker containers, which can be opened with `make server-shell`.
 
-In the `/src` directory:
+In the `/src/fidesops` directory:
 
 - Migrate your database to the latest state: `alembic upgrade head`
 - Get revision id of previous migration: `alembic current`

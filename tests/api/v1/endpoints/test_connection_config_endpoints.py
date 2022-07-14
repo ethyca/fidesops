@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from typing import Dict, List
 from unittest import mock
 from unittest.mock import Mock
@@ -6,6 +7,7 @@ from unittest.mock import Mock
 import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
+from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
@@ -16,7 +18,6 @@ from fidesops.api.v1.scope_registry import (
     STORAGE_DELETE,
 )
 from fidesops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
-from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 
 page_size = Params().size
@@ -24,7 +25,7 @@ page_size = Params().size
 
 class TestPatchConnections:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, policy) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + CONNECTIONS
 
     @pytest.fixture(scope="function")
@@ -40,7 +41,7 @@ class TestPatchConnections:
         ]
 
     def test_patch_connections_not_authenticated(
-        self, api_client: TestClient, generate_auth_header, url, payload
+        self, api_client: TestClient, url, payload
     ) -> None:
         response = api_client.patch(url, headers={}, json=payload)
         assert 401 == response.status_code
@@ -112,6 +113,7 @@ class TestPatchConnections:
         assert postgres_connection["created_at"] is not None
         assert postgres_connection["updated_at"] is not None
         assert postgres_connection["last_test_timestamp"] is None
+        assert postgres_connection["disabled"] is False
         assert "secrets" not in postgres_connection
 
         mongo_connection = response_body["succeeded"][1]
@@ -120,6 +122,7 @@ class TestPatchConnections:
         assert mongo_connection["key"] == "my_mongo_db"  # stringified name
         assert mongo_connection["connection_type"] == "mongodb"
         assert mongo_connection["access"] == "read"
+        assert postgres_connection["disabled"] is False
         assert mongo_connection["created_at"] is not None
         assert mongo_connection["updated_at"] is not None
         assert mongo_connection["last_test_timestamp"] is None
@@ -131,7 +134,7 @@ class TestPatchConnections:
         mongo_resource.delete(db)
 
     def test_patch_connections_bulk_update_key_error(
-        self, url, api_client: TestClient, db: Session, generate_auth_header, payload
+        self, url, api_client: TestClient, generate_auth_header, payload
     ) -> None:
         # Create resources first
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
@@ -193,6 +196,7 @@ class TestPatchConnections:
                 "key": "postgres_db_1",
                 "connection_type": "postgres",
                 "access": "read",
+                "disabled": True,
             },
             {
                 "key": "my_mongo_db",
@@ -235,6 +239,7 @@ class TestPatchConnections:
                 "name": "Snowflake Warehouse",
                 "connection_type": "snowflake",
                 "access": "write",
+                "description": "Backup snowflake db",
             },
         ]
 
@@ -250,19 +255,23 @@ class TestPatchConnections:
 
         postgres_connection = response_body["succeeded"][0]
         assert postgres_connection["access"] == "read"
+        assert postgres_connection["disabled"] is True
         assert "secrets" not in postgres_connection
         assert postgres_connection["updated_at"] is not None
         postgres_resource = (
             db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()
         )
         assert postgres_resource.access.value == "read"
+        assert postgres_resource.disabled
 
         mongo_connection = response_body["succeeded"][1]
         assert mongo_connection["access"] == "write"
+        assert mongo_connection["disabled"] is False
         assert mongo_connection["updated_at"] is not None
         mongo_resource = db.query(ConnectionConfig).filter_by(key="my_mongo_db").first()
         assert mongo_resource.access.value == "write"
         assert "secrets" not in mongo_connection
+        assert not mongo_resource.disabled
 
         mysql_connection = response_body["succeeded"][2]
         assert mysql_connection["access"] == "read"
@@ -308,10 +317,12 @@ class TestPatchConnections:
         snowflake_connection = response_body["succeeded"][7]
         assert snowflake_connection["access"] == "write"
         assert snowflake_connection["updated_at"] is not None
+        assert snowflake_connection["description"] == "Backup snowflake db"
         snowflake_resource = (
             db.query(ConnectionConfig).filter_by(key="my_snowflake").first()
         )
         assert snowflake_resource.access.value == "write"
+        assert snowflake_resource.description == "Backup snowflake db"
         assert "secrets" not in snowflake_connection
 
         postgres_resource.delete(db)
@@ -323,7 +334,7 @@ class TestPatchConnections:
         mssql_resource.delete(db)
         bigquery_resource.delete(db)
 
-    @mock.patch("fidesops.db.base_class.OrmWrappedFidesopsBase.create_or_update")
+    @mock.patch("fideslib.db.base_class.OrmWrappedFidesBase.create_or_update")
     def test_patch_connections_failed_response(
         self, mock_create: Mock, api_client: TestClient, generate_auth_header, url
     ) -> None:
@@ -357,13 +368,73 @@ class TestPatchConnections:
             "key": "postgres_db_1",
             "connection_type": "postgres",
             "access": "write",
+            "disabled": False,
+            "description": None,
         }
         assert response_body["failed"][1]["data"] == {
             "name": "My Mongo DB",
             "key": None,
             "connection_type": "mongodb",
             "access": "read",
+            "disabled": False,
+            "description": None,
         }
+
+    @mock.patch("fidesops.main.prepare_and_log_request")
+    def test_patch_connections_incorrect_scope_analytics(
+        self,
+        mocked_prepare_and_log_request,
+        api_client: TestClient,
+        generate_auth_header,
+        payload,
+    ) -> None:
+        url = V1_URL_PREFIX + CONNECTIONS
+        auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+        assert mocked_prepare_and_log_request.called
+        call_args = mocked_prepare_and_log_request._mock_call_args[0]
+
+        assert call_args[0] == "PATCH: http://testserver/api/v1/connection"
+        assert call_args[1] == "testserver"
+        assert call_args[2] == 403
+        assert isinstance(call_args[3], datetime)
+        assert call_args[4] is None
+        assert call_args[5] == "HTTPException"
+
+    @mock.patch("fidesops.main.prepare_and_log_request")
+    def test_patch_http_connection_successful_analytics(
+        self,
+        mocked_prepare_and_log_request,
+        api_client,
+        db: Session,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = [
+            {
+                "name": "My Post-Execution Webhook",
+                "key": "webhook_key",
+                "connection_type": "https",
+                "access": "read",
+            }
+        ]
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        body = json.loads(response.text)
+        assert body["succeeded"][0]["connection_type"] == "https"
+        http_config = ConnectionConfig.get_by(db, field="key", value="webhook_key")
+        http_config.delete(db)
+
+        call_args = mocked_prepare_and_log_request._mock_call_args[0]
+
+        assert call_args[0] == "PATCH: http://testserver/api/v1/connection"
+        assert call_args[1] == "testserver"
+        assert call_args[2] == 200
+        assert isinstance(call_args[3], datetime)
+        assert call_args[4] is None
+        assert call_args[5] is None
 
 
 class TestGetConnections:
@@ -404,6 +475,8 @@ class TestGetConnections:
             "last_test_succeeded",
             "key",
             "created_at",
+            "disabled",
+            "description",
         }
 
         assert connection["key"] == "my_postgres_db_1"
@@ -415,6 +488,192 @@ class TestGetConnections:
         assert response_body["total"] == 1
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
+
+    def test_filter_connections_disabled_and_type(
+        self,
+        db,
+        connection_config,
+        disabled_connection_config,
+        read_connection_config,
+        redshift_connection_config,
+        mongo_connection_config,
+        api_client,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+
+        resp = api_client.get(url, headers=auth_header)
+        items = resp.json()["items"]
+        assert len(items) == 5
+
+        resp = api_client.get(url + "?connection_type=postgres", headers=auth_header)
+        items = resp.json()["items"]
+        assert len(items) == 3
+        assert all(
+            [con["connection_type"] == "postgres" for con in resp.json()["items"]]
+        )
+
+        resp = api_client.get(
+            url + "?connection_type=postgres&connection_type=redshift",
+            headers=auth_header,
+        )
+        items = resp.json()["items"]
+        assert resp.status_code == 200
+        assert len(items) == 4
+        assert all(
+            [
+                con["connection_type"] in ["redshift", "postgres"]
+                for con in resp.json()["items"]
+            ]
+        )
+
+        resp = api_client.get(
+            url + "?connection_type=postgres&disabled=false", headers=auth_header
+        )
+        assert resp.status_code == 200
+        items = resp.json()["items"]
+        assert len(items) == 2
+        assert all(
+            [con["connection_type"] in ["postgres"] for con in resp.json()["items"]]
+        )
+        assert all([con["disabled"] is False for con in resp.json()["items"]])
+
+        resp = api_client.get(
+            url + "?connection_type=postgres&disabled=True", headers=auth_header
+        )
+        items = resp.json()["items"]
+        assert resp.status_code == 200
+        assert len(items) == 1
+        assert all(
+            [con["connection_type"] in ["postgres"] for con in resp.json()["items"]]
+        )
+        assert all([con["disabled"] is True for con in resp.json()["items"]])
+
+    def test_filter_test_status(
+        self,
+        db,
+        connection_config,
+        disabled_connection_config,
+        read_connection_config,
+        redshift_connection_config,
+        mongo_connection_config,
+        api_client,
+        generate_auth_header,
+        url,
+    ):
+        mongo_connection_config.last_test_succeeded = True
+        mongo_connection_config.save(db)
+        redshift_connection_config.last_test_succeeded = False
+        redshift_connection_config.save(db)
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url + "?test_status=passed", headers=auth_header)
+        items = resp.json()["items"]
+        assert resp.status_code == 200
+        assert len(items) == 1
+        assert items[0]["last_test_succeeded"] is True
+        assert items[0]["key"] == mongo_connection_config.key
+
+        resp = api_client.get(url + "?test_status=failed", headers=auth_header)
+        items = resp.json()["items"]
+        assert resp.status_code == 200
+        assert len(items) == 1
+        assert items[0]["last_test_succeeded"] is False
+        assert items[0]["key"] == redshift_connection_config.key
+
+        resp = api_client.get(url + "?test_status=untested", headers=auth_header)
+        items = resp.json()["items"]
+        assert resp.status_code == 200
+        assert len(items) == 3
+        assert [item["last_test_succeeded"] is None for item in items]
+
+    def test_filter_system_type(
+        self,
+        db,
+        connection_config,
+        disabled_connection_config,
+        read_connection_config,
+        redshift_connection_config,
+        mongo_connection_config,
+        api_client,
+        generate_auth_header,
+        stripe_connection_config,
+        integration_manual_config,
+        url,
+    ):
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url + "?system_type=saas", headers=auth_header)
+        items = resp.json()["items"]
+        assert resp.status_code == 200
+        assert len(items) == 1
+        assert items[0]["connection_type"] == "saas"
+        assert items[0]["key"] == stripe_connection_config.key
+
+        resp = api_client.get(url + "?system_type=database", headers=auth_header)
+        items = resp.json()["items"]
+        assert resp.status_code == 200
+        assert len(items) == 5
+
+        resp = api_client.get(url + "?system_type=manual", headers=auth_header)
+        items = resp.json()["items"]
+        assert resp.status_code == 200
+        assert len(items) == 1
+        assert items[0]["connection_type"] == "manual"
+        assert items[0]["key"] == integration_manual_config.key
+
+        # Conflicting filters
+        resp = api_client.get(
+            url + "?system_type=saas&connection_type=mongodb", headers=auth_header
+        )
+        items = resp.json()["items"]
+        assert resp.status_code == 200
+        assert len(items) == 0
+
+    def test_search_connections(
+        self,
+        db,
+        connection_config,
+        read_connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+
+        resp = api_client.get(url + "?search=primary", headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 1
+        assert "primary" in resp.json()["items"][0]["description"].lower()
+
+        resp = api_client.get(url + "?search=read", headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 1
+        assert "read" in resp.json()["items"][0]["description"].lower()
+
+        resp = api_client.get(url + "?search=nonexistent", headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 0
+
+        resp = api_client.get(url + "?search=postgres", headers=auth_header)
+        assert resp.status_code == 200
+        items = resp.json()["items"]
+        assert len(items) == 2
+
+        ordered = (
+            db.query(ConnectionConfig)
+            .filter(
+                ConnectionConfig.key.in_(
+                    [read_connection_config.key, connection_config.key]
+                )
+            )
+            .order_by(ConnectionConfig.name.asc())
+            .all()
+        )
+        assert len(ordered) == 2
+        assert ordered[0].key == items[0]["key"]
+        assert ordered[1].key == items[1]["key"]
 
 
 class TestGetConnection:
@@ -462,6 +721,8 @@ class TestGetConnection:
             "last_test_succeeded",
             "key",
             "created_at",
+            "disabled",
+            "description",
         }
 
         assert response_body["key"] == "my_postgres_db_1"

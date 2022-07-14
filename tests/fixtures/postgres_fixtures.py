@@ -3,11 +3,12 @@ from typing import Dict, Generator, List
 from uuid import uuid4
 
 import pytest
+from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fidesops.db.session import get_db_engine, get_db_session
+from fidesops.core.config import config
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -140,10 +141,32 @@ def connection_config(
             "connection_type": ConnectionType.postgres,
             "access": AccessLevel.write,
             "secrets": integration_secrets["postgres_example"],
+            "disabled": False,
+            "description": "Primary postgres connection",
         },
     )
     yield connection_config
     connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def disabled_connection_config(
+    db: Session,
+) -> Generator:
+    disabled_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "disabled_postgres_connection",
+            "connection_type": ConnectionType.postgres,
+            "access": AccessLevel.read,
+            "secrets": integration_secrets["postgres_example"],
+            "disabled": True,
+            "description": "Old postgres connection",
+        },
+    )
+    yield connection_config
+    disabled_config.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -158,6 +181,7 @@ def read_connection_config(
             "connection_type": ConnectionType.postgres,
             "access": AccessLevel.read,
             "secrets": integration_secrets["postgres_example"],
+            "description": "Read-only connection config",
         },
     )
     yield connection_config
@@ -169,6 +193,7 @@ def postgres_integration_session_cls(connection_config):
     example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
     engine = get_db_engine(database_uri=example_postgres_uri)
     SessionLocal = get_db_session(
+        config=config,
         engine=engine,
         autocommit=True,
         autoflush=True,

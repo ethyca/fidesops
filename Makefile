@@ -7,7 +7,10 @@
 REGISTRY := ethyca
 IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
 
-IMAGE_NAME := fidesops
+# IMAGE_NAME is webserver rather than fidesops_webserver because commands that don't
+# use docker-compose fail with fidesops_webserver. When left as webserver here both
+# sets of commands work.
+IMAGE_NAME := webserver
 IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
@@ -43,6 +46,9 @@ reset-db:
 server: compose-build
 	@docker-compose up
 
+server-with-worker: compose-build
+	@docker-compose -f docker-compose.yml -f docker-compose.worker.yml up
+
 server-no-db: compose-build
 	@docker-compose -f docker-compose.no-db.yml up
 
@@ -69,7 +75,7 @@ quickstart:
 ####################
 
 docker-build:
-	docker build --tag $(IMAGE) .
+	docker build --tag $(IMAGE) -f Dockerfile.app .
 
 docker-push:
 	docker tag $(IMAGE) $(IMAGE_LATEST)
@@ -127,6 +133,7 @@ pytest: compose-build
 		-e ANALYTICS_OPT_OUT \
 		$(IMAGE_NAME) \
 		pytest $(pytestpath) -m "not integration and not integration_external and not integration_saas"
+
 	@make teardown
 
 pytest-integration:
@@ -151,11 +158,13 @@ pytest-saas: compose-build
 	@docker-compose run \
 		-e ANALYTICS_OPT_OUT \
 		-e MAILCHIMP_DOMAIN -e MAILCHIMP_USERNAME -e MAILCHIMP_API_KEY -e MAILCHIMP_IDENTITY_EMAIL \
-		-e SENTRY_HOST -e SENTRY_ACCESS_TOKEN -e SENTRY_IDENTITY_EMAIL -e SENTRY_ERASURE_TOKEN -e SENTRY_ERASURE_IDENTITY -e SENTRY_USER_ID -e SENTRY_ISSUE_URL  \
+		-e SENTRY_DOMAIN -e SENTRY_ACCESS_TOKEN -e SENTRY_IDENTITY_EMAIL -e SENTRY_ERASURE_TOKEN -e SENTRY_ERASURE_IDENTITY -e SENTRY_USER_ID -e SENTRY_ISSUE_URL  \
 		-e HUBSPOT_DOMAIN -e HUBSPOT_HAPIKEY -e HUBSPOT_IDENTITY_EMAIL \
+		-e ZENDESK_DOMAIN -e ZENDESK_USERNAME -e ZENDESK_API_KEY -e ZENDESK_IDENTITY_EMAIL \
 		-e SEGMENT_DOMAIN -e SEGMENT_PERSONAS_DOMAIN -e SEGMENT_WORKSPACE -e SEGMENT_ACCESS_TOKEN -e SEGMENT_API_DOMAIN -e SEGMENT_NAMESPACE_ID -e SEGMENT_ACCESS_SECRET -e SEGMENT_USER_TOKEN -e SEGMENT_IDENTITY_EMAIL \
-		-e STRIPE_HOST -e STRIPE_API_KEY -e STRIPE_PAYMENT_TYPES -e STRIPE_ITEMS_PER_PAGE -e STRIPE_IDENTITY_EMAIL \
+		-e STRIPE_DOMAIN -e STRIPE_API_KEY -e STRIPE_PAYMENT_TYPES -e STRIPE_PAGE_SIZE -e STRIPE_IDENTITY_EMAIL \
 		-e SENDGRID_HOST -e SENDGRID_API_KEY -e SENDGRID_IDENTITY_EMAIL \
+		-e SALESFORCE_DOMAIN -e SALESFORCE_CLIENT_ID -e SALESFORCE_CLIENT_SECRET -e SALESFORCE_ACCESS_TOKEN -e SALESFORCE_USERNAME -e SALESFORCE_PASSWORD -e SALESFORCE_IDENTITY_EMAIL \
 		$(IMAGE_NAME) pytest $(pytestpath) -m "integration_saas"
 	@make teardown
 

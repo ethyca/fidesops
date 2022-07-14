@@ -1,3 +1,4 @@
+import imp
 import json
 import os
 import time
@@ -8,8 +9,8 @@ import pytest
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_202_ACCEPTED
 
-from fidesops.core.config import load_toml
-from fidesops.db import session
+from fideslib.core.config import load_toml
+from fideslib.db import session
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -21,8 +22,9 @@ from fidesops.service.connectors import SaaSConnector
 from fidesops.util import cryptographic_util
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
+from tests.test_helpers.saas_test_utils import poll_for_existence
 
-saas_config = load_toml("saas_config.toml")
+saas_config = load_toml(["saas_config.toml"])
 SENDGRID_ERASURE_FIRSTNAME = "Erasurefirstname"
 
 
@@ -141,26 +143,21 @@ def sendgrid_erasure_data(
     contacts_response = connector.create_client().send(contacts_request)
     assert HTTP_202_ACCEPTED == contacts_response.status_code
 
-    # Checks contact is propagated to Sendgrid before calling access / erasure requests
-    # this has taken over 25s in testing
-    retries = 10
-    while (
-        contact := _get_contact_if_exists(
-            sendgrid_erasure_identity_email, connector, sendgrid_secrets
-        )
-    ) is None:
-        if not retries:
-            raise Exception(
-                f"Contact with email {sendgrid_erasure_identity_email} could not be added to Sendgrid"
-            )
-        retries -= 1
-        time.sleep(5)
-
+    contacts_body = contacts_response.json()
+    
+    error_message = (
+        f"Contact with email {sendgrid_erasure_identity_email} could not be added to Sendgrid"
+    )
+    contact = poll_for_existence(
+        _contact_exists,
+        (sendgrid_erasure_identity_email, connector,sendgrid_secrets),
+        error_message=error_message,
+    )
     yield contact
 
 
 
-def _get_contact_if_exists(
+def _contact_exists(
     sendgrid_erasure_identity_email: str, connector: SaaSConnector, sendgrid_secrets
 ) -> bool:
     """

@@ -2,10 +2,9 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
-import yaml
+from fideslib.core.config import load_file, load_toml
 from sqlalchemy.orm import Session
 
-from fidesops.core.config import load_file, load_toml
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -15,16 +14,10 @@ from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
 )
+from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
 
-
-def load_config(filename: str) -> Dict:
-    yaml_file = load_file(filename)
-    with open(yaml_file, "r") as file:
-        return yaml.safe_load(file).get("saas_config", [])
-
-
-saas_config = load_toml("saas_config.toml")
+saas_config = load_toml(["saas_config.toml"])
 
 
 @pytest.fixture(scope="function")
@@ -34,7 +27,7 @@ def saas_example_secrets():
         "username": pydash.get(saas_config, "saas_example.username"),
         "api_key": pydash.get(saas_config, "saas_example.api_key"),
         "api_version": pydash.get(saas_config, "saas_example.api_version"),
-        "page_limit": pydash.get(saas_config, "saas_example.page_limit"),
+        "page_size": pydash.get(saas_config, "saas_example.page_size"),
     }
 
 
@@ -200,9 +193,10 @@ def oauth2_connection_config(db: Session, oauth2_configuration) -> Generator:
     saas_config = {
         "fides_key": "oauth2_connector",
         "name": "OAuth2 Connector",
+        "type": "custom",
         "description": "Generic OAuth2 connector for testing",
         "version": "0.0.1",
-        "connector_params": [{"name": item} for item in secrets.values()],
+        "connector_params": [{"name": item} for item in secrets.keys()],
         "client_config": {
             "protocol": "https",
             "host": secrets["domain"],

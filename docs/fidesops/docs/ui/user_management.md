@@ -39,7 +39,7 @@ Existing users can be edited by selecting the "Edit" button from the side of the
 
 ## Managing Users from the API 
 
-Fidesops provides several user-related endpoints for managing access to the control panel. Example requests are included in the Fidesops [Postman Collection](./../postman/using_postman.md).
+Fidesops provides several user-related endpoints for managing access to the control panel. Example requests are included in the fidesops [Postman collection](./../postman/using_postman.md).
 
 
 ### User and Endpoint Scopes
@@ -47,7 +47,12 @@ User permissions are managed through access tokens, which contain scopes associa
 
 Creating a user currently provides access to all scopes.
 
+
+### User Passwords
+All user passwords must by Base64 encoded before creating a new user, logging in, or changing a users password. This can be done with [base64encode.org](https://www.base64encode.org/). After Base64 encoding, the password `Suitablylongwithnumber8andsymbol$` would become `U3VpdGFibHlsb25nd2l0aG51bWJlcjhhbmRzeW1ib2wk`.
+
 ### Logging in
+
 
 ```
 POST api/v1/login
@@ -56,7 +61,7 @@ POST api/v1/login
 ```json title="Request Body"
 {
   "username": "test_username",
-  "password": "Suitablylongwithnumber8andsymbol$"
+  "password": "U3VpdGFibHlsb25nd2l0aG51bWJlcjhhbmRzeW1ib2wk"
 }
 ```
 
@@ -83,7 +88,7 @@ POST api/v1/user
 ```json title="Request Body"
 {
   "username": "new_username",
-  "password": "new_Suitablylongwithnumber8andsymbol$"
+  "password": "U3VpdGFibHlsb25nd2l0aG51bWJlcjhhbmRzeW1ib2wk"
 }
 ```
 

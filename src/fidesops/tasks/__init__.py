@@ -1,9 +1,43 @@
 from celery import Celery
+from celery.utils.log import get_task_logger
 
-app = Celery("tasks")
-app.config_from_object("fidesops.core.config", namespace="EXECUTION")
-app.autodiscover_tasks(["fidesops.tasks", "fidesops.tasks.scheduled"])
+from fidesops.core.config import config
+
+logger = get_task_logger(__name__)
+
+
+def _create_celery() -> Celery:
+    """
+    Returns a configured version of the Celery application
+    """
+    logger.info("Creating Celery app...")
+    app = Celery(__name__)
+
+    broker_url = config.execution.CELERY_BROKER_URL or config.redis.CONNECTION_URL
+    app.conf.update(broker_url=broker_url)
+
+    result_backend = (
+        config.execution.CELERY_RESULT_BACKEND or config.redis.CONNECTION_URL
+    )
+    app.conf.update(result_backend=result_backend)
+    logger.info("Autodiscovering tasks...")
+    app.autodiscover_tasks(
+        [
+            "fidesops.tasks",
+            "fidesops.tasks.scheduled",
+            "fidesops.service.privacy_request",
+        ]
+    )
+    return app
+
+
+celery_app = _create_celery()
+
+
+def start_worker() -> None:
+    logger.info("Running Celery worker...")
+    celery_app.worker_main(argv=["worker", "--loglevel=info"])
 
 
 if __name__ == "__main__":
-    app.worker_main()
+    start_worker()

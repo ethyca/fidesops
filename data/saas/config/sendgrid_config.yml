@@ -1,6 +1,7 @@
 saas_config:
   fides_key: sendgrid_connector_example
   name: Sendgrid SaaS Config
+  type: sendgrid
   description: A sample schema representing the Sendgrid connector for Fidesops
   version: 0.0.1
 

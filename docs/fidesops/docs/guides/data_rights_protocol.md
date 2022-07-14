@@ -74,7 +74,7 @@ The current status of an existing privacy request may be returned via the `/stat
 
 ### Data Rights
 
-All data rights associated with existing policies may be returned via the `/data-rights` endpoint. Note that the `v1` in the below URL does not correspond to DRP version, but instead corresponds to Fidesops version.
+All data rights associated with existing policies may be returned via the `/data-rights` endpoint. Note that the `v1` in the below URL does not correspond to DRP version, but instead corresponds to fidesops version.
 
 ```json title="<code>GET /api/v1/drp/data-rights</code>"
 {
@@ -84,5 +84,16 @@ All data rights associated with existing policies may be returned via the `/data
         "access"
     ],
     "user_relationships": null
+}
+```
+
+### Revoke 
+
+You can revoke a pending privacy request via the `/revoke` endpoint.
+
+```json title="<code>GET /api/v1/drp/revoke</code>"
+{
+    "request_id": "c789ff35-7644-4ceb-9981-4b35c264aac3", 
+    "reason": "Accidentally submitted"
 }
 ```

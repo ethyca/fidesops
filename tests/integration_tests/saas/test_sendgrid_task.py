@@ -81,7 +81,6 @@ def test_sendgrid_erasure_request_task(
     sendgrid_erasure_identity_email,
     sendgrid_erasure_data,
 ) -> None:
-    config.execution.MASKING_STRICT = False #Allow delete
     """Full erasure request based on the sendgrid SaaS config"""
     privacy_request = PrivacyRequest(
         id=f"test_saas_erasure_request_task_{random.randint(0, 1000)}"
@@ -126,7 +125,7 @@ def test_sendgrid_erasure_request_task(
             "updated_at",
         ],
     )
-
+    config.execution.MASKING_STRICT = False #Allow delete
     erasure = graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,

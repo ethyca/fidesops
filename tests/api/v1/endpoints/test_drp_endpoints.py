@@ -9,11 +9,13 @@ from starlette.testclient import TestClient
 from fidesops.api.v1.scope_registry import (
     POLICY_READ,
     PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_REVIEW,
     STORAGE_CREATE_OR_UPDATE,
 )
 from fidesops.api.v1.urn_registry import (
     DRP_DATA_RIGHTS,
     DRP_EXERCISE,
+    DRP_REVOKE,
     DRP_STATUS,
     V1_URL_PREFIX,
 )
@@ -30,7 +32,7 @@ class TestCreateDrpPrivacyRequest:
         return V1_URL_PREFIX + DRP_EXERCISE
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_drp_privacy_request(
         self,
@@ -41,8 +43,12 @@ class TestCreateDrpPrivacyRequest:
         policy_drp_action,
         cache,
     ):
-
-        identity = {"email": "test@example.com"}
+        TEST_EMAIL = "test@example.com"
+        TEST_PHONE_NUMBER = "+1 234 567 8910"
+        identity = {
+            "email": TEST_EMAIL,
+            "phone_number": TEST_PHONE_NUMBER,
+        }
         encoded_identity: str = jwt.encode(
             identity, config.security.DRP_JWT_SECRET, algorithm="HS256"
         )
@@ -58,7 +64,7 @@ class TestCreateDrpPrivacyRequest:
         assert response_data["status"] == "open"
         assert response_data["received_at"]
         assert response_data["request_id"]
-        pr = PrivacyRequest.get(db=db, id=response_data["request_id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data["request_id"])
 
         # test appropriate data is cached
         meta_key = get_drp_request_body_cache_key(
@@ -82,18 +88,22 @@ class TestCreateDrpPrivacyRequest:
         )
         assert (
             cache.get(identity_key)
-            == "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.4I8XLWnTYp8oMHjN2ypP3Hpg45DIaGNAEmj1QCYONUI"
+            == "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJwaG9uZV9udW1iZXIiOiIrMSAyMzQgNTY3IDg5MTAifQ.kHV4ru6vxQR96Meae31oKIU7mMnTJgt1cnli6GLUBFk"
         )
         fidesops_identity_key = get_identity_cache_key(
             privacy_request_id=pr.id,
             identity_attribute="email",
         )
         assert cache.get(fidesops_identity_key) == identity["email"]
+        persisted_identity = pr.get_persisted_identity()
+        assert persisted_identity.email == TEST_EMAIL
+        assert persisted_identity.phone_number == TEST_PHONE_NUMBER
+
         pr.delete(db=db)
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_drp_privacy_request_unsupported_identity_props(
         self,
@@ -121,7 +131,7 @@ class TestCreateDrpPrivacyRequest:
         assert response_data["status"] == "open"
         assert response_data["received_at"]
         assert response_data["request_id"]
-        pr = PrivacyRequest.get(db=db, id=response_data["request_id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data["request_id"])
 
         # test appropriate data is cached
         meta_key = get_drp_request_body_cache_key(
@@ -424,3 +434,64 @@ class TestGetDrpDataRights:
         )
         assert 200 == response.status_code
         assert response.json() == expected_response
+
+
+class TestDrpRevoke:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + DRP_REVOKE
+
+    def test_revoke_not_authenticated(
+        self, api_client: TestClient, privacy_request, url
+    ):
+        response = api_client.post(url, headers={})
+        assert 401 == response.status_code
+
+    def test_revoke_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.post(url, headers=auth_header, json={})
+        assert 403 == response.status_code
+
+    def test_revoke_wrong_status(
+        self, db, api_client: TestClient, generate_auth_header, url, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+        response = api_client.post(
+            url, headers=auth_header, json={"request_id": privacy_request.id}
+        )
+        assert 400 == response.status_code
+        assert response.json()[
+            "detail"
+        ] == "Invalid revoke request. Can only revoke `pending` requests. Privacy request '{}' status = in_processing.".format(
+            privacy_request.id
+        )
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+        assert privacy_request.canceled_at is None
+
+    def test_revoke(
+        self, db, api_client: TestClient, generate_auth_header, url, privacy_request
+    ):
+        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.save(db)
+        canceled_reason = "Accidentally submitted"
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={"request_id": privacy_request.id, "reason": canceled_reason},
+        )
+        assert 200 == response.status_code
+        db.refresh(privacy_request)
+
+        assert privacy_request.status == PrivacyRequestStatus.canceled
+        assert privacy_request.cancel_reason == canceled_reason
+        assert privacy_request.canceled_at is not None
+
+        data = response.json()
+        assert data["request_id"] == privacy_request.id
+        assert data["status"] == "revoked"
+        assert data["reason"] == canceled_reason

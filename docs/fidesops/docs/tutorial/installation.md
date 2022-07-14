@@ -11,13 +11,10 @@ To run this project, ensure you have the following requirements installed and ru
 
 ## Clone the fidesdemo repo
 
-Let's clone [Fides Demo](https://github.com/ethyca/fidesdemo), and rewind to an earlier tag, so we can build out 
-the later commits together. Among other things, this will give us a Flask App to 
-mimic your application and some YAML files that annotate the Flask App's databases. 
+Clone [Fides Demo](https://github.com/ethyca/fidesdemo), and run `make install` to begin setup. Among other things, this will create a [Flask](https://flask.palletsprojects.com/) app to mimic your application, and provide several YAML files that annotate the Flask app's databases. 
 ```bash
 git clone https://github.com/ethyca/fidesdemo
 cd fidesdemo
-git checkout fidesctl-demo
 make install
 source venv/bin/activate
 ```
@@ -28,7 +25,7 @@ marketplace where users can buy and sell products.
 
 ## Install fidesops in our test app
 
-We need to install fidesops in the test app, add a PostgreSQL database (for storing Fidesops resources)
+We need to install fidesops in the test app, add a PostgreSQL database (for storing fidesops resources)
 and a Redis cache (for *temporarily* storing incoming PII). You'll notice that a postgres container has already been set 
 up for you, and `fidesctl` is installed (although we won't dive into that tool here). In the Flask App's docker-compose file, 
 add both a container for `redis` and `fidesops` services beneath the fidesctl `service`:

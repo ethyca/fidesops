@@ -1,14 +1,15 @@
-import { useRouter } from 'next/router';
-import { useSelector } from 'react-redux';
+import { useRouter } from "next/router";
+import { useSelector } from "react-redux";
 
-import { selectToken } from './auth.slice';
+import { LOGIN_ROUTE } from "../../constants";
+import { selectToken } from "./auth.slice";
 
 const useProtectedRoute = (redirectUrl: string) => {
   const router = useRouter();
   const token = useSelector(selectToken);
 
   // TODO: check for token invalidation
-  if (!token && typeof window !== 'undefined') {
+  if (!token && typeof window !== "undefined") {
     router.push(redirectUrl);
     return false;
   }
@@ -33,7 +34,7 @@ const ProtectedRoute = ({
 
 ProtectedRoute.defaultProps = {
   authenticatedBlock: null,
-  redirectUrl: '/login',
+  redirectUrl: LOGIN_ROUTE,
 };
 
 export default ProtectedRoute;

@@ -12,6 +12,7 @@ from fidesops.task import graph_task
 from fidesops.task.filter_results import filter_data_categories
 from fidesops.task.graph_task import get_cached_data_for_erasures
 from tests.graph.graph_test_util import assert_rows_match
+from tests.test_helpers.saas_test_utils import poll_for_existence
 
 
 @pytest.mark.skip(reason="Pending account resolution")
@@ -213,7 +214,7 @@ def _get_issues(
     headers: Dict[str, Any],
 ) -> Optional[List[Dict[str, Any]]]:
     response = requests.get(
-        f"https://{secrets['host']}/api/0/projects/{project['organization']['slug']}/{project['slug']}/issues/",
+        f"https://{secrets['domain']}/api/0/projects/{project['organization']['slug']}/{project['slug']}/issues/",
         headers=headers,
     )
     json = response.json()
@@ -226,7 +227,7 @@ def sentry_erasure_test_prep(sentry_connection_config, db):
     token = sentry_secrets.get("erasure_access_token")
     issue_url = sentry_secrets.get("issue_url")
     sentry_user_id = sentry_secrets.get("user_id_erasure")
-    host = sentry_secrets.get("host")
+    domain = sentry_secrets.get("domain")
 
     if not token or not issue_url or not sentry_user_id:
         # Exit early if these haven't been set locally
@@ -239,19 +240,15 @@ def sentry_erasure_test_prep(sentry_connection_config, db):
     assert response.json().get("assignedTo", {}).get("id") == sentry_user_id
 
     # Get projects
-    response = requests.get(f"https://{host}/api/0/projects/", headers=headers)
+    response = requests.get(f"https://{domain}/api/0/projects/", headers=headers)
     assert response.ok
     project = response.json()[0]
 
     # Wait until issues returns data
-    retries = 10
-    while _get_issues(project, sentry_secrets, headers) is None:
-        if not retries:
-            raise Exception(
-                "The issues endpoint did not return the required data for testing during the time limit"
-            )
-        retries -= 1
-        time.sleep(5)
+    error_message = "The issues endpoint did not return the required data for testing during the time limit"
+    poll_for_existence(
+        _get_issues, (project, sentry_secrets, headers), error_message=error_message
+    )
 
     # Temporarily sets the access token to one that works for erasures
     sentry_connection_config.secrets["access_token"] = sentry_secrets[

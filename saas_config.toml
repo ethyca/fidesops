@@ -3,7 +3,7 @@ domain = "domain"
 username = "username"
 api_key = "api_key"
 api_version = "2.0"
-page_limit = "10"
+page_size = "10"
 
 [mailchimp]
 domain = ""
@@ -17,14 +17,14 @@ hapikey = ""
 identity_email = ""
 
 [stripe]
-host = ""
+domain = ""
 api_key = ""
 payment_types = ""
-page_limit = ""
+page_size = ""
 identity_email = ""
 
 [sentry]
-host = ""
+domain = ""
 access_token = ""
 identity_email = ""
 erasure_access_token = ""
@@ -54,3 +54,20 @@ client_id = ""
 client_secret = ""
 redirect_uri = ""
 page_size = ""
+requester_email = ""
+identity_email = ""
+
+[salesforce]
+domain = ""
+client_id = ""
+client_secret = ""
+access_token = ""
+username = ""
+password = ""
+identity_email = ""
+
+[zendesk]
+domain = ""
+username = ""
+api_key = ""
+identity_email = ""

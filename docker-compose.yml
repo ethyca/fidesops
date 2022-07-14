@@ -1,9 +1,9 @@
 services:
-  fidesops:
-    container_name: fidesops
+  webserver:
+    container_name: webserver
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.app
     depends_on:
       - db
       - redis
@@ -24,10 +24,11 @@ services:
         read_only: False
       - /fidesops/src/fidesops.egg-info
     environment:
-      - FIDESOPS__DEV_MODE=${FIDESOPS__DEV_MODE}
+      - FIDESOPS__DEV_MODE=True
       - FIDESOPS__LOG_PII=${FIDESOPS__LOG_PII}
       - FIDESOPS__HOT_RELOAD=${FIDESOPS__HOT_RELOAD}
       - FIDESOPS__ROOT_USER__ANALYTICS_ID=${FIDESOPS__ROOT_USER__ANALYTICS_ID}
+      - FIDESOPS__EXECUTION__WORKER_ENABLED=False
 
   db:
     image: postgres:12
@@ -58,29 +59,10 @@ services:
     ports:
       - "0.0.0.0:6379:6379"
 
-  celery:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: celery -A fidesops.tasks beat -l info --logfile=/var/log/celery.log
-    depends_on:
-      fidesops:
-        condition: service_healthy
-      db:
-        condition: service_started
-      redis:
-        condition: service_started
-    restart: always
-    volumes:
-      - type: bind
-        source: ./
-        target: /fidesops
-        read_only: False
-
   docs:
     build:
       context: docs/fidesops/
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.docs
     volumes:
       - ./docs/fidesops:/docs
     expose:
