@@ -222,6 +222,6 @@ def run_privacy_request_task(celery_session_app):
 def analytics_opt_out():
     """Disable sending analytics when running tests."""
     original_value = config.root_user.analytics_opt_out
-    config.root_user.analytics_opt_out = true
+    config.root_user.analytics_opt_out = True
     yield
     config.root_user.analytics_opt_out = original_value
