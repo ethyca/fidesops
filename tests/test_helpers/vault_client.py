@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Dict, Any, Optional
 
 from hvac import Client
 
@@ -25,8 +26,10 @@ except Exception as exc:
     raise FidesopsException(f"Unable to create Vault client: {str(exc)}")
 
 
-def get_secrets(connector: str):
+def get_secrets(connector: str) -> Optional[Dict[str, Any]]:
     """Returns a map of secrets for the given connector."""
+    if not _client:
+        return
     secrets = _client.secrets.kv.v2.read_secret_version(
         mount_point=_environment, path=connector
     )
