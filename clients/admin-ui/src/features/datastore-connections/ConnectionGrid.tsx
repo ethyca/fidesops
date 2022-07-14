@@ -121,17 +121,20 @@ const ConnectionGrid: React.FC = () => {
 
   return (
     <>
-      {chunks.map((parent, index) => (
-        <Box key={JSON.stringify(parent)} className={classes["grid-row"]}>
+      {chunks.map((parent, index, { length }) => (
+        <Box
+          key={JSON.stringify(parent)}
+          className={classes["grid-row"]}
+          // Add bottom border only if last row is complete and there is more than 1 row rendered
+          borderBottomWidth={
+            length > 1 && index === length - 1 && parent.length === columns
+              ? "0.5px"
+              : undefined
+          }
+        >
           <SimpleGrid columns={columns}>
             {parent.map((child) => (
-              <Box
-                key={child.key}
-                className={classes["grid-item"]}
-                borderBottomWidth={
-                  index + 1 >= chunks.length ? "0.5px" : undefined
-                }
-              >
+              <Box key={child.key} className={classes["grid-item"]}>
                 <ConnectionGridItem connectionData={child} />
               </Box>
             ))}
