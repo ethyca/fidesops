@@ -2,9 +2,11 @@ import random
 import time
 from typing import Any, Dict, Generator
 
+import pydash
 import pytest
 import requests
 from faker import Faker
+from fideslib.core.config import load_toml
 from fideslib.db import session
 from sqlalchemy.orm import Session
 
@@ -19,26 +21,36 @@ from tests.fixtures.application_fixtures import load_dataset
 from tests.test_helpers.saas_test_utils import poll_for_existence
 from tests.test_helpers.vault_client import get_secrets
 
+saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("segment")
 
 
 @pytest.fixture(scope="session")
 def segment_secrets():
     return {
-        "domain": secrets["domain"],
-        "personas_domain": secrets["personas_domain"],
-        "workspace": secrets["workspace"],
-        "access_token": secrets["access_token"],
-        "namespace_id": secrets["namespace_id"],
-        "access_secret": secrets["access_secret"],
-        "api_domain": secrets["api_domain"],
-        "user_token": secrets["user_token"],
+        "domain": pydash.get(saas_config, "segment.domain") or secrets["domain"],
+        "personas_domain": pydash.get(saas_config, "segment.personas_domain")
+        or secrets["personas_domain"],
+        "workspace": pydash.get(saas_config, "segment.workspace")
+        or secrets["workspace"],
+        "access_token": pydash.get(saas_config, "segment.access_token")
+        or secrets["access_token"],
+        "namespace_id": pydash.get(saas_config, "segment.namespace_id")
+        or secrets["namespace_id"],
+        "access_secret": pydash.get(saas_config, "segment.access_secret")
+        or secrets["access_secret"],
+        "api_domain": pydash.get(saas_config, "segment.api_domain")
+        or secrets["api_domain"],
+        "user_token": pydash.get(saas_config, "segment.user_token")
+        or secrets["user_token"],
     }
 
 
 @pytest.fixture(scope="session")
 def segment_identity_email():
-    return secrets["identity_email"]
+    return (
+        pydash.get(saas_config, "segment.identity_email") or secrets["identity_email"]
+    )
 
 
 @pytest.fixture

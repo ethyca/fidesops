@@ -1,7 +1,9 @@
 from typing import Any, Dict, Generator
 
+import pydash
 import pytest
 import requests
+from fideslib.core.config import load_toml
 from fideslib.db import session
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from sqlalchemy.orm import Session
@@ -16,22 +18,25 @@ from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
 from tests.test_helpers.vault_client import get_secrets
 
+saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("stripe")
 
 
 @pytest.fixture(scope="session")
 def stripe_secrets():
     return {
-        "domain": secrets["domain"],
-        "api_key": secrets["api_key"],
-        "payment_types": secrets["payment_types"],
-        "page_size": secrets["page_size"],
+        "domain": pydash.get(saas_config, "stripe.domain") or secrets["domain"],
+        "api_key": pydash.get(saas_config, "stripe.api_key") or secrets["api_key"],
+        "payment_types": pydash.get(saas_config, "stripe.payment_types")
+        or secrets["payment_types"],
+        "page_size": pydash.get(saas_config, "stripe.page_size")
+        or secrets["page_size"],
     }
 
 
 @pytest.fixture(scope="session")
 def stripe_identity_email():
-    return secrets["identity_email"]
+    return pydash.get(saas_config, "stripe.identity_email") or secrets["identity_email"]
 
 
 @pytest.fixture(scope="function")

@@ -1,7 +1,9 @@
 import json
 from typing import Any, Dict, Generator
 
+import pydash
 import pytest
+from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
 
 from fidesops.models.connectionconfig import (
@@ -18,6 +20,7 @@ from tests.fixtures.application_fixtures import load_dataset
 from tests.test_helpers.saas_test_utils import poll_for_existence
 from tests.test_helpers.vault_client import get_secrets
 
+saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("hubspot")
 
 HUBSPOT_FIRSTNAME = "SomeoneFirstname"
@@ -26,14 +29,16 @@ HUBSPOT_FIRSTNAME = "SomeoneFirstname"
 @pytest.fixture(scope="session")
 def hubspot_secrets():
     return {
-        "domain": secrets["domain"],
-        "hapikey": secrets["hapikey"],
+        "domain": pydash.get(saas_config, "hubspot.domain") or secrets["domain"],
+        "hapikey": pydash.get(saas_config, "hubspot.hapikey") or secrets["hapikey"],
     }
 
 
 @pytest.fixture(scope="function")
 def hubspot_identity_email():
-    return secrets["identity_email"]
+    return (
+        pydash.get(saas_config, "hubspot.identity_email") or secrets["identity_email"]
+    )
 
 
 @pytest.fixture(scope="session")

@@ -14,19 +14,13 @@ params = {
 }
 _environment = os.environ.get("VAULT_ENVIRONMENT", "development")
 
-if not all(params.values()):
-    raise FidesopsException(
-        "Missing environment variables "
-        f"{', '.join([key for key, value in params.items() if not value])}"
-        " for Vault client"
-    )
-
 try:
-    _client = Client(
-        url=params["VAULT_ADDR"],
-        namespace=params["VAULT_NAMESPACE"],
-        token=params["VAULT_TOKEN"],
-    )
+    if all(params.values()):
+        _client = Client(
+            url=params["VAULT_ADDR"],
+            namespace=params["VAULT_NAMESPACE"],
+            token=params["VAULT_TOKEN"],
+        )
 except Exception as exc:
     raise FidesopsException(f"Unable to create Vault client: {str(exc)}")
 

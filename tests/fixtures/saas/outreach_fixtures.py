@@ -1,7 +1,9 @@
 from typing import Any, Dict, Generator
 
+import pydash
 import pytest
 import requests
+from fideslib.core.config import load_toml
 from fideslib.db import session
 from sqlalchemy.orm import Session
 
@@ -16,24 +18,32 @@ from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
 from tests.test_helpers.vault_client import get_secrets
 
+saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("outreach")
 
 
 @pytest.fixture(scope="session")
 def outreach_secrets():
     return {
-        "domain": secrets["domain"],
-        "requester_email": secrets["requester_email"],
-        "client_id": secrets["client_id"],
-        "client_secret": secrets["client_secret"],
-        "redirect_uri": secrets["redirect_uri"],
-        "page_size": secrets["page_size"],
+        "domain": pydash.get(saas_config, "outreach.domain") or secrets["domain"],
+        "requester_email": pydash.get(saas_config, "outreach.requester_email")
+        or secrets["requester_email"],
+        "client_id": pydash.get(saas_config, "outreach.client_id")
+        or secrets["client_id"],
+        "client_secret": pydash.get(saas_config, "outreach.client_secret")
+        or secrets["client_secret"],
+        "redirect_uri": pydash.get(saas_config, "outreach.redirect_uri")
+        or secrets["redirect_uri"],
+        "page_size": pydash.get(saas_config, "outreach.page_size")
+        or secrets["page_size"],
     }
 
 
 @pytest.fixture(scope="session")
 def outreach_identity_email():
-    return secrets["identity_email"]
+    return (
+        pydash.get(saas_config, "outreach.identity_email") or secrets["identity_email"]
+    )
 
 
 @pytest.fixture(scope="function")

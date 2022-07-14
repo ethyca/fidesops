@@ -1,7 +1,9 @@
 from typing import Any, Dict, Generator
 
+import pydash
 import pytest
 import requests
+from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
 
 from fidesops.models.connectionconfig import (
@@ -15,21 +17,24 @@ from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
 from tests.test_helpers.vault_client import get_secrets
 
+saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("zendesk")
 
 
 @pytest.fixture(scope="session")
 def zendesk_secrets():
     return {
-        "domain": secrets["domain"],
-        "username": secrets["username"],
-        "api_key": secrets["api_key"],
+        "domain": pydash.get(saas_config, "zendesk.domain") or secrets["domain"],
+        "username": pydash.get(saas_config, "zendesk.username") or secrets["username"],
+        "api_key": pydash.get(saas_config, "zendesk.api_key") or secrets["api_key"],
     }
 
 
 @pytest.fixture(scope="session")
 def zendesk_identity_email():
-    return secrets["identity_email"]
+    return (
+        pydash.get(saas_config, "zendesk.identity_email") or secrets["identity_email"]
+    )
 
 
 @pytest.fixture(scope="function")
