@@ -5,78 +5,38 @@ saas_config:
   version: 0.0.1
 
   connector_params:
-    - name: host
+    - name: domain
     - name: api_key
 
   client_config:
     protocol: https
-    host:
-      connector_param: host
+    host: <domain>
     authentication:
-      strategy: bearer_authentication
+      strategy: bearer
       configuration:
-        token:
-          connector_param: api_key
+        token: <api_key>
 
   test_request:
     method: GET
     path: /v3/marketing/contacts
     
   endpoints:
-  - name: contacts
-    requests:
-      read:
-        method: POST
-        path: /v3/marketing/contacts/search
-        body: "{\"query\": \"email = '<email>'\"}" # do just emails for now. we don't have support for more dynamic query building.
-        param_values:
-          - name: email
-            identity: email
-        data_path: result
-      update:
-        path: /v3/marketing/contacts
-        method: PUT
-        body: '{
-          "contacts" : [
-            {
-              "email": "<email>" ,
-              <masked_object_fields> 
-            }
-          ]  
-        }'
-        param_values:
-          - name: email
-            references:
-              - dataset: sendgrid_connector_example
-                field: contacts.email
-                direction: from
-  # - name: lists
-  #   after: ['sendgrid_connector_example.contacts']
-  #   requests:
-  #     read:
-  #       method: GET
-  #       path: /v3/marketing/lists/<list_id>
-  #       param_values:
-  #         - name: list_id
-  #           references:
-  #             - dataset: sendgrid_connector_example
-  #               field: contacts.list_ids
-  #               direction: from
-  #     delete:
-  #       method: DELETE
-  #       path: /v3/marketing/lists/<list_id>/contacts
-  #       query_params:
-  #         - name: contact_ids
-  #           value: <contact_id>
-  #       param_values:
-  #         - name: list_id
-  #           references:
-  #             - dataset: sendgrid_connector_example
-  #               field: lists.id
-  #               direction: from
-  #         - name: contact_id
-  #           references:
-  #             - dataset: sendgrid_connector_example
-  #               field: contacts.id
-  #               direction: from
- 
+    - name: contacts
+      requests:
+        read:
+          method: POST
+          path: /v3/marketing/contacts/search
+          body: "{\"query\": \"email = '<email>'\"}" # do just emails for now. we don't have support for more dynamic query building.
+          param_values:
+            - name: email
+              identity: email
+          data_path: data
+        delete:
+          method: DELETE
+          path: /v3/marketing/contacts?ids=<contact_id>
+          param_values:
+            - name: contact_id
+              references:
+                - dataset: sendgrid_connector_example
+                  field: contacts.id
+                  direction: from

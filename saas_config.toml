@@ -44,7 +44,7 @@ user_token = ""
 identity_email = ""
 
 [sendgrid]
-host = ""
+domain = ""
 api_key = ""
 identity_email = ""
 

@@ -34,8 +34,8 @@ def sendgrid_erasure_identity_email():
 @pytest.fixture(scope="function")
 def sendgrid_secrets():
     return {
-        "host": pydash.get(saas_config, "sendgrid.host")
-        or os.environ.get("SENDGRID_HOST"),
+        "domain": pydash.get(saas_config, "sendgrid.domain")
+        or os.environ.get("SENDGRID_DOMAIN"),
         "api_key": pydash.get(saas_config, "sendgrid.api_key")
         or os.environ.get("SENDGRID_API_KEY"),
     }
@@ -145,7 +145,7 @@ def sendgrid_erasure_data(
     # this has taken over 25s in testing
     retries = 10
     while (
-        contact_id := _get_contact_id_if_exists(
+        contact := _get_contact_if_exists(
             sendgrid_erasure_identity_email, connector, sendgrid_secrets
         )
     ) is None:
@@ -156,31 +156,11 @@ def sendgrid_erasure_data(
         retries -= 1
         time.sleep(5)
 
-    # yield contact_id becuase erasure email is already exposed via its own fixture
-    yield contact_id
-
-    delete_request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.DELETE,
-        path=f"/v3/marketing/contacts?ids={contact_id}",
-    )
-    connector.create_client().send(delete_request)
-
-    # verify contact is deleted
-    retries = 10
-    while (
-        contact_id := _get_contact_id_if_exists(
-            sendgrid_erasure_identity_email, connector, sendgrid_secrets
-        )
-    ) is not None:
-        if not retries:
-            raise Exception(
-                f"Contact with contact id {contact_id}, email {sendgrid_erasure_identity_email} could not be deleted from Sendgrid"
-            )
-        retries -= 1
-        time.sleep(5)
+    yield contact
 
 
-def _get_contact_id_if_exists(
+
+def _get_contact_if_exists(
     sendgrid_erasure_identity_email: str, connector: SaaSConnector, sendgrid_secrets
 ) -> bool:
     """
@@ -210,4 +190,4 @@ def _get_contact_id_if_exists(
 
     return contact_response.json()["result"][sendgrid_erasure_identity_email][
         "contact"
-    ]["id"]
+    ]
