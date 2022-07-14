@@ -128,7 +128,7 @@ def get_path_for_datastores(datastores: List[str]) -> str:
         _run_cmd_or_err(f'echo "configuring infrastructure for {datastore}"')
         if datastore in DOCKERFILE_DATASTORES:
             # We only need to locate the docker-compose file if the datastore runs in Docker
-            path += f" -f docker-compose.integration-{datastore}.yml"
+            path += f" -f docker/docker-compose.integration-{datastore}.yml"
         elif datastore not in EXTERNAL_DATASTORES:
             # If the specified datastore is not known to us
             _run_cmd_or_err(f'echo "Datastore {datastore} is currently not supported"')
