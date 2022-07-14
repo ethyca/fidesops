@@ -191,30 +191,30 @@ class FidesopsConfig(FidesSettings):
 
 CONFIG_KEY_ALLOWLIST = {
     "database": [
-        "SERVER",
-        "USER",
-        "PORT",
-        "DB",
-        "TEST_DB",
+        "server",
+        "user",
+        "port",
+        "db",
+        "test_db",
     ],
     "redis": [
-        "HOST",
-        "PORT",
-        "CHARSET",
-        "DECODE_RESPONSES",
-        "DEFAULT_TTL_SECONDS",
-        "DB_INDEX",
+        "host",
+        "port",
+        "charset",
+        "decode_responses",
+        "default_ttl_seconds",
+        "db_index",
     ],
     "security": [
-        "CORS_ORIGINS",
-        "ENCODING",
-        "OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES",
+        "cors_origins",
+        "encoding",
+        "oauth_access_token_expire_minutes",
     ],
     "execution": [
-        "TASK_RETRY_COUNT",
-        "TASK_RETRY_DELAY",
-        "TASK_RETRY_BACKOFF",
-        "REQUIRE_MANUAL_REQUEST_APPROVAL",
+        "task_retry_count",
+        "task_retry_delay",
+        "task_retry_backoff",
+        "require_manual_request_approval",
     ],
 }
 
