@@ -1,7 +1,7 @@
 from unittest import mock
 
 import pytest
-from create_superuser import collect_username_and_password, create_user_and_client
+from scripts.create_superuser import collect_username_and_password, create_user_and_client
 from fideslib.cryptography.cryptographic_util import str_to_b64_str
 from fideslib.exceptions import KeyOrNameAlreadyExists
 from fideslib.models.client import ADMIN_UI_ROOT, ClientDetail

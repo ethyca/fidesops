@@ -66,17 +66,17 @@ server-shell: compose-build
 integration-shell:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python run_infrastructure.py --open_shell --datastores $(datastores)
+		python scripts/run_infrastructure.py --open_shell --datastores $(datastores)
 
 integration-env:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python run_infrastructure.py --run_application --datastores $(datastores)
+		python scripts/run_infrastructure.py --run_application --datastores $(datastores)
 
 quickstart:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python run_infrastructure.py --datastores mongodb postgres --run_quickstart
+		python scripts/run_infrastructure.py --datastores mongodb postgres --run_quickstart
 
 ####################
 # Docker
@@ -147,7 +147,7 @@ pytest: compose-build
 pytest-integration:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python run_infrastructure.py --run_tests --analytics_opt_out --datastores $(datastores)
+		python scripts/run_infrastructure.py --run_tests --analytics_opt_out --datastores $(datastores)
 	@make teardown
 
 # These tests connect to external third-party test databases
@@ -214,7 +214,7 @@ teardown:
 .PHONY: docs-build
 docs-build: compose-build
 	@docker-compose run --rm $(IMAGE_NAME) \
-	python generate_openapi.py ./docs/fidesops/docs/api/openapi.json
+	python scripts/generate_openapi.py ./docs/fidesops/docs/api/openapi.json
 
 .PHONY: docs-serve
 docs-serve: docs-build
@@ -229,9 +229,9 @@ docs-serve: docs-build
 user:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python run_infrastructure.py --datastores postgres --run_create_superuser
+		python scripts/run_infrastructure.py --datastores postgres --run_create_superuser
 
 test-data:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python run_infrastructure.py --datastores postgres --run_create_test_data
+		python scripts/run_infrastructure.py --datastores postgres --run_create_test_data

@@ -154,7 +154,7 @@ def _run_quickstart(
     """
     _run_cmd_or_err(f'echo "Running the quickstart..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f"docker exec -it {image_name} python quickstart.py")
+    _run_cmd_or_err(f"docker exec -it {image_name} python scripts/quickstart.py")
 
 
 def _run_create_superuser(
