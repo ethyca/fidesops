@@ -63,7 +63,7 @@ class RedisSettings(FidesSettings):
     ssl_cert_reqs: Optional[str] = "required"
     connection_url: Optional[str] = None
 
-    @validator("CONNECTION_URL", pre=True)
+    @validator("connection_url", pre=True)
     @classmethod
     def assemble_connection_url(
         cls,
@@ -75,7 +75,7 @@ class RedisSettings(FidesSettings):
             # If the whole URL is provided via the config, preference that
             return v
 
-        return f"redis://{values.get('USER', '')}:{values['PASSWORD']}@{values['HOST']}:{values['PORT']}/{values.get('DB_INDEX', '')}"
+        return f"redis://{values.get('user', '')}:{values['password']}@{values['host']}:{values['port']}/{values.get('db_index', '')}"
 
     class Config:
         env_prefix = "FIDESOPS__REDIS__"
@@ -84,9 +84,9 @@ class RedisSettings(FidesSettings):
 class FidesopsSecuritySettings(SecuritySettings):
     """Configuration settings for Security variables."""
 
-    LOG_LEVEL: str = "INFO"
+    log_level: str = "INFO"
 
-    @validator("LOG_LEVEL", pre=True)
+    @validator("log_level", pre=True)
     def validate_log_level(cls, value: str) -> str:
         """Ensure the provided LOG_LEVEL is a valid value."""
         valid_values = [
@@ -117,7 +117,7 @@ class RootUserSettings(FidesSettings):
     analytics_opt_out: Optional[bool]
     analytics_id: Optional[str]
 
-    @validator("ANALYTICS_ID", pre=True)
+    @validator("analytics_id", pre=True)
     def populate_analytics_id(cls, v: Optional[str]) -> str:
         """
         Populates the appropriate value for analytics id based on config
@@ -129,7 +129,7 @@ class RootUserSettings(FidesSettings):
         update_obj: Dict[str, Dict] = {}
         client_id: str = generate_client_id(FIDESOPS)
         logger.debug("analytics client id generated")
-        update_obj.update(root_user={"ANALYTICS_ID": client_id})
+        update_obj.update(root_user={"analytics_id": client_id})
         update_config_file(update_obj)
         return client_id
 

@@ -83,7 +83,7 @@ def write_to_in_memory_buffer(
             for key in data:
                 df = pd.json_normalize(data[key])
                 buffer = BytesIO()
-                df.to_csv(buffer, index=false, encoding=config.security.encoding)
+                df.to_csv(buffer, index=False, encoding=config.security.encoding)
                 buffer.seek(0)
                 f.writestr(
                     f"{key}.csv",
