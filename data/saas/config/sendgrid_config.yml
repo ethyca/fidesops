@@ -19,18 +19,21 @@ saas_config:
   test_request:
     method: GET
     path: /v3/marketing/contacts
-    
+
   endpoints:
     - name: contacts
       requests:
         read:
           method: POST
           path: /v3/marketing/contacts/search
-          body: "{\"query\": \"email = '<email>'\"}" # do just emails for now. we don't have support for more dynamic query building.
+          body: |
+            {
+              "query": "email = '<email>' OR CONTAINS(alternate_emails, '<email>')"
+            }
           param_values:
             - name: email
               identity: email
-          data_path: data
+          data_path: result
         delete:
           method: DELETE
           path: /v3/marketing/contacts?ids=<contact_id>
