@@ -47,7 +47,7 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
         return data
 
     bytes_encryption_key: bytes = encryption_key.encode(
-        encoding=config.security.ENCODING
+        encoding=config.security.encoding
     )
     nonce: bytes = secrets.token_bytes(config.security.aes_gcm_nonce_length)
     # b64encode the entire nonce and the encrypted message together
@@ -73,7 +73,7 @@ def write_to_in_memory_buffer(
         json_str = json.dumps(data, indent=2, default=_handle_json_encoding)
         return BytesIO(
             encrypt_access_request_results(json_str, request_id).encode(
-                config.security.ENCODING
+                config.security.encoding
             )
         )
 

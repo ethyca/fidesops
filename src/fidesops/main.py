@@ -36,7 +36,7 @@ from fidesops.util.cache import get_cache
 from fidesops.util.logger import get_fides_log_record_factory
 from fidesops.util.oauth_util import get_db, verify_oauth_client
 
-logging.basicConfig(level=config.security.LOG_LEVEL)
+logging.basicConfig(level=config.security.log_level)
 logging.setLogRecordFactory(get_fides_log_record_factory())
 logger = logging.getLogger(__name__)
 

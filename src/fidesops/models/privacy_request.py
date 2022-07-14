@@ -120,7 +120,7 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
         scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
         iat=datetime.now().isoformat(),
     )
-    return generate_jwe(json.dumps(jwe.dict()), config.security.APP_ENCRYPTION_KEY)
+    return generate_jwe(json.dumps(jwe.dict()), config.security.app_encryption_key)
 
 
 class PrivacyRequest(Base):  # pylint: disable=R0904
@@ -575,7 +575,7 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                config.security.APP_ENCRYPTION_KEY,
+                config.security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )
