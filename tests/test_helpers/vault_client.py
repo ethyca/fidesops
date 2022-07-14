@@ -15,15 +15,17 @@ params = {
 }
 _environment = os.environ.get("VAULT_ENVIRONMENT", "development")
 
-try:
-    if all(params.values()):
+
+_client = None
+if all(params.values()):
+    try:
         _client = Client(
             url=params["VAULT_ADDR"],
             namespace=params["VAULT_NAMESPACE"],
             token=params["VAULT_TOKEN"],
         )
-except Exception as exc:
-    raise FidesopsException(f"Unable to create Vault client: {str(exc)}")
+    except Exception as exc:
+        raise FidesopsException(f"Unable to create Vault client: {str(exc)}")
 
 
 def get_secrets(connector: str) -> Optional[Dict[str, Any]]:
