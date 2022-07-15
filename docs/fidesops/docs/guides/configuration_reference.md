@@ -123,7 +123,7 @@ Fidesops uses [Celery](https://docs.celeryq.dev/en/stable/index.html) for asynch
 
 The `celery.toml` file provided contains a brief configuration reference for managing Celery variables. By default, fidesops will look for this file in the root directory of your application, but this location can be optionally overridden by specifying an alternate `CELERY_CONFIG_PATH` in your `fidesops.toml`.
 
-For a full list of possible variable overrides, see the [Celery configuration](https://docs.celeryq.dev/en/stable/userguide/configuration.html) documentation.
+For a full list of possible variable overrides, see the [Celery configuration](https://docs.celeryq.dev/en/stable/userguide/configuration.html#new-lowercase-settings) documentation.
 
 ```sh title="Example <code>celery.toml</code>"
 default_queue_name = "fidesops"
