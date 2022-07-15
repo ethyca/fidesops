@@ -7,11 +7,11 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
+from fideslib.core.config import load_toml
+from fideslib.db import session
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_202_ACCEPTED
 
-from fideslib.core.config import load_toml
-from fideslib.db import session
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
