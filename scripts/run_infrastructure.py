@@ -61,7 +61,7 @@ def run_infrastructure(
     _run_cmd_or_err(f'echo "infrastructure path: {path}"')
     if "mssql" not in datastores:
         _run_cmd_or_err(
-            f'docker-compose {path} build --build-arg skip_mssql_installation="true"'
+            f'docker-compose {path} build --build-arg SKIP_MSSQL_INSTALLATION="true"'
         )
     else:
         _run_cmd_or_err(f"docker-compose {path} build")
