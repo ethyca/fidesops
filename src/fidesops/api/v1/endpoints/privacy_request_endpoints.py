@@ -5,9 +5,9 @@ import io
 import logging
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Callable, DefaultDict, Dict, List, Optional, Union
+from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Union
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Security
+from fastapi import Body, Depends, HTTPException, Security
 from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -15,6 +15,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslib.models.audit_log import AuditLog, AuditLogAction
 from fideslib.models.client import ClientDetail
 from pydantic import conlist
+from sqlalchemy import column
 from sqlalchemy.orm import Query, Session
 from starlette.responses import StreamingResponse
 from starlette.status import (
@@ -59,6 +60,7 @@ from fidesops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestStatus,
+    ProvidedIdentity,
 )
 from fidesops.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fidesops.schemas.external_https import PrivacyRequestResumeFormat
@@ -83,6 +85,7 @@ from fidesops.service.privacy_request.request_service import (
 )
 from fidesops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fidesops.task.task_resources import TaskResources
+from fidesops.util.api_router import APIRouter
 from fidesops.util.cache import FidesopsRedis
 from fidesops.util.collection_util import Row
 from fidesops.util.oauth_util import verify_callback_oauth, verify_oauth_client
@@ -252,7 +255,7 @@ def privacy_request_csv_download(
         csv_file.writerow(
             [
                 pr.created_at,
-                pr.get_cached_identity_data(),
+                pr.get_persisted_identity().dict(),
                 pr.policy.key if pr.policy else None,
                 pr.status.value if pr.status else None,
                 pr.reviewed_by,
@@ -292,8 +295,10 @@ def execution_logs_by_dataset_name(
 
 
 def _filter_privacy_request_queryset(
+    db: Session,
     query: Query,
     request_id: Optional[str] = None,
+    identity: Optional[str] = None,
     status: Optional[List[PrivacyRequestStatus]] = None,
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
@@ -336,6 +341,17 @@ def _filter_privacy_request_queryset(
                 status_code=HTTP_400_BAD_REQUEST,
                 detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
             )
+
+    if identity:
+        hashed_identity = ProvidedIdentity.hash_value(value=identity)
+        identities: Set[str] = {
+            identity[0]
+            for identity in ProvidedIdentity.filter(
+                db=db,
+                conditions=(ProvidedIdentity.hashed_value == hashed_identity),
+            ).values(column("privacy_request_id"))
+        }
+        query = query.filter(PrivacyRequest.id.in_(identities))
 
     # Further restrict all PrivacyRequests by query params
     if request_id:
@@ -432,6 +448,7 @@ def get_request_status(
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
     request_id: Optional[str] = None,
+    identity: Optional[str] = None,
     status: Optional[List[PrivacyRequestStatus]] = FastAPIQuery(
         default=None
     ),  # type:ignore
@@ -457,8 +474,10 @@ def get_request_status(
     logger.info(f"Finding all request statuses with pagination params {params}")
     query = db.query(PrivacyRequest)
     query = _filter_privacy_request_queryset(
+        db,
         query,
         request_id,
+        identity,
         status,
         created_lt,
         created_gt,
@@ -490,7 +509,7 @@ def get_request_status(
         # Conditionally include the cached identity data in the response if
         # it is explicitly requested
         for item in paginated.items:  # type: ignore
-            item.identity = item.get_cached_identity_data()
+            item.identity = item.get_persisted_identity().dict()
             attach_resume_instructions(item)
     else:
         for item in paginated.items:  # type: ignore
@@ -616,6 +635,8 @@ def resume_privacy_request(
 ) -> PrivacyRequestResponse:
     """Resume running a privacy request after it was paused by a Pre-Execution webhook"""
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
+    # We don't want to persist derived identities because they have not been provided
+    # by the end user
     privacy_request.cache_identity(webhook_callback.derived_identity)  # type: ignore
 
     if privacy_request.status != PrivacyRequestStatus.paused:
