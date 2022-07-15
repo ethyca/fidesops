@@ -71,7 +71,7 @@ def setup():
 
     truncate_tables(session)
 
-    with open("./data/sql/mariadb_example_data.sql", "r") as query_file:
+    with open("./docker/sample_data/sql/mariadb_example_data.sql", "r") as query_file:
         lines = query_file.read().splitlines()
         filtered = [line for line in lines if not line.startswith("--")]
         queries = " ".join(filtered).split(";")

@@ -19,4 +19,4 @@ services:
     ports:
       - "3307:3306"
     volumes:
-      - ../data/sql/mysql_example.sql:/docker-entrypoint-initdb.d/mysql_example.sql
+      - ./sample_data/mysql_example.sql:/docker-entrypoint-initdb.d/mysql_example.sql
