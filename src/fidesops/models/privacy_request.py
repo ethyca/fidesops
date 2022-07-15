@@ -120,7 +120,7 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
         scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
         iat=datetime.now().isoformat(),
     )
-    return generate_jwe(json.dumps(jwe.dict()), config.security.APP_ENCRYPTION_KEY)
+    return generate_jwe(json.dumps(jwe.dict()), config.security.app_encryption_key)
 
 
 class PrivacyRequest(Base):  # pylint: disable=R0904
@@ -482,6 +482,8 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             logger.info(
                 f"Updating known identities on privacy request {self.id} from webhook {webhook.key}."
             )
+            # Don't persist derived identities because they aren't provided directly
+            # by the end user
             self.cache_identity(response_body.derived_identity)
 
         # Pause execution if instructed
@@ -573,7 +575,7 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                config.security.APP_ENCRYPTION_KEY,
+                config.security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )

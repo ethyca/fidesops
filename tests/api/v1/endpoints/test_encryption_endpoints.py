@@ -113,7 +113,7 @@ class TestAESEncrypt:
         assert response.status_code == 200
         decrypted = decrypt(
             encrypted_value,
-            key.encode(config.security.ENCODING),
+            key.encode(config.security.encoding),
             nonce,
         )
         assert decrypted == plain_val
@@ -154,7 +154,7 @@ class TestAESDecrypt:
         nonce = b'\x18\xf5"+\xdbj\xe6O\xc7|\x19\xd2'
         orig_data = "test_data"
         encrypted_data = encrypt_verify_secret_length(
-            orig_data, key.encode(config.security.ENCODING), nonce
+            orig_data, key.encode(config.security.encoding), nonce
         )
 
         request = {

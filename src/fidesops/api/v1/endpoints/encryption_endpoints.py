@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 def get_encryption_key() -> str:
     logger.info("Generating encryption key")
     return cryptographic_util.generate_secure_random_string(
-        config.security.AES_ENCRYPTION_KEY_LENGTH
+        config.security.aes_encryption_key_length
     )
 
 
@@ -53,7 +53,7 @@ def get_encryption_key() -> str:
 )
 def aes_encrypt(encryption_request: AesEncryptionRequest) -> AesEncryptionResponse:
     logger.info("Starting AES Encryption")
-    nonce: bytes = secrets.token_bytes(config.security.AES_GCM_NONCE_LENGTH)
+    nonce: bytes = secrets.token_bytes(config.security.aes_gcm_nonce_length)
 
     encrypted_value: str = aes_gcm_encrypt(
         encryption_request.value,
@@ -76,7 +76,7 @@ def aes_decrypt(decryption_request: AesDecryptionRequest) -> AesDecryptionRespon
 
     decrypted_value: str = aes_gcm_decrypt(
         decryption_request.value,
-        decryption_request.key.encode(config.security.ENCODING),
+        decryption_request.key.encode(config.security.encoding),
         nonce,
     )
     return AesDecryptionResponse(decrypted_value=decrypted_value)

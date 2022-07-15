@@ -79,8 +79,8 @@ def create_user_and_client(db: Session) -> FidesUser:
 
     ClientDetail.create_client_and_secret(
         db,
-        config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
-        config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+        config.security.oauth_client_id_length_bytes,
+        config.security.oauth_client_secret_length_bytes,
         scopes=scopes,
         fides_key=ADMIN_UI_ROOT,
         user_id=superuser.id,
@@ -92,7 +92,7 @@ def create_user_and_client(db: Session) -> FidesUser:
 
 
 if __name__ == "__main__":
-    init_db(config.database.SQLALCHEMY_DATABASE_URI)
+    init_db(config.database.sqlalchemy_database_uri)
     session_local = get_db_session(config)
     with session_local() as session:
         create_user_and_client(session)
