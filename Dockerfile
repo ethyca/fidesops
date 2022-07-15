@@ -15,7 +15,6 @@ RUN npm run export
 #############
 FROM --platform=linux/amd64 python:3.9.13-slim-buster as backend
 
-ARG SKIP_MSSQL_INSTALLATION
 
 # Install auxiliary software
 RUN apt-get update && \
@@ -33,6 +32,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 
+ARG SKIP_MSSQL_INSTALLATION
 RUN echo "ENVIRONMENT VAR:  SKIP_MSSQL_INSTALLATION $SKIP_MSSQL_INSTALLATION"
 
 # SQL Server (MS SQL)
