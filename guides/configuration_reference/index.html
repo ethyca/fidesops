@@ -881,18 +881,31 @@
     Configuration variable reference
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
+    <nav class="md-nav" aria-label="Configuration variable reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#an-example-fidesopstoml-configuration-file" class="md-nav__link">
     An example fidesops.toml configuration file
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#additional-environment-variables" class="md-nav__link">
     Additional environment variables
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#celery-configuration" class="md-nav__link">
+    Celery configuration
   </a>
   
 </li>
@@ -1441,18 +1454,31 @@
     Configuration variable reference
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
+    <nav class="md-nav" aria-label="Configuration variable reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#an-example-fidesopstoml-configuration-file" class="md-nav__link">
     An example fidesops.toml configuration file
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#additional-environment-variables" class="md-nav__link">
     Additional environment variables
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#celery-configuration" class="md-nav__link">
+    Celery configuration
   </a>
   
 </li>
@@ -1785,20 +1811,12 @@
 <td>If MASKING_STRICT is True, we only use "update" requests to mask data. (For third-party integrations, you should define an <code>update</code> endpoint to use.)  If MASKING_STRICT is False, you are allowing fidesops to use any defined DELETE or GDPR DELETE endpoints to remove PII. In this case, you should define <code>delete</code> or <code>data_protection_request</code> endpoints for your third-party integrations.  Note that setting MASKING_STRICT to False means that data may be deleted beyond the specific data categories that you've configured in your Policy.</td>
 </tr>
 <tr>
-<td><code>CELERY_BROKER_URL</code></td>
-<td><code>FIDESOPS__EXECUTION__CELERY_BROKER_URL</code></td>
-<td>str</td>
-<td>redis://:testpassword@redis:6379/1</td>
+<td><code>CELERY_CONFIG_PATH</code></td>
+<td><code>FIDESOPS__EXECUTION__CELERY_CONFIG_PATH</code></td>
+<td>string</td>
+<td>data/config/celery.toml</td>
 <td>N/A</td>
-<td>The datastore to maintain ordered queues of tasks.</td>
-</tr>
-<tr>
-<td><code>CELERY_RESULT_BACKEND</code></td>
-<td><code>FIDESOPS__EXECUTION__RESULT_BACKEND</code></td>
-<td>str</td>
-<td>redis://:testpassword@redis:6379/1</td>
-<td>N/A</td>
-<td>The datastore to put results from asynchronously processed tasks.</td>
+<td>An optional override for the <a href="#celery-configuration">Celery</a> configuration file path.</td>
 </tr>
 <tr>
 <td><code>WORKER_ENABLED</code></td>
@@ -1806,10 +1824,10 @@
 <td>bool</td>
 <td>True</td>
 <td>True</td>
-<td>Whether fidesops is running with a dedicated worker to process privacy requests asynchronously.</td>
+<td>By default, fidesops uses a dedicated <a href="#celery-configuration">Celery worker</a> to process privacy requests asynchronously. Setting <code>WORKER_ENABLED</code> to <code>False</code> will run the worker on the same node as the webserver.</td>
 </tr>
 <tr>
-<td>---</td>
+<td>Analytics</td>
 <td>---</td>
 <td>---</td>
 <td>---</td>
@@ -1822,7 +1840,7 @@
 <td>bool</td>
 <td>False</td>
 <td>False</td>
-<td>Opt out of sending anonymous usage data to Ethyca to improve the product experience</td>
+<td>Opt out of sending anonymous usage data to Ethyca to improve the product experience.</td>
 </tr>
 <tr>
 <td>Admin UI Variables</td>
@@ -1842,7 +1860,7 @@
 </tr>
 </tbody>
 </table>
-<h2 id="an-example-fidesopstoml-configuration-file">An example <code>fidesops.toml</code> configuration file</h2>
+<h3 id="an-example-fidesopstoml-configuration-file">An example <code>fidesops.toml</code> configuration file</h3>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1883,8 +1901,7 @@
 <span class="normal">38</span>
 <span class="normal">39</span>
 <span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span></pre></div></td><td class="code"><div><pre><span></span><code>PORT=8080
+<span class="normal">41</span></pre></div></td><td class="code"><div><pre><span></span><code>PORT=8080
 
 [database]
 SERVER=&quot;db&quot;
@@ -1916,8 +1933,7 @@ TASK_RETRY_DELAY=20
 TASK_RETRY_BACKOFF=2
 REQUIRE_MANUAL_REQUEST_APPROVAL=true
 MASKING_STRICT=true
-CELERY_BROKER_URL=&quot;redis://:testpassword@redis:6379/1&quot;
-CELERY_RESULT_BACKEND=&quot;redis://:testpassword@redis:6379/1&quot;
+CELERY_CONFIG_PATH=&quot;data/config/celery.toml&quot;
 WORKER_ENABLED=true
 
 
@@ -1928,7 +1944,7 @@ ANALYTICS_OPT_OUT=false
 ENABLED = true
 </code></pre></div></td></tr></table></div>
 <p>Please note: The configuration is case-sensitive, so the variables must be specified in UPPERCASE.</p>
-<h2 id="additional-environment-variables">Additional environment variables</h2>
+<h3 id="additional-environment-variables">Additional environment variables</h3>
 <table>
 <thead>
 <tr>
@@ -1967,6 +1983,42 @@ ENABLED = true
 <td><code>TESTING</code></td>
 <td>False</td>
 <td>This variable does not need to be set - Pytest will set it to True when running unit tests, so we run against the test database.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="celery-configuration">Celery configuration</h2>
+<p>Fidesops uses <a href="https://docs.celeryq.dev/en/stable/index.html">Celery</a> for asynchronous task management. </p>
+<p>The <code>celery.toml</code> file provided contains a brief configuration reference for managing Celery variables. By default, fidesops will look for this file in the root directory of your application, but this location can be optionally overridden by specifying an alternate <code>CELERY_CONFIG_PATH</code> in your <code>fidesops.toml</code>.</p>
+<p>For a full list of possible variable overrides, see the <a href="https://docs.celeryq.dev/en/stable/userguide/configuration.html#new-lowercase-settings">Celery configuration</a> documentation.</p>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Example <code>celery.toml</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nv">default_queue_name</span> <span class="o">=</span> <span class="s2">&quot;fidesops&quot;</span>
+<span class="nv">broker_url</span> <span class="o">=</span> <span class="s2">&quot;redis://:testpassword@redis:6379/1&quot;</span>
+<span class="nv">result_backend</span> <span class="o">=</span> <span class="s2">&quot;redis://:testpassword@redis:6379/1&quot;</span>
+</code></pre></div></td></tr></table></div>
+<table>
+<thead>
+<tr>
+<th>Celery Variable</th>
+<th>Example</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>default_queue_name</code></td>
+<td><code>fidesops</code></td>
+<td>A name to use for your Celery task queue.</td>
+</tr>
+<tr>
+<td><code>broker_url</code></td>
+<td>redis://:testpassword@redis:6379/1</td>
+<td>The datastore to use as a <a href="https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/">Celery broker</a>, which maintains an ordered list of asynchronous tasks to execute. If not specified, fidesops will default to the <code>CONNECTION_URL</code> or Redis config values specified in your <code>fidesops.toml</code>.</td>
+</tr>
+<tr>
+<td><code>result_backend</code></td>
+<td>redis://:testpassword@redis:6379/1</td>
+<td>The <a href="https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/">backend datastore</a> where Celery will store results from asynchronously processed tasks. If not specified, fidesops will default to the <code>CONNECTION_URL</code> or Redis config values specified in your <code>fidesops.toml</code>.</td>
 </tr>
 </tbody>
 </table>
