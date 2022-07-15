@@ -39,9 +39,10 @@ class ExecutionSettings(FidesSettings):
     task_retry_backoff: int
     require_manual_request_approval: bool = False
     masking_strict: bool = True
+    worker_enabled: bool = True
     celery_broker_url: Optional[str] = None
     celery_result_backend: Optional[str] = None
-    worker_enabled: bool = True
+    celery_config_path: Optional[str] = "celery.toml"
 
     class Config:
         env_prefix = "FIDESOPS__EXECUTION__"
