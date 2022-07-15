@@ -1,10 +1,4 @@
 services:
-  webserver:
-    build:
-      context: ..
-    depends_on:
-      - mysql_example
-
   mysql_example:
     image: mysql
     platform: linux/amd64

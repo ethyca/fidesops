@@ -1,10 +1,4 @@
 services:
-  webserver:
-    build:
-      context: ..
-    depends_on:
-      - mongodb_example
-
   mongodb_example:
     image: mongo:5.0.3
     environment:

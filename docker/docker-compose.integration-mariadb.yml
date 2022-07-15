@@ -1,10 +1,4 @@
 services:
-  webserver:
-    build:
-      context: ..
-    depends_on:
-      - mariadb_example
-
   mariadb_example:
     image: mariadb
     platform: linux/amd64

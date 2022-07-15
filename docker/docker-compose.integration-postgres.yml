@@ -1,10 +1,4 @@
 services:
-  webserver:
-    build:
-      context: ..
-    depends_on:
-      - postgres_example
-
   postgres_example:
     command:
       [
