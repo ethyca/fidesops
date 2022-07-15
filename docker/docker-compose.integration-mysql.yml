@@ -1,5 +1,7 @@
 services:
   webserver:
+    build:
+      context: ..
     depends_on:
       - mysql_example
 

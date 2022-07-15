@@ -208,7 +208,15 @@ isort:
 .PHONY: teardown
 teardown:
 	@echo "Tearing down the dev environment..."
-	@docker-compose down --remove-orphans
+	@docker-compose \
+	-f docker-compose.yml \
+	-f docker/docker-compose.integration-mariadb.yml \
+	-f docker/docker-compose.integration-mongodb.yml \
+	-f docker/docker-compose.integration-mssql.yml \
+	-f docker/docker-compose.integration-mysql.yml \
+	-f docker/docker-compose.integration-postgres.yml \
+	down \
+	--remove-orphans
 	@echo "Teardown complete"
 
 .PHONY: docs-build
