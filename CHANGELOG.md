@@ -20,7 +20,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.2...main)
 
 ### Added
-- ...
+* ...
 
 ## [1.6.2](https://github.com/ethyca/fidesops/compare/1.6.1...1.6.2)
 ### Added
