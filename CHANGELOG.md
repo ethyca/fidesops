@@ -59,7 +59,7 @@ The types of changes are:
 * Fix issue requiring separate install of snowflake-connector-python [#807](https://github.com/ethyca/fidesops/pull/807)
 * [User Management] Create new user gives HTTP 422 Unprocessable Entity exception [#832] (<https://github.com/ethyca/fidesops/pull/833>)
 * Fix error when running `make test-data` [862](https://github.com/ethyca/fidesops/pull/862)
-* [User Management] Refactored New and Edit user pages to reduce duplicate code [#839]<https://github.com/ethyca/fidesops/pull/839>
+* [User Management] Refactored New and Edit user pages to reduce duplicate code [#839](https://github.com/ethyca/fidesops/pull/839)
 * Fix error when there are no scopes in `ClientDetail` [#830](https://github.com/ethyca/fidesops/pull/830)
 
 ## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
@@ -116,8 +116,8 @@ The types of changes are:
 * Sample dataset and access configuration for Zendesk (ticket endpoints) [#677](https://github.com/ethyca/fidesops/pull/677)
 * Include number of records to be masked in masking endpoint's log message [#692](https://github.com/ethyca/fidesops/pull/692)
 * Datastore Connection Landing Page [#674](https://github.com/ethyca/fidesops/pull/674)
-* Added the ability to delete a datastore from the frontend [#683] <https://github.com/ethyca/fidesops/pull/683>
-* Added the ability to disable/enable a datastore from the frontend [#693] <https://github.com/ethyca/fidesops/pull/693>
+* Added the ability to delete a datastore from the frontend [#683](https://github.com/ethyca/fidesops/pull/683)
+* Added the ability to disable/enable a datastore from the frontend [#693](https://github.com/ethyca/fidesops/pull/693)
 * Adds Postgres and Redis health checks to health endpoint [#690](https://github.com/ethyca/fidesops/pull/690)
 * Adds the ability to revoke a pending privacy request [#592](https://github.com/ethyca/fidesops/pull/592/files)
 * Added health checks and better error messages on app startup for both db and cache [#686](https://github.com/ethyca/fidesops/pull/686)
@@ -226,7 +226,7 @@ The types of changes are:
 
 ### Breaking Changes
 
-* Update masking API to take multiple input values [#443](<https://github.com/ethyca/fidesops/pull/443>
+* Update masking API to take multiple input values [#443](https://github.com/ethyca/fidesops/pull/443)
 
 ### Docs
 
@@ -263,7 +263,7 @@ The types of changes are:
 
 ### Breaking Changes
 
-* Update masking API to take multiple input values [#443](<https://github.com/ethyca/fidesops/pull/443>
+* Update masking API to take multiple input values [#443](https://github.com/ethyca/fidesops/pull/443)
 
 ### Docs
 

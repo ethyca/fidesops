@@ -12,4 +12,4 @@ services:
     # Because we're using the "-f" flag from a parent directory, this relative path needs
     # to be from the parent directory as well
     volumes:
-      - ./docker//sample_data/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./docker/sample_data/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
