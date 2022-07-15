@@ -161,7 +161,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         return saas_request_params
 
-    def generate_update_stmt(
+    def generate_update_stmt(  # pylint: disable=R0914
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> SaaSRequestParams:
         """
