@@ -2,9 +2,9 @@ import base64
 from typing import Optional
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 
 from fidesops.core.config import config
-from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 
 
 def encrypt_to_bytes_verify_secrets_length(

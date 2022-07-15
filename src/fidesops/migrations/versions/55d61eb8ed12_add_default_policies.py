@@ -10,6 +10,11 @@ from typing import Optional, Tuple
 from uuid import uuid4
 
 from alembic import op
+from fideslib.cryptography.cryptographic_util import (
+    generate_salt,
+    generate_secure_random_string,
+    hash_with_salt,
+)
 from fideslib.db.base_class import FidesBase
 from sqlalchemy import text
 from sqlalchemy.dialects import postgresql
@@ -27,11 +32,6 @@ from fidesops.models.policy import ActionType, DrpAction
 from fidesops.schemas.storage.storage import StorageType
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE_STRATEGY_NAME,
-)
-from fideslib.cryptography.cryptographic_util import (
-    generate_salt,
-    generate_secure_random_string,
-    hash_with_salt,
 )
 from fidesops.util.data_category import DataCategory
 
