@@ -229,8 +229,8 @@ class TestDeleteUser:
 
         client, _ = ClientDetail.create_client_and_secret(
             db,
-            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
-            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
             scopes=[USER_DELETE],
             user_id=user.id,
         )
@@ -278,8 +278,8 @@ class TestDeleteUser:
 
         user_client, _ = ClientDetail.create_client_and_secret(
             db,
-            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
-            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
             scopes=[USER_DELETE],
             user_id=other_user.id,
         )

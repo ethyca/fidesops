@@ -39,7 +39,7 @@ def test_token_expired(oauth_client):
     assert issued_at == datetime(2020, 1, 1)
     assert extracted[JWE_PAYLOAD_SCOPES] == oauth_client.scopes
     assert (
-        is_token_expired(issued_at, config.security.OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES)
+        is_token_expired(issued_at, config.security.oauth_access_token_expire_minutes)
         is True
     )
 
@@ -53,7 +53,7 @@ def test_token_expired(oauth_client):
     assert (
         is_token_expired(
             datetime.fromisoformat(extracted[JWE_ISSUED_AT]),
-            config.security.OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES,
+            config.security.oauth_access_token_expire_minutes,
         )
         is False
     )

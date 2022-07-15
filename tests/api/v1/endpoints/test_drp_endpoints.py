@@ -50,7 +50,7 @@ class TestCreateDrpPrivacyRequest:
             "phone_number": TEST_PHONE_NUMBER,
         }
         encoded_identity: str = jwt.encode(
-            identity, config.security.drp_jwt_secret, algorithm="hs256"
+            identity, config.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},
@@ -117,7 +117,7 @@ class TestCreateDrpPrivacyRequest:
 
         identity = {"email": "test@example.com", "address": "something"}
         encoded_identity: str = jwt.encode(
-            identity, config.security.drp_jwt_secret, algorithm="hs256"
+            identity, config.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},
@@ -202,7 +202,7 @@ class TestCreateDrpPrivacyRequest:
 
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
-            identity, config.security.drp_jwt_secret, algorithm="hs256"
+            identity, config.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},
@@ -223,7 +223,7 @@ class TestCreateDrpPrivacyRequest:
 
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
-            identity, config.security.drp_jwt_secret, algorithm="hs256"
+            identity, config.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},
@@ -244,7 +244,7 @@ class TestCreateDrpPrivacyRequest:
 
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
-            identity, config.security.drp_jwt_secret, algorithm="hs256"
+            identity, config.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},
