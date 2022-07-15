@@ -177,7 +177,7 @@ def _run_create_test_data(
     """
     Invokes the Fidesops create_user_and_client command
     """
-    _run_cmd_or_err(f'echo "Running create superuser..."')
+    _run_cmd_or_err(f'echo "Running create test data..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
     _run_cmd_or_err(f"docker exec -it {image_name} python scripts/create_test_data.py")
 
