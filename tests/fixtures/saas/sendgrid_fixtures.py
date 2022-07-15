@@ -6,6 +6,7 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+import requests
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_202_ACCEPTED
 
@@ -17,7 +18,6 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors import SaaSConnector
 from fidesops.util import cryptographic_util
 from tests.fixtures.application_fixtures import load_dataset
@@ -112,6 +112,8 @@ def sendgrid_erasure_data(
     """
     connector = SaaSConnector(sendgrid_connection_config)
 
+    auth = f"sendgrid_secrets['api_key']"
+    base_url = f"https://{sendgrid_secrets['domain']}"
     # Create contact
     body = {
         "list_ids": ["62d20902-1cdd-42e7-8d5d-0fbb2a8be13e"],
@@ -130,61 +132,45 @@ def sendgrid_erasure_data(
             }
         ],
     }
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {sendgrid_secrets['api_key']}",
-    }
-    contacts_request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.PUT,
-        path="/v3/marketing/contacts",
-        headers=headers,
-        body=json.dumps(body),
+    headers = {"Authorization": f"Bearer {sendgrid_secrets['api_key']}"}
+    contacts_response = requests.put(
+        url=f"{base_url}/v3/marketing/contacts", json=body, headers=headers
     )
-    contacts_response = connector.create_client().send(contacts_request)
+
+    # contacts_response = connector.create_client().send(contacts_request)
     assert HTTP_202_ACCEPTED == contacts_response.status_code
 
     contacts_body = contacts_response.json()
-    
-    error_message = (
-        f"Contact with email {sendgrid_erasure_identity_email} could not be added to Sendgrid"
-    )
+
+    error_message = f"Contact with email {sendgrid_erasure_identity_email} could not be added to Sendgrid"
     contact = poll_for_existence(
         _contact_exists,
-        (sendgrid_erasure_identity_email, connector,sendgrid_secrets),
+        (sendgrid_erasure_identity_email, connector, sendgrid_secrets),
         error_message=error_message,
     )
     yield contact
 
 
-
 def _contact_exists(
     sendgrid_erasure_identity_email: str, connector: SaaSConnector, sendgrid_secrets
-) -> bool:
+):
     """
     Confirm whether contact exists by calling contact search by email api and comparing resulting firstname str.
     Returns contact ID if it exists, returns None if it does not.
     """
-
-    body = json.dumps({"emails": [sendgrid_erasure_identity_email]})
+    base_url = f"https://{sendgrid_secrets['domain']}"
+    body = {"emails": [sendgrid_erasure_identity_email]}
     headers = {
-        "Content-Type": "application/json",
         "Authorization": f"Bearer {sendgrid_secrets['api_key']}",
     }
 
-    contact_request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.POST,
-        path="/v3/marketing/contacts/search/emails",
+    contact_response = requests.post(
+        url=f"{base_url}/v3/marketing/contacts/search/emails",
         headers=headers,
-        body=body,
+        json=body,
     )
-    contact_response = connector.create_client().send(
-        contact_request, ignore_errors=True
-    )
-
     # we expect 404 if contact doesn't exist
     if 404 == contact_response.status_code:
         return None
 
-    return contact_response.json()["result"][sendgrid_erasure_identity_email][
-        "contact"
-    ]
+    return contact_response.json()["result"][sendgrid_erasure_identity_email]["contact"]

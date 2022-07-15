@@ -3,12 +3,12 @@ import random
 import time
 
 import pytest
+import requests
 
 from fidesops.core.config import config
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors import SaaSConnector
 from fidesops.task import graph_task
 from fidesops.task.graph_task import get_cached_data_for_erasures
@@ -42,7 +42,6 @@ def test_sendgrid_access_request_task(
         [sendgrid_connection_config],
         {"email": sendgrid_identity_email},
     )
-
 
     assert_rows_match(
         v[f"{dataset_name}:contacts"],
@@ -125,7 +124,7 @@ def test_sendgrid_erasure_request_task(
             "updated_at",
         ],
     )
-    config.execution.MASKING_STRICT = False #Allow delete
+    config.execution.MASKING_STRICT = False  # Allow delete
     erasure = graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
@@ -134,5 +133,6 @@ def test_sendgrid_erasure_request_task(
         {"email": sendgrid_erasure_identity_email},
         get_cached_data_for_erasures(privacy_request.id),
     )
+    assert erasure == {"sendgrid_connector_example:contacts": 1}
 
     config.execution.MASKING_STRICT = False
