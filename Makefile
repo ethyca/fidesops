@@ -10,7 +10,8 @@ IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --a
 # IMAGE_NAME is webserver rather than fidesops_webserver because commands that don't
 # use docker-compose fail with fidesops_webserver. When left as webserver here both
 # sets of commands work.
-IMAGE_NAME := webserver
+COMPOSE_SERVICE_NAME := webserver
+IMAGE_NAME := fidesops
 IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
@@ -31,7 +32,7 @@ help:
 
 init-db: compose-build
 	@echo "Check for new migrations to run..."
-	@docker-compose run --rm -e ANALYTICS_OPT_OUT $(IMAGE_NAME) \
+	@docker-compose run --rm -e ANALYTICS_OPT_OUT $(COMPOSE_SERVICE_NAME) \
 	python -c "\
 	from fidesops.db.database import init_db; \
 	from fidesops.core.config import config; \
@@ -61,7 +62,7 @@ server-no-db: compose-build
 	webserver	
 
 server-shell: compose-build
-	@docker-compose run $(IMAGE_NAME) /bin/bash
+	@docker-compose run $(COMPOSE_SERVICE_NAME) /bin/bash
 
 integration-shell:
 	@virtualenv -p python3 fidesops_test_dispatch; \
@@ -100,14 +101,14 @@ black-ci: compose-build
 	@echo "Running black checks..."
 	@docker-compose run \
 		-e ANALYTICS_OPT_OUT \
-		$(IMAGE_NAME) \
+		$(COMPOSE_SERVICE_NAME) \
 		black --check src/ tests/ \
 		|| (echo "Error running 'black --check src/ tests/', please run 'make black' to format your code!"; exit 1)
 	@make teardown
 
 check-migrations: compose-build
 	@echo "Check if there are unrun migrations..."
-	@docker-compose run --rm -e ANALYTICS_OPT_OUT $(IMAGE_NAME) \
+	@docker-compose run --rm -e ANALYTICS_OPT_OUT $(COMPOSE_SERVICE_NAME) \
 	python -c "\
 	from fidesops.db.database import check_missing_migrations; \
 	from fidesops.core.config import config; \
@@ -116,14 +117,14 @@ check-migrations: compose-build
 
 isort-ci:
 	@echo "Running isort checks..."
-	@docker-compose run $(IMAGE_NAME) \
+	@docker-compose run $(COMPOSE_SERVICE_NAME) \
 		isort src tests --check-only
 
 pylint: compose-build
 	@echo "Running pylint checks..."
 	@docker-compose run \
 		-e ANALYTICS_OPT_OUT \
-		$(IMAGE_NAME) \
+		$(COMPOSE_SERVICE_NAME) \
 		pylint src/
 	@make teardown
 
@@ -131,7 +132,7 @@ mypy: compose-build
 	@echo "Running mypy checks..."
 	@docker-compose run \
 		-e ANALYTICS_OPT_OUT \
-		$(IMAGE_NAME) \
+		$(COMPOSE_SERVICE_NAME) \
 		mypy src/
 	@make teardown
 
@@ -139,7 +140,7 @@ pytest: compose-build
 	@echo "Running pytest unit tests..."
 	@docker-compose run \
 		-e ANALYTICS_OPT_OUT \
-		$(IMAGE_NAME) \
+		$(COMPOSE_SERVICE_NAME) \
 		pytest $(pytestpath) -m "not integration and not integration_external and not integration_saas"
 
 	@make teardown
@@ -158,7 +159,7 @@ pytest-integration-external: compose-build
 		-e REDSHIFT_TEST_URI \
 		-e SNOWFLAKE_TEST_URI -e REDSHIFT_TEST_DB_SCHEMA \
 		-e BIGQUERY_KEYFILE_CREDS -e BIGQUERY_DATASET \
-		$(IMAGE_NAME) pytest $(pytestpath) -m "integration_external"
+		$(COMPOSE_SERVICE_NAME) pytest $(pytestpath) -m "integration_external"
 	@make teardown
 
 pytest-saas: compose-build
@@ -172,7 +173,7 @@ pytest-saas: compose-build
 		-e SEGMENT_DOMAIN -e SEGMENT_PERSONAS_DOMAIN -e SEGMENT_WORKSPACE -e SEGMENT_ACCESS_TOKEN -e SEGMENT_API_DOMAIN -e SEGMENT_NAMESPACE_ID -e SEGMENT_ACCESS_SECRET -e SEGMENT_USER_TOKEN -e SEGMENT_IDENTITY_EMAIL \
 		-e STRIPE_DOMAIN -e STRIPE_API_KEY -e STRIPE_PAYMENT_TYPES -e STRIPE_PAGE_SIZE -e STRIPE_IDENTITY_EMAIL \
 		-e SALESFORCE_DOMAIN -e SALESFORCE_CLIENT_ID -e SALESFORCE_CLIENT_SECRET -e SALESFORCE_ACCESS_TOKEN -e SALESFORCE_USERNAME -e SALESFORCE_PASSWORD -e SALESFORCE_IDENTITY_EMAIL \
-		$(IMAGE_NAME) pytest $(pytestpath) -m "integration_saas"
+		$(COMPOSE_SERVICE_NAME) pytest $(pytestpath) -m "integration_saas"
 	@make teardown
 
 
@@ -183,7 +184,7 @@ pytest-saas: compose-build
 .PHONY: black
 black: compose-build
 	@echo "Running black formatting against the src/ and tests/ directories..."
-	@docker-compose run $(IMAGE_NAME) black src/ tests/
+	@docker-compose run $(COMPOSE_SERVICE_NAME) black src/ tests/
 	@make teardown
 	@echo "Fin"
 
@@ -202,7 +203,7 @@ compose-build:
 .PHONY: isort
 isort:
 	@echo "Running isort checks..."
-	@docker-compose run $(IMAGE_NAME) \
+	@docker-compose run $(COMPOSE_SERVICE_NAME) \
 		isort src tests
 
 .PHONY: teardown
@@ -222,7 +223,7 @@ teardown:
 
 .PHONY: docs-build
 docs-build: compose-build
-	@docker-compose run --rm $(IMAGE_NAME) \
+	@docker-compose run --rm $(COMPOSE_SERVICE_NAME) \
 	python scripts/generate_openapi.py ./docs/fidesops/docs/api/openapi.json
 
 .PHONY: docs-serve

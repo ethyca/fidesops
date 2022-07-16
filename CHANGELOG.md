@@ -16,7 +16,20 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.1...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.3...main)
+
+### Added
+
+* ...
+
+
+## [1.6.3](https://github.com/ethyca/fidesops/compare/1.6.2...1.6.3)
+
+### Added
+
+* Adds `COMPOSE_SERVICE_NAME` to `Makefile` [#884](https://github.com/ethyca/fidesops/pull/884)
+
+## [1.6.2](https://github.com/ethyca/fidesops/compare/1.6.1...1.6.2)
 
 ### Added
 
@@ -42,7 +55,8 @@ The types of changes are:
 ### Developer Experience
 
 * Replace user authentication routes with fideslib routes [#811](https://github.com/ethyca/fidesops/pull/811)
-* Reduce docker image size [846](https://github.com/ethyca/fidesops/pull/846)
+* Reduce docker image size [#846](https://github.com/ethyca/fidesops/pull/846)
+* Load Celery config overrides from a dedicated `celery.toml` [#821](https://github.com/ethyca/fidesops/pull/821)
 
 ### Docs
 
