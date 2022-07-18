@@ -227,7 +227,6 @@ teardown:
 	-f docker/docker-compose.integration-mysql.yml \
 	-f docker/docker-compose.integration-postgres.yml \
 	down \
-	--volumes \
 	--remove-orphans
 	@echo "Teardown complete"
 
