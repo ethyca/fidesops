@@ -3,6 +3,7 @@
 import getpass
 from typing import List
 
+from fideslib.cryptography.cryptographic_util import str_to_b64_str
 from fideslib.db.session import get_db_session
 from fideslib.exceptions import KeyOrNameAlreadyExists
 from fideslib.models.client import ADMIN_UI_ROOT, ClientDetail
@@ -14,7 +15,6 @@ from sqlalchemy.orm import Session
 from fidesops.api.v1.scope_registry import CLIENT_CREATE, SCOPE_REGISTRY
 from fidesops.core.config import config
 from fidesops.db.database import init_db
-from fideslib.cryptography.cryptographic_util import str_to_b64_str
 
 
 def get_username(prompt: str) -> str:
