@@ -122,8 +122,8 @@ def test_sendgrid_erasure_request_task(
             "updated_at",
         ],
     )
-    temp_masking = config.execution.MASKING_STRICT
-    config.execution.MASKING_STRICT = False  # Allow delete
+    temp_masking = config.execution.masking_strict
+    config.execution.masking_strict = False  # Allow delete
     erasure = graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
@@ -141,4 +141,4 @@ def test_sendgrid_erasure_request_task(
         existence_desired=False,
     )
 
-    config.execution.MASKING_STRICT = temp_masking
+    config.execution.masking_strict = temp_masking
