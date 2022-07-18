@@ -1,10 +1,10 @@
-import os
 from typing import Any, Dict, Generator
 
 import pydash
 import pytest
 import requests
 from fideslib.core.config import load_toml
+from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
 
@@ -14,35 +14,36 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.util import cryptographic_util
 from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
+from tests.test_helpers.vault_client import get_secrets
 
 saas_config = load_toml(["saas_config.toml"])
+secrets = get_secrets("salesforce")
 
 
 @pytest.fixture(scope="session")
 def salesforce_secrets():
     return {
-        "domain": pydash.get(saas_config, "salesforce.domain")
-        or os.environ.get("SALESFORCE_DOMAIN"),
+        "domain": pydash.get(saas_config, "salesforce.domain") or secrets["domain"],
         "username": pydash.get(saas_config, "salesforce.username")
-        or os.environ.get("SALESFORCE_USERNAME"),
+        or secrets["username"],
         "password": pydash.get(saas_config, "salesforce.password")
-        or os.environ.get("SALESFORCE_PASSWORD"),
+        or secrets["password"],
         "client_id": pydash.get(saas_config, "salesforce.client_id")
-        or os.environ.get("SALESFORCE_CLIENT_ID"),
+        or secrets["client_id"],
         "client_secret": pydash.get(saas_config, "salesforce.client_secret")
-        or os.environ.get("SALESFORCE_CLIENT_SECRET"),
+        or secrets["client_secret"],
         "access_token": pydash.get(saas_config, "salesforce.access_token")
-        or os.environ.get("SALESFORCE_ACCESS_TOKEN"),
+        or secrets["access_token"],
     }
 
 
 @pytest.fixture(scope="session")
 def salesforce_identity_email():
-    return pydash.get(saas_config, "salesforce.identity_email") or os.environ.get(
-        "SALESFORCE_IDENTITY_EMAIL"
+    return (
+        pydash.get(saas_config, "salesforce.identity_email")
+        or secrets["identity_email"]
     )
 
 

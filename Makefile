@@ -36,7 +36,7 @@ init-db: compose-build
 	python -c "\
 	from fidesops.db.database import init_db; \
 	from fidesops.core.config import config; \
-	init_db(config.database.SQLALCHEMY_DATABASE_URI);"
+	init_db(config.database.sqlalchemy_database_uri);"
 
 reset-db:
 	@echo "Resetting and re-initializing the application db..."
@@ -59,7 +59,7 @@ server-no-db: compose-build
     -e FIDESOPS__REDIS__ENABLED=false \
 	--no-deps \
 	--service-ports \
-	webserver	
+	webserver
 
 server-shell: compose-build
 	@docker-compose run $(COMPOSE_SERVICE_NAME) /bin/bash
@@ -112,7 +112,7 @@ check-migrations: compose-build
 	python -c "\
 	from fidesops.db.database import check_missing_migrations; \
 	from fidesops.core.config import config; \
-	check_missing_migrations(config.database.SQLALCHEMY_DATABASE_URI);"
+	check_missing_migrations(config.database.sqlalchemy_database_uri);"
 	@make teardown
 
 isort-ci:
@@ -166,13 +166,7 @@ pytest-saas: compose-build
 	@echo "Running integration tests for SaaS connectors"
 	@docker-compose run \
 		-e ANALYTICS_OPT_OUT \
-		-e MAILCHIMP_DOMAIN -e MAILCHIMP_USERNAME -e MAILCHIMP_API_KEY -e MAILCHIMP_IDENTITY_EMAIL \
-		-e SENTRY_DOMAIN -e SENTRY_ACCESS_TOKEN -e SENTRY_IDENTITY_EMAIL -e SENTRY_ERASURE_TOKEN -e SENTRY_ERASURE_IDENTITY -e SENTRY_USER_ID -e SENTRY_ISSUE_URL  \
-		-e HUBSPOT_DOMAIN -e HUBSPOT_HAPIKEY -e HUBSPOT_IDENTITY_EMAIL \
-		-e ZENDESK_DOMAIN -e ZENDESK_USERNAME -e ZENDESK_API_KEY -e ZENDESK_IDENTITY_EMAIL \
-		-e SEGMENT_DOMAIN -e SEGMENT_PERSONAS_DOMAIN -e SEGMENT_WORKSPACE -e SEGMENT_ACCESS_TOKEN -e SEGMENT_API_DOMAIN -e SEGMENT_NAMESPACE_ID -e SEGMENT_ACCESS_SECRET -e SEGMENT_USER_TOKEN -e SEGMENT_IDENTITY_EMAIL \
-		-e STRIPE_DOMAIN -e STRIPE_API_KEY -e STRIPE_PAYMENT_TYPES -e STRIPE_PAGE_SIZE -e STRIPE_IDENTITY_EMAIL \
-		-e SALESFORCE_DOMAIN -e SALESFORCE_CLIENT_ID -e SALESFORCE_CLIENT_SECRET -e SALESFORCE_ACCESS_TOKEN -e SALESFORCE_USERNAME -e SALESFORCE_PASSWORD -e SALESFORCE_IDENTITY_EMAIL \
+		-e VAULT_ADDR -e VAULT_NAMESPACE -e VAULT_TOKEN \
 		$(COMPOSE_SERVICE_NAME) pytest $(pytestpath) -m "integration_saas"
 	@make teardown
 
