@@ -610,16 +610,16 @@ def test_filter_data_categories_limited_results():
         "mongo_test:internal_customer_profile": [],
     }
 
-    target_categories = {"user.provided.identifiable"}
+    target_categories = {"user"}
 
     data_category_fields = {
         CollectionAddress.from_string("postgres_example:address"): {
-            "user.provided.identifiable.contact.city": [
+            "user.contact.city": [
                 FieldPath(
                     "city",
                 )
             ],
-            "user.provided.identifiable.contact.street": [
+            "user.contact.street": [
                 FieldPath(
                     "house",
                 ),
@@ -632,12 +632,12 @@ def test_filter_data_categories_limited_results():
                     "id",
                 )
             ],
-            "user.provided.identifiable.contact.state": [
+            "user.contact.state": [
                 FieldPath(
                     "state",
                 )
             ],
-            "user.provided.identifiable.contact.postal_code": [
+            "user.contact.postal_code": [
                 FieldPath(
                     "zip",
                 )
@@ -652,7 +652,7 @@ def test_filter_data_categories_limited_results():
                     "created",
                 ),
             ],
-            "user.provided.identifiable.contact.email": [
+            "user.contact.email": [
                 FieldPath(
                     "email",
                 )
@@ -662,7 +662,7 @@ def test_filter_data_categories_limited_results():
                     "id",
                 )
             ],
-            "user.provided.identifiable.name": [
+            "user.name": [
                 FieldPath(
                     "name",
                 )
@@ -674,7 +674,7 @@ def test_filter_data_categories_limited_results():
                     "address_id",
                 )
             ],
-            "user.provided.identifiable.contact.email": [
+            "user.contact.email": [
                 FieldPath(
                     "email",
                 )
@@ -684,7 +684,7 @@ def test_filter_data_categories_limited_results():
                     "id",
                 )
             ],
-            "user.provided.identifiable.name": [
+            "user.name": [
                 FieldPath(
                     "name",
                 )
@@ -744,12 +744,12 @@ def test_filter_data_categories_limited_results():
                     "id",
                 ),
             ],
-            "user.provided.identifiable.financial.account_number": [
+            "user.financial.account_number": [
                 FieldPath(
                     "ccn",
                 )
             ],
-            "user.provided.identifiable.financial": [
+            "user.financial": [
                 FieldPath(
                     "code",
                 ),
@@ -782,7 +782,7 @@ def test_filter_data_categories_limited_results():
             ]
         },
         CollectionAddress.from_string("postgres_example:report"): {
-            "user.provided.identifiable.contact.email": [
+            "user.contact.email": [
                 FieldPath(
                     "email",
                 )
@@ -806,7 +806,7 @@ def test_filter_data_categories_limited_results():
             ],
         },
         CollectionAddress.from_string("postgres_example:service_request"): {
-            "user.provided.identifiable.contact.email": [
+            "user.contact.email": [
                 FieldPath(
                     "alt_email",
                 )
@@ -832,7 +832,7 @@ def test_filter_data_categories_limited_results():
             ],
         },
         CollectionAddress.from_string("postgres_example:visit"): {
-            "user.provided.identifiable.contact.email": [
+            "user.contact.email": [
                 FieldPath(
                     "email",
                 )
@@ -849,7 +849,7 @@ def test_filter_data_categories_limited_results():
                     "_id",
                 )
             ],
-            "user.provided.identifiable.date_of_birth": [
+            "user.date_of_birth": [
                 FieldPath(
                     "birthday",
                 )
@@ -859,14 +859,12 @@ def test_filter_data_categories_limited_results():
                     "customer_id",
                 )
             ],
-            "user.provided.identifiable.gender": [
+            "user.gender": [
                 FieldPath(
                     "gender",
                 )
             ],
-            "user.provided.identifiable.job_title": [
-                FieldPath("workplace_info", "position")
-            ],
+            "user.job_title": [FieldPath("workplace_info", "position")],
         },
         CollectionAddress.from_string("mongo_test:customer_feedback"): {
             "system.operations": [
@@ -874,9 +872,7 @@ def test_filter_data_categories_limited_results():
                     "_id",
                 )
             ],
-            "user.provided.identifiable.contact.phone_number": [
-                FieldPath("customer_information", "phone")
-            ],
+            "user.contact.phone_number": [FieldPath("customer_information", "phone")],
             "user.provided.nonidentifiable": [
                 FieldPath(
                     "message",

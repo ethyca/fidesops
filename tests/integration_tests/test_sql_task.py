@@ -41,14 +41,14 @@ sample_postgres_configuration_policy = erasure_policy(
     "system.operations",
     "user.derived.identifiable.unique_id",
     "user.derived.nonidentifiable.sensor",
-    "user.provided.identifiable.contact.city",
-    "user.provided.identifiable.contact.email",
-    "user.provided.identifiable.contact.postal_code",
-    "user.provided.identifiable.contact.state",
-    "user.provided.identifiable.contact.street",
-    "user.provided.identifiable.financial.account_number",
-    "user.provided.identifiable.financial",
-    "user.provided.identifiable.name",
+    "user.contact.city",
+    "user.contact.email",
+    "user.contact.postal_code",
+    "user.contact.state",
+    "user.contact.street",
+    "user.financial.account_number",
+    "user.financial",
+    "user.name",
     "user.provided.nonidentifiable",
 )
 
@@ -639,7 +639,7 @@ def test_filter_on_data_categories(
         data={
             "name": "Test Rule 1",
             "key": "test_rule_1",
-            "data_category": "user.provided.identifiable.contact.street",
+            "data_category": "user.contact.street",
             "rule_id": rule.id,
         },
     )
@@ -672,7 +672,7 @@ def test_filter_on_data_categories(
     }
 
     # Specify the target category:
-    target_categories = {"user.provided.identifiable.contact"}
+    target_categories = {"user.contact"}
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
@@ -711,7 +711,7 @@ def test_filter_on_data_categories(
         data={
             "name": "Test Rule 2",
             "key": "test_rule_2",
-            "data_category": "user.provided.identifiable.contact.email",
+            "data_category": "user.contact.email",
             "rule_id": rule.id,
         },
     )
@@ -721,7 +721,7 @@ def test_filter_on_data_categories(
         data={
             "name": "Test Rule 3",
             "key": "test_rule_3",
-            "data_category": "user.provided.identifiable.contact.state",
+            "data_category": "user.contact.state",
             "rule_id": rule.id,
         },
     )

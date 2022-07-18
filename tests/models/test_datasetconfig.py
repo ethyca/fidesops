@@ -85,9 +85,7 @@ def test_convert_dataset_to_graph(example_datasets):
     )[0]
     assert employee_collection
     assert employee_collection.fields[1].name == "email"
-    assert employee_collection.fields[1].data_categories == [
-        "user.provided.identifiable.contact.email"
-    ]
+    assert employee_collection.fields[1].data_categories == ["user.contact.email"]
     assert employee_collection.fields[1].identity == "email"
     assert employee_collection.fields[1].references == []
 

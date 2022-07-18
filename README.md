@@ -44,7 +44,7 @@ Follow these five easy steps:
 ### Step Two: Define an Access Policy
 
 Policies help describe what data you care about and how you want to manage it.  In this example, you'll create an `access` 
-Policy,`example_request_policy`, to get all data with the data category: `user.provided.identifiable`.
+Policy,`example_request_policy`, to get all data with the data category: `user`.
   
 ### Step Three: Run a Privacy Request to Access Data
 
@@ -157,12 +157,12 @@ Now you'll create another Policy, `example_erasure_policy`, that describes how t
 ### Step Five: Issue a Privacy Request to erase data and verify
 
 The last step is to issue a Privacy Request using `example_erasure_policy` to remove identifiable user-provided data 
-related to "jane@example.com". Then we'll re-run step #3 again to see what data is remaining for data category `user.provided.identifiable`:
+related to "jane@example.com". Then we'll re-run step #3 again to see what data is remaining for data category `user`:
 
 ```json
 {}
 ```
-This returns an empty dictionary confirming Jane's fields with data category `user.provided.identifiable` have been removed.
+This returns an empty dictionary confirming Jane's fields with data category `user` have been removed.
 
 
 You've learned how to use the fidesops API to connect a database and a final storage location, define policies that describe

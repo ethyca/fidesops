@@ -40,6 +40,18 @@ def init_db(database_url: PostgresDsn) -> None:
     upgrade_db(alembic_config)
 
 
+def generate_migration(database_url: PostgresDsn) -> None:
+    """
+    Tries to autogenerate migrations, returns True if a migration
+    was generated.
+    """
+
+    engine = get_db_engine(database_uri=database_url)
+    config = get_alembic_config(database_url)
+    result = command.revision(config, autogenerate=True)
+    print("Migration generated!")
+
+
 def check_missing_migrations(database_url: PostgresDsn) -> None:
     """
     Tries to autogenerate migrations, returns True if a migration

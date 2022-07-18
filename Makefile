@@ -38,6 +38,16 @@ init-db: compose-build
 	from fidesops.core.config import config; \
 	init_db(config.database.SQLALCHEMY_DATABASE_URI);"
 
+generate-migration: compose-build
+	@echo "Generate new migrations..."
+	@docker-compose run --rm -e ANALYTICS_OPT_OUT $(COMPOSE_SERVICE_NAME) \
+	python -c "\
+	from fidesops.db.database import generate_migration; \
+	from fidesops.core.config import config; \
+	generate_migration(config.database.SQLALCHEMY_DATABASE_URI);"
+	@make teardown
+
+
 reset-db:
 	@echo "Resetting and re-initializing the application db..."
 	@make teardown

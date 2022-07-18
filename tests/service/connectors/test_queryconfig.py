@@ -189,7 +189,7 @@ class TestSQLQueryConfig:
 
         # Make target more broad
         target = rule.targets[0]
-        target.data_category = DataCategory("user.provided.identifiable").value
+        target.data_category = DataCategory("user").value
         assert config.build_rule_target_field_paths(erasure_policy) == {
             rule: [FieldPath("email"), FieldPath("name")]
         }
@@ -284,7 +284,7 @@ class TestSQLQueryConfig:
         # Make target more broad
         rule = erasure_policy.rules[0]
         target = rule.targets[0]
-        target.data_category = DataCategory("user.provided.identifiable").value
+        target.data_category = DataCategory("user").value
 
         # Update rule masking strategy
         rule.masking_strategy = {
@@ -513,7 +513,7 @@ class TestMongoQueryConfig:
         # Make target more broad
         rule = erasure_policy.rules[0]
         target = rule.targets[0]
-        target.data_category = DataCategory("user.provided.identifiable").value
+        target.data_category = DataCategory("user").value
 
         mongo_statement = config.generate_update_stmt(
             row, erasure_policy, privacy_request
@@ -575,9 +575,7 @@ class TestMongoQueryConfig:
             "configuration": {"algorithm": "SHA-512"},
         }
         target = rule.targets[0]
-        target.data_category = DataCategory(
-            "user.provided.identifiable.date_of_birth"
-        ).value
+        target.data_category = DataCategory("user.date_of_birth").value
 
         rule_two = erasure_policy_two_rules.rules[1]
         rule_two.masking_strategy = {
@@ -585,7 +583,7 @@ class TestMongoQueryConfig:
             "configuration": {"length": 30},
         }
         target = rule_two.targets[0]
-        target.data_category = DataCategory("user.provided.identifiable.gender").value
+        target.data_category = DataCategory("user.gender").value
         # cache secrets for hash strategy
         secret = MaskingSecretCache[str](
             secret="adobo",

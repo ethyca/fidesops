@@ -24,7 +24,7 @@ dataset:
           - name: library
             fields:
               - name: name
-                data_categories: [user.provided.identifiable.name]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: version
@@ -56,39 +56,39 @@ dataset:
           - name: address
             fields:
               - name: city
-                data_categories: [user.provided.identifiable.contact.city]
+                data_categories: [user.contact.city]
                 fidesops_meta:
                   data_type: string
               - name: country
-                data_categories: [user.provided.identifiable.contact.country]
+                data_categories: [user.contact.country]
                 fidesops_meta:
                   data_type: string
               - name: postalCode
-                data_categories: [user.provided.identifiable.contact.postal_code]
+                data_categories: [user.contact.postal_code]
                 fidesops_meta:
                   data_type: string
               - name: state
-                data_categories: [user.provided.identifiable.contact.state]
+                data_categories: [user.contact.state]
                 fidesops_meta:
                   data_type: string
           - name: age
-            data_categories: [user.provided.identifiable.non_specific_age]
+            data_categories: [user.non_specific_age]
           - name: avatar
             data_categories: [system.operations]
           - name: createdAt
             data_categories: [system.operations]
           - name: description
-            data_categories: [user.provided.identifiable]
+            data_categories: [user]
           - name: email
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: firstName
-            data_categories: [user.provided.identifiable.name]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: gender
-            data_categories: [user.provided.identifiable.gender]
+            data_categories: [user.gender]
             fidesops_meta:
               data_type: string
           - name: id
@@ -97,24 +97,24 @@ dataset:
             data_categories: [system.operations]
           - name: lastName
           - name: name
-            data_categories: [ user.provided.identifiable.name ]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: phone
-            data_categories: [ user.provided.identifiable.contact.phone_number ]
+            data_categories: [user.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: subscriptionStatus
           - name: title
-            data_categories: [ user.provided.identifiable.name ]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: username
-            data_categories: [ user.provided.identifiable.name ]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: website
-            data_categories: [ user.provided.identifiable ]
+            data_categories: [user]
             fidesops_meta:
               data_type: string
       - name: external_ids

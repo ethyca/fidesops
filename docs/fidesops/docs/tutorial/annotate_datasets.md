@@ -42,7 +42,7 @@ the user by `email`, and from there, travel through other tables linked to `user
 
 ```yaml
 - name: email
-  data_categories: [user.provided.identifiable.contact.email]
+  data_categories: [user.contact.email]
   fidesops_meta:
     data_type: string
     identity: email

@@ -290,7 +290,7 @@ def erasure_policy(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": erasure_rule.id,
         },
     )
@@ -341,7 +341,7 @@ def erasure_policy_aes(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": erasure_rule.id,
         },
     )
@@ -394,7 +394,7 @@ def erasure_policy_string_rewrite_long(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": erasure_rule.id,
         },
     )
@@ -442,9 +442,7 @@ def erasure_policy_two_rules(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory(
-                "user.provided.identifiable.contact.email"
-            ).value,
+            "data_category": DataCategory("user.contact.email").value,
             "rule_id": second_erasure_rule.id,
         },
     )
@@ -493,7 +491,7 @@ def policy(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable").value,
+            "data_category": DataCategory("user").value,
             "rule_id": access_request_rule.id,
         },
     )
@@ -543,7 +541,7 @@ def policy_drp_action(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable").value,
+            "data_category": DataCategory("user").value,
             "rule_id": access_request_rule.id,
         },
     )
@@ -592,7 +590,7 @@ def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Genera
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable").value,
+            "data_category": DataCategory("user").value,
             "rule_id": erasure_request_rule.id,
         },
     )
@@ -644,7 +642,7 @@ def erasure_policy_string_rewrite(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": erasure_rule.id,
         },
     )
@@ -697,7 +695,7 @@ def erasure_policy_hmac(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": erasure_rule.id,
         },
     )
@@ -934,9 +932,7 @@ def dataset_config(
                             },
                             {
                                 "name": "email",
-                                "data_categories": [
-                                    "user.provided.identifiable.contact.email"
-                                ],
+                                "data_categories": ["user.contact.email"],
                                 "fidesops_meta": {
                                     "identity": "email",
                                 },
@@ -976,9 +972,7 @@ def dataset_config_preview(
                             },
                             {
                                 "name": "email",
-                                "data_categories": [
-                                    "user.provided.identifiable.contact.email"
-                                ],
+                                "data_categories": ["user.contact.email"],
                                 "fidesops_meta": {
                                     "identity": "email",
                                 },

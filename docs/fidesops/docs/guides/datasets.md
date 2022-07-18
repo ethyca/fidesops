@@ -41,19 +41,19 @@ dataset:
             fidesops_meta:
               primary_key: True
           - name: street
-            data_categories: [user.provided.identifiable.contact.street]
+            data_categories: [user.contact.street]
             fidesops_meta:
               data_type: string
           - name: city
-            data_categories: [user.provided.identifiable.contact.city]
+            data_categories: [user.contact.city]
             fidesops_meta:
               data_type: string
           - name: state
-            data_categories: [user.provided.identifiable.contact.state]
+            data_categories: [user.contact.state]
             fidesops_meta:
               data_type: string
           - name: zip
-            data_categories: [user.provided.identifiable.contact.postal_code]
+            data_categories: [user.contact.postal_code]
             fidesops_meta:
               data_type: string
 
@@ -70,7 +70,7 @@ dataset:
           - name: created
             data_categories: [system.operations]
           - name: email
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
             fidesops_meta:
               identity: email
               data_type: string
@@ -79,7 +79,7 @@ dataset:
             fidesops_meta:
               primary_key: True
           - name: name
-            data_categories: [user.provided.identifiable.name]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
 ```
@@ -136,7 +136,7 @@ dataset:
             fidesops_meta:
               primary_key: true
           - name: email
-            data_categories: [ user.provided.identifiable.contact.email ]
+            data_categories: [ user.contact.email ]
             fidesops_meta:
               identity: email
               data_type: string

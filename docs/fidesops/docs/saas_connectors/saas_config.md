@@ -519,7 +519,7 @@ collections:
       - name: from_label
         data_categories: [system.operations]
       - name: from_email
-        data_categories: [user.provided.identifiable.contact.email]
+        data_categories: [user.contact.email]
       - name: subject
         data_categories: [system.operations]
       - name: message
@@ -571,7 +571,7 @@ collections:
       - name: from_label
         data_categories: [system.operations]
       - name: from_email
-        data_categories: [user.provided.identifiable.contact.email]
+        data_categories: [user.contact.email]
       - name: subject
         data_categories: [system.operations]
       - name: message

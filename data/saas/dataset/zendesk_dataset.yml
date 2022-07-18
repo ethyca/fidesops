@@ -15,11 +15,11 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: name
-            data_categories: [user.provided.identifiable.name]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: email
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: created_at
@@ -39,15 +39,15 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: phone
-            data_categories: [user.provided.identifiable.contact.phone_number]
+            data_categories: [user.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: shared_phone_number
-            data_categories: [user.provided.identifiable.contact.phone_number]
+            data_categories: [user.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: photo
-            data_categories: [user.provided.identifiable]
+            data_categories: [user]
             fidesops_meta:
               data_type: string
           - name: locale_id
@@ -173,7 +173,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: value
-            data_categories: [user.provided.identifiable.contact]
+            data_categories: [user.contact]
             fidesops_meta:
               data_type: string
           - name: verified
@@ -394,12 +394,11 @@ dataset:
                   - name: to
                     fields:
                       - name: name
-                        data_categories: [user.provided.identifiable.name]
+                        data_categories: [user.name]
                         fidesops_meta:
                           data_type: string
                       - name: address
-                        data_categories:
-                          [user.provided.identifiable.contact.email]
+                        data_categories: [user.contact.email]
                         fidesops_meta:
                           data_type: string
                   - name: rel
