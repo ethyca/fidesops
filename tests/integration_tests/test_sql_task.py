@@ -39,8 +39,8 @@ from ..task.traversal_data import integration_db_dataset, integration_db_graph
 logger = logging.getLogger(__name__)
 sample_postgres_configuration_policy = erasure_policy(
     "system.operations",
-    "user.derived.identifiable.unique_id",
-    "user.derived.nonidentifiable.sensor",
+    "user.unique_id",
+    "user.sensor",
     "user.contact.city",
     "user.contact.email",
     "user.contact.postal_code",
@@ -49,7 +49,7 @@ sample_postgres_configuration_policy = erasure_policy(
     "user.financial.account_number",
     "user.financial",
     "user.name",
-    "user.provided.nonidentifiable",
+    "user",
 )
 
 

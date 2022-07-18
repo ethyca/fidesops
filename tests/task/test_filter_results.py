@@ -657,7 +657,7 @@ def test_filter_data_categories_limited_results():
                     "email",
                 )
             ],
-            "user.derived.identifiable.unique_id": [
+            "user.unique_id": [
                 FieldPath(
                     "id",
                 )
@@ -679,7 +679,7 @@ def test_filter_data_categories_limited_results():
                     "email",
                 )
             ],
-            "user.derived.identifiable.unique_id": [
+            "user.unique_id": [
                 FieldPath(
                     "id",
                 )
@@ -691,7 +691,7 @@ def test_filter_data_categories_limited_results():
             ],
         },
         CollectionAddress.from_string("postgres_example:login"): {
-            "user.derived.identifiable.unique_id": [
+            "user.unique_id": [
                 FieldPath(
                     "customer_id",
                 )
@@ -701,7 +701,7 @@ def test_filter_data_categories_limited_results():
                     "id",
                 )
             ],
-            "user.derived.nonidentifiable.sensor": [
+            "user.sensor": [
                 FieldPath(
                     "time",
                 )
@@ -721,7 +721,7 @@ def test_filter_data_categories_limited_results():
             ]
         },
         CollectionAddress.from_string("postgres_example:orders"): {
-            "user.derived.identifiable.unique_id": [
+            "user.unique_id": [
                 FieldPath(
                     "customer_id",
                 )
@@ -757,12 +757,12 @@ def test_filter_data_categories_limited_results():
                     "name",
                 ),
             ],
-            "user.derived.identifiable.unique_id": [
+            "user.unique_id": [
                 FieldPath(
                     "customer_id",
                 )
             ],
-            "user.provided.nonidentifiable": [
+            "user": [
                 FieldPath(
                     "preferred",
                 )
@@ -825,7 +825,7 @@ def test_filter_data_categories_limited_results():
                     "opened",
                 ),
             ],
-            "user.derived.identifiable.unique_id": [
+            "user.unique_id": [
                 FieldPath(
                     "employee_id",
                 )
@@ -854,7 +854,7 @@ def test_filter_data_categories_limited_results():
                     "birthday",
                 )
             ],
-            "user.derived.identifiable.unique_id": [
+            "user.unique_id": [
                 FieldPath(
                     "customer_id",
                 )
@@ -873,7 +873,7 @@ def test_filter_data_categories_limited_results():
                 )
             ],
             "user.contact.phone_number": [FieldPath("customer_information", "phone")],
-            "user.provided.nonidentifiable": [
+            "user": [
                 FieldPath(
                     "message",
                 ),

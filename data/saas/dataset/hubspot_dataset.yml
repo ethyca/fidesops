@@ -6,7 +6,7 @@ dataset:
       - name: contacts
         fields:
           - name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               primary_key: True
               data_type: string
@@ -15,7 +15,7 @@ dataset:
               data_type: object
             fields:
               - name: company
-                data_categories: [user.provided.nonidentifiable]
+                data_categories: [user]
                 fidesops_meta:
                   data_type: string
               - name: createdate
@@ -31,7 +31,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: lastmodifieddate
-                data_categories: [user.derived.nonidentifiable.sensor]
+                data_categories: [user.sensor]
                 fidesops_meta:
                   data_type: string
               - name: lastname
@@ -43,15 +43,15 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: website
-                data_categories: [user.provided.nonidentifiable]
+                data_categories: [user]
                 fidesops_meta:
                   data_type: string
           - name: createdAt
-            data_categories: [user.derived.nonidentifiable.sensor]
+            data_categories: [user.sensor]
             fidesops_meta:
               data_type: string
           - name: updatedAt
-            data_categories: [user.derived.nonidentifiable.sensor]
+            data_categories: [user.sensor]
             fidesops_meta:
               data_type: string
           - name: archived
@@ -85,15 +85,15 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: name
-                data_categories: [user.provided.nonidentifiable]
+                data_categories: [user]
                 fidesops_meta:
                   data_type: string
           - name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
           - name: userId
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: integer
           - name: email
@@ -101,7 +101,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: updatedAt
-            data_categories: [user.derived.nonidentifiable.sensor]
+            data_categories: [user.sensor]
             fidesops_meta:
               data_type: string
       #      - name: marketing_emails
@@ -135,7 +135,7 @@ dataset:
       #            fidesops_meta:
       #              data_type: boolean
       #          - name: absoluteUrl
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: allEmailCampaignIds
@@ -171,7 +171,7 @@ dataset:
       #            fidesops_meta:
       #              data_type: string
       #          - name: authorUserId
-      #            data_categories: [user.derived.identifiable.unique_id]
+      #            data_categories: [user.unique_id]
       #            fidesops_meta:
       #              data_type: integer
       #          - name: blogRssSettings
@@ -181,11 +181,11 @@ dataset:
       #            fidesops_meta:
       #              data_type: string
       #          - name: campaignName
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: campaignUtm
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: canSpamSettingsId
@@ -205,7 +205,7 @@ dataset:
       #            fidesops_meta:
       #              data_type: boolean
       #          - name: created
-      #            data_categories: [user.derived.nonidentifiable.sensor]
+      #            data_categories: [user.sensor]
       #            fidesops_meta:
       #              data_type: integer
       #          - name: createdById
@@ -221,15 +221,15 @@ dataset:
       #            fidesops_meta:
       #              data_type: boolean
       #          - name: domain
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: emailBody
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: emailNote
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: emailTemplateMode
@@ -241,7 +241,7 @@ dataset:
       #            fidesops_meta:
       #              data_type: string
       #          - name: emailbodyPlaintext
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: feedbackEmailCategory
@@ -263,7 +263,7 @@ dataset:
       #            fidesops_meta:
       #              data_type: string
       #          - name: htmlTitle
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: id
@@ -302,7 +302,7 @@ dataset:
       #            fidesops_meta:
       #              data_type: boolean
       #          - name: liveDomain
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: mailingListsExcluded,
@@ -346,7 +346,7 @@ dataset:
       #            fidesops_meta:
       #              data_type: string
       #          - name: publishDate
-      #            data_categories: [user.derived.nonidentifiable.sensor]
+      #            data_categories: [user.sensor]
       #            fidesops_meta:
       #              data_type: integer
       #          - name: publishImmediately
@@ -362,19 +362,19 @@ dataset:
       #            fidesops_meta:
       #              data_type: string
       #          - name: resolvedDomain
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: rssEmailByText
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: rssEmailClickThroughText
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: rssEmailCommentText
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: rssEmailEntryTemplateEnabled
@@ -386,7 +386,7 @@ dataset:
       #            fidesops_meta:
       #              data_type: integer
       #          - name: rssEmailUrl
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: scrubsSubscriptionLinks
@@ -394,7 +394,7 @@ dataset:
       #            fidesops_meta:
       #              data_type: boolean
       #          - name: slug
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: smartEmailFields
@@ -412,7 +412,7 @@ dataset:
       #            fidesops_meta:
       #              data_type: string
       #          - name: subject
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: subscription
@@ -420,7 +420,7 @@ dataset:
       #            fidesops_meta:
       #              data_type: integer
       #          - name: subscriptionName
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: teamPerms
@@ -434,11 +434,11 @@ dataset:
       #            fidesops_meta:
       #              data_type: boolean
       #          - name: unpublishedAt
-      #            data_categories: [user.derived.nonidentifiable.sensor]
+      #            data_categories: [user.sensor]
       #            fidesops_meta:
       #              data_type: integer
       #          - name: updated
-      #            data_categories: [user.derived.nonidentifiable.sensor]
+      #            data_categories: [user.sensor]
       #            fidesops_meta:
       #              data_type: integer
       #          - name: updatedById
@@ -446,7 +446,7 @@ dataset:
       #            fidesops_meta:
       #              data_type: integer
       #          - name: url
-      #            data_categories: [user.provided.nonidentifiable]
+      #            data_categories: [user]
       #            fidesops_meta:
       #              data_type: string
       #          - name: useRssHeadlineAsSubject
@@ -507,7 +507,7 @@ dataset:
 #      - name: users
 #        fields:
 #          - name: id
-#            data_categories: [user.derived.identifiable.unique_id]
+#            data_categories: [user.unique_id]
 #            fidesops_meta:
 #              primary_key: True
 #              data_type: string
@@ -530,7 +530,7 @@ dataset:
 #      - name: user_provisioning
 #        fields:
 #          - name: id
-#            data_categories: [user.derived.identifiable.unique_id]
+#            data_categories: [user.unique_id]
 #            fidesops_meta:
 #              primary_key: True
 #              data_type: string

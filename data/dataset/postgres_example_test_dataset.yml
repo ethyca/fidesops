@@ -37,7 +37,7 @@ dataset:
               identity: email
               data_type: string
           - name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               primary_key: True
           - name: name
@@ -61,7 +61,7 @@ dataset:
               identity: email
               data_type: string
           - name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               primary_key: True
           - name: name
@@ -72,7 +72,7 @@ dataset:
       - name: login
         fields:
           - name: customer_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               references:
                 - dataset: postgres_example_test_dataset
@@ -83,12 +83,12 @@ dataset:
             fidesops_meta:
               primary_key: True
           - name: time
-            data_categories: [user.derived.nonidentifiable.sensor]
+            data_categories: [user.sensor]
 
       - name: orders
         fields:
           - name: customer_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               references:
                 - dataset: postgres_example_test_dataset
@@ -140,7 +140,7 @@ dataset:
           - name: code
             data_categories: [user.financial]
           - name: customer_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               references:
                 - dataset: postgres_example_test_dataset
@@ -153,7 +153,7 @@ dataset:
           - name: name
             data_categories: [user.financial]
           - name: preferred
-            data_categories: [user.provided.nonidentifiable]
+            data_categories: [user]
 
       - name: product
         fields:
@@ -201,7 +201,7 @@ dataset:
               identity: email
               data_type: string
           - name: employee_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               references:
                 - dataset: postgres_example_test_dataset

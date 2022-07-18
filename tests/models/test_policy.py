@@ -272,11 +272,11 @@ def test_ancestor_detection():
     is_ancestor, _ = _is_ancestor_of_contained_categories(
         fides_key="user.contact.email",
         data_categories=[
-            "user.provided.nonidentifiable",
+            "user",
         ],
     )
     # "user.contact.email" is not a descendent of
-    # "user.provided.nonidentifiable"
+    # "user"
     assert not is_ancestor
 
     is_ancestor, _ = _is_ancestor_of_contained_categories(
@@ -321,7 +321,7 @@ def test_validate_policy(
         data={
             "client_id": oauth_client.id,
             "data_category": DataCategory("user").value,
-            "name": "all user provided identifiable data",
+            "name": "all user data",
             "rule_id": erasure_rule.id,
         },
     )

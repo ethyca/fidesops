@@ -6,7 +6,7 @@ dataset:
       - name: segment_user
         fields:
           - name: segment_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               primary_key: True
       - name: track_events
@@ -18,7 +18,7 @@ dataset:
               - name: type
                 data_categories: [system.operations]
               - name: id
-                data_categories: [user.derived.identifiable.unique_id]
+                data_categories: [user.unique_id]
           - name: context
             data_categories: [system.operations]
           - name: library
@@ -92,7 +92,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
           - name: industry
             data_categories: [system.operations]
           - name: lastName
@@ -120,7 +120,7 @@ dataset:
       - name: external_ids
         fields:
           - name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
           - name: type
             data_categories: [system.operations]
           - name: source_id

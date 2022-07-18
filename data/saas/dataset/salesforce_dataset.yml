@@ -84,11 +84,11 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: OtherLatitude
-            data_categories: [user.derived.identifiable.location]
+            data_categories: [user.location]
             fidesops_meta:
               data_type: string
           - name: OtherLongitude
-            data_categories: [user.derived.identifiable.location]
+            data_categories: [user.location]
             fidesops_meta:
               data_type: string
           - name: OtherGeocodeAccuracy
@@ -120,11 +120,11 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: MailingLatitude
-            data_categories: [user.derived.identifiable.location]
+            data_categories: [user.location]
             fidesops_meta:
               data_type: string
           - name: MailingLongitude
-            data_categories: [user.derived.identifiable.location]
+            data_categories: [user.location]
             fidesops_meta:
               data_type: string
           - name: MailingGeocodeAccuracy
@@ -496,11 +496,11 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: Latitude
-            data_categories: [user.derived.identifiable.location]
+            data_categories: [user.location]
             fidesops_meta:
               data_type: string
           - name: Longitude
-            data_categories: [user.derived.identifiable.location]
+            data_categories: [user.location]
             fidesops_meta:
               data_type: string
           - name: GeocodeAccuracy
@@ -864,11 +864,11 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: BillingLatitude
-            data_categories: [user.derived.identifiable.location]
+            data_categories: [user.location]
             fidesops_meta:
               data_type: string
           - name: BillingLongitude
-            data_categories: [user.derived.identifiable.location]
+            data_categories: [user.location]
             fidesops_meta:
               data_type: string
           - name: BillingGeocodeAccuracy
@@ -900,11 +900,11 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: ShippingLatitude
-            data_categories: [user.derived.identifiable.location]
+            data_categories: [user.location]
             fidesops_meta:
               data_type: string
           - name: ShippingLongitude
-            data_categories: [user.derived.identifiable.location]
+            data_categories: [user.location]
             fidesops_meta:
               data_type: string
           - name: ShippingGeocodeAccuracy

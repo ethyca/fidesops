@@ -10,7 +10,7 @@ dataset:
             fidesops_meta:
               primary_key: True
           - name: customer_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               references:
                 - dataset: postgres_example_test_dataset
@@ -126,7 +126,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
           - name: rating
-            data_categories: [user.provided.nonidentifiable]
+            data_categories: [user]
             fidesops_meta:
               data_type: integer
           - name: date
@@ -134,7 +134,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: message
-            data_categories: [user.provided.nonidentifiable]
+            data_categories: [user]
             fidesops_meta:
               data_type: string
       - name: flights
@@ -205,7 +205,7 @@ dataset:
               identity: email
               data_type: string
           - name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               primary_key: True
               references:
@@ -254,7 +254,7 @@ dataset:
           - name: code
             data_categories: [user.financial]
           - name: customer_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
@@ -262,7 +262,7 @@ dataset:
           - name: name
             data_categories: [user.financial]
           - name: preferred
-            data_categories: [user.provided.nonidentifiable]
+            data_categories: [user]
       - name: rewards
         fields:
           - name: _id

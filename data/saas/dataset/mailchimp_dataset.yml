@@ -18,7 +18,7 @@ dataset:
           - name: subject
             data_categories: [system.operations]
           - name: message
-            data_categories: [user.provided.nonidentifiable]
+            data_categories: [user]
           - name: read
             data_categories: [system.operations]
           - name: timestamp
@@ -36,11 +36,11 @@ dataset:
           - name: from_label
             data_categories: [user.contact.email]
           - name: subject
-            data_categories: [user.provided.nonidentifiable]
+            data_categories: [user]
       - name: member
         fields:
           - name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               primary_key: True
           - name: list_id
@@ -50,11 +50,11 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: unique_email_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
           - name: web_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
           - name: email_type
@@ -106,7 +106,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
           - name: ip_signup
-            data_categories: [user.derived.identifiable.device.ip_address]
+            data_categories: [user.device.ip_address]
             fidesops_meta:
               data_type: string
           - name: timestamp_signup

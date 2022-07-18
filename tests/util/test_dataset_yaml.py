@@ -50,7 +50,7 @@ example_dataset_nested_yaml = """dataset:
               primary_key: True
               data_type: object_id
           - name: photo_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               references:
                 - dataset: postgres_main_database
@@ -238,7 +238,7 @@ example_postgres_yaml = """dataset:
       - name: cameras
         fields:
           - name: name
-            data_categories: [ user.provided.nonidentifiable]
+            data_categories: [ user]
             fidesops_meta:
               data_type: string
           - name: id
