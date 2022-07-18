@@ -272,11 +272,11 @@ def test_ancestor_detection():
     is_ancestor, _ = _is_ancestor_of_contained_categories(
         fides_key="user.contact.email",
         data_categories=[
-            "user",
+            "user.account",
         ],
     )
     # "user.contact.email" is not a descendent of
-    # "user"
+    # "user.account"
     assert not is_ancestor
 
     is_ancestor, _ = _is_ancestor_of_contained_categories(

@@ -189,9 +189,9 @@ class TestSQLQueryConfig:
 
         # Make target more broad
         target = rule.targets[0]
-        target.data_category = DataCategory("user").value
+        target.data_category = DataCategory("user.contact").value
         assert config.build_rule_target_field_paths(erasure_policy) == {
-            rule: [FieldPath("email"), FieldPath("name")]
+            rule: [FieldPath("email")]
         }
 
         # Check different collection
@@ -518,9 +518,9 @@ class TestMongoQueryConfig:
         mongo_statement = config.generate_update_stmt(
             row, erasure_policy, privacy_request
         )
-        assert mongo_statement[0] == {"_id": 1}
 
-        assert mongo_statement[1] == {
+        expected_result_0 = {"_id": 1}
+        expected_result_1 = {
             "$set": {
                 "birthday": None,
                 "children.0": None,
@@ -533,6 +533,11 @@ class TestMongoQueryConfig:
                 "workplace_info.position": None,
             }
         }
+
+        print(mongo_statement[1])
+        print(expected_result_1)
+        assert mongo_statement[0] == expected_result_0
+        assert mongo_statement[1] == expected_result_1
 
     def test_generate_update_stmt_multiple_rules(
         self,
