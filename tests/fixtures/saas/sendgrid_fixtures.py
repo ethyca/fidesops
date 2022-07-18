@@ -144,14 +144,14 @@ def sendgrid_erasure_data(
 
     error_message = f"Contact with email {sendgrid_erasure_identity_email} could not be added to Sendgrid"
     contact = poll_for_existence(
-        _contact_exists,
+        contact_exists,
         (sendgrid_erasure_identity_email, connector, sendgrid_secrets),
         error_message=error_message,
     )
     yield contact
 
 
-def _contact_exists(
+def contact_exists(
     sendgrid_erasure_identity_email: str, connector: SaaSConnector, sendgrid_secrets
 ):
     """

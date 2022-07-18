@@ -9,10 +9,12 @@ from fidesops.core.config import config
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.service.connectors import SaaSConnector
+from fidesops.service import connectors
 from fidesops.task import graph_task
 from fidesops.task.graph_task import get_cached_data_for_erasures
+from tests.fixtures.saas.sendgrid_fixtures import contact_exists
 from tests.graph.graph_test_util import assert_rows_match
+from tests.test_helpers.saas_test_utils import poll_for_existence
 
 
 @pytest.mark.integration_saas
@@ -124,6 +126,7 @@ def test_sendgrid_erasure_request_task(
             "updated_at",
         ],
     )
+    temp_masking = config.execution.MASKING_STRICT
     config.execution.MASKING_STRICT = False  # Allow delete
     erasure = graph_task.run_erasure(
         privacy_request,
@@ -134,5 +137,12 @@ def test_sendgrid_erasure_request_task(
         get_cached_data_for_erasures(privacy_request.id),
     )
     assert erasure == {"sendgrid_connector_example:contacts": 1}
+    error_message = f"Contact with email {sendgrid_erasure_identity_email} could not be deleted in Sendgrid"
+    poll_for_existence(
+        contact_exists,
+        (sendgrid_erasure_identity_email, connectors, sendgrid_secrets),
+        error_message=error_message,
+        existence_desired=False,
+    )
 
-    config.execution.MASKING_STRICT = False
+    config.execution.MASKING_STRICT = temp_masking
