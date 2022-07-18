@@ -1,7 +1,4 @@
-import imp
-import json
 import os
-import time
 from typing import Any, Dict, Generator
 
 import pydash
@@ -18,7 +15,6 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.service.connectors import SaaSConnector
 from fidesops.util import cryptographic_util
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
@@ -110,9 +106,7 @@ def sendgrid_erasure_data(
     Creates a dynamic test data record for erasure tests.
     Yields contact ID as this may be useful to have in test scenarios
     """
-    connector = SaaSConnector(sendgrid_connection_config)
 
-    auth = f"sendgrid_secrets['api_key']"
     base_url = f"https://{sendgrid_secrets['domain']}"
     # Create contact
     body = {
@@ -136,24 +130,17 @@ def sendgrid_erasure_data(
     contacts_response = requests.put(
         url=f"{base_url}/v3/marketing/contacts", json=body, headers=headers
     )
-
-    # contacts_response = connector.create_client().send(contacts_request)
     assert HTTP_202_ACCEPTED == contacts_response.status_code
-
-    contacts_body = contacts_response.json()
-
     error_message = f"Contact with email {sendgrid_erasure_identity_email} could not be added to Sendgrid"
     contact = poll_for_existence(
         contact_exists,
-        (sendgrid_erasure_identity_email, connector, sendgrid_secrets),
+        (sendgrid_erasure_identity_email, sendgrid_secrets),
         error_message=error_message,
     )
     yield contact
 
 
-def contact_exists(
-    sendgrid_erasure_identity_email: str, connector: SaaSConnector, sendgrid_secrets
-):
+def contact_exists(sendgrid_erasure_identity_email: str, sendgrid_secrets):
     """
     Confirm whether contact exists by calling contact search by email api and comparing resulting firstname str.
     Returns contact ID if it exists, returns None if it does not.
