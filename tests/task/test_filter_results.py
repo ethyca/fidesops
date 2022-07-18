@@ -883,7 +883,7 @@ def test_filter_data_categories_limited_results():
             ],
         },
         CollectionAddress.from_string("mongo_test:internal_customer_profile"): {
-            "user.derived": [
+            "user": [
                 FieldPath(
                     "derived_interests",
                 )

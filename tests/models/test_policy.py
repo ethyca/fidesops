@@ -345,7 +345,7 @@ def test_validate_policy(
             data={
                 "client_id": erasure_policy.client.id,
                 "data_category": DataCategory("user.contact.email").value,
-                "name": "all user provided contact emails",
+                "name": "all user contact emails",
                 "rule_id": another_erasure_rule.id,
             },
         )

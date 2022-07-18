@@ -90,18 +90,18 @@ dataset:
                       field: customer_feedback.customer_information.internal_customer_id
                       direction: from
               - name: derived_emails
-                data_categories: [user.derived]
+                data_categories: [user]
                 fidesops_meta:
                   data_type: string[]
                   identity: email
               - name: derived_phone
-                data_categories: [user.derived]
+                data_categories: [user]
                 fidesops_meta:
                   data_type: string[]
                   return_all_elements: true
                   identity: phone_number
           - name: derived_interests
-            data_categories: [user.derived]
+            data_categories: [user]
             fidesops_meta:
               data_type: string[]
       - name: customer_feedback

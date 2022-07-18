@@ -347,6 +347,7 @@ class TestValidateDataset:
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=dataset
         )
+        print(response.text)
         assert response.status_code == 200
         response_body = json.loads(response.text)
         assert response_body["dataset"]

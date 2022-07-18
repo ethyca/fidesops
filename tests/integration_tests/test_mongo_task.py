@@ -572,7 +572,7 @@ def test_object_querying_mongo(
     }
 
     # Includes data retrieved from a nested field that was joined with a nested field from another table
-    target_categories = {"user.derived"}
+    target_categories = {"user"}
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
@@ -781,7 +781,7 @@ def test_array_querying_mongo(
     )
 
     # This is a different category than was specified on the policy, this is just for testing.
-    target_categories = {"user.derived"}
+    target_categories = {"user"}
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,

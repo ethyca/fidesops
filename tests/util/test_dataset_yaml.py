@@ -90,7 +90,7 @@ example_dataset_nested_yaml = """dataset:
           - name: tags
             fidesops_meta:
                 data_type: string[]
-            data_categories: [user.provided]
+            data_categories: [user]
           - name: comments
             fidesops_meta:
                 data_type: object[]
@@ -300,7 +300,7 @@ example_object_with_data_categories_nested_yaml = """dataset:
       - name: photos
         fields:
           - name: thumbnail
-            data_categories: [user.derived]    
+            data_categories: [user]    
             fidesops_meta:
                 data_type: object
             fields:
