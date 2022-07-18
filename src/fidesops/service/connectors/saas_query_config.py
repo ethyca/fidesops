@@ -235,10 +235,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 isinstance(field, ScalarField)
                 and pydash.get(row, field_path.string_path) is not None
             ):
-                if pydash.get(row, field_path.string_path) is not None:
-                    all_value_map[field_path.string_path] = pydash.get(
-                        row, field_path.string_path
-                    )
+                all_value_map[field_path.string_path] = pydash.get(
+                    row, field_path.string_path
+                )
         return all_value_map
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
