@@ -166,8 +166,20 @@ pytest-saas: compose-build
 	@echo "Running integration tests for SaaS connectors"
 	@docker-compose run \
 		-e ANALYTICS_OPT_OUT \
+		-e VAULT_ADDR -e VAULT_NAMESPACE -e VAULT_TOKEN \
+		$(COMPOSE_SERVICE_NAME) pytest $(pytestpath) -m "integration_saas"
+	@make teardown
+
+
+####################
+# Utils
+####################
+
+.PHONY: black
+black: compose-build
 	@echo "Running black formatting against the src/ and tests/ directories..."
 	@docker-compose run $(COMPOSE_SERVICE_NAME) black src/ tests/
+	@make teardown
 	@echo "Fin"
 
 .PHONY: clean
