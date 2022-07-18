@@ -64,23 +64,23 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: OtherStreet
-            data_categories: [user.contact.street]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: OtherCity
-            data_categories: [user.contact.city]
+            data_categories: [user.contact.address.city]
             fidesops_meta:
               data_type: string
           - name: OtherState
-            data_categories: [user.contact.state]
+            data_categories: [user.contact.address.state]
             fidesops_meta:
               data_type: string
           - name: OtherPostalCode
-            data_categories: [user.contact.postal_code]
+            data_categories: [user.contact.address.postal_code]
             fidesops_meta:
               data_type: string
           - name: OtherCountry
-            data_categories: [user.contact.country]
+            data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
           - name: OtherLatitude
@@ -100,23 +100,23 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: MailingStreet
-            data_categories: [user.contact.street]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: MailingCity
-            data_categories: [user.contact.city]
+            data_categories: [user.contact.address.city]
             fidesops_meta:
               data_type: string
           - name: MailingState
-            data_categories: [user.contact.state]
+            data_categories: [user.contact.address.state]
             fidesops_meta:
               data_type: string
           - name: MailingPostalCode
-            data_categories: [user.contact.postal_code]
+            data_categories: [user.contact.address.postal_code]
             fidesops_meta:
               data_type: string
           - name: MailingCountry
-            data_categories: [user.contact.country]
+            data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
           - name: MailingLatitude
@@ -476,23 +476,23 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: Street
-            data_categories: [user.contact.street]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: City
-            data_categories: [user.contact.city]
+            data_categories: [user.contact.address.city]
             fidesops_meta:
               data_type: string
           - name: State
-            data_categories: [user.contact.state]
+            data_categories: [user.contact.address.state]
             fidesops_meta:
               data_type: string
           - name: PostalCode
-            data_categories: [user.contact.postal_code]
+            data_categories: [user.contact.address.postal_code]
             fidesops_meta:
               data_type: string
           - name: Country
-            data_categories: [user.contact.postal_code]
+            data_categories: [user.contact.address.postal_code]
             fidesops_meta:
               data_type: string
           - name: Latitude
@@ -736,23 +736,23 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: Street
-            data_categories: [user.contact.street]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: City
-            data_categories: [user.contact.city]
+            data_categories: [user.contact.address.city]
             fidesops_meta:
               data_type: string
           - name: State
-            data_categories: [user.contact.state]
+            data_categories: [user.contact.address.state]
             fidesops_meta:
               data_type: string
           - name: PostalCode
-            data_categories: [user.contact.postal_code]
+            data_categories: [user.contact.address.postal_code]
             fidesops_meta:
               data_type: string
           - name: Country
-            data_categories: [user.contact.country]
+            data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
           - name: Email
@@ -844,23 +844,23 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: BillingStreet
-            data_categories: [user.contact.street]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: BillingCity
-            data_categories: [user.contact.city]
+            data_categories: [user.contact.address.city]
             fidesops_meta:
               data_type: string
           - name: BillingState
-            data_categories: [user.contact.state]
+            data_categories: [user.contact.address.state]
             fidesops_meta:
               data_type: string
           - name: BillingPostalCode
-            data_categories: [user.contact.postal_code]
+            data_categories: [user.contact.address.postal_code]
             fidesops_meta:
               data_type: string
           - name: BillingCountry
-            data_categories: [user.contact.country]
+            data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
           - name: BillingLatitude
@@ -880,23 +880,23 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: ShippingStreet
-            data_categories: [user.contact.street]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: ShippingCity
-            data_categories: [user.contact.city]
+            data_categories: [user.contact.address.city]
             fidesops_meta:
               data_type: string
           - name: ShippingState
-            data_categories: [user.contact.state]
+            data_categories: [user.contact.address.state]
             fidesops_meta:
               data_type: string
           - name: ShippingPostalCode
-            data_categories: [user.contact.postal_code]
+            data_categories: [user.contact.address.postal_code]
             fidesops_meta:
               data_type: string
           - name: ShippingCountry
-            data_categories: [user.contact.country]
+            data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
           - name: ShippingLatitude

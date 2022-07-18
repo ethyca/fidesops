@@ -29,7 +29,7 @@ example_dataset_yaml = """dataset:
             after: [a.b, c.d, e.f]
         fields:
           - name: city
-            data_categories: [user.contact.city] 
+            data_categories: [user.contact.address.city] 
           - name: id
             data_categories: [system.operations]
             fidesops_meta:

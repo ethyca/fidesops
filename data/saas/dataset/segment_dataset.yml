@@ -56,19 +56,19 @@ dataset:
           - name: address
             fields:
               - name: city
-                data_categories: [user.contact.city]
+                data_categories: [user.contact.address.city]
                 fidesops_meta:
                   data_type: string
               - name: country
-                data_categories: [user.contact.country]
+                data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
               - name: postalCode
-                data_categories: [user.contact.postal_code]
+                data_categories: [user.contact.address.postal_code]
                 fidesops_meta:
                   data_type: string
               - name: state
-                data_categories: [user.contact.state]
+                data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
           - name: age

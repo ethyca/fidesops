@@ -111,12 +111,12 @@ def second_postgres_execution_log(
                 {
                     "path": "my-postgres-db:address:street",
                     "field_name": "street",
-                    "data_categories": ["user.contact.street"],
+                    "data_categories": ["user.contact.address.street"],
                 },
                 {
                     "path": "my-postgres-db:address:city",
                     "field_name": "city",
-                    "data_categories": ["user.contact.city"],
+                    "data_categories": ["user.contact.address.city"],
                 },
             ],
             "action_type": ActionType.access,

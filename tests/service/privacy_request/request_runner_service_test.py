@@ -1223,7 +1223,7 @@ def test_create_and_process_erasure_request_redshift(
             assert row.state == redshift_resources["state"]
 
     target = erasure_policy.rules[0].targets[0]
-    target.data_category = "user.contact.state"
+    target.data_category = "user.contact.address.state"
     target.save(db=db)
 
     # Should erase state fields on address table
@@ -1338,7 +1338,7 @@ def test_create_and_process_erasure_request_bigquery(
             assert row.state == bigquery_resources["state"]
 
     target = erasure_policy.rules[0].targets[0]
-    target.data_category = "user.contact.state"
+    target.data_category = "user.contact.address.state"
     target.save(db=db)
 
     # Should erase state fields on address table

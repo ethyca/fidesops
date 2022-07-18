@@ -614,12 +614,12 @@ def test_filter_data_categories_limited_results():
 
     data_category_fields = {
         CollectionAddress.from_string("postgres_example:address"): {
-            "user.contact.city": [
+            "user.contact.address.city": [
                 FieldPath(
                     "city",
                 )
             ],
-            "user.contact.street": [
+            "user.contact.address.street": [
                 FieldPath(
                     "house",
                 ),
@@ -632,12 +632,12 @@ def test_filter_data_categories_limited_results():
                     "id",
                 )
             ],
-            "user.contact.state": [
+            "user.contact.address.state": [
                 FieldPath(
                     "state",
                 )
             ],
-            "user.contact.postal_code": [
+            "user.contact.address.postal_code": [
                 FieldPath(
                     "zip",
                 )

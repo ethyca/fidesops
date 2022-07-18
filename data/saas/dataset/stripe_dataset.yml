@@ -18,27 +18,27 @@ dataset:
           - name: address
             fields:
               - name: city
-                data_categories: [user.contact.city]
+                data_categories: [user.contact.address.city]
                 fidesops_meta:
                   data_type: string
               - name: country
-                data_categories: [user.contact.country]
+                data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
               - name: line1
-                data_categories: [user.contact.street]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: line2
-                data_categories: [user.contact.street]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: postal_code
-                data_categories: [user.contact.postal_code]
+                data_categories: [user.contact.address.postal_code]
                 fidesops_meta:
                   data_type: string
               - name: state
-                data_categories: [user.contact.state]
+                data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
           - name: balance
@@ -96,27 +96,27 @@ dataset:
               - name: address
                 fields:
                   - name: city
-                    data_categories: [user.contact.city]
+                    data_categories: [user.contact.address.city]
                     fidesops_meta:
                       data_type: string
                   - name: country
-                    data_categories: [user.contact.country]
+                    data_categories: [user.contact.address.country]
                     fidesops_meta:
                       data_type: string
                   - name: line1
-                    data_categories: [user.contact.street]
+                    data_categories: [user.contact.address.street]
                     fidesops_meta:
                       data_type: string
                   - name: line2
-                    data_categories: [user.contact.street]
+                    data_categories: [user.contact.address.street]
                     fidesops_meta:
                       data_type: string
                   - name: postal_code
-                    data_categories: [user.contact.postal_code]
+                    data_categories: [user.contact.address.postal_code]
                     fidesops_meta:
                       data_type: string
                   - name: state
-                    data_categories: [user.contact.state]
+                    data_categories: [user.contact.address.state]
                     fidesops_meta:
                       data_type: string
               - name: name
@@ -154,23 +154,23 @@ dataset:
               - name: address
                 fields:
                   - name: city
-                    data_categories: [user.contact.city]
+                    data_categories: [user.contact.address.city]
                     fidesops_meta:
                       data_type: string
                   - name: country
-                    data_categories: [user.contact.country]
+                    data_categories: [user.contact.address.country]
                     fidesops_meta:
                       data_type: string
                   - name: line1
-                    data_categories: [user.contact.street]
+                    data_categories: [user.contact.address.street]
                     fidesops_meta:
                       data_type: string
                   - name: line2
-                    data_categories: [user.contact.street]
+                    data_categories: [user.contact.address.street]
                     fidesops_meta:
                       data_type: string
                   - name: postal_code
-                    data_categories: [user.contact.postal_code]
+                    data_categories: [user.contact.address.postal_code]
                     fidesops_meta:
                       data_type: string
                   - name: state
@@ -258,7 +258,7 @@ dataset:
                       - name: cvc_check
                         data_categories: [system.operations]
                   - name: country
-                    data_categories: [user.contact.country]
+                    data_categories: [user.contact.address.country]
                     fidesops_meta:
                       data_type: string
                   - name: exp_month
@@ -302,31 +302,31 @@ dataset:
           - name: source
             fields:
               - name: address_city
-                data_categories: [user.contact.city]
+                data_categories: [user.contact.address.city]
                 fidesops_meta:
                   data_type: string
               - name: address_country
-                data_categories: [user.contact.country]
+                data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
               - name: address_line1
-                data_categories: [user.contact.street]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: address_line1_check
-                data_categories: [user.contact.street]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: address_line2
-                data_categories: [user.contact.street]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: address_state
-                data_categories: [user.contact.state]
+                data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
               - name: address_zip
-                data_categories: [user.contact.postal_code]
+                data_categories: [user.contact.address.postal_code]
                 fidesops_meta:
                   data_type: string
               - name: address_zip_check
@@ -334,7 +334,7 @@ dataset:
               - name: brand
                 data_categories: [system.operations]
               - name: country
-                data_categories: [user.contact.country]
+                data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
               - name: customer
@@ -566,27 +566,27 @@ dataset:
               - name: address
                 fields:
                   - name: city
-                    data_categories: [user.contact.city]
+                    data_categories: [user.contact.address.city]
                     fidesops_meta:
                       data_type: string
                   - name: country
-                    data_categories: [user.contact.country]
+                    data_categories: [user.contact.address.country]
                     fidesops_meta:
                       data_type: string
                   - name: line1
-                    data_categories: [user.contact.street]
+                    data_categories: [user.contact.address.street]
                     fidesops_meta:
                       data_type: string
                   - name: line2
-                    data_categories: [user.contact.street]
+                    data_categories: [user.contact.address.street]
                     fidesops_meta:
                       data_type: string
                   - name: postal_code
-                    data_categories: [user.contact.postal_code]
+                    data_categories: [user.contact.address.postal_code]
                     fidesops_meta:
                       data_type: string
                   - name: state
-                    data_categories: [user.contact.state]
+                    data_categories: [user.contact.address.state]
                     fidesops_meta:
                       data_type: string
               - name: carrier
@@ -625,27 +625,27 @@ dataset:
               - name: address
                 fields:
                   - name: city
-                    data_categories: [user.contact.city]
+                    data_categories: [user.contact.address.city]
                     fidesops_meta:
                       data_type: string
                   - name: country
-                    data_categories: [user.contact.country]
+                    data_categories: [user.contact.address.country]
                     fidesops_meta:
                       data_type: string
                   - name: line1
-                    data_categories: [user.contact.street]
+                    data_categories: [user.contact.address.street]
                     fidesops_meta:
                       data_type: string
                   - name: line2
-                    data_categories: [user.contact.street]
+                    data_categories: [user.contact.address.street]
                     fidesops_meta:
                       data_type: string
                   - name: postal_code
-                    data_categories: [user.contact.postal_code]
+                    data_categories: [user.contact.address.postal_code]
                     fidesops_meta:
                       data_type: string
                   - name: state
-                    data_categories: [user.contact.state]
+                    data_categories: [user.contact.address.state]
                     fidesops_meta:
                       data_type: string
               - name: email
@@ -673,7 +673,7 @@ dataset:
                   - name: cvc_check
                     data_categories: [system.operations]
               - name: country
-                data_categories: [user.contact.country]
+                data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
               - name: exp_month
@@ -731,7 +731,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: country
-            data_categories: [user.contact.country]
+            data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
           - name: currency
@@ -760,29 +760,29 @@ dataset:
           - name: object
             data_categories: [system.operations]
           - name: address_city
-            data_categories: [user.contact.city]
+            data_categories: [user.contact.address.city]
             fidesops_meta:
               data_type: string
           - name: address_country
-            data_categories: [user.contact.country]
+            data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
           - name: address_line1
-            data_categories: [user.contact.street]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: address_line1_check
             data_categories: [system.operations]
           - name: address_line2
-            data_categories: [user.contact.street]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: address_state
-            data_categories: [user.contact.state]
+            data_categories: [user.contact.address.state]
             fidesops_meta:
               data_type: string
           - name: address_zip
-            data_categories: [user.contact.postal_code]
+            data_categories: [user.contact.address.postal_code]
             fidesops_meta:
               data_type: string
           - name: address_zip_check
@@ -790,7 +790,7 @@ dataset:
           - name: brand
             data_categories: [system.operations]
           - name: country
-            data_categories: [user.contact.country]
+            data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
           - name: customer
@@ -929,7 +929,7 @@ dataset:
           - name: object
             data_categories: [system.operations]
           - name: country
-            data_categories: [user.contact.country]
+            data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
           - name: created
@@ -964,7 +964,7 @@ dataset:
           - name: object
             data_categories: [system.operations]
           - name: account_country
-            data_categories: [user.contact.country]
+            data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
           - name: account_name
@@ -1014,27 +1014,27 @@ dataset:
           - name: customer_address
             fields:
               - name: city
-                data_categories: [user.contact.city]
+                data_categories: [user.contact.address.city]
                 fidesops_meta:
                   data_type: string
               - name: country
-                data_categories: [user.contact.country]
+                data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
               - name: line1
-                data_categories: [user.contact.street]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: line2
-                data_categories: [user.contact.street]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: postal_code
-                data_categories: [user.contact.postal_code]
+                data_categories: [user.contact.address.postal_code]
                 fidesops_meta:
                   data_type: string
               - name: state
-                data_categories: [user.contact.state]
+                data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
           - name: customer_email
@@ -1054,27 +1054,27 @@ dataset:
               - name: address
                 fields:
                   - name: city
-                    data_categories: [user.contact.city]
+                    data_categories: [user.contact.address.city]
                     fidesops_meta:
                       data_type: string
                   - name: country
-                    data_categories: [user.contact.country]
+                    data_categories: [user.contact.address.country]
                     fidesops_meta:
                       data_type: string
                   - name: line1
-                    data_categories: [user.contact.street]
+                    data_categories: [user.contact.address.street]
                     fidesops_meta:
                       data_type: string
                   - name: line2
-                    data_categories: [user.contact.street]
+                    data_categories: [user.contact.address.street]
                     fidesops_meta:
                       data_type: string
                   - name: postal_code
-                    data_categories: [user.contact.postal_code]
+                    data_categories: [user.contact.address.postal_code]
                     fidesops_meta:
                       data_type: string
                   - name: state
-                    data_categories: [user.contact.state]
+                    data_categories: [user.contact.address.state]
                     fidesops_meta:
                       data_type: string
               - name: name

@@ -42,19 +42,19 @@ dataset:
             fidesops_meta:
               primary_key: True
           - name: street
-            data_categories: [user.contact.street]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: city
-            data_categories: [user.contact.city]
+            data_categories: [user.contact.address.city]
             fidesops_meta:
               data_type: string
           - name: state
-            data_categories: [user.contact.state]
+            data_categories: [user.contact.address.state]
             fidesops_meta:
               data_type: string
           - name: zip
-            data_categories: [user.contact.postal_code]
+            data_categories: [user.contact.address.postal_code]
             fidesops_meta:
               data_type: string
 

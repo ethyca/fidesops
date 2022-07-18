@@ -41,11 +41,11 @@ sample_postgres_configuration_policy = erasure_policy(
     "system.operations",
     "user.unique_id",
     "user.sensor",
-    "user.contact.city",
+    "user.contact.address.city",
     "user.contact.email",
-    "user.contact.postal_code",
-    "user.contact.state",
-    "user.contact.street",
+    "user.contact.address.postal_code",
+    "user.contact.address.state",
+    "user.contact.address.street",
     "user.financial.account_number",
     "user.financial",
     "user.name",
@@ -639,7 +639,7 @@ def test_filter_on_data_categories(
         data={
             "name": "Test Rule 1",
             "key": "test_rule_1",
-            "data_category": "user.contact.street",
+            "data_category": "user.contact.address.street",
             "rule_id": rule.id,
         },
     )
@@ -721,7 +721,7 @@ def test_filter_on_data_categories(
         data={
             "name": "Test Rule 3",
             "key": "test_rule_3",
-            "data_category": "user.contact.state",
+            "data_category": "user.contact.address.state",
             "rule_id": rule.id,
         },
     )
