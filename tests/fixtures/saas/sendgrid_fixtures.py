@@ -5,6 +5,7 @@ import pydash
 import pytest
 import requests
 from fideslib.core.config import load_toml
+from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_202_ACCEPTED
@@ -15,7 +16,6 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.util import cryptographic_util
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 from tests.test_helpers.saas_test_utils import poll_for_existence
