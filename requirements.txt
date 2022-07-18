@@ -9,7 +9,7 @@ emails
 fastapi-caching[redis]
 fastapi-pagination[sqlalchemy]~= 0.9.3
 fastapi[all]==0.78.0
-fideslang==1.0.0
+fideslang==1.1.0
 fideslib==3.0.0
 fideslog==1.2.1
 hvac==0.11.2
