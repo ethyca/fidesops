@@ -7,6 +7,7 @@ from fideslib.core.config import load_toml
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
 from fidesops.models.connectionconfig import (
     AccessLevel,
@@ -219,6 +220,7 @@ def salesforce_create_erasure_data(
         json=campaign_member_data,
     )
     assert campaign_members_response.ok
+
     campaign_member_id = campaign_members_response.json()["id"]
 
     yield account_id, contact_id, case_id, lead_id, campaign_member_id
@@ -227,11 +229,21 @@ def salesforce_create_erasure_data(
     case_response = requests.delete(
         url=f"{base_url}/services/data/v54.0/sobjects/Case/{case_id}", headers=headers
     )
-    assert case_response.ok
+    assert case_response.status_code == HTTP_204_NO_CONTENT
+
+    case_response = requests.get(
+        url=f"{base_url}/services/data/v54.0/sobjects/Case/{case_id}", headers=headers
+    )
+    assert case_response.status_code == HTTP_404_NOT_FOUND
 
     account_response = requests.delete(
         url=f"{base_url}/services/data/v54.0/sobjects/Account/{account_id}",
         headers=headers,
     )
+    assert account_response.status_code == HTTP_204_NO_CONTENT
 
-    assert account_response.ok
+    account_response = requests.get(
+        url=f"{base_url}/services/data/v54.0/sobjects/Account/{account_id}",
+        headers=headers,
+    )
+    assert account_response.status_code == HTTP_404_NOT_FOUND

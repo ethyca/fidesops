@@ -704,8 +704,8 @@ def test_salesforce_erasure_request_task(
         ],
     )
 
-    masking_strict = config.execution.MASKING_STRICT
-    config.execution.MASKING_STRICT = True
+    masking_strict = config.execution.masking_strict
+    config.execution.masking_strict = True
 
     x = graph_task.run_erasure(
         privacy_request,
@@ -774,4 +774,4 @@ def test_salesforce_erasure_request_task(
     assert lead["LastName"] == "MASKED"
 
     # reset
-    config.execution.MASKING_STRICT = masking_strict
+    config.execution.masking_strict = masking_strict
