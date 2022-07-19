@@ -201,6 +201,14 @@ class SaaSConfigBase(BaseModel):
     name: str
     type: SaaSType
 
+    @property
+    def fides_key(self):
+        return self.fides_key
+
+    @property
+    def name(self):
+        return self.name
+
     @validator("type", pre=True)
     def lowercase_saas_type(cls, value: str) -> str:
         """Enforce lowercase on saas type."""
@@ -275,11 +283,6 @@ class SaaSConfig(SaaSConfigBase):
             collections=collections,
             connection_key=super().fides_key,
         )
-
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        use_enum_values = True
 
 
 class SaaSConfigValidationDetails(BaseSchema):
