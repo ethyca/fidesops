@@ -18,6 +18,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.3...main)
 
+### Added
+* Erasure support for Salesforce [#888](https://github.com/ethyca/fidesops/pull/888)
+* Access and erasure support for Sendgrid contacts endpoint [#883](https://github.com/ethyca/fidesops/pull/883)
+
 ### Breaking Changes
 
 * Update fidesops to use bcrypt for hashing [#876](https://github.com/ethyca/fidesops/pull/876)
