@@ -17,7 +17,7 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.3...main)
-* Access and erasure support for Sendgrid contacts endpoint [#883](https://github.com/ethyca/fidesops/pull/)
+* Access and erasure support for Sendgrid contacts endpoint [#883](https://github.com/ethyca/fidesops/pull/883)
 
 ### Added
 * Erasure support for Salesforce [#888](https://github.com/ethyca/fidesops/pull/888)
