@@ -1,3 +1,4 @@
+/* eslint-disable import/extensions */
 import {
   Button,
   Flex,
@@ -12,7 +13,6 @@ import {
 import React, { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-// eslint-disable-next-line import/extensions
 import MultiSelectDropdown from "@/common/dropdown/MultiSelectDropdown";
 
 import { selectToken } from "../auth";

@@ -1,9 +1,8 @@
+/* eslint-disable import/extensions */
 import React, { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-// eslint-disable-next-line import/extensions
 import SelectDropdown from "@/common/dropdown/SelectDropdown";
-// eslint-disable-next-line import/extensions
 import { capitalize } from "@/common/utils";
 
 import { SystemType } from "../constants";
