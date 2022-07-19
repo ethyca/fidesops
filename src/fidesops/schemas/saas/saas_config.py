@@ -202,11 +202,11 @@ class SaaSConfigBase(BaseModel):
     type: SaaSType
 
     @property
-    def fides_key_prop(self):
+    def fides_key_prop(self) -> FidesOpsKey:
         return self.fides_key
 
     @property
-    def name_prop(self):
+    def name_prop(self) -> str:
         return self.name
 
     @validator("type", pre=True)

@@ -470,6 +470,7 @@ class TestGetConnections:
             "connection_type",
             "access",
             "updated_at",
+            "saas_config",
             "name",
             "last_test_timestamp",
             "last_test_succeeded",
