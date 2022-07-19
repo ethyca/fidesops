@@ -132,6 +132,7 @@ The types of changes are:
 * Adds endpoint analytics events [#622](https://github.com/ethyca/fidesops/pull/622)
 * Sample dataset for Salesforce with access configuration [#676](https://github.com/ethyca/fidesops/pull/676)
 * Sample dataset and access configuration for Zendesk (ticket endpoints) [#677](https://github.com/ethyca/fidesops/pull/677)
+* Sample dataset for Sendgrid with access configuration [#883](https://github.com/ethyca/fidesops/pull/883)
 * Include number of records to be masked in masking endpoint's log message [#692](https://github.com/ethyca/fidesops/pull/692)
 * Datastore Connection Landing Page [#674](https://github.com/ethyca/fidesops/pull/674)
 * Added the ability to delete a datastore from the frontend [#683](https://github.com/ethyca/fidesops/pull/683)
