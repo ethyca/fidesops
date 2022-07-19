@@ -612,6 +612,7 @@ class TestGetConnections:
         assert len(items) == 1
         assert items[0]["connection_type"] == "saas"
         assert items[0]["key"] == stripe_connection_config.key
+        assert items[0]["saas_config"]["type"] == "stripe"
 
         resp = api_client.get(url + "?system_type=database", headers=auth_header)
         items = resp.json()["items"]

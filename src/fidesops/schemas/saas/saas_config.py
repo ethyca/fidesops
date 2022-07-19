@@ -192,7 +192,27 @@ class SaaSType(Enum):
     custom = "custom"
 
 
-class SaaSConfig(BaseModel):
+class SaaSConfigBase(BaseModel):
+    """
+    Used to store base info for a saas config
+    """
+
+    fides_key: FidesOpsKey
+    name: str
+    type: SaaSType
+
+    @validator("type", pre=True)
+    def lowercase_saas_type(cls, value: str) -> str:
+        """Enforce lowercase on saas type."""
+        return value.lower()
+
+    class Config:
+        """Populate models with the raw value of enum fields, rather than the enum itself"""
+
+        use_enum_values = True
+
+
+class SaaSConfig(SaaSConfigBase):
     """
     Used to store endpoint and param configurations for a SaaS connector.
     This is done to separate the details of how to make the API calls
@@ -203,9 +223,6 @@ class SaaSConfig(BaseModel):
     for the graph traversal.
     """
 
-    fides_key: FidesOpsKey
-    name: str
-    type: SaaSType
     description: str
     version: str
     connector_params: List[ConnectorParam]
@@ -213,11 +230,6 @@ class SaaSConfig(BaseModel):
     endpoints: List[Endpoint]
     test_request: SaaSRequest
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
-
-    @validator("type", pre=True)
-    def lowercase_saas_type(cls, value: str) -> str:
-        """Enforce lowercase on saas type."""
-        return value.lower()
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:
@@ -259,9 +271,9 @@ class SaaSConfig(BaseModel):
                 )
 
         return Dataset(
-            name=self.name,
+            name=super().name,
             collections=collections,
-            connection_key=self.fides_key,
+            connection_key=super().fides_key,
         )
 
     class Config:
