@@ -1,4 +1,3 @@
-import os
 from typing import Any, Dict, Generator
 
 import pydash
@@ -19,8 +18,11 @@ from fidesops.models.datasetconfig import DatasetConfig
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 from tests.test_helpers.saas_test_utils import poll_for_existence
+from tests.test_helpers.vault_client import get_secrets
 
 saas_config = load_toml(["saas_config.toml"])
+secrets = get_secrets("sendgrid")
+
 SENDGRID_ERASURE_FIRSTNAME = "Erasurefirstname"
 
 
@@ -32,17 +34,15 @@ def sendgrid_erasure_identity_email():
 @pytest.fixture(scope="function")
 def sendgrid_secrets():
     return {
-        "domain": pydash.get(saas_config, "sendgrid.domain")
-        or os.environ.get("SENDGRID_DOMAIN"),
-        "api_key": pydash.get(saas_config, "sendgrid.api_key")
-        or os.environ.get("SENDGRID_API_KEY"),
+        "domain": pydash.get(saas_config, "sendgrid.domain") or secrets["domain"],
+        "api_key": pydash.get(saas_config, "sendgrid.api_key") or secrets["api_key"],
     }
 
 
 @pytest.fixture(scope="function")
 def sendgrid_identity_email():
-    return pydash.get(saas_config, "sendgrid.identity_email") or os.environ.get(
-        "SENDGRID_IDENTITY_EMAIL"
+    return (
+        pydash.get(saas_config, "sendgrid.identity_email") or secrets["identity_email"]
     )
 
 
