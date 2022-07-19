@@ -41,7 +41,7 @@ saas_config:
   test_request:
     method: GET
     path: /3.0/lists
-    
+
   endpoints:
   - name: messages
     requests:
@@ -170,7 +170,7 @@ test_request:
   path: /3.0/lists
 ```
 #### Data protection request
-If your third party integration supports something like a GDPR delete endpoint, that can be configured as a `data_protection_request`.  It has similar attributes to the test request or endpoint requests, but it is generally one endpoint that removes all user PII in one go. 
+If your third party integration supports something like a GDPR delete endpoint, that can be configured as a `data_protection_request`.  It has similar attributes to the test request or endpoint requests, but it is generally one endpoint that removes all user PII in one go.
 ```yaml
 data_protection_request:
   method: POST
@@ -340,7 +340,7 @@ Fidesops will automatically fill in the value of these placeholders with the app
 
 **Example**
 
-An access request returned the following row: 
+An access request returned the following row:
 ```json
 {
   "id": 123,
@@ -358,7 +358,7 @@ With the `name` field masked, the value of each placeholder would be:
 
 !!! Tip "`all_object_fields` should be used if non-masked fields are required as part of the update payload."
 
-**Read-Only fields** 
+**Read-Only fields**
 
 A field can be flagged as `read-only` in the dataset to exclude it from the value of `<all_object_fields>` (for example, if including the `id` would cause an error).
 
@@ -477,7 +477,7 @@ update:
   body: '{
     "properties": {
       <masked_object_fields>,
-      "user_ref_id": <user_ref_id>            
+      "user_ref_id": <user_ref_id>
     }
   }'
   param_values:
@@ -519,7 +519,7 @@ collections:
       - name: from_label
         data_categories: [system.operations]
       - name: from_email
-        data_categories: [user.provided.identifiable.contact.email]
+        data_categories: [user.contact.email]
       - name: subject
         data_categories: [system.operations]
       - name: message
@@ -571,7 +571,7 @@ collections:
       - name: from_label
         data_categories: [system.operations]
       - name: from_email
-        data_categories: [user.provided.identifiable.contact.email]
+        data_categories: [user.contact.email]
       - name: subject
         data_categories: [system.operations]
       - name: message

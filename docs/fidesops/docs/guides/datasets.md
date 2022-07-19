@@ -41,19 +41,19 @@ dataset:
             fidesops_meta:
               primary_key: True
           - name: street
-            data_categories: [user.provided.identifiable.contact.street]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: city
-            data_categories: [user.provided.identifiable.contact.city]
+            data_categories: [user.contact.address.city]
             fidesops_meta:
               data_type: string
           - name: state
-            data_categories: [user.provided.identifiable.contact.state]
+            data_categories: [user.contact.address.state]
             fidesops_meta:
               data_type: string
           - name: zip
-            data_categories: [user.provided.identifiable.contact.postal_code]
+            data_categories: [user.contact.address.postal_code]
             fidesops_meta:
               data_type: string
 
@@ -70,16 +70,16 @@ dataset:
           - name: created
             data_categories: [system.operations]
           - name: email
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
             fidesops_meta:
               identity: email
               data_type: string
           - name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               primary_key: True
           - name: name
-            data_categories: [user.provided.identifiable.name]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
 ```
@@ -105,20 +105,20 @@ dataset:
     - `field`: The specified linked field, using the syntax `[dataset name].[collection name ].[field name]`.
     - `identity`: Signifies that this field is an identity value that can be used as the root for a traversal [See graph traversal](query_execution.md)
     - `direction`(_Optional_): Accepted values are `from` or `to`. This determines how fidesops uses the relationships to discover data. If the direction is `to`, fidesops will only use data in the _source_ collection to discover data in the _referenced_ collection. If the direction is `from`, fidesops will only use data in the _referenced_ collection to discover data in the _source_ collection. If the direction is omitted, fidesops will traverse the relation in whatever direction works to discover all related data.
-    - `primary_key` (_Optional_): A boolean value that means that fidesops will treat this field as a unique row identifier for generating update statements. If no primary key is specified for any field on a collection, no updates will be generated against that collection. If multiple fields are marked as primary keys the combination of their values will be treated as a combined key. In SQL terms, we'd issue a query that looked like `SELECT ... FROM TABLE WHERE primary_key_name_1 = value1 AND primary_key_name_2 = value2`. 
+    - `primary_key` (_Optional_): A boolean value that means that fidesops will treat this field as a unique row identifier for generating update statements. If no primary key is specified for any field on a collection, no updates will be generated against that collection. If multiple fields are marked as primary keys the combination of their values will be treated as a combined key. In SQL terms, we'd issue a query that looked like `SELECT ... FROM TABLE WHERE primary_key_name_1 = value1 AND primary_key_name_2 = value2`.
     - `data_type` (_Optional_): An indication of the type of data held by this field. Data types are used to convert values to the appropriate type when those values are used in queries. This is especially necessary when using data of one type to help locate data of another type.  Data types are also used to generate the appropriate masked value when running erasures, since fidesops needs to know the type of data expected by the field in order to generate an appropriate masked value. Available data types are `string`, `integer`, `float`, `boolean`, and `object_id`. `object` types are also supported for MongoDB.
     - `length` (_Optional_): An indicator of field length.
     - `return_all_elements`: (_Optional_):  For array entrypoint fields, specify whether the query should return/mask all fields, or just matching fields.  By default, we just return/mask matching fields.  `return_all_elements=true` will return/mask the entire array.
-  
+
 ## Configure a manual Dataset
 
-Not all data can be automatically retrieved. When services have no external API, or when user data is held in a physical location, you can define a Dataset to describe the types of manual fields you plan to upload, as well as any dependencies between these manual collections and other collections. 
+Not all data can be automatically retrieved. When services have no external API, or when user data is held in a physical location, you can define a Dataset to describe the types of manual fields you plan to upload, as well as any dependencies between these manual collections and other collections.
 
 When a manual Dataset is defined, an in-progress access request will pause until the data is added manually, and then resume execution.
 
 ### Describe a manual Dataset
 
-In the following example, the Manual Dataset contains one `storage_unit` collection.  `email` is 
+In the following example, the Manual Dataset contains one `storage_unit` collection.  `email` is
 defined as the unit's [identity](#field-members), which will then be used to retrieve the `box_id` in the storage unit.
 
 To add a Manual Dataset, first create a [Manual ConnectionConfig](database_connectors.md#example-6-manual-connectionconfig). The following Manual Dataset can then be [added to](database_connectors.md#associate-a-dataset) the new ConnectionConfig:
@@ -136,7 +136,7 @@ dataset:
             fidesops_meta:
               primary_key: true
           - name: email
-            data_categories: [ user.provided.identifiable.contact.email ]
+            data_categories: [ user.contact.email ]
             fidesops_meta:
               identity: email
               data_type: string
@@ -145,8 +145,8 @@ dataset:
 ### Resume a paused access privacy request
 
 A privacy request will pause execution when it reaches a manual collection in an access request.  An administrator
-should manually retrieve the data and send it in a POST request.  The fields 
-should match the fields on the paused collection.  
+should manually retrieve the data and send it in a POST request.  The fields
+should match the fields on the paused collection.
 
 Erasure requests with manual collections will also need data manually added as well.
 
@@ -166,7 +166,7 @@ If no manual data can be found, simply pass in an empty list to resume the priva
 ### Resume a paused erasure privacy request
 
 A privacy request will pause execution when it reaches a manual collection in an erasure request.  An administrator
-should manually mask the records in question and send confirmation of the rows affected in a POST request.  
+should manually mask the records in question and send confirmation of the rows affected in a POST request.
 
 ```json title="<code>POST {{host}}/privacy-request/{{privacy_request_id}}/erasure_confirm</code>"
 {"row_count": 2}

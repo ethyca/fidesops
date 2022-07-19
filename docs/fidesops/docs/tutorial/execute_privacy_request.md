@@ -1,7 +1,7 @@
 # Execute a Privacy Request
 
 
-## See a Privacy Request in Action 
+## See a Privacy Request in Action
 
 To summarize so far, we have:
 
@@ -44,7 +44,7 @@ def create_privacy_request(email, policy_key):
 
 ### Call the helper method to run the Privacy Request
 
-This will create a request to fetch for all user data with category `user.provided.identifiable` associated 
+This will create a request to fetch for all user data with category `user` associated
 with email `user@example.com` and save it to our local Storage destination, by specifying the email and the Policy.
 
 ```python
@@ -83,7 +83,7 @@ INFO:__main__:Executing a Privacy Request. Status 200
 INFO:__main__:Check fidesdemo/fidesuploads for upload package.
 ```
 
-Check your `fidesdemo/fides_uploads` directory for your data package (you may have to wait a few 
+Check your `fidesdemo/fides_uploads` directory for your data package (you may have to wait a few
 moments for the file to appear):
 
 ```json
@@ -132,7 +132,7 @@ docker ps
 fidesdemo_db_1         docker-entrypoint.sh postgres    Up      0.0.0.0:5432->5432/tcp,:::5432->5432/tcp
 fidesdemo_fidesctl_1   fidesctl webserver               Up      0.0.0.0:8080->8080/tcp,:::8080->8080/tcp
 fidesdemo_fidesops_1   fidesops webserver               Up      8000/tcp, 0.0.0.0:8000->8080/tcp,:::8000->8080/tcp
-fidesdemo_redis_1      docker-entrypoint.sh redis ...   Up      0.0.0.0:6379->6379/tcp,:::6379->6379/tcp 
+fidesdemo_redis_1      docker-entrypoint.sh redis ...   Up      0.0.0.0:6379->6379/tcp,:::6379->6379/tcp
 ```
 ```bash
 docker logs fidesdemo_fidesops_1

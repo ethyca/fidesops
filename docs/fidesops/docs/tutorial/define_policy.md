@@ -1,11 +1,11 @@
 # Define Policies
 
-## Creating a Policy with Rules and Targets 
+## Creating a Policy with Rules and Targets
 
 We're almost there: we need to create a Policy to describe how to handle a Privacy Request.
 
-Very detailed configurations are supported to define how different data is treated. You can create 
-Policies with multiple Rules (how the data is handled), that each have Rule Targets (what data we care about). 
+Very detailed configurations are supported to define how different data is treated. You can create
+Policies with multiple Rules (how the data is handled), that each have Rule Targets (what data we care about).
 
 Below are methods to add a Policy, a Rule, and a Rule Target, plus a cleanup method that deletes Rules for
 convenience (handy if you'll be running this script multiple times).
@@ -33,7 +33,7 @@ def create_policy(key, access_token):
     )
     logger.info(f"Creating a Policy. Status {response.status_code}")
     return response.json()
-```   
+```
 
 ```python
 def create_policy_rule(
@@ -60,7 +60,7 @@ def create_policy_rule(
 
     logger.info(f"Creating a rule. Status {response.status_code}")
     return response.json()
-```    
+```
 
 ```python
 def create_policy_rule_target(policy_key, rule_key, data_category, access_token):
@@ -99,10 +99,10 @@ def delete_policy_rule(policy_key, key, access_token):
 
 For simplicity's sake, let's just create one Policy, one Rule, and one Target.
 
-Our single Policy will have one Rule with type `access`, meaning we just want to *retrieve* user data, not delete it. 
+Our single Policy will have one Rule with type `access`, meaning we just want to *retrieve* user data, not delete it.
 We also configure on the Rule that any results will be uploaded to our local Storage `example_storage`.
 
-Finally, we create a RuleTarget, that is looking for all data with the category `user.provided.identifiable` (and included subcategories). 
+Finally, we create a RuleTarget, that is looking for all data with the category `user` (and included subcategories).
 
 ```python
 if __name__ == "__main__":
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         access_token=access_token,
     )
 
-    data_category = "user.provided.identifiable"
+    data_category = "user"
     create_policy_rule_target(
         "example_request_policy", "access_user_data", data_category, access_token
     )
@@ -131,6 +131,6 @@ if __name__ == "__main__":
 If you look back at our annotated YAML `fides_resources/flaskr_postgres_dataset.yml`, we can see the relevant fields
 associated with this Data Category that we will expect in our final upload package:
 
-- `products` collection:  `description`,`name`, and `price` 
+- `products` collection:  `description`,`name`, and `price`
 - `user` collection: `email`, `first_name`, `last_name`, and `password`
 - `purchases` collection: `city`, `state`, `street_1`, `street_2`, and `zip`

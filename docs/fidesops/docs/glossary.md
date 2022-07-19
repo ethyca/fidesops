@@ -38,16 +38,16 @@
 
 See the [fidesctl repo](https://github.com/ethyca/fides) for more information, but here's some fidesctl terms that might be helpful in fidesops.
 
-- `Manifest`: YAML files that describe different types of objects within Fides, with a high-level "privacy as code" language. 
+- `Manifest`: YAML files that describe different types of objects within Fides, with a high-level "privacy as code" language.
 
-- `Policy`: Different from a *fidesops* Policy, this controls what kinds of data you are permitted to commit to source code.  For example, you might create a fidesctl policy that says, I am not going to allow any System that takes in provided contact information and uses it for marketing purposes. 
+- `Policy`: Different from a *fidesops* Policy, this controls what kinds of data you are permitted to commit to source code.  For example, you might create a fidesctl policy that says, I am not going to allow any System that takes in provided contact information and uses it for marketing purposes.
 
 - `Dataset`: An annotation of a database schema, which describes the Collections in a database, the Fields, the Data Categories of those fields, and the relationships between relevant Collections.
 
 - `System`: Systems represent the applications, services, integrations, and any software that processes data for a specific use case.
 
 - Privacy Data Types:
-    - `Data Category` - *What kind of data is it?*  For example, the Data Category `user.provided.identifiable` includes things like contact email and street address.
+    - `Data Category` - *What kind of data is it?*  For example, the Data Category `user` includes things like contact email and street address.
     - `Data Use` - *Why is it being used?*  For example, for `advertising` or to `improve` the system.
     - `Data Subject` - *Whose data is it?* For example, a `customer`.
     - `Data Qualifier` - *How is the data being protected?* For example, it might be `aggregated`.

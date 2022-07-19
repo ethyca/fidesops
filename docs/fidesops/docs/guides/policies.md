@@ -8,7 +8,7 @@ A Policy is a set of instructions (or "Rules") that are executed when a user sub
 
 * `storage_destination`: If the `action_type` is `access`, this is the key of a `StorageConfig` object that defines where the data is uploaded.  Currently, Amazon S3 buckets and local filesystem storage are supported. See [Configuring Storage](storage.md) for more information.
 
-* `masking_strategy`: If the `action_type` is `erasure`, this is the key of a Masking object that defines how the erasure is implemented. See [Configuring Masking Strategies](masking_strategies.md) for a list of available strategies. 
+* `masking_strategy`: If the `action_type` is `erasure`, this is the key of a Masking object that defines how the erasure is implemented. See [Configuring Masking Strategies](masking_strategies.md) for a list of available strategies.
 
 In addition to specifying an execution strategy, a Rule contains one or more Data Categories, or "Targets", to which the rule applies. Putting it all together, we have:
 ```
@@ -23,7 +23,7 @@ This is reflected in the API paths that create these elements:
 * `PATCH /policy/{policy_key}/rule`
 * `PATCH /policy/{policy_key}/rule/{rule_key}/target`
 
-Each operation takes an array of objects, so you can create more than one at a time. 
+Each operation takes an array of objects, so you can create more than one at a time.
 
 !!! Note "A note about `PATCH` endpoints"
     The PATCH requests perform the equivalent of a `create_or_update` operation. This means that any existing objects sent to this endpoint will:
@@ -80,7 +80,7 @@ Finally, we use the Rule key to add a Target:
   {
     "name": "Access User Email Address Target",
     "key": "access_user_email_address_target",
-    "data_category": "user.provided.identifiable.contact.email",
+    "data_category": "user.contact.email",
   }
 ]
 ```
@@ -93,7 +93,7 @@ Finally, we use the Rule key to add a Target:
 - `Rule.masking_strategy`: How to erase data in the Identity Graph that applies to this `Rule`. See [Configuring Masking Strategies](masking_strategies.md) for a full list of supported strategies and their respective configurations.
 
 ## Add an Erasure Rule to a Policy
-The simple access policy we've created above, will simply pull all data of category `user.provided.identifiable.contact.email`, but in the event of an erasure request, we might also want to mask this information. 
+The simple access policy we've created above, will simply pull all data of category `user.contact.email`, but in the event of an erasure request, we might also want to mask this information.
 
 ```json title="<code>PATCH /api/v1/policy/{policy_key}/rule</code>"
 [
@@ -115,28 +115,28 @@ This will create a rule to hash a not-yet-specified value with a SHA-512 hash. W
 ```json title="<code>PATCH api/v1/policy/{policy_key}/rule/{rule_key}</code>"
   [
     {
-      "data_category": "user.provided.identifiable.contact.email",
+      "data_category": "user.contact.email",
     },
   ]
 ```
 
 This policy, `user_email_address_polcy`, will now do the following:
-- Return all data inside the Identity Graph with a data category that matches (or is nested under) `user.provided.identifiable.contact`.
-- Mask all data inside the Identity Graph with a data category that matches `user.provided.identifiable.contact.email` with a the `SHA-512` hashing function.
+- Return all data inside the Identity Graph with a data category that matches (or is nested under) `user.contact`.
+- Mask all data inside the Identity Graph with a data category that matches `user.contact.email` with a the `SHA-512` hashing function.
 
 ### Erasing data
 
-When a Policy Rule erases data, it erases the _entire_ branch given by the Target. For example, if we created an `erasure` rule with a Target of `user.provided.identifiable.contact`, _all_ of the information within the `contact` node -- including `user.provided.identifiable.contact.email` -- would be erased.
+When a Policy Rule erases data, it erases the _entire_ branch given by the Target. For example, if we created an `erasure` rule with a Target of `user.contact`, _all_ of the information within the `contact` node -- including `user.contact.email` -- would be erased.
 
-It's illegal to erase the same data twice within a Policy, so you should take care when you add Targets to a Rule. For example, you can't add `user.provided.identifiable.contact` _and_ `user.provided.identifiable.contact.email`
-"data_category". 
+It's illegal to erase the same data twice within a Policy, so you should take care when you add Targets to a Rule. For example, you can't add `user.contact` _and_ `user.contact.email`
+"data_category".
 
-And lastly, access rules will always run before erasure rules. 
+And lastly, access rules will always run before erasure rules.
 
 ## Default Policies
 
-Fidesops ships with two default Policies: `download` (for access requests) and `delete` (for erasure requests).  
-The `download` Policy is configured to retrieve `user.provided.identifiable` data and upload to a local storage location.
-The `delete` Policy is set up to mask `user.provided.identifiable` data with the string: `MASKED`.  
+Fidesops ships with two default Policies: `download` (for access requests) and `delete` (for erasure requests).
+The `download` Policy is configured to retrieve `user` data and upload to a local storage location.
+The `delete` Policy is set up to mask `user` data with the string: `MASKED`.
 
 These auto-generated Policies are intended for use in a test environment. In production deployments, you should configure separate Policies with proper storage destinations that target and process the appropriate fields.

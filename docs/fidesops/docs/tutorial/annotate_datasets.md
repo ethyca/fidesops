@@ -13,8 +13,8 @@ Add a `fidesops_meta` attribute to `flaskr_postgres_dataset.collections.seller_i
 and use that to look up the `seller_id`.
 
 ```yaml
-- name: seller_id 
-  data_categories: [user.derived.identifiable.unique_id]
+- name: seller_id
+  data_categories: [user.unique_id]
   fidesops_meta:
     data_type: integer
     references:
@@ -28,7 +28,7 @@ to take the user `id` and use that to look up purchases by `buyer_id`.
 
 ```yaml
 - name: buyer_id
-  data_categories: [user.derived.identifiable.unique_id]
+  data_categories: [user.unique_id]
   fidesops_meta:
     data_type: integer
     references:
@@ -38,11 +38,11 @@ to take the user `id` and use that to look up purchases by `buyer_id`.
 ```
 
 Lastly, annotate `flaskr_postgres_dataset.users.email` field. This is our entry point: fidesops will first look up
-the user by `email`, and from there, travel through other tables linked to `user`. 
+the user by `email`, and from there, travel through other tables linked to `user`.
 
 ```yaml
 - name: email
-  data_categories: [user.provided.identifiable.contact.email]
+  data_categories: [user.contact.email]
   fidesops_meta:
     data_type: string
     identity: email

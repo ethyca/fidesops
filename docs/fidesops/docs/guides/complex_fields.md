@@ -5,12 +5,12 @@ Fidesops can retrieve and mask data from complex objects and arrays in MongoDB, 
 ## Declare an object field
 
 To declare an `object` field, you should define nested fields underneath that field. You can optionally
-add the `data_type: object` annotation, but the object type will be inferred by the presence of the nested fields. In the example below, 
+add the `data_type: object` annotation, but the object type will be inferred by the presence of the nested fields. In the example below,
 `workplace_info` is an object field with two nested fields: `employer` and `position`.
 
 Data categories cannot be specified at the `object` level due to potential conflicts with nested fields. Instead,
 annotate the scalar fields within the object field.  Here, the `workplace_info.position` field has `data_category`
-`user.provided.identifiable.job_title`.
+`user.job_title`.
 
 
 ```yaml
@@ -30,7 +30,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: position
-                data_categories: [ user.provided.identifiable.job_title ]
+                data_categories: [ user.job_title ]
                 fidesops_meta:
                   data_type: string
               - name: id
@@ -42,7 +42,7 @@ To define a relationship between a field on one collection and a nested field on
 in the `fidesops_meta` references for as many levels are necessary.
 
 In the example below, we might add a separate `customer` collection that references
-the nested field `workplace_info.id` field in the `customer_details` collection. 
+the nested field `workplace_info.id` field in the `customer_details` collection.
 Under references, this field is denoted by `<collection_name>.<field_name>.<sub_field>` name, or
 `customer_details.workplace_info.id`.
 
@@ -96,7 +96,7 @@ dataset:
 
 In this example, our `mydatabase:customer` collection has a nested `workplace_info.direct_reports` array, that is an
 array of strings. In other words, we have a `workplace_info` object field, with sub-fields `employer`, `postion`, and `direct_reports`,
-where `direct_reports` is an array.  
+where `direct_reports` is an array.
 
 We define `direct_reports` as a subfield under `workplace_info`, as well as add the data_type `string[]` to `direct_reports`.
 
@@ -116,11 +116,11 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: position
-                data_categories: [ user.provided.identifiable.job_title ]
+                data_categories: [ user.job_title ]
                 fidesops_meta:
                   data_type: string
               - name: direct_reports
-                data_categories: [ user.provided.identifiable.name ]
+                data_categories: [ user.name ]
                 fidesops_meta:
                   data_type: string[]
 ```
@@ -128,7 +128,7 @@ dataset:
 ### Declare an array of objects
 
 In this example, our `mydatabase:customer` collection has an `emergency_contacts` field which is an array of objects, or
-embedded documents, denoted by `data_type: object[]`. Each object in the `emergency_contacts` array can contain a 
+embedded documents, denoted by `data_type: object[]`. Each object in the `emergency_contacts` array can contain a
 `name`, `relationship`, and `phone` field.
 
 ```yaml
@@ -144,21 +144,21 @@ dataset:
               data_type: object[]
             fields:
               - name: name
-                data_categories: [ user.provided.identifiable.name ]
+                data_categories: [ user.name ]
                 fidesops_meta:
                   data_type: string
               - name: relationship
                 fidesops_meta:
                   data_type: string
               - name: phone
-                data_categories: [ user.provided.identifiable.contact.phone_number ]
+                data_categories: [ user.contact.phone_number ]
                 fidesops_meta:
                   data_type: string
 ```
 
 ### Reference an array
 
-Generally, reference an array field as if it is any other field. You cannot currently reference a specific index in an array field, 
+Generally, reference an array field as if it is any other field. You cannot currently reference a specific index in an array field,
 but you can point a field to an array field, and we would search for matches within that array.
 
 In this example, `mydatabase:flights.plane` is an integer field that will be used to lookup records that match an integer
@@ -203,9 +203,9 @@ dataset:
               data_type: string
 ```
 
-In this more complicated example, a field in an array of objects is used to look up a different field in an array of 
-objects in another collection. Potentially multiple values from `mydatabase:customer.comments.comment_id` can be used 
-to query for corresponding values in `mydatabase:conversations.thread.comment`. Because this field is in an array of objects, 
+In this more complicated example, a field in an array of objects is used to look up a different field in an array of
+objects in another collection. Potentially multiple values from `mydatabase:customer.comments.comment_id` can be used
+to query for corresponding values in `mydatabase:conversations.thread.comment`. Because this field is in an array of objects,
 multiple matches may be found.
 
 ```yaml
@@ -240,7 +240,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: chat_name
-                data_categories: [ user.provided.identifiable.name ]
+                data_categories: [ user.name ]
                 fidesops_meta:
                   data_type: string
 ```

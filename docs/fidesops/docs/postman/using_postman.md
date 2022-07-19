@@ -17,7 +17,7 @@ A minimal Postman collection is included to assist in setting up your fidesops c
 
       ![Open Fidesops Variables](../img/postman_images/open_fidesops_variables.png)
 
-5. Add your `OAUTH_ROOT_CLIENT_ID` and `OAUTH_ROOT_CLIENT_SECRET` under `CURRENT VALUE`.  
+5. Add your `OAUTH_ROOT_CLIENT_ID` and `OAUTH_ROOT_CLIENT_SECRET` under `CURRENT VALUE`.
       - `fidesopsadmin` and `fidesopsadminsecret` are default configurations for testing, found in your `fidesops.toml`. Add the appropriate values for your instance if they differ.
       - **Important:** Click `Save`!
 
@@ -26,10 +26,10 @@ A minimal Postman collection is included to assist in setting up your fidesops c
 ## Bring up local servers and mock databases
 1. Run `make integration-env` in your terminal.
       - This brings up the `fidesops` server, `redis`, the `fidesops` postgres database, and some mock external databases like `mongodb_example` and `postgres_example`. These mock databases are pre-populated with test data to represent your datastores.
-  
+
 !!! Note ""
       The following list of requests is kept in the `Minimum API calls to create an Access Privacy Request` folder. Some of the returned data will need to be saved as additional variables for use in other steps.
-    
+
    ![Fidesops container](../img/postman_images/fidesops_container.png)
 
 ## Saving Authentication variables
@@ -45,7 +45,7 @@ A minimal Postman collection is included to assist in setting up your fidesops c
 
 3. Similarly, click on `Create Client`, and click `Send` to send a `POST` request to fidesops to create a new client.
       - Copy the `client_id` and `client_secret` and paste into `Current Value` slots in fidesops variables and click "Save".
-  
+
 4. Finally, click on the `Get Client Token` request, and click `Send` to send another `POST` request to fidesops. This will create a token for the client made in the previous step.
 
       ![client variables](../img/postman_images/client_form_data.png)
@@ -68,7 +68,7 @@ Inspect the `Body` of each request to see what is sent to fidesops:
 2. Configure what data you care about, and what to do with it:
       1. SEND `Create/Update Policies` - Creates a Policy to handle Privacy Requests
       2. SEND `Create/Update Access Rule` - Defines an `access` Rule on the previous Policy, which specifies results will be uploaded to the configured local storage
-      3. SEND `Create/Update Rule Targets` - Specify a RuleTarget that says to will return data that has been marked as having a `user.provided.identifiable` data category
+      3. SEND `Create/Update Rule Targets` - Specify a RuleTarget that says to will return data that has been marked as having a `user` data category
 3. Create ConnectionConfigs, and add connection secrets for the `postgres_example` and `mongodb_example` mock databases:
       1. SEND `Create/Update Connection Configs: Postgres`
       2. SEND `Create/Update Connection Configs: Mongo`
@@ -79,7 +79,7 @@ Inspect the `Body` of each request to see what is sent to fidesops:
       2. SEND `Create/Update Dataset Mongo`
 
 !!! Note ""
-      API calls to additional supported datastores (MsSQL, MySQL) are in separate folders within the collection. 
+      API calls to additional supported datastores (MsSQL, MySQL) are in separate folders within the collection.
 
 ## Run a privacy request
 You have now completed the basic configuration required to create an Access Request.
@@ -90,7 +90,7 @@ You have now completed the basic configuration required to create an Access Requ
       ![Succeeded Request](../img/postman_images/succeeded_privacy_request.png)
 
 2. Check your local `fides_uploads` folder, configured earlier, to see access request results.
-      - This is run asynchronously, so it may take a few moments to complete.  This particular request should have retrieved data from both the `postgres_example` and `mongodb_example` databases with the `user.provided.identifiable` data_category
+      - This is run asynchronously, so it may take a few moments to complete.  This particular request should have retrieved data from both the `postgres_example` and `mongodb_example` databases with the `user` data_category
 
       ![Local Results](../img/postman_images/local_results.png)
 

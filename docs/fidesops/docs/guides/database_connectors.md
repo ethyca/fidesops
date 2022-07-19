@@ -2,7 +2,7 @@
 
 ## What is a connection?
 
-A _connection_ links your databases to fidesops, so you can gather and update selected PII 
+A _connection_ links your databases to fidesops, so you can gather and update selected PII
 categories.
 
 ## Supported databases
@@ -20,9 +20,9 @@ Fidesops supports connections to the following databases:
 
 Other platforms will be added in future releases.
 
-## Create a ConnectionConfig object 
+## Create a ConnectionConfig object
 
-The connection between fidesops and your database is represented by a _ConnectionConfig_ object. To create a ConnectionConfig, you issue a request to the [Create a ConnectionConfig](/fidesops/api/#operations-Connections-put_connections_api_v1_connection_put) operation, passing a payload that contains the properties listed below. 
+The connection between fidesops and your database is represented by a _ConnectionConfig_ object. To create a ConnectionConfig, you issue a request to the [Create a ConnectionConfig](/fidesops/api/#operations-Connections-put_connections_api_v1_connection_put) operation, passing a payload that contains the properties listed below.
 
 * `name`  is a human-readable name for your database.
 
@@ -34,7 +34,7 @@ The connection between fidesops and your database is represented by a _Connectio
 
 * `disabled` determines whether the ConnectionConfig is active.  If True, we skip running queries for any collection associated with that ConnectionConfig.
 
-* `description` is an extra field to add further details about your connection. 
+* `description` is an extra field to add further details about your connection.
 
 While the ConnectionConfig object contains meta information about the database, you'll notice that it doesn't actually identify the database itself. We'll get to that when we set the ConnectionConfig's "secrets".
 
@@ -43,7 +43,7 @@ While the ConnectionConfig object contains meta information about the database, 
 
 ```json title="<code>PATCH api/v1/connection</code>"
 [
-  { 
+  {
     "name": "Application PostgreSQL DB",
     "key": "application_postgresql_db",
     "connection_type": "postgres",
@@ -56,7 +56,7 @@ While the ConnectionConfig object contains meta information about the database, 
 
 ```json title="<code>PATCH api/v1/connection</code>"
 [
-  { 
+  {
     "name": "My Mongo DB",
     "key": "my_mongo_db",
     "connection_type": "mongodb",
@@ -64,13 +64,13 @@ While the ConnectionConfig object contains meta information about the database, 
     "disabled": false
   }
 ]
-``` 
+```
 
-### MySQL 
+### MySQL
 
 ```json title="<code>PATCH api/v1/connection</code>"
 [
-  { 
+  {
     "name": "My MySQL DB",
     "key": "my_mysql_db",
     "connection_type": "mysql",
@@ -78,13 +78,13 @@ While the ConnectionConfig object contains meta information about the database, 
     "disabled": false
   }
 ]
-``` 
+```
 
 ### MariaDB
 
 ```json title="<code>PATCH api/v1/connection</code>"
 [
-  { 
+  {
     "name": "My Maria DB",
     "key": "my_maria_db",
     "connection_type": "mariadb",
@@ -92,13 +92,13 @@ While the ConnectionConfig object contains meta information about the database, 
     "disabled": false
   }
 ]
-``` 
+```
 
 ### MsSQL
 
 ```json title="<code>PATCH api/v1/connection </code>"
 [
-  { 
+  {
     "name": "My MsSQL DB",
     "key": "my_mssql_db",
     "connection_type": "mssql",
@@ -106,7 +106,7 @@ While the ConnectionConfig object contains meta information about the database, 
     "disabled": false
   }
 ]
-``` 
+```
 
 ### Manual connections
 
@@ -121,7 +121,7 @@ While the ConnectionConfig object contains meta information about the database, 
     "description": "Connector describing manual actions"
   }
 ]
-``` 
+```
 
 ## Set ConnectionConfig secrets
 
@@ -152,7 +152,7 @@ This example sets the database secrets through separate properties and then test
 This example sets the database secrets as a single `url` property, and skips the connection test.
 
 
-```json title="<code>PUT api/v1/connection/my_mongo_db/secret?verify=false</code>" 
+```json title="<code>PUT api/v1/connection/my_mongo_db/secret?verify=false</code>"
 {
     "url": "mongodb://mongo_user:mongo_pass@mongodb_example/mongo_test"
 }
@@ -165,7 +165,7 @@ databases have one or more schemas, with the default being named `public`.  If y
 specify `db_schema` for Redshift, and it will be set as the `search_path` when querying.
 
 
-```json title="<code>PUT api/v1/connection/my_redshift_db/secret</code>" 
+```json title="<code>PUT api/v1/connection/my_redshift_db/secret</code>"
 {
     "url": "redshift+psycopg2://username@host.amazonaws.com:5439/database",
     "db_schema": "my_test_schema"
@@ -174,11 +174,11 @@ specify `db_schema` for Redshift, and it will be set as the `search_path` when q
 
 ### Google BigQuery
 
-For Google BigQuery, there are 2 items needed for secrets: 
+For Google BigQuery, there are 2 items needed for secrets:
 
 `dataset` - Name of your dataset. BigQuery datasets are top-level containers (within a project) that are used to organize and control access to your tables and views.
 
-`keyfile_creds` - Credentials from your service account JSON keyfile, accessible for download from the GCP console.  
+`keyfile_creds` - Credentials from your service account JSON keyfile, accessible for download from the GCP console.
 
 Here's an example of what this looks like:
 
@@ -200,7 +200,7 @@ Here's an example of what this looks like:
 }
 ```
 
-### Test your connection 
+### Test your connection
 
 You can verify that a ConnectionConfig's secrets are valid at any time by calling the [Test a ConnectionConfig's Secrets](/fidesops/api#operations-Connections-test_connection_config_secrets_api_v1_connection__connection_key__test_get) operation:
 
@@ -251,7 +251,7 @@ Current available filters are the `connection_type` and whether the connection i
 
 ### Connection type filter
 
-Including multiple `connection_type` query params and values will result in a query that looks for 
+Including multiple `connection_type` query params and values will result in a query that looks for
 *any* connections with that type.
 
 ```json title="<code>GET api/v1//connection/?connection_type=mariadb&connection_type=postgres</code>"
@@ -417,11 +417,11 @@ dataset:
       - name: person
         fields:
           - name: name
-            data_categories: [user.provided.identifiable.contact.name]
+            data_categories: [user.contact.name]
           - name: email
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
           - name: id
-            data_categories: [system.operations] 
+            data_categories: [system.operations]
 ```
 
 
