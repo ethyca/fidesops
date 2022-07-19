@@ -202,11 +202,11 @@ class SaaSConfigBase(BaseModel):
     type: SaaSType
 
     @property
-    def fides_key(self):
+    def fides_key_prop(self):
         return self.fides_key
 
     @property
-    def name(self):
+    def name_prop(self):
         return self.name
 
     @validator("type", pre=True)
@@ -279,9 +279,9 @@ class SaaSConfig(SaaSConfigBase):
                 )
 
         return Dataset(
-            name=super().name,
+            name=super().name_prop,
             collections=collections,
-            connection_key=super().fides_key,
+            connection_key=super().fides_key_prop,
         )
 
 
