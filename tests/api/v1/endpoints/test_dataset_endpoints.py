@@ -130,7 +130,7 @@ class TestValidateDataset:
                 "fields": [
                     {
                         "name": "phone",
-                        "data_categories": ["user.provided.identifiable.contact"],
+                        "data_categories": ["user.contact"],
                     },
                     {"name": "count", "data_categories": ["system.operations"]},
                 ],

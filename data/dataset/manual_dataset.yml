@@ -10,11 +10,11 @@ dataset:
             fidesops_meta:
               primary_key: true
           - name: authorized_user
-            data_categories: [ user.provided.identifiable ]
+            data_categories: [ user ]
             fidesops_meta:
               data_type: string
           - name: customer_id
-            data_categories: [ user.provided.identifiable ]
+            data_categories: [ user ]
             fidesops_meta:
               references:
                 - dataset: postgres_example_test_dataset
@@ -34,7 +34,7 @@ dataset:
             fidesops_meta:
               primary_key: true
           - name: email
-            data_categories: [ user.provided.identifiable.contact.email ]
+            data_categories: [ user.contact.email ]
             fidesops_meta:
               identity: email
               data_type: string

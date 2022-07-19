@@ -520,8 +520,8 @@ def test_object_querying_mongo(
     )
 
     target_categories = {
-        "user.provided.identifiable.gender",
-        "user.provided.identifiable.date_of_birth",
+        "user.gender",
+        "user.date_of_birth",
     }
     filtered_results = filter_data_categories(
         access_request_results,
@@ -537,7 +537,7 @@ def test_object_querying_mongo(
     }
 
     # mongo_test:customer_feedback collection reached via nested identity
-    target_categories = {"user.provided.identifiable.contact.phone_number"}
+    target_categories = {"user.contact.phone_number"}
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
@@ -548,7 +548,7 @@ def test_object_querying_mongo(
     }
 
     # Includes nested workplace_info.position field
-    target_categories = {"user.provided.identifiable"}
+    target_categories = {"user"}
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
@@ -572,7 +572,7 @@ def test_object_querying_mongo(
     }
 
     # Includes data retrieved from a nested field that was joined with a nested field from another table
-    target_categories = {"user.derived"}
+    target_categories = {"user"}
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
@@ -781,7 +781,7 @@ def test_array_querying_mongo(
     )
 
     # This is a different category than was specified on the policy, this is just for testing.
-    target_categories = {"user.derived"}
+    target_categories = {"user"}
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
@@ -801,7 +801,7 @@ def test_array_querying_mongo(
     # This matches the category on the policy
     filtered_identifiable = filter_data_categories(
         access_request_results,
-        {"user.provided.identifiable"},
+        {"user"},
         dataset_graph.data_category_field_mapping,
     )
 
@@ -822,37 +822,37 @@ def test_array_querying_mongo(
         {
             "path": "mongo_test:customer_details:birthday",
             "field_name": "birthday",
-            "data_categories": ["user.provided.identifiable.date_of_birth"],
+            "data_categories": ["user.date_of_birth"],
         },
         {
             "path": "mongo_test:customer_details:children",
             "field_name": "children",
-            "data_categories": ["user.provided.identifiable.childrens"],
+            "data_categories": ["user.childrens"],
         },
         {
             "path": "mongo_test:customer_details:emergency_contacts.name",
             "field_name": "emergency_contacts.name",
-            "data_categories": ["user.provided.identifiable.name"],
+            "data_categories": ["user.name"],
         },
         {
             "path": "mongo_test:customer_details:workplace_info.direct_reports",
             "field_name": "workplace_info.direct_reports",
-            "data_categories": ["user.provided.identifiable.name"],
+            "data_categories": ["user.name"],
         },
         {
             "path": "mongo_test:customer_details:emergency_contacts.phone",
             "field_name": "emergency_contacts.phone",
-            "data_categories": ["user.provided.identifiable.contact.phone_number"],
+            "data_categories": ["user.contact.phone_number"],
         },
         {
             "path": "mongo_test:customer_details:gender",
             "field_name": "gender",
-            "data_categories": ["user.provided.identifiable.gender"],
+            "data_categories": ["user.gender"],
         },
         {
             "path": "mongo_test:customer_details:workplace_info.position",
             "field_name": "workplace_info.position",
-            "data_categories": ["user.provided.identifiable.job_title"],
+            "data_categories": ["user.job_title"],
         },
     ]
 
@@ -871,7 +871,7 @@ def test_array_querying_mongo(
         {
             "path": "mongo_test:flights:passenger_information.full_name",
             "field_name": "passenger_information.full_name",
-            "data_categories": ["user.provided.identifiable.name"],
+            "data_categories": ["user.name"],
         }
     ]
 
@@ -894,12 +894,12 @@ def test_array_querying_mongo(
         {
             "path": "mongo_test:conversations:thread.chat_name",
             "field_name": "thread.chat_name",
-            "data_categories": ["user.provided.identifiable.name"],
+            "data_categories": ["user.name"],
         },
         {
             "path": "mongo_test:conversations:thread.ccn",
             "field_name": "thread.ccn",
-            "data_categories": ["user.provided.identifiable.financial.account_number"],
+            "data_categories": ["user.financial.account_number"],
         },
     ]
 
@@ -925,12 +925,12 @@ def test_array_querying_mongo(
         {
             "path": "mongo_test:employee:email",
             "field_name": "email",
-            "data_categories": ["user.provided.identifiable.contact.email"],
+            "data_categories": ["user.contact.email"],
         },
         {
             "path": "mongo_test:employee:name",
             "field_name": "name",
-            "data_categories": ["user.provided.identifiable.name"],
+            "data_categories": ["user.name"],
         },
     ]
 
@@ -947,7 +947,7 @@ def test_array_querying_mongo(
         {
             "path": "mongo_test:customer_feedback:customer_information.phone",
             "field_name": "customer_information.phone",
-            "data_categories": ["user.provided.identifiable.contact.phone_number"],
+            "data_categories": ["user.contact.phone_number"],
         }
     ]
 
@@ -963,17 +963,17 @@ def test_array_querying_mongo(
         {
             "path": "mongo_test:payment_card:ccn",
             "field_name": "ccn",
-            "data_categories": ["user.provided.identifiable.financial.account_number"],
+            "data_categories": ["user.financial.account_number"],
         },
         {
             "path": "mongo_test:payment_card:code",
             "field_name": "code",
-            "data_categories": ["user.provided.identifiable.financial"],
+            "data_categories": ["user.financial"],
         },
         {
             "path": "mongo_test:payment_card:name",
             "field_name": "name",
-            "data_categories": ["user.provided.identifiable.financial"],
+            "data_categories": ["user.financial"],
         },
     ]
 
@@ -988,7 +988,7 @@ def test_array_querying_mongo(
     )
     filtered_identifiable = filter_data_categories(
         access_request_results,
-        {"user.provided.identifiable"},
+        {"user"},
         dataset_graph.data_category_field_mapping,
     )
 
