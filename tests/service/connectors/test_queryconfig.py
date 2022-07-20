@@ -70,23 +70,29 @@ class TestSQLQueryConfig:
         }
 
         # values exist for all query keys
-        assert found_query_keys(
-            payment_card_node,
-            {
-                "id": ["A"],
-                "customer_id": ["V"],
-                "ignore_me": ["X"],
-            },
-        ) == {"id", "customer_id"}
+        assert (
+            found_query_keys(
+                payment_card_node,
+                {
+                    "id": ["A"],
+                    "customer_id": ["V"],
+                    "ignore_me": ["X"],
+                },
+            )
+            == {"id", "customer_id"}
+        )
         # with no values OR an empty set, these are omitted
-        assert found_query_keys(
-            payment_card_node,
-            {
-                "id": ["A"],
-                "customer_id": [],
-                "ignore_me": ["X"],
-            },
-        ) == {"id"}
+        assert (
+            found_query_keys(
+                payment_card_node,
+                {
+                    "id": ["A"],
+                    "customer_id": [],
+                    "ignore_me": ["X"],
+                },
+            )
+            == {"id"}
+        )
         assert found_query_keys(
             payment_card_node, {"id": ["A"], "ignore_me": ["X"]}
         ) == {"id"}
@@ -94,21 +100,27 @@ class TestSQLQueryConfig:
         assert found_query_keys(payment_card_node, {}) == set()
 
     def test_typed_filtered_values(self):
-        assert payment_card_node.typed_filtered_values(
-            {
-                "id": ["A"],
-                "customer_id": ["V"],
-                "ignore_me": ["X"],
-            }
-        ) == {"id": ["A"], "customer_id": ["V"]}
+        assert (
+            payment_card_node.typed_filtered_values(
+                {
+                    "id": ["A"],
+                    "customer_id": ["V"],
+                    "ignore_me": ["X"],
+                }
+            )
+            == {"id": ["A"], "customer_id": ["V"]}
+        )
 
-        assert payment_card_node.typed_filtered_values(
-            {
-                "id": ["A"],
-                "customer_id": [],
-                "ignore_me": ["X"],
-            }
-        ) == {"id": ["A"]}
+        assert (
+            payment_card_node.typed_filtered_values(
+                {
+                    "id": ["A"],
+                    "customer_id": [],
+                    "ignore_me": ["X"],
+                }
+            )
+            == {"id": ["A"]}
+        )
 
         assert payment_card_node.typed_filtered_values(
             {"id": ["A"], "ignore_me": ["X"]}
@@ -636,6 +648,10 @@ class TestSaaSQueryConfig:
             CollectionAddress(saas_config.fides_key, "payment_methods")
         ]
 
+        data_management = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "data_management")
+        ]
+
         # static path with single query param
         config = SaaSQueryConfig(member, endpoints, {})
         prepared_request: SaaSRequestParams = config.generate_query(
@@ -700,6 +716,14 @@ class TestSaaSQueryConfig:
             "query": "customer-1@example.com",
         }
 
+        # using privacy_request_id placeholder
+        config = SaaSQueryConfig(data_management, endpoints, {}, None, privacy_request)
+        prepared_request = config.generate_query(
+            {"email": ["customer-1@example.com"]}, policy
+        )
+        assert prepared_request.method == HTTPMethod.GET.value
+        assert prepared_request.path == f"/v1/privacy_request/{privacy_request.id}"
+
     def test_generate_update_stmt(
         self,
         erasure_policy_string_rewrite,
@@ -712,6 +736,10 @@ class TestSaaSQueryConfig:
 
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
+        ]
+
+        data_management = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "data_management")
         ]
 
         config = SaaSQueryConfig(member, endpoints, {}, update_request)
@@ -730,10 +758,18 @@ class TestSaaSQueryConfig:
         assert prepared_request.path == "/3.0/lists/abc/members/123"
         assert prepared_request.headers == {"Content-Type": "application/json"}
         assert prepared_request.query_params == {}
-        assert (
-            prepared_request.body
-            == '{\n  "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"}\n}\n'
+        assert json.loads(prepared_request.body) == {
+            "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"}
+        }
+
+        # using privacy_request_id placeholder
+        config = SaaSQueryConfig(data_management, endpoints, {}, None, privacy_request)
+        prepared_request = config.generate_update_stmt(
+            row, erasure_policy_string_rewrite, privacy_request
         )
+        assert prepared_request.method == HTTPMethod.POST.value
+        assert prepared_request.path == "/v1/privacy_request/"
+        assert json.loads(prepared_request.body) == {"unique_id": privacy_request.id}
 
     def test_generate_update_stmt_custom_http_method(
         self,
@@ -768,10 +804,9 @@ class TestSaaSQueryConfig:
         assert prepared_request.path == "/3.0/lists/abc/members/123"
         assert prepared_request.headers == {"Content-Type": "application/json"}
         assert prepared_request.query_params == {}
-        assert (
-            prepared_request.body
-            == '{\n  "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"}\n}\n'
-        )
+        assert json.loads(prepared_request.body) == {
+            "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"}
+        }
 
     def test_generate_update_stmt_with_request_body(
         self,
@@ -847,7 +882,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.path == "/2.0/payment_methods"
         assert prepared_request.headers == {"Content-Type": "application/json"}
         assert prepared_request.query_params == {}
-        assert prepared_request.body == '{\n  "customer_name": "MASKED"\n}\n'
+        assert json.loads(prepared_request.body) == {"customer_name": "MASKED"}
 
     def test_generate_update_stmt_with_url_encoded_body(
         self,
