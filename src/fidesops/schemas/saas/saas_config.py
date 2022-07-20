@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Set, Union
 
-from pydantic import BaseModel, Extra, Field, root_validator, validator
+from pydantic import BaseModel, Extra, root_validator, validator
 
 from fidesops.graph.config import (
     Collection,
