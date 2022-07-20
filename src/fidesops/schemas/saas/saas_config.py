@@ -201,14 +201,6 @@ class SaaSConfigBase(BaseModel):
     name: str
     type: SaaSType
 
-    @property
-    def fides_key_prop(self) -> FidesOpsKey:
-        return self.fides_key
-
-    @property
-    def name_prop(self) -> str:
-        return self.name
-
     @validator("type", pre=True)
     def lowercase_saas_type(cls, value: str) -> str:
         """Enforce lowercase on saas type."""
@@ -230,6 +222,9 @@ class SaaSConfig(SaaSConfigBase):
     merged with the standard Fidesops Dataset to provide a complete set of dependencies
     for the graph traversal.
     """
+
+    def __init__(self):
+        super().__init__()
 
     description: str
     version: str
@@ -279,9 +274,9 @@ class SaaSConfig(SaaSConfigBase):
                 )
 
         return Dataset(
-            name=super().name_prop,
+            name=self.name,
             collections=collections,
-            connection_key=super().fides_key_prop,
+            connection_key=self.fides_key,
         )
 
 
