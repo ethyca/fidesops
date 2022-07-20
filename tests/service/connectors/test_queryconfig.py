@@ -189,9 +189,9 @@ class TestSQLQueryConfig:
 
         # Make target more broad
         target = rule.targets[0]
-        target.data_category = DataCategory("user.provided.identifiable").value
+        target.data_category = DataCategory("user.contact").value
         assert config.build_rule_target_field_paths(erasure_policy) == {
-            rule: [FieldPath("email"), FieldPath("name")]
+            rule: [FieldPath("email")]
         }
 
         # Check different collection
@@ -284,7 +284,7 @@ class TestSQLQueryConfig:
         # Make target more broad
         rule = erasure_policy.rules[0]
         target = rule.targets[0]
-        target.data_category = DataCategory("user.provided.identifiable").value
+        target.data_category = DataCategory("user").value
 
         # Update rule masking strategy
         rule.masking_strategy = {
@@ -513,18 +513,19 @@ class TestMongoQueryConfig:
         # Make target more broad
         rule = erasure_policy.rules[0]
         target = rule.targets[0]
-        target.data_category = DataCategory("user.provided.identifiable").value
+        target.data_category = DataCategory("user").value
 
         mongo_statement = config.generate_update_stmt(
             row, erasure_policy, privacy_request
         )
-        assert mongo_statement[0] == {"_id": 1}
 
-        assert mongo_statement[1] == {
+        expected_result_0 = {"_id": 1}
+        expected_result_1 = {
             "$set": {
                 "birthday": None,
                 "children.0": None,
                 "children.1": None,
+                "customer_id": None,
                 "emergency_contacts.0.name": None,
                 "workplace_info.direct_reports.0": None,  # Both direct reports are masked.
                 "workplace_info.direct_reports.1": None,
@@ -533,6 +534,11 @@ class TestMongoQueryConfig:
                 "workplace_info.position": None,
             }
         }
+
+        print(mongo_statement[1])
+        print(expected_result_1)
+        assert mongo_statement[0] == expected_result_0
+        assert mongo_statement[1] == expected_result_1
 
     def test_generate_update_stmt_multiple_rules(
         self,
@@ -575,9 +581,7 @@ class TestMongoQueryConfig:
             "configuration": {"algorithm": "SHA-512"},
         }
         target = rule.targets[0]
-        target.data_category = DataCategory(
-            "user.provided.identifiable.date_of_birth"
-        ).value
+        target.data_category = DataCategory("user.date_of_birth").value
 
         rule_two = erasure_policy_two_rules.rules[1]
         rule_two.masking_strategy = {
@@ -585,7 +589,7 @@ class TestMongoQueryConfig:
             "configuration": {"length": 30},
         }
         target = rule_two.targets[0]
-        target.data_category = DataCategory("user.provided.identifiable.gender").value
+        target.data_category = DataCategory("user.gender").value
         # cache secrets for hash strategy
         secret = MaskingSecretCache[str](
             secret="adobo",
