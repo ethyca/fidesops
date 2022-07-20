@@ -26,6 +26,8 @@ The types of changes are:
 
 * Update fidesops to use bcrypt for hashing [#876](https://github.com/ethyca/fidesops/pull/876)
 
+### Docs
+* Added zendesk and salesforce connection pages [#908](https://github.com/ethyca/fidesops/pull/908)
 
 
 
@@ -73,7 +75,6 @@ The types of changes are:
 * Reorganize docs and standardize formatting [#858](https://github.com/ethyca/fidesops/pull/858)
 * Changed wording on Admin UI login page [#774](https://github.com/ethyca/fidesops/pull/774)
 * Fixed typos in Admin UI [#774](https://github.com/ethyca/fidesops/pull/774)
-* Added zendesk and salesforce connection pages [#908](https://github.com/ethyca/fidesops/pull/908)
 
 ### Fixed
 
