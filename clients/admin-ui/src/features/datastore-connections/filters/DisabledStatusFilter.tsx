@@ -1,9 +1,7 @@
-/* eslint-disable import/extensions */
+import SelectDropdown from "common/dropdown/SelectDropdown";
+import { capitalize } from "common/utils";
 import React, { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
-import SelectDropdown from "@/common/dropdown/SelectDropdown";
-import { capitalize } from "@/common/utils";
 
 import { DisabledStatus } from "../constants";
 import {

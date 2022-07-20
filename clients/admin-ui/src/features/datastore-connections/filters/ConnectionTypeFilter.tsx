@@ -1,9 +1,7 @@
-/* eslint-disable import/extensions */
+import MultiSelectDropdown from "common/dropdown/MultiSelectDropdown";
+import { capitalize } from "common/utils";
 import React, { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
-import MultiSelectDropdown from "@/common/dropdown/MultiSelectDropdown";
-import { capitalize } from "@/common/utils";
 
 import { ConnectionType } from "../constants";
 import {

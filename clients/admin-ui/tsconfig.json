@@ -13,7 +13,7 @@
     "moduleResolution": "node",
     "noEmit": true,
     "paths": {
-      "@/common/*": ["src/features/common/*"]
+      "common/*": ["src/features/common/*"]
     },
     "resolveJsonModule": true,
     "skipLibCheck": true,

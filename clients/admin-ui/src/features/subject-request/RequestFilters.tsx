@@ -1,4 +1,3 @@
-/* eslint-disable import/extensions */
 import {
   Button,
   Flex,
@@ -10,10 +9,9 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
+import MultiSelectDropdown from "common/dropdown/MultiSelectDropdown";
 import React, { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
-import MultiSelectDropdown from "@/common/dropdown/MultiSelectDropdown";
 
 import { selectToken } from "../auth";
 import {
