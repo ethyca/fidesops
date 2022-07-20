@@ -283,7 +283,7 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
         "mongo_test:customer": 1,
         "mongo_test:payment_card": 0,
         "mongo_test:orders": 0,
-        "mongo_test:address": 2,
+        "mongo_test:address": 0,
     }
 
 
@@ -923,7 +923,7 @@ def test_array_querying_mongo(
 
     # Values in mongo_test:flights:pilots array field used to locate scalar field in mongo_test:employee.id
     assert filtered_identifiable["mongo_test:employee"] == [
-        {"email": "employee-2@example.com", "name": "Jane Employee"}
+        {"email": "employee-2@example.com", "name": "Jane Employee", "id": "2"}
     ]
     employee_logs = privacy_request.execution_logs.filter_by(
         dataset_name="mongo_test", collection_name="employee", status="complete"
