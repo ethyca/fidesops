@@ -278,12 +278,11 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
         {"email": seed_email},
         get_cached_data_for_erasures(privacy_request.id),
     )
-
     assert v == {
         "mongo_test:customer": 1,
         "mongo_test:payment_card": 0,
         "mongo_test:orders": 0,
-        "mongo_test:address": 0,
+        "mongo_test:address": 2,
     }
 
 
