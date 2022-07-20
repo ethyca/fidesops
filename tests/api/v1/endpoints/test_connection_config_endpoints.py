@@ -727,6 +727,7 @@ class TestGetConnection:
             "created_at",
             "disabled",
             "description",
+            "saas_config",
         }
 
         assert response_body["key"] == "my_postgres_db_1"
