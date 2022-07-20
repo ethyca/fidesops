@@ -553,7 +553,8 @@ def test_filter_data_categories_arrays():
 
 def test_filter_data_categories_limited_results():
     """
-    Test scenario where the related data for a given identity is only a small subset of all the annotated fields.
+    Test scenario where the related data for a given identity is only a
+    small subset of all the annotated fields.
     """
     jane_results = {
         "mongo_test:customer_details": [
@@ -894,24 +895,42 @@ def test_filter_data_categories_limited_results():
     filtered_results = filter_data_categories(
         copy.deepcopy(jane_results), target_categories, data_category_fields
     )
-
-    assert filtered_results == {
+    expected_results = {
         "mongo_test:customer_details": [
-            {"gender": "female", "birthday": datetime(1990, 2, 28)}
+            {
+                "birthday": datetime(1990, 2, 28, 0, 0),
+                "gender": "female",
+                "customer_id": 3.0,
+            }
         ],
+        "postgres_example:orders": [{"customer_id": 3}],
         "postgres_example:address": [
             {
-                "city": "Example Mountain",
-                "house": 1111,
                 "state": "TX",
                 "street": "Example Place",
                 "zip": "54321",
+                "house": 1111,
+                "city": "Example Mountain",
             }
         ],
         "postgres_example:customer": [
-            {"email": "jane@example.com", "name": "Jane Customer"}
+            {"id": 3, "name": "Jane Customer", "email": "jane@example.com"}
         ],
         "postgres_example:payment_card": [
-            {"ccn": 373719391, "code": 222, "name": "Example Card 3"}
+            {
+                "code": 222,
+                "name": "Example Card 3",
+                "customer_id": 3,
+                "preferred": False,
+                "ccn": 373719391,
+            }
+        ],
+        "postgres_example:login": [
+            {"time": datetime(2021, 1, 6, 1, 0), "customer_id": 3}
         ],
     }
+
+    print(filtered_results)
+    print("-" * 10)
+    print(expected_results)
+    assert filtered_results == expected_results

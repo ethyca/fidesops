@@ -525,6 +525,7 @@ class TestMongoQueryConfig:
                 "birthday": None,
                 "children.0": None,
                 "children.1": None,
+                "customer_id": None,
                 "emergency_contacts.0.name": None,
                 "workplace_info.direct_reports.0": None,  # Both direct reports are masked.
                 "workplace_info.direct_reports.1": None,
