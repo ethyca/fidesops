@@ -22,8 +22,9 @@ The types of changes are:
 
 * Update fidesops to use bcrypt for hashing [#876](https://github.com/ethyca/fidesops/pull/876)
 
+### Changed
 
-
+* Updated fideslog==1.1.0 [#890](https://github.com/ethyca/fidesops/pull/890)
 
 ## [1.6.3](https://github.com/ethyca/fidesops/compare/1.6.2...1.6.3)
 
