@@ -40,10 +40,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.client_config = self.saas_config.client_config  # type: ignore
         self.endpoints = self.saas_config.top_level_endpoint_dict  # type: ignore
         self.collection_name: Optional[str] = None
+        self.privacy_request: Optional[PrivacyRequest] = None
 
-    def query_config(
-        self, node: TraversalNode, privacy_request: PrivacyRequest
-    ) -> SaaSQueryConfig:
+    def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
         """
         Returns the query config for a given node which includes the endpoints
         and connector param values for the current collection.
@@ -53,9 +52,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         return SaaSQueryConfig(
             node,
             self.endpoints,
-            self.secrets,
-            privacy_request,
-            self.saas_config.data_protection_request,
+            self.secrets,  # type: ignore
+            self.saas_config.data_protection_request,  # type: ignore
+            self.privacy_request,  # type: ignore
         )
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
@@ -113,7 +112,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
         # generate initial set of requests if read request is defined, otherwise raise an exception
-        query_config: SaaSQueryConfig = self.query_config(node, privacy_request)
+        self.privacy_request = privacy_request
+        query_config: SaaSQueryConfig = self.query_config(node)
         read_request: Optional[SaaSRequest] = query_config.get_request_by_action("read")
         if not read_request:
             raise FidesopsException(
@@ -239,7 +239,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated."""
 
-        query_config = self.query_config(node, privacy_request)
+        self.privacy_request = privacy_request
+        query_config = self.query_config(node)
         masking_request = query_config.get_masking_request()
         if not masking_request:
             raise Exception(

@@ -32,15 +32,15 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         node: TraversalNode,
         endpoints: Dict[str, Endpoint],
         secrets: Dict[str, Any],
-        privacy_request: PrivacyRequest,
         data_protection_request: Optional[SaaSRequest] = None,
+        privacy_request: Optional[PrivacyRequest] = None,
     ):
         super().__init__(node)
         self.collection_name = node.address.collection
         self.endpoints = endpoints
         self.secrets = secrets
-        self.privacy_request = privacy_request
         self.data_protection_request = data_protection_request
+        self.privacy_request = privacy_request
         self.action: Optional[str] = None
 
     def get_request_by_action(self, action: str) -> Optional[SaaSRequest]:
@@ -141,7 +141,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
-        param_values: Dict[str, Any] = {"privacy_request_id": self.privacy_request.id}
+        param_values: Dict[str, Any] = {}
         for param_value in current_request.param_values or []:
             if param_value.references or param_value.identity:
                 # TODO: how to handle missing reference or identity values in a way
@@ -153,6 +153,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 param_values[param_value.name] = pydash.get(
                     self.secrets, param_value.connector_param
                 )
+
+        if self.privacy_request:
+            param_values["privacy_request_id"] = self.privacy_request.id
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
@@ -179,7 +182,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
-        param_values: Dict[str, Any] = {"privacy_request_id": self.privacy_request.id}
+        param_values: Dict[str, Any] = {}
         for param_value in current_request.param_values or []:
             if param_value.references:
                 param_values[param_value.name] = pydash.get(
@@ -193,6 +196,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 param_values[param_value.name] = pydash.get(
                     self.secrets, param_value.connector_param
                 )
+
+        if self.privacy_request:
+            param_values["privacy_request_id"] = self.privacy_request.id
 
         # remove any row values for fields marked as read-only, these will be omitted from all update maps
         for field_path, field in self.field_map().items():
