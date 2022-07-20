@@ -810,7 +810,7 @@ def test_array_querying_mongo(
     assert filtered_identifiable["mongo_test:customer_details"] == [
         {
             "birthday": datetime(1990, 2, 28, 0, 0),
-            "customer_id": 1.0,
+            "customer_id": 3.0,
             "gender": "female",
             "children": ["Erica Example"],
         }
