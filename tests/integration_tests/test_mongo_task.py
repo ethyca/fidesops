@@ -820,6 +820,7 @@ def test_array_querying_mongo(
     )
     # Returns fields_affected for all possible targeted fields, even though this identity only had some
     # of them actually populated
+    # Note that order matters here!
     assert customer_detail_logs[0].fields_affected == [
         {
             "path": "mongo_test:customer_details:birthday",
@@ -830,6 +831,11 @@ def test_array_querying_mongo(
             "path": "mongo_test:customer_details:children",
             "field_name": "children",
             "data_categories": ["user.childrens"],
+        },
+        {
+            "path": "mongo_test:customer_details:customer_id",
+            "field_name": "customer_id",
+            "data_categories": ["user.unique_id"],
         },
         {
             "path": "mongo_test:customer_details:emergency_contacts.name",
