@@ -935,6 +935,11 @@ def test_array_querying_mongo(
             "data_categories": ["user.contact.email"],
         },
         {
+            "path": "mongo_test:employee:id",
+            "field_name": "id",
+            "data_categories": ["user.unique_id"],
+        },
+        {
             "path": "mongo_test:employee:name",
             "field_name": "name",
             "data_categories": ["user.name"],
@@ -955,12 +960,28 @@ def test_array_querying_mongo(
             "path": "mongo_test:customer_feedback:customer_information.phone",
             "field_name": "customer_information.phone",
             "data_categories": ["user.contact.phone_number"],
-        }
+        },
+        {
+            "path": "mongo_test:customer_feedback:message",
+            "field_name": "message",
+            "data_categories": ["user"],
+        },
+        {
+            "path": "mongo_test:customer_feedback:rating",
+            "field_name": "rating",
+            "data_categories": ["user"],
+        },
     ]
 
     # Only matched embedded document in mongo_test:conversations.thread.ccn used to locate mongo_test:payment_card
     assert filtered_identifiable["mongo_test:payment_card"] == [
-        {"code": "123", "name": "Example Card 2", "ccn": "987654321"}
+        {
+            "code": "123",
+            "name": "Example Card 2",
+            "ccn": "987654321",
+            "preferred": False,
+            "customer_id": 2,
+        }
     ]
     payment_logs = privacy_request.execution_logs.filter_by(
         dataset_name="mongo_test", collection_name="payment_card", status="complete"
@@ -982,6 +1003,16 @@ def test_array_querying_mongo(
             "field_name": "name",
             "data_categories": ["user.financial"],
         },
+        {
+            "path": "mongo_test:payment_card:customer_id",
+            "field_name": "customer_id",
+            "data_categories": ["user.unique_id"],
+        },
+        {
+            "path": "mongo_test:payment_card:preferred",
+            "field_name": "preferred",
+            "data_categories": ["user"],
+        },
     ]
 
     # Run again with different email
@@ -1001,8 +1032,8 @@ def test_array_querying_mongo(
 
     # Two values in mongo_test:flights:pilots array field mapped to mongo_test:employee ids
     assert filtered_identifiable["mongo_test:employee"] == [
-        {"name": "Jack Employee", "email": "employee-1@example.com"},
-        {"name": "Jane Employee", "email": "employee-2@example.com"},
+        {"email": "employee-1@example.com", "name": "Jack Employee", "id": "1"},
+        {"email": "employee-2@example.com", "name": "Jane Employee", "id": "2"},
     ]
 
     # Only embedded documents matching mongo_test:conversations.thread.comment returned
