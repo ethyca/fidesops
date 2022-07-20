@@ -20,6 +20,10 @@ The types of changes are:
 
 ### Added
 * Erasure support for Salesforce [#888](https://github.com/ethyca/fidesops/pull/888)
+* Access and erasure support for Sendgrid contacts endpoint [#883](https://github.com/ethyca/fidesops/pull/883)
+
+### Changed
+* Users should be able to click on the full field of a dropdown-type filter to open up the dropdown [#747](https://github.com/ethyca/fidesops/pull/903)
 
 ### Breaking Changes
 

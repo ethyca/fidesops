@@ -111,6 +111,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
+
         # generate initial set of requests if read request is defined, otherwise raise an exception
         self.privacy_request = privacy_request
         query_config: SaaSQueryConfig = self.query_config(node)
@@ -148,6 +149,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Executes the prepared request and handles response postprocessing and pagination.
         Returns processed data and request_params for next page of data if available.
         """
+
         client: AuthenticatedClient = self.create_client_from_request(saas_request)
         response: Response = client.send(prepared_request, saas_request.ignore_errors)
         response = self._handle_errored_response(saas_request, response)
@@ -195,6 +197,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         The final result is returned as a list of processed objects.
         """
+
         rows: List[Row] = []
         processed_data = response_data
         for postprocessor in postprocessors or []:
