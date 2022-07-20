@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Set, Union
 
-from pydantic import BaseModel, Extra, root_validator, validator
+from pydantic import BaseModel, Extra, root_validator, validator, Field
 
 from fidesops.graph.config import (
     Collection,
@@ -199,7 +199,7 @@ class SaaSConfigBase(BaseModel):
 
     fides_key: FidesOpsKey
     name: str
-    type: SaaSType
+    connection_type: SaaSType = Field(..., alias="type")
 
     @property
     def fides_key_prop(self) -> FidesOpsKey:
