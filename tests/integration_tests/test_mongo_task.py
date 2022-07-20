@@ -560,6 +560,7 @@ def test_object_querying_mongo(
     assert filtered_results["mongo_test:customer_details"][0] == {
         "birthday": datetime(1988, 1, 10, 0, 0),
         "gender": "male",
+        "customer_id": 1.0,
         "children": ["Christopher Customer", "Courtney Customer"],
         "emergency_contacts": [
             {"name": "June Customer", "phone": "444-444-4444"},
@@ -809,6 +810,7 @@ def test_array_querying_mongo(
     assert filtered_identifiable["mongo_test:customer_details"] == [
         {
             "birthday": datetime(1990, 2, 28, 0, 0),
+            "customer_id": 1.0,
             "gender": "female",
             "children": ["Erica Example"],
         }
