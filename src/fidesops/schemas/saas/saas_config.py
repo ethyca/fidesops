@@ -199,7 +199,7 @@ class SaaSConfigBase(BaseModel):
 
     fides_key: FidesOpsKey
     name: str
-    connection_type: SaaSType = Field(..., alias="type")
+    type: SaaSType
 
     @property
     def fides_key_prop(self) -> FidesOpsKey:
