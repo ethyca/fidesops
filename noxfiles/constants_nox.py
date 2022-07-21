@@ -20,7 +20,7 @@ WITH_TEST_CONFIG = ("-f", "tests/test_config.toml")
 
 # Image Names & Tags
 REGISTRY = "ethyca"
-IMAGE_NAME = "fidesctl"
+IMAGE_NAME = "fidesops"
 IMAGE = f"{REGISTRY}/{IMAGE_NAME}"
 IMAGE_LOCAL = f"{IMAGE}:local"
 IMAGE_LOCAL_UI = f"{IMAGE}:local-ui"
