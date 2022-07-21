@@ -5098,6 +5098,9 @@
           "last_test_succeeded": {
             "title": "Last Test Succeeded",
             "type": "boolean"
+          },
+          "saas_config": {
+            "$ref": "#/components/schemas/SaaSConfigBase"
           }
         },
         "description": "Describes the returned schema for a ConnectionConfiguration.\n\nDo *NOT* add \"secrets\" to this schema."
@@ -7465,6 +7468,30 @@
         },
         "description": "Used to store endpoint and param configurations for a SaaS connector.\nThis is done to separate the details of how to make the API calls\nfrom the data provided by a given API collection.\n\nThe required fields for the config are converted into a Dataset which is\nmerged with the standard Fidesops Dataset to provide a complete set of dependencies\nfor the graph traversal."
       },
+      "SaaSConfigBase": {
+        "title": "SaaSConfigBase",
+        "required": [
+          "fides_key",
+          "name",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/SaaSType"
+          }
+        },
+        "description": "Used to store base info for a saas config"
+      },
       "SaaSConfigValidationDetails": {
         "title": "SaaSConfigValidationDetails",
         "type": "object",
@@ -7570,7 +7597,8 @@
           "sentry",
           "stripe",
           "zendesk",
-          "custom"
+          "custom",
+          "sendgrid"
         ],
         "description": "Enum to store saas connection type in Fidesops"
       },

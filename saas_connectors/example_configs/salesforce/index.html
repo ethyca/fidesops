@@ -8,21 +8,21 @@
       
       
       
-        <link rel="canonical" href="https://ethyca.github.io/fidesops/deployment/">
+        <link rel="canonical" href="https://ethyca.github.io/fidesops/saas_connectors/example_configs/salesforce/">
       
-      <link rel="icon" href="../img/favicon.ico">
+      <link rel="icon" href="../../../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.2.7">
     
     
       
-        <title>Deployment Guide - Fidesops</title>
+        <title>Salesforce - Fidesops</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.9d5733d3.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.9d5733d3.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.e6a45f82.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.e6a45f82.min.css">
         
       
     
@@ -39,13 +39,13 @@
     
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
     
-      <link rel="stylesheet" href="../css/fides.css">
+      <link rel="stylesheet" href="../../../css/fides.css">
     
-      <link rel="stylesheet" href="../css/api.css">
+      <link rel="stylesheet" href="../../../css/api.css">
     
-      <link rel="stylesheet" href="../css/logo.css">
+      <link rel="stylesheet" href="../../../css/logo.css">
     
-    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -73,7 +73,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#deployment-guide" class="md-skip">
+        <a href="#salesforce" class="md-skip">
           Skip to content
         </a>
       
@@ -87,9 +87,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="Fidesops" class="md-header__button md-logo" aria-label="Fidesops" data-md-component="logo">
+    <a href="../../.." title="Fidesops" class="md-header__button md-logo" aria-label="Fidesops" data-md-component="logo">
       
-  <img src="../img/fidesops.svg" alt="logo">
+  <img src="../../../img/fidesops.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Deployment Guide
+              Salesforce
             
           </span>
         </div>
@@ -194,9 +194,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="Fidesops" class="md-nav__button md-logo" aria-label="Fidesops" data-md-component="logo">
+    <a href="../../.." title="Fidesops" class="md-nav__button md-logo" aria-label="Fidesops" data-md-component="logo">
       
-  <img src="../img/fidesops.svg" alt="logo">
+  <img src="../../../img/fidesops.svg" alt="logo">
 
     </a>
     Fidesops
@@ -212,7 +212,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         What is Fidesops?
       </a>
     </li>
@@ -227,7 +227,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../use_cases/" class="md-nav__link">
+      <a href="../../../use_cases/" class="md-nav__link">
         Use Cases
       </a>
     </li>
@@ -268,7 +268,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting_started/" class="md-nav__link">
+      <a href="../../../getting_started/" class="md-nav__link">
         Getting Started
       </a>
     </li>
@@ -282,7 +282,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/oauth/" class="md-nav__link">
+      <a href="../../../guides/oauth/" class="md-nav__link">
         Authenticate with OAuth
       </a>
     </li>
@@ -296,7 +296,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/database_connectors/" class="md-nav__link">
+      <a href="../../../guides/database_connectors/" class="md-nav__link">
         Connect to Databases
       </a>
     </li>
@@ -310,7 +310,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/datasets/" class="md-nav__link">
+      <a href="../../../guides/datasets/" class="md-nav__link">
         Define Datasets
       </a>
     </li>
@@ -324,7 +324,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/policies/" class="md-nav__link">
+      <a href="../../../guides/policies/" class="md-nav__link">
         Configure Policies
       </a>
     </li>
@@ -338,7 +338,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/privacy_requests/" class="md-nav__link">
+      <a href="../../../guides/privacy_requests/" class="md-nav__link">
         Execute Privacy Requests
       </a>
     </li>
@@ -386,7 +386,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/overview/" class="md-nav__link">
+      <a href="../../../ui/overview/" class="md-nav__link">
         Overview
       </a>
     </li>
@@ -400,7 +400,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/privacy_center/" class="md-nav__link">
+      <a href="../../../ui/privacy_center/" class="md-nav__link">
         Privacy Center
       </a>
     </li>
@@ -440,7 +440,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/subject_requests/" class="md-nav__link">
+      <a href="../../../ui/subject_requests/" class="md-nav__link">
         Subject Requests
       </a>
     </li>
@@ -454,7 +454,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/datastores/" class="md-nav__link">
+      <a href="../../../ui/datastores/" class="md-nav__link">
         Managing Datastores
       </a>
     </li>
@@ -468,7 +468,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/user_management/" class="md-nav__link">
+      <a href="../../../ui/user_management/" class="md-nav__link">
         User Management
       </a>
     </li>
@@ -523,7 +523,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/complex_fields/" class="md-nav__link">
+      <a href="../../../guides/complex_fields/" class="md-nav__link">
         Annotate Complex Fields
       </a>
     </li>
@@ -537,7 +537,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/masking_strategies/" class="md-nav__link">
+      <a href="../../../guides/masking_strategies/" class="md-nav__link">
         Configure Data Masking
       </a>
     </li>
@@ -551,7 +551,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/storage/" class="md-nav__link">
+      <a href="../../../guides/storage/" class="md-nav__link">
         Configure Storage Destinations
       </a>
     </li>
@@ -565,7 +565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/policy_webhooks/" class="md-nav__link">
+      <a href="../../../guides/policy_webhooks/" class="md-nav__link">
         Configure Policy Webhooks
       </a>
     </li>
@@ -579,7 +579,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/reporting/" class="md-nav__link">
+      <a href="../../../guides/reporting/" class="md-nav__link">
         Report on Privacy Requests
       </a>
     </li>
@@ -593,7 +593,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/onetrust/" class="md-nav__link">
+      <a href="../../../guides/onetrust/" class="md-nav__link">
         Configure OneTrust Integration
       </a>
     </li>
@@ -607,7 +607,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/query_execution/" class="md-nav__link">
+      <a href="../../../guides/query_execution/" class="md-nav__link">
         Preview Query Execution
       </a>
     </li>
@@ -621,7 +621,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/data_rights_protocol/" class="md-nav__link">
+      <a href="../../../guides/data_rights_protocol/" class="md-nav__link">
         Data Rights Protocol
       </a>
     </li>
@@ -641,12 +641,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" checked>
       
       
       
@@ -669,7 +671,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../saas_connectors/saas_connectors/" class="md-nav__link">
+      <a href="../../saas_connectors/" class="md-nav__link">
         Connect to SaaS Applications
       </a>
     </li>
@@ -683,7 +685,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../saas_connectors/saas_config/" class="md-nav__link">
+      <a href="../../saas_config/" class="md-nav__link">
         SaaS Configuration
       </a>
     </li>
@@ -697,7 +699,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../saas_connectors/saas_postprocessors/" class="md-nav__link">
+      <a href="../../saas_postprocessors/" class="md-nav__link">
         SaaS Post-Processors
       </a>
     </li>
@@ -711,7 +713,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../saas_connectors/saas_pagination/" class="md-nav__link">
+      <a href="../../saas_pagination/" class="md-nav__link">
         SaaS Pagination
       </a>
     </li>
@@ -723,12 +725,14 @@
               
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_5" type="checkbox" id="__nav_6_5" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_5" type="checkbox" id="__nav_6_5" checked>
       
       
       
@@ -751,7 +755,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../saas_connectors/example_configs/hubspot/" class="md-nav__link">
+      <a href="../hubspot/" class="md-nav__link">
         Hubspot
       </a>
     </li>
@@ -765,7 +769,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../saas_connectors/example_configs/mailchimp/" class="md-nav__link">
+      <a href="../mailchimp/" class="md-nav__link">
         Mailchimp
       </a>
     </li>
@@ -777,11 +781,66 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../saas_connectors/example_configs/salesforce/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Salesforce
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Salesforce
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-summary" class="md-nav__link">
+    Implementation Summary
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connection-settings" class="md-nav__link">
+    Connection Settings
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-salesforce-configuration" class="md-nav__link">
+    Example Salesforce Configuration
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -793,7 +852,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../saas_connectors/example_configs/segment/" class="md-nav__link">
+      <a href="../segment/" class="md-nav__link">
         Segment
       </a>
     </li>
@@ -807,7 +866,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../saas_connectors/example_configs/sentry/" class="md-nav__link">
+      <a href="../sentry/" class="md-nav__link">
         Sentry
       </a>
     </li>
@@ -821,7 +880,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../saas_connectors/example_configs/stripe/" class="md-nav__link">
+      <a href="../stripe/" class="md-nav__link">
         Stripe
       </a>
     </li>
@@ -835,7 +894,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../saas_connectors/example_configs/zendesk/" class="md-nav__link">
+      <a href="../zendesk/" class="md-nav__link">
         Zendesk
       </a>
     </li>
@@ -864,7 +923,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/configuration_reference/" class="md-nav__link">
+      <a href="../../../guides/configuration_reference/" class="md-nav__link">
         Configuration Reference
       </a>
     </li>
@@ -877,99 +936,11 @@
 
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Deployment Guide
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../../deployment/" class="md-nav__link">
         Deployment Guide
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#step-1-setup-hosted-database" class="md-nav__link">
-    Step 1: Setup Hosted Database
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 1: Setup Hosted Database">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#fidesops-postgresql-app-database-diagram" class="md-nav__link">
-    Fidesops PostgreSQL app database diagram
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-2-setup-hosted-cache" class="md-nav__link">
-    Step 2: Setup Hosted Cache
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-3-setup-fidesops-web-server" class="md-nav__link">
-    Step 3: Setup fidesops Web Server
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 3: Setup fidesops Web Server">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#install-fidesops-via-docker" class="md-nav__link">
-    Install fidesops via Docker
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#test-the-web-server" class="md-nav__link">
-    Test the Web Server
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -982,7 +953,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../glossary/" class="md-nav__link">
+      <a href="../../../glossary/" class="md-nav__link">
         Glossary
       </a>
     </li>
@@ -997,7 +968,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/" class="md-nav__link">
+      <a href="../../../api/" class="md-nav__link">
         API
       </a>
     </li>
@@ -1038,7 +1009,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial/" class="md-nav__link">
+      <a href="../../../tutorial/" class="md-nav__link">
         Zero to Privacy Request
       </a>
     </li>
@@ -1052,7 +1023,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial/installation/" class="md-nav__link">
+      <a href="../../../tutorial/installation/" class="md-nav__link">
         Install Fidesops
       </a>
     </li>
@@ -1066,7 +1037,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial/outline/" class="md-nav__link">
+      <a href="../../../tutorial/outline/" class="md-nav__link">
         Outline a Python Script
       </a>
     </li>
@@ -1080,7 +1051,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial/oauth_client/" class="md-nav__link">
+      <a href="../../../tutorial/oauth_client/" class="md-nav__link">
         Create an Oauth Client
       </a>
     </li>
@@ -1094,7 +1065,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial/postgres_connection/" class="md-nav__link">
+      <a href="../../../tutorial/postgres_connection/" class="md-nav__link">
         Connect to Postgres
       </a>
     </li>
@@ -1108,7 +1079,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial/annotate_datasets/" class="md-nav__link">
+      <a href="../../../tutorial/annotate_datasets/" class="md-nav__link">
         Annotate a Database
       </a>
     </li>
@@ -1122,7 +1093,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial/storage_config/" class="md-nav__link">
+      <a href="../../../tutorial/storage_config/" class="md-nav__link">
         Configure a Storage Destination
       </a>
     </li>
@@ -1136,7 +1107,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial/define_policy/" class="md-nav__link">
+      <a href="../../../tutorial/define_policy/" class="md-nav__link">
         Define a Policy
       </a>
     </li>
@@ -1150,7 +1121,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial/execute_privacy_request/" class="md-nav__link">
+      <a href="../../../tutorial/execute_privacy_request/" class="md-nav__link">
         Execute a Privacy Request
       </a>
     </li>
@@ -1198,7 +1169,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/overview/" class="md-nav__link">
+      <a href="../../../development/overview/" class="md-nav__link">
         Overview
       </a>
     </li>
@@ -1212,7 +1183,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/contributing_details/" class="md-nav__link">
+      <a href="../../../development/contributing_details/" class="md-nav__link">
         Contributing Details
       </a>
     </li>
@@ -1226,7 +1197,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/code_style/" class="md-nav__link">
+      <a href="../../../development/code_style/" class="md-nav__link">
         Code Style
       </a>
     </li>
@@ -1240,7 +1211,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/documentation/" class="md-nav__link">
+      <a href="../../../development/documentation/" class="md-nav__link">
         Documentation
       </a>
     </li>
@@ -1254,7 +1225,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/fideslog/" class="md-nav__link">
+      <a href="../../../development/fideslog/" class="md-nav__link">
         Fideslog Analytics
       </a>
     </li>
@@ -1268,7 +1239,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/testing/" class="md-nav__link">
+      <a href="../../../development/testing/" class="md-nav__link">
         Testing
       </a>
     </li>
@@ -1282,7 +1253,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/pull_requests/" class="md-nav__link">
+      <a href="../../../development/pull_requests/" class="md-nav__link">
         Pull Requests
       </a>
     </li>
@@ -1296,7 +1267,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/releases/" class="md-nav__link">
+      <a href="../../../development/releases/" class="md-nav__link">
         Releases
       </a>
     </li>
@@ -1310,7 +1281,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../postman/using_postman/" class="md-nav__link">
+      <a href="../../../postman/using_postman/" class="md-nav__link">
         Postman Collection
       </a>
     </li>
@@ -1358,7 +1329,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../community/github/" class="md-nav__link">
+      <a href="../../../community/github/" class="md-nav__link">
         GitHub
       </a>
     </li>
@@ -1372,7 +1343,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../community/code_of_conduct/" class="md-nav__link">
+      <a href="../../../community/code_of_conduct/" class="md-nav__link">
         Code of Conduct
       </a>
     </li>
@@ -1394,7 +1365,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ethyca/" class="md-nav__link">
+      <a href="../../../ethyca/" class="md-nav__link">
         About Ethyca
       </a>
     </li>
@@ -1409,7 +1380,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../license/" class="md-nav__link">
+      <a href="../../../license/" class="md-nav__link">
         License
       </a>
     </li>
@@ -1443,56 +1414,23 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#step-1-setup-hosted-database" class="md-nav__link">
-    Step 1: Setup Hosted Database
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 1: Setup Hosted Database">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#fidesops-postgresql-app-database-diagram" class="md-nav__link">
-    Fidesops PostgreSQL app database diagram
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-2-setup-hosted-cache" class="md-nav__link">
-    Step 2: Setup Hosted Cache
+  <a href="#implementation-summary" class="md-nav__link">
+    Implementation Summary
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-3-setup-fidesops-web-server" class="md-nav__link">
-    Step 3: Setup fidesops Web Server
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 3: Setup fidesops Web Server">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#install-fidesops-via-docker" class="md-nav__link">
-    Install fidesops via Docker
+  <a href="#connection-settings" class="md-nav__link">
+    Connection Settings
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#test-the-web-server" class="md-nav__link">
-    Test the Web Server
+      
+        <li class="md-nav__item">
+  <a href="#example-salesforce-configuration" class="md-nav__link">
+    Example Salesforce Configuration
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1510,247 +1448,451 @@
                 
 
 
-<h1 id="deployment-guide">Deployment Guide</h1>
-<p>To quickly experiment with <code>fidesops</code>, it's easiest to clone the source repo and use the built-in docker compose configuration to get a fully working demo environment up and running. However, when you want to use <code>fidesops</code> in production, you'll want to deploy it in parts, leveraging whatever cloud infrastructure your organization is most familiar with.</p>
-<p>Fully deployed, <code>fidesops</code> has three individual systems you'll need to run:</p>
-<ol>
-<li><a href="#step-1-setup-hosted-database"><strong>Hosted Database</strong></a>: PostgreSQL database server used for permanent storage of configuration data for the web server</li>
-<li><a href="#step-2-setup-hosted-cache"><strong>Hosted Cache</strong></a>: Redis database server used as a temporary cache during execution and scheduling of tasks</li>
-<li><a href="#step-3-setup-fidesops-web-server"><strong>fidesops Web Server</strong></a>: Main application with API endpoints to configure, execute, and report on privacy requests</li>
-</ol>
-<p><img alt="Deployment Diagram" src="../img/Deployment_Diagram.png" /></p>
-<p>Let's review each individually.</p>
-<h2 id="step-1-setup-hosted-database">Step 1: Setup Hosted Database</h2>
-<p>Like most web applications, <code>fidesops</code> uses an application database for persistent storage. Any hosted PostgreSQL database solution will work (PostgreSQL version 12+), as long as it's accessible. Good options include:</p>
-<ul>
-<li>Managed PostgreSQL database services (e.g. AWS RDS, GCP Cloud SQL, Azure Database)</li>
-<li>Self-hosted PostgreSQL Docker container with a persistent volume mount (e.g. on a Kubernetes cluster)</li>
-<li>Self-hosted PostgreSQL server (e.g. on an EC2 server)</li>
-</ul>
-<p>NOTE: there <em>is no reason to expose this database to the public Internet</em> as long as it will be accessible by your <code>fidesops</code> web server!</p>
-<p>Setting up a production-grade PostgreSQL database is likely something your team is already familiar with, so we won't revisit that here. Once it's up and running, make sure you create a unique user and database to use for <code>fidesops</code> (we recommended calling these both <code>fidesops</code>) and assign a secure password, then keep track of all those credentials. You'll need those values later to populate these configuration variables for <code>fidesops</code>:</p>
+<h1 id="salesforce">Salesforce</h1>
+<h2 id="implementation-summary">Implementation Summary</h2>
+<p>Fidesops uses the following Salesforce endpoints to retrieve and delete Personally Identifiable Information (PII) when processing a Data Subject Request (DSR). Right to Access and Right to Delete (Right to Forget) support for each endpoint is noted below. </p>
+<p>For more information, see the <a href="https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_basic_info_post.htm">Salesforce sObject API reference</a>.</p>
 <table>
 <thead>
 <tr>
-<th>Config Variable</th>
-<th>Example</th>
-<th>Description</th>
+<th>Endpoint</th>
+<th>Right to Access</th>
+<th>Right to Delete</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>FIDESOPS__DATABASE__SERVER</code></td>
-<td>postgres.internal</td>
-<td>hostname for your database server</td>
+<td><a href="https://developer.salesforce.com/docs/atlas.en-us.238.0.api_rest.meta/api_rest/resources_query.htm">Query</a></td>
+<td>Yes</td>
+<td>No</td>
 </tr>
 <tr>
-<td><code>FIDESOPS__DATABASE__USER</code></td>
-<td>fidesops</td>
-<td>username <code>fidesops</code> should use to access the database</td>
+<td><a href="https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_contact.htm">Contact</a></td>
+<td>Yes</td>
+<td>Yes</td>
 </tr>
 <tr>
-<td><code>FIDESOPS__DATABASE__PASSWORD</code></td>
-<td>fidesopssecret</td>
-<td>password <code>fidesops</code> should use to access the database</td>
+<td><a href="https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_case.htm">Case</a></td>
+<td>Yes</td>
+<td>Yes</td>
 </tr>
 <tr>
-<td><code>FIDESOPS__DATABASE__DB</code></td>
-<td>fidesops</td>
-<td>database name</td>
+<td><a href="https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_lead.htm">Lead</a></td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><a href="https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_account.htm">Account</a></td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><a href="https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_campaignmember.htm">CampaignMember</a></td>
+<td>Yes</td>
+<td>Yes</td>
 </tr>
 </tbody>
 </table>
-<h3 id="fidesops-postgresql-app-database-diagram">Fidesops PostgreSQL <code>app</code> database diagram</h3>
-<p><img alt="PostgreSQL Database" src="../img/app_database.png" /></p>
-<h2 id="step-2-setup-hosted-cache">Step 2: Setup Hosted Cache</h2>
-<p>During privacy request execution, <code>fidesops</code> collects result data in a temporary Redis cache that automatically expires to ensure personal data is never retained erroneously. Any hosted Redis database will work for this purpose (Redis version 6.2.0+), from a simple Docker <a href="https://hub.docker.com/_/redis">redis</a> container to a managed service (e.g. AWS ElastiCache, GCP Memorystore, Azure Cache, Redis Cloud).</p>
-<p>NOTE: Similar to PostgreSQL, there <em>is no reason to expose this cache to the public Internet</em> as long as it is will be accessible by your <code>fidesops</code> web server!</p>
-<p>As with the PostgreSQL deployment, setting up a production-grade Redis cache is outside the scope of these docs. Once your Redis cache is available, ensure you enable a password (via Redis <a href="https://redis.io/commands/auth"><code>AUTH</code></a>) to provide additional security, and then keep track of all the connection credentials as you'll need these to configure <code>fidesops</code> in the next step with the following variables:</p>
-<table>
-<thead>
-<tr>
-<th>Config Variable</th>
-<th>Example</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>FIDESOPS__REDIS__HOST</code></td>
-<td>redis.internal</td>
-<td>hostname for your Redis server</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__REDIS__PORT</code></td>
-<td>6379</td>
-<td>port for your Redis server</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__REDIS__PASSWORD</code></td>
-<td>fidesopssecret</td>
-<td>password <code>fidesops</code> should use to access Redis</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__REDIS__SSL</code></td>
-<td>true</td>
-<td>Whether we should enable Redis SSL</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__REDIS__SSL_CERT_REQS</code></td>
-<td>required</td>
-<td>Hostname verification. If SSL is true, the default is that it is required.</td>
-</tr>
-</tbody>
-</table>
-<h2 id="step-3-setup-fidesops-web-server">Step 3: Setup fidesops Web Server</h2>
-<p>The <code>fidesops</code> web server is a <a href="https://fastapi.tiangolo.com/">FastAPI</a> application with a <a href="https://www.uvicorn.org/">Uvicorn</a> server to handle requests. The host requirements for the <code>fidesops</code> web server are pretty minimal:</p>
-<ul>
-<li>A general purpose web server (e.g. for AWS EC2, a <code>t2.small</code> should be plenty)</li>
-<li>No persistent storage requirements (this is handled by the hosted database)</li>
-<li>Docker version 20.10.8 or newer (if installing via Docker)</li>
-<li>OR Python 3.8 or newer (if installing via Python)</li>
-</ul>
-<p>Depending on your preferences, you can install <code>fidesops</code> in one of two ways: <em>Docker</em> or <em>Python</em>.</p>
-<h3 id="install-fidesops-via-docker">Install fidesops via Docker</h3>
-<p>If you typically run your applications via Docker, you'll probably be familiar with pulling images and configuring them with environment variables. Setting up a <code>fidesops</code> container should contain no surprises.</p>
-<p>First, ensure that Docker is running on your host, with a minimum version of <code>20.10.8</code>.</p>
-<p>You can <code>docker pull ethyca/fidesops</code> to get the latest image from Ethyca's Docker Hub here: <a href="https://hub.docker.com/r/ethyca/fidesops">ethyca/fidesops</a>.</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>docker pull ethyca/fidesops
+<h2 id="connection-settings">Connection Settings</h2>
+<p>Fidesops provides a <a href="../../../postman/using_postman/">Postman collection</a> for easily establishing connections to your third party applications. Additional connection instructions may be found in the <a href="../../saas_config/">configuration guide</a>.</p>
+<p><strong>Deletion requests</strong> are fulfilled by masking PII via <code>UPDATE</code> endpoints. To <a href="../../../guides/configuration_reference/#configuration-variable-reference">give fidesops permission</a> to remove PII using <code>DELETE</code> endpoints, ensure the <code>MASKING_STRICT</code> variable in your <code>fidesops.toml</code> file is set to <code>FALSE</code>. </p>
+<h2 id="example-salesforce-configuration">Example Salesforce Configuration</h2>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">  1</span>
+<span class="normal">  2</span>
+<span class="normal">  3</span>
+<span class="normal">  4</span>
+<span class="normal">  5</span>
+<span class="normal">  6</span>
+<span class="normal">  7</span>
+<span class="normal">  8</span>
+<span class="normal">  9</span>
+<span class="normal"> 10</span>
+<span class="normal"> 11</span>
+<span class="normal"> 12</span>
+<span class="normal"> 13</span>
+<span class="normal"> 14</span>
+<span class="normal"> 15</span>
+<span class="normal"> 16</span>
+<span class="normal"> 17</span>
+<span class="normal"> 18</span>
+<span class="normal"> 19</span>
+<span class="normal"> 20</span>
+<span class="normal"> 21</span>
+<span class="normal"> 22</span>
+<span class="normal"> 23</span>
+<span class="normal"> 24</span>
+<span class="normal"> 25</span>
+<span class="normal"> 26</span>
+<span class="normal"> 27</span>
+<span class="normal"> 28</span>
+<span class="normal"> 29</span>
+<span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">saas_config</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce_connector_example</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Salesforce SaaS Config</span><span class="w"></span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce</span><span class="w"></span>
+<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A sample schema representing the Salesforce connector for Fidesops</span><span class="w"></span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0.1</span><span class="w"></span>
+
+<span class="w">  </span><span class="nt">connector_params</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">domain</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">username</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">password</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">client_id</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">client_secret</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">access_token</span><span class="w"></span>
+
+<span class="w">  </span><span class="nt">client_config</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https</span><span class="w"></span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;domain&gt;</span><span class="w"></span>
+<span class="w">    </span><span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bearer</span><span class="w"></span>
+<span class="w">      </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;access_token&gt;</span><span class="w"></span>
+
+<span class="w">  </span><span class="nt">test_request</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/services/data/v54.0/sobjects</span><span class="w"></span>
+
+<span class="w">  </span><span class="nt">endpoints</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">contact_list</span><span class="w"></span>
+<span class="w">      </span><span class="nt">requests</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">read</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/services/data/v54.0/query</span><span class="w"></span>
+<span class="w">          </span><span class="nt">query_params</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">q</span><span class="w"></span>
+<span class="w">              </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SELECT Id FROM Contact WHERE Email=&#39;&lt;email&gt;&#39;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="w">              </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="w">          </span><span class="nt">data_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">records</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">contacts</span><span class="w"></span>
+<span class="w">      </span><span class="nt">requests</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">read</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/services/data/v54.0/sobjects/Contact/&lt;contact_id&gt;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">contact_id</span><span class="w"></span>
+<span class="w">              </span><span class="nt">references</span><span class="p">:</span><span class="w"></span>
+<span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce_connector_example</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">contact_list.Id</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from</span><span class="w"></span>
+<span class="w">        </span><span class="nt">update</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PATCH</span><span class="w"></span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/services/data/v54.0/sobjects/Contact/&lt;contact_id&gt;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">body</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span><span class="w"></span>
+<span class="w">            </span><span class="no">{</span><span class="w"></span>
+<span class="w">              </span><span class="no">&lt;masked_object_fields&gt;</span><span class="w"></span>
+<span class="w">            </span><span class="no">}</span><span class="w"></span>
+<span class="w">          </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">contact_id</span><span class="w"></span>
+<span class="w">              </span><span class="nt">references</span><span class="p">:</span><span class="w"></span>
+<span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce_connector_example</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">contacts.Id</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">case_list</span><span class="w"></span>
+<span class="w">      </span><span class="nt">requests</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">read</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/services/data/v54.0/query</span><span class="w"></span>
+<span class="w">          </span><span class="nt">query_params</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">q</span><span class="w"></span>
+<span class="w">              </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SELECT Id FROM Case WHERE ContactId=&#39;&lt;contact_id&gt;&#39;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">contact_id</span><span class="w"></span>
+<span class="w">              </span><span class="nt">references</span><span class="p">:</span><span class="w"></span>
+<span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce_connector_example</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">contact_list.Id</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from</span><span class="w"></span>
+<span class="w">          </span><span class="nt">data_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">records</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cases</span><span class="w"></span>
+<span class="w">      </span><span class="nt">requests</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">read</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/services/data/v54.0/sobjects/Case/&lt;case_id&gt;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">case_id</span><span class="w"></span>
+<span class="w">              </span><span class="nt">references</span><span class="p">:</span><span class="w"></span>
+<span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce_connector_example</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">case_list.Id</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from</span><span class="w"></span>
+<span class="w">        </span><span class="nt">update</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PATCH</span><span class="w"></span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/services/data/v54.0/sobjects/Case/&lt;case_id&gt;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">body</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span><span class="w"></span>
+<span class="w">            </span><span class="no">{</span><span class="w"></span>
+<span class="w">              </span><span class="no">&lt;masked_object_fields&gt;</span><span class="w"></span>
+<span class="w">            </span><span class="no">}</span><span class="w"></span>
+<span class="w">          </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">case_id</span><span class="w"></span>
+<span class="w">              </span><span class="nt">references</span><span class="p">:</span><span class="w"></span>
+<span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce_connector_example</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cases.Id</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lead_list</span><span class="w"></span>
+<span class="w">      </span><span class="nt">requests</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">read</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/services/data/v54.0/query</span><span class="w"></span>
+<span class="w">          </span><span class="nt">query_params</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">q</span><span class="w"></span>
+<span class="w">              </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SELECT Id FROM Lead WHERE Email=&#39;&lt;email&gt;&#39;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="w">              </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="w">          </span><span class="nt">data_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">records</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">leads</span><span class="w"></span>
+<span class="w">      </span><span class="nt">requests</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">read</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/services/data/v54.0/sobjects/Lead/&lt;lead_id&gt;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lead_id</span><span class="w"></span>
+<span class="w">              </span><span class="nt">references</span><span class="p">:</span><span class="w"></span>
+<span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce_connector_example</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lead_list.Id</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from</span><span class="w"></span>
+<span class="w">        </span><span class="nt">update</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PATCH</span><span class="w"></span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/services/data/v54.0/sobjects/Lead/&lt;lead_id&gt;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">body</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span><span class="w"></span>
+<span class="w">            </span><span class="no">{</span><span class="w"></span>
+<span class="w">              </span><span class="no">&lt;masked_object_fields&gt;</span><span class="w"></span>
+<span class="w">            </span><span class="no">}</span><span class="w"></span>
+<span class="w">          </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lead_id</span><span class="w"></span>
+<span class="w">              </span><span class="nt">references</span><span class="p">:</span><span class="w"></span>
+<span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce_connector_example</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">leads.Id</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">accounts</span><span class="w"></span>
+<span class="w">      </span><span class="nt">requests</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">read</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/services/data/v54.0/sobjects/Account/&lt;account_id&gt;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">account_id</span><span class="w"></span>
+<span class="w">              </span><span class="nt">references</span><span class="p">:</span><span class="w"></span>
+<span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce_connector_example</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">contacts.AccountId</span><span class="w"></span>
+<span class="w">        </span><span class="nt">update</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PATCH</span><span class="w"></span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/services/data/v54.0/sobjects/Account/&lt;account_id&gt;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">body</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span><span class="w"></span>
+<span class="w">            </span><span class="no">{</span><span class="w"></span>
+<span class="w">              </span><span class="no">&lt;masked_object_fields&gt;</span><span class="w"></span>
+<span class="w">            </span><span class="no">}</span><span class="w"></span>
+<span class="w">          </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">account_id</span><span class="w"></span>
+<span class="w">              </span><span class="nt">references</span><span class="p">:</span><span class="w"></span>
+<span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce_connector_example</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">accounts.Id</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">campaign_member_list</span><span class="w"></span>
+<span class="w">      </span><span class="nt">requests</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">read</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/services/data/v54.0/query</span><span class="w"></span>
+<span class="w">          </span><span class="nt">query_params</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">q</span><span class="w"></span>
+<span class="w">              </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SELECT Id FROM CampaignMember WHERE Email=&#39;&lt;email&gt;&#39;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="w">              </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="w">          </span><span class="nt">data_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">records</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">campaign_members</span><span class="w"></span>
+<span class="w">      </span><span class="nt">requests</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">read</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/services/data/v54.0/sobjects/CampaignMember/&lt;campaign_member_id&gt;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">campaign_member_id</span><span class="w"></span>
+<span class="w">              </span><span class="nt">references</span><span class="p">:</span><span class="w"></span>
+<span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce_connector_example</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">campaign_member_list.Id</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from</span><span class="w"></span>
+<span class="w">        </span><span class="nt">update</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PATCH</span><span class="w"></span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/services/data/v54.0/sobjects/CampaignMember/&lt;campaign_member_id&gt;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">body</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span><span class="w"></span>
+<span class="w">            </span><span class="no">{</span><span class="w"></span>
+<span class="w">              </span><span class="no">&lt;masked_object_fields&gt;</span><span class="w"></span>
+<span class="w">            </span><span class="no">}</span><span class="w"></span>
+<span class="w">          </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">campaign_member_id</span><span class="w"></span>
+<span class="w">              </span><span class="nt">references</span><span class="p">:</span><span class="w"></span>
+<span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce_connector_example</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">campaign_members.Id</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
-<p>Once pulled, you can run <code>docker run ethyca/fidesops</code> to start the server.</p>
-<p>To configure <code>fidesops</code> for your environment, however, you'll need to provide a number of required environment variables through <code>docker run</code>. You can accomplish this either by creating a <code>.env</code> file and passing it in via the <a href="https://docs.docker.com/engine/reference/commandline/run/#set-environment-variables--e---env---env-file"><code>--env-file {file}</code> option</a> or by providing individual variables with the <code>--env {VAR}</code> option. At a minimum, you'll need to provide the following as env variables:</p>
-<table>
-<thead>
-<tr>
-<th>Config Variable</th>
-<th>Example</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>FIDESOPS__SECURITY__APP_ENCRYPTION_KEY</code></td>
-<td>averyveryverysecretencryptionkey</td>
-<td>AES256 encryption key used for DB &amp; JWE encryption, must be exactly 32 characters (256bits)</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_ID</code></td>
-<td>fidesopsadmin</td>
-<td>client ID used for the "root" OAuth client</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_SECRET</code></td>
-<td>fidesopsadminsecret</td>
-<td>client secret used for the "root" OAuth client</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__DATABASE__SERVER</code></td>
-<td>postgres.internal</td>
-<td>hostname for your database server</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__DATABASE__PORT</code></td>
-<td>5432</td>
-<td>port for your database server</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__DATABASE__USER</code></td>
-<td>fidesops</td>
-<td>username <code>fidesops</code> should use to access the database</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__DATABASE__PASSWORD</code></td>
-<td>fidesopssecret</td>
-<td>password <code>fidesops</code> should use to access the database</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__DATABASE__DB</code></td>
-<td>fidesops</td>
-<td>database name</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__REDIS__HOST</code></td>
-<td>redis.internal</td>
-<td>hostname for your Redis server</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__REDIS__PORT</code></td>
-<td>6379</td>
-<td>port for your Redis server</td>
-</tr>
-<tr>
-<td><code>FIDESOPS__REDIS__PASSWORD</code></td>
-<td>fidesopssecret</td>
-<td>password <code>fidesops</code> should use to access Redis</td>
-</tr>
-</tbody>
-</table>
-<p>Lastly, you'll also want to ensure you use the <code>-p 8080:8080</code> option to <code>docker run</code> to bind port 8080 (the web server) to port 8080 on the host, so you can connect from the outside.</p>
-<p>Putting this together:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code>docker run \
-  -p 8080:8080 \
-  --env FIDESOPS__SECURITY__APP_ENCRYPTION_KEY=&quot;averyveryverysecretencryptionkey&quot; \
-  --env FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_ID=&quot;fidesopsadmin&quot; \
-  --env FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_SECRET=&quot;fidesopsadminsecret&quot; \
-  --env FIDESOPS__DATABASE__SERVER=&quot;postgres.internal&quot; \
-  --env FIDESOPS__DATABASE__PORT=&quot;5432&quot; \
-  --env FIDESOPS__DATABASE__USER=&quot;fidesops&quot; \
-  --env FIDESOPS__DATABASE__PASSWORD=&quot;fidesopssecret&quot; \
-  --env FIDESOPS__DATABASE__DB=&quot;fidesops&quot; \
-  --env FIDESOPS__REDIS__HOST=&quot;redis.internal&quot; \
-  --env FIDESOPS__REDIS__PORT=6379 \
-  --env FIDESOPS__REDIS__PASSWORD=&quot;fidesopssecret&quot; \
-  ethyca/fidesops
-</code></pre></div></td></tr></table></div>
-<p>Or if you prefer to create your .env file and pass an <code>--env-file</code> variable, you can use the following: </p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>docker run \
-  -p 8080:8080 \
-  --env-file=&lt;ENV FILE NAME&gt;.env \
-  ethyca/fidesops
-</code></pre></div></td></tr></table></div>
-<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>config.env</env></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code>FIDESOPS__SECURITY__APP_ENCRYPTION_KEY=&quot;averyveryverysecretencryptionkey&quot;
-FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_ID=&quot;fidesopsadmin&quot;
-FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_SECRET=&quot;fidesopsadminsecret&quot;
-FIDESOPS__DATABASE__SERVER=&quot;postgres.internal&quot;
-FIDESOPS__DATABASE__PORT=&quot;5432&quot;
-FIDESOPS__DATABASE__USER=&quot;fidesops&quot;
-FIDESOPS__DATABASE__PASSWORD=&quot;fidesopssecret&quot;
-FIDESOPS__DATABASE__DB=&quot;fidesops&quot;
-FIDESOPS__REDIS__HOST=&quot;redis.internal&quot;
-FIDESOPS__REDIS__PORT=6379
-FIDESOPS__REDIS__PASSWORD=&quot;fidesopssecret&quot;
-</code></pre></div></td></tr></table></div>
-<p>Now, for most Docker hosts, you won't be calling <code>docker run</code> directly, and instead will be providing configuration variables to Kubernetes/Swarm/ECS/etc. As you can see in the <code>docker run</code> example above, this config is quite minimal and should just involve specifying (1) the image, (2) the port mapping, (3) all the various environment variables for configuration.</p>
-<p>Note that there's no need for a persistent volume mount for the web server, it's fully ephemeral and relies on the database for all it's permanent state.</p>
-<h3 id="test-the-web-server">Test the Web Server</h3>
-<p>To test that your server is running, visit <code>http://{server_url}/health</code> in your browser (e.g. http://0.0.0.0:8080/health) and you should see <code>{"webserver": "healthy", "database": "healthy", "cache": "healthy"}</code>.</p>
-<p>You now have a functional <code>fidesops</code> server running! Now you can use the API to set up your OAuth clients, connect to databases, configure policies, execute privacy requests, etc. To learn more, head to the <a href="../guides/oauth/">How-To Guides</a> for details.</p>
 
               
             </article>
@@ -1802,9 +1944,9 @@ FIDESOPS__REDIS__PASSWORD=&quot;fidesopssecret&quot;
       
         
         <a
-          href="../guides/configuration_reference/"
+          href="../mailchimp/"
           class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Configuration Reference"
+          aria-label="Previous: Mailchimp"
           rel="prev"
         >
           <div class="md-footer__button md-icon">
@@ -1815,7 +1957,7 @@ FIDESOPS__REDIS__PASSWORD=&quot;fidesopssecret&quot;
               <span class="md-footer__direction">
                 Previous
               </span>
-              Configuration Reference
+              Mailchimp
             </div>
           </div>
         </a>
@@ -1825,9 +1967,9 @@ FIDESOPS__REDIS__PASSWORD=&quot;fidesopssecret&quot;
       
         
         <a
-          href="../glossary/"
+          href="../segment/"
           class="md-footer__link md-footer__link--next"
-          aria-label="Next: Glossary"
+          aria-label="Next: Segment"
           rel="next"
         >
           <div class="md-footer__title">
@@ -1835,7 +1977,7 @@ FIDESOPS__REDIS__PASSWORD=&quot;fidesopssecret&quot;
               <span class="md-footer__direction">
                 Next
               </span>
-              Glossary
+              Segment
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -1920,10 +2062,10 @@ FIDESOPS__REDIS__PASSWORD=&quot;fidesopssecret&quot;
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.top", "navigation.instant"], "search": "../assets/javascripts/workers/search.5e67fbfe.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.top", "navigation.instant"], "search": "../../../assets/javascripts/workers/search.5e67fbfe.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.e87a5f81.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.e87a5f81.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
       
