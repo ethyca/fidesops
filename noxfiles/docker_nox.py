@@ -23,11 +23,10 @@ def get_current_image() -> str:
         nox.param("dev", id="dev"),
         nox.param("test", id="test"),
         nox.param("ui", id="ui"),
-        nox.param("worker", id="worker"),
     ],
 )
 def build(session: nox.Session, image: str) -> None:
-    """Build the Docker containers."""
+    """Build the Docker container for fidesctl."""
 
     # The lambdas are a workaround to lazily evaluate get_current_image
     # This allows the dev deployment to run without needing other dev requirements
@@ -35,7 +34,6 @@ def build(session: nox.Session, image: str) -> None:
         "prod": {"tag": get_current_image, "target": "prod"},
         "dev": {"tag": lambda: IMAGE_LOCAL, "target": "dev"},
         "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
-        "worker": {"tag": lambda: IMAGE_LOCAL, "target": "worker"},
         "ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
     }
     target = build_matrix[image]["target"]
@@ -60,7 +58,7 @@ def build(session: nox.Session, image: str) -> None:
     ],
 )
 def push(session: nox.Session, tag: str) -> None:
-    """Push the Docker image to Dockerhub."""
+    """Push the fidesctl Docker image to Dockerhub."""
 
     tag_matrix = {"prod": IMAGE_LATEST, "dev": IMAGE_DEV}
 

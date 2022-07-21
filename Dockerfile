@@ -9,10 +9,12 @@ RUN npm install
 # Build the frontend static files
 RUN npm run export
 
+
 #############
 ## Backend ##
 #############
 FROM --platform=linux/amd64 python:3.9.13-slim-buster as backend
+
 
 # Install auxiliary software
 RUN apt-get update && \
@@ -47,58 +49,36 @@ RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get -y --no-install-r
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* ; fi
 
-#########################
-## Python Dependencies ##
-#########################
-COPY mssql-requirements.txt .
-RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then pip --no-cache-dir install -r mssql-requirements.txt ; fi
+# Update pip and install requirements
+COPY requirements.txt dev-requirements.txt mssql-requirements.txt ./
+RUN pip install -U pip  \
+    && pip --no-cache-dir install -r requirements.txt -r dev-requirements.txt \
+    && if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then pip --no-cache-dir install -r mssql-requirements.txt ; fi
 
-COPY dev-requirements.txt .
-RUN pip install -U pip --no-cache-dir install -r dev-requirements.txt
-
-COPY requirements.txt .
-RUN pip install -U pip --no-cache-dir install -r requirements.txt
-
-###############################
-## General Application Setup ##
-###############################
+# Copy in the application files and install it locally
 COPY . /fidesops
 WORKDIR /fidesops
-
-# Immediately flush to stdout, globally
-ENV PYTHONUNBUFFERED=TRUE
+RUN pip install -e .
 
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=true
 
+############
+## Worker ##
+############
+FROM backend as worker
+CMD [ "fidesops", "worker" ]
+
+#################
+## Application ##
+#################
+## Set the image up to be the application
+FROM backend as app
+
 # Make a static files directory
 RUN mkdir -p /fidesops/src/fidesops/build/static/
-
-EXPOSE 8080
-CMD [ "fidesops", "webserver" ]
-
-#############################
-## Development Application ##
-#############################
-FROM backend as dev
-
-RUN pip install -e .
-
-#############################
-## Production Application ##
-#############################
-FROM backend as prod
-
-# Install without a symlink
-RUN python setup.py sdist
-RUN pip install dist/fidesops-*.tar.gz
 
 # Copy frontend build over
 COPY --from=frontend /fidesops/clients/admin-ui/out/ /fidesops/src/fidesops/build/static/
 
-############
-## Worker ##
-############
-FROM prod as worker
-
-CMD [ "fidesops", "worker" ]
+CMD [ "fidesops", "webserver" ]
