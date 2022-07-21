@@ -29,7 +29,8 @@ The types of changes are:
 
 * Update fidesops to use bcrypt for hashing [#876](https://github.com/ethyca/fidesops/pull/876)
 
-
+### Added
+* Adds saas config base info to connection config responses [#904](https://github.com/ethyca/fidesops/pull/904)
 
 
 ## [1.6.3](https://github.com/ethyca/fidesops/compare/1.6.2...1.6.3)
@@ -53,6 +54,7 @@ The types of changes are:
 * Erasure support for Zendesk [#775](https://github.com/ethyca/fidesops/pull/775)
 * Adds endpoint to get the secrets required for different connectors [#795](https://github.com/ethyca/fidesops/pull/795)
 * Adds Vault for secrets management [#688](https://github.com/ethyca/fidesops/pull/869)
+* Adds privacy_request_id placeholder to use in SaaS configs [#911](https://github.com/ethyca/fidesops/pull/911)
 
 ### Changed
 
