@@ -861,8 +861,6 @@ class TestMicrosoftSQLServerConnection:
         assert resp.status_code == 200
         body = resp.json()
 
-        print(body)
-
         assert (
             body["msg"]
             == f"Secrets updated for ConnectionConfig with key: {connection_config_mssql.key}."
