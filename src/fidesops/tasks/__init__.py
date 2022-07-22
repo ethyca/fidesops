@@ -1,19 +1,37 @@
+from typing import Any, Dict, MutableMapping
+
 from celery import Celery
 from celery.utils.log import get_task_logger
+from fideslib.core.config import load_toml
 
 from fidesops.core.config import config
+from fidesops.util.logger import NotPii
 
 logger = get_task_logger(__name__)
 
 
-def _create_celery() -> Celery:
+def _create_celery(config_path: str = config.execution.celery_config_path) -> Celery:
     """
     Returns a configured version of the Celery application
     """
     logger.info("Creating Celery app...")
     app = Celery(__name__)
-    app.conf.update(broker_url=config.execution.CELERY_BROKER_URL)
-    app.conf.update(result_backend=config.execution.CELERY_RESULT_BACKEND)
+
+    celery_config: Dict[str, Any] = {
+        # Defaults for the celery config
+        "broker_url": config.redis.connection_url,
+        "result_backend": config.redis.connection_url,
+    }
+
+    try:
+        celery_config_overrides: MutableMapping[str, Any] = load_toml([config_path])
+    except FileNotFoundError as e:
+        logger.warning("celery.toml could not be loaded: %s", NotPii(e))
+    else:
+        celery_config.update(celery_config_overrides)
+
+    app.conf.update(celery_config)
+
     logger.info("Autodiscovering tasks...")
     app.autodiscover_tasks(
         [

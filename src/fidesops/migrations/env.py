@@ -19,10 +19,11 @@ from sqlalchemy import engine_from_config, pool
 # access to the values within the .ini file in use.
 config = context.config
 
+from fideslib.db.base import Base  # pylint: disable=W0611
+
 # add your model's MetaData object here
 # for 'autogenerate' support
 from fidesops.core.config import config as fides_config
-from fidesops.db.base import Base  # pylint: disable=W0611
 
 # Load the correct environment
 target_metadata = Base.metadata
@@ -40,9 +41,9 @@ def get_url():
     the URL will point at the test database.
     """
 
-    database_uri = fides_config.database.SQLALCHEMY_DATABASE_URI
+    database_uri = fides_config.database.sqlalchemy_database_uri
     if fides_config.is_test_mode:
-        database_uri = fides_config.database.SQLALCHEMY_TEST_DATABASE_URI
+        database_uri = fides_config.database.sqlalchemy_test_database_uri
     return database_uri
 
 

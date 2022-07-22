@@ -4,9 +4,10 @@ from uuid import uuid4
 
 import pytest
 import sqlalchemy
+from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 
-from fidesops.db.session import get_db_engine, get_db_session
+from fidesops.core.config import config
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -45,6 +46,7 @@ def mariadb_example_db() -> Generator:
     engine = get_db_engine(database_uri=example_mariadb_uri)
     logger.debug(f"Connecting to MariaDB example database at: {engine.url}")
     SessionLocal = get_db_session(
+        config=config,
         engine=engine,
         autocommit=True,
         autoflush=True,
@@ -85,6 +87,7 @@ def mariadb_integration_session(connection_config_mariadb):
     example_mariadb_uri = MariaDBConnector(connection_config_mariadb).build_uri()
     engine = get_db_engine(database_uri=example_mariadb_uri)
     SessionLocal = get_db_session(
+        config=config,
         engine=engine,
         autocommit=True,
         autoflush=True,
@@ -112,7 +115,7 @@ def truncate_all_tables(db_session):
 @pytest.fixture(scope="function")
 def mariadb_integration_db(mariadb_integration_session):
     truncate_all_tables(mariadb_integration_session)
-    with open("./data/sql/mariadb_example_data.sql", "r") as query_file:
+    with open("./docker/sample_data/mariadb_example_data.sql", "r") as query_file:
         lines = query_file.read().splitlines()
         filtered = [line for line in lines if not line.startswith("--")]
         queries = " ".join(filtered).split(";")

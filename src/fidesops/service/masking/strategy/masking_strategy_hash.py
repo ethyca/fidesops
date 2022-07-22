@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import hashlib
 from typing import Dict, List, Optional
 
@@ -50,14 +52,15 @@ class HashMaskingStrategy(MaskingStrategy):
         masking_meta: Dict[
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
-        salt: str = SecretsUtil.get_or_generate_secret(
+        salt: str | None = SecretsUtil.get_or_generate_secret(
             request_id,
             SecretType.salt,
             masking_meta[SecretType.salt],
         )
+
         masked_values: List[str] = []
         for value in values:
-            masked: str = self.algorithm_function(value, salt)
+            masked: str = self.algorithm_function(value, salt)  # type: ignore
             if self.format_preservation is not None:
                 formatter = FormatPreservation(self.format_preservation)
                 masked = formatter.format(masked)
@@ -75,7 +78,7 @@ class HashMaskingStrategy(MaskingStrategy):
 
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
-        return HashMaskingConfiguration
+        return HashMaskingConfiguration  # type: ignore
 
     # MR Note - We will need a way to ensure that this does not fall out of date. Given that it
     # includes subjective instructions, this is not straightforward to automate
@@ -108,13 +111,13 @@ class HashMaskingStrategy(MaskingStrategy):
     @staticmethod
     def _hash_sha256(value: str, salt: str) -> str:
         return hashlib.sha256(
-            (value + salt).encode(config.security.ENCODING)
+            (value + salt).encode(config.security.encoding)
         ).hexdigest()
 
     @staticmethod
     def _hash_sha512(value: str, salt: str) -> str:
         return hashlib.sha512(
-            (value + salt).encode(config.security.ENCODING)
+            (value + salt).encode(config.security.encoding)
         ).hexdigest()
 
     @staticmethod

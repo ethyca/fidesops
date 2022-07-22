@@ -1,18 +1,9 @@
-# Fidesops: Application Configuration Reference
-
-In this section we'll cover:
-
-- How to configure the Fidesops application
-- Configuration variable reference
-- An example `fidesops.toml` configuration file
-- Reporting a running application's configuration
-
-Take me directly to [api docs](/fidesops/api#operations-tag-Config).
+# Application Configuration Reference
 
 
-## How to configure the Fidesops application
+## How to configure the fidesops application
 
-The Fidesops application configuration variables are provided in the `fidesops.toml` file in `.toml` format. Fidesops will take the first config file it finds from the following locations:
+The fidesops application configuration variables are provided in the `fidesops.toml` file in `.toml` format. Fidesops will take the first config file it finds from the following locations:
 
 - The location according to the `FIDESOPS__CONFIG_PATH` environment variable
 - The current working directory (`./fidesops.toml`)
@@ -31,26 +22,28 @@ The `fidesops.toml` file should specify the following variables:
 |---|---|---|---|---|---|
 | `PORT` | --- | int | 8080 | 8080 | The port at which the webserver will run.|
 | Database Variables |---|---|---|---|---|
-| `SERVER` | `FIDESOPS__DATABASE__SERVER` | string | postgres.internal | N/A | The networking address for the Fideops Postgres database server |
-| `USER` | `FIDESOPS__DATABASE__USER` | string | postgres | N/A | The database user with which to login to the Fidesops application database |
-| `PASSWORD` | `FIDESOPS__DATABASE__PASSWORD` | string | apassword | N/A | The password with which to login to the Fidesops application database |
-| `PORT` | `FIDESOPS__DATABASE__PORT` | int | 5432 | 5432 | The port at which the Fidesops application database will be accessible |
-| `DB` | `FIDESOPS__DATABASE__DB` | string | db | N/A | The name of the database to use in the Fidesops application database |
+| `SERVER` | `FIDESOPS__DATABASE__SERVER` | string | postgres.internal | N/A | The networking address for the fideops Postgres database server |
+| `USER` | `FIDESOPS__DATABASE__USER` | string | postgres | N/A | The database user with which to login to the fidesops application database |
+| `PASSWORD` | `FIDESOPS__DATABASE__PASSWORD` | string | apassword | N/A | The password with which to login to the fidesops application database |
+| `PORT` | `FIDESOPS__DATABASE__PORT` | int | 5432 | 5432 | The port at which the fidesops application database will be accessible |
+| `DB` | `FIDESOPS__DATABASE__DB` | string | db | N/A | The name of the database to use in the fidesops application database |
 | `ENABLED` | `FIDESOPS__DATABASE__ENABLED` | bool | True | True | Whether the application database should be enabled. Only set to false for certain narrow uses of the application that do not require a backing application database. |
 | Redis Variables |---|---|---|---|---|
-| `HOST` | `FIDESOPS__REDIS__HOST` | string | redis.internal | N/A | The networking address for the Fidesops application Redis cache |
-| `PORT` | `FIDESOPS__REDIS__PORT` | int | 6379 | 6379 | The port at which the Fidesops application cache will be accessible |
-| `PASSWORD` | `FIDESOPS__REDIS__PASSWORD` | string | anotherpassword | N/A | The password with which to login to the Fidesops application cache |
-| `DB_INDEX` | `FIDESOPS__REDIS__DB_INDEX` | int | 0 | 0 | The Fidesops application will use this index in the Redis cache to cache data |
+| `HOST` | `FIDESOPS__REDIS__HOST` | string | redis.internal | N/A | The networking address for the fidesops application Redis cache |
+| `PORT` | `FIDESOPS__REDIS__PORT` | int | 6379 | 6379 | The port at which the fidesops application cache will be accessible |
+| `USER` | `FIDESOPS__REDIS__USER` | string | testuser | N/A | The user with which to login to the Redis cache |
+| `PASSWORD` | `FIDESOPS__REDIS__PASSWORD` | string | anotherpassword | N/A | The password with which to login to the fidesops application cache |
+| `DB_INDEX` | `FIDESOPS__REDIS__DB_INDEX` | int | 0 | N/A | The fidesops application will use this index in the Redis cache to cache data |
+| `CONNECTION_URL` | `FIDESOPS__REDIS__CONNECTION_URL` | string | redis://:testpassword@redis:6379/0 | N/A | If not specified this URL is automatically assembled from the `HOST`, `PORT`, `PASSWORD` and `DB_INDEX` specified above |
 | `DEFAULT_TTL_SECONDS` | `FIDESOPS__REDIS__DEFAULT_TTL_SECONDS` | int | 3600 | 604800 | The number of seconds for which data will live in Redis before automatically expiring |
 | `ENABLED` | `FIDESOPS__REDIS__ENABLED` | bool | True | True | Whether the application's redis cache should be enabled. Only set to false for certain narrow uses of the application that do not require a backing redis cache. |
 | Security Variables |---|---|---|---|---|
-| `APP_ENCRYPTION_KEY` | `FIDESOPS__SECURITY__APP_ENCRYPTION_KEY` | string | OLMkv91j8DHiDAULnK5Lxx3kSCov30b3 | N/A | The key used to sign Fidesops API access tokens |
-| `CORS_ORIGINS` | `FIDESOPS__SECURITY__CORS_ORIGINS` | List[AnyHttpUrl] | ["https://a-client.com/", "https://another-client.com"/] | N/A | A list of pre-approved addresses of clients allowed to communicate with the Fidesops application server |
-| `LOG_LEVEL` | `FIDESOPS__SECURITY__LOG_LEVEL` | string | INFO | N/A | The log level used for Fidesops. Must be one of DEBUG, INFO, WARNING, ERROR, or CRITICAL |
-| `OAUTH_ROOT_CLIENT_ID` | `FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_ID` | string | fidesopsadmin | N/A | The value used to identify the Fidesops application root API client |
-| `OAUTH_ROOT_CLIENT_SECRET` | `FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_SECRET` | string | fidesopsadminsecret | N/A | The secret value used to authenticate the Fidesops application root API client |
-| `OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES` | `FIDESOPS__SECURITY__OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES` | int | 1 | 11520 | The time period Fidesops API tokens will be valid |
+| `APP_ENCRYPTION_KEY` | `FIDESOPS__SECURITY__APP_ENCRYPTION_KEY` | string | OLMkv91j8DHiDAULnK5Lxx3kSCov30b3 | N/A | The key used to sign fidesops API access tokens |
+| `CORS_ORIGINS` | `FIDESOPS__SECURITY__CORS_ORIGINS` | List[AnyHttpUrl] | ["https://a-client.com/", "https://another-client.com"/] | N/A | A list of pre-approved addresses of clients allowed to communicate with the fidesops application server |
+| `LOG_LEVEL` | `FIDESOPS__SECURITY__LOG_LEVEL` | string | INFO | N/A | The log level used for fidesops. Must be one of DEBUG, INFO, WARNING, ERROR, or CRITICAL |
+| `OAUTH_ROOT_CLIENT_ID` | `FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_ID` | string | fidesopsadmin | N/A | The value used to identify the fidesops application root API client |
+| `OAUTH_ROOT_CLIENT_SECRET` | `FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_SECRET` | string | fidesopsadminsecret | N/A | The secret value used to authenticate the fidesops application root API client |
+| `OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES` | `FIDESOPS__SECURITY__OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES` | int | 1 | 11520 | The time period fidesops API tokens will be valid |
 | Execution Variables |---|---|---|---|---|
 |`PRIVACY_REQUEST_DELAY_TIMEOUT` | `FIDESOPS__EXECUTION__PRIVACY_REQUEST_DELAY_TIMEOUT` | int | 3600 | 3600 | The amount of time to wait for actions delaying privacy requests, for example pre and post processing webhooks.
 |`TASK_RETRY_COUNT` | `FIDESOPS__EXECUTION__TASK_RETRY_COUNT` | int | 5 | 0 | The number of times a failed request will be retried
@@ -58,12 +51,14 @@ The `fidesops.toml` file should specify the following variables:
 |`TASK_RETRY_BACKOFF` | `FIDESOPS__EXECUTION__TASK_RETRY_BACKOFF` | int | 2 | 1 | The backoff factor for retries, to space out repeated retries.
 |`REQUIRE_MANUAL_REQUEST_APPROVAL` | `FIDESOPS__EXECUTION__REQUIRE_MANUAL_REQUEST_APPROVAL` | bool | False | False | Whether privacy requests require explicit approval to execute
 |`MASKING_STRICT` | `FIDESOPS__EXECUTION__MASKING_STRICT` | bool | True | True | If MASKING_STRICT is True, we only use "update" requests to mask data. (For third-party integrations, you should define an `update` endpoint to use.)  If MASKING_STRICT is False, you are allowing fidesops to use any defined DELETE or GDPR DELETE endpoints to remove PII. In this case, you should define `delete` or `data_protection_request` endpoints for your third-party integrations.  Note that setting MASKING_STRICT to False means that data may be deleted beyond the specific data categories that you've configured in your Policy.
-|---|---|---|---|---|---|
-|`ANALYTICS_OPT_OUT` | `FIDESOPS__USER__ANALYTICS_OPT_OUT` | bool | False | False | Opt out of sending anonymous usage data to Ethyca to improve the product experience
+|`CELERY_CONFIG_PATH` | `FIDESOPS__EXECUTION__CELERY_CONFIG_PATH` | string | data/config/celery.toml | N/A | An optional override for the [Celery](#celery-configuration) configuration file path.
+|`WORKER_ENABLED` | `FIDESOPS__EXECUTION__WORKER_ENABLED` | bool | True | True | By default, fidesops uses a dedicated [Celery worker](#celery-configuration) to process privacy requests asynchronously. Setting `WORKER_ENABLED` to `False` will run the worker on the same node as the webserver.
+|Analytics |---|---|---|---|---|
+|`ANALYTICS_OPT_OUT` | `FIDESOPS__USER__ANALYTICS_OPT_OUT` | bool | False | False | Opt out of sending anonymous usage data to Ethyca to improve the product experience.
 | Admin UI Variables|---|---|---|---|---|
-|`ENABLED` | `FIDESOPS__ADMIN_UI__ENABLED` | bool | False | True | Toggle whether the `/static` file directory is mounted to serve the Admin UI
+|`ENABLED` | `FIDESOPS__ADMIN_UI__ENABLED` | bool | False | True | Toggle whether the Admin UI is served from `/`
 
-## An example `fidesops.toml` configuration file
+### An example `fidesops.toml` configuration file
 
 ```
 PORT=8080
@@ -98,6 +93,9 @@ TASK_RETRY_DELAY=20
 TASK_RETRY_BACKOFF=2
 REQUIRE_MANUAL_REQUEST_APPROVAL=true
 MASKING_STRICT=true
+CELERY_CONFIG_PATH="data/config/celery.toml"
+WORKER_ENABLED=true
+
 
 [root_user]
 ANALYTICS_OPT_OUT=false
@@ -108,7 +106,7 @@ ENABLED = true
 
 Please note: The configuration is case-sensitive, so the variables must be specified in UPPERCASE.
 
-## Additional environment variables
+### Additional environment variables
 
  ENV Variable | Default | Description |
 |---|---|---|
@@ -119,14 +117,33 @@ Please note: The configuration is case-sensitive, so the variables must be speci
 | `FIDESOPS__DATABASE__SQLALCHEMY_DATABASE_URI` | None | An optional override for the URI used for the database connection, in the form of `postgresql://<user>:<password>@<hostname>:<port>/<database>`. |
 | `TESTING` | False | This variable does not need to be set - Pytest will set it to True when running unit tests, so we run against the test database. |
 
+## Celery configuration
+
+Fidesops uses [Celery](https://docs.celeryq.dev/en/stable/index.html) for asynchronous task management. 
+
+The `celery.toml` file provided contains a brief configuration reference for managing Celery variables. By default, fidesops will look for this file in the root directory of your application, but this location can be optionally overridden by specifying an alternate `CELERY_CONFIG_PATH` in your `fidesops.toml`.
+
+For a full list of possible variable overrides, see the [Celery configuration](https://docs.celeryq.dev/en/stable/userguide/configuration.html#new-lowercase-settings) documentation.
+
+```sh title="Example <code>celery.toml</code>"
+default_queue_name = "fidesops"
+broker_url = "redis://:testpassword@redis:6379/1"
+result_backend = "redis://:testpassword@redis:6379/1"
+```
+
+ Celery Variable | Example | Description |
+|---|---|---|
+| `default_queue_name` | `fidesops` | A name to use for your Celery task queue. |
+| `broker_url` | redis://:testpassword@redis:6379/1  | The datastore to use as a [Celery broker](https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/), which maintains an ordered list of asynchronous tasks to execute. If not specified, fidesops will default to the `CONNECTION_URL` or Redis config values specified in your `fidesops.toml`.
+| `result_backend` | redis://:testpassword@redis:6379/1 | The [backend datastore](https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/) where Celery will store results from asynchronously processed tasks. If not specified, fidesops will default to the `CONNECTION_URL` or Redis config values specified in your `fidesops.toml`.
 
 ## Reporting a running application's configuration
 
-You can view the currently running configuration of a Fidesops application with the following request:
+You can view the currently running configuration of a fidesops application with the following request:
 
 `GET /api/v1/config`
 
-Please note: Fidesops will filter out any sensitive configuration variables. The full list of variables deemed safe to return is:
+Please note: fidesops will filter out any sensitive configuration variables. The full list of variables deemed safe to return is:
 
 #### Postgres database
 

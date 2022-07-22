@@ -2,7 +2,7 @@ import logging
 from typing import Any, Dict, List, Optional
 
 import jwt
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Security
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -40,6 +40,7 @@ from fidesops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
+from fidesops.util.api_router import APIRouter
 from fidesops.util.cache import FidesopsRedis
 from fidesops.util.oauth_util import verify_oauth_client
 
@@ -64,7 +65,7 @@ def create_drp_privacy_request(
     a corresponding Fidesops PrivacyRequest
     """
 
-    jwt_key: str = config.security.DRP_JWT_SECRET
+    jwt_key: str = config.security.drp_jwt_secret
     if jwt_key is None:
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
@@ -89,12 +90,6 @@ def create_drp_privacy_request(
     )
 
     try:
-        privacy_request: PrivacyRequest = PrivacyRequest.create(
-            db=db, data=privacy_request_kwargs
-        )
-
-        logger.info(f"Decrypting identity for DRP privacy request {privacy_request.id}")
-
         decrypted_identity: DrpIdentity = DrpIdentity(
             **jwt.decode(data.identity, jwt_key, algorithms=["HS256"])
         )
@@ -103,6 +98,17 @@ def create_drp_privacy_request(
             drp_identity=decrypted_identity
         )
 
+        privacy_request: PrivacyRequest = PrivacyRequest.create(
+            db=db,
+            data=privacy_request_kwargs,
+        )
+        privacy_request.persist_identity(
+            db=db,
+            identity=mapped_identity,
+        )
+
+        logger.info(f"Decrypting identity for DRP privacy request {privacy_request.id}")
+
         cache_data(privacy_request, policy, mapped_identity, None, data)
 
         queue_privacy_request(privacy_request.id)
@@ -110,7 +116,7 @@ def create_drp_privacy_request(
         return PrivacyRequestDRPStatusResponse(
             request_id=privacy_request.id,
             received_at=privacy_request.requested_at,
-            status=DrpFidesopsMapper.map_status(privacy_request.status),
+            status=DrpFidesopsMapper.map_status(privacy_request.status),  # type: ignore
         )
 
     except common_exceptions.RedisConnectionError as exc:
@@ -144,7 +150,7 @@ def get_request_status_drp(
     logger.info(f"Finding request for DRP with ID: {request_id}")
     request = PrivacyRequest.get(
         db=db,
-        id=request_id,
+        object_id=request_id,
     )
     if not request or not request.policy or not request.policy.drp_action:
         # If no request is found with this ID, or that request has no policy,
@@ -174,7 +180,7 @@ def get_drp_data_rights(*, db: Session = Depends(deps.get_db)) -> DrpDataRightsR
 
     logger.info("Fetching available DRP data rights")
     actions: List[DrpAction] = [
-        item.drp_action
+        item.drp_action  # type: ignore
         for item in db.query(Policy.drp_action).filter(Policy.drp_action.isnot(None))
     ]
 
@@ -201,8 +207,7 @@ def revoke_request(
     if privacy_request.status != PrivacyRequestStatus.pending:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid revoke request. Can only revoke `pending` requests. "
-            f"Privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+            detail=f"Invalid revoke request. Can only revoke `pending` requests. Privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
     logger.info(f"Canceling privacy request '{privacy_request.id}'")
@@ -211,6 +216,6 @@ def revoke_request(
     return PrivacyRequestDRPStatusResponse(
         request_id=privacy_request.id,
         received_at=privacy_request.requested_at,
-        status=DrpFidesopsMapper.map_status(privacy_request.status),
+        status=DrpFidesopsMapper.map_status(privacy_request.status),  # type: ignore
         reason=data.reason,
     )

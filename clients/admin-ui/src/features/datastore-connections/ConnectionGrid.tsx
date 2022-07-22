@@ -1,10 +1,20 @@
-import { Button, Flex, SimpleGrid, Spinner, Text } from "@fidesui/react";
+import { chunk } from "@chakra-ui/utils";
+import {
+  Box,
+  Button,
+  Center,
+  Flex,
+  SimpleGrid,
+  Spinner,
+  Text,
+} from "@fidesui/react";
 import debounce from "lodash.debounce";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "../../app/hooks";
 import PaginationFooter from "../common/PaginationFooter";
+import classes from "./ConnectionGrid.module.css";
 import ConnectionGridItem from "./ConnectionGridItem";
 import {
   selectDatastoreConnectionFilters,
@@ -72,8 +82,13 @@ const ConnectionGrid: React.FC = () => {
     handleNextPage,
     handlePreviousPage,
   } = useConnectionGrid();
+
   if (isUninitialized || isLoading || isFetching) {
-    return <Spinner />;
+    return (
+      <Center>
+        <Spinner />
+      </Center>
+    );
   }
 
   if (isInitialRenderEmpty.current) {
@@ -113,17 +128,35 @@ const ConnectionGrid: React.FC = () => {
     );
   }
 
-  // @ts-ignore
-  const gridItems = data!.items.map((d) => (
-    <ConnectionGridItem key={d.key} connectionData={d} />
-  ));
+  const columns = 3;
+  const chunks = chunk(data!?.items, columns);
+
   return (
     <>
-      <SimpleGrid minChildWidth={400}>{gridItems}</SimpleGrid>
+      {chunks.map((parent, index, { length }) => (
+        <Box
+          key={JSON.stringify(parent)}
+          className={classes["grid-row"]}
+          // Add bottom border only if last row is complete and there is more than 1 row rendered
+          borderBottomWidth={
+            length > 1 && index === length - 1 && parent.length === columns
+              ? "0.5px"
+              : undefined
+          }
+        >
+          <SimpleGrid columns={columns}>
+            {parent.map((child) => (
+              <Box key={child.key} className={classes["grid-item"]}>
+                <ConnectionGridItem connectionData={child} />
+              </Box>
+            ))}
+          </SimpleGrid>
+        </Box>
+      ))}
       <PaginationFooter
         page={page}
         size={size}
-        total={data!.total}
+        total={data!?.total}
         handleNextPage={handleNextPage}
         handlePreviousPage={handlePreviousPage}
       />

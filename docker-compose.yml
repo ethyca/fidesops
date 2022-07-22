@@ -3,9 +3,8 @@ services:
     container_name: webserver
     build:
       context: .
-      dockerfile: Dockerfile.app
+      target: app
     depends_on:
-      - worker
       - db
       - redis
     expose:
@@ -29,6 +28,7 @@ services:
       - FIDESOPS__LOG_PII=${FIDESOPS__LOG_PII}
       - FIDESOPS__HOT_RELOAD=${FIDESOPS__HOT_RELOAD}
       - FIDESOPS__ROOT_USER__ANALYTICS_ID=${FIDESOPS__ROOT_USER__ANALYTICS_ID}
+      - FIDESOPS__EXECUTION__WORKER_ENABLED=False
 
   db:
     image: postgres:12
@@ -60,9 +60,10 @@ services:
       - "0.0.0.0:6379:6379"
 
   worker:
+    container_name: worker
     build:
       context: .
-      dockerfile: Dockerfile.worker
+      target: worker
     command: fidesops worker
     depends_on:
       redis:

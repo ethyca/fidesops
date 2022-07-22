@@ -4,6 +4,14 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
+from fideslib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
+from fideslib.models.client import ClientDetail
+from fideslib.oauth.jwt import generate_jwe
+from fideslib.oauth.oauth_util import extract_payload
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.scope_registry import (
@@ -25,14 +33,8 @@ from fidesops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.common_exceptions import OAuth2TokenException
+from fidesops.core.config import config
 from fidesops.models.authentication_request import AuthenticationRequest
-from fidesops.models.client import ClientDetail
-from fidesops.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_SCOPES,
-)
-from fidesops.util.oauth_util import extract_payload, generate_jwe
 
 
 class TestCreateClient:
@@ -56,7 +58,10 @@ class TestCreateClient:
             JWE_PAYLOAD_SCOPES: [CLIENT_CREATE],
         }
         # Build auth header without client
-        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+        }
 
         response = api_client.post(url, headers=auth_header)
         assert 403 == response.status_code
@@ -69,7 +74,10 @@ class TestCreateClient:
             JWE_PAYLOAD_SCOPES: oauth_client.scopes,
             JWE_ISSUED_AT: datetime(1995, 1, 1).isoformat(),
         }
-        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+        }
         response = api_client.post(url, headers=auth_header)
         assert 403 == response.status_code
 
@@ -88,7 +96,9 @@ class TestCreateClient:
         assert 200 == response.status_code
         assert list(response_body.keys()) == ["client_id", "client_secret"]
 
-        new_client = ClientDetail.get(db, id=response_body["client_id"])
+        new_client = ClientDetail.get(
+            db, object_id=response_body["client_id"], config=config
+        )
         assert new_client.hashed_secret != response_body["client_secret"]
 
         new_client.delete(db)
@@ -116,7 +126,9 @@ class TestCreateClient:
         assert 200 == response.status_code
         assert list(response_body.keys()) == ["client_id", "client_secret"]
 
-        new_client = ClientDetail.get(db, id=response_body["client_id"])
+        new_client = ClientDetail.get(
+            db, object_id=response_body["client_id"], config=config
+        )
         assert new_client.scopes == scopes
 
         new_client.delete(db)
@@ -346,7 +358,7 @@ class TestDeleteClient:
         assert response_body is None
 
         db.expunge_all()
-        client = ClientDetail.get(db, id=oauth_client.id)
+        client = ClientDetail.get(db, object_id=oauth_client.id, config=config)
         assert client is None
 
 
@@ -366,7 +378,11 @@ class TestAcquireAccessToken:
         assert response.status_code == 401
 
     def test_invalid_client_secret(self, db, url, api_client):
-        new_client, _ = ClientDetail.create_client_and_secret(db)
+        new_client, _ = ClientDetail.create_client_and_secret(
+            db,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
+        )
         response = api_client.post(
             url, data={"client_id": new_client.id, "secret": "badsecret"}
         )
@@ -374,8 +390,34 @@ class TestAcquireAccessToken:
 
         new_client.delete(db)
 
+    def test_get_access_token_root_client(self, url, api_client):
+        data = {
+            "client_id": config.security.oauth_root_client_id,
+            "client_secret": config.security.oauth_root_client_secret,
+        }
+
+        response = api_client.post(url, data=data)
+        jwt = json.loads(response.text).get("access_token")
+        assert 200 == response.status_code
+        assert (
+            data["client_id"]
+            == json.loads(extract_payload(jwt, config.security.app_encryption_key))[
+                JWE_PAYLOAD_CLIENT_ID
+            ]
+        )
+        assert (
+            json.loads(extract_payload(jwt, config.security.app_encryption_key))[
+                JWE_PAYLOAD_SCOPES
+            ]
+            == SCOPE_REGISTRY
+        )
+
     def test_get_access_token(self, db, url, api_client):
-        new_client, secret = ClientDetail.create_client_and_secret(db)
+        new_client, secret = ClientDetail.create_client_and_secret(
+            db,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
+        )
 
         data = {
             "client_id": new_client.id,
@@ -386,9 +428,17 @@ class TestAcquireAccessToken:
         jwt = json.loads(response.text).get("access_token")
         assert 200 == response.status_code
         assert (
-            data["client_id"] == json.loads(extract_payload(jwt))[JWE_PAYLOAD_CLIENT_ID]
+            data["client_id"]
+            == json.loads(extract_payload(jwt, config.security.app_encryption_key))[
+                JWE_PAYLOAD_CLIENT_ID
+            ]
         )
-        assert json.loads(extract_payload(jwt))[JWE_PAYLOAD_SCOPES] == []
+        assert (
+            json.loads(extract_payload(jwt, config.security.app_encryption_key))[
+                JWE_PAYLOAD_SCOPES
+            ]
+            == []
+        )
 
         new_client.delete(db)
 
