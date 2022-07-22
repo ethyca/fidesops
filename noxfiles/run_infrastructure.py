@@ -46,7 +46,7 @@ def run_infrastructure(
 
     if len(datastores) == 0:
         _run_cmd_or_err(
-            f'echo "no datastores specified, configuring infrastructure for all datastores"'
+            'echo "no datastores specified, configuring infrastructure for all datastores"'
         )
         datastores = DOCKERFILE_DATASTORES + EXTERNAL_DATASTORES
     else:
@@ -81,13 +81,13 @@ def run_infrastructure(
     if open_shell:
         return _open_shell(path, IMAGE_NAME)
 
-    elif run_application:
+    if run_application:
         return _run_application(path)
 
-    elif run_quickstart:
+    if run_quickstart:
         return _run_quickstart(path, IMAGE_NAME)
 
-    elif run_tests:
+    if run_tests:
         # Now run the tests
         return _run_tests(
             datastores,
@@ -96,10 +96,10 @@ def run_infrastructure(
             analytics_opt_out=analytics_opt_out,
         )
 
-    elif run_create_superuser:
+    if run_create_superuser:
         return _run_create_superuser(path, IMAGE_NAME)
 
-    elif run_create_test_data:
+    if run_create_test_data:
         return _run_create_test_data(path, IMAGE_NAME)
 
 

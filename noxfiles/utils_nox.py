@@ -1,7 +1,6 @@
 """Contains various utility-related nox sessions."""
 import nox
 from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE, RUN
-
 from run_infrastructure import run_infrastructure
 
 COMPOSE_DOWN = (
