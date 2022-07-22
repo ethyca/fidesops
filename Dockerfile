@@ -95,10 +95,3 @@ RUN pip install dist/fidesops-*.tar.gz
 
 # Copy frontend build over
 COPY --from=frontend /fidesops/clients/admin-ui/out/ /fidesops/src/fidesops/build/static/
-
-############
-## Worker ##
-############
-FROM prod as worker
-
-CMD [ "fidesops", "worker" ]
