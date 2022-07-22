@@ -232,6 +232,9 @@ def _run_tests(
                 else:
                     pytest_markers += f" or integration_{datastore}"
 
+    # TODO: This is a test, remove it
+    pytest_markers = f" -m integration_mssql"
+
     environment_variables = ""
     for datastore in EXTERNAL_DATASTORES:
         if datastore in datastores:
