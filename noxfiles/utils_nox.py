@@ -2,6 +2,8 @@
 import nox
 from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE
 
+from run_infrastructure import run_infrastructure
+
 COMPOSE_DOWN = (
     "docker-compose",
     "-f",
@@ -11,6 +13,18 @@ COMPOSE_DOWN = (
     "down",
     "--remove-orphans",
 )
+
+
+@nox.session()
+def create_user(session: nox.Session) -> None:
+    """Create a super user in the fidesops database."""
+    run_infrastructure(datastores=["postgres"], run_create_superuser=True)
+
+
+@nox.session()
+def seed_test_data(session: nox.Session) -> None:
+    """Seed test data in the Postgres application database."""
+    run_infrastructure(datastores=["postgres"], run_create_test_data=True)
 
 
 @nox.session()
