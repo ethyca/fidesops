@@ -119,4 +119,4 @@ jobs:
 
       - name: Integration Tests
         run: make pytest-integration
-        timeout-minutes: 40
+        timeout-minutes: 20

@@ -66,8 +66,7 @@ def run_infrastructure(
     else:
         _run_cmd_or_err(f"docker-compose {path} build")
 
-    # _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f"docker-compose {path} up")
+    _run_cmd_or_err(f"docker-compose {path} up -d")
 
     wait = min(DOCKER_WAIT * len(datastores), 15)
     print(f"Sleeping for: {wait} while infrastructure loads...")
