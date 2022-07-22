@@ -13,6 +13,8 @@ def get_current_tag() -> str:
     return current_tag
 
 
+COMPOSE_SERVICE_NAME = "webserver"
+
 # Files
 COMPOSE_FILE = "docker-compose.yml"
 INTEGRATION_COMPOSE_FILE = "docker-compose.integration-tests.yml"
@@ -32,22 +34,27 @@ IMAGE_LATEST = f"{IMAGE}:latest"
 # The else statement is required due to the way commmands are structured and is arbitrary.
 CI_ARGS = "-T" if getenv("CI") else "--user=root"
 
-# If FIDESCTL__CLI__ANALYTICS_ID is set in the local environment, use its value as the analytics_id
-ANALYTICS_ID_OVERRIDE = ("-e", "FIDESCTL__CLI__ANALYTICS_ID")
+ANALYTICS_OPT_OUT = ("-e", "ANALYTICS_OPT_OUT")
 
 # Reusable Commands
-RUN = ("docker-compose", "run", "--rm", *ANALYTICS_ID_OVERRIDE, CI_ARGS, IMAGE_NAME)
+RUN = (
+    "docker-compose",
+    "run",
+    "--rm",
+    *ANALYTICS_OPT_OUT,
+    CI_ARGS,
+    COMPOSE_SERVICE_NAME,
+)
 RUN_NO_DEPS = (
     "docker-compose",
     "run",
     "--no-deps",
     "--rm",
-    *ANALYTICS_ID_OVERRIDE,
+    *ANALYTICS_OPT_OUT,
     CI_ARGS,
-    IMAGE_NAME,
+    COMPOSE_SERVICE_NAME,
 )
-START_APP = ("docker-compose", "up", "-d", "fidesctl")
-START_APP_UI = ("docker-compose", "up", "-d", "fidesctl-ui")
+START_APP = ("docker-compose", "up", "-d", COMPOSE_SERVICE_NAME)
 START_APP_EXTERNAL = (
     "docker-compose",
     "-f",
@@ -56,5 +63,5 @@ START_APP_EXTERNAL = (
     INTEGRATION_COMPOSE_FILE,
     "up",
     "-d",
-    IMAGE_NAME,
+    COMPOSE_SERVICE_NAME,
 )
