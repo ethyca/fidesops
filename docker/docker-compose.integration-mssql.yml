@@ -6,3 +6,5 @@ services:
     environment:
       - SA_PASSWORD=Mssql_pw1
       - ACCEPT_EULA="Y"
+    healthcheck:
+      test: ["/opt/mssql-tools/bin/sqlcmd", "-U", "sa", "-P", "Mssql_pw1", "-Q", "select 1"]
