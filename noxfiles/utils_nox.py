@@ -1,6 +1,6 @@
 """Contains various utility-related nox sessions."""
 import nox
-from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE
+from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE, RUN
 
 from run_infrastructure import run_infrastructure
 
@@ -25,6 +25,29 @@ def create_user(session: nox.Session) -> None:
 def seed_test_data(session: nox.Session) -> None:
     """Seed test data in the Postgres application database."""
     run_infrastructure(datastores=["postgres"], run_create_test_data=True)
+
+
+@nox.session()
+@nox.parametrize(
+    "db_command",
+    [
+        nox.param("init", id="init"),
+        nox.param("reset", id="reset"),
+    ],
+)
+def db(session: nox.Session, db_command: str) -> None:
+    """Run commands against the database."""
+    teardown(session)
+    if db_command == "reset":
+        reset_command = ("docker", "volume", "rm", "-f", "fidesops_app-db-data")
+        session.run(*reset_command, external=True)
+    raise SystemExit
+    init_command = (
+        "python",
+        "-c",
+        "from fidesops.db.database import init_db; from fidesops.core.config import config; init_db(config.database.sqlalchemy_database_uri)",
+    )
+    session.run(*RUN, *init_command, external=True)
 
 
 @nox.session()
