@@ -1013,20 +1013,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#install-fidesops-in-our-test-app" class="md-nav__link">
-    Install fidesops in our test app
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#verify-that-fidesops-is-installed" class="md-nav__link">
-    Verify that fidesops is installed
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -1432,20 +1418,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#install-fidesops-in-our-test-app" class="md-nav__link">
-    Install fidesops in our test app
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#verify-that-fidesops-is-installed" class="md-nav__link">
-    Verify that fidesops is installed
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -1479,90 +1451,9 @@
 make install
 <span class="nb">source</span> venv/bin/activate
 </code></pre></div></td></tr></table></div></p>
-<p>You can run <code>make server</code> and visit <a href="http://127.0.0.1:5000/">http://127.0.0.1:5000/</a> to explore the test app. It is a simple e-commerce 
+<p>Next, run <code>make server</code>. You can now visit <a href="http://127.0.0.1:2000/">http://127.0.0.1:2000/</a> to explore the test app. It is a simple e-commerce 
 marketplace where users can buy and sell products. </p>
-<h2 id="install-fidesops-in-our-test-app">Install fidesops in our test app</h2>
-<p>We need to install fidesops in the test app, add a PostgreSQL database (for storing fidesops resources)
-and a Redis cache (for <em>temporarily</em> storing incoming PII). You'll notice that a postgres container has already been set 
-up for you, and <code>fidesctl</code> is installed (although we won't dive into that tool here). In the Flask App's docker-compose file, 
-add both a container for <code>redis</code> and <code>fidesops</code> services beneath the fidesctl <code>service</code>:</p>
-<p><code>fidesdemo/docker-compose.yml</code>:
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">services</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
-<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">redis</span><span class="p p-Indicator">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;redis:6.2.5-alpine&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis-server --requirepass redispass</span><span class="w"></span>
-<span class="w">    </span><span class="nt">expose</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6379</span><span class="w"></span>
-<span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;6379:6379&quot;</span><span class="w"></span>
-
-<span class="w">  </span><span class="nt">fidesops</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ethyca/fidesops:latest</span><span class="w"></span>
-<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis</span><span class="w"></span>
-<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fidesops webserver</span><span class="w"></span>
-<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./fides_uploads:/fidesops/fides_uploads</span><span class="w"></span>
-<span class="w">    </span><span class="nt">expose</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span><span class="w"></span>
-<span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8080&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESOPS__SECURITY__APP_ENCRYPTION_KEY=QLMI5I0xLWUXE4JN4Asnba79JiBHWWM3</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_ID=fidesopsadmin</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_SECRET=fidesopsadminsecret</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESOPS__DATABASE__SERVER=db</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESOPS__DATABASE__USER=postgres</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESOPS__DATABASE__PASSWORD=postgres</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESOPS__DATABASE__DB=fidesops</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESOPS__DATABASE__PORT=5432</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESOPS__REDIS__HOST=redis</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESOPS__REDIS__PORT=6379</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESOPS__REDIS__PASSWORD=redispass</span><span class="w"></span>
-</code></pre></div></td></tr></table></div></p>
-<h2 id="verify-that-fidesops-is-installed">Verify that fidesops is installed</h2>
-<p>Run <code>make_server</code> again:
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  <span class="nb">cd</span> fidesdemo
-  make server
-</code></pre></div></td></tr></table></div></p>
-<p>Visit <a href="http://localhost:8000/docs">http://localhost:8000/docs</a> to check that fidesops is up and running and preview the set of API endpoints 
-that are available for us to run requests on fidesops.</p>
+<p>Similarly you can visit <a href="http://127.0.0.1:8080/docs">http://127.0.0.1:8080/docs</a> to check that fidesops is up and running and preview the set of API endpoints that are available for us to run requests on fidesops.</p>
 
               
             </article>

@@ -7589,6 +7589,7 @@
       "SaaSType": {
         "title": "SaaSType",
         "enum": [
+          "adobe_campaign",
           "mailchimp",
           "hubspot",
           "outreach",
