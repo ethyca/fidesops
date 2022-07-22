@@ -40,7 +40,6 @@ def db(session: nox.Session, db_command: str) -> None:
     if db_command == "reset":
         reset_command = ("docker", "volume", "rm", "-f", "fidesops_app-db-data")
         session.run(*reset_command, external=True)
-    raise SystemExit
     init_command = (
         "python",
         "-c",

@@ -32,8 +32,6 @@ def run_infrastructure(
     run_application: bool = False,  # Should we run the Fidesops webserver?
     run_quickstart: bool = False,  # Should we run the quickstart command?
     run_tests: bool = False,  # Should we run the tests after creating the infra?
-    run_create_superuser: bool = False,  # Should we run the create_superuser command?
-    run_create_test_data: bool = False,  # Should we run the create_test_data command?
     analytics_opt_out: bool = False,  # Should we opt out of analytics?
 ) -> None:
     """
@@ -96,12 +94,6 @@ def run_infrastructure(
             analytics_opt_out=analytics_opt_out,
         )
 
-    if run_create_superuser:
-        return _run_create_superuser(path, IMAGE_NAME)
-
-    if run_create_test_data:
-        return _run_create_test_data(path, IMAGE_NAME)
-
 
 def seed_initial_data(
     datastores: List[str],
@@ -156,7 +148,7 @@ def _run_quickstart(
     """
     Invokes the Fidesops command line quickstart
     """
-    _run_cmd_or_err(f'echo "Running the quickstart..."')
+    _run_cmd_or_err('echo "Running the quickstart..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
     _run_cmd_or_err(f"docker exec -it {image_name} python scripts/quickstart.py")
 
@@ -168,7 +160,7 @@ def _run_create_superuser(
     """
     Invokes the Fidesops create_user_and_client command
     """
-    _run_cmd_or_err(f'echo "Running create superuser..."')
+    _run_cmd_or_err('echo "Running create superuser..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
     _run_cmd_or_err(f"docker exec -it {image_name} python scripts/create_superuser.py")
 
@@ -200,7 +192,7 @@ def _run_application(docker_compose_path: str) -> None:
     """
     Runs the application at `docker_compose_path` without detaching it from the shell
     """
-    _run_cmd_or_err(f'echo "Running application"')
+    _run_cmd_or_err('echo "Running application"')
     _run_cmd_or_err(f"docker-compose {docker_compose_path} up")
 
 
@@ -251,7 +243,7 @@ def _run_tests(
 
     # Now tear down the infrastructure
     _run_cmd_or_err(f"docker-compose {docker_compose_path} down --remove-orphans")
-    _run_cmd_or_err(f'echo "fin."')
+    _run_cmd_or_err('echo "fin."')
 
 
 if __name__ == "__main__":
@@ -292,17 +284,6 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-su",
-        "--run_create_superuser",
-        action="store_true",
-    )
-
-    parser.add_argument(
-        "-td",
-        "--run_create_test_data",
-        action="store_true",
-    )
-    parser.add_argument(
         "-a",
         "--analytics_opt_out",
         action="store_true",
@@ -317,7 +298,5 @@ if __name__ == "__main__":
         run_application=config_args.run_application,
         run_quickstart=config_args.run_quickstart,
         run_tests=config_args.run_tests,
-        run_create_superuser=config_args.run_create_superuser,
-        run_create_test_data=config_args.run_create_test_data,
         analytics_opt_out=config_args.analytics_opt_out,
     )
