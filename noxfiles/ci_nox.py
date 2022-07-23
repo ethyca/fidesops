@@ -5,28 +5,30 @@ from constants_nox import (
     COMPOSE_SERVICE_NAME,
     RUN_NO_DEPS,
     START_APP,
-    WITH_TEST_CONFIG,
 )
 from docker_nox import build
-from utils_nox import teardown
+from run_infrastructure import run_infrastructure
+
 
 @nox.session()
 def ci_suite(session: nox.Session) -> None:
     """
     Runs all of the CI checks, except for 'pytest_external'.
 
-    Excludes 'pytest_external' so that no additional secrets/tooling are required.
+    Excludes external tests so that no additional secrets/tooling are required.
     """
-    teardown(session)
-    build(session, "test")
-    black(session)
-    isort(session)
-    xenon(session)
-    mypy(session)
-    pylint(session)
-    check_install(session)
-    pytest(session, "unit")
-    pytest(session, "integration")
+    # Use "notify" instead of direct calls here to provide better user feedback
+    session.notify("teardown")
+    session.notify("build", ["test"])
+    session.notify("black")
+    session.notify("isort")
+    session.notify("xenon")
+    session.notify("mypy")
+    session.notify("pylint")
+    session.notify("check_install")
+    session.notify("pytest_unit")
+    session.notify("pytest_integration")
+    session.notify("teardown")
 
 
 # Static Checks
@@ -85,22 +87,13 @@ def xenon(session: nox.Session) -> None:
 @nox.session()
 def check_install(session: nox.Session) -> None:
     """Check that fidesops is installed."""
-    session.install(".")
-    run_command = ("fidesops", *(WITH_TEST_CONFIG), "--version")
-    session.run(*run_command)
+    build(session, "test")
+    session.run("docker", "run", "ethyca/fidesops:local", "fidesops", external=True)
 
 
 # Pytest
 @nox.session()
-@nox.parametrize(
-    "mark",
-    [
-        nox.param("unit", id="unit"),
-        nox.param("integration", id="integration"),
-        nox.param("not external", id="not-external"),
-    ],
-)
-def pytest(session: nox.Session, mark: str) -> None:
+def pytest_unit(session: nox.Session) -> None:
     """Runs tests."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
@@ -109,9 +102,16 @@ def pytest(session: nox.Session, mark: str) -> None:
         "pytest",
         "-x",
         "-m",
-        mark,
+        "not integration and not integration_external and not integration_saas",
     )
     session.run(*run_command, external=True)
+
+
+@nox.session()
+def pytest_integration(session: nox.Session) -> None:
+    """Runs tests."""
+    session.notify("teardown")
+    run_infrastructure(run_tests=True, analytics_opt_out=True, datastores=[])
 
 
 @nox.session()

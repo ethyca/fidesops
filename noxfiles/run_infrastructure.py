@@ -32,6 +32,8 @@ def run_infrastructure(
     run_application: bool = False,  # Should we run the Fidesops webserver?
     run_quickstart: bool = False,  # Should we run the quickstart command?
     run_tests: bool = False,  # Should we run the tests after creating the infra?
+    run_create_superuser: bool = False,  # Should we run the create_superuser command?
+    run_create_test_data: bool = False,  # Should we run the create_test_data command?
     analytics_opt_out: bool = False,  # Should we opt out of analytics?
 ) -> None:
     """
@@ -93,6 +95,12 @@ def run_infrastructure(
             pytest_path=pytest_path,
             analytics_opt_out=analytics_opt_out,
         )
+
+    if run_create_superuser:
+        return _run_create_superuser(path, IMAGE_NAME)
+
+    if run_create_test_data:
+        return _run_create_test_data(path, IMAGE_NAME)
 
 
 def seed_initial_data(
