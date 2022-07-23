@@ -189,7 +189,7 @@ class TestSQLQueryConfig:
 
         # Make target more broad
         target = rule.targets[0]
-        target.data_category = DataCategory("user.contact").value
+        target.data_category = DataCategory("user").value
         assert config.build_rule_target_field_paths(erasure_policy) == {
             rule: [FieldPath("email")]
         }
