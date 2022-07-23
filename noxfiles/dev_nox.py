@@ -1,6 +1,6 @@
 """Contains the nox sessions for running development environments."""
 import nox
-from constants_nox import COMPOSE_SERVICE_NAME, RUN, START_APP, START_APP_EXTERNAL
+from constants_nox import COMPOSE_SERVICE_NAME, RUN
 from docker_nox import build
 from run_infrastructure import run_infrastructure
 

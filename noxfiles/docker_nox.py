@@ -23,7 +23,6 @@ def get_current_image() -> str:
         nox.param("dev", id="dev"),
         nox.param("test", id="test"),
         nox.param("ui", id="ui"),
-        nox.param("worker", id="worker"),
     ],
 )
 def build(session: nox.Session, image: str) -> None:
@@ -35,7 +34,6 @@ def build(session: nox.Session, image: str) -> None:
         "prod": {"tag": get_current_image, "target": "prod"},
         "dev": {"tag": lambda: IMAGE_LOCAL, "target": "dev"},
         "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
-        "worker": {"tag": lambda: IMAGE_LOCAL, "target": "worker"},
         "ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
     }
     target = build_matrix[image]["target"]
