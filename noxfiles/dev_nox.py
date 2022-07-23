@@ -1,7 +1,8 @@
 """Contains the nox sessions for running development environments."""
 import nox
-from constants_nox import RUN, START_APP_EXTERNAL, START_APP
+from constants_nox import COMPOSE_SERVICE_NAME, RUN, START_APP, START_APP_EXTERNAL
 from docker_nox import build
+from run_infrastructure import run_infrastructure
 
 
 @nox.session()
@@ -9,9 +10,33 @@ def dev(session: nox.Session) -> None:
     """Spin up the entire application and open a development shell."""
     build(session, "dev")
     session.notify("teardown")
-    if session.posargs == ["external"]:
-        session.run(*START_APP_EXTERNAL, external=True)
+    datastores = session.posargs or None
+    if not datastores:
+        # Run the webserver without integrations
+        session.run(*RUN, "/bin/bash", external=True)
     else:
-        session.run(*START_APP, external=True)
-    run_shell = (*RUN, "/bin/bash")
-    session.run(*run_shell, external=True)
+        # Run the webserver with additional datastores
+        run_infrastructure(open_shell=True, datastores=datastores)
+
+
+@nox.session()
+def dev_with_worker(session: nox.Session) -> None:
+    """Spin up the entire application and open a development shell."""
+    build(session, "dev")
+    session.notify("teardown")
+    session.run("docker-compose", "up", "worker", "-d", external=True)
+    session.run(
+        "docker-compose",
+        "run",
+        "-e",
+        "FIDESOPS__EXECUTION__WORKER_ENABLED=True",
+        COMPOSE_SERVICE_NAME,
+        external=True,
+    )
+
+
+@nox.session()
+def quickstart(session: nox.Session) -> None:
+    build(session, "dev")
+    session.notify("teardown")
+    run_infrastructure(datastores=["mongodb", "postgres"], run_quickstart=True)

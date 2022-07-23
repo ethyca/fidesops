@@ -1,11 +1,6 @@
 """Contains the nox sessions used during CI checks."""
 import nox
-from constants_nox import (
-    CI_ARGS,
-    COMPOSE_SERVICE_NAME,
-    RUN_NO_DEPS,
-    START_APP,
-)
+from constants_nox import CI_ARGS, COMPOSE_SERVICE_NAME, RUN_NO_DEPS, START_APP
 from docker_nox import build
 from run_infrastructure import run_infrastructure
 
