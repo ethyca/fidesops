@@ -4,6 +4,7 @@ GitPython==3.1
 ipython
 isort
 mypy==0.961
+nox==2022.1.7
 packaging==21.3
 pdbpp
 pre-commit==2.20.0
