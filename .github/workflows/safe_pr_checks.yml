@@ -117,6 +117,10 @@ jobs:
       - name: Init DB
         run: make init-db
 
-      - name: Integration Tests
-        run: make pytest-integration
+      - name: Integration Tests No MSSQL
+        run: make pytest-integration-no-mssql
+        timeout-minutes: 20
+
+      - name: Integration Tests MSSQL
+        run: make pytest-integration-mssql
         timeout-minutes: 20

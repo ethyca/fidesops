@@ -151,6 +151,19 @@ pytest-integration:
 		python scripts/run_infrastructure.py --run_tests --analytics_opt_out --datastores $(datastores)
 	@make teardown
 
+
+pytest-integration-no-mssql:
+	@virtualenv -p python3 fidesops_test_dispatch; \
+		source fidesops_test_dispatch/bin/activate; \
+		python scripts/run_infrastructure.py --run_tests --analytics_opt_out --datastores postgres mysql mongodb
+	@make teardown
+
+pytest-integration-mssql:
+	@virtualenv -p python3 fidesops_test_dispatch; \
+		source fidesops_test_dispatch/bin/activate; \
+		python scripts/run_infrastructure.py --run_tests --analytics_opt_out --datastores mssql
+	@make teardown
+
 # These tests connect to external third-party test databases
 pytest-integration-external: compose-build
 	@echo "Running tests that connect to external third party test databases"
