@@ -105,14 +105,14 @@ jobs:
     - name: run mypy
       run: mypy src
 
-  Docker-Build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Docker Compose Build
-        run: make compose-build
+        #   Docker-Build:
+        #     runs-on: ubuntu-latest
+        #     steps:
+        #       - name: Checkout
+        #         uses: actions/checkout@v3
+        # 
+        #       - name: Docker Compose Build
+        #         run: make compose-build
 
   Migration-Check:
     needs: Build
@@ -169,10 +169,6 @@ jobs:
       - name: Init DB
         run: make init-db
 
-          # - name: Integration Tests No MSSQL
-          #   run: make pytest-integration-no-mssql
-          #   timeout-minutes: 20
-
-      - name: Integration Tests MSSQL
-        run: make pytest-integration-mssql
+      - name: Integration Tests No MSSQL
+        run: make pytest-integration-no-mssql
         timeout-minutes: 20
