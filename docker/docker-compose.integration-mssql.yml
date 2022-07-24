@@ -6,4 +6,3 @@ services:
     environment:
       - SA_PASSWORD=Mssql_pw1
       - ACCEPT_EULA="Y"
-    network_mode: host
