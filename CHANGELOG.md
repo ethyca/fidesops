@@ -22,6 +22,7 @@ The types of changes are:
 * Erasure support for Salesforce [#888](https://github.com/ethyca/fidesops/pull/888)
 * Access and erasure support for Sendgrid contacts endpoint [#883](https://github.com/ethyca/fidesops/pull/883)
 * Added saas config base info to connection config responses [#904](https://github.com/ethyca/fidesops/pull/904)
+* Access and erasure support for Adobe Campaign [#905](https://github.com/ethyca/fidesops/pull/905)
 * Added db vs saas to connection type api [#937](https://github.com/ethyca/fidesops/pull/937)
 
 ### Changed
@@ -33,6 +34,10 @@ The types of changes are:
 
 ### Docs
 * Added zendesk and salesforce connection pages [#908](https://github.com/ethyca/fidesops/pull/908)
+
+### Fixed
+
+* Correct build arg variable name [925](https://github.com/ethyca/fidesops/pull/925)
 
 ## [1.6.3](https://github.com/ethyca/fidesops/compare/1.6.2...1.6.3)
 
