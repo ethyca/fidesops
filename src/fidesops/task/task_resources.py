@@ -2,6 +2,7 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fideslib.db.session import get_db_session
+from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import ConnectorNotFoundException
 from fidesops.core.config import config
@@ -97,6 +98,7 @@ class TaskResources:
         request: PrivacyRequest,
         policy: Policy,
         connection_configs: List[ConnectionConfig],
+        session: Optional[Session] = None,
     ):
         self.request = request
         self.policy = policy
@@ -106,6 +108,11 @@ class TaskResources:
             c.key: c for c in connection_configs
         }
         self.connections = Connections()
+        if session:
+            self.session = session
+        else:
+            SessionLocal = get_db_session(config)
+            self.session = SessionLocal()
 
     def __enter__(self) -> "TaskResources":
         """Support 'with' usage for closing resources"""
@@ -157,8 +164,7 @@ class TaskResources:
         message: str = None,
     ) -> Any:
         """Store in application db. Return the created or written-to id field value."""
-        SessionLocal = get_db_session(config)
-        db = SessionLocal()
+        db = self.session
 
         ExecutionLog.create(
             db=db,
@@ -172,7 +178,6 @@ class TaskResources:
                 "message": message,
             },
         )
-        db.close()
 
     def get_connector(self, key: FidesOpsKey) -> Any:
         """Create or return the client corresponding to the given ConnectionConfig key"""
