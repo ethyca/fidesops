@@ -93,10 +93,7 @@ def get_connection_type_secret_schema(
     to authenticate.
     """
     connection_system_types: List[ConnectionSystemTypeMap] = get_connection_types()
-    if not any(
-        item.identifier == connection_type
-        for item in connection_system_types
-    ):
+    if not any(item.identifier == connection_type for item in connection_system_types):
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No connection type found with name '{connection_type}'.",
