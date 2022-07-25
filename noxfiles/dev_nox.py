@@ -2,6 +2,7 @@
 import nox
 from constants_nox import COMPOSE_SERVICE_NAME, RUN
 from docker_nox import build
+from noxfiles.constants_nox import ANALYTICS_OPT_OUT
 from run_infrastructure import run_infrastructure
 
 
@@ -24,10 +25,11 @@ def dev_with_worker(session: nox.Session) -> None:
     """Spin up the entire application and open a development shell."""
     build(session, "dev")
     session.notify("teardown")
-    session.run("docker-compose", "up", "worker", "-d", external=True)
+    session.run("docker-compose", "up", "worker", "--wait", external=True)
     session.run(
         "docker-compose",
         "run",
+        *ANALYTICS_OPT_OUT,
         "-e",
         "FIDESOPS__EXECUTION__WORKER_ENABLED=True",
         COMPOSE_SERVICE_NAME,
