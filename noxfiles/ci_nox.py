@@ -66,6 +66,7 @@ def pylint(session: nox.Session) -> None:
 def xenon(session: nox.Session) -> None:
     """Run 'xenon' code complexity monitoring."""
     command = (
+        *RUN_NO_DEPS,
         "xenon",
         "noxfiles",
         "src",
@@ -95,7 +96,6 @@ def pytest_unit(session: nox.Session) -> None:
     run_command = (
         *RUN_NO_DEPS,
         "pytest",
-        "-x",
         "-m",
         "not integration and not integration_external and not integration_saas",
     )
