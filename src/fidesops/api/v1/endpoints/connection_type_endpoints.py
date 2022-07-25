@@ -35,7 +35,7 @@ def get_connection_types(search: Optional[str] = None) -> List[ConnectionSystemT
         return search in elem if search else True
 
     connection_system_types: List[ConnectionSystemTypeMap] = []
-    database_types: List[ConnectionType.value] = sorted(
+    database_types: List[str] = sorted(
         [
             conn_type.value
             for conn_type in ConnectionType
@@ -50,7 +50,7 @@ def get_connection_types(search: Optional[str] = None) -> List[ConnectionSystemT
             for item in database_types
         ]
     )
-    saas_types: List[SaaSType.value] = sorted(
+    saas_types: List[str] = sorted(
         [
             saas_type.value
             for saas_type in SaaSType
