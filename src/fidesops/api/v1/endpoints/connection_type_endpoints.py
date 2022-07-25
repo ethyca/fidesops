@@ -29,40 +29,48 @@ router = APIRouter(tags=["Connection Types"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)
 
 
-def get_connection_types(search: Optional[str] = None) -> List[ConnectionSystemTypeMap]:
+def get_connection_types(
+    search: Optional[str] = None, system_type: Optional[SystemType] = None
+) -> List[ConnectionSystemTypeMap]:
     def is_match(elem: str) -> bool:
         """If a search query param was included, is it a substring of an available connector type?"""
         return search in elem if search else True
 
     connection_system_types: List[ConnectionSystemTypeMap] = []
-    database_types: List[str] = sorted(
-        [
-            conn_type.value
-            for conn_type in ConnectionType
-            if conn_type
-            not in [ConnectionType.saas, ConnectionType.https, ConnectionType.manual]
-            and is_match(conn_type.value)
-        ]
-    )
-    connection_system_types.extend(
-        [
-            ConnectionSystemTypeMap(identifier=item, type=SystemType.database)
-            for item in database_types
-        ]
-    )
-    saas_types: List[str] = sorted(
-        [
-            saas_type.value
-            for saas_type in SaaSType
-            if saas_type != SaaSType.custom and is_match(saas_type.value)
-        ]
-    )
-    connection_system_types.extend(
-        [
-            ConnectionSystemTypeMap(identifier=item, type=SystemType.saas)
-            for item in saas_types
-        ]
-    )
+    if system_type == SystemType.database or system_type is None:
+        database_types: List[str] = sorted(
+            [
+                conn_type.value
+                for conn_type in ConnectionType
+                if conn_type
+                not in [
+                    ConnectionType.saas,
+                    ConnectionType.https,
+                    ConnectionType.manual,
+                ]
+                and is_match(conn_type.value)
+            ]
+        )
+        connection_system_types.extend(
+            [
+                ConnectionSystemTypeMap(identifier=item, type=SystemType.database)
+                for item in database_types
+            ]
+        )
+    if system_type == SystemType.saas or system_type is None:
+        saas_types: List[str] = sorted(
+            [
+                saas_type.value
+                for saas_type in SaaSType
+                if saas_type != SaaSType.custom and is_match(saas_type.value)
+            ]
+        )
+        connection_system_types.extend(
+            [
+                ConnectionSystemTypeMap(identifier=item, type=SystemType.saas)
+                for item in saas_types
+            ]
+        )
 
     return connection_system_types
 
@@ -73,11 +81,11 @@ def get_connection_types(search: Optional[str] = None) -> List[ConnectionSystemT
     response_model=List[ConnectionSystemTypeMap],
 )
 def get_all_connection_types(
-    *, search: Optional[str] = None
+    *, search: Optional[str] = None, system_type: Optional[SystemType] = None
 ) -> List[ConnectionSystemTypeMap]:
     """Returns a list of connection options in Fidesops - includes only database and saas options here."""
 
-    return get_connection_types(search)
+    return get_connection_types(search, system_type)
 
 
 @router.get(

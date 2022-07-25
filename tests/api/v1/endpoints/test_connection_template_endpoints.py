@@ -85,6 +85,37 @@ class TestGetConnections:
             {"identifier": SaaSType.outreach.value, "type": SystemType.saas.value},
         ]
 
+    def test_search_system_type(self, api_client, generate_auth_header, url):
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+
+        resp = api_client.get(url + "?system_type=nothing", headers=auth_header)
+        assert resp.status_code == 422
+
+        resp = api_client.get(url + "?system_type=saas", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 8
+
+        resp = api_client.get(url + "?search=database", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 10
+
+    def test_search_system_type_and_connection_type(
+        self, api_client, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+
+        resp = api_client.get(url + "?search=str&system_type=saas", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 1
+
+        resp = api_client.get(url + "?search=re&system_type=database", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 2
+
 
 class TestGetConnectionSecretSchema:
     @pytest.fixture(scope="function")
