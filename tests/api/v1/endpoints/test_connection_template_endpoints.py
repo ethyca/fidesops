@@ -111,7 +111,9 @@ class TestGetConnections:
         data = resp.json()
         assert len(data) == 1
 
-        resp = api_client.get(url + "?search=re&system_type=database", headers=auth_header)
+        resp = api_client.get(
+            url + "?search=re&system_type=database", headers=auth_header
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 2
