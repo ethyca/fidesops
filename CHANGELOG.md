@@ -31,11 +31,16 @@ The types of changes are:
 * Removed ipython from the docker install [928](https://github.com/ethyca/fidesops/pull/928)
 * Serve admin UI by default [#906](https://github.com/ethyca/fidesops/pull/936)
 
+### Developer Experience
+
+* When releases are published, dispatch a repository webhook event to ethyca/fidesops-plus [#945](https://github.com/ethyca/fidesops/pull/945)
+
 ### Breaking Changes
 
 * Update fidesops to use bcrypt for hashing [#876](https://github.com/ethyca/fidesops/pull/876)
 
 ### Docs
+
 * Added zendesk and salesforce connection pages [#908](https://github.com/ethyca/fidesops/pull/908)
 
 ### Fixed
