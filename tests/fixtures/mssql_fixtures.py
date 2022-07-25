@@ -1,9 +1,11 @@
 import logging
+from time import sleep
 from typing import Dict, Generator, List
 from uuid import uuid4
 
 import pytest
 from fideslib.db.session import get_db_engine, get_db_session
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from fidesops.core.config import config
@@ -63,6 +65,18 @@ def connection_config_mssql(db: Session) -> Generator:
 def mssql_integration_session_cls(connection_config_mssql):
     uri = MicrosoftSQLServerConnector(connection_config_mssql).build_uri()
     engine = get_db_engine(database_uri=uri)
+
+    # Wait until mssql is ready. MSSQL tests were randomly failing in CI because the
+    # server wasn't ready. This is a workaround to that issue.
+    while True:
+        try:
+            # Just need to verify connection is possible so try then close it right away
+            conn = engine.connect()
+            conn.close()
+            break
+        except SQLAlchemyError:
+            sleep(1)
+
     SessionLocal = get_db_session(
         config=config,
         engine=engine,
@@ -74,6 +88,7 @@ def mssql_integration_session_cls(connection_config_mssql):
 
 @pytest.fixture(scope="function")
 def mssql_integration_session(mssql_integration_session_cls):
+
     yield mssql_integration_session_cls()
 
 
