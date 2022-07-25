@@ -94,7 +94,7 @@ def get_connection_type_secret_schema(
     """
     connection_system_types: List[ConnectionSystemTypeMap] = get_connection_types()
     if not any(
-        item.identifier and item.identifier.value == connection_type
+        item.identifier == connection_type
         for item in connection_system_types
     ):
         raise HTTPException(
