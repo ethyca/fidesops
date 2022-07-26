@@ -569,7 +569,7 @@ def run_access_request(
     graph: DatasetGraph,
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
-    session: Optional[Session] = None,
+    session: Session,
 ) -> Dict[str, List[Row]]:
     """Run the access request"""
     traversal: Traversal = Traversal(graph, identity)
@@ -647,7 +647,7 @@ def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
     access_request_data: Dict[str, List[Row]],
-    session: Optional[Session] = None,
+    session: Session,
 ) -> Dict[str, int]:
     """Run an erasure request"""
     traversal: Traversal = Traversal(graph, identity)

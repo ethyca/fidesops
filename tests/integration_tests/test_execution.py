@@ -155,6 +155,7 @@ class TestDeleteCollection:
             dataset_graph,
             [integration_postgres_config, mongo_connection_config],
             {"email": "customer-1@example.com"},
+            db,
         )
         assert any(
             collection.startswith("mongo_test") for collection in results
@@ -208,6 +209,7 @@ class TestDeleteCollection:
                 mongo_postgres_dataset_graph,
                 [integration_postgres_config, integration_mongodb_config],
                 {"email": "customer-1@example.com"},
+                db,
             )
 
         execution_logs = get_sorted_execution_logs(db, privacy_request)
@@ -241,6 +243,7 @@ class TestDeleteCollection:
             postgres_only_dataset_graph,
             [integration_postgres_config],
             {"email": "customer-1@example.com"},
+            db,
         )
 
         execution_logs = get_sorted_execution_logs(db, privacy_request)
@@ -334,6 +337,7 @@ class TestSkipDisabledCollection:
             mongo_postgres_dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
+            db,
         )
         assert all(
             [dataset.startswith("postgres_example") for dataset in results]
@@ -417,6 +421,7 @@ class TestSkipDisabledCollection:
             dataset_graph,
             [integration_postgres_config, mongo_connection_config],
             {"email": "customer-1@example.com"},
+            db,
         )
         assert any(
             collection.startswith("mongo_test") for collection in results
@@ -468,6 +473,7 @@ class TestSkipDisabledCollection:
                 mongo_postgres_dataset_graph,
                 [integration_postgres_config, integration_mongodb_config],
                 {"email": "customer-1@example.com"},
+                db,
             )
 
         execution_logs = get_sorted_execution_logs(db, privacy_request)
@@ -495,6 +501,7 @@ class TestSkipDisabledCollection:
             mongo_postgres_dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
+            db,
         )
 
         execution_logs = get_sorted_execution_logs(db, privacy_request)
@@ -600,6 +607,7 @@ def test_restart_graph_from_failure(
             mongo_postgres_dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
+            db,
         )
     assert exc.value.__class__ == ValidationError
     assert (
@@ -639,6 +647,7 @@ def test_restart_graph_from_failure(
         mongo_postgres_dataset_graph,
         [integration_postgres_config, integration_mongodb_config],
         {"email": "customer-1@example.com"},
+        db,
     )
 
     assert (

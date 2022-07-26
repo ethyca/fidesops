@@ -1,11 +1,9 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-from fideslib.db.session import get_db_session
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import ConnectorNotFoundException
-from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.models.policy import ActionType, Policy
@@ -98,7 +96,7 @@ class TaskResources:
         request: PrivacyRequest,
         policy: Policy,
         connection_configs: List[ConnectionConfig],
-        session: Optional[Session] = None,
+        session: Session,
     ):
         self.request = request
         self.policy = policy
@@ -108,11 +106,7 @@ class TaskResources:
             c.key: c for c in connection_configs
         }
         self.connections = Connections()
-        if session:
-            self.session = session
-        else:
-            SessionLocal = get_db_session(config)
-            self.session = SessionLocal()
+        self.session = session
 
     def __enter__(self) -> "TaskResources":
         """Support 'with' usage for closing resources"""
