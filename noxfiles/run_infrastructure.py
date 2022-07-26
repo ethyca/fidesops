@@ -23,11 +23,14 @@ EXTERNAL_DATASTORE_CONFIG = {
     "bigquery": ["BIGQUERY_KEYFILE_CREDS", "BIGQUERY_DATASET"],
 }
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
+ALL_DATASTORES = DOCKERFILE_DATASTORES + EXTERNAL_DATASTORES
 IMAGE_NAME = "webserver"
 
 
 def run_infrastructure(
-    datastores: List[str] = [],  # Which infra should we create? If empty, we create all
+    datastores: List[
+        str
+    ] = ALL_DATASTORES,  # Which infra should we create? By default, we create all
     open_shell: bool = False,  # Should we open a bash shell?
     pytest_path: str = "",  # Which subset of tests should we run?
     run_application: bool = False,  # Should we run the Fidesops webserver?
@@ -45,13 +48,7 @@ def run_infrastructure(
     with `IMAGE_NAME`.
     """
 
-    if len(datastores) == 0:
-        _run_cmd_or_err(
-            'echo "no datastores specified, configuring infrastructure for all datastores"'
-        )
-        datastores = DOCKERFILE_DATASTORES + EXTERNAL_DATASTORES
-    else:
-        _run_cmd_or_err(f'echo "datastores specified: {", ".join(datastores)}"')
+    _run_cmd_or_err(f'echo "datastores to build: {", ".join(datastores)}"')
 
     # De-duplicate datastores
     datastores = set(datastores)
