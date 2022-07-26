@@ -82,8 +82,8 @@ When you run `make server` or `make server-shell`, the database will be spun up 
 
 - Hostname: `localhost`
 - Port: `5432`
-- Username: see `database.USER` in `.fidesops.toml`
-- Password: see `database.PASSWORD` in `.fidesops.toml`
+- Username: see `database.user` in `.fidesops.toml`
+- Password: see `database.password` in `.fidesops.toml`
 
 
 ### Alembic migrations
