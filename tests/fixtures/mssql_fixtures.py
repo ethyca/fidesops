@@ -63,7 +63,6 @@ def connection_config_mssql(db: Session) -> Generator:
 def mssql_integration_session_cls(connection_config_mssql):
     uri = MicrosoftSQLServerConnector(connection_config_mssql).build_uri()
     engine = get_db_engine(database_uri=uri)
-
     SessionLocal = get_db_session(
         config=config,
         engine=engine,
@@ -75,7 +74,6 @@ def mssql_integration_session_cls(connection_config_mssql):
 
 @pytest.fixture(scope="function")
 def mssql_integration_session(mssql_integration_session_cls):
-
     yield mssql_integration_session_cls()
 
 
