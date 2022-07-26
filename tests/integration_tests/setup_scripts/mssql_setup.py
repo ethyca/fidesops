@@ -17,6 +17,7 @@ def mssql_setup():
 
     # Wait until mssql is ready. MSSQL tests were randomly failing in CI because the
     # server wasn't ready. This is a workaround to that issue.
+    try_number = 1
     while True:
         try:
             # Just need to verify connection is possible so try then close it right away
@@ -24,6 +25,8 @@ def mssql_setup():
             conn.close()
             break
         except SQLAlchemyError:
+            try_number += 1
+            print(f"Error connecting, retrying. Try number {try_number}")
             sleep(1)
 
     with open("./docker/sample_data/mssql_example.sql", "r") as query_file:
