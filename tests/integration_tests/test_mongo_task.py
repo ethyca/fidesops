@@ -599,7 +599,7 @@ def test_object_querying_mongo(
 
 @pytest.mark.integration
 def test_get_cached_data_for_erasures(
-    integration_postgres_config, integration_mongodb_config, policy
+    integration_postgres_config, integration_mongodb_config, policy, db
 ) -> None:
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
 
