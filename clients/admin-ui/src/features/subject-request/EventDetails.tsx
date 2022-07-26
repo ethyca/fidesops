@@ -63,12 +63,12 @@ const EventDetails = ({ eventDetails, openStackTrace }: EventDetailsProps) => {
     </Tr>
   ));
   return (
-    <Box width="100%" paddingTop="0px">
+    <Box width="100%" paddingTop="0px" height="100%">
       <TableContainer
-        height="600px"
         id="tableContainer"
+        height="100%"
         style={{
-          overflowY: "auto",
+          overflowY: "auto", // needs to be set on style. Chakra overrides it
         }}
       >
         <Table size="sm" id="table" position="relative">
