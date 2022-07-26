@@ -19,15 +19,17 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.3...main)
 
 ### Added
-* Retry a DSR (FE) [#863](https://github.com/ethyca/fidesops/pull/938)
 * Erasure support for Salesforce [#888](https://github.com/ethyca/fidesops/pull/888)
 * Access and erasure support for Sendgrid contacts endpoint [#883](https://github.com/ethyca/fidesops/pull/883)
 * Added saas config base info to connection config responses [#904](https://github.com/ethyca/fidesops/pull/904)
 * Access and erasure support for Adobe Campaign [#905](https://github.com/ethyca/fidesops/pull/905)
+* Added db vs saas to connection type api [#937](https://github.com/ethyca/fidesops/pull/937)
+* Retry a DSR (FE) [#863](https://github.com/ethyca/fidesops/pull/938)
 
 ### Changed
 
 * Users should be able to click on the full field of a dropdown-type filter to open up the dropdown [#747](https://github.com/ethyca/fidesops/pull/903)
+* Added `nox` commands to replace the `Makefile` [#919](https://github.com/ethyca/fidesops/pull/919)
 * Updated the python docker base image from slim-buster to slim-bullseye [928](https://github.com/ethyca/fidesops/pull/928)
 * Removed ipython from the docker install [928](https://github.com/ethyca/fidesops/pull/928)
 * Serve admin UI by default [#906](https://github.com/ethyca/fidesops/pull/936)
@@ -37,6 +39,7 @@ The types of changes are:
 * Update fidesops to use bcrypt for hashing [#876](https://github.com/ethyca/fidesops/pull/876)
 
 ### Docs
+
 * Added zendesk and salesforce connection pages [#908](https://github.com/ethyca/fidesops/pull/908)
 
 ### Fixed
