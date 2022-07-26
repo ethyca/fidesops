@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Set
+from typing import ContextManager, Dict, List, Optional, Set
 
 from celery import Task
 from celery.utils.log import get_task_logger
@@ -155,7 +155,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
     _session = None
 
     @property
-    def session(self) -> Session:
+    def session(self) -> ContextManager[Session]:
         """Creates Session once per process"""
         if self._session is None:
             SessionLocal = get_db_session(config)
@@ -166,7 +166,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
 
 @celery_app.task(base=DatabaseTask, bind=True)
 def run_privacy_request(
-    self,
+    self: DatabaseTask,
     privacy_request_id: str,
     from_webhook_id: Optional[str] = None,
     from_step: Optional[str] = None,
