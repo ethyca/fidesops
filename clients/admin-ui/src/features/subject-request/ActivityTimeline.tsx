@@ -17,8 +17,8 @@ const ActivityTimeline = ({
 
   const resultKeys = [
     "postgres_example",
-    "postgres_example",
-    "postgres_example",
+    "postgres_example2",
+    "postgres_example3",
   ];
 
   const timelineEntries = resultKeys.map((key, index) => (

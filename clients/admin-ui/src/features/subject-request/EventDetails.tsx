@@ -12,42 +12,124 @@ import {
 import { format } from "date-fns-tz";
 import React from "react";
 
-import { ExecutionLog } from "../privacy-requests/types";
+import { ExecutionLog, ExecutionLogStatus } from "../privacy-requests/types";
 
 type EventDetailsProps = {
   eventDetails: ExecutionLog[];
+  openStackTrace: () => void;
 };
 
-const EventDetails = ({ eventDetails }: EventDetailsProps) => (
-  <Box width="100%">
-    <Text color="gray.900" fontSize="md" fontWeight="500" mb={1}>
-      Event Details
-    </Text>
-    <TableContainer>
-      <Table size="sm">
-        <Thead>
-          <Tr>
-            <Th>Timestamp </Th>
-            <Th>Collection </Th>
-            <Th>Status </Th>
-            <Th>Message </Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {eventDetails?.map((detail) => (
-            <Tr key={detail.updated_at}>
-              <Td>
-                {format(new Date(detail.updated_at), "MMMM d, Y, KK:mm:ss z")}
-              </Td>
-              <Td> {detail.collection_name}</Td>
-              <Td> {detail.status}</Td>
-              <Td>{detail.message}</Td>
+const EventDetails = ({ eventDetails, openStackTrace }: EventDetailsProps) => {
+  const isError = "sdfsdfsdf";
+  const tableItems = eventDetails?.map((detail) => (
+    <Tr
+      key={detail.updated_at}
+      _hover={{
+        backgroundColor: "#F7FAFC",
+      }}
+      onClick={() => {
+        if (detail.status === ExecutionLogStatus.IN_PROCESSING) {
+          openStackTrace();
+        }
+      }}
+      style={{
+        cursor:
+          detail.status === ExecutionLogStatus.IN_PROCESSING
+            ? "pointer"
+            : "unset",
+      }}
+    >
+      <Td>
+        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
+          {format(new Date(detail.updated_at), "MMMM d, Y, KK:mm:ss z")}
+        </Text>
+      </Td>
+      <Td>
+        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
+          {detail.status}
+        </Text>
+      </Td>
+      <Td>
+        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
+          {detail.collection_name}
+        </Text>
+      </Td>
+
+      <Td>
+        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
+          {detail.message}
+        </Text>
+      </Td>
+    </Tr>
+  ));
+  return (
+    <Box width="100%" paddingTop="0px">
+      <TableContainer
+        height="600px"
+        id="tableContainer"
+        style={{
+          overflowY: "auto",
+        }}
+      >
+        <Table size="sm" id="table" position="relative">
+          <Thead
+            id="tableHeader"
+            position="sticky"
+            top="0px"
+            backgroundColor="white"
+          >
+            <Tr>
+              <Th>
+                <Text
+                  color="black"
+                  fontSize="xs"
+                  lineHeight="4"
+                  fontWeight="medium"
+                >
+                  Time
+                </Text>
+              </Th>
+              <Th>
+                <Text
+                  color="black"
+                  fontSize="xs"
+                  lineHeight="4"
+                  fontWeight="medium"
+                >
+                  Status
+                </Text>
+              </Th>
+              <Th>
+                <Text
+                  color="black"
+                  fontSize="xs"
+                  lineHeight="4"
+                  fontWeight="medium"
+                >
+                  Collection
+                </Text>
+              </Th>
+              <Th>
+                <Text
+                  color="black"
+                  fontSize="xs"
+                  lineHeight="4"
+                  fontWeight="medium"
+                >
+                  Event Details
+                </Text>
+              </Th>
             </Tr>
-          ))}
-        </Tbody>
-      </Table>
-    </TableContainer>
-  </Box>
-);
+          </Thead>
+
+          <Tbody id="tabelBody">
+            {tableItems}
+            {tableItems}
+          </Tbody>
+        </Table>
+      </TableContainer>
+    </Box>
+  );
+};
 
 export default EventDetails;

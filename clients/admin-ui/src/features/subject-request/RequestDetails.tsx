@@ -33,7 +33,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         <Text color="gray.600" fontWeight="500" fontSize="sm" mr={1}>
           {id}
         </Text>
-        <ClipboardButton requestId={id} />
+        <ClipboardButton copyText={id} />
       </Flex>
 
       <Flex alignItems="center">
