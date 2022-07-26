@@ -8,9 +8,9 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.task import graph_task
 from fidesops.task.graph_task import get_cached_data_for_erasures
-from tests.fixtures.saas.sendgrid_fixtures import contact_exists
-from tests.graph.graph_test_util import assert_rows_match
-from tests.test_helpers.saas_test_utils import poll_for_existence
+from tests.ops.fixtures.saas.sendgrid_fixtures import contact_exists
+from tests.ops.graph.graph_test_util import assert_rows_match
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
 @pytest.mark.integration_saas

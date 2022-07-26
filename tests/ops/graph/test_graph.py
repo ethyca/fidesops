@@ -6,7 +6,7 @@ from fidesops.graph.traversal import *
 from fidesops.models.policy import ActionType
 from fidesops.task.graph_task import retry
 from fidesops.task.task_resources import TaskResources
-from tests.task.traversal_data import integration_db_graph
+from tests.ops.task.traversal_data import integration_db_graph
 
 t1 = Collection(
     name="t1",

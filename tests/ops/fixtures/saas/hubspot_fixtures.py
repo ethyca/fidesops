@@ -16,9 +16,9 @@ from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors import SaaSConnector
 from fidesops.util.saas_util import format_body, load_config
-from tests.fixtures.application_fixtures import load_dataset
-from tests.test_helpers.saas_test_utils import poll_for_existence
-from tests.test_helpers.vault_client import get_secrets
+from tests.ops.fixtures.application_fixtures import load_dataset
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
+from tests.ops.test_helpers.vault_client import get_secrets
 
 saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("hubspot")

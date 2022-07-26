@@ -15,10 +15,10 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from tests.fixtures.application_fixtures import load_dataset
-from tests.fixtures.saas_example_fixtures import load_config
-from tests.test_helpers.saas_test_utils import poll_for_existence
-from tests.test_helpers.vault_client import get_secrets
+from tests.ops.fixtures.application_fixtures import load_dataset
+from tests.ops.fixtures.saas_example_fixtures import load_config
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
+from tests.ops.test_helpers.vault_client import get_secrets
 
 saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("sendgrid")

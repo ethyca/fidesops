@@ -9,7 +9,7 @@ from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.task import graph_task
 from fidesops.task.filter_results import filter_data_categories
 from fidesops.task.graph_task import get_cached_data_for_erasures
-from tests.graph.graph_test_util import assert_rows_match
+from tests.ops.graph.graph_test_util import assert_rows_match
 
 
 @pytest.mark.skip(reason="Pending account resolution")

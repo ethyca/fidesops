@@ -25,7 +25,7 @@ from fidesops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from tests.api.v1.endpoints.test_dataset_endpoints import _reject_key
+from tests.ops.api.v1.endpoints.test_dataset_endpoints import _reject_key
 
 
 @pytest.mark.unit_saas
