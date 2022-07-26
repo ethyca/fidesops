@@ -1,8 +1,7 @@
 """Contains the nox sessions for running development environments."""
 import nox
-from constants_nox import COMPOSE_SERVICE_NAME, RUN
+from constants_nox import ANALYTICS_OPT_OUT, COMPOSE_SERVICE_NAME, RUN
 from docker_nox import build
-from noxfiles.constants_nox import ANALYTICS_OPT_OUT
 from run_infrastructure import run_infrastructure
 
 
