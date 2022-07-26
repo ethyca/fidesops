@@ -2,7 +2,9 @@ from fidesops.task.task_resources import TaskResources
 
 
 class TestTaskResources:
-    def test_cache_erasure(self, privacy_request, policy, integration_manual_config):
+    def test_cache_erasure(
+        self, db, privacy_request, policy, integration_manual_config
+    ):
         resources = TaskResources(
             privacy_request, policy, [integration_manual_config], db
         )
