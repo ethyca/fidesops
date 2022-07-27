@@ -9,19 +9,19 @@ import pytest
 import yaml
 from faker import Faker
 from fideslib.core.config import load_file, load_toml
+from fideslib.models.client import ClientDetail
+from fideslib.models.fides_user import FidesUser
+from fideslib.models.fides_user_permissions import FidesUserPermissions
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
-from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.fidesops_user import FidesopsUser
-from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.models.policy import (
     ActionType,
     Policy,
@@ -32,6 +32,7 @@ from fidesops.models.policy import (
 )
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.models.storage import ResponseFormat, StorageConfig
+from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.schemas.storage.storage import (
     FileNaming,
     StorageDetails,
@@ -59,38 +60,38 @@ logger = logging.getLogger(__name__)
 
 integration_secrets = {
     "postgres_example": {
-        "host": pydash.get(integration_config, "postgres_example.SERVER"),
-        "port": pydash.get(integration_config, "postgres_example.PORT"),
-        "dbname": pydash.get(integration_config, "postgres_example.DB"),
-        "username": pydash.get(integration_config, "postgres_example.USER"),
-        "password": pydash.get(integration_config, "postgres_example.PASSWORD"),
+        "host": pydash.get(integration_config, "postgres_example.server"),
+        "port": pydash.get(integration_config, "postgres_example.port"),
+        "dbname": pydash.get(integration_config, "postgres_example.db"),
+        "username": pydash.get(integration_config, "postgres_example.user"),
+        "password": pydash.get(integration_config, "postgres_example.password"),
     },
     "mongo_example": {
-        "host": pydash.get(integration_config, "mongodb_example.SERVER"),
-        "defaultauthdb": pydash.get(integration_config, "mongodb_example.DB"),
-        "username": pydash.get(integration_config, "mongodb_example.USER"),
-        "password": pydash.get(integration_config, "mongodb_example.PASSWORD"),
+        "host": pydash.get(integration_config, "mongodb_example.server"),
+        "defaultauthdb": pydash.get(integration_config, "mongodb_example.db"),
+        "username": pydash.get(integration_config, "mongodb_example.user"),
+        "password": pydash.get(integration_config, "mongodb_example.password"),
     },
     "mysql_example": {
-        "host": pydash.get(integration_config, "mysql_example.SERVER"),
-        "port": pydash.get(integration_config, "mysql_example.PORT"),
-        "dbname": pydash.get(integration_config, "mysql_example.DB"),
-        "username": pydash.get(integration_config, "mysql_example.USER"),
-        "password": pydash.get(integration_config, "mysql_example.PASSWORD"),
+        "host": pydash.get(integration_config, "mysql_example.server"),
+        "port": pydash.get(integration_config, "mysql_example.port"),
+        "dbname": pydash.get(integration_config, "mysql_example.db"),
+        "username": pydash.get(integration_config, "mysql_example.user"),
+        "password": pydash.get(integration_config, "mysql_example.password"),
     },
     "mssql_example": {
-        "host": pydash.get(integration_config, "mssql_example.SERVER"),
-        "port": pydash.get(integration_config, "mssql_example.PORT"),
-        "dbname": pydash.get(integration_config, "mssql_example.DB"),
-        "username": pydash.get(integration_config, "mssql_example.USER"),
-        "password": pydash.get(integration_config, "mssql_example.PASSWORD"),
+        "host": pydash.get(integration_config, "mssql_example.server"),
+        "port": pydash.get(integration_config, "mssql_example.port"),
+        "dbname": pydash.get(integration_config, "mssql_example.db"),
+        "username": pydash.get(integration_config, "mssql_example.user"),
+        "password": pydash.get(integration_config, "mssql_example.password"),
     },
     "mariadb_example": {
-        "host": pydash.get(integration_config, "mariadb_example.SERVER"),
-        "port": pydash.get(integration_config, "mariadb_example.PORT"),
-        "dbname": pydash.get(integration_config, "mariadb_example.DB"),
-        "username": pydash.get(integration_config, "mariadb_example.USER"),
-        "password": pydash.get(integration_config, "mariadb_example.PASSWORD"),
+        "host": pydash.get(integration_config, "mariadb_example.server"),
+        "port": pydash.get(integration_config, "mariadb_example.port"),
+        "dbname": pydash.get(integration_config, "mariadb_example.db"),
+        "username": pydash.get(integration_config, "mariadb_example.user"),
+        "password": pydash.get(integration_config, "mariadb_example.password"),
     },
 }
 
@@ -772,10 +773,18 @@ def _create_privacy_request_for_policy(
             microsecond=393185,
             tzinfo=timezone.utc,
         )
-    return PrivacyRequest.create(
+    pr = PrivacyRequest.create(
         db=db,
         data=data,
     )
+    pr.persist_identity(
+        db=db,
+        identity=PrivacyRequestIdentity(
+            email="test@example.com",
+            phone_number="+1 234 567 8910",
+        ),
+    )
+    return pr
 
 
 @pytest.fixture(scope="function")
@@ -839,14 +848,19 @@ def succeeded_privacy_request(cache, db: Session, policy: Policy) -> PrivacyRequ
             "client_id": policy.client_id,
         },
     )
-    pr.cache_identity({"email": "email@example.com"})
+    identity_kwargs = {"email": "email@example.com"}
+    pr.cache_identity(identity_kwargs)
+    pr.persist_identity(
+        db=db,
+        identity=PrivacyRequestIdentity(**identity_kwargs),
+    )
     yield pr
     pr.delete(db)
 
 
 @pytest.fixture(scope="function")
 def user(db: Session):
-    user = FidesopsUser.create(
+    user = FidesUser.create(
         db=db,
         data={
             "username": "test_fidesops_user",
@@ -860,7 +874,7 @@ def user(db: Session):
         user_id=user.id,
     )
 
-    FidesopsUserPermissions.create(
+    FidesUserPermissions.create(
         db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
     )
 
@@ -1095,9 +1109,9 @@ def sample_data():
 def application_user(
     db,
     oauth_client,
-) -> FidesopsUser:
+) -> FidesUser:
     unique_username = f"user-{uuid4()}"
-    user = FidesopsUser.create(
+    user = FidesUser.create(
         db=db,
         data={
             "username": unique_username,

@@ -1,10 +1,20 @@
 import json
 from datetime import datetime
-from email.mime import application
 from typing import List
 
 import pytest
 from fastapi_pagination import Params
+from fideslib.cryptography.cryptographic_util import str_to_b64_str
+from fideslib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
+from fideslib.models.client import ADMIN_UI_ROOT, ClientDetail
+from fideslib.models.fides_user import FidesUser
+from fideslib.models.fides_user_permissions import FidesUserPermissions
+from fideslib.oauth.jwt import generate_jwe
+from fideslib.oauth.oauth_util import extract_payload
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -19,7 +29,6 @@ from starlette.testclient import TestClient
 
 from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
-    SCOPE_REGISTRY,
     STORAGE_READ,
     USER_CREATE,
     USER_DELETE,
@@ -34,16 +43,7 @@ from fidesops.api.v1.urn_registry import (
     USERS,
     V1_URL_PREFIX,
 )
-from fidesops.models.client import ADMIN_UI_ROOT, ClientDetail
-from fidesops.models.fidesops_user import FidesopsUser
-from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
-from fidesops.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_SCOPES,
-)
-from fidesops.util.cryptographic_util import str_to_b64_str
-from fidesops.util.oauth_util import extract_payload, generate_jwe
+from fidesops.core.config import config
 from tests.conftest import generate_auth_header_for_user
 
 page_size = Params().size
@@ -71,7 +71,10 @@ class TestCreateUser:
         url,
     ) -> None:
         auth_header = generate_auth_header([USER_CREATE])
-        body = {"username": "spaces in name", "password": "TestP@ssword9"}
+        body = {
+            "username": "spaces in name",
+            "password": str_to_b64_str("TestP@ssword9"),
+        }
 
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
@@ -86,7 +89,7 @@ class TestCreateUser:
         auth_header = generate_auth_header([USER_CREATE])
 
         body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
-        user = FidesopsUser.create(db=db, data=body)
+        user = FidesUser.create(db=db, data=body)
 
         response = api_client.post(url, headers=auth_header, json=body)
         response_body = json.loads(response.text)
@@ -148,7 +151,7 @@ class TestCreateUser:
 
         response = api_client.post(url, headers=auth_header, json=body)
 
-        user = FidesopsUser.get_by(db, field="username", value=body["username"])
+        user = FidesUser.get_by(db, field="username", value=body["username"])
         response_body = json.loads(response.text)
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
@@ -172,7 +175,7 @@ class TestCreateUser:
 
         response = api_client.post(url, headers=auth_header, json=body)
 
-        user = FidesopsUser.get_by(db, field="username", value=body["username"])
+        user = FidesUser.get_by(db, field="username", value=body["username"])
         response_body = json.loads(response.text)
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
@@ -208,16 +211,16 @@ class TestDeleteUser:
         assert HTTP_404_NOT_FOUND == response.status_code
 
     def test_delete_self(self, api_client, db, generate_auth_header):
-        user = FidesopsUser.create(
+        user = FidesUser.create(
             db=db,
             data={
                 "username": "test_delete_user",
-                "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
             },
         )
         saved_user_id = user.id
 
-        FidesopsUserPermissions.create(
+        FidesUserPermissions.create(
             db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
         )
 
@@ -225,7 +228,11 @@ class TestDeleteUser:
         saved_permissions_id = user.permissions.id
 
         client, _ = ClientDetail.create_client_and_secret(
-            db, [USER_DELETE], user_id=user.id
+            db,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
+            scopes=[USER_DELETE],
+            user_id=user.id,
         )
         assert client.user == user
         saved_client_id = client.id
@@ -235,7 +242,7 @@ class TestDeleteUser:
             JWE_PAYLOAD_CLIENT_ID: client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload))
+        jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         auth_header = {"Authorization": "Bearer " + jwe}
 
         response = api_client.delete(
@@ -245,32 +252,36 @@ class TestDeleteUser:
 
         db.expunge_all()
 
-        user_search = FidesopsUser.get_by(db, field="id", value=saved_user_id)
+        user_search = FidesUser.get_by(db, field="id", value=saved_user_id)
         assert user_search is None
 
         client_search = ClientDetail.get_by(db, field="id", value=saved_client_id)
         assert client_search is None
 
-        permissions_search = FidesopsUserPermissions.get_by(
+        permissions_search = FidesUserPermissions.get_by(
             db, field="id", value=saved_permissions_id
         )
         assert permissions_search is None
 
     def test_delete_user_as_root(self, api_client, db, generate_auth_header, user):
-        other_user = FidesopsUser.create(
+        other_user = FidesUser.create(
             db=db,
             data={
                 "username": "test_delete_user",
-                "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
             },
         )
 
-        FidesopsUserPermissions.create(
+        FidesUserPermissions.create(
             db=db, data={"user_id": other_user.id, "scopes": [PRIVACY_REQUEST_READ]}
         )
 
         user_client, _ = ClientDetail.create_client_and_secret(
-            db, [USER_DELETE], user_id=other_user.id
+            db,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
+            scopes=[USER_DELETE],
+            user_id=other_user.id,
         )
         client_id = user_client.id
         saved_user_id = other_user.id
@@ -286,7 +297,7 @@ class TestDeleteUser:
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload))
+        jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         auth_header = {"Authorization": "Bearer " + jwe}
 
         response = api_client.delete(
@@ -296,14 +307,14 @@ class TestDeleteUser:
 
         db.expunge_all()
 
-        user_search = FidesopsUser.get_by(db, field="id", value=saved_user_id)
+        user_search = FidesUser.get_by(db, field="id", value=saved_user_id)
         assert user_search is None
 
         # Deleted user's client is also deleted
         client_search = ClientDetail.get_by(db, field="id", value=client_id)
         assert client_search is None
 
-        permissions_search = FidesopsUserPermissions.get_by(
+        permissions_search = FidesUserPermissions.get_by(
             db, field="id", value=saved_permission_id
         )
         assert permissions_search is None
@@ -350,7 +361,7 @@ class TestGetUsers:
 
     def test_get_users(self, api_client: TestClient, generate_auth_header, url, db):
         create_auth_header = generate_auth_header(scopes=[USER_CREATE])
-        saved_users: List[FidesopsUser] = []
+        saved_users: List[FidesUser] = []
         total_users = 25
         for i in range(total_users):
             body = {
@@ -361,7 +372,7 @@ class TestGetUsers:
             }
             resp = api_client.post(url, headers=create_auth_header, json=body)
             assert resp.status_code == HTTP_201_CREATED
-            user = FidesopsUser.get_by(db, field="username", value=body["username"])
+            user = FidesUser.get_by(db, field="username", value=body["username"])
             saved_users.append(user)
 
         get_auth_header = generate_auth_header(scopes=[USER_READ])
@@ -387,7 +398,7 @@ class TestGetUsers:
         self, api_client: TestClient, generate_auth_header, url, db
     ):
         create_auth_header = generate_auth_header(scopes=[USER_CREATE])
-        saved_users: List[FidesopsUser] = []
+        saved_users: List[FidesUser] = []
         total_users = 50
         for i in range(total_users):
             body = {
@@ -396,7 +407,7 @@ class TestGetUsers:
             }
             resp = api_client.post(url, headers=create_auth_header, json=body)
             assert resp.status_code == HTTP_201_CREATED
-            user = FidesopsUser.get_by(db, field="username", value=body["username"])
+            user = FidesUser.get_by(db, field="username", value=body["username"])
             saved_users.append(user)
 
         get_auth_header = generate_auth_header(scopes=[USER_READ])
@@ -624,7 +635,6 @@ class TestUpdateUserPassword:
         OLD_PASSWORD = "oldpassword"
         NEW_PASSWORD = "newpassword"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
-
         auth_header = generate_auth_header_for_user(
             user=application_user,
             scopes=[USER_PASSWORD_RESET],
@@ -638,7 +648,6 @@ class TestUpdateUserPassword:
             },
         )
         assert resp.status_code == HTTP_200_OK
-
         db.expunge(application_user)
         application_user = application_user.refresh_from_db(db=db)
         assert application_user.credentials_valid(password=NEW_PASSWORD)
@@ -682,7 +691,9 @@ class TestUserLogin:
         assert user.client is not None
         assert "token_data" in list(response.json().keys())
         token = response.json()["token_data"]["access_token"]
-        token_data = json.loads(extract_payload(token))
+        token_data = json.loads(
+            extract_payload(token, config.security.app_encryption_key)
+        )
         assert token_data["client-id"] == user.client.id
         assert token_data["scopes"] == [
             PRIVACY_REQUEST_READ
@@ -721,7 +732,9 @@ class TestUserLogin:
         assert user.client is not None
         assert "token_data" in list(response.json().keys())
         token = response.json()["token_data"]["access_token"]
-        token_data = json.loads(extract_payload(token))
+        token_data = json.loads(
+            extract_payload(token, config.security.app_encryption_key)
+        )
         assert token_data["client-id"] == existing_client_id
         assert token_data["scopes"] == [
             PRIVACY_REQUEST_READ
@@ -746,7 +759,10 @@ class TestUserLogout:
             JWE_PAYLOAD_CLIENT_ID: client_id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+        }
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == HTTP_204_NO_CONTENT
 
@@ -755,12 +771,12 @@ class TestUserLogout:
         assert client_search is None
 
         # Assert user is not deleted
-        user_search = FidesopsUser.get_by(db, field="id", value=user_id)
+        user_search = FidesUser.get_by(db, field="id", value=user_id)
         db.refresh(user_search)
         assert user_search is not None
 
         # Assert user permissions are not deleted
-        permission_search = FidesopsUserPermissions.get_by(
+        permission_search = FidesUserPermissions.get_by(
             db, field="user_id", value=user_id
         )
         assert permission_search is not None
@@ -775,7 +791,10 @@ class TestUserLogout:
             JWE_PAYLOAD_CLIENT_ID: client_id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+        }
         response = api_client.post(url, headers=auth_header, json={})
         assert HTTP_403_FORBIDDEN == response.status_code
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 import re
@@ -5,6 +7,8 @@ from collections import defaultdict
 from functools import reduce
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+import yaml
+from fideslib.core.config import load_file
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
 from fidesops.common_exceptions import FidesopsException
@@ -15,6 +19,13 @@ from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 logger = logging.getLogger(__name__)
 
 FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
+
+
+def load_config(filename: str) -> Dict:
+    """Loads the saas config from the yaml file"""
+    yaml_file = load_file([filename])
+    with open(yaml_file, "r") as file:
+        return yaml.safe_load(file).get("saas_config", [])
 
 
 def merge_fields(target: Field, source: Field) -> Field:
@@ -44,8 +55,8 @@ def get_collection_grouped_inputs(
     collections: List[Collection], name: str
 ) -> Optional[Set[str]]:
     """Get collection grouped inputs"""
-    collection: Collection = next(
-        (collect for collect in collections if collect.name == name), {}
+    collection: Collection | None = next(
+        (collect for collect in collections if collect.name == name), None
     )
     if not collection:
         return set()
@@ -56,8 +67,8 @@ def get_collection_after(
     collections: List[Collection], name: str
 ) -> Set[CollectionAddress]:
     """If specified, return the collections that need to run before the current collection for saas configs"""
-    collection: Collection = next(
-        (collect for collect in collections if collect.name == name), {}
+    collection: Collection | None = next(
+        (collect for collect in collections if collect.name == name), None
     )
     if not collection:
         return set()
@@ -182,7 +193,7 @@ def assign_placeholders(value: Any, param_values: Dict[str, Any]) -> Optional[An
         placeholders = re.findall("<([^<>]+)>", value)
         for placeholder in placeholders:
             placeholder_value = param_values.get(placeholder)
-            if placeholder_value:
+            if placeholder_value is not None:
                 value = value.replace(f"<{placeholder}>", str(placeholder_value))
             else:
                 return None

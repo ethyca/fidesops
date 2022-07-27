@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set
 
 from celery.utils.log import get_task_logger
+from fideslib.db.session import get_db_session
 from pydantic import ValidationError
 from redis.exceptions import DataError
 from sqlalchemy.orm import Session
@@ -10,7 +11,6 @@ from sqlalchemy.orm import Session
 from fidesops import common_exceptions
 from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.core.config import config
-from fidesops.db.session import get_db_session
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
@@ -54,11 +54,11 @@ def run_webhooks_and_report_status(
     Updates privacy request status if execution is paused/errored.
     Returns True if execution should proceed.
     """
-    webhooks = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)
+    webhooks = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)  # type: ignore
 
     if after_webhook_id:
         # Only run webhooks configured to run after this Pre-Execution webhook
-        pre_webhook = PolicyPreWebhook.get(db=db, id=after_webhook_id)
+        pre_webhook = PolicyPreWebhook.get(db=db, object_id=after_webhook_id)
         webhooks = webhooks.filter(
             webhook_cls.order > pre_webhook.order,
         )
@@ -119,7 +119,7 @@ def upload_access_results(
                 db=session,
                 request_id=privacy_request.id,
                 data=filtered_results,
-                storage_key=rule.storage_destination.key,
+                storage_key=rule.storage_destination.key,  # type: ignore
             )
         except common_exceptions.StorageUploadError as exc:
             logging.error(
@@ -167,12 +167,12 @@ def run_privacy_request(
     if from_step is not None:
         # Re-cast `from_step` into an Enum to enforce the validation since unserializable objects
         # can't be passed into and between tasks
-        from_step = PausedStep(from_step)
+        from_step = PausedStep(from_step)  # type: ignore
 
-    SessionLocal = get_db_session()
+    SessionLocal = get_db_session(config)
     with SessionLocal() as session:
 
-        privacy_request = PrivacyRequest.get(db=session, id=privacy_request_id)
+        privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
         if privacy_request.status == PrivacyRequestStatus.canceled:
             logging.info(
                 f"Terminating privacy request {privacy_request.id}: request canceled."
@@ -186,7 +186,7 @@ def run_privacy_request(
             proceed = run_webhooks_and_report_status(
                 session,
                 privacy_request=privacy_request,
-                webhook_cls=PolicyPreWebhook,
+                webhook_cls=PolicyPreWebhook,  # type: ignore
                 after_webhook_id=from_webhook_id,
             )
             if not proceed:
@@ -209,7 +209,7 @@ def run_privacy_request(
             connection_configs = ConnectionConfig.all(db=session)
 
             if (
-                not from_step == PausedStep.erasure
+                from_step != PausedStep.erasure
             ):  # Skip if we're resuming from erasure step
                 access_result: Dict[str, List[Row]] = run_access_request(
                     privacy_request=privacy_request,
@@ -257,7 +257,7 @@ def run_privacy_request(
         proceed = run_webhooks_and_report_status(
             db=session,
             privacy_request=privacy_request,
-            webhook_cls=PolicyPostWebhook,
+            webhook_cls=PolicyPostWebhook,  # type: ignore
         )
         if not proceed:
             session.close()
@@ -278,15 +278,15 @@ def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) ->
         id=privacy_request.id,
         replace_existing=True,
         trigger="date",
-        run_date=(datetime.now() + timedelta(seconds=config.redis.DEFAULT_TTL_SECONDS)),
+        run_date=(datetime.now() + timedelta(seconds=config.redis.default_ttl_seconds)),
     )
 
 
 def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
     """Mark "paused" PrivacyRequest as "errored" after its associated identity data in the redis cache has expired."""
-    SessionLocal = get_db_session()
+    SessionLocal = get_db_session(config)
     db = SessionLocal()
-    privacy_request = PrivacyRequest.get(db=db, id=privacy_request_id)
+    privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
     if not privacy_request:
         logger.info(
             f"Attempted to mark as expired. No privacy request with id'{privacy_request_id}' found."

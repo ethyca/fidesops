@@ -10,6 +10,14 @@ import pytest
 from dateutil.parser import parse
 from fastapi import HTTPException, status
 from fastapi_pagination import Params
+from fideslib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
+from fideslib.models.audit_log import AuditLog
+from fideslib.models.client import ClientDetail
+from fideslib.oauth.jwt import generate_jwe
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.endpoints.privacy_request_endpoints import (
@@ -38,8 +46,6 @@ from fidesops.api.v1.urn_registry import (
 from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
-from fidesops.models.audit_log import AuditLog
-from fidesops.models.client import ClientDetail
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import ActionType, PausedStep
 from fidesops.models.privacy_request import (
@@ -48,22 +54,16 @@ from fidesops.models.privacy_request import (
     ManualAction,
     PrivacyRequest,
     PrivacyRequestStatus,
-    StoppedCollection,
 )
 from fidesops.schemas.dataset import DryRunDatasetResponse
-from fidesops.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_SCOPES,
-)
 from fidesops.schemas.masking.masking_secrets import SecretType
 from fidesops.schemas.policy import PolicyResponse
+from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
-from fidesops.util.oauth_util import generate_jwe
 
 page_size = Params().size
 
@@ -99,7 +99,41 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        pr.delete(db=db)
+        assert run_access_request_mock.called
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_create_privacy_request_stores_identities(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+    ):
+        TEST_EMAIL = "test@example.com"
+        TEST_PHONE_NUMBER = "+1 234 567 8910"
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {
+                    "email": TEST_EMAIL,
+                    "phone_number": TEST_PHONE_NUMBER,
+                },
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        persisted_identity = pr.get_persisted_identity()
+        assert persisted_identity.email == TEST_EMAIL
+        assert persisted_identity.phone_number == TEST_PHONE_NUMBER
         pr.delete(db=db)
         assert run_access_request_mock.called
 
@@ -114,7 +148,7 @@ class TestCreatePrivacyRequest:
         api_client: TestClient,
         policy,
     ):
-        config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL = True
+        config.execution.require_manual_request_approval = True
 
         data = [
             {
@@ -128,11 +162,11 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         assert response_data[0]["status"] == "pending"
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         pr.delete(db=db)
         assert not run_access_request_mock.called
 
-        config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL = False
+        config.execution.require_manual_request_approval = False
 
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -156,7 +190,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         pr.delete(db=db)
         assert run_access_request_mock.called
 
@@ -211,7 +245,7 @@ class TestCreatePrivacyRequest:
         assert run_privacy_request_mock.called
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         pr.delete(db=db)
 
     @mock.patch(
@@ -239,7 +273,7 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         assert response_data[0]["external_id"] == external_id
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         assert pr.external_id == external_id
         pr.delete(db=db)
         assert run_access_request_mock.called
@@ -268,7 +302,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         key = get_identity_cache_key(
             privacy_request_id=pr.id,
             identity_attribute=list(identity.keys())[0],
@@ -301,7 +335,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         secret_key = get_masking_secret_cache_key(
             privacy_request_id=pr.id,
             masking_strategy="aes_encrypt",
@@ -351,7 +385,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         encryption_key = get_encryption_cache_key(
             privacy_request_id=pr.id,
             encryption_attr="key",
@@ -399,7 +433,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
-        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         assert pr.get_cached_task_id() is not None
         assert pr.get_async_execution_task() is not None
         pr.delete(db=db)
@@ -455,6 +489,7 @@ class TestGetPrivacyRequests:
         assert reviewer
         assert user.id == reviewer["id"]
         assert user.username == reviewer["username"]
+        privacy_request.delete(db)
 
     def test_get_privacy_requests_accept_datetime(
         self,
@@ -605,7 +640,7 @@ class TestGetPrivacyRequests:
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
         assert (
             resp["items"][0]["identity"]
-            == succeeded_privacy_request.get_cached_identity_data()
+            == succeeded_privacy_request.get_persisted_identity()
         )
 
         assert resp["items"][0]["policy"]["key"] == privacy_request.policy.key
@@ -650,7 +685,57 @@ class TestGetPrivacyRequests:
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == failed_privacy_request.id
 
+    def test_filter_privacy_request_by_multiple_statuses(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_request,
+        succeeded_privacy_request,
+        failed_privacy_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            url + f"?status=complete&status=error", headers=auth_header
+        )
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 2
+        assert resp["items"][0]["id"] == failed_privacy_request.id
+        assert resp["items"][1]["id"] == succeeded_privacy_request.id
+
     def test_filter_privacy_requests_by_internal_id(
+        self,
+        db,
+        api_client,
+        url,
+        generate_auth_header,
+        policy,
+    ):
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": "test@example.com"},
+                "id": "test_internal_id_1",
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        privacy_request = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            url + f"?request_id={privacy_request.id}",
+            headers=auth_header,
+        )
+        assert response.status_code == status.HTTP_200_OK
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == privacy_request.id
+
+    def test_filter_privacy_requests_by_identity_exact(
         self,
         db,
         api_client,
@@ -658,22 +743,19 @@ class TestGetPrivacyRequests:
         generate_auth_header,
         privacy_request,
     ):
+        TEST_EMAIL = "test-12345678910@example.com"
+        privacy_request.persist_identity(
+            db=db,
+            identity=PrivacyRequestIdentity(
+                email=TEST_EMAIL,
+            ),
+        )
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        new_request_id = "test_internal_id_1"
         response = api_client.get(
-            url + f"?request_id={new_request_id}", headers=auth_header
+            url + f"?identity={TEST_EMAIL}",
+            headers=auth_header,
         )
-        assert response.status_code == status.HTTP_200_OK
-        resp = response.json()
-        assert len(resp["items"]) == 0
-
-        privacy_request.id = new_request_id
-        privacy_request.save(db)
-
-        response = api_client.get(
-            url + f"?request_id={new_request_id}", headers=auth_header
-        )
-        assert response.status_code == status.HTTP_200_OK
+        assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == privacy_request.id
@@ -1001,8 +1083,13 @@ class TestGetPrivacyRequests:
         privacy_request.status = PrivacyRequestStatus.approved
         privacy_request.reviewed_by = user.id
         privacy_request.reviewed_at = reviewed_at
+        TEST_EMAIL = "test@example.com"
+        TEST_PHONE = "+1 234 567 8910"
         privacy_request.cache_identity(
-            {"email": "email@example.com", "phone_number": "111-111-1111"}
+            {
+                "email": TEST_EMAIL,
+                "phone_number": TEST_PHONE,
+            }
         )
         privacy_request.save(db)
 
@@ -1023,14 +1110,16 @@ class TestGetPrivacyRequests:
         first_row = next(csv_file)
         assert parse(first_row["Time received"], ignoretz=True) == created_at
         assert ast.literal_eval(first_row["Subject identity"]) == {
-            "email": "email@example.com",
-            "phone_number": "111-111-1111",
+            "email": TEST_EMAIL,
+            "phone_number": TEST_PHONE,
         }
         assert first_row["Policy key"] == "example_access_request_policy"
         assert first_row["Request status"] == "approved"
         assert first_row["Reviewer"] == user.id
         assert parse(first_row["Time approved/denied"], ignoretz=True) == reviewed_at
         assert first_row["Denial reason"] == ""
+
+        privacy_request.delete(db)
 
     def test_get_paused_access_privacy_request_resume_info(
         self, db, privacy_request, generate_auth_header, api_client, url
@@ -1164,7 +1253,7 @@ class TestGetExecutionLogs:
     def test_get_execution_logs_unauthenticated(
         self, api_client: TestClient, privacy_request, url
     ):
-        response = api_client.get(url + "/", headers={})
+        response = api_client.get(url, headers={})
         assert 401 == response.status_code
 
     def test_get_execution_logs_wrong_scope(
@@ -1518,7 +1607,10 @@ class TestApprovePrivacyRequest:
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+        }
 
         body = {"request_ids": [privacy_request.id]}
         response = api_client.patch(url, headers=auth_header, json=body)
@@ -1533,6 +1625,8 @@ class TestApprovePrivacyRequest:
         assert response_body["succeeded"][0]["reviewed_by"] == user.id
 
         assert submit_mock.called
+
+        privacy_request.delete(db)
 
 
 class TestDenyPrivacyRequest:
@@ -1614,7 +1708,10 @@ class TestDenyPrivacyRequest:
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+        }
 
         body = {"request_ids": [privacy_request.id]}
         response = api_client.patch(url, headers=auth_header, json=body)
@@ -1639,6 +1736,8 @@ class TestDenyPrivacyRequest:
 
         assert not submit_mock.called  # Shouldn't run! Privacy request was denied
 
+        privacy_request.delete(db)
+
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
@@ -1660,7 +1759,10 @@ class TestDenyPrivacyRequest:
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+        }
         denial_reason = "Your request was denied because reasons"
         body = {"request_ids": [privacy_request.id], "reason": denial_reason}
         response = api_client.patch(url, headers=auth_header, json=body)
@@ -1684,6 +1786,8 @@ class TestDenyPrivacyRequest:
         assert denial_audit_log.message == denial_reason
 
         assert not submit_mock.called  # Shouldn't run! Privacy request was denied
+
+        privacy_request.delete(db)
 
 
 class TestResumePrivacyRequest:
@@ -1712,7 +1816,9 @@ class TestResumePrivacyRequest:
     ):
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps({"unexpected": "format"}))
+            + generate_jwe(
+                json.dumps({"unexpected": "format"}), config.security.app_encryption_key
+            )
         }
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == 403
@@ -1738,7 +1844,8 @@ class TestResumePrivacyRequest:
                         "scopes": [PRIVACY_REQUEST_READ],
                         "iat": datetime.now().isoformat(),
                     }
-                )
+                ),
+                config.security.app_encryption_key,
             )
         }
         response = api_client.post(url, headers=auth_header, json={})
@@ -1761,7 +1868,8 @@ class TestResumePrivacyRequest:
                         "scopes": [PRIVACY_REQUEST_CALLBACK_RESUME],
                         "iat": datetime.now().isoformat(),
                     }
-                )
+                ),
+                config.security.app_encryption_key,
             )
         }
         response = api_client.post(url, headers=auth_header, json={})
@@ -1783,6 +1891,8 @@ class TestResumePrivacyRequest:
         )
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == 400
+
+        privacy_request.delete(db)
 
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -1835,6 +1945,8 @@ class TestResumePrivacyRequest:
             "resume_endpoint": None,
         }
 
+        privacy_request.delete(db)
+
 
 class TestResumeAccessRequestWithManualInput:
     @pytest.fixture(scope="function")
@@ -1878,6 +1990,8 @@ class TestResumeAccessRequestWithManualInput:
             == f"Cannot resume privacy request '{privacy_request.id}'; no paused details."
         )
 
+        privacy_request.delete(db)
+
     def test_resume_with_manual_input_collection_has_changed(
         self, db, api_client, url, generate_auth_header, privacy_request
     ):
@@ -1897,6 +2011,8 @@ class TestResumeAccessRequestWithManualInput:
             response.json()["detail"]
             == "Cannot save manual data. No collection in graph with name: 'manual_example:filing_cabinet'."
         )
+
+        privacy_request.delete(db)
 
     @pytest.mark.usefixtures(
         "postgres_example_test_dataset_config", "manual_dataset_config"
@@ -1925,6 +2041,8 @@ class TestResumeAccessRequestWithManualInput:
             response.json()["detail"]
             == "Cannot save manual rows. No 'mock' field defined on the 'manual_input:filing_cabinet' collection."
         )
+
+        privacy_request.delete(db)
 
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -1966,6 +2084,8 @@ class TestResumeAccessRequestWithManualInput:
 
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+        privacy_request.delete(db)
 
 
 class TestValidateManualInput:
@@ -2056,6 +2176,8 @@ class TestResumeErasureRequestWithManualConfirmation:
             == f"Cannot resume privacy request '{privacy_request.id}'; no paused details."
         )
 
+        privacy_request.delete(db)
+
     def test_resume_with_manual_erasure_confirmation_collection_has_changed(
         self, db, api_client, url, generate_auth_header, privacy_request
     ):
@@ -2076,6 +2198,8 @@ class TestResumeErasureRequestWithManualConfirmation:
             == "Cannot save manual data. No collection in graph with name: 'manual_example:filing_cabinet'."
         )
 
+        privacy_request.delete(db)
+
     def test_resume_still_paused_at_access_request(
         self, db, api_client, url, generate_auth_header, privacy_request
     ):
@@ -2095,6 +2219,8 @@ class TestResumeErasureRequestWithManualConfirmation:
             response.json()["detail"]
             == "Collection 'manual_example:filing_cabinet' is paused at the access step. Pass in manual data instead to '/privacy-request/{privacy_request_id}/manual_input' to resume."
         )
+
+        privacy_request.delete(db)
 
     @pytest.mark.usefixtures(
         "postgres_example_test_dataset_config", "manual_dataset_config"
@@ -2128,6 +2254,8 @@ class TestResumeErasureRequestWithManualConfirmation:
 
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+        privacy_request.delete(db)
 
 
 class TestRestartFromFailure:
@@ -2174,6 +2302,8 @@ class TestRestartFromFailure:
             response.json()["detail"]
             == f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection."
         )
+
+        privacy_request.delete(db)
 
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"

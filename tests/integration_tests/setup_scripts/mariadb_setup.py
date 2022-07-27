@@ -1,11 +1,11 @@
-from os import truncate
 from uuid import uuid4
 
 import pydash
 import sqlalchemy
 from fideslib.core.config import load_toml
+from fideslib.db.session import get_db_engine, get_db_session
 
-from fidesops.db.session import get_db_engine, get_db_session
+from fidesops.core.config import config
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -47,12 +47,12 @@ def setup():
                 "connection_type": ConnectionType.mariadb,
                 "access": AccessLevel.write,
                 "secrets": {
-                    "host": pydash.get(integration_config, "mariadb_example.SERVER"),
-                    "port": pydash.get(integration_config, "mariadb_example.PORT"),
-                    "dbname": pydash.get(integration_config, "mariadb_example.DB"),
-                    "username": pydash.get(integration_config, "mariadb_example.USER"),
+                    "host": pydash.get(integration_config, "mariadb_example.server"),
+                    "port": pydash.get(integration_config, "mariadb_example.port"),
+                    "dbname": pydash.get(integration_config, "mariadb_example.db"),
+                    "username": pydash.get(integration_config, "mariadb_example.user"),
                     "password": pydash.get(
-                        integration_config, "mariadb_example.PASSWORD"
+                        integration_config, "mariadb_example.password"
                     ),
                 },
             },
@@ -61,6 +61,7 @@ def setup():
 
     engine = get_db_engine(database_uri=uri)
     SessionLocal = get_db_session(
+        config=config,
         engine=engine,
         autocommit=True,
         autoflush=True,
@@ -69,7 +70,7 @@ def setup():
 
     truncate_tables(session)
 
-    with open("./data/sql/mariadb_example_data.sql", "r") as query_file:
+    with open("./docker/sample_data/mariadb_example_data.sql", "r") as query_file:
         lines = query_file.read().splitlines()
         filtered = [line for line in lines if not line.startswith("--")]
         queries = " ".join(filtered).split(";")

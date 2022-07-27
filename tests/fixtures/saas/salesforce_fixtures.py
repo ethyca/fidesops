@@ -1,48 +1,50 @@
-import os
 from typing import Any, Dict, Generator
 
 import pydash
 import pytest
 import requests
 from fideslib.core.config import load_toml
+from fideslib.cryptography import cryptographic_util
+from fideslib.db import session
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
-from fidesops.db import session
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.util import cryptographic_util
+from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
-from tests.fixtures.saas_example_fixtures import load_config
+from tests.test_helpers.vault_client import get_secrets
 
 saas_config = load_toml(["saas_config.toml"])
+secrets = get_secrets("salesforce")
 
 
 @pytest.fixture(scope="session")
 def salesforce_secrets():
     return {
-        "domain": pydash.get(saas_config, "salesforce.domain")
-        or os.environ.get("SALESFORCE_DOMAIN"),
+        "domain": pydash.get(saas_config, "salesforce.domain") or secrets["domain"],
         "username": pydash.get(saas_config, "salesforce.username")
-        or os.environ.get("SALESFORCE_USERNAME"),
+        or secrets["username"],
         "password": pydash.get(saas_config, "salesforce.password")
-        or os.environ.get("SALESFORCE_PASSWORD"),
+        or secrets["password"],
         "client_id": pydash.get(saas_config, "salesforce.client_id")
-        or os.environ.get("SALESFORCE_CLIENT_ID"),
+        or secrets["client_id"],
         "client_secret": pydash.get(saas_config, "salesforce.client_secret")
-        or os.environ.get("SALESFORCE_CLIENT_SECRET"),
+        or secrets["client_secret"],
         "access_token": pydash.get(saas_config, "salesforce.access_token")
-        or os.environ.get("SALESFORCE_ACCESS_TOKEN"),
+        or secrets["access_token"],
     }
 
 
 @pytest.fixture(scope="session")
 def salesforce_identity_email():
-    return pydash.get(saas_config, "salesforce.identity_email") or os.environ.get(
-        "SALESFORCE_IDENTITY_EMAIL"
+    return (
+        pydash.get(saas_config, "salesforce.identity_email")
+        or secrets["identity_email"]
     )
 
 
@@ -124,7 +126,7 @@ def salesforce_dataset_config(
 
 @pytest.fixture(scope="function")
 def salesforce_create_erasure_data(
-    salesforce_identity_email, salesforce_secrets
+    salesforce_erasure_identity_email, salesforce_secrets
 ) -> Generator:
     """
     Creates a dynamic test data record for tests.
@@ -150,7 +152,7 @@ def salesforce_create_erasure_data(
     contact_data = {
         "firstName": "Fidesops",
         "lastName": "Test Contact",
-        "email": salesforce_identity_email,
+        "email": salesforce_erasure_identity_email,
         "AccountId": account_id,
     }
     contacts_response = requests.post(
@@ -165,7 +167,7 @@ def salesforce_create_erasure_data(
     lead_data = {
         "firstName": "Fidesops",
         "lastName": "Test Lead",
-        "email": salesforce_identity_email,
+        "email": salesforce_erasure_identity_email,
         "Company": "Test Company",
     }
     leads_response = requests.post(
@@ -173,12 +175,13 @@ def salesforce_create_erasure_data(
         headers=headers,
         json=lead_data,
     )
+
     assert leads_response.ok
     lead_id = leads_response.json()["id"]
 
     # Create Case
     case_data = {
-        "SuppliedEmail": salesforce_identity_email,
+        "SuppliedEmail": salesforce_erasure_identity_email,
         "SuppliedCompany": "Test Company",
         "ContactId": contact_id,
     }
@@ -217,6 +220,30 @@ def salesforce_create_erasure_data(
         json=campaign_member_data,
     )
     assert campaign_members_response.ok
+
     campaign_member_id = campaign_members_response.json()["id"]
 
-    yield contact_id, lead_id, case_id, account_id, campaign_member_id
+    yield account_id, contact_id, case_id, lead_id, campaign_member_id
+
+    # cleanup data by doing a full deletion instead of just masking
+    case_response = requests.delete(
+        url=f"{base_url}/services/data/v54.0/sobjects/Case/{case_id}", headers=headers
+    )
+    assert case_response.status_code == HTTP_204_NO_CONTENT
+
+    case_response = requests.get(
+        url=f"{base_url}/services/data/v54.0/sobjects/Case/{case_id}", headers=headers
+    )
+    assert case_response.status_code == HTTP_404_NOT_FOUND
+
+    account_response = requests.delete(
+        url=f"{base_url}/services/data/v54.0/sobjects/Account/{account_id}",
+        headers=headers,
+    )
+    assert account_response.status_code == HTTP_204_NO_CONTENT
+
+    account_response = requests.get(
+        url=f"{base_url}/services/data/v54.0/sobjects/Account/{account_id}",
+        headers=headers,
+    )
+    assert account_response.status_code == HTTP_404_NOT_FOUND

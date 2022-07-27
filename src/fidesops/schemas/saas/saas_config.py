@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Set, Union
 
 from pydantic import BaseModel, Extra, root_validator, validator
@@ -113,8 +114,10 @@ class SaaSRequest(BaseModel):
         before any field validation.
         """
 
-        # delay import to avoid cyclic-dependency error
-        from fidesops.service.pagination.pagination_strategy_factory import get_strategy
+        # delay import to avoid cyclic-dependency error - We still ignore the pylint error
+        from fidesops.service.pagination.pagination_strategy_factory import (  # pylint: disable=R0401
+            get_strategy,
+        )
 
         pagination = values.get("pagination")
         if pagination is not None:
@@ -173,7 +176,53 @@ class ConnectorParam(BaseModel):
     description: Optional[str]
 
 
-class SaaSConfig(BaseModel):
+class SaaSType(Enum):
+    """
+    Enum to store saas connection type in Fidesops
+    """
+
+    adobe_campaign = "adobe_campaign"
+    mailchimp = "mailchimp"
+    hubspot = "hubspot"
+    outreach = "outreach"
+    salesforce = "salesforce"
+    segment = "segment"
+    sentry = "sentry"
+    stripe = "stripe"
+    zendesk = "zendesk"
+    custom = "custom"
+    sendgrid = "sendgrid"
+
+
+class SaaSConfigBase(BaseModel):
+    """
+    Used to store base info for a saas config
+    """
+
+    fides_key: FidesOpsKey
+    name: str
+    type: SaaSType
+
+    @property
+    def fides_key_prop(self) -> FidesOpsKey:
+        return self.fides_key
+
+    @property
+    def name_prop(self) -> str:
+        return self.name
+
+    @validator("type", pre=True)
+    def lowercase_saas_type(cls, value: str) -> str:
+        """Enforce lowercase on saas type."""
+        return value.lower()
+
+    class Config:
+        """Populate models with the raw value of enum fields, rather than the enum itself"""
+
+        use_enum_values = True
+
+
+class SaaSConfig(SaaSConfigBase):
     """
     Used to store endpoint and param configurations for a SaaS connector.
     This is done to separate the details of how to make the API calls
@@ -184,8 +233,6 @@ class SaaSConfig(BaseModel):
     for the graph traversal.
     """
 
-    fides_key: FidesOpsKey
-    name: str
     description: str
     version: str
     connector_params: List[ConnectorParam]
@@ -234,9 +281,9 @@ class SaaSConfig(BaseModel):
                 )
 
         return Dataset(
-            name=self.name,
+            name=super().name_prop,
             collections=collections,
-            connection_key=self.fides_key,
+            connection_key=super().fides_key_prop,
         )
 
 

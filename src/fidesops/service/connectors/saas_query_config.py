@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 from typing import Any, Dict, List, Optional, TypeVar
@@ -31,12 +33,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         endpoints: Dict[str, Endpoint],
         secrets: Dict[str, Any],
         data_protection_request: Optional[SaaSRequest] = None,
+        privacy_request: Optional[PrivacyRequest] = None,
     ):
         super().__init__(node)
         self.collection_name = node.address.collection
         self.endpoints = endpoints
         self.secrets = secrets
         self.data_protection_request = data_protection_request
+        self.privacy_request = privacy_request
         self.action: Optional[str] = None
 
     def get_request_by_action(self, action: str) -> Optional[SaaSRequest]:
@@ -48,7 +52,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             # store action name for logging purposes
             self.action = action
             collection_name = self.node.address.collection
-            request = self.endpoints[collection_name].requests[action]
+            request = self.endpoints[collection_name].requests[action]  # type: ignore
             logger.info(
                 f"Found matching endpoint to {action} '{collection_name}' collection"
             )
@@ -68,7 +72,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         gdpr_delete: Optional[SaaSRequest] = None
         delete: Optional[SaaSRequest] = None
 
-        if not config.execution.MASKING_STRICT:
+        if not config.execution.masking_strict:
             gdpr_delete = self.data_protection_request
             delete = self.get_request_by_action("delete")
 
@@ -128,7 +132,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         query statement (select statement, where clause, limit, offset, etc.)
         """
 
-        current_request: SaaSRequest = self.get_request_by_action("read")
+        current_request: SaaSRequest | None = self.get_request_by_action("read")
         if not current_request:
             raise FidesopsException(
                 f"The 'read' action is not defined for the '{self.collection_name}' "
@@ -150,16 +154,19 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                     self.secrets, param_value.connector_param
                 )
 
+        if self.privacy_request:
+            param_values["privacy_request_id"] = self.privacy_request.id
+
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
-            self.action, self.collection_name, current_request, param_values
+            self.action, self.collection_name, current_request, param_values  # type: ignore
         )
 
         logger.info(f"Populated request params for {current_request.path}")
 
         return saas_request_params
 
-    def generate_update_stmt(
+    def generate_update_stmt(  # pylint: disable=R0914
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> SaaSRequestParams:
         """
@@ -168,7 +175,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         if specified by the body field of the masking request.
         """
 
-        current_request: SaaSRequest = self.get_masking_request()
+        current_request: SaaSRequest = self.get_masking_request()  # type: ignore
         collection_name: str = self.node.address.collection
         collection_values: Dict[str, Row] = {collection_name: row}
         identity_data: Dict[str, Any] = request.get_cached_identity_data()
@@ -190,6 +197,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                     self.secrets, param_value.connector_param
                 )
 
+        if self.privacy_request:
+            param_values["privacy_request_id"] = self.privacy_request.id
+
+        # remove any row values for fields marked as read-only, these will be omitted from all update maps
+        for field_path, field in self.field_map().items():
+            if field.read_only:
+                pydash.unset(row, field_path.string_path)
+
         # mask row values
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
         masked_object: Dict[str, Any] = unflatten_dict(update_value_map)
@@ -208,7 +223,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
-            self.action, self.collection_name, current_request, param_values
+            self.action, self.collection_name, current_request, param_values  # type: ignore
         )
 
         logger.info(f"Populated request params for {current_request.path}")
@@ -217,19 +232,20 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
     def all_value_map(self, row: Row) -> Dict[str, Any]:
         """
-        Takes a row and preserves only the fields that are defined in the Dataset
-        and are not flagged as read-only. Used for scenarios when an update endpoint
-        has required fields other than just the fields being updated.
+        Takes a row and preserves only the fields that are defined in the Dataset.
+        Used for scenarios when an update endpoint has required fields other than
+        just the fields being updated.
         """
         all_value_map: Dict[str, Any] = {}
         for field_path, field in self.field_map().items():
-            # only map scalar fields that are not read-only
-            if isinstance(field, ScalarField) and not field.read_only:
-                # only map if the value exists on the row
-                if pydash.get(row, field_path.string_path) is not None:
-                    all_value_map[field_path.string_path] = pydash.get(
-                        row, field_path.string_path
-                    )
+            # only map scalar fields
+            if (
+                isinstance(field, ScalarField)
+                and pydash.get(row, field_path.string_path) is not None
+            ):
+                all_value_map[field_path.string_path] = pydash.get(
+                    row, field_path.string_path
+                )
         return all_value_map
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:

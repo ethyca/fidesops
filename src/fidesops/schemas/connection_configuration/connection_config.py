@@ -1,11 +1,12 @@
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pydantic import BaseModel, Extra
 
 from fidesops.models.connectionconfig import AccessLevel, ConnectionType
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
+from fidesops.schemas.saas.saas_config import SaaSConfigBase, SaaSType
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
@@ -52,6 +53,21 @@ class SystemType(Enum):
     manual = "manual"
 
 
+class ConnectionSystemTypeMap(BaseModel):
+    """
+    Describes the returned schema for connection types
+    """
+
+    identifier: Union[ConnectionType, SaaSType]
+    type: SystemType
+
+    class Config:
+        """Use enum values and set orm mode"""
+
+        use_enum_values = True
+        orm_mode = True
+
+
 class ConnectionConfigurationResponse(BaseModel):
     """
     Describes the returned schema for a ConnectionConfiguration.
@@ -69,6 +85,7 @@ class ConnectionConfigurationResponse(BaseModel):
     disabled: Optional[bool] = False
     last_test_timestamp: Optional[datetime]
     last_test_succeeded: Optional[bool]
+    saas_config: Optional[SaaSConfigBase]
 
     class Config:
         """Set orm_mode to support mapping to ConnectionConfig"""

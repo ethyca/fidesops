@@ -4,6 +4,7 @@ import enum
 from datetime import datetime
 from typing import Any, Optional
 
+from fideslib.db.base import Base
 from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
@@ -14,7 +15,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fidesops.core.config import config
-from fidesops.db.base_class import Base, JSONTypeOverride
+from fidesops.db.base_class import JSONTypeOverride
 from fidesops.schemas.saas.saas_config import SaaSConfig
 
 
@@ -70,7 +71,7 @@ class ConnectionConfig(Base):
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                config.security.APP_ENCRYPTION_KEY,
+                config.security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )

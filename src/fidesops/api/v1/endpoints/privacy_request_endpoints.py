@@ -5,13 +5,17 @@ import io
 import logging
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Callable, DefaultDict, Dict, List, Optional, Union
+from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Union
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Security
+from fastapi import Body, Depends, HTTPException, Security
+from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslib.models.audit_log import AuditLog, AuditLogAction
+from fideslib.models.client import ClientDetail
 from pydantic import conlist
+from sqlalchemy import column
 from sqlalchemy.orm import Query, Session
 from starlette.responses import StreamingResponse
 from starlette.status import (
@@ -49,8 +53,6 @@ from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph, Node
 from fidesops.graph.traversal import Traversal
-from fidesops.models.audit_log import AuditLog, AuditLogAction
-from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import PausedStep, Policy, PolicyPreWebhook
@@ -58,6 +60,7 @@ from fidesops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestStatus,
+    ProvidedIdentity,
 )
 from fidesops.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fidesops.schemas.external_https import PrivacyRequestResumeFormat
@@ -82,6 +85,7 @@ from fidesops.service.privacy_request.request_service import (
 )
 from fidesops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fidesops.task.task_resources import TaskResources
+from fidesops.util.api_router import APIRouter
 from fidesops.util.cache import FidesopsRedis
 from fidesops.util.collection_util import Row
 from fidesops.util.oauth_util import verify_callback_oauth, verify_oauth_client
@@ -97,7 +101,7 @@ def get_privacy_request_or_error(
     """Load the privacy request or throw a 404"""
     logger.info(f"Finding privacy request with id '{privacy_request_id}'")
 
-    privacy_request = PrivacyRequest.get(db, id=privacy_request_id)
+    privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
 
     if not privacy_request:
         raise HTTPException(
@@ -124,7 +128,7 @@ def create_privacy_request(
 
     You cannot update privacy requests after they've been created.
     """
-    if not config.redis.ENABLED:
+    if not config.redis.enabled:
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
@@ -177,6 +181,9 @@ def create_privacy_request(
 
         try:
             privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
+            privacy_request.persist_identity(
+                db=db, identity=privacy_request_data.identity
+            )
 
             cache_data(
                 privacy_request,
@@ -186,7 +193,7 @@ def create_privacy_request(
                 None,
             )
 
-            if not config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL:
+            if not config.execution.require_manual_request_approval:
                 queue_privacy_request(privacy_request.id)
 
         except common_exceptions.RedisConnectionError as exc:
@@ -248,7 +255,7 @@ def privacy_request_csv_download(
         csv_file.writerow(
             [
                 pr.created_at,
-                pr.get_cached_identity_data(),
+                pr.get_persisted_identity().dict(),
                 pr.policy.key if pr.policy else None,
                 pr.status.value if pr.status else None,
                 pr.reviewed_by,
@@ -288,9 +295,11 @@ def execution_logs_by_dataset_name(
 
 
 def _filter_privacy_request_queryset(
+    db: Session,
     query: Query,
     request_id: Optional[str] = None,
-    status: Optional[PrivacyRequestStatus] = None,
+    identity: Optional[str] = None,
+    status: Optional[List[PrivacyRequestStatus]] = None,
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
     started_lt: Optional[datetime] = None,
@@ -302,7 +311,10 @@ def _filter_privacy_request_queryset(
     external_id: Optional[str] = None,
 ) -> Query:
     """
-    Utility method to apply filters to our privacy request query
+    Utility method to apply filters to our privacy request query.
+
+    Status supports "or" filtering:
+    ?status=approved&status=pending will be translated into an "or" query.
     """
     if any([completed_lt, completed_gt]) and any([errored_lt, errored_gt]):
         raise HTTPException(
@@ -330,13 +342,24 @@ def _filter_privacy_request_queryset(
                 detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
             )
 
+    if identity:
+        hashed_identity = ProvidedIdentity.hash_value(value=identity)
+        identities: Set[str] = {
+            identity[0]
+            for identity in ProvidedIdentity.filter(
+                db=db,
+                conditions=(ProvidedIdentity.hashed_value == hashed_identity),
+            ).values(column("privacy_request_id"))
+        }
+        query = query.filter(PrivacyRequest.id.in_(identities))
+
     # Further restrict all PrivacyRequests by query params
     if request_id:
         query = query.filter(PrivacyRequest.id.ilike(f"{request_id}%"))
     if external_id:
         query = query.filter(PrivacyRequest.external_id.ilike(f"{external_id}%"))
     if status:
-        query = query.filter(PrivacyRequest.status == status)
+        query = query.filter(PrivacyRequest.status.in_(status))
     if created_lt:
         query = query.filter(PrivacyRequest.created_at < created_lt)
     if created_gt:
@@ -396,9 +419,9 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
         resume_endpoint = PRIVACY_REQUEST_RETRY
 
     if stopped_collection_details:
-        stopped_collection_details.step = stopped_collection_details.step.value
+        stopped_collection_details.step = stopped_collection_details.step.value  # type: ignore
         stopped_collection_details.collection = (
-            stopped_collection_details.collection.value
+            stopped_collection_details.collection.value  # type: ignore
         )
 
     privacy_request.stopped_collection_details = stopped_collection_details
@@ -425,7 +448,10 @@ def get_request_status(
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
     request_id: Optional[str] = None,
-    status: Optional[PrivacyRequestStatus] = None,
+    identity: Optional[str] = None,
+    status: Optional[List[PrivacyRequestStatus]] = FastAPIQuery(
+        default=None
+    ),  # type:ignore
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
     started_lt: Optional[datetime] = None,
@@ -448,8 +474,10 @@ def get_request_status(
     logger.info(f"Finding all request statuses with pagination params {params}")
     query = db.query(PrivacyRequest)
     query = _filter_privacy_request_queryset(
+        db,
         query,
         request_id,
+        identity,
         status,
         created_lt,
         created_gt,
@@ -481,7 +509,7 @@ def get_request_status(
         # Conditionally include the cached identity data in the response if
         # it is explicitly requested
         for item in paginated.items:  # type: ignore
-            item.identity = item.get_cached_identity_data()
+            item.identity = item.get_persisted_identity().dict()
             attach_resume_instructions(item)
     else:
         for item in paginated.items:  # type: ignore
@@ -551,7 +579,7 @@ def get_request_preview_queries(
             dataset_configs.append(dataset_config)
     try:
         connection_configs: List[ConnectionConfig] = [
-            ConnectionConfig.get(db=db, id=dataset.connection_config_id)
+            ConnectionConfig.get(db=db, object_id=dataset.connection_config_id)
             for dataset in dataset_configs
         ]
 
@@ -607,12 +635,14 @@ def resume_privacy_request(
 ) -> PrivacyRequestResponse:
     """Resume running a privacy request after it was paused by a Pre-Execution webhook"""
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
-    privacy_request.cache_identity(webhook_callback.derived_identity)
+    # We don't want to persist derived identities because they have not been provided
+    # by the end user
+    privacy_request.cache_identity(webhook_callback.derived_identity)  # type: ignore
 
     if privacy_request.status != PrivacyRequestStatus.paused:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid resume request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+            detail=f"Invalid resume request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
     logger.info(
@@ -664,7 +694,7 @@ def resume_privacy_request_with_manual_input(
     if privacy_request.status != PrivacyRequestStatus.paused:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid resume request: privacy request '{privacy_request.id}' "
+            detail=f"Invalid resume request: privacy request '{privacy_request.id}' "  # type: ignore
             f"status = {privacy_request.status.value}. Privacy request is not paused.",
         )
 
@@ -709,7 +739,7 @@ def resume_privacy_request_with_manual_input(
         logger.info(
             f"Caching manually erased row count for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
         )
-        privacy_request.cache_manual_erasure_count(paused_collection, manual_count)
+        privacy_request.cache_manual_erasure_count(paused_collection, manual_count)  # type: ignore
 
     logger.info(
         f"Resuming privacy request '{privacy_request_id}', {paused_step.value} step, from collection "
@@ -805,7 +835,7 @@ def restart_privacy_request_from_failure(
     if privacy_request.status != PrivacyRequestStatus.error:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+            detail=f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
     failed_details: Optional[
@@ -846,7 +876,7 @@ def review_privacy_request(
     failed: List[Dict[str, Any]] = []
 
     for request_id in request_ids:
-        privacy_request = PrivacyRequest.get(db, id=request_id)
+        privacy_request = PrivacyRequest.get(db, object_id=request_id)
         if not privacy_request:
             failed.append(
                 {

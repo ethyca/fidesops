@@ -3,11 +3,12 @@ from typing import Dict, Generator, List
 from uuid import uuid4
 
 import pytest
+from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fidesops.db.session import get_db_engine, get_db_session
+from fidesops.core.config import config
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -192,6 +193,7 @@ def postgres_integration_session_cls(connection_config):
     example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
     engine = get_db_engine(database_uri=example_postgres_uri)
     SessionLocal = get_db_session(
+        config=config,
         engine=engine,
         autocommit=True,
         autoflush=True,
@@ -211,7 +213,7 @@ def postgres_integration_db(postgres_integration_session):
         # we should drop the DB this way instead
         drop_database(postgres_integration_session.bind.url)
     create_database(postgres_integration_session.bind.url)
-    with open("./data/sql/postgres_example.sql", "r") as query_file:
+    with open("./docker/sample_data/postgres_example.sql", "r") as query_file:
         lines = query_file.read().splitlines()
         filtered = [line for line in lines if not line.startswith("--")]
         queries = " ".join(filtered).split(";")

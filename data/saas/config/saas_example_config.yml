@@ -1,6 +1,7 @@
 saas_config:
   fides_key: saas_connector_example
   name: SaaS Example Config
+  type: custom
   description: A sample schema representing a SaaS connector for Fidesops
   version: 0.0.1
 
@@ -181,4 +182,22 @@ saas_config:
           body: |
             {
               <all_object_fields>
+            }
+    - name: data_management
+      requests:
+        read:
+          method: GET
+          path: /v1/privacy_request/<privacy_request_id>
+          param_values:
+            - name: placeholder
+              identity: email
+        update:
+          method: POST
+          path: /v1/privacy_request/
+          param_values:
+            - name: placeholder
+              identity: email
+          body: |
+            {
+              "unique_id": "<privacy_request_id>"
             }

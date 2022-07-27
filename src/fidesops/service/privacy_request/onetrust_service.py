@@ -4,15 +4,16 @@ from datetime import datetime, timedelta
 from typing import Dict, Final, List, Optional, Union
 
 import requests
+from fideslib.db.session import get_db_session
+from fideslib.exceptions import AuthenticationError
 from requests import Response
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import (
-    AuthenticationException,
     PolicyNotFoundException,
     StorageConfigNotFoundException,
 )
-from fidesops.db.session import get_db_session
+from fidesops.core.config import config
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.models.storage import StorageConfig
@@ -48,7 +49,7 @@ class OneTrustService:
     @staticmethod
     def intake_onetrust_requests(config_key: FidesOpsKey) -> None:
         """Intake onetrust requests"""
-        SessionLocal = get_db_session()
+        SessionLocal = get_db_session(config)
         db = SessionLocal()
 
         onetrust_config: Optional[StorageConfig] = StorageConfig.get_by(
@@ -79,7 +80,7 @@ class OneTrustService:
             hostname=hostname,
         )
         if not access_token:
-            raise AuthenticationException(
+            raise AuthenticationError(
                 f"Authentication denied for storage config with key: {config_key}"
             )
         all_requests: Final[List[OneTrustRequest]] = OneTrustService._get_all_requests(
@@ -93,14 +94,14 @@ class OneTrustService:
             identity_kwargs = {"email": request.email}
             identity = PrivacyRequestIdentity(**identity_kwargs)
             fides_task: Optional[OneTrustSubtask] = OneTrustService._get_fides_subtask(
-                hostname, request.requestQueueRefId, access_token
+                hostname, request.requestQueueRefId, access_token  # type: ignore
             )
             if fides_task is None:
                 # no fides task associated with this request
                 continue
             OneTrustService._create_privacy_request(
-                fides_task.subTaskId,
-                request.dateCreated,
+                fides_task.subTaskId,  # type: ignore
+                request.dateCreated,  # type: ignore
                 identity,
                 onetrust_policy,
                 hostname,
@@ -151,7 +152,12 @@ class OneTrustService:
             "client_id": onetrust_policy.client_id,
             "external_id": subtask_id,
         }
+
         privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
+        privacy_request.persist_identity(
+            db=db,
+            identity=PrivacyRequestIdentity(email=identity.email),
+        )
         privacy_request.cache_identity(identity)
         try:
             queue_privacy_request(privacy_request_id=privacy_request.id)

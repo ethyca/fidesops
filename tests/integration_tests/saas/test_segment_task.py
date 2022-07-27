@@ -12,6 +12,7 @@ from fidesops.task.graph_task import get_cached_data_for_erasures
 from tests.graph.graph_test_util import assert_rows_match
 
 
+@pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_segment
 def test_segment_saas_access_request_task(
@@ -147,7 +148,7 @@ def test_segment_saas_erasure_request_task(
     segment_erasure_data,
 ) -> None:
     """Full erasure request based on the Segment SaaS config"""
-    config.execution.MASKING_STRICT = False  # Allow GDPR Delete
+    config.execution.masking_strict = False  # Allow GDPR Delete
 
     # Create user for GDPR delete
     erasure_email = segment_erasure_identity_email
@@ -224,4 +225,4 @@ def test_segment_saas_erasure_request_task(
         "segment_connector_example:track_events": 0,
     }
 
-    config.execution.MASKING_STRICT = True  # Reset
+    config.execution.masking_strict = True  # Reset
