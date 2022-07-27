@@ -366,8 +366,8 @@ class TestSkipDisabledCollection:
         integration_postgres_config,
         example_datasets,
     ) -> None:
-        """Assert that disabling a collection while the privacy request is in progress doesn't affect the current execution plan.
-        We still proceed to visit the disabled collections, because we rely on the ConnectionConfigs already in memory.
+        """Assert that disabling a collection while the privacy request is in progress can affect the current execution plan.
+        ConnectionConfigs that are disabled while a request is in progress will be skipped after the current session is committed.
         """
         # Create a new ConnectionConfig instead of using the fixture because I need to be able to access this
         # outside of the current session.
@@ -423,9 +423,9 @@ class TestSkipDisabledCollection:
             {"email": "customer-1@example.com"},
             db,
         )
-        assert any(
+        assert not any(
             collection.startswith("mongo_test") for collection in results
-        ), "mongo results still returned"
+        ), "mongo results not returned"
         assert any(
             collection.startswith("postgres_example_test_dataset")
             for collection in results
@@ -443,8 +443,8 @@ class TestSkipDisabledCollection:
         )
         assert mongo_logs.count() == 9
         assert (
-            mongo_logs.filter_by(status="complete").count() == 9
-        ), "No mongo collections skipped"
+            mongo_logs.filter_by(status="skipped").count() == 9
+        ), "All mongo collections skipped"
 
         db.delete(mongo_connection_config)
 
