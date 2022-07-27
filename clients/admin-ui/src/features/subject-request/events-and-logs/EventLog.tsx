@@ -12,16 +12,15 @@ import {
 import { format } from "date-fns-tz";
 import React from "react";
 
-import { ExecutionLog, ExecutionLogStatus } from "../privacy-requests/types";
+import { ExecutionLog, ExecutionLogStatus } from "../../privacy-requests/types";
 
 type EventDetailsProps = {
-  eventDetails: ExecutionLog[];
+  eventLogs: ExecutionLog[];
   openStackTrace: () => void;
 };
 
-const EventDetails = ({ eventDetails, openStackTrace }: EventDetailsProps) => {
-  const isError = "sdfsdfsdf";
-  const tableItems = eventDetails?.map((detail) => (
+const EventLog = ({ eventLogs, openStackTrace }: EventDetailsProps) => {
+  const tableItems = eventLogs?.map((detail) => (
     <Tr
       key={detail.updated_at}
       _hover={{
@@ -132,4 +131,4 @@ const EventDetails = ({ eventDetails, openStackTrace }: EventDetailsProps) => {
   );
 };
 
-export default EventDetails;
+export default EventLog;

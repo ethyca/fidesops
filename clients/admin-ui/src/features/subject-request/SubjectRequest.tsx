@@ -1,7 +1,7 @@
 import React from "react";
 
 import { PrivacyRequest } from "../privacy-requests/types";
-import EventsAndLogs from "./EventsAndLogs";
+import EventsAndLogs from "./events-and-logs/EventsAndLogs";
 import RequestDetails from "./RequestDetails";
 import SubjectIdentities from "./SubjectIdentities";
 

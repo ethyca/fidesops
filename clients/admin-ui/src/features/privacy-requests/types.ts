@@ -49,9 +49,11 @@ export interface Rule {
   action_type: ActionType;
 }
 
+export type PrivacyRequestResults = Record<string, ExecutionLog[]>;
+
 export interface PrivacyRequest {
   status: PrivacyRequestStatus;
-  results?: Record<string, ExecutionLog[]>;
+  results?: PrivacyRequestResults;
   identity: {
     email?: string;
     phone_number?: string;
