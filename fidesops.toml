@@ -1,4 +1,5 @@
 port = 8080
+oauth_instance = "local"
 
 [database]
 server = "db"

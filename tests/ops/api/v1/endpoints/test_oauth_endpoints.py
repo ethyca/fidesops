@@ -476,7 +476,7 @@ class TestCallback:
                 "state": "new_request",
             },
         )
-        response = api_client.post(
+        response = api_client.get(
             callback_url, params={"code": "abc", "state": "new_request"}
         )
         assert response.ok
@@ -505,7 +505,7 @@ class TestCallback:
                 "state": "new_request",
             },
         )
-        response = api_client.post(
+        response = api_client.get(
             callback_url, params={"code": "abc", "state": "new_request"}
         )
         assert response.status_code == 400
