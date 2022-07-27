@@ -13,6 +13,7 @@ def dev(session: nox.Session) -> None:
     datastores = session.posargs or None
     if not datastores:
         # Run the webserver without integrations
+        # Spin up the webserver before the RUN
         session.run(*RUN, "/bin/bash", external=True)
     else:
         # Run the webserver with additional datastores
