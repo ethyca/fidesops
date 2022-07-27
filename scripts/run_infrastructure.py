@@ -10,11 +10,11 @@ from typing import List
 
 DOCKER_WAIT = 5
 DOCKERFILE_DATASTORES = [
-    "mssql",
     "postgres",
     "mysql",
     "mongodb",
     "mariadb",
+    "mssql",
 ]
 EXTERNAL_DATASTORE_CONFIG = {
     "snowflake": ["SNOWFLAKE_TEST_URI"],

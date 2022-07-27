@@ -7,7 +7,7 @@
 REGISTRY := ethyca
 IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
 
-# IMAGE_NAME is webserver rather than fidesops_webserver because commands that don't
+# COMPOSE_SERVICE_NAME is webserver rather than fidesops_webserver because commands that don't
 # use docker-compose fail with fidesops_webserver. When left as webserver here both
 # sets of commands work.
 COMPOSE_SERVICE_NAME := webserver
@@ -192,7 +192,7 @@ clean:
 compose-build:
 	@echo "Tearing down the docker compose images, network, etc..."
 	@docker-compose down --remove-orphans
-	@docker-compose build --build-arg REQUIRE_MSSQL="true"
+	@docker-compose build --build-arg SKIP_MSSQL_INSTALLATION="false"
 
 .PHONY: isort
 isort:

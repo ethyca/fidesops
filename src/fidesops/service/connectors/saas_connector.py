@@ -25,7 +25,7 @@ from fidesops.service.processors.post_processor_strategy.post_processor_strategy
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
     get_strategy as get_postprocessor_strategy,
 )
-from fidesops.util.saas_util import assign_placeholders
+from fidesops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +40,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.client_config = self.saas_config.client_config  # type: ignore
         self.endpoints = self.saas_config.top_level_endpoint_dict  # type: ignore
         self.collection_name: Optional[str] = None
+        self.privacy_request: Optional[PrivacyRequest] = None
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
         """
@@ -49,14 +50,21 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         # store collection_name for logging purposes
         self.collection_name = node.address.collection
         return SaaSQueryConfig(
-            node, self.endpoints, self.secrets, self.saas_config.data_protection_request  # type: ignore
+            node,
+            self.endpoints,
+            self.secrets,  # type: ignore
+            self.saas_config.data_protection_request,  # type: ignore
+            self.privacy_request,  # type: ignore
         )
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
         test_request: SaaSRequest = self.saas_config.test_request  # type: ignore
-        prepared_request: SaaSRequestParams = SaaSRequestParams(
-            method=test_request.method, path=test_request.path
+        prepared_request = map_param_values(
+            "test",
+            f"{self.configuration.name}",
+            test_request,
+            self.configuration.secrets,  # type: ignore
         )
         client: AuthenticatedClient = self.create_client_from_request(test_request)
         client.send(prepared_request)
@@ -103,7 +111,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
+
         # generate initial set of requests if read request is defined, otherwise raise an exception
+        self.privacy_request = privacy_request
         query_config: SaaSQueryConfig = self.query_config(node)
         read_request: Optional[SaaSRequest] = query_config.get_request_by_action("read")
         if not read_request:
@@ -139,6 +149,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Executes the prepared request and handles response postprocessing and pagination.
         Returns processed data and request_params for next page of data if available.
         """
+
         client: AuthenticatedClient = self.create_client_from_request(saas_request)
         response: Response = client.send(prepared_request, saas_request.ignore_errors)
         response = self._handle_errored_response(saas_request, response)
@@ -186,6 +197,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         The final result is returned as a list of processed objects.
         """
+
         rows: List[Row] = []
         processed_data = response_data
         for postprocessor in postprocessors or []:
@@ -230,6 +242,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated."""
 
+        self.privacy_request = privacy_request
         query_config = self.query_config(node)
         masking_request = query_config.get_masking_request()
         if not masking_request:

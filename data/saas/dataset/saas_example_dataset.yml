@@ -201,3 +201,9 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               read_only: True
+      - name: data_management
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string

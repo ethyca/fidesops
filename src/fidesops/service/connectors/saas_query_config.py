@@ -33,12 +33,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         endpoints: Dict[str, Endpoint],
         secrets: Dict[str, Any],
         data_protection_request: Optional[SaaSRequest] = None,
+        privacy_request: Optional[PrivacyRequest] = None,
     ):
         super().__init__(node)
         self.collection_name = node.address.collection
         self.endpoints = endpoints
         self.secrets = secrets
         self.data_protection_request = data_protection_request
+        self.privacy_request = privacy_request
         self.action: Optional[str] = None
 
     def get_request_by_action(self, action: str) -> Optional[SaaSRequest]:
@@ -152,6 +154,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                     self.secrets, param_value.connector_param
                 )
 
+        if self.privacy_request:
+            param_values["privacy_request_id"] = self.privacy_request.id
+
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
             self.action, self.collection_name, current_request, param_values  # type: ignore
@@ -161,7 +166,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         return saas_request_params
 
-    def generate_update_stmt(
+    def generate_update_stmt(  # pylint: disable=R0914
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> SaaSRequestParams:
         """
@@ -192,6 +197,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                     self.secrets, param_value.connector_param
                 )
 
+        if self.privacy_request:
+            param_values["privacy_request_id"] = self.privacy_request.id
+
+        # remove any row values for fields marked as read-only, these will be omitted from all update maps
+        for field_path, field in self.field_map().items():
+            if field.read_only:
+                pydash.unset(row, field_path.string_path)
+
         # mask row values
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
         masked_object: Dict[str, Any] = unflatten_dict(update_value_map)
@@ -219,19 +232,20 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
     def all_value_map(self, row: Row) -> Dict[str, Any]:
         """
-        Takes a row and preserves only the fields that are defined in the Dataset
-        and are not flagged as read-only. Used for scenarios when an update endpoint
-        has required fields other than just the fields being updated.
+        Takes a row and preserves only the fields that are defined in the Dataset.
+        Used for scenarios when an update endpoint has required fields other than
+        just the fields being updated.
         """
         all_value_map: Dict[str, Any] = {}
         for field_path, field in self.field_map().items():
-            # only map scalar fields that are not read-only
-            if isinstance(field, ScalarField) and not field.read_only:
-                # only map if the value exists on the row
-                if pydash.get(row, field_path.string_path) is not None:
-                    all_value_map[field_path.string_path] = pydash.get(
-                        row, field_path.string_path
-                    )
+            # only map scalar fields
+            if (
+                isinstance(field, ScalarField)
+                and pydash.get(row, field_path.string_path) is not None
+            ):
+                all_value_map[field_path.string_path] = pydash.get(
+                    row, field_path.string_path
+                )
         return all_value_map
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:

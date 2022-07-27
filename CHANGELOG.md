@@ -18,6 +18,23 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.3...main)
 
+### Added
+* Erasure support for Salesforce [#888](https://github.com/ethyca/fidesops/pull/888)
+* Access and erasure support for Sendgrid contacts endpoint [#883](https://github.com/ethyca/fidesops/pull/883)
+* Added saas config base info to connection config responses [#904](https://github.com/ethyca/fidesops/pull/904)
+* Access and erasure support for Adobe Campaign [#905](https://github.com/ethyca/fidesops/pull/905)
+* Added db vs saas to connection type api [#937](https://github.com/ethyca/fidesops/pull/937)
+* Retry a DSR (FE) [#863](https://github.com/ethyca/fidesops/pull/938)
+
+### Changed
+
+* Users should be able to click on the full field of a dropdown-type filter to open up the dropdown [#747](https://github.com/ethyca/fidesops/pull/903)
+* Added `nox` commands to replace the `Makefile` [#919](https://github.com/ethyca/fidesops/pull/919)
+* Updated the python docker base image from slim-buster to slim-bullseye [928](https://github.com/ethyca/fidesops/pull/928)
+* Removed ipython from the docker install [928](https://github.com/ethyca/fidesops/pull/928)
+* Serve admin UI by default [#906](https://github.com/ethyca/fidesops/pull/936)
+* Updated the docs docker base image to be consistent with the fidesops image [949](https://github.com/ethyca/fidesops/pull/949)
+
 ### Breaking Changes
 
 * Update fidesops to use bcrypt for hashing [#876](https://github.com/ethyca/fidesops/pull/876)
@@ -25,6 +42,18 @@ The types of changes are:
 ### Changed
 
 * Updated fideslog==1.1.0 [#890](https://github.com/ethyca/fidesops/pull/890)
+
+### Developer Experience
+
+* Fix randomly failing mssql integration tests [918](https://github.com/ethyca/fidesops/pull/918)
+
+### Docs
+
+* Added zendesk and salesforce connection pages [#908](https://github.com/ethyca/fidesops/pull/908)
+
+### Fixed
+
+* Correct build arg variable name [925](https://github.com/ethyca/fidesops/pull/925)
 
 ## [1.6.3](https://github.com/ethyca/fidesops/compare/1.6.2...1.6.3)
 
@@ -47,6 +76,7 @@ The types of changes are:
 * Erasure support for Zendesk [#775](https://github.com/ethyca/fidesops/pull/775)
 * Adds endpoint to get the secrets required for different connectors [#795](https://github.com/ethyca/fidesops/pull/795)
 * Adds Vault for secrets management [#688](https://github.com/ethyca/fidesops/pull/869)
+* Adds privacy_request_id placeholder to use in SaaS configs [#911](https://github.com/ethyca/fidesops/pull/911)
 
 ### Changed
 
