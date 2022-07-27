@@ -449,7 +449,7 @@ class TestCallback:
         return V1_URL_PREFIX + OAUTH_CALLBACK
 
     def test_callback_for_missing_state(self, db, api_client: TestClient, callback_url):
-        response = api_client.post(
+        response = api_client.get(
             callback_url, params={"code": "abc", "state": "not_found"}
         )
         assert response.status_code == 404
