@@ -19,7 +19,9 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.3...main)
 
 ### Added
+
 * Erasure support for Salesforce [#888](https://github.com/ethyca/fidesops/pull/888)
+* Publish a `dev` tagged image on every push to main [#956](https://github.com/ethyca/fidesops/pull/956)
 * Access and erasure support for Sendgrid contacts endpoint [#883](https://github.com/ethyca/fidesops/pull/883)
 * Added saas config base info to connection config responses [#904](https://github.com/ethyca/fidesops/pull/904)
 * Access and erasure support for Adobe Campaign [#905](https://github.com/ethyca/fidesops/pull/905)
