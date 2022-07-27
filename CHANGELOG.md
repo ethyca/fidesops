@@ -46,6 +46,7 @@ The types of changes are:
 ### Docs
 
 * Added zendesk and salesforce connection pages [#908](https://github.com/ethyca/fidesops/pull/908)
+* Added nox command documentation [#960](https://github.com/ethyca/fidesops/pull/960)
 
 ### Fixed
 
