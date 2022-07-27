@@ -188,6 +188,7 @@ black: compose-build
 .PHONY: clean
 clean:
 	@echo "Cleaning project temporary files and installed dependencies..."
+	@make teardown
 	@docker rm -f $(DOCKER_CONTAINER_IDS) || echo "no containers to remove"
 	@docker volume rm $(DOCKER_VOLUME_IDS) || echo "no volumes to remove"
 	@docker system prune -a --volumes
