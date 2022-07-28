@@ -211,6 +211,18 @@ class FieldAddress:
             and self.collection == collection_address.collection
         )
 
+    @staticmethod
+    def from_string(field_address_str: str) -> FieldAddress:
+        """Generate a field address from a string of the form 'dataset:collection:field_path'"""
+        try:
+            field_address_components = field_address_str.split(":")
+            field_address_components[2]  # Ensure there are at least three components
+            return FieldAddress(*field_address_components)
+        except Exception:
+            raise FidesopsException(
+                f"'{field_address_str}' is not a valid field address"
+            )
+
     def collection_address(self) -> CollectionAddress:
         """Return the collection prefix of this field address."""
         return CollectionAddress(self.dataset, self.collection)
