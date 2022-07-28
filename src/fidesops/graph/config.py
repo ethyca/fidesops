@@ -216,7 +216,8 @@ class FieldAddress:
         """Generate a field address from a string of the form 'dataset:collection:field_path'"""
         try:
             field_address_components = field_address_str.split(":")
-            field_address_components[2]  # Ensure there are at least three components
+            # Ensure there are at least three components
+            field_address_components[2]  # pylint: disable=pointless-statement
             return FieldAddress(*field_address_components)
         except Exception:
             raise FidesopsException(

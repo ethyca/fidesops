@@ -2,6 +2,7 @@ from typing import Any, Dict
 
 import pytest
 
+from fidesops.graph.analytics_events import prepare_rerun_access_graph_analytics_event
 from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,
@@ -289,6 +290,12 @@ class TestGraphDiff:
             previous_results={},
         )
 
+        assert not find_graph_differences_summary(
+            previous_graph=previous_graph,
+            current_graph=formatted_current_graph,
+            previous_results={},
+        )
+
     def test_find_graph_differences_no_change(self, env_a_b_c):
         formatted_graph = format_graph_for_caching(
             env_a_b_c, [c_traversal_node().address]
@@ -514,3 +521,61 @@ class TestGraphDiff:
             remaining_collection_count=1,
             added_upstream_edge_count=2,
         )
+
+
+class TestCachePrivacyRequestAccessGraph:
+    def test_cache_privacy_request_access_graph(self, privacy_request, env_a_b_c):
+        end_nodes = [c_traversal_node().address]
+        formatted_graph = format_graph_for_caching(env_a_b_c, end_nodes)
+        privacy_request.cache_access_graph(formatted_graph)
+
+        cached_data = privacy_request.get_cached_access_graph()
+        assert cached_data == formatted_graph
+
+    def test_no_access_graph_cached(self, privacy_request):
+        cached_data = privacy_request.get_cached_access_graph()
+        assert cached_data is None
+
+
+class TestPrepareRerunAccessGraphEvent:
+    def test_rerun_access_graph_event_no_previous_graph(
+        self, privacy_request, env_a_b_c, resources
+    ):
+        end_nodes = [c_traversal_node().address]
+        analytics_event = prepare_rerun_access_graph_analytics_event(
+            privacy_request, env_a_b_c, end_nodes, resources
+        )
+        assert analytics_event is None
+
+    def test_rerun_access_graph_analytics_event(
+        self, privacy_request, env_a_b, env_a_b_c, resources
+    ):
+        end_nodes = [b_traversal_node().address]
+        formatted_graph = format_graph_for_caching(env_a_b, end_nodes)
+        privacy_request.cache_access_graph(formatted_graph)
+
+        end_nodes = [c_traversal_node().address]
+        analytics_event = prepare_rerun_access_graph_analytics_event(
+            privacy_request, env_a_b_c, end_nodes, resources
+        )
+
+        assert analytics_event.docker is True
+        assert analytics_event.event == "rerun_access_graph"
+        assert analytics_event.event_created_at is not None
+        assert analytics_event.extra_data == {
+            "prev_collection_count": 2,
+            "curr_collection_count": 3,
+            "added_collection_count": 1,
+            "removed_collection_count": 0,
+            "added_edge_count": 1,
+            "removed_edge_count": 0,
+            "processed_collection_count": 0,
+            "remaining_collection_count": 3,
+            "added_upstream_edge_count": 0,
+            "privacy_request": privacy_request.id,
+        }
+
+        assert analytics_event.error is None
+        assert analytics_event.status_code is None
+        assert analytics_event.endpoint is None
+        assert analytics_event.local_host is None

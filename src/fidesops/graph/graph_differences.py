@@ -110,7 +110,7 @@ def _get_upstream_edges(
 
 
 def _find_graph_differences(  # pylint: disable=too-many-locals
-    previous_graph: GraphRepr,
+    previous_graph: Optional[GraphRepr],
     current_graph: GraphRepr,
     previous_results: Dict[str, Optional[List[Row]]],
 ) -> Optional[GraphDiff]:
@@ -176,7 +176,7 @@ def _find_graph_differences(  # pylint: disable=too-many-locals
 
 
 def find_graph_differences_summary(
-    previous_graph: GraphRepr,
+    previous_graph: Optional[GraphRepr],
     current_graph: GraphRepr,
     previous_results: Dict[str, Optional[List[Row]]],
 ) -> Optional[GraphDiffSummary]:
