@@ -33,18 +33,24 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [isViewingError, setViewingError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const toggleIsViewingError = () => {
-    setViewingError(!isViewingError);
+  const openErrorPanel = (message: string) => {
+    setErrorMessage(message);
+    setViewingError(true);
   };
+
+  const closeErrorPanel = () => {
+    setViewingError(false);
+  };
+
   const closeDrawer = () => {
     if (isViewingError) {
-      toggleIsViewingError();
+      closeErrorPanel();
     }
 
     onClose();
   };
-  const btnRef = useRef<unknown>();
 
   const headerText = isViewingError ? "Event detail" : "Event log";
   if (eventData === undefined) {
@@ -79,21 +85,12 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
         View Log
       </Text>
 
-      {/* <Button */}
-      {/*   ref={btnRef as LegacyRef<HTMLButtonElement> | undefined} */}
-      {/*   colorScheme="teal" */}
-      {/*   onClick={() => { */}
-      {/*     onOpen(); */}
-      {/*   }} */}
-      {/* > */}
-      {/*   Open */}
-      {/* </Button> */}
       <Drawer
         isOpen={isOpen}
         placement="right"
         onClose={onClose}
         size="full"
-        finalFocusRef={btnRef as RefObject<FocusableElement>}
+        autoFocus={false}
       >
         <DrawerOverlay />
         <DrawerContent style={{ width: "50%" }}>
@@ -111,7 +108,7 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
                 {isViewingError ? (
                   <IconButton
                     icon={<ArrowBackIcon />}
-                    aria-label="Close Event Logs"
+                    aria-label="Close error logs"
                     size="sm"
                     style={{
                       height: "24px",
@@ -119,7 +116,7 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
                       minWidth: "24px",
                       marginRight: "8px",
                     }}
-                    onClick={toggleIsViewingError}
+                    onClick={closeErrorPanel}
                   />
                 ) : null}
                 <Text
@@ -154,10 +151,10 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
             {eventData && !isViewingError ? (
               <EventLog
                 eventLogs={eventData.logs}
-                openStackTrace={toggleIsViewingError}
+                openErrorPanel={openErrorPanel}
               />
             ) : null}
-            {isViewingError ? <EventError errorMessage="stacktrace!" /> : null}
+            {isViewingError ? <EventError errorMessage={errorMessage} /> : null}
           </DrawerBody>
         </DrawerContent>
       </Drawer>

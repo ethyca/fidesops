@@ -16,10 +16,10 @@ import { ExecutionLog, ExecutionLogStatus } from "../../privacy-requests/types";
 
 type EventDetailsProps = {
   eventLogs: ExecutionLog[];
-  openStackTrace: () => void;
+  openErrorPanel: (message: string) => void;
 };
 
-const EventLog = ({ eventLogs, openStackTrace }: EventDetailsProps) => {
+const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
   const tableItems = eventLogs?.map((detail) => (
     <Tr
       key={detail.updated_at}
@@ -27,15 +27,10 @@ const EventLog = ({ eventLogs, openStackTrace }: EventDetailsProps) => {
         backgroundColor: "#F7FAFC",
       }}
       onClick={() => {
-        if (detail.status === ExecutionLogStatus.IN_PROCESSING) {
-          openStackTrace();
-        }
+        openErrorPanel(detail.message);
       }}
       style={{
-        cursor:
-          detail.status === ExecutionLogStatus.IN_PROCESSING
-            ? "pointer"
-            : "unset",
+        cursor: "pointer",
       }}
     >
       <Td>
