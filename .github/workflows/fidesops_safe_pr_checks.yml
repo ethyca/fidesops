@@ -59,6 +59,9 @@ jobs:
       - name: Check fidesops installation
         run: nox -s check_install
 
+      - name: Check migrations
+        run: nox -s check_migrations
+
   isort:
     needs: Build
     runs-on: ubuntu-latest

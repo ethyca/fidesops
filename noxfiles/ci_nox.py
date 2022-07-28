@@ -1,6 +1,13 @@
 """Contains the nox sessions used during CI checks."""
 import nox
-from constants_nox import CI_ARGS, COMPOSE_SERVICE_NAME, RUN_NO_DEPS, START_APP
+from constants_nox import (
+    CI_ARGS,
+    COMPOSE_SERVICE_NAME,
+    IMAGE_LOCAL,
+    RUN,
+    RUN_NO_DEPS,
+    START_APP,
+)
 from docker_nox import build
 from run_infrastructure import run_infrastructure
 
@@ -82,9 +89,19 @@ def xenon(session: nox.Session) -> None:
 
 @nox.session()
 def check_install(session: nox.Session) -> None:
-    """Check that fidesops is installed."""
-    build(session, "test")
-    session.run("docker", "run", "ethyca/fidesops:local", "fidesops", external=True)
+    """Check that fidesops is installed in the container."""
+    session.run("docker", "run", IMAGE_LOCAL, "fidesops", external=True)
+
+
+@nox.session()
+def check_migrations(session: nox.Session) -> None:
+    """Check for missing migrations."""
+    check_migration_command = (
+        "python",
+        "-c",
+        "from fidesops.db.database import check_missing_migrations; from fidesops.core.config import config; check_missing_migrations(config.database.sqlalchemy_database_uri);",
+    )
+    session.run(*RUN, *check_migration_command, external=True)
 
 
 # Pytest
