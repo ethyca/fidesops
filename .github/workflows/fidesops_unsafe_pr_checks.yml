@@ -1,4 +1,4 @@
-name: CI Checks - Unsafe
+name: Fidesops CI Checks - Unsafe
 on:
   push:
     branches:
