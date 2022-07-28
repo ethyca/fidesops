@@ -119,7 +119,7 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
                       minWidth: "24px",
                       marginRight: "8px",
                     }}
-                    onClick={closeDrawer}
+                    onClick={toggleIsViewingError}
                   />
                 ) : null}
                 <Text
@@ -145,9 +145,7 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
                     backgroundColor: "#00000000",
                   }}
                   isRound
-                  onClick={() => {
-                    toggleIsViewingError();
-                  }}
+                  onClick={closeDrawer}
                 />
               </Flex>
             </Flex>
