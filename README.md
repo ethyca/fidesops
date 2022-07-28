@@ -20,7 +20,6 @@ If you're looking for a more detailed introduction to fidesops, we recommend fol
 
 - [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+)
 - [Python](https://www.python.org/downloads/) (3.8+)
-- [Nox](https://nox.thea.codes/en/stable/) (pip install nox)
 
 Run the quickstart in your terminal to give fidesops a test drive:
 

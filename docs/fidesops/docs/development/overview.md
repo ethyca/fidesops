@@ -14,11 +14,9 @@ commands to give you different functionality.
 ### System Requirements 
 
 1. Install Docker: https://docs.docker.com/desktop/#download-and-install
-2. Install [`nox`](https://nox.thea.codes/en/stable/) 
-   1. `pip install nox`
-3. [Create a fork of fidesops](https://docs.github.com/en/get-started/quickstart/fork-a-repo) 
-4. Clone your fork `git clone https://github.com/<your-fork-location>/fidesops.git`
-5. `cd fidesops`
+2. [Create a fork of fidesops](https://docs.github.com/en/get-started/quickstart/fork-a-repo) 
+3. Clone your fork `git clone https://github.com/<your-fork-location>/fidesops.git`
+4. `cd fidesops`
 
 ### Available `nox -s` commands
 - `build` - Build the Docker containers.
