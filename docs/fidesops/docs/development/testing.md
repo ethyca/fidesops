@@ -58,7 +58,7 @@ cd fidesops
 pytest
 ```
 
-2. From regular command-line: 
+2. From regular command-line:
 
 ```bash
 nox -s pytest_unit
@@ -69,11 +69,11 @@ nox -s pytest_unit
 To run a subset of tests, provide a filename or directory; to match a specific test name, use the `-k` flag:
 
 ```bash
-# run all tests in the tests/integration directory that contain the word "api" in their title
-pytest tests/integration/ -k api
+# run all tests in the tests/ops/integration directory that contain the word "api" in their title
+pytest tests/ops/integration/ -k api
 ```
 
-Other commands you may need are listed below. The full documentation can be found at: https://docs.pytest.org/en/6.2.x/.
+Other commands you may need are listed below. The full documentation can be found at: <https://docs.pytest.org/en/6.2.x/>.
 
 - Run all unit tests, except those that talk to integration databases - `nox -s pytest_unit`
 - Run all integration tests, except those on external datastores - `nox -s pytest_integration`

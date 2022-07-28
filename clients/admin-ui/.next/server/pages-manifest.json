@@ -1,0 +1,14 @@
+{
+  "/404": "pages/404.html",
+  "/_app": "pages/_app.js",
+  "/api/auth/[...nextauth]": "pages/api/auth/[...nextauth].js",
+  "/datastore-connection": "pages/datastore-connection.html",
+  "/": "pages/index.html",
+  "/login": "pages/login.html",
+  "/subject-request/[id]": "pages/subject-request/[id].html",
+  "/user-management": "pages/user-management.html",
+  "/user-management/new": "pages/user-management/new.html",
+  "/user-management/profile/[id]": "pages/user-management/profile/[id].html",
+  "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js"
+}
