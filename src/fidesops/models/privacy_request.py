@@ -441,14 +441,14 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     def cache_access_graph(self, value: GraphRepr) -> None:
         """Cache a representation of the graph built for the access request"""
         cache: FidesopsRedis = get_cache()
-        cache.set_encoded_object(f"{self.id}__access_graph", value)
+        cache.set_encoded_object(f"ACCESS_GRAPH__{self.id}", value)
 
     def get_cached_access_graph(self) -> Optional[GraphRepr]:
         """Fetch the graph built for the access request"""
         cache: FidesopsRedis = get_cache()
         value_dict: Optional[
             Dict[str, Optional[GraphRepr]]
-        ] = cache.get_encoded_objects_by_prefix(f"{self.id}__access_graph")
+        ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
 
     def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:

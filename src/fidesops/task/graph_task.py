@@ -11,6 +11,10 @@ from dask.threaded import get
 
 from fidesops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
 from fidesops.core.config import config
+from fidesops.graph.analytics_events import (
+    log_access_graph_rerun,
+    prepare_rerun_access_graph_analytics_event,
+)
 from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -20,6 +24,7 @@ from fidesops.graph.config import (
     FieldPath,
 )
 from fidesops.graph.graph import DatasetGraph, Edge, Node
+from fidesops.graph.graph_differences import format_graph_for_caching
 from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.connectionconfig import AccessLevel, ConnectionConfig
 from fidesops.models.policy import ActionType, Policy
@@ -598,6 +603,13 @@ def run_access_request(
         dsk[ROOT_COLLECTION_ADDRESS] = (start_function([traversal.seed_data]),)
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
         update_mapping_from_cache(dsk, resources, start_function)
+
+        log_access_graph_rerun(
+            prepare_rerun_access_graph_analytics_event(
+                privacy_request, env, end_nodes, resources
+            )
+        )
+        privacy_request.cache_access_graph(format_graph_for_caching(env, end_nodes))
 
         v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
         return v.compute()

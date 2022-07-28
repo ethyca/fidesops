@@ -633,13 +633,39 @@ def test_restart_graph_from_failure(
     integration_mongodb_config.save(db)
 
     # Rerun access request using cached results
-    graph_task.run_access_request(
-        privacy_request,
-        policy,
-        mongo_postgres_dataset_graph,
-        [integration_postgres_config, integration_mongodb_config],
-        {"email": "customer-1@example.com"},
-    )
+    with mock.patch(
+        "fidesops.task.graph_task.log_access_graph_rerun"
+    ) as mock_log_event:
+        graph_task.run_access_request(
+            privacy_request,
+            policy,
+            mongo_postgres_dataset_graph,
+            [integration_postgres_config, integration_mongodb_config],
+            {"email": "customer-1@example.com"},
+        )
+
+        # Assert analytics event created - before and after graph on rerun did not change
+        analytics_event = mock_log_event.call_args.args[0]
+        assert analytics_event.docker is True
+        assert analytics_event.event == "rerun_access_graph"
+        assert analytics_event.event_created_at is not None
+        assert analytics_event.extra_data == {
+            "prev_collection_count": 20,
+            "curr_collection_count": 20,
+            "added_collection_count": 0,
+            "removed_collection_count": 0,
+            "added_edge_count": 0,
+            "removed_edge_count": 0,
+            "processed_collection_count": 5,
+            "remaining_collection_count": 15,
+            "added_upstream_edge_count": 0,
+            "privacy_request": privacy_request.id,
+        }
+
+        assert analytics_event.error is None
+        assert analytics_event.status_code is None
+        assert analytics_event.endpoint is None
+        assert analytics_event.local_host is None
 
     assert (
         db.query(ExecutionLog)

@@ -3,7 +3,8 @@ from typing import Any, Dict, List, Optional
 
 from fideslog.sdk.python.event import AnalyticsEvent
 
-from fidesops.analytics import in_docker_container
+from fidesops.analytics import in_docker_container, send_analytics_event
+from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph_differences import (
     GraphDiffSummary,
@@ -14,6 +15,18 @@ from fidesops.graph.graph_differences import (
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.collection_util import Row
+
+
+def log_access_graph_rerun(event: Optional[AnalyticsEvent]) -> None:
+    """Send an Analytics Event if an access graph has been rerun for a given privacy request"""
+    if config.root_user.analytics_opt_out:
+        return
+
+    if not event:
+        # No analytics event created if there's not a previous graph to compare in the cache
+        return
+
+    send_analytics_event(event)
 
 
 def prepare_rerun_access_graph_analytics_event(
