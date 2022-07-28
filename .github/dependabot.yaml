@@ -17,7 +17,7 @@ updates:
       - javascript
       - dependabot
   - package-ecosystem: npm
-    directory: "/clients/privacy-center"
+    directory: "/clients/ops/privacy-center"
     schedule:
       interval: weekly
     labels:
