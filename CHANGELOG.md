@@ -55,6 +55,7 @@ The types of changes are:
 ### Docs
 
 * Added zendesk and salesforce connection pages [#908](https://github.com/ethyca/fidesops/pull/908)
+* Added documentation for OAuth2 configuration and usage [#963](https://github.com/ethyca/fidesops/pull/963)
 
 ### Fixed
 
