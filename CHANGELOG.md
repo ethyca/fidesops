@@ -19,7 +19,9 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.3...main)
 
 ### Added
+
 * Erasure support for Salesforce [#888](https://github.com/ethyca/fidesops/pull/888)
+* Publish a `dev` tagged image on every push to main [#956](https://github.com/ethyca/fidesops/pull/956)
 * Access and erasure support for Sendgrid contacts endpoint [#883](https://github.com/ethyca/fidesops/pull/883)
 * Added saas config base info to connection config responses [#904](https://github.com/ethyca/fidesops/pull/904)
 * Access and erasure support for Adobe Campaign [#905](https://github.com/ethyca/fidesops/pull/905)
@@ -33,11 +35,22 @@ The types of changes are:
 * Updated the python docker base image from slim-buster to slim-bullseye [928](https://github.com/ethyca/fidesops/pull/928)
 * Removed ipython from the docker install [928](https://github.com/ethyca/fidesops/pull/928)
 * Serve admin UI by default [#906](https://github.com/ethyca/fidesops/pull/936)
+* Move tests into an `ops` subdir [#935](https://github.com/ethyca/fidesops/pull/935)
+* Move client code into an `ops` subdir [#964](https://github.com/ethyca/fidesops/pull/964)
 * Updated the docs docker base image to be consistent with the fidesops image [949](https://github.com/ethyca/fidesops/pull/949)
+
+### Developer Experience
+
+* When releases are published, dispatch a repository webhook event to ethyca/fidesops-plus [#945](https://github.com/ethyca/fidesops/pull/945)
 
 ### Breaking Changes
 
 * Update fidesops to use bcrypt for hashing [#876](https://github.com/ethyca/fidesops/pull/876)
+
+### Developer Experience
+
+* Fix randomly failing mssql integration tests [918](https://github.com/ethyca/fidesops/pull/918)
+* Update the way `make clean` works [#767](https://github.com/ethyca/fidesops/pull/767)
 
 ### Docs
 
@@ -48,6 +61,7 @@ The types of changes are:
 ### Fixed
 
 * Correct build arg variable name [925](https://github.com/ethyca/fidesops/pull/925)
+* Reduce number of clients connected to the application db [#944](https://github.com/ethyca/fidesops/pull/944)
 
 ## [1.6.3](https://github.com/ethyca/fidesops/compare/1.6.2...1.6.3)
 
