@@ -54,8 +54,7 @@ def check_missing_migrations(database_url: PostgresDsn) -> None:
 
     if result:
         raise SystemExit("Migrations needs to be generated!")
-    else:
-        print("No migrations need to be generated.")
+    print("No migrations need to be generated.")
 
 
 def reset_db(database_url: PostgresDsn) -> None:

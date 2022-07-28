@@ -8,14 +8,14 @@ from constants_nox import (
     RUN_NO_DEPS,
     START_APP,
 )
-from docker_nox import build
+from utils_nox import db
 from run_infrastructure import run_infrastructure
 
 
 @nox.session()
 def ci_suite(session: nox.Session) -> None:
     """
-    Runs all of the CI checks, except for 'pytest_external'.
+    Runs the CI check suite.
 
     Excludes external tests so that no additional secrets/tooling are required.
     """
@@ -28,6 +28,7 @@ def ci_suite(session: nox.Session) -> None:
     session.notify("mypy")
     session.notify("pylint")
     session.notify("check_install")
+    session.notify("check_migrations")
     session.notify("pytest_unit")
     session.notify("pytest_integration")
     session.notify("teardown")
@@ -96,6 +97,7 @@ def check_install(session: nox.Session) -> None:
 @nox.session()
 def check_migrations(session: nox.Session) -> None:
     """Check for missing migrations."""
+    db(session, "init")
     check_migration_command = (
         "python",
         "-c",
@@ -113,6 +115,7 @@ def pytest_unit(session: nox.Session) -> None:
     run_command = (
         *RUN_NO_DEPS,
         "pytest",
+        "tests/ops/",
         "-m",
         "not integration and not integration_external and not integration_saas",
     )
@@ -149,6 +152,7 @@ def pytest_integration_external(session: nox.Session) -> None:
         CI_ARGS,
         COMPOSE_SERVICE_NAME,
         "pytest",
+        "tests/ops/",
         "-m",
         "integration_external",
     )
@@ -174,6 +178,7 @@ def pytest_saas(session: nox.Session) -> None:
         CI_ARGS,
         COMPOSE_SERVICE_NAME,
         "pytest",
+        "tests/ops/",
         "-m",
         "integration_saas",
     )
