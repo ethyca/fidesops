@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 import pytest
 
-from fidesops.graph.analytics_events import prepare_rerun_access_graph_analytics_event
+from fidesops.graph.analytics_events import prepare_rerun_graph_analytics_event
 from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,
@@ -18,7 +18,7 @@ from fidesops.graph.graph_differences import (
 )
 from fidesops.graph.traversal import TraversalNode, artificial_traversal_node
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.models.policy import Policy
+from fidesops.models.policy import ActionType, Policy
 from fidesops.task.graph_task import EMPTY_REQUEST, GraphTask
 from fidesops.task.task_resources import TaskResources
 
@@ -454,12 +454,14 @@ class TestGraphDiff:
             previous_graph=previous_graph,
             current_graph=formatted_current_graph,
             previous_results={},
+            previous_erasure_results={},
         )
 
         assert not find_graph_differences_summary(
             previous_graph=previous_graph,
             current_graph=formatted_current_graph,
             previous_results={},
+            previous_erasure_results={},
         )
 
     def test_find_graph_differences_no_change(self, env_a_b_c):
@@ -470,6 +472,7 @@ class TestGraphDiff:
             previous_graph=formatted_graph,
             current_graph=formatted_graph,
             previous_results={},
+            previous_erasure_results={},
         )
         assert graph_diff == GraphDiff(
             previous_collections=[
@@ -486,11 +489,12 @@ class TestGraphDiff:
             removed_collections=[],
             added_edges=[],
             removed_edges=[],
-            processed_access_collections=[],
+            already_processed_access_collections=[],
+            already_processed_erasure_collections=[],
             skipped_added_edges=[],
         )
         assert find_graph_differences_summary(
-            formatted_graph, formatted_graph, {}
+            formatted_graph, formatted_graph, {}, {}
         ) == GraphDiffSummary(
             prev_collection_count=3,
             curr_collection_count=3,
@@ -498,7 +502,8 @@ class TestGraphDiff:
             removed_collection_count=0,
             added_edge_count=0,
             removed_edge_count=0,
-            processed_access_collection_count=0,
+            already_processed_access_collection_count=0,
+            already_processed_erasure_collection_count=0,
             skipped_added_edge_count=0,
         )
 
@@ -509,7 +514,7 @@ class TestGraphDiff:
         current_graph = format_graph_for_caching(
             env_a_b_c, end_nodes=[c_traversal_node().address]
         )
-        graph_diff = _find_graph_differences(previous_graph, current_graph, {})
+        graph_diff = _find_graph_differences(previous_graph, current_graph, {}, {})
         assert graph_diff == GraphDiff(
             previous_collections=["test_db:a_collection", "test_db:b_collection"],
             current_collections=[
@@ -521,12 +526,13 @@ class TestGraphDiff:
             removed_collections=[],
             added_edges=["test_db:b_collection:id->test_db:c_collection:upstream_id"],
             removed_edges=[],
-            processed_access_collections=[],
+            already_processed_access_collections=[],
+            already_processed_erasure_collections=[],
             skipped_added_edges=[],
         )
 
         assert find_graph_differences_summary(
-            previous_graph, current_graph, {}
+            previous_graph, current_graph, {}, {}
         ) == GraphDiffSummary(
             prev_collection_count=2,
             curr_collection_count=3,
@@ -534,7 +540,8 @@ class TestGraphDiff:
             removed_collection_count=0,
             added_edge_count=1,
             removed_edge_count=0,
-            processed_access_collection_count=0,
+            already_processed_access_collection_count=0,
+            already_processed_erasure_collection_count=0,
             skipped_added_edge_count=0,
         )
 
@@ -545,7 +552,7 @@ class TestGraphDiff:
         current_graph = format_graph_for_caching(
             env_a_b, end_nodes=[b_traversal_node().address]
         )
-        graph_diff = _find_graph_differences(previous_graph, current_graph, {})
+        graph_diff = _find_graph_differences(previous_graph, current_graph, {}, {})
         assert graph_diff == GraphDiff(
             previous_collections=[
                 "test_db:a_collection",
@@ -557,11 +564,12 @@ class TestGraphDiff:
             removed_collections=["test_db:c_collection"],
             added_edges=[],
             removed_edges=["test_db:b_collection:id->test_db:c_collection:upstream_id"],
-            processed_access_collections=[],
+            already_processed_access_collections=[],
+            already_processed_erasure_collections=[],
             skipped_added_edges=[],
         )
         assert find_graph_differences_summary(
-            previous_graph, current_graph, {}
+            previous_graph, current_graph, {}, {}
         ) == GraphDiffSummary(
             prev_collection_count=3,
             curr_collection_count=2,
@@ -569,7 +577,8 @@ class TestGraphDiff:
             removed_collection_count=1,
             added_edge_count=0,
             removed_edge_count=1,
-            processed_access_collection_count=0,
+            already_processed_access_collection_count=0,
+            already_processed_erasure_collection_count=0,
             skipped_added_edge_count=0,
         )
 
@@ -584,7 +593,7 @@ class TestGraphDiff:
         )
         previous_results = {"test_db:a_collection": []}
         graph_diff = _find_graph_differences(
-            previous_graph, current_graph, previous_results
+            previous_graph, current_graph, previous_results, {}
         )
 
         assert graph_diff == GraphDiff(
@@ -608,11 +617,12 @@ class TestGraphDiff:
                 "test_db:a_collection:id->test_db:b_collection:upstream_id",
                 "test_db:b_collection:id->test_db:c_collection:upstream_id",
             ],
-            processed_access_collections=["test_db:a_collection"],
+            already_processed_access_collections=["test_db:a_collection"],
+            already_processed_erasure_collections=[],
             skipped_added_edges=[],
         )
         assert find_graph_differences_summary(
-            previous_graph, current_graph, previous_results
+            previous_graph, current_graph, previous_results, {}
         ) == GraphDiffSummary(
             prev_collection_count=3,
             curr_collection_count=3,
@@ -620,7 +630,8 @@ class TestGraphDiff:
             removed_collection_count=0,
             added_edge_count=2,
             removed_edge_count=2,
-            processed_access_collection_count=1,
+            already_processed_access_collection_count=1,
+            already_processed_erasure_collection_count=0,
             skipped_added_edge_count=0,
         )
 
@@ -635,7 +646,7 @@ class TestGraphDiff:
         previous_results = {"test_db:a_collection": []}
 
         graph_diff = _find_graph_differences(
-            previous_graph, current_graph, previous_results
+            previous_graph, current_graph, previous_results, {}
         )
 
         assert graph_diff == GraphDiff(
@@ -652,14 +663,15 @@ class TestGraphDiff:
                 "test_db:c_collection:id->test_db:a_collection:upstream_id",
             ],
             removed_edges=["__ROOT__:__ROOT__:email->test_db:a_collection:email"],
-            processed_access_collections=["test_db:a_collection"],
+            already_processed_access_collections=["test_db:a_collection"],
+            already_processed_erasure_collections=[],
             skipped_added_edges=[
                 "test_db:c_collection:id->test_db:a_collection:upstream_id"
             ],
         )
 
         assert find_graph_differences_summary(
-            previous_graph, current_graph, previous_results
+            previous_graph, current_graph, previous_results, {}
         ) == GraphDiffSummary(
             prev_collection_count=2,
             curr_collection_count=3,
@@ -667,7 +679,8 @@ class TestGraphDiff:
             removed_collection_count=0,
             added_edge_count=2,
             removed_edge_count=1,
-            processed_access_collection_count=1,
+            already_processed_access_collection_count=1,
+            already_processed_erasure_collection_count=0,
             skipped_added_edge_count=1,
         )
 
@@ -684,7 +697,7 @@ class TestGraphDiff:
         previous_results = {"test_db:a_collection": []}
 
         graph_diff = _find_graph_differences(
-            previous_graph, current_graph, previous_results
+            previous_graph, current_graph, previous_results, {}
         )
         assert graph_diff == GraphDiff(
             previous_collections=[
@@ -705,7 +718,7 @@ class TestGraphDiff:
                 "test_db:d_collection:id->test_db:c_collection:upstream_id",
             ],
             removed_edges=["__ROOT__:__ROOT__:email->test_db:c_collection:email"],
-            processed_access_collections=["test_db:a_collection"],
+            already_processed_access_collections=["test_db:a_collection"],
             skipped_added_edges=[],
         )
 
@@ -722,7 +735,7 @@ class TestGraphDiff:
         previous_results = {"test_db:b_collection": []}
 
         graph_diff = _find_graph_differences(
-            previous_graph, current_graph, previous_results
+            previous_graph, current_graph, previous_results, {}
         )
 
         assert graph_diff == GraphDiff(
@@ -748,10 +761,67 @@ class TestGraphDiff:
                 "__ROOT__:__ROOT__:email->test_db:b_collection:email",
                 "__ROOT__:__ROOT__:email->test_db:c_collection:email",
             ],
-            processed_access_collections=["test_db:b_collection"],
+            already_processed_access_collections=["test_db:b_collection"],
+            already_processed_erasure_collections=[],
             skipped_added_edges=[
                 "test_db:a_collection:id->test_db:b_collection:upstream_id"
             ],
+        )
+
+    def test_find_graph_differences_collection_added_upstream_erasure(
+        self, env_a_b, env_c_a_b
+    ):
+        previous_graph = format_graph_for_caching(
+            env_a_b, end_nodes=[b_traversal_node().address]
+        )
+        current_graph = format_graph_for_caching(
+            env_c_a_b, end_nodes=[b_traversal_node().address]
+        )
+
+        # The original access graph has already run to get data from just a and b
+        previous_results = {"test_db:a_collection": [], "test_db:b_collection": []}
+        # The erasure has already processed one collection "a"
+        erasure_results = {"test_db:a_collection": 1}
+
+        graph_diff = _find_graph_differences(
+            previous_graph, current_graph, previous_results, erasure_results
+        )
+        assert graph_diff == GraphDiff(
+            previous_collections=["test_db:a_collection", "test_db:b_collection"],
+            current_collections=[
+                "test_db:a_collection",
+                "test_db:b_collection",
+                "test_db:c_collection",
+            ],
+            added_collections=["test_db:c_collection"],
+            removed_collections=[],
+            added_edges=[
+                "__ROOT__:__ROOT__:email->test_db:c_collection:email",
+                "test_db:c_collection:id->test_db:a_collection:upstream_id",
+            ],
+            removed_edges=["__ROOT__:__ROOT__:email->test_db:a_collection:email"],
+            already_processed_access_collections=[
+                "test_db:a_collection",
+                "test_db:b_collection",
+            ],
+            skipped_added_edges=[
+                "test_db:c_collection:id->test_db:a_collection:upstream_id"
+            ],
+            already_processed_erasure_collections=["test_db:a_collection"],
+        )
+
+        assert find_graph_differences_summary(
+            previous_graph, current_graph, previous_results, erasure_results
+        ) == GraphDiffSummary(
+            prev_collection_count=2,
+            curr_collection_count=3,
+            added_collection_count=1,
+            removed_collection_count=0,
+            added_edge_count=2,
+            removed_edge_count=1,
+            already_processed_access_collection_count=2,
+            skipped_added_edge_count=1,
+            already_processed_erasure_collection_count=1,
         )
 
 
@@ -774,8 +844,8 @@ class TestPrepareRerunAccessGraphEvent:
         self, privacy_request, env_a_b_c, resources
     ):
         end_nodes = [c_traversal_node().address]
-        analytics_event = prepare_rerun_access_graph_analytics_event(
-            privacy_request, env_a_b_c, end_nodes, resources
+        analytics_event = prepare_rerun_graph_analytics_event(
+            privacy_request, env_a_b_c, end_nodes, resources, ActionType.access
         )
         assert analytics_event is None
 
@@ -787,8 +857,8 @@ class TestPrepareRerunAccessGraphEvent:
         privacy_request.cache_access_graph(formatted_graph)
 
         end_nodes = [c_traversal_node().address]
-        analytics_event = prepare_rerun_access_graph_analytics_event(
-            privacy_request, env_a_b_c, end_nodes, resources
+        analytics_event = prepare_rerun_graph_analytics_event(
+            privacy_request, env_a_b_c, end_nodes, resources, step=ActionType.access
         )
 
         assert analytics_event.docker is True
@@ -801,7 +871,41 @@ class TestPrepareRerunAccessGraphEvent:
             "removed_collection_count": 0,
             "added_edge_count": 1,
             "removed_edge_count": 0,
-            "processed_access_collection_count": 0,
+            "already_processed_access_collection_count": 0,
+            "already_processed_erasure_collection_count": 0,
+            "skipped_added_edge_count": 0,
+            "privacy_request": privacy_request.id,
+        }
+
+        assert analytics_event.error is None
+        assert analytics_event.status_code is None
+        assert analytics_event.endpoint is None
+        assert analytics_event.local_host is None
+
+    def test_rerun_erasure_graph_analytics_event(
+        self, privacy_request, env_a_b, env_a_b_c, resources
+    ):
+        end_nodes = [b_traversal_node().address]
+        formatted_graph = format_graph_for_caching(env_a_b, end_nodes)
+        privacy_request.cache_access_graph(formatted_graph)
+
+        end_nodes = [c_traversal_node().address]
+        analytics_event = prepare_rerun_graph_analytics_event(
+            privacy_request, env_a_b_c, end_nodes, resources, step=ActionType.erasure
+        )
+
+        assert analytics_event.docker is True
+        assert analytics_event.event == "rerun_erasure_graph"
+        assert analytics_event.event_created_at is not None
+        assert analytics_event.extra_data == {
+            "prev_collection_count": 2,
+            "curr_collection_count": 3,
+            "added_collection_count": 1,
+            "removed_collection_count": 0,
+            "added_edge_count": 1,
+            "removed_edge_count": 0,
+            "already_processed_access_collection_count": 0,
+            "already_processed_erasure_collection_count": 0,
             "skipped_added_edge_count": 0,
             "privacy_request": privacy_request.id,
         }

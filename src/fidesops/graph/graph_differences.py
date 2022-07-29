@@ -19,7 +19,7 @@ def format_graph_for_caching(
 
     Requires the results of traversal.traverse():
         - the modified `env`
-        - and the outputted end_nodes, which are nodes without children
+        - and the outputted end_nodes, which are the final nodes without children
 
     Maps collections to their upstream dependencies and associated edges. The root is stored as having
     no upstream collections and the terminator collection has no incoming edges.
@@ -59,7 +59,8 @@ class GraphDiff(BaseSchema):
     removed_collections: List[str] = []
     added_edges: List[str] = []
     removed_edges: List[str] = []
-    processed_access_collections: List[str] = []
+    already_processed_access_collections: List[str] = []
+    already_processed_erasure_collections: List[str] = []
     skipped_added_edges: List[str] = []
 
 
@@ -70,7 +71,8 @@ class GraphDiffSummary(BaseSchema):
     removed_collection_count: int = 0
     added_edge_count: int = 0
     removed_edge_count: int = 0
-    processed_access_collection_count: int = 0
+    already_processed_access_collection_count: int = 0
+    already_processed_erasure_collection_count: int = 0
     skipped_added_edge_count: int = 0
 
 
@@ -81,7 +83,7 @@ artificial_collections: Set[str] = {
 
 
 def get_skipped_added_edges(
-    processed_access_collections: List[str],
+    already_processed_access_collections: List[str],
     current_graph: GraphRepr,
     added_edges: List[str],
 ) -> List[str]:
@@ -94,7 +96,7 @@ def get_skipped_added_edges(
     """
     added_upstream_edges: List[str] = []
 
-    for collection in processed_access_collections:
+    for collection in already_processed_access_collections:
         for _, upstream_edges in current_graph[collection].items():
             for edge in upstream_edges:
                 if edge in added_edges:
@@ -106,6 +108,7 @@ def _find_graph_differences(  # pylint: disable=too-many-locals
     previous_graph: Optional[GraphRepr],
     current_graph: GraphRepr,
     previous_results: Dict[str, Optional[List[Row]]],
+    previous_erasure_results: Dict[str, int],
 ) -> Optional[GraphDiff]:
     """
     Determine how/if a graph has changed from the previous run when a privacy request is rerun.
@@ -137,10 +140,12 @@ def _find_graph_differences(  # pylint: disable=too-many-locals
     removed_collections: List[str] = list(previous_collections - current_collections)
     removed_edges: List[str] = list(previous_edges - current_edges)
 
-    processed_access_collections = list(previous_results.keys())
+    already_processed_access_collections = list(previous_results.keys())
     skipped_added_edges: List[str] = get_skipped_added_edges(
-        processed_access_collections, current_graph, added_edges
+        already_processed_access_collections, current_graph, added_edges
     )
+
+    already_processed_erasure_collections = list(previous_erasure_results.keys())
 
     return GraphDiff(
         previous_collections=list(sorted(previous_collections)),
@@ -149,7 +154,12 @@ def _find_graph_differences(  # pylint: disable=too-many-locals
         removed_collections=sorted(removed_collections),
         added_edges=sorted(added_edges),
         removed_edges=sorted(removed_edges),
-        processed_access_collections=sorted(processed_access_collections),
+        already_processed_access_collections=sorted(
+            already_processed_access_collections
+        ),
+        already_processed_erasure_collections=sorted(
+            already_processed_erasure_collections
+        ),
         skipped_added_edges=sorted(skipped_added_edges),
     )
 
@@ -158,13 +168,14 @@ def find_graph_differences_summary(
     previous_graph: Optional[GraphRepr],
     current_graph: GraphRepr,
     previous_results: Dict[str, Optional[List[Row]]],
+    previous_erasure_results: Dict[str, int],
 ) -> Optional[GraphDiffSummary]:
     """
     Summarizes the differences between the current graph and previous graph
     with a series of counts.
     """
     graph_diff: Optional[GraphDiff] = _find_graph_differences(
-        previous_graph, current_graph, previous_results
+        previous_graph, current_graph, previous_results, previous_erasure_results
     )
 
     if not graph_diff:
@@ -177,6 +188,11 @@ def find_graph_differences_summary(
         removed_collection_count=len(graph_diff.removed_collections),
         added_edge_count=len(graph_diff.added_edges),
         removed_edge_count=len(graph_diff.removed_edges),
-        processed_access_collection_count=len(graph_diff.processed_access_collections),
+        already_processed_access_collection_count=len(
+            graph_diff.already_processed_access_collections
+        ),
+        already_processed_erasure_collection_count=len(
+            graph_diff.already_processed_erasure_collections
+        ),
         skipped_added_edge_count=len(graph_diff.skipped_added_edges),
     )

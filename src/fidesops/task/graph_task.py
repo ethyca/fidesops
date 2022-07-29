@@ -12,8 +12,8 @@ from dask.threaded import get
 from fidesops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
 from fidesops.core.config import config
 from fidesops.graph.analytics_events import (
-    log_access_graph_rerun,
-    prepare_rerun_access_graph_analytics_event,
+    log_graph_rerun,
+    prepare_rerun_graph_analytics_event,
 )
 from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -604,9 +604,9 @@ def run_access_request(
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
         update_mapping_from_cache(dsk, resources, start_function)
 
-        log_access_graph_rerun(
-            prepare_rerun_access_graph_analytics_event(
-                privacy_request, env, end_nodes, resources
+        log_graph_rerun(
+            prepare_rerun_graph_analytics_event(
+                privacy_request, env, end_nodes, resources, ActionType.access
             )
         )
         privacy_request.cache_access_graph(format_graph_for_caching(env, end_nodes))
@@ -648,7 +648,7 @@ def update_erasure_mapping_from_cache(
         )
 
 
-def run_erasure(  # pylint: disable = too-many-arguments
+def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
     privacy_request: PrivacyRequest,
     policy: Policy,
     graph: DatasetGraph,
@@ -668,7 +668,7 @@ def run_erasure(  # pylint: disable = too-many-arguments
                 data[tn.address] = GraphTask(tn, resources)
 
         env: Dict[CollectionAddress, Any] = {}
-        traversal.traverse(env, collect_tasks_fn)
+        end_nodes = traversal.traverse(env, collect_tasks_fn)
 
         def termination_fn(*dependent_values: int) -> Tuple[int, ...]:
             """The dependent_values here is an int output from each task feeding in, where
@@ -684,6 +684,11 @@ def run_erasure(  # pylint: disable = too-many-arguments
         # terminator function waits for all keys
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
         update_erasure_mapping_from_cache(dsk, resources, start_function)
+        log_graph_rerun(
+            prepare_rerun_graph_analytics_event(
+                privacy_request, env, end_nodes, resources, ActionType.erasure
+            )
+        )
         v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
 
         update_cts: Tuple[int, ...] = v.compute()
