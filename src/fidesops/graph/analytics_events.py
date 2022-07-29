@@ -24,7 +24,6 @@ def log_graph_failure(event: Optional[AnalyticsEvent]) -> None:
         return
 
     if not event:
-        # No analytics event created if there's not a previous graph to compare in the cache
         return
 
     send_analytics_event(event)
