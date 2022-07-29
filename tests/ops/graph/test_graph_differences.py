@@ -64,7 +64,7 @@ def d_traversal_node():
 
 
 @pytest.fixture(scope="module")
-def resources():
+def resources(db):
     return TaskResources(
         EMPTY_REQUEST,
         Policy(),
@@ -74,6 +74,7 @@ def resources():
                 connection_type=ConnectionType.postgres,
             )
         ],
+        db
     )
 
 
