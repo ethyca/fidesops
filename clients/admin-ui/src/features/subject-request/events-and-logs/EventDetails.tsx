@@ -1,6 +1,5 @@
 import { ArrowBackIcon } from "@chakra-ui/icons";
-import { Button, useDisclosure } from "@chakra-ui/react";
-import { FocusableElement } from "@chakra-ui/utils";
+import { useDisclosure } from "@chakra-ui/react";
 import {
   Box,
   Divider,
@@ -14,15 +13,16 @@ import {
   Text,
 } from "@fidesui/react";
 import { CloseSolidIcon } from "common/Icon";
-import React, { LegacyRef, RefObject, useRef, useState } from "react";
+import React, { useState } from "react";
 
-import { ExecutionLog } from "../../privacy-requests/types";
+import { ExecutionLog, ExecutionLogStatus } from "../../privacy-requests/types";
 import EventError from "./EventError";
 import EventLog from "./EventLog";
 
 export type EventData = {
   key: string;
   logs: ExecutionLog[];
+  status: ExecutionLogStatus;
 };
 
 type EventDetailsProps = {
@@ -88,7 +88,7 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
       <Drawer
         isOpen={isOpen}
         placement="right"
-        onClose={onClose}
+        onClose={closeDrawer}
         size="full"
         autoFocus={false}
       >
@@ -154,7 +154,12 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
                 openErrorPanel={openErrorPanel}
               />
             ) : null}
-            {isViewingError ? <EventError errorMessage={errorMessage} /> : null}
+            {isViewingError ? (
+              <EventError
+                errorMessage={errorMessage}
+                isError={eventData.status === ExecutionLogStatus.ERROR}
+              />
+            ) : null}
           </DrawerBody>
         </DrawerContent>
       </Drawer>
