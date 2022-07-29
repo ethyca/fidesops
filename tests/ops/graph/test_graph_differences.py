@@ -57,6 +57,12 @@ def c_traversal_node():
     )
 
 
+def d_traversal_node():
+    return TraversalNode(
+        generate_node("test_db", "d_collection", "upstream_id", "D_info")
+    )
+
+
 @pytest.fixture(scope="module")
 def resources():
     return TaskResources(
@@ -143,6 +149,53 @@ def env_c_a_b(resources):
 
 
 @pytest.fixture(scope="module")
+def env_d_c_a_b(resources):
+    """Mocks env result that is mutated as of traversal.traverse()
+    This mimics a simple graph where ROOT->D->C->A->B->TERMINATOR
+    """
+    d_tn = d_traversal_node()
+    c_tn = c_traversal_node()
+    a_tn = a_traversal_node()
+    b_tn = b_traversal_node()
+
+    root_node = artificial_traversal_node(ROOT_COLLECTION_ADDRESS)
+    root_node.add_child(
+        d_tn,
+        Edge(
+            FieldAddress(
+                ROOT_COLLECTION_ADDRESS.dataset,
+                ROOT_COLLECTION_ADDRESS.collection,
+                "email",
+            ),
+            FieldAddress("test_db", "d_collection", "email"),
+        ),
+    )
+    d_tn.add_child(
+        c_tn,
+        Edge(
+            FieldAddress("test_db", "d_collection", "id"),
+            FieldAddress("test_db", "c_collection", "upstream_id"),
+        ),
+    )
+    c_tn.add_child(
+        a_tn,
+        Edge(
+            FieldAddress("test_db", "c_collection", "id"),
+            FieldAddress("test_db", "a_collection", "upstream_id"),
+        ),
+    )
+    a_tn.add_child(
+        b_tn,
+        Edge(
+            FieldAddress("test_db", "a_collection", "id"),
+            FieldAddress("test_db", "b_collection", "upstream_id"),
+        ),
+    )
+
+    return build_test_traversal_env(d_tn, c_tn, a_tn, b_tn, resources=resources)
+
+
+@pytest.fixture(scope="function")
 def env_a_b_c(resources):
     """Mocks env result that is mutated as of traversal.traverse()
     This mimics a simple graph where ROOT->A->B->C->TERMINATOR
@@ -220,6 +273,119 @@ def env_a_c_b(resources):
     b_tn.is_terminal_node = True
 
     return build_test_traversal_env(a_tn, c_tn, b_tn, resources=resources)
+
+
+@pytest.fixture(scope="function")
+def env_both_b_c_point_to_d(resources):
+    """
+    Root node points to both b and c, and b and c both point to d.
+
+           --> B -->
+     ROOT               D
+           --> C -->
+    """
+    c_tn = c_traversal_node()
+    d_tn = d_traversal_node()
+    b_tn = b_traversal_node()
+
+    root_node = artificial_traversal_node(ROOT_COLLECTION_ADDRESS)
+    root_node.add_child(
+        b_tn,
+        Edge(
+            FieldAddress(
+                ROOT_COLLECTION_ADDRESS.dataset,
+                ROOT_COLLECTION_ADDRESS.collection,
+                "email",
+            ),
+            FieldAddress("test_db", "b_collection", "email"),
+        ),
+    )
+    root_node.add_child(
+        c_tn,
+        Edge(
+            FieldAddress(
+                ROOT_COLLECTION_ADDRESS.dataset,
+                ROOT_COLLECTION_ADDRESS.collection,
+                "email",
+            ),
+            FieldAddress("test_db", "c_collection", "email"),
+        ),
+    )
+    b_tn.add_child(
+        d_tn,
+        Edge(
+            FieldAddress("test_db", "b_collection", "id"),
+            FieldAddress("test_db", "d_collection", "upstream_id"),
+        ),
+    )
+    c_tn.add_child(
+        d_tn,
+        Edge(
+            FieldAddress("test_db", "c_collection", "id"),
+            FieldAddress("test_db", "d_collection", "upstream_id"),
+        ),
+    )
+    d_tn.is_terminal_node = True
+    return build_test_traversal_env(d_tn, c_tn, b_tn, resources=resources)
+
+
+@pytest.fixture(scope="function")
+def env_a_to_both_b_c_to_d(resources):
+    """
+    Root node points to a which points to both b and c,
+    and b and c both point to d.
+
+                 --> B -->
+     ROOT -->  A            D
+                 --> C -->
+    """
+    a_tn = a_traversal_node()
+    c_tn = c_traversal_node()
+    d_tn = d_traversal_node()
+    b_tn = b_traversal_node()
+
+    root_node = artificial_traversal_node(ROOT_COLLECTION_ADDRESS)
+    root_node.add_child(
+        a_tn,
+        Edge(
+            FieldAddress(
+                ROOT_COLLECTION_ADDRESS.dataset,
+                ROOT_COLLECTION_ADDRESS.collection,
+                "email",
+            ),
+            FieldAddress("test_db", "a_collection", "email"),
+        ),
+    )
+    a_tn.add_child(
+        b_tn,
+        Edge(
+            FieldAddress("test_db", "a_collection", "id"),
+            FieldAddress("test_db", "b_collection", "upstream_id"),
+        ),
+    )
+    a_tn.add_child(
+        c_tn,
+        Edge(
+            FieldAddress("test_db", "a_collection", "id"),
+            FieldAddress("test_db", "c_collection", "upstream_id"),
+        ),
+    )
+    b_tn.add_child(
+        d_tn,
+        Edge(
+            FieldAddress("test_db", "b_collection", "id"),
+            FieldAddress("test_db", "d_collection", "upstream_id"),
+        ),
+    )
+    c_tn.add_child(
+        d_tn,
+        Edge(
+            FieldAddress("test_db", "c_collection", "id"),
+            FieldAddress("test_db", "d_collection", "upstream_id"),
+        ),
+    )
+    d_tn.is_terminal_node = True
+    return build_test_traversal_env(d_tn, c_tn, b_tn, a_tn, resources=resources)
 
 
 class TestFormatGraphForCaching:
@@ -320,13 +486,8 @@ class TestGraphDiff:
             removed_collections=[],
             added_edges=[],
             removed_edges=[],
-            processed_collections=[],
-            remaining_collections=[
-                "test_db:a_collection",
-                "test_db:b_collection",
-                "test_db:c_collection",
-            ],
-            added_upstream_edges=[],
+            processed_access_collections=[],
+            skipped_added_edges=[],
         )
         assert find_graph_differences_summary(
             formatted_graph, formatted_graph, {}
@@ -337,9 +498,8 @@ class TestGraphDiff:
             removed_collection_count=0,
             added_edge_count=0,
             removed_edge_count=0,
-            processed_collection_count=0,
-            remaining_collection_count=3,
-            added_upstream_edge_count=0,
+            processed_access_collection_count=0,
+            skipped_added_edge_count=0,
         )
 
     def test_find_graph_differences_collection_added(self, env_a_b, env_a_b_c):
@@ -361,14 +521,10 @@ class TestGraphDiff:
             removed_collections=[],
             added_edges=["test_db:b_collection:id->test_db:c_collection:upstream_id"],
             removed_edges=[],
-            processed_collections=[],
-            remaining_collections=[
-                "test_db:a_collection",
-                "test_db:b_collection",
-                "test_db:c_collection",
-            ],
-            added_upstream_edges=[],
+            processed_access_collections=[],
+            skipped_added_edges=[],
         )
+
         assert find_graph_differences_summary(
             previous_graph, current_graph, {}
         ) == GraphDiffSummary(
@@ -378,9 +534,8 @@ class TestGraphDiff:
             removed_collection_count=0,
             added_edge_count=1,
             removed_edge_count=0,
-            processed_collection_count=0,
-            remaining_collection_count=3,
-            added_upstream_edge_count=0,
+            processed_access_collection_count=0,
+            skipped_added_edge_count=0,
         )
 
     def test_find_graph_differences_collection_removed(self, env_a_b_c, env_a_b):
@@ -402,9 +557,8 @@ class TestGraphDiff:
             removed_collections=["test_db:c_collection"],
             added_edges=[],
             removed_edges=["test_db:b_collection:id->test_db:c_collection:upstream_id"],
-            processed_collections=[],
-            remaining_collections=["test_db:a_collection", "test_db:b_collection"],
-            added_upstream_edges=[],
+            processed_access_collections=[],
+            skipped_added_edges=[],
         )
         assert find_graph_differences_summary(
             previous_graph, current_graph, {}
@@ -415,9 +569,8 @@ class TestGraphDiff:
             removed_collection_count=1,
             added_edge_count=0,
             removed_edge_count=1,
-            processed_collection_count=0,
-            remaining_collection_count=2,
-            added_upstream_edge_count=0,
+            processed_access_collection_count=0,
+            skipped_added_edge_count=0,
         )
 
     def test_find_graph_differences_collection_order_changed(
@@ -455,9 +608,8 @@ class TestGraphDiff:
                 "test_db:a_collection:id->test_db:b_collection:upstream_id",
                 "test_db:b_collection:id->test_db:c_collection:upstream_id",
             ],
-            processed_collections=["test_db:a_collection"],
-            remaining_collections=["test_db:b_collection", "test_db:c_collection"],
-            added_upstream_edges=[],
+            processed_access_collections=["test_db:a_collection"],
+            skipped_added_edges=[],
         )
         assert find_graph_differences_summary(
             previous_graph, current_graph, previous_results
@@ -468,9 +620,8 @@ class TestGraphDiff:
             removed_collection_count=0,
             added_edge_count=2,
             removed_edge_count=2,
-            processed_collection_count=1,
-            remaining_collection_count=2,
-            added_upstream_edge_count=0,
+            processed_access_collection_count=1,
+            skipped_added_edge_count=0,
         )
 
     def test_find_graph_differences_collection_added_upstream(self, env_a_b, env_c_a_b):
@@ -501,13 +652,12 @@ class TestGraphDiff:
                 "test_db:c_collection:id->test_db:a_collection:upstream_id",
             ],
             removed_edges=["__ROOT__:__ROOT__:email->test_db:a_collection:email"],
-            processed_collections=["test_db:a_collection"],
-            remaining_collections=["test_db:b_collection"],
-            added_upstream_edges=[
-                "__ROOT__:__ROOT__:email->test_db:c_collection:email",
-                "test_db:c_collection:id->test_db:a_collection:upstream_id",
+            processed_access_collections=["test_db:a_collection"],
+            skipped_added_edges=[
+                "test_db:c_collection:id->test_db:a_collection:upstream_id"
             ],
         )
+
         assert find_graph_differences_summary(
             previous_graph, current_graph, previous_results
         ) == GraphDiffSummary(
@@ -517,9 +667,91 @@ class TestGraphDiff:
             removed_collection_count=0,
             added_edge_count=2,
             removed_edge_count=1,
-            processed_collection_count=1,
-            remaining_collection_count=1,
-            added_upstream_edge_count=2,
+            processed_access_collection_count=1,
+            skipped_added_edge_count=1,
+        )
+
+    def test_find_graph_differences_collection_added_far_upstream(
+        self, env_d_c_a_b, env_c_a_b
+    ):
+        previous_graph = format_graph_for_caching(
+            env_c_a_b, end_nodes=[b_traversal_node().address]
+        )
+        current_graph = format_graph_for_caching(
+            env_d_c_a_b, end_nodes=[b_traversal_node().address]
+        )
+
+        previous_results = {"test_db:a_collection": []}
+
+        graph_diff = _find_graph_differences(
+            previous_graph, current_graph, previous_results
+        )
+        assert graph_diff == GraphDiff(
+            previous_collections=[
+                "test_db:a_collection",
+                "test_db:b_collection",
+                "test_db:c_collection",
+            ],
+            current_collections=[
+                "test_db:a_collection",
+                "test_db:b_collection",
+                "test_db:c_collection",
+                "test_db:d_collection",
+            ],
+            added_collections=["test_db:d_collection"],
+            removed_collections=[],
+            added_edges=[
+                "__ROOT__:__ROOT__:email->test_db:d_collection:email",
+                "test_db:d_collection:id->test_db:c_collection:upstream_id",
+            ],
+            removed_edges=["__ROOT__:__ROOT__:email->test_db:c_collection:email"],
+            processed_access_collections=["test_db:a_collection"],
+            skipped_added_edges=[],
+        )
+
+    def test_find_graph_differences_collection_added_upstream_multiple(
+        self, env_both_b_c_point_to_d, env_a_to_both_b_c_to_d
+    ):
+        previous_graph = format_graph_for_caching(
+            env_both_b_c_point_to_d, end_nodes=[b_traversal_node().address]
+        )
+        current_graph = format_graph_for_caching(
+            env_a_to_both_b_c_to_d, end_nodes=[b_traversal_node().address]
+        )
+
+        previous_results = {"test_db:b_collection": []}
+
+        graph_diff = _find_graph_differences(
+            previous_graph, current_graph, previous_results
+        )
+
+        assert graph_diff == GraphDiff(
+            previous_collections=[
+                "test_db:b_collection",
+                "test_db:c_collection",
+                "test_db:d_collection",
+            ],
+            current_collections=[
+                "test_db:a_collection",
+                "test_db:b_collection",
+                "test_db:c_collection",
+                "test_db:d_collection",
+            ],
+            added_collections=["test_db:a_collection"],
+            removed_collections=[],
+            added_edges=[
+                "__ROOT__:__ROOT__:email->test_db:a_collection:email",
+                "test_db:a_collection:id->test_db:b_collection:upstream_id",
+                "test_db:a_collection:id->test_db:c_collection:upstream_id",
+            ],
+            removed_edges=[
+                "__ROOT__:__ROOT__:email->test_db:b_collection:email",
+                "__ROOT__:__ROOT__:email->test_db:c_collection:email",
+            ],
+            processed_access_collections=["test_db:b_collection"],
+            skipped_added_edges=[
+                "test_db:a_collection:id->test_db:b_collection:upstream_id"
+            ],
         )
 
 
@@ -569,9 +801,8 @@ class TestPrepareRerunAccessGraphEvent:
             "removed_collection_count": 0,
             "added_edge_count": 1,
             "removed_edge_count": 0,
-            "processed_collection_count": 0,
-            "remaining_collection_count": 3,
-            "added_upstream_edge_count": 0,
+            "processed_access_collection_count": 0,
+            "skipped_added_edge_count": 0,
             "privacy_request": privacy_request.id,
         }
 

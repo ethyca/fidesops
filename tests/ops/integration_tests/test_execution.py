@@ -656,9 +656,8 @@ def test_restart_graph_from_failure(
             "removed_collection_count": 0,
             "added_edge_count": 0,
             "removed_edge_count": 0,
-            "processed_collection_count": 5,
-            "remaining_collection_count": 15,
-            "added_upstream_edge_count": 0,
+            "processed_access_collection_count": 5,
+            "skipped_added_edge_count": 0,
             "privacy_request": privacy_request.id,
         }
 

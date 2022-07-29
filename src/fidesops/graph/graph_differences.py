@@ -4,7 +4,6 @@ from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     CollectionAddress,
-    FieldAddress,
 )
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.util.collection_util import Row
@@ -60,9 +59,8 @@ class GraphDiff(BaseSchema):
     removed_collections: List[str] = []
     added_edges: List[str] = []
     removed_edges: List[str] = []
-    processed_collections: List[str] = []
-    remaining_collections: List[str] = []
-    added_upstream_edges: List[str] = []
+    processed_access_collections: List[str] = []
+    skipped_added_edges: List[str] = []
 
 
 class GraphDiffSummary(BaseSchema):
@@ -72,9 +70,8 @@ class GraphDiffSummary(BaseSchema):
     removed_collection_count: int = 0
     added_edge_count: int = 0
     removed_edge_count: int = 0
-    processed_collection_count: int = 0
-    remaining_collection_count: int = 0
-    added_upstream_edge_count: int = 0
+    processed_access_collection_count: int = 0
+    skipped_added_edge_count: int = 0
 
 
 artificial_collections: Set[str] = {
@@ -83,29 +80,25 @@ artificial_collections: Set[str] = {
 }
 
 
-def _get_upstream_edges(
-    processed_collections: List[str], added_edges: List[str]
+def get_skipped_added_edges(
+    processed_access_collections: List[str],
+    current_graph: GraphRepr,
+    added_edges: List[str],
 ) -> List[str]:
     """
-    Get new edges that have been added upstream of collections that have
-    already been processed on previous runs.
+    Gets newly added edges *directly* upstream of an already-processed collection.
 
-    Currently these edges are not re-run.
+    Already-processed collections have their immediate upstream edges removed from the graph
+    when we reprocess an access portion of the request.  We don't re-query collections that were already run:
+    we use saved incoming results from last time.
     """
-    collections_queue = processed_collections.copy()
-
     added_upstream_edges: List[str] = []
-    while collections_queue:
-        collection_name = collections_queue.pop()
-        for edge in added_edges:
-            if f"->{collection_name}" in edge:
-                added_upstream_edges.append(edge)
-                collections_queue.append(
-                    FieldAddress.from_string(edge.split("->")[0])
-                    .collection_address()
-                    .value
-                )
 
+    for collection in processed_access_collections:
+        for _, upstream_edges in current_graph[collection].items():
+            for edge in upstream_edges:
+                if edge in added_edges:
+                    added_upstream_edges.append(edge)
     return added_upstream_edges
 
 
@@ -144,22 +137,9 @@ def _find_graph_differences(  # pylint: disable=too-many-locals
     removed_collections: List[str] = list(previous_collections - current_collections)
     removed_edges: List[str] = list(previous_edges - current_edges)
 
-    processed_collections = list(previous_results.keys())
-    added_upstream_edges: List[str] = _get_upstream_edges(
-        processed_collections, added_edges
-    )
-
-    upstream_collections: List[str] = []
-    for edge in added_upstream_edges:
-        upstream_collections.append(
-            FieldAddress.from_string(edge.split("->")[0]).collection_address().value
-        )
-
-    remaining_collections = list(
-        current_collections
-        - set(upstream_collections)
-        - set(processed_collections)
-        - artificial_collections
+    processed_access_collections = list(previous_results.keys())
+    skipped_added_edges: List[str] = get_skipped_added_edges(
+        processed_access_collections, current_graph, added_edges
     )
 
     return GraphDiff(
@@ -169,9 +149,8 @@ def _find_graph_differences(  # pylint: disable=too-many-locals
         removed_collections=sorted(removed_collections),
         added_edges=sorted(added_edges),
         removed_edges=sorted(removed_edges),
-        processed_collections=sorted(processed_collections),
-        remaining_collections=sorted(remaining_collections),
-        added_upstream_edges=sorted(added_upstream_edges),
+        processed_access_collections=sorted(processed_access_collections),
+        skipped_added_edges=sorted(skipped_added_edges),
     )
 
 
@@ -198,7 +177,6 @@ def find_graph_differences_summary(
         removed_collection_count=len(graph_diff.removed_collections),
         added_edge_count=len(graph_diff.added_edges),
         removed_edge_count=len(graph_diff.removed_edges),
-        processed_collection_count=len(graph_diff.processed_collections),
-        remaining_collection_count=len(graph_diff.remaining_collections),
-        added_upstream_edge_count=len(graph_diff.added_upstream_edges),
+        processed_access_collection_count=len(graph_diff.processed_access_collections),
+        skipped_added_edge_count=len(graph_diff.skipped_added_edges),
     )
