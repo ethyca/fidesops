@@ -111,9 +111,11 @@ def _find_graph_differences(  # pylint: disable=too-many-locals
     previous_erasure_results: Dict[str, int],
 ) -> Optional[GraphDiff]:
     """
-    Determine how/if a graph has changed from the previous run when a privacy request is rerun.
+    Determine how/if a graph has changed from the previous run when a privacy request is reprocessed.
 
-    Takes in the previous graph, the current graph, and any collections that already ran the first time (previous_results)
+    Takes in the previous graph, the current graph, and any collections that already ran the first time (previous_results).
+    Where applicable, we also take in the erasure collections that have already run.  The current design doesn't run
+    the access request on a collection or the erasure portion of the collection more than once.
     """
     if not previous_graph:
         return None

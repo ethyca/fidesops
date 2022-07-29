@@ -19,7 +19,7 @@ from fidesops.util.collection_util import Row
 
 
 def log_graph_failure(event: Optional[AnalyticsEvent]) -> None:
-    """Send an Analytics Event if an access graph has been rerun for a given privacy request"""
+    """Send an Analytics Event if privacy request execution has failed"""
     if config.root_user.analytics_opt_out:
         return
 
@@ -31,7 +31,7 @@ def log_graph_failure(event: Optional[AnalyticsEvent]) -> None:
 
 
 def log_graph_rerun(event: Optional[AnalyticsEvent]) -> None:
-    """Send an Analytics Event if an access graph has been rerun for a given privacy request"""
+    """Send an Analytics Event if a privacy request has been reprocessed, comparing its graph to the previous graph"""
     if config.root_user.analytics_opt_out:
         return
 
