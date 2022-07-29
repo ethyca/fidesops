@@ -26,7 +26,6 @@ def valid_read_override(
     policy: Policy,
     privacy_request: PrivacyRequest,
     input_data: Dict[str, List[Any]],
-    identity_data: Dict[str, Any],
     secrets: Dict[str, Any],
 ) -> List[Row]:
     """
@@ -40,7 +39,6 @@ def valid_read_override_copy(
     policy: Policy,
     privacy_request: PrivacyRequest,
     input_data: Dict[str, List[Any]],
-    identity_data: Dict[str, Any],
     secrets: Dict[str, Any],
 ) -> List[Row]:
     """
@@ -50,10 +48,9 @@ def valid_read_override_copy(
 
 
 def valid_update_override(
-    update_param_values: List[Dict[str, Any]],
+    param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
     privacy_request: PrivacyRequest,
-    identity_data: Dict[str, Any],
     secrets: Dict[str, Any],
 ) -> int:
     """
@@ -82,7 +79,7 @@ class TestSaasRequestOverrideFactory:
 
         with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
             SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.UPDATE)
-        assert f"Custom saas override '{f_id}' does not exist." in str(exc.value)
+        assert f"Custom SaaS override '{f_id}' does not exist." in str(exc.value)
 
     def test_register_update(self):
         """
@@ -98,7 +95,7 @@ class TestSaasRequestOverrideFactory:
 
         with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
             SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.READ)
-        assert f"Custom saas override '{f_id}' does not exist." in str(exc.value)
+        assert f"Custom SaaS override '{f_id}' does not exist." in str(exc.value)
 
     def test_register_update_and_delete(self):
         """
@@ -117,7 +114,7 @@ class TestSaasRequestOverrideFactory:
 
         with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
             SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.READ)
-        assert f"Custom saas override '{f_id}' does not exist." in str(exc.value)
+        assert f"Custom SaaS override '{f_id}' does not exist." in str(exc.value)
 
     def test_reregister_override(self):
         """
@@ -201,7 +198,6 @@ class TestSaasRequestOverrideFactory:
             policy: Policy,
             privacy_request: PrivacyRequest,
             input_data: Dict[str, List[Any]],
-            identity_data: Dict[str, Any],
             secrets: Dict[str, Any],
         ):
             pass
@@ -211,7 +207,6 @@ class TestSaasRequestOverrideFactory:
             policy: Policy,
             privacy_request: PrivacyRequest,
             input_data: Dict[str, List[Any]],
-            identity_data: Dict[str, Any],
             secrets: Dict[str, Any],
         ) -> int:
             pass
@@ -221,7 +216,6 @@ class TestSaasRequestOverrideFactory:
             policy: Policy,
             privacy_request: PrivacyRequest,
             input_data: Dict[str, List[Any]],
-            identity_data: Dict[str, Any],
             secrets: Dict[str, Any],
         ) -> List[str]:
             pass
@@ -231,7 +225,6 @@ class TestSaasRequestOverrideFactory:
             policy: Policy,
             privacy_request: PrivacyRequest,
             input_data: Dict[str, List[Any]],
-            identity_data: Dict[str, Any],
         ) -> List[Row]:
             pass
 
@@ -253,14 +246,14 @@ class TestSaasRequestOverrideFactory:
             assert exc_string in str(exc.value)
             with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
                 SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.READ)
-            assert f"Custom saas override '{f_id}' does not exist." in str(exc.value)
+            assert f"Custom SaaS override '{f_id}' does not exist." in str(exc.value)
 
         for override_function in return_type_functions:
             assert_validation_error(override_function, "must return a List[Row]")
 
         for override_function in params_functions:
             assert_validation_error(
-                override_function, "must declare at least 6 parameters"
+                override_function, "must declare at least 5 parameters"
             )
 
     def test_register_invalid_update(self):
@@ -271,37 +264,33 @@ class TestSaasRequestOverrideFactory:
         f_id = uuid()
 
         def no_return_type(
-            update_param_values: List[Dict[str, Any]],
+            param_values_per_row: List[Dict[str, Any]],
             policy: Policy,
             privacy_request: PrivacyRequest,
-            identity_data: Dict[str, Any],
             secrets: Dict[str, Any],
         ):
             pass
 
         def invalid_return_type(
-            update_param_values: List[Dict[str, Any]],
+            param_values_per_row: List[Dict[str, Any]],
             policy: Policy,
             privacy_request: PrivacyRequest,
-            identity_data: Dict[str, Any],
             secrets: Dict[str, Any],
         ) -> str:
             pass
 
         def invalid_return_type_2(
-            update_param_values: List[Dict[str, Any]],
+            param_values_per_row: List[Dict[str, Any]],
             policy: Policy,
             privacy_request: PrivacyRequest,
-            identity_data: Dict[str, Any],
             secrets: Dict[str, Any],
         ) -> List[Row]:
             pass
 
         def too_few_params(
-            update_param_values: List[Dict[str, Any]],
+            param_values_per_row: List[Dict[str, Any]],
             policy: Policy,
             privacy_request: PrivacyRequest,
-            identity_data: Dict[str, Any],
         ) -> int:
             pass
 
@@ -316,7 +305,7 @@ class TestSaasRequestOverrideFactory:
             assert exc_string in str(exc.value)
             with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
                 SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.UPDATE)
-            assert f"Custom saas override '{f_id}' does not exist." in str(exc.value)
+            assert f"Custom SaaS override '{f_id}' does not exist." in str(exc.value)
 
         return_type_functions = [
             invalid_return_type,
@@ -330,7 +319,7 @@ class TestSaasRequestOverrideFactory:
 
         for override_function in params_functions:
             assert_validation_error(
-                override_function, "must declare at least 5 parameters"
+                override_function, "must declare at least 4 parameters"
             )
 
     def test_register_invalid_request_type(self):
@@ -382,4 +371,4 @@ class TestSaasRequestOverrideFactory:
         f_id_2 = uuid()
         with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
             SaaSRequestOverrideFactory.get_override(f_id_2, SaaSRequestType.READ)
-        assert f"Custom saas override '{f_id_2}' does not exist." in str(exc.value)
+        assert f"Custom SaaS override '{f_id_2}' does not exist." in str(exc.value)

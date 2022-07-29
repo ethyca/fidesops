@@ -174,18 +174,16 @@ class SaaSRequest(BaseModel):
                 )
 
         else:  # if a request override is specified, many fields are NOT allowed
-            invalid = next(
-                (
-                    k
-                    for k in values.keys()
-                    if values.get(k)
-                    and k not in ("request_override", "param_values", "grouped_inputs")
-                ),
-                None,
-            )
+            invalid = [
+                k
+                for k in values.keys()
+                if values.get(k)
+                and k not in ("request_override", "param_values", "grouped_inputs")
+            ]
             if invalid:
+                invalid_joined = ", ".join(invalid)
                 raise ValueError(
-                    f"Invalid property {invalid} on a request with request_override specified"
+                    f"Invalid properties [{invalid_joined}] on a request with request_override specified"
                 )
 
         return values

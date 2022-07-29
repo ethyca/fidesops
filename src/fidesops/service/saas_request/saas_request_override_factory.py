@@ -46,7 +46,7 @@ class SaaSRequestOverrideFactory:
         [Callable[..., Union[List[Row], int]]], Callable[..., Union[List[Row], int]]
     ]:
         """
-        Decorator to register the custom-implemented saas request override
+        Decorator to register the custom-implemented SaaS request override
         with the given name.
         """
 
@@ -62,7 +62,7 @@ class SaaSRequestOverrideFactory:
         ) -> Callable[..., Union[List[Row], int]]:
             for request_type in request_types:
                 logger.debug(
-                    f"Registering new SaaS request override function '{override_function}' under name '{name}' for SaaSRequestType {request_type}"
+                    f"Registering new SaaS request override function '{override_function.__name__}' under name '{name}' for SaaSRequestType {request_type}"
                 )
 
                 # perform some basic validation on the function that's been provided
@@ -81,7 +81,7 @@ class SaaSRequestOverrideFactory:
 
                 if name in cls.registry[request_type]:
                     logger.warning(
-                        f"Saas request override function with name '{name}' already exists for SaasRequestType {request_type}. It previously referred to function '{cls.registry[request_type][name]}', but will now refer to '{override_function}'"
+                        f"SaaS request override function with name '{name}' already exists for SaaSRequestType {request_type}. It previously referred to function '{cls.registry[request_type][name]}', but will now refer to '{override_function.__name__}'"
                     )
 
                 cls.registry[request_type][name] = override_function
@@ -108,14 +108,14 @@ class SaaSRequestOverrideFactory:
             ][override_function_name]
         except KeyError:
             raise NoSuchSaaSRequestOverrideException(
-                f"Custom saas override '{override_function_name}' does not exist. Valid custom saas override classes for SaasRequestType {request_type} are [{cls.valid_overrides[request_type]}]"
+                f"Custom SaaS override '{override_function_name}' does not exist. Valid custom SaaS override classes for SaaSRequestType {request_type} are [{cls.valid_overrides[request_type]}]"
             )
         return override_function
 
 
 def validate_read_override_function(f: Callable) -> None:
     """
-    Perform some basic checks on the user-provided Saas request override function
+    Perform some basic checks on the user-provided SaaS request override function
     that will be used with `read` actions.
 
     The validation is not overly strict to allow for some flexibility in
@@ -123,22 +123,22 @@ def validate_read_override_function(f: Callable) -> None:
     the function meets the framework's basic expectations.
 
     Specifically, the validation checks that function's return type is `List[Row]`
-    and that it declares at least 6 parameters.
+    and that it declares at least 5 parameters.
     """
     sig: Signature = signature(f)
     if sig.return_annotation is not List[Row]:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS request override function must return a List[Row]"
         )
-    if len(sig.parameters) < 6:
+    if len(sig.parameters) < 5:
         raise InvalidSaaSRequestOverrideException(
-            "Provided SaaS request override function must declare at least 6 parameters"
+            "Provided SaaS request override function must declare at least 5 parameters"
         )
 
 
 def validate_update_override_function(f: Callable) -> None:
     """
-    Perform some basic checks on the user-provided Saas request override function
+    Perform some basic checks on the user-provided SaaS request override function
     that will be used with `update`, `delete` or `data_protection_request` actions.
 
     The validation is not overly strict to allow for some flexibility in
@@ -146,14 +146,14 @@ def validate_update_override_function(f: Callable) -> None:
     the function meets the framework's basic expectations.
 
     Specifically, the validation checks that function's return type is `int`
-    and that it declares at least 5 parameters.
+    and that it declares at least 4 parameters.
     """
     sig: Signature = signature(f)
     if sig.return_annotation is not int:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS request override function must return an int"
         )
-    if len(sig.parameters) < 5:
+    if len(sig.parameters) < 4:
         raise InvalidSaaSRequestOverrideException(
-            "Provided SaaS request override function must declare at least 5 parameters"
+            "Provided SaaS request override function must declare at least 4 parameters"
         )

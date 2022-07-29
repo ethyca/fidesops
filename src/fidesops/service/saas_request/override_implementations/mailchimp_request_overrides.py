@@ -24,7 +24,6 @@ def mailchimp_messages_access(
     policy: Policy,
     privacy_request: PrivacyRequest,
     input_data: Dict[str, List[Any]],
-    identity_data: Dict[str, Any],
     secrets: Dict[str, Any],
 ) -> List[Row]:
     """
@@ -34,6 +33,7 @@ def mailchimp_messages_access(
     This is to provide the necessary reference and identity data as part
     of graph traversal. The resulting values are passed in as parameters
     so we don't need to define the data retrieval here.
+
     path: /3.0/conversations/<conversation_id>/messages
     request_params:
     - name: conversation_id
@@ -81,7 +81,8 @@ def mailchimp_messages_access(
             # unwrap and post-process response
             response_data = pydash.get(response.json(), "conversation_messages")
             filtered_data = pydash.filter_(
-                response_data, {"from_email": identity_data.get("email")}
+                response_data,
+                {"from_email": privacy_request.get_cached_identity_data().get("email")},
             )
 
             # build up final result
@@ -94,22 +95,21 @@ def mailchimp_messages_access(
     "mailchimp_member_update", [SaaSRequestType.UPDATE]
 )
 def mailchimp_member_update(
-    update_param_values: List[Dict[str, Any]],
+    param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
     privacy_request: PrivacyRequest,
-    identity_data: Dict[str, Any],
     secrets: Dict[str, Any],
 ) -> int:
     rows_updated = 0
     # each update_params dict correspond to a record that needs to be updated
-    for update_params in update_param_values:
+    for row_param_values in param_values_per_row:
         # get params to be used in update request
-        list_id = update_params.get("list_id")
-        subscriber_hash = update_params.get("subscriber_hash")
+        list_id = row_param_values.get("list_id")
+        subscriber_hash = row_param_values.get("subscriber_hash")
 
         # in this case, we can just put the masked object fields object
         # directly into the request body
-        update_body = dumps(update_params["masked_object_fields"])
+        update_body = dumps(row_param_values["masked_object_fields"])
         try:
             response = put(
                 url=f'https://{secrets["domain"]}/3.0/lists/{list_id}/members/{subscriber_hash}',

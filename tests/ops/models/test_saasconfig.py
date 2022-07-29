@@ -58,19 +58,23 @@ def test_saas_request_override_invalid_properties():
     """
     with pytest.raises(ValidationError) as exc:
         SaaSRequest(request_override="test_override", path="/test")
-    assert "Invalid property path" in str(exc.value)
+    assert "Invalid properties" in str(exc.value) and "path" in str(exc.value)
 
     with pytest.raises(ValidationError) as exc:
         SaaSRequest(request_override="test_override", method="GET")
-    assert "Invalid property method" in str(exc.value)
+    assert "Invalid properties" in str(exc.value) and "method" in str(exc.value)
 
     with pytest.raises(ValidationError) as exc:
         SaaSRequest(request_override="test_override", path="/test", method="GET")
-    assert "Invalid property" in str(exc.value)
+    assert (
+        "Invalid properties" in str(exc.value)
+        and "path" in str(exc.value)
+        and "method" in str(exc.value)
+    )
 
     with pytest.raises(ValidationError) as exc:
         SaaSRequest(request_override="test_override", body="testbody")
-    assert "Invalid property body" in str(exc.value)
+    assert "Invalid properties" in str(exc.value) and "body" in str(exc.value)
 
 
 @pytest.mark.unit_saas

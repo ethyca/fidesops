@@ -364,12 +364,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 policy,
                 privacy_request,
                 input_data,
-                privacy_request.get_cached_identity_data(),
                 secrets,
             )  # type: ignore
         except Exception:
             logger.error(
-                "Encountered error executing override access function '%s",
+                "Encountered error executing override access function '%s'",
                 override_function_name,
                 exc_info=True,
             )
@@ -402,7 +401,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         try:
             # if using a saas override, we still need to use the core framework
             # to generate updated (masked) parameter values, and pass these
-            # into the overriden function
+            # into the overridden function
             update_param_values: List[Dict[str, Any]] = [
                 query_config.generate_update_param_values(
                     row, policy, privacy_request, masking_request
@@ -413,7 +412,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 update_param_values,
                 policy,
                 privacy_request,
-                privacy_request.get_cached_identity_data(),
                 secrets,
             )  # type: ignore
         except Exception:
