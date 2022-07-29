@@ -126,7 +126,9 @@ def pytest_unit(session: nox.Session) -> None:
 def pytest_integration(session: nox.Session) -> None:
     """Runs tests."""
     session.notify("teardown")
-    run_infrastructure(run_tests=True, analytics_opt_out=True, datastores=[], pytest_path="tests/ops/")
+    run_infrastructure(
+        run_tests=True, analytics_opt_out=True, datastores=[], pytest_path="tests/ops/"
+    )
 
 
 @nox.session()

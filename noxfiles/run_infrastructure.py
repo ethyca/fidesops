@@ -9,6 +9,8 @@ import sys
 from time import sleep
 from typing import List
 
+from constants_nox import COMPOSE_SERVICE_NAME
+
 DOCKER_WAIT = 5
 DOCKERFILE_DATASTORES = [
     "mssql",
@@ -23,7 +25,6 @@ EXTERNAL_DATASTORE_CONFIG = {
     "bigquery": ["BIGQUERY_KEYFILE_CREDS", "BIGQUERY_DATASET"],
 }
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
-IMAGE_NAME = "webserver"
 
 
 def run_infrastructure(
@@ -42,7 +43,7 @@ def run_infrastructure(
     - Defaults to creating infrastructure for all datastores in `DOCKERFILE_DATASTORES` if none
     are provided.
     - Optionally runs integration tests against those datastores from the container identified
-    with `IMAGE_NAME`.
+    with `COMPOSE_SERVICE_NAME`.
     """
 
     if len(datastores) == 0:
@@ -54,7 +55,7 @@ def run_infrastructure(
         _run_cmd_or_err(f'echo "datastores specified: {", ".join(datastores)}"')
 
     # De-duplicate datastores
-    datastores = set(datastores)
+    datastores = list(set(datastores))
 
     # Configure docker-compose path
     path: str = get_path_for_datastores(datastores)
@@ -76,17 +77,17 @@ def run_infrastructure(
     seed_initial_data(
         datastores,
         path,
-        base_image=IMAGE_NAME,
+        service_name=COMPOSE_SERVICE_NAME,
     )
 
     if open_shell:
-        return _open_shell(path, IMAGE_NAME)
+        return _open_shell(path, COMPOSE_SERVICE_NAME)
 
     if run_application:
         return _run_application(path)
 
     if run_quickstart:
-        return _run_quickstart(path, IMAGE_NAME)
+        return _run_quickstart(path, COMPOSE_SERVICE_NAME)
 
     if run_tests:
         # Now run the tests
@@ -98,16 +99,16 @@ def run_infrastructure(
         )
 
     if run_create_superuser:
-        return _run_create_superuser(path, IMAGE_NAME)
+        return _run_create_superuser(path, COMPOSE_SERVICE_NAME)
 
     if run_create_test_data:
-        return _run_create_test_data(path, IMAGE_NAME)
+        return _run_create_test_data(path, COMPOSE_SERVICE_NAME)
 
 
 def seed_initial_data(
     datastores: List[str],
     path: str,
-    base_image: str,
+    service_name: str,
 ) -> None:
     """
     Seed the datastores with initial data as defined in the file at `setup_path`
@@ -120,7 +121,7 @@ def seed_initial_data(
                 f'echo "Attempting to create schema and seed initial data for {datastore} from {setup_path}..."'
             )
             _run_cmd_or_err(
-                f'docker-compose {path} run {base_image} python {setup_path} || echo "no custom setup logic found for {datastore}, skipping"'
+                f'docker-compose {path} run {service_name} python {setup_path} || echo "no custom setup logic found for {datastore}, skipping"'
             )
 
 
@@ -152,49 +153,53 @@ def _run_cmd_or_err(cmd: str) -> None:
 
 def _run_quickstart(
     path: str,
-    image_name: str,
+    service_name: str,
 ) -> None:
     """
     Invokes the Fidesops command line quickstart
     """
     _run_cmd_or_err('echo "Running the quickstart..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f"docker exec -it {image_name} python scripts/quickstart.py")
+    _run_cmd_or_err(f"docker exec -it {service_name} python scripts/quickstart.py")
 
 
 def _run_create_superuser(
     path: str,
-    image_name: str,
+    service_name: str,
 ) -> None:
     """
     Invokes the Fidesops create_user_and_client command
     """
     _run_cmd_or_err('echo "Running create superuser..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f"docker exec -it {image_name} python scripts/create_superuser.py")
+    _run_cmd_or_err(
+        f"docker exec -it {service_name} python scripts/create_superuser.py"
+    )
 
 
 def _run_create_test_data(
     path: str,
-    image_name: str,
+    service_name: str,
 ) -> None:
     """
     Invokes the Fidesops create_user_and_client command
     """
     _run_cmd_or_err('echo "Running create test data..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f"docker exec -it {image_name} python scripts/create_test_data.py")
+    _run_cmd_or_err(
+        f"docker exec -it {service_name} python scripts/create_test_data.py"
+    )
 
 
 def _open_shell(
     path: str,
-    image_name: str,
+    service_name: str,
 ) -> None:
     """
     Opens a bash shell on the container at `image_name`
     """
-    _run_cmd_or_err(f'echo "Opening bash shell on {image_name}"')
-    _run_cmd_or_err(f"docker-compose {path} run {image_name} /bin/bash")
+    _run_cmd_or_err(f'echo "Opening bash shell on {service_name}"')
+    _run_cmd_or_err(f"docker-compose {path} run {service_name} /bin/bash")
 
 
 def _run_application(docker_compose_path: str) -> None:
@@ -247,7 +252,7 @@ def _run_tests(
         f'echo "running pytest for conditions: {pytest_path} with environment variables: {environment_variables}"'
     )
     _run_cmd_or_err(
-        f"docker-compose {docker_compose_path} run {environment_variables} {IMAGE_NAME} pytest {pytest_path}"
+        f"docker-compose {docker_compose_path} run {environment_variables} {COMPOSE_SERVICE_NAME} pytest {pytest_path}"
     )
 
     # Now tear down the infrastructure
