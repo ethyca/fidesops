@@ -8,8 +8,8 @@ from constants_nox import (
     RUN_NO_DEPS,
     START_APP,
 )
-from utils_nox import db
 from run_infrastructure import run_infrastructure
+from utils_nox import db
 
 
 @nox.session()
@@ -126,7 +126,7 @@ def pytest_unit(session: nox.Session) -> None:
 def pytest_integration(session: nox.Session) -> None:
     """Runs tests."""
     session.notify("teardown")
-    run_infrastructure(run_tests=True, analytics_opt_out=True, datastores=[])
+    run_infrastructure(run_tests=True, analytics_opt_out=True, datastores=[], pytest_path="tests/ops/")
 
 
 @nox.session()
