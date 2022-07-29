@@ -27,6 +27,7 @@ The types of changes are:
 * Access and erasure support for Adobe Campaign [#905](https://github.com/ethyca/fidesops/pull/905)
 * Added db vs saas to connection type api [#937](https://github.com/ethyca/fidesops/pull/937)
 * Retry a DSR (FE) [#863](https://github.com/ethyca/fidesops/pull/938)
+* Enable python function overrides for SaaS connector request execution [#986](https://github.com/ethyca/fidesops/pull/986)
 
 ### Changed
 
