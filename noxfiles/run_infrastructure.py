@@ -146,9 +146,9 @@ def _run_cmd_or_err(cmd: str) -> None:
     """
     Runs a command in the bash prompt and throws an error if the command was not successful
     """
-    res = subprocess.Popen(cmd, shell=True).wait()
-    if res > 0:
-        raise Exception(f"Error executing command: {cmd}")
+    with subprocess.Popen(cmd, shell=True) as result:
+        if result.wait() > 0:
+            raise Exception(f"Error executing command: {cmd}")
 
 
 def _run_quickstart(
