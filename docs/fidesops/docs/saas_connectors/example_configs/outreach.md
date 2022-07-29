@@ -1,3 +1,22 @@
+
+# Outreach
+
+## Implementation Summary
+Fidesops uses the following Outreach endpoints to retrieve and delete Personally Identifiable Information (PII) when processing a Data Subject Request (DSR). Right to Access and Right to Delete (Right to Forget) support for each endpoint is noted below. 
+
+|Endpoint | Right to Access | Right to Delete |
+|----|----|----|
+|[Prospects](https://api.outreach.io/api/v2/docs#manage-prospects-and-accounts) | Yes | Yes |
+|[Recipients](https://api.outreach.io/api/v2/docs#recipient) | Yes | Yes |
+
+
+## Connection Settings
+Fidesops provides a [Postman collection](../../postman/using_postman.md) for easily establishing connections to your third party applications. Additional connection instructions may be found in the [configuration guide](../saas_config.md).
+
+**Deletion requests** are fulfilled by masking PII via `UPDATE` endpoints. To [give fidesops permission](../../guides/configuration_reference.md#configuration-variable-reference) to remove PII using `DELETE` endpoints, ensure the `MASKING_STRICT` variable in your `fidesops.toml` file is set to `FALSE`. 
+
+## Example Outreach Configuration
+```yaml
 saas_config:
   fides_key: outreach_connector_example
   name: Outreach Example Config
@@ -7,7 +26,7 @@ saas_config:
 
   connector_params:
     - name: domain
-      default_value: api.outreach.io
+      default_value: platform.segmentapis.com
     - name: requester_email
       description: The email of the Outreach user to associate with each automated compliance request (data_protection_request)
     - name: client_id
@@ -24,7 +43,7 @@ saas_config:
       configuration:
         authorization_request:
           method: GET
-          path: /oauth/authorize
+          path: /auth/authorize
           query_params:
             - name: client_id
               value: <client_id>
@@ -155,3 +174,4 @@ saas_config:
                 }
               }
             }
+```

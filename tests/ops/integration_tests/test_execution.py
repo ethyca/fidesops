@@ -156,6 +156,7 @@ class TestDeleteCollection:
             dataset_graph,
             [integration_postgres_config, mongo_connection_config],
             {"email": "customer-1@example.com"},
+            db,
         )
         assert any(
             collection.startswith("mongo_test") for collection in results
@@ -209,6 +210,7 @@ class TestDeleteCollection:
                 mongo_postgres_dataset_graph,
                 [integration_postgres_config, integration_mongodb_config],
                 {"email": "customer-1@example.com"},
+                db,
             )
 
         execution_logs = get_sorted_execution_logs(db, privacy_request)
@@ -242,6 +244,7 @@ class TestDeleteCollection:
             postgres_only_dataset_graph,
             [integration_postgres_config],
             {"email": "customer-1@example.com"},
+            db,
         )
 
         execution_logs = get_sorted_execution_logs(db, privacy_request)
@@ -335,6 +338,7 @@ class TestSkipDisabledCollection:
             mongo_postgres_dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
+            db,
         )
         assert all(
             [dataset.startswith("postgres_example") for dataset in results]
@@ -363,8 +367,8 @@ class TestSkipDisabledCollection:
         integration_postgres_config,
         example_datasets,
     ) -> None:
-        """Assert that disabling a collection while the privacy request is in progress doesn't affect the current execution plan.
-        We still proceed to visit the disabled collections, because we rely on the ConnectionConfigs already in memory.
+        """Assert that disabling a collection while the privacy request is in progress can affect the current execution plan.
+        ConnectionConfigs that are disabled while a request is in progress will be skipped after the current session is committed.
         """
         # Create a new ConnectionConfig instead of using the fixture because I need to be able to access this
         # outside of the current session.
@@ -418,10 +422,11 @@ class TestSkipDisabledCollection:
             dataset_graph,
             [integration_postgres_config, mongo_connection_config],
             {"email": "customer-1@example.com"},
+            db,
         )
-        assert any(
+        assert not any(
             collection.startswith("mongo_test") for collection in results
-        ), "mongo results still returned"
+        ), "mongo results not returned"
         assert any(
             collection.startswith("postgres_example_test_dataset")
             for collection in results
@@ -439,8 +444,8 @@ class TestSkipDisabledCollection:
         )
         assert mongo_logs.count() == 9
         assert (
-            mongo_logs.filter_by(status="complete").count() == 9
-        ), "No mongo collections skipped"
+            mongo_logs.filter_by(status="skipped").count() == 9
+        ), "All mongo collections skipped"
 
         db.delete(mongo_connection_config)
 
@@ -469,6 +474,7 @@ class TestSkipDisabledCollection:
                 mongo_postgres_dataset_graph,
                 [integration_postgres_config, integration_mongodb_config],
                 {"email": "customer-1@example.com"},
+                db,
             )
 
         execution_logs = get_sorted_execution_logs(db, privacy_request)
@@ -496,6 +502,7 @@ class TestSkipDisabledCollection:
             mongo_postgres_dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
+            db,
         )
 
         execution_logs = get_sorted_execution_logs(db, privacy_request)
@@ -601,6 +608,7 @@ def test_restart_graph_from_failure(
             mongo_postgres_dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
+            db,
         )
     assert exc.value.__class__ == ValidationError
     assert (
@@ -641,6 +649,7 @@ def test_restart_graph_from_failure(
             mongo_postgres_dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
+            db
         )
 
         # Assert analytics event created - before and after graph on rerun did not change
@@ -731,6 +740,7 @@ def test_restart_graph_from_failure_during_erasure(
         mongo_postgres_dataset_graph,
         [integration_postgres_config, integration_mongodb_config],
         {"email": "customer-1@example.com"},
+        db
     )
 
     # Temporarily remove the secrets from the postgres connection to prevent execution from occurring
