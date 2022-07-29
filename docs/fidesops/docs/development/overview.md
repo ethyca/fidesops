@@ -18,39 +18,13 @@ commands to give you different functionality.
 3. Clone your fork `git clone https://github.com/<your-fork-location>/fidesops.git`
 4. `cd fidesops`
 
-### Available `nox -s` commands
-- `build` - Build the Docker containers.
-- `push` - Push the Docker image to Dockerhub.
-- `ci_suite` - Runs all of the CI checks, except for 'pytest_external'.
-- `black` - Run the 'black' style linter.
-- `isort` - Run the 'isort' import linter.
-- `mypy` - Run the 'mypy' static type checker.
-- `pylint` - Run the 'pylint' code linter.
-- `xenon` - Run 'xenon' code complexity monitoring.
-- `check_install` - Check that fidesops is installed.
-- `pytest_unit` - Runs all unit tests except those that talk to integration databases.
-- `pytest_integration` - Runs all integration tests, except those on external datastores.
-- `pytest_integration_external` - Run all tests that rely on the third-party databases and services.
-- `pytest_saas` - Run all saas tests that rely on the third-party databases and services.
-- `dev` - Spin up the entire application and open a development shell.
-- `dev_with_worker` - Spin up the entire application with a dedicated worker, and open a development shell.
-- `quickstart` - Runs a quick, five minute quickstart that talks to the fidesops API to execute privacy requests.
-- `docs_build` - Build docs from the source code.
-- `docs_serve` - Spins up just the docs, which you can visit at `http://0.0.0.0:8000/fidesops/`
-- `docs_check` - Check that the docs can build.
-- `create_user` - Create a super user in the fidesops database.
-- `seed_test_data` - Seed test data in the Postgres application database.
-- `db(init)` - Run commands against the database.
-- `db(reset)` - Run commands against the database.
-- `clean` - Clean up docker containers, remove orphans, remove volumes
-- `teardown` - Tear down the docker dev environment.
-
-
+### Available `nox` commands
+An up-to-date list of build commands is available by running `nox` from within the project directory.
 #### Issues 
 
 - MSSQL: Known issues around connecting to MSSQL exist today for Apple M1 users. M1 users that wish to install `pyodbc` locally, please reference the workaround [here](https://github.com/mkleehammer/pyodbc/issues/846).
 
-- Package not found: When running `docker-compose up`, if you get a `importlib.metadata.PackageNotFoundError: fidesops`, do `nox -s dev`, and then run `pip install -e .`. Verify fidesops is installed with `pip list`.
+- Package not found: When running `docker-compose up webserver`, if you get a `importlib.metadata.PackageNotFoundError: fidesops`, do `nox -s dev`, and then run `pip install -e .`. Verify fidesops is installed with `pip list`.
 
 
 ## Write your code

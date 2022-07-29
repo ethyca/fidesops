@@ -49,4 +49,4 @@ To deploy a full version of the UI from a backend, run the following from the ro
 
 This will build and place the Admin UI files into a location accessible by backend fidesops deployments.
 
-To test the UI, run `docker-compose up` from the root directory, and visit `http://0.0.0.0:8080/static/index.html`.
+To test the UI, run `docker-compose up webserver` from the root directory, and visit `http://0.0.0.0:8080/index.html`.

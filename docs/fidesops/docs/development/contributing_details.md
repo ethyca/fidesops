@@ -78,7 +78,7 @@ db.refresh()
 ```
 
 ### Connecting to the database
-When you run `docker-compose up` or `nox -s dev`, the database will be spun up in a Docker container with port `5432` exposed on localhost. You can connect to it using the credentials found in `.fidesops.toml`, e.g.
+When you run `docker-compose up webserver` or `nox -s dev`, the database will be spun up in a Docker container with port `5432` exposed on localhost. You can connect to it using the credentials found in `.fidesops.toml`, e.g.
 
 - Hostname: `localhost`
 - Port: `5432`
