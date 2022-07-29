@@ -757,6 +757,7 @@ def test_restart_graph_from_failure_during_erasure(
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
             get_cached_data_for_erasures(privacy_request.id),
+            db
         )
         assert exc.value.__class__ == ValidationError
         assert (
@@ -777,6 +778,7 @@ def test_restart_graph_from_failure_during_erasure(
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
             get_cached_data_for_erasures(privacy_request.id),
+            db
         )
 
         # Assert analytics event created - before and after graph on rerun did not change
