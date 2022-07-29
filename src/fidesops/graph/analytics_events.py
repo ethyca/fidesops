@@ -18,6 +18,18 @@ from fidesops.task.task_resources import TaskResources
 from fidesops.util.collection_util import Row
 
 
+def log_graph_failure(event: Optional[AnalyticsEvent]) -> None:
+    """Send an Analytics Event if an access graph has been rerun for a given privacy request"""
+    if config.root_user.analytics_opt_out:
+        return
+
+    if not event:
+        # No analytics event created if there's not a previous graph to compare in the cache
+        return
+
+    send_analytics_event(event)
+
+
 def log_graph_rerun(event: Optional[AnalyticsEvent]) -> None:
     """Send an Analytics Event if an access graph has been rerun for a given privacy request"""
     if config.root_user.analytics_opt_out:
@@ -41,8 +53,8 @@ def prepare_rerun_graph_analytics_event(
     has changed from the previous run if applicable.
 
     Even for erasure requests, we still compare the "access graphs", because that reflects
-    what data has changed.  The erasure graph is really just a list that runs each node
-    with data from the access graphs.
+    what data has changed and the relationships between them.
+    The erasure graph is really just a list that runs each node with data from the access graphs.
     """
     previous_graph: Optional[GraphRepr] = privacy_request.get_cached_access_graph()
     current_graph: GraphRepr = format_graph_for_caching(env, end_nodes)
@@ -76,5 +88,24 @@ def prepare_rerun_graph_analytics_event(
         endpoint=None,
         status_code=None,
         error=None,
+        extra_data=data,
+    )
+
+
+def failed_graph_analytics_event(
+    privacy_request: PrivacyRequest, exc: Optional[BaseException]
+) -> Optional[AnalyticsEvent]:
+    """Prepares an AnalyticsEvent to send to Fideslog if privacy request execution has failed."""
+
+    data = {"privacy_request": privacy_request.id}
+
+    return AnalyticsEvent(
+        docker=in_docker_container(),
+        event="privacy_request_execution_failure",
+        event_created_at=datetime.now(tz=timezone.utc),
+        local_host=None,
+        endpoint=None,
+        status_code=500,
+        error=exc.__class__.__name__ if exc else None,
         extra_data=data,
     )

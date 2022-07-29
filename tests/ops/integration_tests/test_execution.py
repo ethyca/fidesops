@@ -649,7 +649,7 @@ def test_restart_graph_from_failure(
             mongo_postgres_dataset_graph,
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
-            db
+            db,
         )
 
         # Assert analytics event created - before and after graph on rerun did not change
@@ -740,7 +740,7 @@ def test_restart_graph_from_failure_during_erasure(
         mongo_postgres_dataset_graph,
         [integration_postgres_config, integration_mongodb_config],
         {"email": "customer-1@example.com"},
-        db
+        db,
     )
 
     # Temporarily remove the secrets from the postgres connection to prevent execution from occurring
@@ -757,7 +757,7 @@ def test_restart_graph_from_failure_during_erasure(
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
             get_cached_data_for_erasures(privacy_request.id),
-            db
+            db,
         )
         assert exc.value.__class__ == ValidationError
         assert (
@@ -778,7 +778,7 @@ def test_restart_graph_from_failure_during_erasure(
             [integration_postgres_config, integration_mongodb_config],
             {"email": "customer-1@example.com"},
             get_cached_data_for_erasures(privacy_request.id),
-            db
+            db,
         )
 
         # Assert analytics event created - before and after graph on rerun did not change
