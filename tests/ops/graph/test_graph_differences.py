@@ -74,7 +74,7 @@ def resources(db):
                 connection_type=ConnectionType.postgres,
             )
         ],
-        db
+        db,
     )
 
 
