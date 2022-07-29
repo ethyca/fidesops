@@ -54,6 +54,7 @@ def test_mailchimp_override_access_request_task(
         graph,
         [mailchimp_override_connection_config],
         {"email": mailchimp_identity_email},
+        db,
     )
 
     assert_rows_match(
@@ -166,6 +167,7 @@ def test_mailchimp_erasure_request_task(
         graph,
         [mailchimp_override_connection_config],
         {"email": mailchimp_identity_email},
+        db,
     )
 
     v = graph_task.run_erasure(
@@ -175,6 +177,7 @@ def test_mailchimp_erasure_request_task(
         [mailchimp_override_connection_config],
         {"email": mailchimp_identity_email},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     logs = (
