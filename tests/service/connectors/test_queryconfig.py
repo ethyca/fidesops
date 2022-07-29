@@ -191,7 +191,7 @@ class TestSQLQueryConfig:
         target = rule.targets[0]
         target.data_category = DataCategory("user").value
         assert config.build_rule_target_field_paths(erasure_policy) == {
-            rule: [FieldPath("email")]
+            rule: [FieldPath("email"), FieldPath("id"), FieldPath("name")]
         }
 
         # Check different collection
