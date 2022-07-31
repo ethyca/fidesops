@@ -78,7 +78,7 @@ db.refresh()
 ```
 
 ### Connecting to the database
-When you run `docker-compose up webserver` or `nox -s dev`, the database will be spun up in a Docker container with port `5432` exposed on localhost. You can connect to it using the credentials found in `.fidesops.toml`, e.g.
+When you run `nox -s dev`, the database will be spun up in a Docker container with port `5432` exposed on localhost. You can connect to it using the credentials found in `.fidesops.toml`, e.g.
 
 - Hostname: `localhost`
 - Port: `5432`
@@ -90,7 +90,7 @@ When you run `docker-compose up webserver` or `nox -s dev`, the database will be
 
 Some common Alembic commands are listed below. For a comprehensive guide see: https://alembic.sqlalchemy.org/en/latest/tutorial.html. 
 
-The commands will need to be run inside a shell on your Docker containers, which can be opened with `nox -s dev`.
+The commands will need to be run inside a shell on your Docker containers, which can be opened with `nox -s dev -- shell`.
 
 In the `/src/fidesops` directory:
 

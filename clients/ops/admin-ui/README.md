@@ -10,7 +10,7 @@ Admin UI for managing FidesOps privacy requests. A web application built in Next
 
 ## Testing Entire Request Flow
 
-1. Run the `fidesops` server with `docker-compose up webserver`.
+1. Run the `fidesops` server with `nox -s dev`.
 2. Create a policy key through the API (using the fidesops Postman collection).
 3. Configure the `clients/privacy-center` application to use that policy by adding it to the appropriate request config in `config/config.json`.
 4. Run the Privacy Request center using `npm run dev`.

@@ -37,7 +37,7 @@ echo NEXTAUTH_SECRET=`openssl rand -base64 32` >> .env.local
 
 ## Backend deployment
 
-Fidesops automatically serves a version of the UI when running `docker-compose up`.
+Fidesops automatically serves a version of the UI when running `nox -s dev`.
 
 To deploy a full version of the UI from a backend, run the following from the root fidesops directory:
 
@@ -49,4 +49,4 @@ To deploy a full version of the UI from a backend, run the following from the ro
 
 This will build and place the Admin UI files into a location accessible by backend fidesops deployments.
 
-To test the UI, run `docker-compose up webserver` from the root directory, and visit `http://0.0.0.0:8080/index.html`.
+To test the UI, run `nox -s dev` from the root directory, and visit `http://0.0.0.0:8080/index.html`.
