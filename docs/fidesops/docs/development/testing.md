@@ -51,7 +51,7 @@ Fidesops has a few [`pytest` fixtures](https://docs.pytest.org/en/stable/fixture
 
 Fidesops uses `pytest` for unit testing. As with other `make` commands, you have the option to run `pytest` in command-line or in application shell:
 
-1. In shell: Enter the fidesops container shell using `nox -s dev`, or pass in the datastores you want to start for integration testing (i.e., `nox -s dev -- mssql mariadb`). You can then invoke `pytest` from the root fidesops directory:
+1. In shell: Enter the fidesops container shell using `nox -s dev -- shell`, or pass in the datastores you want to start for integration testing (i.e., `nox -s dev -- shell mssql mariadb`). You can then invoke `pytest` from the root fidesops directory:
 
 ```bash
 cd fidesops

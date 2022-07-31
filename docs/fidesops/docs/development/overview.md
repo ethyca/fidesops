@@ -24,7 +24,7 @@ An up-to-date list of build commands is available by running `nox` from within t
 
 - MSSQL: Known issues around connecting to MSSQL exist today for Apple M1 users. M1 users that wish to install `pyodbc` locally, please reference the workaround [here](https://github.com/mkleehammer/pyodbc/issues/846).
 
-- Package not found: When running `docker-compose up webserver`, if you get a `importlib.metadata.PackageNotFoundError: fidesops`, do `nox -s dev`, and then run `pip install -e .`. Verify fidesops is installed with `pip list`.
+- Package not found: When running `nox -s dev`, if you get a `importlib.metadata.PackageNotFoundError: fidesops`, do `nox -s dev -- shell`, and then run `pip install -e .`. Verify fidesops is installed with `pip list`.
 
 
 ## Write your code
