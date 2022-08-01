@@ -157,3 +157,6 @@ def validate_update_override_function(f: Callable) -> None:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS request override function must declare at least 4 parameters"
         )
+
+
+register = SaaSRequestOverrideFactory.register

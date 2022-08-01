@@ -10,15 +10,13 @@ from fidesops.graph.traversal import TraversalNode
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.saas_request.saas_request_override_factory import (
-    SaaSRequestOverrideFactory,
     SaaSRequestType,
+    register,
 )
 from fidesops.util.collection_util import Row
 
 
-@SaaSRequestOverrideFactory.register(
-    "mailchimp_messages_access", [SaaSRequestType.READ]
-)
+@register("mailchimp_messages_access", [SaaSRequestType.READ])
 def mailchimp_messages_access(
     node: TraversalNode,
     policy: Policy,
@@ -91,9 +89,7 @@ def mailchimp_messages_access(
     return processed_data
 
 
-@SaaSRequestOverrideFactory.register(
-    "mailchimp_member_update", [SaaSRequestType.UPDATE]
-)
+@register("mailchimp_member_update", [SaaSRequestType.UPDATE])
 def mailchimp_member_update(
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,

@@ -13,6 +13,7 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
+    register,
 )
 from fidesops.util.collection_util import Row
 
@@ -70,9 +71,7 @@ class TestSaasRequestOverrideFactory:
         Test registering a valid `read` override function
         """
         f_id = uuid()
-        SaaSRequestOverrideFactory.register(f_id, SaaSRequestType.READ)(
-            valid_read_override
-        )
+        register(f_id, SaaSRequestType.READ)(valid_read_override)
         assert valid_read_override == SaaSRequestOverrideFactory.get_override(
             f_id, SaaSRequestType.READ
         )
@@ -86,9 +85,7 @@ class TestSaasRequestOverrideFactory:
         Test registering a valid `update` override function
         """
         f_id = uuid()
-        SaaSRequestOverrideFactory.register(f_id, SaaSRequestType.UPDATE)(
-            valid_update_override
-        )
+        register(f_id, SaaSRequestType.UPDATE)(valid_update_override)
         assert valid_update_override == SaaSRequestOverrideFactory.get_override(
             f_id, SaaSRequestType.UPDATE
         )
@@ -102,9 +99,9 @@ class TestSaasRequestOverrideFactory:
         Test registering a valid override function for both `update` and `delete`
         """
         f_id = uuid()
-        SaaSRequestOverrideFactory.register(
-            f_id, [SaaSRequestType.UPDATE, SaaSRequestType.DELETE]
-        )(valid_update_override)
+        register(f_id, [SaaSRequestType.UPDATE, SaaSRequestType.DELETE])(
+            valid_update_override
+        )
         assert valid_update_override == SaaSRequestOverrideFactory.get_override(
             f_id, SaaSRequestType.UPDATE
         )
@@ -122,16 +119,12 @@ class TestSaasRequestOverrideFactory:
         properly updates what is returned by the factory.
         """
         f_id = uuid()
-        SaaSRequestOverrideFactory.register(f_id, SaaSRequestType.READ)(
-            valid_read_override
-        )
+        register(f_id, SaaSRequestType.READ)(valid_read_override)
         assert valid_read_override == SaaSRequestOverrideFactory.get_override(
             f_id, SaaSRequestType.READ
         )
 
-        SaaSRequestOverrideFactory.register(f_id, SaaSRequestType.READ)(
-            valid_read_override_copy
-        )
+        register(f_id, SaaSRequestType.READ)(valid_read_override_copy)
         assert valid_read_override_copy == SaaSRequestOverrideFactory.get_override(
             f_id, SaaSRequestType.READ
         )
@@ -145,17 +138,13 @@ class TestSaasRequestOverrideFactory:
         type properly creates two separate entries that can each be retrieved
         """
         f_id = uuid()
-        SaaSRequestOverrideFactory.register(f_id, SaaSRequestType.READ)(
-            valid_read_override
-        )
+        register(f_id, SaaSRequestType.READ)(valid_read_override)
         assert valid_read_override == SaaSRequestOverrideFactory.get_override(
             f_id, SaaSRequestType.READ
         )
 
         f_id_2 = uuid()
-        SaaSRequestOverrideFactory.register(f_id_2, SaaSRequestType.READ)(
-            valid_read_override_copy
-        )
+        register(f_id_2, SaaSRequestType.READ)(valid_read_override_copy)
         assert valid_read_override_copy == SaaSRequestOverrideFactory.get_override(
             f_id_2, SaaSRequestType.READ
         )
@@ -169,16 +158,12 @@ class TestSaasRequestOverrideFactory:
         request type does NOT update the first entry
         """
         f_id = uuid()
-        SaaSRequestOverrideFactory.register(f_id, SaaSRequestType.READ)(
-            valid_read_override
-        )
+        register(f_id, SaaSRequestType.READ)(valid_read_override)
         assert valid_read_override == SaaSRequestOverrideFactory.get_override(
             f_id, SaaSRequestType.READ
         )
 
-        SaaSRequestOverrideFactory.register(f_id, SaaSRequestType.UPDATE)(
-            valid_update_override
-        )
+        register(f_id, SaaSRequestType.UPDATE)(valid_update_override)
         assert valid_update_override == SaaSRequestOverrideFactory.get_override(
             f_id, SaaSRequestType.UPDATE
         )
@@ -240,9 +225,7 @@ class TestSaasRequestOverrideFactory:
 
         def assert_validation_error(override_function: Callable, exc_string: str):
             with pytest.raises(InvalidSaaSRequestOverrideException) as exc:
-                SaaSRequestOverrideFactory.register(f_id, SaaSRequestType.READ)(
-                    override_function
-                )
+                register(f_id, SaaSRequestType.READ)(override_function)
             assert exc_string in str(exc.value)
             with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
                 SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.READ)
@@ -299,9 +282,7 @@ class TestSaasRequestOverrideFactory:
 
         def assert_validation_error(override_function: Callable, exc_string: str):
             with pytest.raises(InvalidSaaSRequestOverrideException) as exc:
-                SaaSRequestOverrideFactory.register(f_id, SaaSRequestType.UPDATE)(
-                    override_function
-                )
+                register(f_id, SaaSRequestType.UPDATE)(override_function)
             assert exc_string in str(exc.value)
             with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
                 SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.UPDATE)
@@ -329,30 +310,28 @@ class TestSaasRequestOverrideFactory:
         """
         f_id = uuid()
         with pytest.raises(TypeError) as exc:
-            SaaSRequestOverrideFactory.register(f_id)(valid_read_override)
+            register(f_id)(valid_read_override)
         assert "missing 1 required positional argument" in str(exc.value)
 
         with pytest.raises(TypeError) as exc:
-            SaaSRequestOverrideFactory.register(f_id, [])(valid_read_override)
+            register(f_id, [])(valid_read_override)
         assert "At least one SaaSRequestType must be specified" in str(exc.value)
 
         with pytest.raises(TypeError) as exc:
-            SaaSRequestOverrideFactory.register(f_id, {})(valid_read_override)
+            register(f_id, {})(valid_read_override)
         assert "At least one SaaSRequestType must be specified" in str(exc.value)
 
         with pytest.raises(ValueError) as exc:
-            SaaSRequestOverrideFactory.register(f_id, "an invalid string")(
-                valid_read_override
-            )
+            register(f_id, "an invalid string")(valid_read_override)
         assert "Invalid SaaSRequestType" in str(exc.value)
 
         with pytest.raises(TypeError) as exc:
-            SaaSRequestOverrideFactory.register(f_id, 1)(valid_read_override)
+            register(f_id, 1)(valid_read_override)
 
         with pytest.raises(ValueError) as exc:
-            SaaSRequestOverrideFactory.register(
-                f_id, [SaaSRequestType.READ, "an invalid string"]
-            )(valid_read_override)
+            register(f_id, [SaaSRequestType.READ, "an invalid string"])(
+                valid_read_override
+            )
         assert "Invalid SaaSRequestType" in str(exc.value)
 
     def test_retrieve_incorrect_id(self):
@@ -361,9 +340,7 @@ class TestSaasRequestOverrideFactory:
         an incorrect ID is handled as expected
         """
         f_id = uuid()
-        SaaSRequestOverrideFactory.register(f_id, SaaSRequestType.READ)(
-            valid_read_override
-        )
+        register(f_id, SaaSRequestType.READ)(valid_read_override)
         assert valid_read_override == SaaSRequestOverrideFactory.get_override(
             f_id, SaaSRequestType.READ
         )
