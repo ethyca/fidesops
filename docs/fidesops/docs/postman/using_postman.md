@@ -24,7 +24,7 @@ A minimal Postman collection is included to assist in setting up your fidesops c
       ![Add root client id and secret](../img/postman_images/add_root_client_id_and_secret.png)
 
 ## Bring up local servers and mock databases
-1. 1. Run `nox -s dev -- <datastore>` in your terminal. 
+1. Run `nox -s dev -- <datastore>` in your terminal. 
       - This brings up the `fidesops` server and the list of datastores specified, i.e. `nox -s dev -- postgres mongodb`. These mock datastores are pre-populated with test data to represent your datastores.
   
 !!! Note ""
