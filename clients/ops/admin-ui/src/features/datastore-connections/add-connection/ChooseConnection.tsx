@@ -86,13 +86,13 @@ const ChooseConnection: React.FC<ChooseConnectionProps> = ({ currentStep }) => {
           <Spinner />
         </Center>
       )}
-      {isSuccess && (
+      {isSuccess && data ? (
         <ConnectionTypeList
           items={[...data].sort((a, b) =>
             a.identifier > b.identifier ? 1 : -1
           )}
         />
-      )}
+      ) : null}
     </>
   );
 };
