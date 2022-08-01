@@ -9,7 +9,6 @@ import {
 } from "@fidesui/react";
 import { SearchLineIcon } from "common/Icon";
 import { debounce } from "common/utils";
-import { SystemType } from "datastore-connections/constants";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 

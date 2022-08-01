@@ -1,4 +1,4 @@
-import { Box, Center, Spinner } from "@fidesui/react";
+import { Center, Spinner } from "@fidesui/react";
 import { debounce } from "common/utils";
 import React, { useEffect, useRef, useState } from "react";
 
