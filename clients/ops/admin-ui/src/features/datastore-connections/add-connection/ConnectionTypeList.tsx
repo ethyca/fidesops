@@ -31,6 +31,7 @@ const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => {
           borderRadius="5px"
           key={JSON.stringify(i)}
           maxWidth="232px"
+          overflow="hidden"
         >
           <Center
             color="gray.700"
