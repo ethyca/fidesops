@@ -81,13 +81,17 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
     def _generate_state() -> str:
         """
         Generates a string value to associate the authentication request
-        with an eventual OAuth2 callback response. If dev mode is enabled
-        a prefix is added to associate authentication requests with a
-        specific local dev instance.
+        with an eventual OAuth2 callback response.
+
+        If an oauth_instance name is defined then the name is added as a
+        prefix to the generated state. The state prefix can be used by a
+        proxy server to route the callback response to a specific Fidesops
+        instance. This functionality is not part of the OAuth2 specification
+        but it can be used for local testing of OAuth2 workflows.
         """
 
         state = str(uuid4())
-        if config.dev_mode:
+        if config.oauth_instance:
             state = f"{config.oauth_instance}-{state}"
         return state
 
