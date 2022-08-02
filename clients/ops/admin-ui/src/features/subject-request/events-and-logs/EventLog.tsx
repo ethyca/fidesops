@@ -1,8 +1,18 @@
-import {Box, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr,} from "@fidesui/react";
-import {format} from "date-fns-tz";
+import {
+  Box,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "@fidesui/react";
+import { format } from "date-fns-tz";
 import React from "react";
 
-import {ExecutionLog, ExecutionLogStatus} from "../../privacy-requests/types";
+import { ExecutionLog, ExecutionLogStatus } from "privacy-requests/types";
 
 type EventDetailsProps = {
   eventLogs: ExecutionLog[];
@@ -14,16 +24,21 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
     <Tr
       key={detail.updated_at}
       _hover={{
-        backgroundColor: detail.status === ExecutionLogStatus.IN_PROCESSING? "#F7FAFC": "unset",
+        backgroundColor:
+          detail.status === ExecutionLogStatus.IN_PROCESSING
+            ? "#F7FAFC"
+            : "unset",
       }}
       onClick={() => {
-        if( detail.status === ExecutionLogStatus.IN_PROCESSING){
-
-        openErrorPanel(detail.message);
+        if (detail.status === ExecutionLogStatus.IN_PROCESSING) {
+          openErrorPanel(detail.message);
         }
       }}
       style={{
-        cursor:detail.status === ExecutionLogStatus.IN_PROCESSING? "pointer": "unset",
+        cursor:
+          detail.status === ExecutionLogStatus.IN_PROCESSING
+            ? "pointer"
+            : "unset",
       }}
     >
       <Td>

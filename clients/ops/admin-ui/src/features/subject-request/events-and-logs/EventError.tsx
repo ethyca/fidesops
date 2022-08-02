@@ -18,15 +18,15 @@ const EventError = ({ errorMessage }: EventErrorProps) => (
       >
         Status
       </Text>
-        <Tag
-          size="sm"
-          height="20px"
-          backgroundColor="red.500"
-          color="white"
-          marginRight="8px"
-        >
-          Error
-        </Tag>
+      <Tag
+        size="sm"
+        height="20px"
+        backgroundColor="red.500"
+        color="white"
+        marginRight="8px"
+      >
+        Error
+      </Tag>
       <Box padding="0px" marginBottom="3px">
         <ClipboardButton copyText={errorMessage} />
       </Box>

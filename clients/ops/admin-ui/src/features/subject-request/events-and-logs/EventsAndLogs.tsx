@@ -1,7 +1,7 @@
 import { Divider, Flex, Heading } from "@fidesui/react";
 import React, { useState } from "react";
 
-import { PrivacyRequest } from "../../privacy-requests/types";
+import { PrivacyRequest } from "privacy-requests/types";
 import ActivityTimeline from "./ActivityTimeline";
 import EventDetails, { EventData } from "./EventDetails";
 

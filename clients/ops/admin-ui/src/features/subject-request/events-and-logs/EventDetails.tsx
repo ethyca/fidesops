@@ -15,7 +15,7 @@ import {
 import { CloseSolidIcon } from "common/Icon";
 import React, { useState } from "react";
 
-import { ExecutionLog, ExecutionLogStatus } from "../../privacy-requests/types";
+import { ExecutionLog } from "privacy-requests/types";
 import EventError from "./EventError";
 import EventLog from "./EventLog";
 
@@ -153,11 +153,7 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
                 openErrorPanel={openErrorPanel}
               />
             ) : null}
-            {isViewingError ? (
-              <EventError
-                errorMessage={errorMessage}
-              />
-            ) : null}
+            {isViewingError ? <EventError errorMessage={errorMessage} /> : null}
           </DrawerBody>
         </DrawerContent>
       </Drawer>
