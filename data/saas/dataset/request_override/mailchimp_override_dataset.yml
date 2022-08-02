@@ -82,7 +82,7 @@ dataset:
                     fidesops_meta:
                       data_type: string
                   - name: city
-                    data_categories: [user.contact.city]
+                    data_categories: [user.contact.address.city]
                     fidesops_meta:
                       data_type: string
                   - name: state
