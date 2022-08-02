@@ -27,7 +27,7 @@ The types of changes are:
 * Access and erasure support for Adobe Campaign [#905](https://github.com/ethyca/fidesops/pull/905)
 * Added db vs saas to connection type api [#937](https://github.com/ethyca/fidesops/pull/937)
 * Retry a DSR (FE) [#863](https://github.com/ethyca/fidesops/pull/938)
-* Adding access and erasure support for Auth0 [#991](https://github.com/ethyca/fidesops/pull/991)
+* Access and erasure support for Auth0 [#991](https://github.com/ethyca/fidesops/pull/991)
 
 ### Changed
 
