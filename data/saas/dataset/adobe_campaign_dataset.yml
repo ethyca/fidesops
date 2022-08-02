@@ -117,22 +117,22 @@ dataset:
               data_type: object
             fields:
               - name: address1
-                data_categories: [user.contact.street]
+                data_categories: [user.contact.address.street]
               - name: address2
-                data_categories: [user.contact.street]
+                data_categories: [user.contact.address.street]
               - name: address3
-                data_categories: [user.contact.street]
+                data_categories: [user.contact.address.street]
               - name: address4
-                data_categories: [user.contact.street]
+                data_categories: [user.contact.address.street]
               - name: city
-                data_categories: [user.contact.city]
+                data_categories: [user.contact.address.city]
               - name: countryCode
-                data_categories: [user.contact.country]
+                data_categories: [user.contact.address.country]
               - name: stateCode
-                data_categories: [user.contact.state]
+                data_categories: [user.contact.address.state]
               - name: zipCode
                 data_categories:
-                  [user.contact.postal_code]
+                  [user.contact.address.postal_code]
           - name: middleName
             data_categories: [user.name]
           - name: mobilePhone
@@ -328,22 +328,22 @@ dataset:
               data_type: object
             fields:
               - name: address1
-                data_categories: [user.contact.street]
+                data_categories: [user.contact.address.street]
               - name: address2
-                data_categories: [user.contact.street]
+                data_categories: [user.contact.address.street]
               - name: address3
-                data_categories: [user.contact.street]
+                data_categories: [user.contact.address.street]
               - name: address4
-                data_categories: [user.contact.street]
+                data_categories: [user.contact.address.street]
               - name: city
-                data_categories: [user.contact.city]
+                data_categories: [user.contact.address.city]
               - name: countryCode
-                data_categories: [user.contact.country]
+                data_categories: [user.contact.address.country]
               - name: stateCode
-                data_categories: [user.contact.state]
+                data_categories: [user.contact.address.state]
               - name: zipCode
                 data_categories:
-                  [user.contact.postal_code]
+                  [user.contact.address.postal_code]
           - name: middleName
             data_categories: [user.name]
           - name: minBroadLogEvents
