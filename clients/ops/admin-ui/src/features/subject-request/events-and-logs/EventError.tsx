@@ -4,10 +4,9 @@ import React from "react";
 
 type EventErrorProps = {
   errorMessage: string;
-  isError: boolean;
 };
 
-const EventError = ({ errorMessage, isError }: EventErrorProps) => (
+const EventError = ({ errorMessage }: EventErrorProps) => (
   <Box height="100%" id="outer">
     <Flex alignItems="center" paddingBottom="8px">
       <Text
@@ -19,7 +18,6 @@ const EventError = ({ errorMessage, isError }: EventErrorProps) => (
       >
         Status
       </Text>
-      {isError ? (
         <Tag
           size="sm"
           height="20px"
@@ -29,7 +27,6 @@ const EventError = ({ errorMessage, isError }: EventErrorProps) => (
         >
           Error
         </Tag>
-      ) : null}
       <Box padding="0px" marginBottom="3px">
         <ClipboardButton copyText={errorMessage} />
       </Box>

@@ -22,7 +22,6 @@ import EventLog from "./EventLog";
 export type EventData = {
   key: string;
   logs: ExecutionLog[];
-  status: ExecutionLogStatus;
 };
 
 type EventDetailsProps = {
@@ -157,7 +156,6 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
             {isViewingError ? (
               <EventError
                 errorMessage={errorMessage}
-                isError={eventData.status === ExecutionLogStatus.ERROR}
               />
             ) : null}
           </DrawerBody>
