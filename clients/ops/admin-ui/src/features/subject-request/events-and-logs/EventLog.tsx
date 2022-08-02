@@ -24,9 +24,7 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
       key={detail.updated_at}
       _hover={{
         backgroundColor:
-          detail.status === ExecutionLogStatus.ERROR
-            ? "#F7FAFC"
-            : "unset",
+          detail.status === ExecutionLogStatus.ERROR ? "#F7FAFC" : "unset",
       }}
       onClick={() => {
         if (detail.status === ExecutionLogStatus.ERROR) {
@@ -35,9 +33,7 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
       }}
       style={{
         cursor:
-          detail.status === ExecutionLogStatus.ERROR
-            ? "pointer"
-            : "unset",
+          detail.status === ExecutionLogStatus.ERROR ? "pointer" : "unset",
       }}
     >
       <Td>
@@ -107,9 +103,7 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
             </Tr>
           </Thead>
 
-          <Tbody id="tabelBody">
-            {tableItems}
-          </Tbody>
+          <Tbody id="tabelBody">{tableItems}</Tbody>
         </Table>
       </TableContainer>
     </Box>
