@@ -68,7 +68,6 @@ def test_auth0_access_request_task(
             "type",
             "description",
             "connection_id",
-            "client_id",
             "client_name",
             "ip",
             "user_agent",

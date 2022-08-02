@@ -35,7 +35,6 @@ def auth0_secrets():
         "domain": pydash.get(saas_config, "auth0.domain") or secrets["domain"],
         "access_token": pydash.get(saas_config, "auth0.access_token")
         or secrets["access_token"],
-        "client_id": pydash.get(saas_config, "auth0.client_id") or secrets["client_id"],
     }
 
 
