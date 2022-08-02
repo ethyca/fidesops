@@ -46,7 +46,7 @@ The `fidesops.toml` file should specify the following variables:
 | `oauth_access_token_expire_minutes` | `FIDESOPS__SECURITY__OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES` | int | 1 | 11520 | The time period fidesops API tokens will be valid |
 | Execution Variables |---|---|---|---|---|
 |`privacy_request_delay_timeout` | `FIDESOPS__EXECUTION__PRIVACY_REQUEST_DELAY_TIMEOUT` | int | 3600 | 3600 | The amount of time to wait for actions delaying privacy requests, for example pre and post processing webhooks.
-|`task_retry_timeout` | `FIDESOPS__EXECUTION__TASK_RETRY_COUNT` | int | 5 | 0 | The number of times a failed request will be retried
+|`task_retry_count` | `FIDESOPS__EXECUTION__TASK_RETRY_COUNT` | int | 5 | 0 | The number of times a failed request will be retried
 |`task_retry_delay` | `FIDESOPS__EXECUTION__TASK_RETRY_DELAY` | int | 20 | 1 | The delays between retries in seconds
 |`task_retry_backoff` | `FIDESOPS__EXECUTION__TASK_RETRY_BACKOFF` | int | 2 | 1 | The backoff factor for retries, to space out repeated retries.
 |`require_manual_request_approval` | `FIDESOPS__EXECUTION__REQUIRE_MANUAL_REQUEST_APPROVAL` | bool | False | False | Whether privacy requests require explicit approval to execute
