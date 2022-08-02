@@ -7,9 +7,10 @@ from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
+from fidesops.service.generic_strategy import GenericStrategy
 
 
-class MaskingStrategy(ABC):
+class MaskingStrategy(GenericStrategy):
     """Abstract base class for masking strategies"""
 
     @abstractmethod

@@ -18,9 +18,7 @@ from fidesops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_factory import (
-    MaskingStrategyFactory,
-)
+from fidesops.service.masking.strategy.masking_strategy_factory import register
 from fidesops.util.encryption.aes_gcm_encryption_scheme import encrypt
 from fidesops.util.encryption.hmac_encryption_scheme import hmac_encrypt_return_bytes
 from fidesops.util.encryption.secrets_util import SecretsUtil
@@ -28,7 +26,7 @@ from fidesops.util.encryption.secrets_util import SecretsUtil
 AES_ENCRYPT_STRATEGY_NAME = "aes_encrypt"
 
 
-@MaskingStrategyFactory.register(AES_ENCRYPT_STRATEGY_NAME)
+@register(AES_ENCRYPT_STRATEGY_NAME)
 class AesEncryptionMaskingStrategy(MaskingStrategy):
     def __init__(self, configuration: AesEncryptionMaskingConfiguration):
         self.mode = configuration.mode

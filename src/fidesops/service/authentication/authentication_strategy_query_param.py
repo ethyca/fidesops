@@ -8,17 +8,17 @@ from fidesops.schemas.saas.strategy_configuration import (
 from fidesops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
+from fidesops.service.authentication.authentication_strategy_factory import register
 from fidesops.util.saas_util import assign_placeholders
 from fidesops.util.url_util import set_query_parameter
 
 
+@register("query_param")
 class QueryParamAuthenticationStrategy(AuthenticationStrategy):
     """
     Replaces the value placeholder with the actual credentials
     and adds it as a query param to the incoming request.
     """
-
-    strategy_name = "query_param"
 
     def __init__(self, configuration: QueryParamAuthenticationConfiguration):
         self.name = configuration.name

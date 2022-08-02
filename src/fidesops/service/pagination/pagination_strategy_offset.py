@@ -11,10 +11,12 @@ from fidesops.schemas.saas.strategy_configuration import (
     StrategyConfiguration,
 )
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
+from fidesops.service.pagination.pagination_strategy_factory import register
 
 STRATEGY_NAME = "offset"
 
 
+@register(STRATEGY_NAME)
 class OffsetPaginationStrategy(PaginationStrategy):
     def __init__(self, configuration: OffsetPaginationConfiguration):
         self.incremental_param = configuration.incremental_param

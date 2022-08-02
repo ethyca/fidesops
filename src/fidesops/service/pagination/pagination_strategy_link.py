@@ -13,12 +13,14 @@ from fidesops.schemas.saas.strategy_configuration import (
     StrategyConfiguration,
 )
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
+from fidesops.service.pagination.pagination_strategy_factory import register
 
 STRATEGY_NAME = "link"
 
 logger = logging.getLogger(__name__)
 
 
+@register(STRATEGY_NAME)
 class LinkPaginationStrategy(PaginationStrategy):
     def __init__(self, configuration: LinkPaginationConfiguration):
         self.source = configuration.source

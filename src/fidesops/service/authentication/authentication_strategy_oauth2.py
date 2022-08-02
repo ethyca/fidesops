@@ -25,14 +25,19 @@ from fidesops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
 
+from fidesops.service.authentication.authentication_strategy_factory_generic import (
+    register,
+)
 
+OAUTH_2_STRATEGY_NAME = "oauth2"
+
+
+@register(OAUTH_2_STRATEGY_NAME)
 class OAuth2AuthenticationStrategy(AuthenticationStrategy):
     """
     Checks the expiration date on the stored access token and refreshes
     it if needed using the configured token refresh request.
     """
-
-    strategy_name = "oauth2"
 
     def __init__(self, configuration: OAuth2AuthenticationConfiguration):
         self.expires_in = configuration.expires_in

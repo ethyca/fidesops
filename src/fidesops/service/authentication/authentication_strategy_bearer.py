@@ -8,16 +8,18 @@ from fidesops.schemas.saas.strategy_configuration import (
 from fidesops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
+from fidesops.service.authentication.authentication_strategy_factory_generic import (
+    register,
+)
 from fidesops.util.saas_util import assign_placeholders
 
 
+@register("bearer")
 class BearerAuthenticationStrategy(AuthenticationStrategy):
     """
     Replaces the token placeholder with the actual credentials
     and uses it to add a bearer authentication header to the incoming request.
     """
-
-    strategy_name = "bearer"
 
     def __init__(self, configuration: BearerAuthenticationConfiguration):
         self.token = configuration.token

@@ -10,12 +10,16 @@ from fidesops.schemas.saas.strategy_configuration import (
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
+    register,
+)
 
 STRATEGY_NAME = "unwrap"
 
 logger = logging.getLogger(__name__)
 
 
+@register(STRATEGY_NAME)
 class UnwrapPostProcessorStrategy(PostProcessorStrategy):
     """
     Given a path to a dict/list, returns the dict/list

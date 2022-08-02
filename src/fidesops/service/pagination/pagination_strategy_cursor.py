@@ -9,10 +9,12 @@ from fidesops.schemas.saas.strategy_configuration import (
     StrategyConfiguration,
 )
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
+from fidesops.service.pagination.pagination_strategy_factory import register
 
 STRATEGY_NAME = "cursor"
 
 
+@register(STRATEGY_NAME)
 class CursorPaginationStrategy(PaginationStrategy):
     def __init__(self, configuration: CursorPaginationConfiguration):
         self.cursor_param = configuration.cursor_param

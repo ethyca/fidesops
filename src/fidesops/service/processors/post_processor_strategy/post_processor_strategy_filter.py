@@ -12,12 +12,16 @@ from fidesops.schemas.saas.strategy_configuration import (
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
+    register,
+)
 
 STRATEGY_NAME = "filter"
 
 logger = logging.getLogger(__name__)
 
 
+@register(STRATEGY_NAME)
 class FilterPostProcessorStrategy(PostProcessorStrategy):
     """
     Filters object or array given field name and value
