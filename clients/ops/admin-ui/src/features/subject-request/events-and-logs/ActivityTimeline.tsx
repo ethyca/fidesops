@@ -1,8 +1,8 @@
 import { Box, Flex, Text } from "@fidesui/react";
 import { GreenCheckCircle } from "common/Icon";
+import { PrivacyRequest } from "privacy-requests/types";
 import React from "react";
 
-import { PrivacyRequest } from "privacy-requests/types";
 import { EventData } from "./EventDetails";
 
 type ActivityTimelineProps = {

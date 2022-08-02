@@ -10,9 +10,8 @@ import {
   Tr,
 } from "@fidesui/react";
 import { format } from "date-fns-tz";
-import React from "react";
-
 import { ExecutionLog, ExecutionLogStatus } from "privacy-requests/types";
+import React from "react";
 
 type EventDetailsProps = {
   eventLogs: ExecutionLog[];

@@ -13,9 +13,9 @@ import {
   Text,
 } from "@fidesui/react";
 import { CloseSolidIcon } from "common/Icon";
+import { ExecutionLog } from "privacy-requests/types";
 import React, { useState } from "react";
 
-import { ExecutionLog } from "privacy-requests/types";
 import EventError from "./EventError";
 import EventLog from "./EventLog";
 
