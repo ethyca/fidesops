@@ -20,6 +20,7 @@ def test_auth0_access_request_task(
     auth0_connection_config,
     auth0_dataset_config,
     auth0_identity_email,
+    auth0_access_data,
 ) -> None:
     """Full access request based on the Auth0 SaaS config"""
     privacy_request = PrivacyRequest(

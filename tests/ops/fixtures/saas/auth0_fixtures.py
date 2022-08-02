@@ -94,6 +94,36 @@ def auth0_dataset_config(
 
 
 @pytest.fixture(scope="function")
+def auth0_access_data(
+    auth0_connection_config, auth0_identity_email, auth0_secrets
+) -> Generator:
+    """
+        Updates user password to have some data in user_logs
+    """
+
+    base_url = f"https://{auth0_secrets['domain']}"
+
+    headers = {"Authorization": f"Bearer {auth0_secrets['access_token']}"}
+    user_response = requests.get(
+        url=f"{base_url}/api/v2/users-by-email?email={auth0_identity_email}",
+        headers=headers,
+    )
+    assert user_response.ok
+    user = user_response.json()
+    user_id = user[0]['user_id']
+
+    body = {
+        "connection": "Username-Password-Authentication",
+        "password": "P@ssword123"
+    }
+    users_response = requests.patch(
+        url=f"{base_url}/api/v2/users/{user_id}", json=body, headers=headers
+    )
+    assert users_response.ok
+
+    yield user
+
+@pytest.fixture(scope="function")
 def auth0_erasure_data(
     auth0_connection_config, auth0_erasure_identity_email, auth0_secrets
 ) -> Generator:
