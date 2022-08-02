@@ -23,7 +23,7 @@ def test_auth0_access_request_task(
 ) -> None:
     """Full access request based on the Auth0 SaaS config"""
     privacy_request = PrivacyRequest(
-        id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
+        id=f"test_auth0_access_request_task_{random.randint(0, 1000)}"
     )
     identity = PrivacyRequestIdentity(**{"email": auth0_identity_email})
     privacy_request.cache_identity(identity)
@@ -97,7 +97,7 @@ def test_auth0_erasure_request_task(
     """Full erasure request based on the auth0 SaaS config"""
 
     privacy_request = PrivacyRequest(
-        id=f"test_saas_erasure_request_task_{random.randint(0, 1000)}"
+        id=f"test_auth0_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity = PrivacyRequestIdentity(**{"email": auth0_erasure_identity_email})
     privacy_request.cache_identity(identity)

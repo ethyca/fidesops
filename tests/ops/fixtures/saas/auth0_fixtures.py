@@ -106,28 +106,25 @@ def auth0_erasure_data(
     base_url = f"https://{auth0_secrets['domain']}"
     # Create user
     body = {
-        "client_id": auth0_secrets["client_id"],
         "email": auth0_erasure_identity_email,
-        "password": "p@sswordtest1",
-        "connection": "Username-Password-Authentication",
-        "username": "testaccount",
-        "given_name": "test",
-        "family_name": "account",
-        "name": "test account",
-        "nickname": "test",
         "blocked": False,
-        "email_verified": True,
-        "phone_number": "+012345678",
-        "phone_verified": True,
-        "verify_phone_number": True,
-        "verify_password": True,
+        "email_verified": False,
+        "app_metadata": {},
+        "given_name": "John",
+        "family_name": "Doe",
+        "name": "John Doe",
+        "nickname": "Johnny",
+        "picture": "https://secure.gravatar.com/avatar/15626c5e0c749cb912f9d1ad48dba440?s=480&r=pg&d=https%3A%2F%2Fssl.gstatic.com%2Fs2%2Fprofiles%2Fimages%2Fsilhouette80.png",
+        "connection": "Username-Password-Authentication",
+        "password": "P@ssword123",
+        "verify_email": False,
     }
     headers = {"Authorization": f"Bearer {auth0_secrets['access_token']}"}
     users_response = requests.post(
-        url=f"{base_url}/dbconnections/signup", json=body, headers=headers
+        url=f"{base_url}/api/v2/users", json=body, headers=headers
     )
     user = users_response.json()
-    assert 200 == users_response.status_code
+    assert users_response.ok
     error_message = (
         f"User with email {auth0_erasure_identity_email} could not be added to auth0"
     )
@@ -138,13 +135,10 @@ def auth0_erasure_data(
     )
     yield user
 
+    user_id = user["user_id"]
     # Deleting user after verifying update request
-    headers = {
-        "Authorization": f"Bearer {auth0_secrets['access_token']}",
-    }
-
     user_delete_response = requests.delete(
-        url=f"{base_url}/api/v2/users/auth0|{auth0_erasure_identity_email}",
+        url=f"{base_url}/api/v2/users/{user_id}",
         headers=headers,
     )
     # we expect 204 if user doesn't exist

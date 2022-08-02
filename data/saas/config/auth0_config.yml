@@ -20,7 +20,10 @@ saas_config:
 
     test_request:
       method: GET
-      path: /api/v2/users-by-email?email=test@test.com
+      path: /api/v2/users-by-email
+      query_params:
+        - name: email
+          value: test@test.com
 
     endpoints:
       - name: users
