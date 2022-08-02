@@ -98,7 +98,7 @@ def auth0_access_data(
     auth0_connection_config, auth0_identity_email, auth0_secrets
 ) -> Generator:
     """
-        Updates user password to have some data in user_logs
+    Updates user password to have some data in user_logs
     """
 
     base_url = f"https://{auth0_secrets['domain']}"
@@ -110,11 +110,11 @@ def auth0_access_data(
     )
     assert user_response.ok
     user = user_response.json()
-    user_id = user[0]['user_id']
+    user_id = user[0]["user_id"]
 
     body = {
         "connection": "Username-Password-Authentication",
-        "password": "P@ssword123"
+        "password": f"pass+{cryptographic_util.generate_secure_random_string(8)}+test",
     }
     users_response = requests.patch(
         url=f"{base_url}/api/v2/users/{user_id}", json=body, headers=headers
@@ -122,6 +122,7 @@ def auth0_access_data(
     assert users_response.ok
 
     yield user
+
 
 @pytest.fixture(scope="function")
 def auth0_erasure_data(
