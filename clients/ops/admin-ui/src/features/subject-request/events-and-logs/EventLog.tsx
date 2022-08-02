@@ -24,18 +24,18 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
       key={detail.updated_at}
       _hover={{
         backgroundColor:
-          detail.status === ExecutionLogStatus.IN_PROCESSING
+          detail.status === ExecutionLogStatus.ERROR
             ? "#F7FAFC"
             : "unset",
       }}
       onClick={() => {
-        if (detail.status === ExecutionLogStatus.IN_PROCESSING) {
+        if (detail.status === ExecutionLogStatus.ERROR) {
           openErrorPanel(detail.message);
         }
       }}
       style={{
         cursor:
-          detail.status === ExecutionLogStatus.IN_PROCESSING
+          detail.status === ExecutionLogStatus.ERROR
             ? "pointer"
             : "unset",
       }}
@@ -53,12 +53,6 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
       <Td>
         <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
           {detail.collection_name}
-        </Text>
-      </Td>
-
-      <Td>
-        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
-          {detail.message}
         </Text>
       </Td>
     </Tr>
@@ -110,21 +104,10 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
                   Collection
                 </Text>
               </Th>
-              <Th>
-                <Text
-                  color="black"
-                  fontSize="xs"
-                  lineHeight="4"
-                  fontWeight="medium"
-                >
-                  Event Details
-                </Text>
-              </Th>
             </Tr>
           </Thead>
 
           <Tbody id="tabelBody">
-            {tableItems}
             {tableItems}
           </Tbody>
         </Table>
