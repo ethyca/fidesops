@@ -7,7 +7,7 @@
 REGISTRY := ethyca
 IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
 
-# IMAGE_NAME is webserver rather than fidesops_webserver because commands that don't
+# COMPOSE_SERVICE_NAME is webserver rather than fidesops_webserver because commands that don't
 # use docker-compose fail with fidesops_webserver. When left as webserver here both
 # sets of commands work.
 COMPOSE_SERVICE_NAME := webserver
@@ -16,6 +16,9 @@ IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
 DOCKERFILE_ENVIRONMENTS := postgres mysql mongodb mssql
+
+DOCKER_CONTAINER_IDS := $(shell docker ps -a -q)
+DOCKER_VOLUME_IDS := $(shell docker volume ls -q)
 
 
 ####################
@@ -185,6 +188,9 @@ black: compose-build
 .PHONY: clean
 clean:
 	@echo "Cleaning project temporary files and installed dependencies..."
+	@make teardown
+	@docker rm -f $(DOCKER_CONTAINER_IDS) || echo "no containers to remove"
+	@docker volume rm $(DOCKER_VOLUME_IDS) || echo "no volumes to remove"
 	@docker system prune -a --volumes
 	@echo "Clean complete!"
 
