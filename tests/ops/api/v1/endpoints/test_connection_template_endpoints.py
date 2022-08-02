@@ -41,7 +41,7 @@ class TestGetConnections:
         resp = api_client.get(url, headers=auth_header)
         data = resp.json()
         assert resp.status_code == 200
-        assert len(data) == 18
+        assert len(data) == 19
 
         assert {
             "identifier": ConnectionType.postgres.value,
