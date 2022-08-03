@@ -120,58 +120,52 @@ def is_removed_upgrade(privacy_key: str) -> bool:
     return privacy_key in removed
 
 
-def update_field(field: dict, up_down: str) -> dict:
-    data_categories = field.get("data_categories")
+def update_field(field: dict, migration_direction: str) -> dict:
+    data_categories = field.get("data_categories", [])
     updated = []
-    if up_down == "up":
-        if data_categories:
-            for data_category in data_categories:
-                if is_removed_upgrade(data_category):
-                    logger.info(
-                        "Removing %s, this is no longer a valid category", data_category
-                    )
-                if data_category:
-                    if not is_removed_upgrade(data_category):
-                        new = DATA_MAP_UPGRADE.get(data_category)
-                        if new:
-                            updated.append(new)
-                        else:
-                            updated.append(data_category)
+    if migration_direction == "up":
+        for data_category in data_categories:
+            if is_removed_upgrade(data_category):
+                logger.info(
+                    "Removing %s, this is no longer a valid category", data_category
+                )
+            if data_category:
+                if not is_removed_upgrade(data_category):
+                    new = DATA_MAP_UPGRADE.get(data_category)
+                    if new:
+                        updated.append(new)
                     else:
                         updated.append(data_category)
+                else:
+                    updated.append(data_category)
         field["data_categories"] = updated
-
-        if field.get("fields"):
-            for field in field["fields"]:
-                update_field(field, up_down)
     else:
-        if data_categories:
-            for data_category in data_categories:
-                if is_removed_downgrade(data_category):
-                    logger.info(
-                        "Removing %s, this is no longer a valid category", data_category
-                    )
-                if data_category:
-                    if not is_removed_downgrade(data_category):
-                        new = DATA_MAP_DOWNGRADE.get(data_category)
-                        if new:
-                            updated.append(new)
-                        else:
-                            updated.append(data_category)
+        for data_category in data_categories:
+            if is_removed_downgrade(data_category):
+                logger.info(
+                    "Removing %s, this is no longer a valid category", data_category
+                )
+            if data_category:
+                if not is_removed_downgrade(data_category):
+                    new = DATA_MAP_DOWNGRADE.get(data_category)
+                    if new:
+                        updated.append(new)
                     else:
                         updated.append(data_category)
+                else:
+                    updated.append(data_category)
         field["data_categories"] = updated
 
-        # Document databases like mongo can have nested fields so this is the reason
-        # for the recursion here.
-        if field.get("fields"):
-            for field in field["fields"]:
-                update_field(field, up_down)
+    # Document databases like mongo can have nested fields so this is the reason
+    # for the recursion here.
+    if field.get("fields"):
+        for field in field["fields"]:
+            update_field(field, migration_direction)
 
     return field
 
 
-def upgrade() -> None:
+def run_migration(migration_direction: str) -> None:
     sessionlocal = get_db_session(config)
     with sessionlocal() as session:
         try:
@@ -185,7 +179,7 @@ def upgrade() -> None:
                         fields = collection.get("fields")
                         if fields:
                             for field in fields:
-                                field = update_field(field, "up")
+                                field = update_field(field, migration_direction)
 
         # If the datasetconfig table doesn't exist a ProgrammingError will be thrown.
         # If that happens we know there are no records to update so we can ignore the
@@ -193,25 +187,9 @@ def upgrade() -> None:
         except ProgrammingError:
             pass
 
+
+def upgrade() -> None:
+    run_migration("up")
 
 def downgrade() -> None:
-    sessionlocal = get_db_session(config)
-    with sessionlocal() as session:
-        try:
-            datasets = DatasetConfig.all(db=session)
-
-            for dataset in datasets:
-                collections = dataset.get("collections")
-
-                if collections:
-                    for collection in collections:
-                        fields = collection.get("fields")
-                        if fields:
-                            for field in fields:
-                                field = update_field(field, "down")
-
-        # If the datasetconfig table doesn't exist a ProgrammingError will be thrown.
-        # If that happens we know there are no records to update so we can ignore the
-        # error.
-        except ProgrammingError:
-            pass
+    run_migration("down")
