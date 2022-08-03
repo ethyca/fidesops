@@ -191,5 +191,6 @@ def run_migration(migration_direction: str) -> None:
 def upgrade() -> None:
     run_migration("up")
 
+
 def downgrade() -> None:
     run_migration("down")
