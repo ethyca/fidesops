@@ -86,8 +86,9 @@ class SaaSRequest(BaseModel):
     Includes optional strategies for postprocessing and pagination.
     """
 
-    path: str
-    method: HTTPMethod
+    request_override: Optional[str]
+    path: Optional[str]
+    method: Optional[HTTPMethod]
     headers: Optional[List[Header]] = []
     query_params: Optional[List[QueryParam]] = []
     body: Optional[str]
@@ -159,6 +160,34 @@ class SaaSRequest(BaseModel):
 
         return values
 
+    @root_validator
+    def validate_override(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate that configs related to request overrides are set properly"""
+        if not values.get("request_override"):
+            if not values.get("path"):
+                raise ValueError(
+                    "A request must specify a path if no request_override is provided"
+                )
+            if not values.get("method"):
+                raise ValueError(
+                    "A request must specify a method if no request_override is provided"
+                )
+
+        else:  # if a request override is specified, many fields are NOT allowed
+            invalid = [
+                k
+                for k in values.keys()
+                if values.get(k)
+                and k not in ("request_override", "param_values", "grouped_inputs")
+            ]
+            if invalid:
+                invalid_joined = ", ".join(invalid)
+                raise ValueError(
+                    f"Invalid properties [{invalid_joined}] on a request with request_override specified"
+                )
+
+        return values
+
 
 class Endpoint(BaseModel):
     """A collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"""
@@ -182,6 +211,7 @@ class SaaSType(Enum):
     """
 
     adobe_campaign = "adobe_campaign"
+    auth0 = "auth0"
     mailchimp = "mailchimp"
     hubspot = "hubspot"
     outreach = "outreach"
