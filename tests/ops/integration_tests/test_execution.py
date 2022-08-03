@@ -673,7 +673,7 @@ def test_restart_graph_from_failure(
         assert analytics_event.error is None
         assert analytics_event.status_code is None
         assert analytics_event.endpoint is None
-        assert analytics_event.local_host is None
+        assert analytics_event.local_host is False
 
     assert (
         db.query(ExecutionLog)
@@ -802,7 +802,7 @@ def test_restart_graph_from_failure_during_erasure(
         assert analytics_event.error is None
         assert analytics_event.status_code is None
         assert analytics_event.endpoint is None
-        assert analytics_event.local_host is None
+        assert analytics_event.local_host is False
 
     assert (
         db.query(ExecutionLog)
