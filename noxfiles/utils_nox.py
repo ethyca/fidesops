@@ -1,8 +1,8 @@
 """Contains various utility-related nox sessions."""
 import nox
 
-from .constants_nox import COMPOSE_FILE, RUN
-from .run_infrastructure import run_infrastructure
+from constants_nox import COMPOSE_FILE, RUN
+from run_infrastructure import run_infrastructure
 
 COMPOSE_DOWN = (
     "docker-compose",

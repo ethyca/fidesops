@@ -9,7 +9,7 @@ import sys
 from time import sleep
 from typing import List
 
-from .constants_nox import COMPOSE_SERVICE_NAME
+from constants_nox import COMPOSE_SERVICE_NAME
 
 DOCKER_WAIT = 5
 DOCKERFILE_DATASTORES = [

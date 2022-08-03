@@ -1,9 +1,9 @@
 """Contains the nox sessions for running development environments."""
 import nox
 
-from .constants_nox import ANALYTICS_OPT_OUT, COMPOSE_SERVICE_NAME, RUN, START_APP
-from .docker_nox import build
-from .run_infrastructure import ALL_DATASTORES, run_infrastructure
+from constants_nox import ANALYTICS_OPT_OUT, COMPOSE_SERVICE_NAME, RUN, START_APP
+from docker_nox import build
+from run_infrastructure import ALL_DATASTORES, run_infrastructure
 
 
 @nox.session()
