@@ -44,9 +44,6 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
     def __init__(self, configuration: UnwrapPostProcessorConfiguration):
         self.data_path = configuration.data_path
 
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
-
     def process(
         self,
         data: Union[List[Dict[str, Any]], Dict[str, Any]],
@@ -64,7 +61,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
             if unwrapped is None:
                 logger.warning(
                     f"{self.data_path} could not be found for the following "
-                    f"post processing strategy: {self.get_strategy_name()}"
+                    f"post processing strategy: {STRATEGY_NAME}"
                 )
             else:
                 result = unwrapped
@@ -74,7 +71,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
                 if unwrapped is None:
                     logger.warning(
                         f"{self.data_path} could not be found for the following "
-                        f"post processing strategy: {self.get_strategy_name()}"
+                        f"post processing strategy: {STRATEGY_NAME}"
                     )
                 else:
                     result.append(unwrapped)

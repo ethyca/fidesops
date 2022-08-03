@@ -16,10 +16,6 @@ class PaginationStrategy(GenericStrategy):
     """Abstract base class for SaaS pagination strategies"""
 
     @abstractmethod
-    def get_strategy_name(self) -> str:
-        """Returns strategy name"""
-
-    @abstractmethod
     def get_next_request(
         self,
         request_params: SaaSRequestParams,

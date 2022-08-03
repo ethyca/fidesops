@@ -54,9 +54,6 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         self.exact = configuration.exact
         self.case_sensitive = configuration.case_sensitive
 
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
-
     def process(
         self,
         data: Union[List[Dict[str, Any]], Dict[str, Any]],
@@ -79,7 +76,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                 logger.warning(
                     f"Could not retrieve identity reference '{self.value.identity}' "
                     "due to missing identity data for the following post processing "
-                    f"strategy: {self.get_strategy_name()}"
+                    f"strategy: {STRATEGY_NAME}"
                 )
                 return []
             filter_value = identity_data.get(self.value.identity)  # type: ignore
@@ -108,7 +105,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
             )
         except KeyError:
             logger.warning(
-                f"{self.field} could not be found on data for the following post processing strategy: {self.get_strategy_name()}"
+                f"{self.field} could not be found on data for the following post processing strategy: {STRATEGY_NAME}"
             )
             return []
 

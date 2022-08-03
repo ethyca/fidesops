@@ -23,9 +23,6 @@ class OffsetPaginationStrategy(PaginationStrategy):
         self.increment_by = configuration.increment_by
         self.limit = configuration.limit
 
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
-
     def get_next_request(
         self,
         request_params: SaaSRequestParams,

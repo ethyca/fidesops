@@ -27,9 +27,6 @@ class LinkPaginationStrategy(PaginationStrategy):
         self.rel = configuration.rel
         self.path = configuration.path
 
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
-
     def get_next_request(
         self,
         request_params: SaaSRequestParams,

@@ -20,9 +20,6 @@ class CursorPaginationStrategy(PaginationStrategy):
         self.cursor_param = configuration.cursor_param
         self.field = configuration.field
 
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
-
     def get_next_request(
         self,
         request_params: SaaSRequestParams,
