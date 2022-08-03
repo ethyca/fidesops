@@ -25,6 +25,7 @@ EXTERNAL_DATASTORE_CONFIG = {
     "bigquery": ["BIGQUERY_KEYFILE_CREDS", "BIGQUERY_DATASET"],
 }
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
+OPS_TEST_DIR = "tests/ops/"
 
 
 def run_infrastructure(
@@ -117,7 +118,7 @@ def seed_initial_data(
     for datastore in datastores:
         if datastore in DOCKERFILE_DATASTORES:
             setup_path = (
-                f"tests/ops/integration_tests/setup_scripts/{datastore}_setup.py"
+                f"{OPS_TEST_DIR}integration_tests/setup_scripts/{datastore}_setup.py"
             )
             _run_cmd_or_err(
                 f'echo "Attempting to create schema and seed initial data for {datastore} from {setup_path}..."'
