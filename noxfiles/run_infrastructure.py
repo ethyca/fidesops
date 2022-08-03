@@ -198,7 +198,7 @@ def _open_shell(
     service_name: str,
 ) -> None:
     """
-    Opens a bash shell on the container at `image_name`
+    Opens a bash shell on the container at `service_name`
     """
     _run_cmd_or_err(f'echo "Opening bash shell on {service_name}"')
     _run_cmd_or_err(f"docker-compose {path} run {service_name} /bin/bash")

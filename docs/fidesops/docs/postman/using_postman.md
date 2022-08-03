@@ -17,15 +17,15 @@ A minimal Postman collection is included to assist in setting up your fidesops c
 
       ![Open Fidesops Variables](../img/postman_images/open_fidesops_variables.png)
 
-5. Add your `OAUTH_ROOT_CLIENT_ID` and `OAUTH_ROOT_CLIENT_SECRET` under `CURRENT VALUE`.  
+5. Add your `oauth_root_client_id` and `oauth_root_client_secret` under `CURRENT VALUE`.  
       - `fidesopsadmin` and `fidesopsadminsecret` are default configurations for testing, found in your `fidesops.toml`. Add the appropriate values for your instance if they differ.
       - **Important:** Click `Save`!
 
       ![Add root client id and secret](../img/postman_images/add_root_client_id_and_secret.png)
 
 ## Bring up local servers and mock databases
-1. Run `make integration-env` in your terminal.
-      - This brings up the `fidesops` server, `redis`, the `fidesops` postgres database, and some mock external databases like `mongodb_example` and `postgres_example`. These mock databases are pre-populated with test data to represent your datastores.
+1. Run `nox -s dev -- <datastore>` in your terminal. 
+      - This brings up the `fidesops` server and the list of datastores specified, i.e. `nox -s dev -- postgres mongodb`. These mock datastores are pre-populated with test data to represent your datastores.
   
 !!! Note ""
       The following list of requests is kept in the `Minimum API calls to create an Access Privacy Request` folder. Some of the returned data will need to be saved as additional variables for use in other steps.
