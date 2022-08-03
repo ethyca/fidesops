@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Set
+from typing import TYPE_CHECKING, Dict, List, Optional, Set
 
 from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -8,14 +8,18 @@ from fidesops.graph.config import (
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.util.collection_util import Row
 
+if TYPE_CHECKING:
+    from fidesops.task.graph_task import GraphTask
+
 GraphRepr = Dict[str, Dict[str, List[str]]]
 
 
 def format_graph_for_caching(
-    env: Dict[CollectionAddress, Any], end_nodes: List[CollectionAddress]
+    env: Dict[CollectionAddress, "GraphTask"], end_nodes: List[CollectionAddress]
 ) -> GraphRepr:
     """
-    Builds a representation of the current graph (that includes its edges) for caching in Redis.
+    Builds a representation of the current graph built for a privacy request (that includes its edges)
+    for caching in Redis.
 
     Requires the results of traversal.traverse():
         - the modified `env`
@@ -53,6 +57,8 @@ def format_graph_for_caching(
 
 
 class GraphDiff(BaseSchema):
+    """A more detailed description about how two graphs differ. Do not send these details to FidesLog."""
+
     previous_collections: List[str] = []
     current_collections: List[str] = []
     added_collections: List[str] = []
@@ -65,6 +71,8 @@ class GraphDiff(BaseSchema):
 
 
 class GraphDiffSummary(BaseSchema):
+    """A summary about how two graphs have changed. This can be sent to FidesLog."""
+
     prev_collection_count: int = 0
     curr_collection_count: int = 0
     added_collection_count: int = 0

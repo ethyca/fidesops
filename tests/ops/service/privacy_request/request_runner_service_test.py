@@ -1503,7 +1503,7 @@ def test_privacy_request_log_failure(
     }
 
     with mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.log_graph_failure"
+        "fidesops.service.privacy_request.request_runner_service.fideslog_graph_failure"
     ) as mock_log_event:
         pr = get_privacy_request_results(
             db,

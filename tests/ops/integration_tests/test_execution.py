@@ -642,7 +642,7 @@ def test_restart_graph_from_failure(
     integration_mongodb_config.save(db)
 
     # Rerun access request using cached results
-    with mock.patch("fidesops.task.graph_task.log_graph_rerun") as mock_log_event:
+    with mock.patch("fidesops.task.graph_task.fideslog_graph_rerun") as mock_log_event:
         graph_task.run_access_request(
             privacy_request,
             policy,
@@ -770,7 +770,7 @@ def test_restart_graph_from_failure_during_erasure(
     integration_postgres_config.save(db)
 
     # Rerun erasure portion of request using cached results
-    with mock.patch("fidesops.task.graph_task.log_graph_rerun") as mock_log_event:
+    with mock.patch("fidesops.task.graph_task.fideslog_graph_rerun") as mock_log_event:
         graph_task.run_erasure(
             privacy_request,
             policy,

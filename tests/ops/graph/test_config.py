@@ -74,12 +74,6 @@ class TestFieldAddress:
             "A", "B", "C", "D", "E"
         ).collection_address() == CollectionAddress("A", "B")
 
-    def test_field_address_from_string(self):
-        assert FieldAddress.from_string("A:B:C") == FieldAddress("A", "B", "C")
-        assert FieldAddress.from_string("A:B:C:D") == FieldAddress("A", "B", "C", "D")
-        with pytest.raises(FidesopsException):
-            assert FieldAddress.from_string("A:B")
-
 
 class TestCollection:
     def test_collection_field_dict(self):

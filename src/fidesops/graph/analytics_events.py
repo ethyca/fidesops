@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 from fideslog.sdk.python.event import AnalyticsEvent
 
@@ -17,25 +17,21 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.collection_util import Row
 
+if TYPE_CHECKING:
+    from fidesops.task.graph_task import GraphTask
 
-def log_graph_failure(event: Optional[AnalyticsEvent]) -> None:
+
+def fideslog_graph_failure(event: Optional[AnalyticsEvent]) -> None:
     """Send an Analytics Event if privacy request execution has failed"""
-    if config.root_user.analytics_opt_out:
-        return
-
-    if not event:
+    if config.root_user.analytics_opt_out or not event:
         return
 
     send_analytics_event(event)
 
 
-def log_graph_rerun(event: Optional[AnalyticsEvent]) -> None:
+def fideslog_graph_rerun(event: Optional[AnalyticsEvent]) -> None:
     """Send an Analytics Event if a privacy request has been reprocessed, comparing its graph to the previous graph"""
-    if config.root_user.analytics_opt_out:
-        return
-
-    if not event:
-        # No analytics event created if there's not a previous graph to compare in the cache
+    if config.root_user.analytics_opt_out or not event:
         return
 
     send_analytics_event(event)
@@ -43,7 +39,7 @@ def log_graph_rerun(event: Optional[AnalyticsEvent]) -> None:
 
 def prepare_rerun_graph_analytics_event(
     privacy_request: PrivacyRequest,
-    env: Dict[CollectionAddress, Any],
+    env: Dict[CollectionAddress, "GraphTask"],
     end_nodes: List[CollectionAddress],
     resources: TaskResources,
     step: ActionType,

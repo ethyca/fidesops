@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from fidesops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
 from fidesops.core.config import config
 from fidesops.graph.analytics_events import (
-    log_graph_rerun,
+    fideslog_graph_rerun,
     prepare_rerun_graph_analytics_event,
 )
 from fidesops.graph.config import (
@@ -608,7 +608,7 @@ def run_access_request(
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
         update_mapping_from_cache(dsk, resources, start_function)
 
-        log_graph_rerun(
+        fideslog_graph_rerun(
             prepare_rerun_graph_analytics_event(
                 privacy_request, env, end_nodes, resources, ActionType.access
             )
@@ -691,7 +691,7 @@ def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
         # terminator function waits for all keys
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
         update_erasure_mapping_from_cache(dsk, resources, start_function)
-        log_graph_rerun(
+        fideslog_graph_rerun(
             prepare_rerun_graph_analytics_event(
                 privacy_request, env, end_nodes, resources, ActionType.erasure
             )
