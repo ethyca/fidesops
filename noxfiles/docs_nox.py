@@ -1,7 +1,8 @@
 """Contains the nox sessions for developing docs."""
 import nox
-from constants_nox import CI_ARGS, RUN
-from docker_nox import build
+
+from .constants_nox import CI_ARGS, RUN
+from .docker_nox import build
 
 
 @nox.session()

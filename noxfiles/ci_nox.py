@@ -1,6 +1,7 @@
 """Contains the nox sessions used during CI checks."""
 import nox
-from constants_nox import (
+
+from .constants_nox import (
     CI_ARGS,
     COMPOSE_SERVICE_NAME,
     IMAGE_LOCAL,
@@ -8,8 +9,8 @@ from constants_nox import (
     RUN_NO_DEPS,
     START_APP,
 )
-from run_infrastructure import run_infrastructure, OPS_TEST_DIR
-from utils_nox import db
+from .run_infrastructure import OPS_TEST_DIR, run_infrastructure
+from .utils_nox import db
 
 
 @nox.session()
