@@ -29,6 +29,8 @@ The types of changes are:
 * Retry a DSR (FE) [#863](https://github.com/ethyca/fidesops/pull/938)
 * Add a Connection - Select a connector to configure (front end) [#760] (https://github.com/ethyca/fidesops/pull/987)
 * Add a Connection - Front End layout structure [#866] (https://github.com/ethyca/fidesops/pull/987)
+* Enable python function overrides for SaaS connector request execution [#986](https://github.com/ethyca/fidesops/pull/986)
+* Access and erasure support for Auth0 [#991](https://github.com/ethyca/fidesops/pull/991)
 
 ### Changed
 
@@ -58,6 +60,7 @@ The types of changes are:
 
 * Added zendesk and salesforce connection pages [#908](https://github.com/ethyca/fidesops/pull/908)
 * Added nox command documentation [#981](https://github.com/ethyca/fidesops/pull/981)
+* Updated references to `fidesops.toml` to use lowercase values [#952](https://github.com/ethyca/fidesops/pull/952)
 
 ### Fixed
 
