@@ -28,11 +28,6 @@ class MaskingStrategy(GenericStrategy):
 
     @staticmethod
     @abstractmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        """Used to get the configuration model to configure the strategy"""
-
-    @staticmethod
-    @abstractmethod
     def get_description() -> MaskingStrategyDescription:
         """Returns the description used for documentation. In particular, used by the
         documentation endpoint in masking_endpoints.list_masking_strategies"""
