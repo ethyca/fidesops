@@ -136,7 +136,6 @@ if config.admin_ui.enabled:
     def generate_route_file_map() -> None:
         pattern = r"\[.+]"
         for filepath in WEBAPP_DIRECTORY.glob("**/*.html"):
-            logger.info(str(filepath))
             if "index" not in str(filepath):
                 path = re.sub(
                     pattern, ".+", str(filepath.relative_to(WEBAPP_DIRECTORY))[:-5]
