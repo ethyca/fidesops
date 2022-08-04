@@ -171,7 +171,12 @@ def run_migration(migration_direction: str) -> None:
         try:
             datasets = DatasetConfig.all(db=session)
 
+            logger.info("Upgrading fideslang categories")
+            counter = 0
             for dataset in datasets:
+                if counter % 10 == 0:
+                    logger.info("Upgrading fideslang categories")
+
                 collections = dataset.get("collections")
 
                 if collections:
