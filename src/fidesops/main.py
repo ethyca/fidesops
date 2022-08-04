@@ -133,7 +133,7 @@ WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 if config.admin_ui.enabled:
     route_file_map = {}
 
-    def generate_route_file_map():
+    def generate_route_file_map() -> None:
         pattern = r"\[.+]"
         for filepath in WEBAPP_DIRECTORY.glob("**/*.html"):
             logger.info(str(filepath))
@@ -167,6 +167,7 @@ if config.admin_ui.enabled:
         for key in route_file_map.keys():
             if re.fullmatch(key, path):
                 return route_file_map[key]
+        return None
 
     @app.get("/{catchall:path}", response_class=FileResponse)
     def read_ui_files(request: Request) -> FileResponse:
