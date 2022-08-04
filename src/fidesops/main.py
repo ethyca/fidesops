@@ -1,7 +1,7 @@
 import logging
 import os
-import subprocess
 import re
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Optional, Union
