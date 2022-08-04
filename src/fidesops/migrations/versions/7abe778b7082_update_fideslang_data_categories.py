@@ -174,6 +174,7 @@ def run_migration(migration_direction: str) -> None:
             logger.info("Upgrading fideslang categories")
             counter = 0
             for dataset in datasets:
+                counter += 1
                 if counter % 10 == 0:
                     logger.info("Upgrading fideslang categories")
 
