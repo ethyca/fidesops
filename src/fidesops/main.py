@@ -164,7 +164,7 @@ if config.admin_ui.enabled:
         return FileResponse(WEBAPP_INDEX)
 
     def match_route(path: str) -> Union[FileResponse, None]:
-        for key in route_file_map.keys():
+        for key, _ in route_file_map.items():
             if re.fullmatch(key, path):
                 return route_file_map[key]
         return None
