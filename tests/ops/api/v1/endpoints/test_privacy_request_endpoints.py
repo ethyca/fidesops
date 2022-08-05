@@ -1674,11 +1674,8 @@ class TestApprovePrivacyRequest:
         api_client,
         generate_auth_header,
         user,
-        privacy_request,
+        privacy_request_status_pending,
     ):
-        privacy_request.status = PrivacyRequestStatus.pending
-        privacy_request.save(db=db)
-
         payload = {
             JWE_PAYLOAD_SCOPES: user.client.scopes,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
@@ -1689,12 +1686,12 @@ class TestApprovePrivacyRequest:
             + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         }
 
-        body = {"request_ids": [privacy_request.id]}
+        body = {"request_ids": [privacy_request_status_pending.id]}
         api_client.patch(url, headers=auth_header, json=body)
         approval_audit_log: AuditLog = AuditLog.filter(
             db=db,
             conditions=(
-                (AuditLog.privacy_request_id == privacy_request.id)
+                (AuditLog.privacy_request_id == privacy_request_status_pending.id)
                 & (AuditLog.user_id == user.id)
                 & (AuditLog.action == AuditLogAction.approved)
             ),
@@ -1704,7 +1701,6 @@ class TestApprovePrivacyRequest:
         assert approval_audit_log.message == ""
 
         approval_audit_log.delete(db)
-        privacy_request.delete(db)
 
 
 class TestDenyPrivacyRequest:
