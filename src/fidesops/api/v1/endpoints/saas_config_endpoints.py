@@ -1,8 +1,10 @@
+import json
 import logging
-from typing import Optional
+from typing import Any, Dict, Optional
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from fastapi.params import Security
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -15,12 +17,14 @@ from starlette.status import (
 from fidesops.api import deps
 from fidesops.api.v1.scope_registry import (
     CONNECTION_AUTHORIZE,
+    CONNECTION_INSTANTIATE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
 )
 from fidesops.api.v1.urn_registry import (
     AUTHORIZE,
+    INSTANTIATE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     V1_URL_PREFIX,
@@ -38,8 +42,15 @@ from fidesops.service.authentication.authentication_strategy_factory import get_
 from fidesops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
+from fidesops.service.connectors.saas.connector_registry_service import (
+    ConnectorTemplate,
+    connector_types,
+    get_connector_template,
+    instantiate_connector_template,
+)
 from fidesops.util.api_router import APIRouter
 from fidesops.util.oauth_util import verify_oauth_client
+from fidesops.util.saas_util import load_yaml_as_string
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)
@@ -243,3 +254,46 @@ def authorize_connection(
         return auth_strategy.get_authorization_url(db, connection_config)
     except FidesopsException as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc))
+
+
+@router.post(
+    INSTANTIATE,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_INSTANTIATE])],
+    response_model=str,
+)
+async def instantiate_connection(
+    saas_connector_type: str,
+    request: Request,
+    db: Session = Depends(deps.get_db),
+) -> JSONResponse:
+    """
+    Looks up the connector type in the SaaS connector registry and, if all required
+    fields are provided, persists the associated config and dataset to the database.
+    """
+
+    # verify connector type is registered
+    if saas_connector_type not in connector_types():
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"SaaS connector type '{saas_connector_type}' is not registered.",
+        )
+
+    # verify instance_key is provided
+    payload = await request.json()
+    instance_key = payload.pop("instance_key", None)
+    if not instance_key:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"The instance_key was not specified.",
+        )
+
+    # verify instance_key is not already in use
+
+    # let the service do the heavy lifting
+    instantiate_connector_template(saas_connector_type, instance_key, payload)
+
+    return JSONResponse(
+        content={
+            "message": f"A new {saas_connector_type} connector with fides_key '{instance_key}' was successfully instantiated"
+        }
+    )

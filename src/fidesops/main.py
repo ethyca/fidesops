@@ -30,6 +30,10 @@ from fidesops.common_exceptions import FunctionalityNotConfigured, RedisConnecti
 from fidesops.core.config import config
 from fidesops.db.database import init_db
 from fidesops.schemas.analytics import Event, ExtraData
+from fidesops.service.connectors.saas.connector_registry_service import (
+    load_registry,
+    update_connector_instances,
+)
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.util.cache import get_cache
@@ -177,6 +181,9 @@ def start_webserver() -> None:
         )
         config.log_all_config_values()
 
+    logger.info("Validating SaaS connector templates...")
+    load_registry("saas_connector_registry.toml")
+
     if config.database.enabled:
         logger.info("Running any pending DB migrations...")
         try:
@@ -184,6 +191,9 @@ def start_webserver() -> None:
         except Exception as error:  # pylint: disable=broad-except
             logger.error(f"Connection to database failed: {error}")
             return
+
+        logger.info("Updating SaaS connector instances...")
+        update_connector_instances()
 
     if config.redis.enabled:
         logger.info("Running Redis connection test...")
