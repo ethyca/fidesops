@@ -1,0 +1,26 @@
+saas_config:
+  fides_key: ownbackup_config_example
+  name: OwnBackup SaaS Config
+  type: ownbackup
+  description: A sample schema representing the OwnBackup connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: username
+    - name: password
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: ownbackup
+      configuration:
+        username: <username>
+        password: <password>
+
+  test_request:
+    method: GET
+    path: /api/v1/services
+
+  endpoints: []

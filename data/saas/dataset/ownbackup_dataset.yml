@@ -1,0 +1,5 @@
+dataset:
+  - fides_key: ownbackup_connector_example
+    name: OwnBackup Dataset
+    description: A sample dataset representing the OwnBackup connector for Fidesops
+    collections: []

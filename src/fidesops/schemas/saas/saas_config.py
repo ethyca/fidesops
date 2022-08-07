@@ -222,6 +222,7 @@ class SaaSType(Enum):
     zendesk = "zendesk"
     custom = "custom"
     sendgrid = "sendgrid"
+    ownbackup = "ownbackup"
 
 
 class SaaSConfigBase(BaseModel):
