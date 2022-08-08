@@ -57,6 +57,7 @@ The types of changes are:
 * Added `nox` commands to replace the `Makefile` [#919](https://github.com/ethyca/fidesops/pull/919)
 * GitHub Actions Workflows leverage `nox` commands [#966](https://github.com/ethyca/fidesops/pull/966)
 * The `docker-compose.yml` file no longer handles builds [#966](https://github.com/ethyca/fidesops/pull/966)
+* Sort the table names before comparing it it the list to prevent randomly failing tests [#1052](https://github.com/ethyca/fidesops/pull/1052)
 
 ### Docs
 
