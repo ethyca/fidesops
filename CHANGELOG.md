@@ -33,6 +33,7 @@ The types of changes are:
 * add Events and logs section to Subject Request Details Page [#1018](https://github.com/ethyca/fidesops/pull/1018)
 * Access and erasure support for Auth0 [#991](https://github.com/ethyca/fidesops/pull/991)
 * Start better understanding how request execution fails [#993] https://github.com/ethyca/fidesops/pull/993
+* Add finished `AuditLog` for subject requests [#1040](https://github.com/ethyca/fidesops/pull/1040)
 
 ### Changed
 
