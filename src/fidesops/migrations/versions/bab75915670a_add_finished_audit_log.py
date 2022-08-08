@@ -20,7 +20,7 @@ def upgrade():
 
 
 def downgrade():
-    op.execute("delete from auditlog where status in ('finished')")
+    op.execute("delete from auditlog where action in ('finished')")
     op.execute("alter type auditlogaction rename to auditlogaction_old")
     op.execute("create type auditlogaction as enum('approved', 'denied')")
     op.execute(
