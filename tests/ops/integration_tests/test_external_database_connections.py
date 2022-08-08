@@ -71,18 +71,18 @@ def snowflake_test_engine() -> Generator:
 def test_redshift_example_data(redshift_test_engine):
     """Confirm that we can connect to the redshift test db and get table names"""
     inspector = inspect(redshift_test_engine)
-    assert inspector.get_table_names(schema="test") == [
+    assert sorted(inspector.get_table_names(schema="test")) == [
+        "address",
+        "customer",
+        "employee",
+        "login",
+        "order",
+        "order_item",
+        "payment_card",
+        "product",
         "report",
         "service_request",
-        "login",
         "visit",
-        "order_item",
-        "order",
-        "payment_card",
-        "employee",
-        "customer",
-        "address",
-        "product",
     ]
 
 
@@ -91,10 +91,9 @@ def test_redshift_example_data(redshift_test_engine):
 def test_snowflake_example_data(snowflake_test_engine):
     """Confirm that we can connect to the snowflake test db and get table names"""
     inspector = inspect(snowflake_test_engine)
-    assert inspector.get_table_names(schema="test") == [
-        "cc",
-        "report",
+    assert sorted(inspector.get_table_names(schema="test")) == [
         "address",
+        "cc",
         "customer",
         "employee",
         "login",
@@ -102,6 +101,7 @@ def test_snowflake_example_data(snowflake_test_engine):
         "order_item",
         "payment_card",
         "product",
+        "report",
         "report",
         "service_request",
         "visit",
@@ -113,13 +113,13 @@ def test_snowflake_example_data(snowflake_test_engine):
 def test_bigquery_example_data(bigquery_test_engine):
     """Confirm that we can connect to the bigquery test db and get table names"""
     inspector = inspect(bigquery_test_engine)
-    assert inspector.get_table_names(schema="fidesopstest") == [
+    assert sorted(inspector.get_table_names(schema="fidesopstest")) == [
         "address",
         "customer",
         "employee",
         "login",
-        "order_item",
         "orders",
+        "order_item",
         "payment_card",
         "product",
         "report",
