@@ -6,11 +6,10 @@ from uuid import uuid4
 
 import pydash
 import pytest
+from fideslib.models.audit_log import AuditLog, AuditLogAction
 from pydantic import ValidationError
 from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session
-
-from fideslib.models.audit_log import AuditLog, AuditLogAction
 
 from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.core.config import config
@@ -291,14 +290,13 @@ def test_create_and_process_access_request(
     log_id = pr.execution_logs[0].id
     pr_id = pr.id
 
-
-    finished_audit_log:AuditLog =  AuditLog.filter(
-            db=db,
-            conditions=(
-                (AuditLog.privacy_request_id == pr_id)
-                & (AuditLog.action == AuditLogAction.finished)
-            ),
-        ).first()
+    finished_audit_log: AuditLog = AuditLog.filter(
+        db=db,
+        conditions=(
+            (AuditLog.privacy_request_id == pr_id)
+            & (AuditLog.action == AuditLogAction.finished)
+        ),
+    ).first()
 
     assert finished_audit_log is not None
 

@@ -5,13 +5,12 @@ Revises: 3c5e1253465d
 Create Date: 2022-08-04 20:18:29.339116
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = 'bab75915670a'
-down_revision = '3c5e1253465d'
+revision = "bab75915670a"
+down_revision = "3c5e1253465d"
 branch_labels = None
 depends_on = None
 
@@ -23,9 +22,7 @@ def upgrade():
 def downgrade():
     op.execute("delete from auditlog where status in ('finished')")
     op.execute("alter type auditlogaction rename to auditlogaction_old")
-    op.execute(
-        "create type auditlogaction as enum('approved', 'denied')"
-    )
+    op.execute("create type auditlogaction as enum('approved', 'denied')")
     op.execute(
         (
             "alter table auditlog alter column action type auditlogaction using "
