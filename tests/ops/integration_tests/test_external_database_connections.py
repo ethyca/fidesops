@@ -71,7 +71,7 @@ def snowflake_test_engine() -> Generator:
 def test_redshift_example_data(redshift_test_engine):
     """Confirm that we can connect to the redshift test db and get table names"""
     inspector = inspect(redshift_test_engine)
-    assert inspector.get_table_names(schema="test") == [
+    assert sorted(inspector.get_table_names(schema="test")) == sorted([
         "report",
         "service_request",
         "login",
@@ -83,7 +83,7 @@ def test_redshift_example_data(redshift_test_engine):
         "customer",
         "address",
         "product",
-    ]
+    ])
 
 
 @pytest.mark.integration_external
@@ -91,7 +91,7 @@ def test_redshift_example_data(redshift_test_engine):
 def test_snowflake_example_data(snowflake_test_engine):
     """Confirm that we can connect to the snowflake test db and get table names"""
     inspector = inspect(snowflake_test_engine)
-    assert inspector.get_table_names(schema="test") == [
+    assert sorted(inspector.get_table_names(schema="test")) == sorted([
         "cc",
         "report",
         "address",
@@ -105,7 +105,7 @@ def test_snowflake_example_data(snowflake_test_engine):
         "report",
         "service_request",
         "visit",
-    ]
+    ])
 
 
 @pytest.mark.integration_external
@@ -113,7 +113,7 @@ def test_snowflake_example_data(snowflake_test_engine):
 def test_bigquery_example_data(bigquery_test_engine):
     """Confirm that we can connect to the bigquery test db and get table names"""
     inspector = inspect(bigquery_test_engine)
-    assert inspector.get_table_names(schema="fidesopstest") == [
+    assert sorted(inspector.get_table_names(schema="fidesopstest")) == sorted([
         "address",
         "customer",
         "employee",
@@ -125,4 +125,4 @@ def test_bigquery_example_data(bigquery_test_engine):
         "report",
         "service_request",
         "visit",
-    ]
+    ])
