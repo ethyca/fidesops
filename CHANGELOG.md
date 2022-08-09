@@ -27,12 +27,12 @@ The types of changes are:
 * Access and erasure support for Adobe Campaign [#905](https://github.com/ethyca/fidesops/pull/905)
 * Added db vs saas to connection type api [#937](https://github.com/ethyca/fidesops/pull/937)
 * Retry a DSR (FE) [#863](https://github.com/ethyca/fidesops/pull/938)
-* Add a Connection - Select a connector to configure (front end) [#760] (https://github.com/ethyca/fidesops/pull/987)
-* Add a Connection - Front End layout structure [#866] (https://github.com/ethyca/fidesops/pull/987)
+* Add a Connection - Select a connector to configure (front end) [#760] (<https://github.com/ethyca/fidesops/pull/987>)
+* Add a Connection - Front End layout structure [#866] (<https://github.com/ethyca/fidesops/pull/987>)
 * Enable python function overrides for SaaS connector request execution [#986](https://github.com/ethyca/fidesops/pull/986)
 * add Events and logs section to Subject Request Details Page [#1018](https://github.com/ethyca/fidesops/pull/1018)
 * Access and erasure support for Auth0 [#991](https://github.com/ethyca/fidesops/pull/991)
-* Start better understanding how request execution fails [#993] (https://github.com/ethyca/fidesops/pull/993)
+* Start better understanding how request execution fails [#993] (<https://github.com/ethyca/fidesops/pull/993>)
 * Add approval `AuditLog`s for user and sytem approved privacy requests [#1038](https://github.com/ethyca/fidesops/pull/1038)
 
 ### Changed
@@ -40,6 +40,7 @@ The types of changes are:
 * Users should be able to click on the full field of a dropdown-type filter to open up the dropdown [#747](https://github.com/ethyca/fidesops/pull/903)
 * Updated the python docker base image from slim-buster to slim-bullseye [928](https://github.com/ethyca/fidesops/pull/928)
 * Removed ipython from the docker install [928](https://github.com/ethyca/fidesops/pull/928)
+* Run static nox checks outside of Docker [1053](https://github.com/ethyca/fidesops/pull/1053)
 * Serve admin UI by default [#906](https://github.com/ethyca/fidesops/pull/936)
 * Move tests into an `ops` subdir [#935](https://github.com/ethyca/fidesops/pull/935)
 * Move client code into an `ops` subdir [#964](https://github.com/ethyca/fidesops/pull/964)
