@@ -33,7 +33,7 @@ def ci_suite(session: nox.Session) -> None:
     session.notify("pytest_integration")
     session.notify("teardown")
 
-
+# Make the static checks run outside of docker
 # Static Checks
 @nox.session()
 def black(session: nox.Session) -> None:
