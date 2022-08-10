@@ -3,7 +3,7 @@ from __future__ import annotations
 """Update fideslang data categories
 
 Revision ID: 7abe778b7082
-Revises: 3c5e1253465d
+Revises: bab75915670a
 Create Date: 2022-07-29 17:54:53.719453
 
 """
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # revision identifiers, used by Alembic.
 revision = "7abe778b7082"
-down_revision = "3c5e1253465d"
+down_revision = "bab75915670a"
 branch_labels = None
 depends_on = None
 
