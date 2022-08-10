@@ -49,6 +49,7 @@ def get_schema_for_secrets(
 class EmailConfig(Base):
     """The DB ORM model for EmailConfig"""
     key = Column(String, index=True, unique=True, nullable=False)
+    name = Column(String, unique=True, index=True)
     service_type = Column(Enum(EmailServiceType), index=True, nullable=False)
     details = Column(MutableDict.as_mutable(JSONB), nullable=False)
     secrets = Column(
