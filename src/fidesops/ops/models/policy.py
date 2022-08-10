@@ -16,7 +16,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fidesops import common_exceptions
+from fidesops.ops import common_exceptions
 from fidesops.ops.common_exceptions import WebhookOrderException
 from fidesops.ops.core.config import config
 from fidesops.ops.db.base_class import JSONTypeOverride

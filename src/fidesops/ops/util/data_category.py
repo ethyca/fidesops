@@ -3,7 +3,7 @@ from typing import Type
 
 from fideslang import DEFAULT_TAXONOMY
 
-from fidesops import common_exceptions
+from fidesops.ops import common_exceptions
 
 
 def generate_fides_data_categories() -> Type[EnumType]:

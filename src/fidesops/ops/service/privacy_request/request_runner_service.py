@@ -10,7 +10,7 @@ from pydantic import ValidationError
 from redis.exceptions import DataError
 from sqlalchemy.orm import Session
 
-from fidesops import common_exceptions
+from fidesops.ops import common_exceptions
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,

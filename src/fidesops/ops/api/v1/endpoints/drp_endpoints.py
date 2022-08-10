@@ -13,7 +13,7 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from fidesops import common_exceptions
+from fidesops.ops import common_exceptions
 from fidesops.ops.api import deps
 from fidesops.ops.api.v1 import scope_registry as scopes
 from fidesops.ops.api.v1 import urn_registry as urls
