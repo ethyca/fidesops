@@ -1,5 +1,5 @@
-from fidesops.graph.config import FieldPath
-from fidesops.task.refine_target_path import (
+from fidesops.ops.graph.config import FieldPath
+from fidesops.ops.task.refine_target_path import (
     _match_found,
     build_refined_target_paths,
     join_detailed_path,

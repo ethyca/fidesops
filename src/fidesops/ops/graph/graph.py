@@ -5,7 +5,7 @@ from collections import defaultdict
 from typing import Callable, Dict, List, Optional, Set, Tuple
 
 from fidesops.ops.common_exceptions import ValidationError
-from fidesops.graph.config import (
+from fidesops.ops.graph.config import (
     Collection,
     CollectionAddress,
     Dataset,

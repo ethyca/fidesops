@@ -9,10 +9,10 @@ from fidesops.ops.common_exceptions import (
     ConnectionException,
 )
 from fidesops.ops.core.config import config
-from fidesops.graph.traversal import TraversalNode
-from fidesops.models.policy import Policy
-from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.service.saas_request.saas_request_override_factory import (
+from fidesops.ops.graph.traversal import TraversalNode
+from fidesops.ops.models.policy import Policy
+from fidesops.ops.models.privacy_request import PrivacyRequest
+from fidesops.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )

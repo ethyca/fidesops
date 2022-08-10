@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional, Union
 
-from fidesops.models.connectionconfig import ConnectionType
+from fidesops.ops.models.connectionconfig import ConnectionType
 from fidesops.ops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )

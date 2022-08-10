@@ -8,7 +8,7 @@ from fidesops.ops.schemas.saas.strategy_configuration import (
     CursorPaginationConfiguration,
     StrategyConfiguration,
 )
-from fidesops.service.pagination.pagination_strategy import PaginationStrategy
+from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
 
 STRATEGY_NAME = "cursor"
 

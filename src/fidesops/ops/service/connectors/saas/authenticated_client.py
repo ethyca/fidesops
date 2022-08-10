@@ -12,7 +12,7 @@ from fidesops.ops.common_exceptions import (
 from fidesops.ops.core.config import config
 
 if TYPE_CHECKING:
-    from fidesops.models.connectionconfig import ConnectionConfig
+    from fidesops.ops.models.connectionconfig import ConnectionConfig
     from fidesops.ops.schemas.saas.saas_config import ClientConfig
     from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
 
@@ -52,7 +52,7 @@ class AuthenticatedClient:
         incoming path, headers, query, and body params.
         """
 
-        from fidesops.service.authentication.authentication_strategy_factory import (  # pylint: disable=R0401
+        from fidesops.ops.service.authentication.authentication_strategy_factory import (  # pylint: disable=R0401
             get_strategy,
         )
 

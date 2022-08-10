@@ -33,9 +33,9 @@ from fidesops.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.ops.common_exceptions import StorageUploadError
-from fidesops.models.connectionconfig import ConnectionTestStatus
-from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.models.storage import StorageConfig, get_schema_for_secrets
+from fidesops.ops.models.connectionconfig import ConnectionTestStatus
+from fidesops.ops.models.privacy_request import PrivacyRequest
+from fidesops.ops.models.storage import StorageConfig, get_schema_for_secrets
 from fidesops.ops.schemas.api import BulkUpdateFailed
 from fidesops.ops.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
@@ -47,10 +47,12 @@ from fidesops.ops.schemas.storage.storage import (
     StorageDestination,
     StorageDestinationResponse,
 )
-from fidesops.ops.schemas.storage.storage_secrets_docs_only import possible_storage_secrets
-from fidesops.service.storage.storage_authenticator_service import secrets_are_valid
-from fidesops.service.storage.storage_uploader_service import upload
-from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
+from fidesops.ops.schemas.storage.storage_secrets_docs_only import (
+    possible_storage_secrets,
+)
+from fidesops.ops.service.storage.storage_authenticator_service import secrets_are_valid
+from fidesops.ops.service.storage.storage_uploader_service import upload
+from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.oauth_util import verify_oauth_client
 

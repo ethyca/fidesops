@@ -39,11 +39,13 @@ from fidesops.ops.common_exceptions import (
     OAuth2TokenException,
 )
 from fidesops.ops.core.config import config
-from fidesops.models.authentication_request import AuthenticationRequest
-from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.models.authentication_request import AuthenticationRequest
+from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.schemas.client import ClientCreatedResponse
-from fidesops.service.authentication.authentication_strategy_factory import get_strategy
-from fidesops.service.authentication.authentication_strategy_oauth2 import (
+from fidesops.ops.service.authentication.authentication_strategy_factory import (
+    get_strategy,
+)
+from fidesops.ops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
 from fidesops.ops.util.api_router import APIRouter

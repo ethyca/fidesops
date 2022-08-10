@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Literal, Optional, Set, Union
 
 from pydantic import BaseModel, Extra, root_validator, validator
 
-from fidesops.graph.config import (
+from fidesops.ops.graph.config import (
     Collection,
     CollectionAddress,
     Dataset,
@@ -116,7 +116,7 @@ class SaaSRequest(BaseModel):
         """
 
         # delay import to avoid cyclic-dependency error - We still ignore the pylint error
-        from fidesops.service.pagination.pagination_strategy_factory import (  # pylint: disable=R0401
+        from fidesops.ops.service.pagination.pagination_strategy_factory import (  # pylint: disable=R0401
             get_strategy,
         )
 

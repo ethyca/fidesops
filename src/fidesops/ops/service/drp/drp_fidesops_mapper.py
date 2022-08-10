@@ -1,7 +1,10 @@
 import logging
 from typing import Dict
 
-from fidesops.models.privacy_request import PrivacyRequestStatus, ProvidedIdentityType
+from fidesops.ops.models.privacy_request import (
+    PrivacyRequestStatus,
+    ProvidedIdentityType,
+)
 from fidesops.ops.schemas.drp_privacy_request import DrpIdentity
 from fidesops.ops.schemas.privacy_request import PrivacyRequestDRPStatus
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity

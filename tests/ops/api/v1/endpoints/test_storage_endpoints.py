@@ -21,7 +21,7 @@ from fidesops.ops.api.v1.urn_registry import (
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
-from fidesops.models.storage import StorageConfig
+from fidesops.ops.models.storage import StorageConfig
 from fidesops.ops.schemas.storage.data_upload_location_response import DataUpload
 from fidesops.ops.schemas.storage.storage import (
     FileNaming,
@@ -507,7 +507,9 @@ class TestPutStorageConfigSecretsS3:
             "failure_reason": None,
         }
 
-    @mock.patch("fidesops.service.storage.storage_authenticator_service.get_s3_session")
+    @mock.patch(
+        "fidesops.ops.service.storage.storage_authenticator_service.get_s3_session"
+    )
     def test_put_s3_config_secrets_and_verify(
         self,
         get_s3_session_mock: Mock,
@@ -522,7 +524,7 @@ class TestPutStorageConfigSecretsS3:
         get_s3_session_mock.assert_called_once_with(**payload)
 
     @mock.patch(
-        "fidesops.service.storage.storage_authenticator_service.get_onetrust_access_token"
+        "fidesops.ops.service.storage.storage_authenticator_service.get_onetrust_access_token"
     )
     def test_put_onetrust_config_secrets_and_verify(
         self,

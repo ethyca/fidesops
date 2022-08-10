@@ -34,7 +34,7 @@ from fidesops.ops.api.v1.urn_registry import (
 )
 from fidesops.ops.common_exceptions import OAuth2TokenException
 from fidesops.ops.core.config import config
-from fidesops.models.authentication_request import AuthenticationRequest
+from fidesops.ops.models.authentication_request import AuthenticationRequest
 
 
 class TestCreateClient:

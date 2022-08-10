@@ -6,7 +6,7 @@ from fidesops.ops.common_exceptions import FidesopsException
 from fidesops.ops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
 )
-from fidesops.service.processors.post_processor_strategy.post_processor_strategy_filter import (
+from fidesops.ops.service.processors.post_processor_strategy.post_processor_strategy_filter import (
     FilterPostProcessorStrategy,
 )
 

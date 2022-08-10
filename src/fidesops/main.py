@@ -33,8 +33,8 @@ from fidesops.ops.common_exceptions import (
 from fidesops.ops.core.config import config
 from fidesops.ops.db.database import init_db
 from fidesops.ops.schemas.analytics import Event, ExtraData
-from fidesops.tasks.scheduled.scheduler import scheduler
-from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
+from fidesops.ops.tasks.scheduled.scheduler import scheduler
+from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.ops.util.cache import get_cache
 from fidesops.ops.util.logger import get_fides_log_record_factory
 from fidesops.ops.util.oauth_util import get_db, verify_oauth_client

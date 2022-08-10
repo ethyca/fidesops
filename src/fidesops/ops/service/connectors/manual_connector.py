@@ -2,11 +2,11 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fidesops.ops.common_exceptions import PrivacyRequestPaused
-from fidesops.graph.traversal import TraversalNode
-from fidesops.models.policy import PausedStep, Policy
-from fidesops.models.privacy_request import ManualAction, PrivacyRequest
-from fidesops.service.connectors.base_connector import BaseConnector
-from fidesops.service.connectors.query_config import ManualQueryConfig
+from fidesops.ops.graph.traversal import TraversalNode
+from fidesops.ops.models.policy import PausedStep, Policy
+from fidesops.ops.models.privacy_request import ManualAction, PrivacyRequest
+from fidesops.ops.service.connectors.base_connector import BaseConnector
+from fidesops.ops.service.connectors.query_config import ManualQueryConfig
 from fidesops.ops.util.collection_util import Row
 
 logger = logging.getLogger(__name__)

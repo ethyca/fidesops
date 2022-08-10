@@ -7,8 +7,8 @@ from fidesops.ops.common_exceptions import (
     InvalidDataLengthValidationError,
     InvalidDataTypeValidationError,
 )
-from fidesops.graph.config import EdgeDirection
-from fidesops.graph.data_type import is_valid_data_type, parse_data_type_string
+from fidesops.ops.graph.config import EdgeDirection
+from fidesops.ops.graph.data_type import is_valid_data_type, parse_data_type_string
 from fidesops.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.ops.schemas.base_class import BaseSchema
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey

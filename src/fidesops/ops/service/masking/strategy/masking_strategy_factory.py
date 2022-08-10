@@ -6,7 +6,7 @@ from pydantic import ValidationError
 from fidesops.ops.common_exceptions import NoSuchStrategyException
 from fidesops.ops.common_exceptions import ValidationError as FidesopsValidationError
 from fidesops.ops.schemas.masking.masking_configuration import FormatPreservationConfig
-from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 
 logger = logging.getLogger(__name__)
 

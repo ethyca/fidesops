@@ -85,7 +85,7 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple
 from pydantic import BaseModel, validator
 
 from fidesops.ops.common_exceptions import FidesopsException
-from fidesops.graph.data_type import (
+from fidesops.ops.graph.data_type import (
     DataType,
     DataTypeConverter,
     get_data_type_converter,

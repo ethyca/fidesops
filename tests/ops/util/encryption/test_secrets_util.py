@@ -5,10 +5,10 @@ from fidesops.ops.schemas.masking.masking_secrets import (
     MaskingSecretMeta,
     SecretType,
 )
-from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import (
+from fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
     AES_ENCRYPT_STRATEGY_NAME,
 )
-from fidesops.service.masking.strategy.masking_strategy_hmac import (
+from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
     HMAC_STRATEGY_NAME,
     HmacMaskingStrategy,
 )

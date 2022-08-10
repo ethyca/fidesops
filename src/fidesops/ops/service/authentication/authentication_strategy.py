@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 from requests import PreparedRequest
 
-from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.schemas.saas.strategy_configuration import StrategyConfiguration
 
 

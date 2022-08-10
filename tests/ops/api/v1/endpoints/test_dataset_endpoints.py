@@ -23,8 +23,8 @@ from fidesops.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
-from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.models.datasetconfig import DatasetConfig
 
 
 def _reject_key(dict: Dict, key: str) -> Dict:
@@ -800,7 +800,7 @@ class TestPutDatasets:
             "'saas_connector_example' of the connection config"
         )
 
-    @mock.patch("fidesops.models.datasetconfig.DatasetConfig.create_or_update")
+    @mock.patch("fidesops.ops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,
@@ -894,7 +894,7 @@ class TestPutYamlDatasets:
         )
         assert response.status_code == 400
 
-    @mock.patch("fidesops.models.datasetconfig.DatasetConfig.create_or_update")
+    @mock.patch("fidesops.ops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,

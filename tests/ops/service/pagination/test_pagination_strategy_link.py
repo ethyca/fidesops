@@ -6,7 +6,9 @@ from requests import Response
 
 from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.ops.schemas.saas.strategy_configuration import LinkPaginationConfiguration
-from fidesops.service.pagination.pagination_strategy_link import LinkPaginationStrategy
+from fidesops.ops.service.pagination.pagination_strategy_link import (
+    LinkPaginationStrategy,
+)
 
 
 @pytest.fixture(scope="function")

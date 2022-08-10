@@ -50,19 +50,22 @@ from fidesops.ops.common_exceptions import (
     ValidationError,
 )
 from fidesops.ops.core.config import config
-from fidesops.graph.config import CollectionAddress
-from fidesops.graph.graph import DatasetGraph, Node
-from fidesops.graph.traversal import Traversal
-from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import PausedStep, Policy, PolicyPreWebhook
-from fidesops.models.privacy_request import (
+from fidesops.ops.graph.config import CollectionAddress
+from fidesops.ops.graph.graph import DatasetGraph, Node
+from fidesops.ops.graph.traversal import Traversal
+from fidesops.ops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.policy import PausedStep, Policy, PolicyPreWebhook
+from fidesops.ops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestStatus,
     ProvidedIdentity,
 )
-from fidesops.ops.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
+from fidesops.ops.schemas.dataset import (
+    CollectionAddressResponse,
+    DryRunDatasetResponse,
+)
 from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fidesops.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
@@ -76,15 +79,15 @@ from fidesops.ops.schemas.privacy_request import (
     RowCountRequest,
     StoppedCollection,
 )
-from fidesops.service.privacy_request.request_runner_service import (
+from fidesops.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
-from fidesops.service.privacy_request.request_service import (
+from fidesops.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
-from fidesops.task.graph_task import EMPTY_REQUEST, collect_queries
-from fidesops.task.task_resources import TaskResources
+from fidesops.ops.task.graph_task import EMPTY_REQUEST, collect_queries
+from fidesops.ops.task.task_resources import TaskResources
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.cache import FidesopsRedis
 from fidesops.ops.util.collection_util import Row

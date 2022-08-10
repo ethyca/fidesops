@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from fidesops.models.datasetconfig import (
+from fidesops.ops.models.datasetconfig import (
     DatasetConfig,
     FieldAddress,
     convert_dataset_to_graph,

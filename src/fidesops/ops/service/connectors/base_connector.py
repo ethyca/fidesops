@@ -3,11 +3,11 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
 from fidesops.ops.core.config import config
-from fidesops.graph.traversal import TraversalNode
-from fidesops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
-from fidesops.models.policy import Policy
-from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.service.connectors.query_config import QueryConfig
+from fidesops.ops.graph.traversal import TraversalNode
+from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
+from fidesops.ops.models.policy import Policy
+from fidesops.ops.models.privacy_request import PrivacyRequest
+from fidesops.ops.service.connectors.query_config import QueryConfig
 from fidesops.ops.util.collection_util import Row
 
 logger = logging.getLogger(__name__)
@@ -19,8 +19,8 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
 
     How to use example:
     from fidesops.ops.db.session import get_db_session
-    from fidesops.models.connectionconfig import ConnectionConfig
-    from fidesops.service.connectors import get_connector
+    from fidesops.ops.models.connectionconfig import ConnectionConfig
+    from fidesops.ops.service.connectors import get_connector
 
     SessionLocal = get_db_session(config)
     db = SessionLocal()

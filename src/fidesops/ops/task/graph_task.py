@@ -12,11 +12,11 @@ from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
 from fidesops.ops.core.config import config
-from fidesops.graph.analytics_events import (
+from fidesops.ops.graph.analytics_events import (
     fideslog_graph_rerun,
     prepare_rerun_graph_analytics_event,
 )
-from fidesops.graph.config import (
+from fidesops.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     CollectionAddress,
@@ -24,17 +24,17 @@ from fidesops.graph.config import (
     FieldAddress,
     FieldPath,
 )
-from fidesops.graph.graph import DatasetGraph, Edge, Node
-from fidesops.graph.graph_differences import format_graph_for_caching
-from fidesops.graph.traversal import Traversal, TraversalNode
-from fidesops.models.connectionconfig import AccessLevel, ConnectionConfig
-from fidesops.models.policy import ActionType, Policy
-from fidesops.models.privacy_request import ExecutionLogStatus, PrivacyRequest
-from fidesops.service.connectors import BaseConnector
-from fidesops.task.consolidate_query_matches import consolidate_query_matches
-from fidesops.task.filter_element_match import filter_element_match
-from fidesops.task.refine_target_path import FieldPathNodeInput
-from fidesops.task.task_resources import TaskResources
+from fidesops.ops.graph.graph import DatasetGraph, Edge, Node
+from fidesops.ops.graph.graph_differences import format_graph_for_caching
+from fidesops.ops.graph.traversal import Traversal, TraversalNode
+from fidesops.ops.models.connectionconfig import AccessLevel, ConnectionConfig
+from fidesops.ops.models.policy import ActionType, Policy
+from fidesops.ops.models.privacy_request import ExecutionLogStatus, PrivacyRequest
+from fidesops.ops.service.connectors import BaseConnector
+from fidesops.ops.task.consolidate_query_matches import consolidate_query_matches
+from fidesops.ops.task.filter_element_match import filter_element_match
+from fidesops.ops.task.refine_target_path import FieldPathNodeInput
+from fidesops.ops.task.task_resources import TaskResources
 from fidesops.ops.util.cache import get_cache
 from fidesops.ops.util.collection_util import NodeInput, Row, append, partition
 from fidesops.ops.util.logger import NotPii

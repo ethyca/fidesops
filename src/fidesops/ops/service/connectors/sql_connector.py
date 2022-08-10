@@ -17,10 +17,10 @@ from sqlalchemy.sql import Executable  # type: ignore
 from sqlalchemy.sql.elements import TextClause
 
 from fidesops.ops.common_exceptions import ConnectionException
-from fidesops.graph.traversal import Row, TraversalNode
-from fidesops.models.connectionconfig import ConnectionTestStatus
-from fidesops.models.policy import Policy
-from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.ops.graph.traversal import Row, TraversalNode
+from fidesops.ops.models.connectionconfig import ConnectionTestStatus
+from fidesops.ops.models.policy import Policy
+from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.schemas.connection_configuration import (
     MicrosoftSQLServerSchema,
     PostgreSQLSchema,
@@ -36,8 +36,8 @@ from fidesops.ops.schemas.connection_configuration.connection_secrets_mariadb im
 from fidesops.ops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
-from fidesops.service.connectors.base_connector import BaseConnector
-from fidesops.service.connectors.query_config import (
+from fidesops.ops.service.connectors.base_connector import BaseConnector
+from fidesops.ops.service.connectors.query_config import (
     BigQueryQueryConfig,
     MicrosoftSQLServerQueryConfig,
     RedshiftQueryConfig,

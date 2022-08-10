@@ -28,9 +28,9 @@ from fidesops.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.ops.core.config import config
 from fidesops.ops.db.base import Policy, Rule, RuleTarget, StorageConfig
 from fidesops.ops.db.base_class import JSONTypeOverride
-from fidesops.models.policy import ActionType, DrpAction
+from fidesops.ops.models.policy import ActionType, DrpAction
 from fidesops.ops.schemas.storage.storage import StorageType
-from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
+from fidesops.ops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE_STRATEGY_NAME,
 )
 from fidesops.ops.util.data_category import DataCategory

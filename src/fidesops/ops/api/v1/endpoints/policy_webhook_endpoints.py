@@ -20,7 +20,7 @@ from fidesops.ops.api.v1.endpoints.connection_endpoints import (
 )
 from fidesops.ops.api.v1.endpoints.policy_endpoints import get_policy_or_error
 from fidesops.ops.common_exceptions import WebhookOrderException
-from fidesops.models.policy import (
+from fidesops.ops.models.policy import (
     Policy,
     PolicyPostWebhook,
     PolicyPreWebhook,

@@ -6,11 +6,14 @@ from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fidesops.ops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
 from fidesops.ops.common_exceptions import ValidationError
-from fidesops.ops.schemas.masking.masking_api import MaskingAPIRequest, MaskingAPIResponse
+from fidesops.ops.schemas.masking.masking_api import (
+    MaskingAPIRequest,
+    MaskingAPIResponse,
+)
 from fidesops.ops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
-from fidesops.service.masking.strategy.masking_strategy_factory import (
+from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
     NoSuchStrategyException,
 )

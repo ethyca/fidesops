@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from fidesops.models.policy import WebhookDirection
+from fidesops.ops.models.policy import WebhookDirection
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 
 

@@ -4,16 +4,16 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import ConnectorNotFoundException
-from fidesops.graph.config import CollectionAddress
-from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.models.policy import ActionType, Policy
-from fidesops.models.privacy_request import (
+from fidesops.ops.graph.config import CollectionAddress
+from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesops.ops.models.policy import ActionType, Policy
+from fidesops.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
 )
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.service.connectors import (
+from fidesops.ops.service.connectors import (
     BaseConnector,
     BigQueryConnector,
     ManualConnector,

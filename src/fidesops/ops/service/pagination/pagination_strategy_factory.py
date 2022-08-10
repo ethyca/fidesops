@@ -8,17 +8,19 @@ from pydantic import ValidationError
 
 from fidesops.ops.common_exceptions import NoSuchStrategyException
 from fidesops.ops.common_exceptions import ValidationError as FidesopsValidationError
-from fidesops.service.pagination.pagination_strategy_cursor import (
+from fidesops.ops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
 )
-from fidesops.service.pagination.pagination_strategy_link import LinkPaginationStrategy
-from fidesops.service.pagination.pagination_strategy_offset import (
+from fidesops.ops.service.pagination.pagination_strategy_link import (
+    LinkPaginationStrategy,
+)
+from fidesops.ops.service.pagination.pagination_strategy_offset import (
     OffsetPaginationStrategy,
 )
 
 if TYPE_CHECKING:
     from fidesops.ops.schemas.saas.strategy_configuration import StrategyConfiguration
-    from fidesops.service.pagination.pagination_strategy import PaginationStrategy
+    from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
 
 logger = logging.getLogger(__name__)
 

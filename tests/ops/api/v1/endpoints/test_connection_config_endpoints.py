@@ -18,7 +18,7 @@ from fidesops.ops.api.v1.scope_registry import (
     STORAGE_DELETE,
 )
 from fidesops.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
-from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.models.connectionconfig import ConnectionConfig
 
 page_size = Params().size
 

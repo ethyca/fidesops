@@ -4,8 +4,8 @@ from typing import Any, Dict, Optional
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import StorageUploadError
-from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.models.storage import StorageConfig
+from fidesops.ops.models.privacy_request import PrivacyRequest
+from fidesops.ops.models.storage import StorageConfig
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.schemas.storage.storage import (
     FileNaming,
@@ -13,7 +13,7 @@ from fidesops.ops.schemas.storage.storage import (
     StorageDetails,
     StorageType,
 )
-from fidesops.tasks.storage import upload_to_local, upload_to_onetrust, upload_to_s3
+from fidesops.ops.tasks.storage import upload_to_local, upload_to_onetrust, upload_to_s3
 
 logger = logging.getLogger(__name__)
 

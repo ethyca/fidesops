@@ -3,7 +3,7 @@ import logging
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Set, Union
 
-from fidesops.graph.config import CollectionAddress, FieldPath
+from fidesops.ops.graph.config import CollectionAddress, FieldPath
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.util.collection_util import Row
 

@@ -38,7 +38,7 @@ from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.ops.schemas.api import BulkUpdateFailed
 from fidesops.ops.schemas.connection_configuration import (
     connection_secrets_schemas,
@@ -57,7 +57,7 @@ from fidesops.ops.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.service.connectors import get_connector
+from fidesops.ops.service.connectors import get_connector
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.logger import NotPii
 from fidesops.ops.util.oauth_util import verify_oauth_client
@@ -104,7 +104,8 @@ def get_connections(
     Can also filter on disabled, connection_type, test_status, and system_type.
 
     Connection_type supports "or" filtering:
-    ?connection_type=postgres&connection_type=mongo will be translated into an "or" query.
+    ?connection_type=postgres&connection_type=mongo will be translated
+    into an "or" query.
     """
     logger.info(
         f"Finding connection configurations with pagination params {params} and search query: '{search if search else ''}'."

@@ -6,14 +6,14 @@ import pytest
 from fideslib.cryptography import cryptographic_util
 from sqlalchemy.orm import Session
 
-from fidesops.models.connectionconfig import (
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.service.connectors import SaaSConnector
+from fidesops.ops.service.connectors import SaaSConnector
 from fidesops.ops.util.saas_util import format_body, load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence

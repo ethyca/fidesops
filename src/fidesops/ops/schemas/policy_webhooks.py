@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from fidesops.models.policy import WebhookDirection
+from fidesops.ops.models.policy import WebhookDirection
 from fidesops.ops.schemas.base_class import BaseSchema
 from fidesops.ops.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,

@@ -16,8 +16,8 @@ from fidesops.ops.api.v1.urn_registry import (
     POLICY_WEBHOOKS_PRE,
     V1_URL_PREFIX,
 )
-from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.models.policy import PolicyPostWebhook, PolicyPreWebhook
+from fidesops.ops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.models.policy import PolicyPostWebhook, PolicyPreWebhook
 from tests.ops.api.v1.endpoints.test_privacy_request_endpoints import stringify_date
 
 

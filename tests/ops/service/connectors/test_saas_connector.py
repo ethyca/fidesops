@@ -7,8 +7,8 @@ from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 
 from fidesops.ops.schemas.saas.saas_config import SaaSRequest
 from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod
-from fidesops.service.connectors import get_connector
-from fidesops.service.connectors.saas_connector import SaaSConnector
+from fidesops.ops.service.connectors import get_connector
+from fidesops.ops.service.connectors.saas_connector import SaaSConnector
 
 
 @pytest.mark.unit_saas

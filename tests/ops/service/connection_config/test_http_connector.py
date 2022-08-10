@@ -4,7 +4,7 @@ import pytest
 import requests_mock
 
 from fidesops.ops.common_exceptions import ClientUnsuccessfulException
-from fidesops.service.connectors import HTTPSConnector
+from fidesops.ops.service.connectors import HTTPSConnector
 
 
 class TestHttpConnectorMethods:

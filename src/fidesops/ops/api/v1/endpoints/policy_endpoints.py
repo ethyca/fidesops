@@ -23,8 +23,8 @@ from fidesops.ops.common_exceptions import (
     RuleTargetValidationError,
     RuleValidationError,
 )
-from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fidesops.models.storage import StorageConfig
+from fidesops.ops.models.policy import ActionType, Policy, Rule, RuleTarget
+from fidesops.ops.models.storage import StorageConfig
 from fidesops.ops.schemas import policy as schemas
 from fidesops.ops.schemas.api import BulkUpdateFailed
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey

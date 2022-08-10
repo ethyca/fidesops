@@ -9,17 +9,19 @@ from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import FidesopsException, OAuth2TokenException
 from fidesops.ops.core.config import config
-from fidesops.models.authentication_request import AuthenticationRequest
-from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.models.authentication_request import AuthenticationRequest
+from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
 from fidesops.ops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
     StrategyConfiguration,
 )
-from fidesops.service.authentication.authentication_strategy import (
+from fidesops.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fidesops.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fidesops.ops.service.connectors.saas.authenticated_client import (
+    AuthenticatedClient,
+)
 from fidesops.ops.util.logger import NotPii
 from fidesops.ops.util.saas_util import assign_placeholders, map_param_values
 

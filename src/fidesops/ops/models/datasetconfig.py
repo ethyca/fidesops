@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 
-from fidesops.graph.config import (
+from fidesops.ops.graph.config import (
     Collection,
     CollectionAddress,
     Dataset,
@@ -16,8 +16,8 @@ from fidesops.graph.config import (
     FieldAddress,
     generate_field,
 )
-from fidesops.graph.data_type import parse_data_type_string
-from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesops.ops.graph.data_type import parse_data_type_string
+from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.ops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.util.logger import NotPii

@@ -1,6 +1,6 @@
 from typing import Any, List, Optional
 
-from fidesops.graph.config import FieldPath
+from fidesops.ops.graph.config import FieldPath
 from fidesops.ops.util.collection_util import Row
 
 

@@ -20,8 +20,8 @@ from fidesops import common_exceptions
 from fidesops.ops.common_exceptions import WebhookOrderException
 from fidesops.ops.core.config import config
 from fidesops.ops.db.base_class import JSONTypeOverride
-from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.models.storage import StorageConfig
+from fidesops.ops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.models.storage import StorageConfig
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.util.data_category import _validate_data_category
 

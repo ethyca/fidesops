@@ -13,7 +13,7 @@ from fidesops.ops.api.v1.urn_registry import (
     CONNECTION_TYPES,
     V1_URL_PREFIX,
 )
-from fidesops.models.connectionconfig import ConnectionType
+from fidesops.ops.models.connectionconfig import ConnectionType
 from fidesops.ops.schemas.connection_configuration import (
     SaaSSchemaFactory,
     secrets_validators,

@@ -5,12 +5,12 @@ import pytest
 from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
 
-from fidesops.models.connectionconfig import (
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
 )

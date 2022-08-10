@@ -9,24 +9,24 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.sql import Executable, Update  # type: ignore
 from sqlalchemy.sql.elements import ColumnElement, TextClause
 
-from fidesops.graph.config import (
+from fidesops.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,
     Field,
     FieldPath,
     MaskingOverride,
 )
-from fidesops.graph.traversal import Row, TraversalNode
-from fidesops.models.policy import ActionType, Policy, Rule
-from fidesops.models.privacy_request import ManualAction, PrivacyRequest
-from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_factory import (
+from fidesops.ops.graph.traversal import Row, TraversalNode
+from fidesops.ops.models.policy import ActionType, Policy, Rule
+from fidesops.ops.models.privacy_request import ManualAction, PrivacyRequest
+from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
-from fidesops.service.masking.strategy.masking_strategy_nullify import (
+from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
     NULL_REWRITE_STRATEGY_NAME,
 )
-from fidesops.task.refine_target_path import (
+from fidesops.ops.task.refine_target_path import (
     build_refined_target_paths,
     join_detailed_path,
 )
@@ -58,7 +58,7 @@ class QueryConfig(Generic[T], ABC):
         """
         Return dictionary of rules mapped to update-able field paths on a given collection
         Example:
-        {<fidesops.models.policy.Rule object at 0xffff9160e190>: [FieldPath('name'), FieldPath('code'), FieldPath('ccn')]}
+        {<fidesops.ops.models.policy.Rule object at 0xffff9160e190>: [FieldPath('name'), FieldPath('code'), FieldPath('ccn')]}
         """
         rule_updates: Dict[Rule, List[FieldPath]] = {}
         for rule in policy.rules:

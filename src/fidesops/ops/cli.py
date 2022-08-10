@@ -4,7 +4,7 @@ import logging
 import click
 
 from fidesops.main import start_webserver
-from fidesops.tasks import start_worker
+from fidesops.ops.tasks import start_worker
 
 logger = logging.getLogger(__name__)
 

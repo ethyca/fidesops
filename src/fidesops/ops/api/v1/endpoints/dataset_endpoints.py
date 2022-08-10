@@ -35,9 +35,9 @@ from fidesops.ops.common_exceptions import (
     TraversalError,
     ValidationError,
 )
-from fidesops.graph.traversal import DatasetGraph, Traversal
-from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.models.datasetconfig import (
+from fidesops.ops.graph.traversal import DatasetGraph, Traversal
+from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesops.ops.models.datasetconfig import (
     DatasetConfig,
     convert_dataset_to_graph,
     to_graph_field,

@@ -12,7 +12,7 @@ from fidesops.ops.schemas.saas.strategy_configuration import (
     LinkSource,
     StrategyConfiguration,
 )
-from fidesops.service.pagination.pagination_strategy import PaginationStrategy
+from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
 
 STRATEGY_NAME = "link"
 

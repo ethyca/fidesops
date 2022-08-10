@@ -20,7 +20,7 @@ from fidesops.ops.api.v1.urn_registry import (
     SAAS_CONFIG_VALIDATE,
     V1_URL_PREFIX,
 )
-from fidesops.models.connectionconfig import (
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,

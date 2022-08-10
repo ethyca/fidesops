@@ -29,9 +29,9 @@ from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.ops.common_exceptions import PrivacyRequestPaused
 from fidesops.ops.core.config import config
 from fidesops.ops.db.base_class import JSONTypeOverride
-from fidesops.graph.config import CollectionAddress
-from fidesops.graph.graph_differences import GraphRepr
-from fidesops.models.policy import (
+from fidesops.ops.graph.config import CollectionAddress
+from fidesops.ops.graph.graph_differences import GraphRepr
+from fidesops.ops.models.policy import (
     ActionType,
     PausedStep,
     Policy,
@@ -48,7 +48,7 @@ from fidesops.ops.schemas.external_https import (
 )
 from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.tasks import celery_app
+from fidesops.ops.tasks import celery_app
 from fidesops.ops.util.cache import (
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
@@ -459,7 +459,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         to halt.  To resume, they use send a request to the reply-to URL with the reply-to-token.
         """
         # temp fix for circular dependency
-        from fidesops.service.connectors import HTTPSConnector, get_connector
+        from fidesops.ops.service.connectors import HTTPSConnector, get_connector
 
         https_connector: HTTPSConnector = get_connector(webhook.connection_config)  # type: ignore
         request_body = SecondPartyRequestFormat(

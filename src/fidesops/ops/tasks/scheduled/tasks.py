@@ -5,11 +5,11 @@ from apscheduler.jobstores.base import JobLookupError
 from fideslib.db.session import get_db_session
 
 from fidesops.ops.core.config import config
-from fidesops.models.storage import StorageConfig
+from fidesops.ops.models.storage import StorageConfig
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.schemas.storage.storage import StorageDetails, StorageType
-from fidesops.service.privacy_request.onetrust_service import OneTrustService
-from fidesops.tasks.scheduled.scheduler import scheduler
+from fidesops.ops.service.privacy_request.onetrust_service import OneTrustService
+from fidesops.ops.tasks.scheduled.scheduler import scheduler
 
 logger = logging.getLogger(__name__)
 

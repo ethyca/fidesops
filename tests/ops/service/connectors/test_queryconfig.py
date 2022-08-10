@@ -4,25 +4,28 @@ from typing import Any, Dict, Optional, Set
 import pytest
 
 from fidesops.ops.core.config import config
-from fidesops.graph.config import (
+from fidesops.ops.graph.config import (
     CollectionAddress,
     FieldAddress,
     FieldPath,
     ObjectField,
     ScalarField,
 )
-from fidesops.graph.graph import DatasetGraph, Edge
-from fidesops.graph.traversal import Traversal, TraversalNode
-from fidesops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.ops.graph.graph import DatasetGraph, Edge
+from fidesops.ops.graph.traversal import Traversal, TraversalNode
+from fidesops.ops.models.datasetconfig import convert_dataset_to_graph
+from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.schemas.dataset import FidesopsDataset
 from fidesops.ops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fidesops.ops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.service.connectors.query_config import MongoQueryConfig, SQLQueryConfig
-from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
-from fidesops.service.masking.strategy.masking_strategy_hash import (
+from fidesops.ops.service.connectors.query_config import (
+    MongoQueryConfig,
+    SQLQueryConfig,
+)
+from fidesops.ops.service.connectors.saas_query_config import SaaSQueryConfig
+from fidesops.ops.service.masking.strategy.masking_strategy_hash import (
     HASH_STRATEGY_NAME,
     HashMaskingStrategy,
 )

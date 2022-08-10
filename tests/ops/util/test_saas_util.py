@@ -1,7 +1,7 @@
 import pytest
 
 from fidesops.ops.common_exceptions import FidesopsException
-from fidesops.graph.config import (
+from fidesops.ops.graph.config import (
     Collection,
     Dataset,
     FieldAddress,

@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, List, Set, Tuple, cast
 import pydash.collections
 
 from fidesops.ops.common_exceptions import TraversalError
-from fidesops.graph.config import (
+from fidesops.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     Collection,
     CollectionAddress,
@@ -15,7 +15,7 @@ from fidesops.graph.config import (
     FieldAddress,
     FieldPath,
 )
-from fidesops.graph.graph import DatasetGraph, Edge, Node
+from fidesops.ops.graph.graph import DatasetGraph, Edge, Node
 from fidesops.ops.util.collection_util import Row, append
 from fidesops.ops.util.logger import NotPii
 from fidesops.ops.util.matching_queue import MatchingQueue

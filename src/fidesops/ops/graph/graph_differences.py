@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Dict, List, Optional, Set
 
-from fidesops.graph.config import (
+from fidesops.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     CollectionAddress,
@@ -9,7 +9,7 @@ from fidesops.ops.schemas.base_class import BaseSchema
 from fidesops.ops.util.collection_util import Row
 
 if TYPE_CHECKING:
-    from fidesops.task.graph_task import GraphTask
+    from fidesops.ops.task.graph_task import GraphTask
 
 GraphRepr = Dict[str, Dict[str, List[str]]]
 

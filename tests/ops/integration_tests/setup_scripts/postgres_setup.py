@@ -7,12 +7,12 @@ from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from fidesops.ops.core.config import config
-from fidesops.models.connectionconfig import (
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.service.connectors.sql_connector import PostgreSQLConnector
+from fidesops.ops.service.connectors.sql_connector import PostgreSQLConnector
 
 integration_config = load_toml(["fidesops-integration.toml"])
 

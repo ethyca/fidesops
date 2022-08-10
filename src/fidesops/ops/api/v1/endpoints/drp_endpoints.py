@@ -21,8 +21,8 @@ from fidesops.ops.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,
 )
 from fidesops.ops.core.config import config
-from fidesops.models.policy import DrpAction, Policy
-from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesops.ops.models.policy import DrpAction, Policy
+from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.ops.schemas.drp_privacy_request import (
     DRP_VERSION,
     DrpDataRightsResponse,
@@ -32,11 +32,11 @@ from fidesops.ops.schemas.drp_privacy_request import (
 )
 from fidesops.ops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
-from fidesops.service.privacy_request.request_runner_service import (
+from fidesops.ops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
+from fidesops.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
-from fidesops.service.privacy_request.request_service import (
+from fidesops.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )

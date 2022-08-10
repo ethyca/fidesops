@@ -16,14 +16,14 @@ from fidesops.ops.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
-from fidesops.graph.analytics_events import (
+from fidesops.ops.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
 )
-from fidesops.graph.graph import DatasetGraph
-from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import (
+from fidesops.ops.graph.graph import DatasetGraph
+from fidesops.ops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.policy import (
     ActionType,
     PausedStep,
     Policy,
@@ -31,16 +31,16 @@ from fidesops.models.policy import (
     PolicyPreWebhook,
     WebhookTypes,
 )
-from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fidesops.service.storage.storage_uploader_service import upload
-from fidesops.task.filter_results import filter_data_categories
-from fidesops.task.graph_task import (
+from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesops.ops.service.storage.storage_uploader_service import upload
+from fidesops.ops.task.filter_results import filter_data_categories
+from fidesops.ops.task.graph_task import (
     get_cached_data_for_erasures,
     run_access_request,
     run_erasure,
 )
-from fidesops.tasks import celery_app
-from fidesops.tasks.scheduled.scheduler import scheduler
+from fidesops.ops.tasks import celery_app
+from fidesops.ops.tasks.scheduled.scheduler import scheduler
 from fidesops.ops.util.cache import (
     FidesopsRedis,
     get_async_task_tracking_cache_key,

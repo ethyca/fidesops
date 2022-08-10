@@ -5,8 +5,10 @@ import pytest
 from requests import Response
 
 from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.ops.schemas.saas.strategy_configuration import CursorPaginationConfiguration
-from fidesops.service.pagination.pagination_strategy_cursor import (
+from fidesops.ops.schemas.saas.strategy_configuration import (
+    CursorPaginationConfiguration,
+)
+from fidesops.ops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
 )
 

@@ -26,16 +26,18 @@ from fidesops.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.ops.common_exceptions import FidesopsException
-from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.schemas.saas.saas_config import (
     SaaSConfig,
     SaaSConfigValidationDetails,
     ValidateSaaSConfigResponse,
 )
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.service.authentication.authentication_strategy_factory import get_strategy
-from fidesops.service.authentication.authentication_strategy_oauth2 import (
+from fidesops.ops.service.authentication.authentication_strategy_factory import (
+    get_strategy,
+)
+from fidesops.ops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
 from fidesops.ops.util.api_router import APIRouter

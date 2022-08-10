@@ -15,7 +15,7 @@ from botocore.exceptions import ClientError, ParamValidationError
 from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 
 from fidesops.ops.core.config import config
-from fidesops.models.storage import ResponseFormat
+from fidesops.ops.models.storage import ResponseFormat
 from fidesops.ops.schemas.storage.storage import StorageSecrets
 from fidesops.ops.util.cache import get_cache, get_encryption_cache_key
 from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import (

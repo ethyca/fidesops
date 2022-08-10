@@ -14,9 +14,9 @@ from fidesops.ops.common_exceptions import (
     StorageConfigNotFoundException,
 )
 from fidesops.ops.core.config import config
-from fidesops.models.policy import Policy
-from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.models.storage import StorageConfig
+from fidesops.ops.models.policy import Policy
+from fidesops.ops.models.privacy_request import PrivacyRequest
+from fidesops.ops.models.storage import StorageConfig
 from fidesops.ops.schemas.privacy_request import PrivacyRequestIdentity
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.schemas.storage.storage import StorageDetails, StorageSecrets
@@ -27,12 +27,12 @@ from fidesops.ops.schemas.third_party.onetrust import (
     OneTrustSubtask,
     OneTrustSubtaskStatus,
 )
-from fidesops.service.outbound_urn_registry import (
+from fidesops.ops.service.outbound_urn_registry import (
     ONETRUST_GET_ALL_REQUESTS,
     ONETRUST_GET_SUBTASKS_BY_REF_ID,
     ONETRUST_PUT_SUBTASK_STATUS,
 )
-from fidesops.service.privacy_request.request_runner_service import (
+from fidesops.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
 from fidesops.ops.util.storage_authenticator import get_onetrust_access_token

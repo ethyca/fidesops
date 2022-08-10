@@ -20,8 +20,8 @@ from fidesops.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.ops.core.config import config
-from fidesops.models.policy import DrpAction
-from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesops.ops.models.policy import DrpAction
+from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.ops.schemas.privacy_request import PrivacyRequestDRPStatus
 from fidesops.ops.util.cache import (
     get_drp_request_body_cache_key,
@@ -35,7 +35,7 @@ class TestCreateDrpPrivacyRequest:
         return V1_URL_PREFIX + DRP_EXERCISE
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_drp_privacy_request(
         self,
@@ -106,7 +106,7 @@ class TestCreateDrpPrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_drp_privacy_request_unsupported_identity_props(
         self,

@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Union
 
-from fidesops.models.policy import ActionType, DrpAction
+from fidesops.ops.models.policy import ActionType, DrpAction
 from fidesops.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.ops.schemas.base_class import BaseSchema
 from fidesops.ops.schemas.masking.masking_configuration import FormatPreservationConfig

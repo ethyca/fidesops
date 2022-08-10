@@ -6,13 +6,13 @@ import requests
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from fidesops.ops.common_exceptions import ClientUnsuccessfulException
-from fidesops.graph.traversal import TraversalNode
-from fidesops.models.connectionconfig import ConnectionTestStatus
-from fidesops.models.policy import Policy
-from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.ops.graph.traversal import TraversalNode
+from fidesops.ops.models.connectionconfig import ConnectionTestStatus
+from fidesops.ops.models.policy import Policy
+from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.schemas.connection_configuration import HttpsSchema
-from fidesops.service.connectors.base_connector import BaseConnector
-from fidesops.service.connectors.query_config import QueryConfig
+from fidesops.ops.service.connectors.base_connector import BaseConnector
+from fidesops.ops.service.connectors.query_config import QueryConfig
 from fidesops.ops.util.collection_util import Row
 
 logger = logging.getLogger(__name__)

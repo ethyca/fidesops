@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import WebhookOrderException
-from fidesops.models.policy import PolicyPostWebhook
+from fidesops.ops.models.policy import PolicyPostWebhook
 
 
 def test_reorder_webhooks(db: Session, policy, https_connection_config):

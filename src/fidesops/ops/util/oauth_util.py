@@ -24,7 +24,7 @@ from fidesops.ops.api.deps import get_db
 from fidesops.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.ops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fidesops.ops.core.config import config
-from fidesops.models.policy import PolicyPreWebhook
+from fidesops.ops.models.policy import PolicyPreWebhook
 from fidesops.ops.schemas.external_https import WebhookJWE
 
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM

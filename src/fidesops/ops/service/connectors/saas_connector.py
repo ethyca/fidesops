@@ -6,26 +6,28 @@ import pydash
 from requests import Response
 
 from fidesops.ops.common_exceptions import FidesopsException, PostProcessingException
-from fidesops.graph.traversal import Row, TraversalNode
-from fidesops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
-from fidesops.models.policy import Policy
-from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.ops.graph.traversal import Row, TraversalNode
+from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
+from fidesops.ops.models.policy import Policy
+from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
 from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
-from fidesops.service.connectors.base_connector import BaseConnector
-from fidesops.service.connectors.saas.authenticated_client import AuthenticatedClient
-from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
-from fidesops.service.pagination.pagination_strategy import PaginationStrategy
-from fidesops.service.pagination.pagination_strategy_factory import (
+from fidesops.ops.service.connectors.base_connector import BaseConnector
+from fidesops.ops.service.connectors.saas.authenticated_client import (
+    AuthenticatedClient,
+)
+from fidesops.ops.service.connectors.saas_query_config import SaaSQueryConfig
+from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
+from fidesops.ops.service.pagination.pagination_strategy_factory import (
     get_strategy as get_pagination_strategy,
 )
-from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
+from fidesops.ops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
-from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
+from fidesops.ops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
     get_strategy as get_postprocessor_strategy,
 )
-from fidesops.service.saas_request.saas_request_override_factory import (
+from fidesops.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
 )
