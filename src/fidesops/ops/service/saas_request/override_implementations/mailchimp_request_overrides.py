@@ -8,7 +8,7 @@ from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fidesops.core.config import config
+from fidesops.ops.core.config import config
 from fidesops.graph.traversal import TraversalNode
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
@@ -16,7 +16,7 @@ from fidesops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fidesops.util.collection_util import Row
+from fidesops.ops.util.collection_util import Row
 
 
 @register("mailchimp_messages_access", [SaaSRequestType.READ])

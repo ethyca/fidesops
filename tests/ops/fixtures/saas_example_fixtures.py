@@ -11,11 +11,11 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.schemas.saas.strategy_configuration import (
+from fidesops.ops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
 )
-from fidesops.util.logger import NotPii
-from fidesops.util.saas_util import load_config
+from fidesops.ops.util.logger import NotPii
+from fidesops.ops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
 
 logger = logging.getLogger(__name__)

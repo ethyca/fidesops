@@ -16,9 +16,9 @@ from fidesops.graph.config import (
     FieldPath,
 )
 from fidesops.graph.graph import DatasetGraph, Edge, Node
-from fidesops.util.collection_util import Row, append
-from fidesops.util.logger import NotPii
-from fidesops.util.matching_queue import MatchingQueue
+from fidesops.ops.util.collection_util import Row, append
+from fidesops.ops.util.logger import NotPii
+from fidesops.ops.util.matching_queue import MatchingQueue
 
 logger = logging.getLogger(__name__)
 

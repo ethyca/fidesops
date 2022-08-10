@@ -15,7 +15,7 @@ from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fidesops.core.config import config
+from fidesops.ops.core.config import config
 from fidesops.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
@@ -41,13 +41,13 @@ from fidesops.task.graph_task import (
 )
 from fidesops.tasks import celery_app
 from fidesops.tasks.scheduled.scheduler import scheduler
-from fidesops.util.cache import (
+from fidesops.ops.util.cache import (
     FidesopsRedis,
     get_async_task_tracking_cache_key,
     get_cache,
 )
-from fidesops.util.collection_util import Row
-from fidesops.util.logger import _log_exception, _log_warning
+from fidesops.ops.util.collection_util import Row
+from fidesops.ops.util.logger import _log_exception, _log_warning
 
 logger = get_task_logger(__name__)
 

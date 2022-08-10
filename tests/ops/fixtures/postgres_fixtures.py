@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fidesops.core.config import config
+from fidesops.ops.core.config import config
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,

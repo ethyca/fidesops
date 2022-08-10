@@ -19,7 +19,7 @@ from fidesops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarg
 from fidesops.service.masking.strategy.masking_strategy_nullify import (
     NULL_REWRITE_STRATEGY_NAME,
 )
-from fidesops.util.data_category import DataCategory, generate_fides_data_categories
+from fidesops.ops.util.data_category import DataCategory, generate_fides_data_categories
 
 
 class TestGetPolicies:

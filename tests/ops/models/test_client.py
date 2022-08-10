@@ -3,7 +3,7 @@ from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 
 from fidesops.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fidesops.core.config import config
+from fidesops.ops.core.config import config
 
 
 class TestClientModel:

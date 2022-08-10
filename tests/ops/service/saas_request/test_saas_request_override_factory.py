@@ -15,7 +15,7 @@ from fidesops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fidesops.util.collection_util import Row
+from fidesops.ops.util.collection_util import Row
 
 
 def uuid():

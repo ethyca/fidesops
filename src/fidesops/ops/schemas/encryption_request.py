@@ -1,7 +1,7 @@
 from pydantic import BaseModel, validator
 
-from fidesops.core.config import config
-from fidesops.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
+from fidesops.ops.core.config import config
+from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
 
 
 class AesEncryptionRequest(BaseModel):

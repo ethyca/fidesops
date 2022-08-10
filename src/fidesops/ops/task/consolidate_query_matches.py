@@ -1,7 +1,7 @@
 from typing import Any, List, Optional
 
 from fidesops.graph.config import FieldPath
-from fidesops.util.collection_util import Row
+from fidesops.ops.util.collection_util import Row
 
 
 def consolidate_query_matches(

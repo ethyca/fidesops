@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 from fideslog.sdk.python.event import AnalyticsEvent
 
 from fidesops.analytics import in_docker_container, send_analytics_event
-from fidesops.core.config import config
+from fidesops.ops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph_differences import (
     GraphDiffSummary,
@@ -15,7 +15,7 @@ from fidesops.graph.graph_differences import (
 from fidesops.models.policy import ActionType
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.task.task_resources import TaskResources
-from fidesops.util.collection_util import Row
+from fidesops.ops.util.collection_util import Row
 
 if TYPE_CHECKING:
     from fidesops.task.graph_task import GraphTask

@@ -11,7 +11,7 @@ from dask.threaded import get
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
-from fidesops.core.config import config
+from fidesops.ops.core.config import config
 from fidesops.graph.analytics_events import (
     fideslog_graph_rerun,
     prepare_rerun_graph_analytics_event,
@@ -35,10 +35,10 @@ from fidesops.task.consolidate_query_matches import consolidate_query_matches
 from fidesops.task.filter_element_match import filter_element_match
 from fidesops.task.refine_target_path import FieldPathNodeInput
 from fidesops.task.task_resources import TaskResources
-from fidesops.util.cache import get_cache
-from fidesops.util.collection_util import NodeInput, Row, append, partition
-from fidesops.util.logger import NotPii
-from fidesops.util.saas_util import FIDESOPS_GROUPED_INPUTS
+from fidesops.ops.util.cache import get_cache
+from fidesops.ops.util.collection_util import NodeInput, Row, append, partition
+from fidesops.ops.util.logger import NotPii
+from fidesops.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
 
 logger = logging.getLogger(__name__)
 

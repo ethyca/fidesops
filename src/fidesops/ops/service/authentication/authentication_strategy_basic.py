@@ -1,14 +1,14 @@
 from requests import PreparedRequest
 
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.strategy_configuration import (
+from fidesops.ops.schemas.saas.strategy_configuration import (
     BasicAuthenticationConfiguration,
     StrategyConfiguration,
 )
 from fidesops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fidesops.util.saas_util import assign_placeholders
+from fidesops.ops.util.saas_util import assign_placeholders
 
 
 class BasicAuthenticationStrategy(AuthenticationStrategy):

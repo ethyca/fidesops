@@ -18,8 +18,8 @@ from fidesops.service.masking.strategy.masking_strategy_hash import HASH_STRATEG
 from fidesops.service.masking.strategy.masking_strategy_nullify import (
     NULL_REWRITE_STRATEGY_NAME,
 )
-from fidesops.util.data_category import DataCategory
-from fidesops.util.text import to_snake_case
+from fidesops.ops.util.data_category import DataCategory
+from fidesops.ops.util.text import to_snake_case
 
 
 def test_policy_sets_slug(

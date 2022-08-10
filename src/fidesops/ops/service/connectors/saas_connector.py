@@ -10,8 +10,8 @@ from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.schemas.saas.saas_config import ClientConfig, SaaSRequest
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
+from fidesops.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
+from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
@@ -29,7 +29,7 @@ from fidesops.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
 )
-from fidesops.util.saas_util import assign_placeholders, map_param_values
+from fidesops.ops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
 

@@ -7,10 +7,10 @@ from sqlalchemy import create_engine
 
 from fidesops.ops.api.v1.urn_registry import HEALTH
 from fidesops.ops.common_exceptions import RedisConnectionError
-from fidesops.core.config import config
-from fidesops.db.database import get_alembic_config
-from fidesops.util.api_router import APIRouter
-from fidesops.util.cache import get_cache
+from fidesops.ops.core.config import config
+from fidesops.ops.db.database import get_alembic_config
+from fidesops.ops.util.api_router import APIRouter
+from fidesops.ops.util.cache import get_cache
 
 router = APIRouter(tags=["Public"])
 

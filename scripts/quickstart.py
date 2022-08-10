@@ -13,7 +13,7 @@ from typing import Optional
 import requests
 import yaml
 
-from fidesops.core.config import config
+from fidesops.ops.core.config import config
 from fidesops.models.connectionconfig import ConnectionType
 from fidesops.models.policy import ActionType
 

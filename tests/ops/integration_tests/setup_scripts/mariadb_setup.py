@@ -5,7 +5,7 @@ import sqlalchemy
 from fideslib.core.config import load_toml
 from fideslib.db.session import get_db_engine, get_db_session
 
-from fidesops.core.config import config
+from fidesops.ops.core.config import config
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,

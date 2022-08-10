@@ -9,12 +9,12 @@ from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fidesops.core.config import config
+from fidesops.ops.core.config import config
 
 if TYPE_CHECKING:
     from fidesops.models.connectionconfig import ConnectionConfig
-    from fidesops.schemas.saas.saas_config import ClientConfig
-    from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
+    from fidesops.ops.schemas.saas.saas_config import ClientConfig
+    from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
 
 logger = logging.getLogger(__name__)
 

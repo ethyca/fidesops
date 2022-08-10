@@ -33,7 +33,7 @@ from fidesops.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.ops.common_exceptions import OAuth2TokenException
-from fidesops.core.config import config
+from fidesops.ops.core.config import config
 from fidesops.models.authentication_request import AuthenticationRequest
 
 

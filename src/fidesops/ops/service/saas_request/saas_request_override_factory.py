@@ -7,7 +7,7 @@ from fidesops.ops.common_exceptions import (
     InvalidSaaSRequestOverrideException,
     NoSuchSaaSRequestOverrideException,
 )
-from fidesops.util.collection_util import Row
+from fidesops.ops.util.collection_util import Row
 
 logger = logging.getLogger(__name__)
 

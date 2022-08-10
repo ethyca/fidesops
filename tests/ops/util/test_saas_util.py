@@ -9,7 +9,11 @@ from fidesops.graph.config import (
     ObjectField,
     ScalarField,
 )
-from fidesops.util.saas_util import assign_placeholders, merge_datasets, unflatten_dict
+from fidesops.ops.util.saas_util import (
+    assign_placeholders,
+    merge_datasets,
+    unflatten_dict,
+)
 
 
 class TestMergeDatasets:

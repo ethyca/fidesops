@@ -5,7 +5,7 @@ from fidesops.task.refine_target_path import (
     join_detailed_path,
     refine_target_path,
 )
-from fidesops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
+from fidesops.ops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
 
 
 class TestRefineTargetPathToValue:

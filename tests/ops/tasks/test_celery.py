@@ -1,4 +1,4 @@
-from fidesops.core.config import config
+from fidesops.ops.core.config import config
 from fidesops.tasks import _create_celery
 
 

@@ -7,8 +7,8 @@ from fidesops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.schemas.saas.saas_config import SaaSConfig
-from fidesops.util.text import to_snake_case
+from fidesops.ops.schemas.saas.saas_config import SaaSConfig
+from fidesops.ops.util.text import to_snake_case
 
 
 class TestConnectionConfigModel:

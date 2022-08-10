@@ -21,7 +21,7 @@ from fidesops.ops.api.v1.scope_registry import (
     USER_PERMISSION_UPDATE,
 )
 from fidesops.ops.api.v1.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
-from fidesops.core.config import config
+from fidesops.ops.core.config import config
 
 
 class TestCreateUserPermissions:

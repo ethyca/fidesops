@@ -13,8 +13,8 @@ from fidesops.ops.api.v1.urn_registry import (
     ENCRYPTION_KEY,
     V1_URL_PREFIX,
 )
-from fidesops.core.config import config
-from fidesops.util.encryption.aes_gcm_encryption_scheme import (
+from fidesops.ops.core.config import config
+from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     encrypt_verify_secret_length,
 )

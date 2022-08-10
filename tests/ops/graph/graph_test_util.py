@@ -16,7 +16,7 @@ from fidesops.service.connectors import BaseConnector, MongoDBConnector
 from fidesops.service.connectors.sql_connector import SQLConnector
 from fidesops.task.graph_task import GraphTask
 from fidesops.task.task_resources import TaskResources
-from fidesops.util.collection_util import Row
+from fidesops.ops.util.collection_util import Row
 
 from ..fixtures.application_fixtures import faker
 

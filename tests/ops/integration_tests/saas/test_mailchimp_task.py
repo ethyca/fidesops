@@ -4,7 +4,7 @@ import pytest
 
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
-from fidesops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.task import graph_task
 from fidesops.task.graph_task import get_cached_data_for_erasures
 from tests.ops.graph.graph_test_util import assert_rows_match, records_matching_fields

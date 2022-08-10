@@ -30,14 +30,14 @@ from fidesops.ops.common_exceptions import (
     FunctionalityNotConfigured,
     RedisConnectionError,
 )
-from fidesops.core.config import config
-from fidesops.db.database import init_db
-from fidesops.schemas.analytics import Event, ExtraData
+from fidesops.ops.core.config import config
+from fidesops.ops.db.database import init_db
+from fidesops.ops.schemas.analytics import Event, ExtraData
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
-from fidesops.util.cache import get_cache
-from fidesops.util.logger import get_fides_log_record_factory
-from fidesops.util.oauth_util import get_db, verify_oauth_client
+from fidesops.ops.util.cache import get_cache
+from fidesops.ops.util.logger import get_fides_log_record_factory
+from fidesops.ops.util.oauth_util import get_db, verify_oauth_client
 
 logging.basicConfig(level=config.security.log_level)
 logging.setLogRecordFactory(get_fides_log_record_factory())

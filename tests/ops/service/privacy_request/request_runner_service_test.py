@@ -15,7 +15,7 @@ from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fidesops.core.config import config
+from fidesops.ops.core.config import config
 from fidesops.models.policy import PausedStep, PolicyPostWebhook
 from fidesops.models.privacy_request import (
     ActionType,
@@ -24,14 +24,14 @@ from fidesops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fidesops.schemas.external_https import SecondPartyResponseFormat
-from fidesops.schemas.masking.masking_configuration import (
+from fidesops.ops.schemas.external_https import SecondPartyResponseFormat
+from fidesops.ops.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
     MaskingConfiguration,
 )
-from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
-from fidesops.schemas.policy import Rule
-from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
+from fidesops.ops.schemas.policy import Rule
+from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors.saas_connector import SaaSConnector
 from fidesops.service.connectors.sql_connector import (
     RedshiftConnector,
@@ -44,7 +44,7 @@ from fidesops.service.masking.strategy.masking_strategy_hmac import HmacMaskingS
 from fidesops.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
 )
-from fidesops.util.data_category import DataCategory
+from fidesops.ops.util.data_category import DataCategory
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return

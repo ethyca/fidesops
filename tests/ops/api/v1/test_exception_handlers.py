@@ -10,7 +10,7 @@ from fidesops.ops.api.v1.urn_registry import (
     PRIVACY_REQUESTS,
     V1_URL_PREFIX,
 )
-from fidesops.core import config
+from fidesops.ops.core import config
 
 
 @pytest.fixture

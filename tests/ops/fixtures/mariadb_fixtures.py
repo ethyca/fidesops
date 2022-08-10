@@ -7,7 +7,7 @@ import sqlalchemy
 from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 
-from fidesops.core.config import config
+from fidesops.ops.core.config import config
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,

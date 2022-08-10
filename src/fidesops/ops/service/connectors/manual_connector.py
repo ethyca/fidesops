@@ -7,7 +7,7 @@ from fidesops.models.policy import PausedStep, Policy
 from fidesops.models.privacy_request import ManualAction, PrivacyRequest
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.service.connectors.query_config import ManualQueryConfig
-from fidesops.util.collection_util import Row
+from fidesops.ops.util.collection_util import Row
 
 logger = logging.getLogger(__name__)
 
