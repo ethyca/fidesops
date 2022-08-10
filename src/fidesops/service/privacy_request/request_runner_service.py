@@ -5,6 +5,7 @@ from typing import ContextManager, Dict, List, Optional, Set
 from celery import Task
 from celery.utils.log import get_task_logger
 from fideslib.db.session import get_db_session
+from fideslib.models.audit_log import AuditLog, AuditLogAction
 from pydantic import ValidationError
 from redis.exceptions import DataError
 from sqlalchemy.orm import Session
@@ -12,6 +13,10 @@ from sqlalchemy.orm import Session
 from fidesops import common_exceptions
 from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.core.config import config
+from fidesops.graph.analytics_events import (
+    failed_graph_analytics_event,
+    fideslog_graph_failure,
+)
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
@@ -263,6 +268,7 @@ def run_privacy_request(
         except BaseException as exc:  # pylint: disable=broad-except
             privacy_request.error_processing(db=session)
             # If dev mode, log traceback
+            fideslog_graph_failure(failed_graph_analytics_event(privacy_request, exc))
             _log_exception(exc, config.dev_mode)
             return
 
@@ -276,6 +282,15 @@ def run_privacy_request(
             return
 
         privacy_request.finished_processing_at = datetime.utcnow()
+        AuditLog.create(
+            db=session,
+            data={
+                "user_id": "system",
+                "privacy_request_id": privacy_request.id,
+                "action": AuditLogAction.finished,
+                "message": "",
+            },
+        )
         privacy_request.status = PrivacyRequestStatus.complete
         privacy_request.save(db=session)
         logging.info(f"Privacy request {privacy_request.id} run completed.")
