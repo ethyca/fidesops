@@ -7,13 +7,13 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fidesops.api.v1.scope_registry import (
+from fidesops.ops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
     STORAGE_READ,
 )
-from fidesops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
-from fidesops.common_exceptions import ConnectionException
+from fidesops.ops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
+from fidesops.ops.common_exceptions import ConnectionException
 from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.service.connectors import (
     MongoDBConnector,

@@ -18,15 +18,18 @@ from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from starlette.status import HTTP_404_NOT_FOUND
 
-from fidesops.analytics import (
+from fidesops.ops.analytics import (
     accessed_through_local_host,
     in_docker_container,
     send_analytics_event,
 )
-from fidesops.api.v1.api import api_router
-from fidesops.api.v1.exception_handlers import ExceptionHandlers
-from fidesops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesops.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
+from fidesops.ops.api.v1.api import api_router
+from fidesops.ops.api.v1.exception_handlers import ExceptionHandlers
+from fidesops.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fidesops.ops.common_exceptions import (
+    FunctionalityNotConfigured,
+    RedisConnectionError,
+)
 from fidesops.core.config import config
 from fidesops.db.database import init_db
 from fidesops.schemas.analytics import Event, ExtraData

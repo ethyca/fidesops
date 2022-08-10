@@ -6,8 +6,8 @@ import pytest
 from fideslib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 from starlette.testclient import TestClient
 
-from fidesops.api.v1.scope_registry import ENCRYPTION_EXEC, STORAGE_CREATE_OR_UPDATE
-from fidesops.api.v1.urn_registry import (
+from fidesops.ops.api.v1.scope_registry import ENCRYPTION_EXEC, STORAGE_CREATE_OR_UPDATE
+from fidesops.ops.api.v1.urn_registry import (
     DECRYPT_AES,
     ENCRYPT_AES,
     ENCRYPTION_KEY,
@@ -39,7 +39,7 @@ class TestGetEncryptionKey:
         assert response.status_code == 403
 
     @mock.patch(
-        "fidesops.api.v1.endpoints.encryption_endpoints.cryptographic_util.generate_secure_random_string"
+        "fidesops.ops.api.v1.endpoints.encryption_endpoints.cryptographic_util.generate_secure_random_string"
     )
     def test_get_encryption_key(
         self,

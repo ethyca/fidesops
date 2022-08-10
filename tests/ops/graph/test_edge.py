@@ -1,6 +1,6 @@
 import pytest
 
-from fidesops.common_exceptions import ValidationError
+from fidesops.ops.common_exceptions import ValidationError
 from fidesops.graph.graph import *
 
 

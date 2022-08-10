@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
-from fidesops.common_exceptions import WebhookOrderException
+from fidesops.ops.common_exceptions import WebhookOrderException
 from fidesops.models.policy import PolicyPostWebhook
 
 

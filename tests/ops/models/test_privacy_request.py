@@ -7,7 +7,10 @@ import requests_mock
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
+from fidesops.ops.common_exceptions import (
+    ClientUnsuccessfulException,
+    PrivacyRequestPaused,
+)
 from fidesops.graph.config import CollectionAddress
 from fidesops.models.policy import PausedStep, Policy
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus

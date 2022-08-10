@@ -11,12 +11,12 @@ from pydash import filter_
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fidesops.api.v1.scope_registry import (
+from fidesops.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
 )
-from fidesops.api.v1.urn_registry import (
+from fidesops.ops.api.v1.urn_registry import (
     DATASET_BY_KEY,
     DATASET_VALIDATE,
     DATASETS,

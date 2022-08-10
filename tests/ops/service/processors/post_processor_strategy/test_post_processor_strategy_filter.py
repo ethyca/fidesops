@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 import pytest
 
-from fidesops.common_exceptions import FidesopsException
+from fidesops.ops.common_exceptions import FidesopsException
 from fidesops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
 )

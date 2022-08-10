@@ -1,6 +1,6 @@
 import pytest
 
-from fidesops.common_exceptions import NoSuchStrategyException, ValidationError
+from fidesops.ops.common_exceptions import NoSuchStrategyException, ValidationError
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
     get_strategy,
 )

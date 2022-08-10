@@ -2,7 +2,7 @@ import pytest
 from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 
-from fidesops.common_exceptions import (
+from fidesops.ops.common_exceptions import (
     DataCategoryNotSupported,
     PolicyValidationError,
     RuleValidationError,

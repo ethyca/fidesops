@@ -6,7 +6,7 @@ import pytest
 from requests import PreparedRequest, Request
 from sqlalchemy.orm import Session
 
-from fidesops.common_exceptions import FidesopsException, OAuth2TokenException
+from fidesops.ops.common_exceptions import FidesopsException, OAuth2TokenException
 from fidesops.service.authentication.authentication_strategy_factory import get_strategy
 from fidesops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,

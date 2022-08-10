@@ -1,6 +1,6 @@
 import pytest
 
-from fidesops.common_exceptions import NoSuchStrategyException, ValidationError
+from fidesops.ops.common_exceptions import NoSuchStrategyException, ValidationError
 from fidesops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
 )

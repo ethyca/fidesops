@@ -20,18 +20,18 @@ from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
 from starlette.testclient import TestClient
 
-from fidesops.api.v1.endpoints.privacy_request_endpoints import (
+from fidesops.ops.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
     validate_manual_input,
 )
-from fidesops.api.v1.scope_registry import (
+from fidesops.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
     STORAGE_CREATE_OR_UPDATE,
 )
-from fidesops.api.v1.urn_registry import (
+from fidesops.ops.api.v1.urn_registry import (
     DATASETS,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,

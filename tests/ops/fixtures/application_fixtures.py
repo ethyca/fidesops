@@ -15,7 +15,7 @@ from fideslib.models.fides_user_permissions import FidesUserPermissions
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
-from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
+from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,

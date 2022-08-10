@@ -3,7 +3,7 @@ from collections.abc import Generator
 import pytest
 import requests_mock
 
-from fidesops.common_exceptions import ClientUnsuccessfulException
+from fidesops.ops.common_exceptions import ClientUnsuccessfulException
 from fidesops.service.connectors import HTTPSConnector
 
 

@@ -11,7 +11,7 @@ import pandas as pd
 import pytest
 from sqlalchemy.orm import Session
 
-from fidesops.common_exceptions import StorageUploadError
+from fidesops.ops.common_exceptions import StorageUploadError
 from fidesops.core.config import config
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.models.storage import StorageConfig

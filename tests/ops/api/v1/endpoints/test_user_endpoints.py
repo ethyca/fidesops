@@ -27,7 +27,7 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fidesops.api.v1.scope_registry import (
+from fidesops.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     STORAGE_READ,
     USER_CREATE,
@@ -36,7 +36,7 @@ from fidesops.api.v1.scope_registry import (
     USER_READ,
     USER_UPDATE,
 )
-from fidesops.api.v1.urn_registry import (
+from fidesops.ops.api.v1.urn_registry import (
     LOGIN,
     LOGOUT,
     USER_DETAIL,

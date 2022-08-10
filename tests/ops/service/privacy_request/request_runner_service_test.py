@@ -11,7 +11,10 @@ from pydantic import ValidationError
 from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session
 
-from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
+from fidesops.ops.common_exceptions import (
+    ClientUnsuccessfulException,
+    PrivacyRequestPaused,
+)
 from fidesops.core.config import config
 from fidesops.models.policy import PausedStep, PolicyPostWebhook
 from fidesops.models.privacy_request import (

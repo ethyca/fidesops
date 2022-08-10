@@ -18,7 +18,7 @@ from fideslib.oauth.jwt import generate_jwe
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
+from fidesops.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.core.config import config
 from fidesops.db.base import Base
 from fidesops.db.database import init_db

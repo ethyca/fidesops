@@ -3,13 +3,13 @@ from typing import Dict
 
 import pytest
 
-from fidesops.api.v1.scope_registry import (
+from fidesops.ops.api.v1.scope_registry import (
     POLICY_READ,
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,
     WEBHOOK_READ,
 )
-from fidesops.api.v1.urn_registry import (
+from fidesops.ops.api.v1.urn_registry import (
     POLICY_POST_WEBHOOK_DETAIL,
     POLICY_PRE_WEBHOOK_DETAIL,
     POLICY_WEBHOOKS_POST,

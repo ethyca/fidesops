@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from fidesops.common_exceptions import (
+from fidesops.ops.common_exceptions import (
     InvalidSaaSRequestOverrideException,
     NoSuchSaaSRequestOverrideException,
 )
