@@ -20,7 +20,9 @@ from fidesops.ops.schemas.storage.storage import (
     StorageSecretsS3,
     StorageType,
 )
-from fidesops.ops.schemas.storage.storage_secrets_docs_only import possible_storage_secrets
+from fidesops.ops.schemas.storage.storage_secrets_docs_only import (
+    possible_storage_secrets,
+)
 
 logger = logging.getLogger(__name__)
 
