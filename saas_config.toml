@@ -78,3 +78,9 @@ domain = ""
 username = ""
 api_key = ""
 identity_email = ""
+
+[datadog]
+domain = ""
+api_key = ""
+app_key = ""
+identity_email = ""
