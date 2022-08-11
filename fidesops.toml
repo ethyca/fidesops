@@ -38,7 +38,6 @@ worker_enabled = false
 
 [root_user]
 analytics_opt_out = false
-analytics_id = "5085123be3740a54bfab258287e8482f"
 
 [admin_ui]
 enabled = true
