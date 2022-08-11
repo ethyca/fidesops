@@ -30,7 +30,7 @@ The types of changes are:
 * Add a Connection - Select a connector to configure (front end) [#760] (https://github.com/ethyca/fidesops/pull/987)
 * Add a Connection - Front End layout structure [#866] (https://github.com/ethyca/fidesops/pull/987)
 * Enable python function overrides for SaaS connector request execution [#986](https://github.com/ethyca/fidesops/pull/986)
-
+* Access Support for Datadog Logs [#1060](https://github.com/ethyca/fidesops/pull/1060)
 ### Changed
 
 * Users should be able to click on the full field of a dropdown-type filter to open up the dropdown [#747](https://github.com/ethyca/fidesops/pull/903)
