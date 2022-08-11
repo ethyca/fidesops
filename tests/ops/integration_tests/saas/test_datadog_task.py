@@ -21,7 +21,7 @@ def test_saas_access_request_task(
     dataset_config_datadog,
     datadog_identity_email,
 ) -> None:
-    """Full access request based on the Hubspot SaaS config"""
+    """Full access request based on the Datadog SaaS config"""
 
     privacy_request = PrivacyRequest(
         id=f"test_datadog_access_request_task_{random.randint(0, 1000)}"

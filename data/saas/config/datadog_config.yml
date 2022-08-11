@@ -9,7 +9,7 @@ saas_config:
       - name: domain
       - name: api_key
       - name: app_key
-      - name: page_limit
+      - name: page_size
 
     client_config:
       protocol: https
@@ -43,7 +43,7 @@ saas_config:
               - name: filter[to]
                 value: now
               - name: page[limit]
-                value: <page_limit>
+                value: <page_size>
             param_values:
               - name: app_key
                 connector_param: app_key

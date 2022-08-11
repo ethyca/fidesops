@@ -2,7 +2,6 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
-from fideslib.core.config import load_toml
 from fideslib.db import session
 from sqlalchemy.orm import Session
 
@@ -16,12 +15,11 @@ from fidesops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.vault_client import get_secrets
 
-saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("datadog")
 
 
-@pytest.fixture(scope="session")
-def datadog_secrets():
+@pytest.fixture(scope="function")
+def datadog_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "datadog.domain") or secrets["domain"],
         "api_key": pydash.get(saas_config, "datadog.api_key") or secrets["api_key"],
@@ -30,7 +28,7 @@ def datadog_secrets():
 
 
 @pytest.fixture(scope="function")
-def datadog_identity_email():
+def datadog_identity_email(saas_config):
     return (
         pydash.get(saas_config, "datadog.identity_email") or secrets["identity_email"]
     )
