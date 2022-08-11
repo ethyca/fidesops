@@ -16,7 +16,10 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.3...main)
+
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.0...main)
+
+## [1.7.0](https://github.com/ethyca/fidesops/compare/1.6.3...1.7.0)
 
 ### Added
 
@@ -39,6 +42,7 @@ The types of changes are:
 ### Changed
 
 * Users should be able to click on the full field of a dropdown-type filter to open up the dropdown [#747](https://github.com/ethyca/fidesops/pull/903)
+* Reorganize the core code logic to be easier to merge with fidesctl [#1058](https://github.com/ethyca/fidesops/pull/1058)
 * Updated the python docker base image from slim-buster to slim-bullseye [#928](https://github.com/ethyca/fidesops/pull/928)
 * Removed ipython from the docker install [#928](https://github.com/ethyca/fidesops/pull/928)
 * Run static nox checks outside of Docker [#1053](https://github.com/ethyca/fidesops/pull/1053)
@@ -46,9 +50,6 @@ The types of changes are:
 * Move tests into an `ops` subdir [#935](https://github.com/ethyca/fidesops/pull/935)
 * Move client code into an `ops` subdir [#964](https://github.com/ethyca/fidesops/pull/964)
 * Updated the docs docker base image to be consistent with the fidesops image [#949](https://github.com/ethyca/fidesops/pull/949)
-
-### Breaking Changes
-
 * Update fidesops to use bcrypt for hashing [#876](https://github.com/ethyca/fidesops/pull/876)
 
 ### Developer Experience
