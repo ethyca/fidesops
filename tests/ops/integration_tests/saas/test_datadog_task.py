@@ -15,11 +15,11 @@ logger = logging.getLogger(__name__)
 @pytest.mark.integration_saas
 @pytest.mark.integration_datadog
 def test_saas_access_request_task(
-        db,
-        policy,
-        datadog_connection_config,
-        dataset_config_datadog,
-        datadog_identity_email,
+    db,
+    policy,
+    datadog_connection_config,
+    dataset_config_datadog,
+    datadog_identity_email,
 ) -> None:
     """Full access request based on the Hubspot SaaS config"""
 
@@ -51,19 +51,19 @@ def test_saas_access_request_task(
             "attributes",
             "type",
             "id",
-        ]
+        ],
     )
 
     for item in v[f"{dataset_name}:events"]:
         assert_rows_match(
-            [item['attributes']],
+            [item["attributes"]],
             min_size=1,
             keys=[
                 "status",
                 "timestamp",
                 "message",
                 "tags",
-            ]
+            ],
         )
 
     for item in v[f"{dataset_name}:events"]:

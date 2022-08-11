@@ -1,10 +1,8 @@
-import json
 from typing import Any, Dict, Generator
 
 import pydash
 import pytest
 from fideslib.core.config import load_toml
-from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
 
@@ -14,11 +12,8 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.service.connectors import SaaSConnector
-from fidesops.util.saas_util import format_body, load_config
+from fidesops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
-from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
 saas_config = load_toml(["saas_config.toml"])
@@ -53,9 +48,7 @@ def datadog_dataset() -> Dict[str, Any]:
 
 @pytest.fixture(scope="function")
 def datadog_connection_config(
-        db: session,
-        datadog_config,
-        datadog_secrets
+    db: session, datadog_config, datadog_secrets
 ) -> Generator:
     fides_key = datadog_config["fides_key"]
     connection_config = ConnectionConfig.create(
@@ -71,6 +64,7 @@ def datadog_connection_config(
     )
     yield connection_config
     connection_config.delete(db)
+
 
 @pytest.fixture
 def dataset_config_datadog(
