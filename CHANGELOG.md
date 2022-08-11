@@ -34,6 +34,7 @@ The types of changes are:
 * Access and erasure support for Auth0 [#991](https://github.com/ethyca/fidesops/pull/991)
 * Start better understanding how request execution fails [#993] https://github.com/ethyca/fidesops/pull/993
 
+* Access Support for Datadog Logs [#1060](https://github.com/ethyca/fidesops/pull/1060)
 ### Changed
 
 * Users should be able to click on the full field of a dropdown-type filter to open up the dropdown [#747](https://github.com/ethyca/fidesops/pull/903)
