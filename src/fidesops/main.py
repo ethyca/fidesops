@@ -129,7 +129,7 @@ app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 for handler in ExceptionHandlers.get_handlers():
     app.add_exception_handler(FunctionalityNotConfigured, handler)
 
-WEBAPP_DIRECTORY = Path("src/fidesops/build/static")
+WEBAPP_DIRECTORY = Path("src/fidesops/ops/build/static")
 WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
 if config.admin_ui.enabled:
@@ -141,7 +141,7 @@ if config.admin_ui.enabled:
             with open(
                 WEBAPP_DIRECTORY / "index.html", "w", encoding="utf-8"
             ) as index_file:
-                heading = "<h1>No src/fidesops/build/static/index.html found</h1>"
+                heading = "<h1>No src/fidesops/ops/build/static/index.html found</h1>"
                 help_message = "<h2>A docker-compose.yml volume may be overwriting the built in Admin UI files</h2>"
                 index_file.write(f"{heading}{help_message}")
                 logger.info(
