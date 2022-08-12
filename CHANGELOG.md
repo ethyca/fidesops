@@ -38,6 +38,7 @@ The types of changes are:
 * Start better understanding how request execution fails [#993](https://github.com/ethyca/fidesops/pull/993)
 * Add approval `AuditLog`s for user and sytem approved privacy requests [#1038](https://github.com/ethyca/fidesops/pull/1038)
 * Add finished `AuditLog` for subject requests [#1040](https://github.com/ethyca/fidesops/pull/1040)
+* Added Headers in Paginated Requests [#1069](https://github.com/ethyca/fidesops/pull/1069)
 
 ### Changed
 
