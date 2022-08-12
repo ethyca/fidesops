@@ -169,4 +169,4 @@ def test_headers_present_in_paginated_request(response_with_body_link):
     next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
         request_params, {}, response_with_body_link, "customers"
     )
-    assert next_request == request_params.headers
+    assert next_request.headers == request_params.headers
