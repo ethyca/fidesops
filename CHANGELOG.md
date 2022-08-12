@@ -19,6 +19,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.0...main)
 
+### Fixed
+
+* HTTP headers are now preserved in requests generated from SaaS connector pagination [#1069](https://github.com/ethyca/fidesops/pull/1069)
+
 ## [1.7.0](https://github.com/ethyca/fidesops/compare/1.6.3...1.7.0)
 
 ### Added
@@ -70,8 +74,10 @@ The types of changes are:
 
 ### Fixed
 
-* Correct build arg variable name [925](https://github.com/ethyca/fidesops/pull/925)
+* Correct build arg variable name [#925](https://github.com/ethyca/fidesops/pull/925)
 * Reduce number of clients connected to the application db [#944](https://github.com/ethyca/fidesops/pull/944)
+* Patch versioneer to allow editable installs [#1070](https://github.com/ethyca/fidesops/pull/1070)
+* Add setuptools to dev-requirements to fix versioneer error and revert patch [#1072](https://github.com/ethyca/fidesops/pull/1072)
 
 ## [1.6.3](https://github.com/ethyca/fidesops/compare/1.6.2...1.6.3)
 
