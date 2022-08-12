@@ -15,15 +15,26 @@ class EmailServiceType(Enum):
     MAILGUN = "mailgun"
 
 
-class EmailPurpose(Enum):  # support using different email services for different purposes
-    """Enum for email usage type"""
+class EmailActionType(Enum):
+    """Enum for email action type"""
     # verify email upon acct creation
     SUBJECT_IDENTITY_VERIFICATION = "subject_identity_verification"
-    # e.g. your request is processing
-    AUTOMATED_SUBJECT_COMMUNICATION = "automated_subject_communication"
-    # for 3rd parties that require manual email upon subject request for access/deletion
-    EMAIL_CONNECTOR = "email_connector"
 
+
+class EmailTemplateBodyParams(Enum):
+    """Enum for all possible email template body params"""
+    ACCESS_CODE = "access_code"
+
+
+class SubjectIdentityVerificationBodyParams(BaseModel):
+    """Body params required for subject identity verification email template"""
+    access_code: str
+
+
+class EmailForActionType(BaseModel):
+    """Email details that depend on action type"""
+    subject: str
+    body: str
 
 # fixme: Add enums for email purpose (subject communication) mapped to email action (request processing, request completed, etc)
 # fixme: Add service router logic to get email service based on email action
@@ -52,12 +63,12 @@ class EmailServiceDetailsMailgun(BaseModel):
 class EmailServiceSecrets(Enum):
     """Enum for email service secrets"""
     # mailgun-specific
-    API_KEY = "api_key"
+    MAILGUN_API_KEY = "mailgun_api_key"
 
 
 class EmailServiceSecretsMailgun(BaseModel):
     """The secrets required to connect to mailgun."""
-    api_key: str
+    mailgun_api_key: str
 
     class Config:
         """Restrict adding other fields through this schema."""
@@ -74,11 +85,9 @@ class EmailConfigRequest(BaseModel):
     details: Union[
         EmailServiceDetailsMailgun,
     ]
-    # default to using this email service for all email purposes
-    purposes: Optional[List[EmailPurpose]] = [usage for usage in EmailPurpose.value]
 
     class Config:
-        use_enum_values = True
+        use_enum_values = False
         orm_mode = True
 
     @validator("details", pre=True, always=True)
@@ -96,11 +105,11 @@ class EmailConfigRequest(BaseModel):
 
         try:
             schema = {
-                EmailServiceType.MAILGUN.value: EmailServiceDetailsMailgun,
+                EmailServiceType.MAILGUN: EmailServiceDetailsMailgun,
             }[service_type]
         except KeyError:
             raise ValueError(
-                f"`storage_type` {service_type} has no supported `details` validation."
+                f"`service type` {service_type} has no supported `details` validation."
             )
 
         try:
@@ -121,7 +130,6 @@ class EmailConfigResponse(BaseModel):
     key: FidesOpsKey
     service_type: EmailServiceType
     details: Dict[EmailServiceDetails, Any]
-    purposes: List[EmailPurpose]
 
     class Config:
         orm_mode = True

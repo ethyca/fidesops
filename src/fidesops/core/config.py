@@ -30,6 +30,14 @@ class FidesopsDatabaseSettings(DatabaseSettings):
         env_prefix = "FIDESOPS__DATABASE__"
 
 
+class FidesopsOrganizationSettings(FidesSettings):
+    """Configuration settings for organization variables."""
+    name: str
+
+    class Config:
+        env_prefix = "FIDESOPS__ORGANIZATION__"
+
+
 class ExecutionSettings(FidesSettings):
     """Configuration settings for execution."""
 
@@ -148,6 +156,7 @@ class AdminUiSettings(FidesSettings):
 class FidesopsConfig(FidesSettings):
     """Configuration variables for the FastAPI project"""
 
+    organization: FidesopsOrganizationSettings
     database: FidesopsDatabaseSettings
     redis: RedisSettings
     security: FidesopsSecuritySettings
@@ -174,6 +183,7 @@ class FidesopsConfig(FidesSettings):
     def log_all_config_values(self) -> None:
         """Output DEBUG logs of all the config values."""
         for settings in [
+            self.organization,
             self.database,
             self.redis,
             self.security,
@@ -190,6 +200,9 @@ class FidesopsConfig(FidesSettings):
 
 
 CONFIG_KEY_ALLOWLIST = {
+    "organization": [
+        "name",
+    ],
     "database": [
         "server",
         "user",

@@ -5,6 +5,7 @@ from fastapi import Security, Depends
 from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
 from fideslib.exceptions import KeyOrNameAlreadyExists
+from pydantic import conlist
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY, HTTP_400_BAD_REQUEST, \
@@ -20,7 +21,7 @@ from fidesops.schemas.email.email import BulkPutEmailConfigResponse, TestEmailSt
     EmailConfigRequest, EmailConfigResponse
 from fidesops.schemas.email.email_secrets_docs_only import possible_email_secrets
 from fidesops.schemas.shared_schemas import FidesOpsKey
-from fidesops.service.email.email_crud_service import create_email_config, get_email_configs, get_email_config_by_key
+from fidesops.service.email.email_crud_service import create_or_update_email_config, get_email_configs, get_email_config_by_key
 from fidesops.util.api_router import APIRouter
 from fidesops.util.oauth_util import verify_oauth_client
 
@@ -40,7 +41,7 @@ def patch_config(
         email_configs: conlist(EmailConfigRequest, max_items=50),  # type: ignore
 ) -> BulkPutEmailConfigResponse:
     """
-    Given a list of email config elements, create or update corresponding EmailConfig and EmailConfigUsage objects
+    Given a list of email config elements, create or update corresponding EmailConfig objects
     or report failure.
     """
     created_or_updated: List[EmailConfigResponse] = []
@@ -49,11 +50,11 @@ def patch_config(
     logger.info(f"Starting bulk upsert for {len(email_configs)} email configs")
     for config in email_configs:
         try:
-            email_config: EmailConfigResponse = create_email_config(db=db, config=config)
+            email_config: EmailConfigResponse = create_or_update_email_config(db=db, config=config)
 
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
-                f"Create/update failed for storage config {config.key}: {exc}"
+                f"Create/update failed for email config {config.key}: {exc}"
             )
             failure = {
                 "message": exc.args[0],
@@ -93,7 +94,7 @@ def put_config_secrets(
         verify: Optional[bool] = True,
 ) -> TestEmailStatusMessage:
     """
-    Add or update secrets for storage config.
+    Add or update secrets for email config.
     """
     logger.info(f"Finding email config with key '{config_key}'")
     email_config = EmailConfig.get_by(db=db, field="key", value=config_key)
@@ -159,9 +160,9 @@ def get_configs(
         *, db: Session = Depends(deps.get_db), params: Params = Depends()
 ) -> AbstractPage[EmailConfigResponse]:
     """
-    Retrieves configs for storage.
+    Retrieves configs for email.
     """
-    logger.info(f"Finding all storage configurations with pagination params {params}")
+    logger.info(f"Finding all email configurations with pagination params {params}")
     return paginate(
         get_email_configs(db=db), params=params
     )

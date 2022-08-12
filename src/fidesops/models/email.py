@@ -2,7 +2,7 @@ import logging
 
 from fideslib.db.base import Base
 from pydantic import ValidationError
-from sqlalchemy import Column, Enum, String, ForeignKey
+from sqlalchemy import Column, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session
@@ -13,8 +13,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 
 from fidesops.core.config import config
 from fidesops.db.base_class import JSONTypeOverride
-from fidesops.schemas.email.email import EmailServiceType, EmailServiceSecretsMailgun, SUPPORTED_EMAIL_SERVICE_SECRETS, \
-    EmailPurpose
+from fidesops.schemas.email.email import EmailServiceType, EmailServiceSecretsMailgun, SUPPORTED_EMAIL_SERVICE_SECRETS
 from fidesops.schemas.email.email_secrets_docs_only import possible_email_secrets
 
 logger = logging.getLogger(__name__)
@@ -91,11 +90,4 @@ class EmailConfig(Base):
 
         self.secrets = email_secrets
         self.save(db=db)
-
-
-class EmailConfigPurpose(Base):
-    """The DB ORM model for Email purpose"""
-
-    config_key = Column(String, ForeignKey(EmailConfig.key), index=True, unique=False, nullable=False)
-    purpose = Column(Enum(EmailPurpose), index=True, unique=True, nullable=False)
 

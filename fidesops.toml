@@ -1,5 +1,8 @@
 port = 8080
 
+[organization]
+name = "Test Org"
+
 [database]
 server = "db"
 user = "postgres"
