@@ -2,8 +2,8 @@ from fideslib.cryptography.cryptographic_util import hash_with_salt
 from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 
-from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
-from fidesops.core.config import config
+from fidesops.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fidesops.ops.core.config import config
 
 
 class TestClientModel:
@@ -17,8 +17,8 @@ class TestClientModel:
         assert new_client.hashed_secret is not None
         assert (
             hash_with_salt(
-                secret.encode(config.security.ENCODING),
-                new_client.salt.encode(config.security.ENCODING),
+                secret.encode(config.security.encoding),
+                new_client.salt.encode(config.security.encoding),
             )
             == new_client.hashed_secret
         )
@@ -32,8 +32,8 @@ class TestClientModel:
         )
 
         hashed_access_key = hash_with_salt(
-            config.security.oauth_root_client_secret.encode(config.security.ENCODING),
-            client.salt.encode(config.security.ENCODING),
+            config.security.oauth_root_client_secret.encode(config.security.encoding),
+            client.salt.encode(config.security.encoding),
         )
 
         assert "fidesopsadmin" == client.id

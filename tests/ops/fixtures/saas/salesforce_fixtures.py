@@ -3,28 +3,26 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from fideslib.core.config import load_toml
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
-from fidesops.models.connectionconfig import (
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.util.saas_util import load_config
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.vault_client import get_secrets
 
-saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("salesforce")
 
 
 @pytest.fixture(scope="session")
-def salesforce_secrets():
+def salesforce_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "salesforce.domain") or secrets["domain"],
         "username": pydash.get(saas_config, "salesforce.username")
@@ -41,7 +39,7 @@ def salesforce_secrets():
 
 
 @pytest.fixture(scope="session")
-def salesforce_identity_email():
+def salesforce_identity_email(saas_config):
     return (
         pydash.get(saas_config, "salesforce.identity_email")
         or secrets["identity_email"]

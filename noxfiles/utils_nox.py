@@ -51,7 +51,7 @@ def db(session: nox.Session, db_command: str) -> None:
     init_command = (
         "python",
         "-c",
-        "from fidesops.db.database import init_db; from fidesops.core.config import config; init_db(config.database.sqlalchemy_database_uri)",
+        "from fidesops.ops.db.database import init_db; from fidesops.ops.core.config import config; init_db(config.database.sqlalchemy_database_uri)",
     )
     session.run(*RUN, *init_command, external=True)
 
@@ -73,3 +73,8 @@ def teardown(session: nox.Session) -> None:
     """Tear down the docker dev environment."""
     session.run(*COMPOSE_DOWN, external=True)
     print("Teardown complete")
+
+
+def install_requirements(session: nox.Session) -> None:
+    session.install("-r", "requirements.txt")
+    session.install("-r", "dev-requirements.txt")
