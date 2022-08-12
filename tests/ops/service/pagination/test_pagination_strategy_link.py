@@ -142,13 +142,29 @@ def test_config_mismatch():
     with pytest.raises(ValueError) as exc:
         LinkPaginationConfiguration(source="headers", path="links.next")
     assert (
-        "The 'rel' value must be specified when accessing the link from the headers"
-        in str(exc.value)
+            "The 'rel' value must be specified when accessing the link from the headers"
+            in str(exc.value)
     )
 
     with pytest.raises(ValueError) as exc:
         LinkPaginationConfiguration(source="body", rel="next")
     assert (
-        "The 'path' value must be specified when accessing the link from the body"
-        in str(exc.value)
+            "The 'path' value must be specified when accessing the link from the body"
+            in str(exc.value)
     )
+
+
+def test_headers_present_in_paginated_request(response_with_body_link):
+    config = LinkPaginationConfiguration(source="body", path="links.next")
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        headers={"x-custom-header": "abc"},
+        path="/customers",
+        query_params={"page": "abc"},
+    )
+
+    paginator = LinkPaginationStrategy(config)
+    next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
+        request_params, {}, response_with_body_link, "customers"
+    )
+    assert next_request == request_params.headers
