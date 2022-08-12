@@ -18,7 +18,7 @@ from tests.ops.test_helpers.vault_client import get_secrets
 secrets = get_secrets("datadog")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def datadog_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "datadog.domain") or secrets["domain"],
@@ -27,7 +27,7 @@ def datadog_secrets(saas_config):
     }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def datadog_identity_email(saas_config):
     return (
         pydash.get(saas_config, "datadog.identity_email") or secrets["identity_email"]
