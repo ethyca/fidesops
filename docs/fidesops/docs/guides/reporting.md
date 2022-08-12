@@ -141,7 +141,7 @@ There are also "Request approved" and "Request finished" audit logs included in 
                                 "path": "mongo_test:flights:passenger_information.full_name",
                                 "field_name": "passenger_information.full_name",
                                 "data_categories": [
-                                    "user.provided.identifiable.name"
+                                    "user.name"
                                 ]
                             }
                         ],
@@ -168,7 +168,7 @@ There are also "Request approved" and "Request finished" audit logs included in 
                                 "path": "order.customer_name",
                                 "field_name": "name",
                                 "data_categories": [
-                                    "user.provided.identifiable.name"
+                                    "user.name"
                                 ]
                             }
                         ], 

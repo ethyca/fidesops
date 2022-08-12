@@ -1021,9 +1021,7 @@ class TestGetPrivacyRequests:
                                     {
                                         "path": "my-mongo-db:orders:name",
                                         "field_name": "name",
-                                        "data_categories": [
-                                            "user.provided.identifiable.contact.name"
-                                        ],
+                                        "data_categories": ["user.contact.name"],
                                     }
                                 ],
                                 "message": None,
@@ -1042,9 +1040,7 @@ class TestGetPrivacyRequests:
                                     {
                                         "path": "my-postgres-db:user:email",
                                         "field_name": "email",
-                                        "data_categories": [
-                                            "user.provided.identifiable.contact.email"
-                                        ],
+                                        "data_categories": ["user.contact.email"],
                                     }
                                 ],
                                 "message": None,
@@ -1062,14 +1058,14 @@ class TestGetPrivacyRequests:
                                         "path": "my-postgres-db:address:street",
                                         "field_name": "street",
                                         "data_categories": [
-                                            "user.provided.identifiable.contact.street"
+                                            "user.contact.address.street"
                                         ],
                                     },
                                     {
                                         "path": "my-postgres-db:address:city",
                                         "field_name": "city",
                                         "data_categories": [
-                                            "user.provided.identifiable.contact.city"
+                                            "user.contact.address.city"
                                         ],
                                     },
                                 ],
@@ -1349,9 +1345,7 @@ class TestGetExecutionLogs:
                         {
                             "path": "my-postgres-db:user:email",
                             "field_name": "email",
-                            "data_categories": [
-                                "user.provided.identifiable.contact.email"
-                            ],
+                            "data_categories": ["user.contact.email"],
                         }
                     ],
                     "message": None,
@@ -1366,9 +1360,7 @@ class TestGetExecutionLogs:
                         {
                             "path": "my-mongo-db:orders:name",
                             "field_name": "name",
-                            "data_categories": [
-                                "user.provided.identifiable.contact.name"
-                            ],
+                            "data_categories": ["user.contact.name"],
                         }
                     ],
                     "message": None,
@@ -1383,16 +1375,12 @@ class TestGetExecutionLogs:
                         {
                             "path": "my-postgres-db:address:street",
                             "field_name": "street",
-                            "data_categories": [
-                                "user.provided.identifiable.contact.street"
-                            ],
+                            "data_categories": ["user.contact.address.street"],
                         },
                         {
                             "path": "my-postgres-db:address:city",
                             "field_name": "city",
-                            "data_categories": [
-                                "user.provided.identifiable.contact.city"
-                            ],
+                            "data_categories": ["user.contact.address.city"],
                         },
                     ],
                     "message": "Database timed out.",
