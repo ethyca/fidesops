@@ -144,15 +144,15 @@ def test_config_mismatch():
     with pytest.raises(ValueError) as exc:
         LinkPaginationConfiguration(source="headers", path="links.next")
     assert (
-            "The 'rel' value must be specified when accessing the link from the headers"
-            in str(exc.value)
+        "The 'rel' value must be specified when accessing the link from the headers"
+        in str(exc.value)
     )
 
     with pytest.raises(ValueError) as exc:
         LinkPaginationConfiguration(source="body", rel="next")
     assert (
-            "The 'path' value must be specified when accessing the link from the body"
-            in str(exc.value)
+        "The 'path' value must be specified when accessing the link from the body"
+        in str(exc.value)
     )
 
 
