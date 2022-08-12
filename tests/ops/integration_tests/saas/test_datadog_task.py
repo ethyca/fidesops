@@ -3,13 +3,20 @@ import random
 
 import pytest
 
-from fidesops.graph.graph import DatasetGraph
-from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.task import graph_task
+from fidesops.ops.graph.graph import DatasetGraph
+from fidesops.ops.models.privacy_request import PrivacyRequest
+from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.service.connectors import get_connector
+from fidesops.ops.task import graph_task
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 logger = logging.getLogger(__name__)
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_datadog
+def test_datadog_connection_test(datadog_connection_config) -> None:
+    get_connector(datadog_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
@@ -18,7 +25,7 @@ def test_saas_access_request_task(
     db,
     policy,
     datadog_connection_config,
-    dataset_config_datadog,
+    datadog_dataset_config,
     datadog_identity_email,
 ) -> None:
     """Full access request based on the Datadog SaaS config"""
@@ -33,7 +40,7 @@ def test_saas_access_request_task(
     privacy_request.cache_identity(identity)
 
     dataset_name = datadog_connection_config.get_saas_config().fides_key
-    merged_graph = dataset_config_datadog.get_graph()
+    merged_graph = datadog_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
     v = graph_task.run_access_request(
         privacy_request,
