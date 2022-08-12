@@ -65,7 +65,7 @@ def datadog_connection_config(
 
 
 @pytest.fixture
-def dataset_config_datadog(
+def datadog_dataset_config(
     db: Session,
     datadog_connection_config: ConnectionConfig,
     datadog_dataset,

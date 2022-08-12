@@ -19,6 +19,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.0...main)
 
+### Added
+
+* Access support for Datadog Logs [#1060](https://github.com/ethyca/fidesops/pull/1060)
 ### Fixed
 
 * HTTP headers are now preserved in requests generated from SaaS connector pagination [#1069](https://github.com/ethyca/fidesops/pull/1069)
@@ -42,7 +45,7 @@ The types of changes are:
 * Start better understanding how request execution fails [#993](https://github.com/ethyca/fidesops/pull/993)
 * Add approval `AuditLog`s for user and sytem approved privacy requests [#1038](https://github.com/ethyca/fidesops/pull/1038)
 * Add finished `AuditLog` for subject requests [#1040](https://github.com/ethyca/fidesops/pull/1040)
-* Access Support for Datadog Logs [#1060](https://github.com/ethyca/fidesops/pull/1060)
+
 ### Changed
 
 * Users should be able to click on the full field of a dropdown-type filter to open up the dropdown [#747](https://github.com/ethyca/fidesops/pull/903)
