@@ -22,6 +22,7 @@ The types of changes are:
 ### Added
 
 * Access support for Datadog Logs [#1060](https://github.com/ethyca/fidesops/pull/1060)
+* Access and erasure support for Logi ID [#1074](https://github.com/ethyca/fidesops/pull/1074)
 
 ### Fixed
 
