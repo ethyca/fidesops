@@ -4,18 +4,18 @@ import pytest
 from fideslib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
-from fidesops.api.v1.scope_registry import CONNECTION_READ, CONNECTION_TYPE_READ
-from fidesops.api.v1.urn_registry import (
+from fidesops.ops.api.v1.scope_registry import CONNECTION_READ, CONNECTION_TYPE_READ
+from fidesops.ops.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
     V1_URL_PREFIX,
 )
-from fidesops.models.connectionconfig import ConnectionType
-from fidesops.schemas.connection_configuration.connection_config import (
+from fidesops.ops.models.connectionconfig import ConnectionType
+from fidesops.ops.schemas.connection_configuration.connection_config import (
     ConnectionSystemTypeMap,
     SystemType,
 )
-from fidesops.schemas.saas.saas_config import SaaSType
+from fidesops.ops.schemas.saas.saas_config import SaaSType
 
 
 class TestGetConnections:
@@ -41,7 +41,7 @@ class TestGetConnections:
         resp = api_client.get(url, headers=auth_header)
         data = resp.json()["items"]
         assert resp.status_code == 200
-        assert len(data) == 19
+        assert len(data) == 21
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -94,7 +94,7 @@ class TestGetConnections:
         resp = api_client.get(url + "?system_type=saas", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 11
+        assert len(data) == 13
 
         resp = api_client.get(url + "?system_type=database", headers=auth_header)
         assert resp.status_code == 200

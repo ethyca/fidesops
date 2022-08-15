@@ -6,9 +6,12 @@ import pytest
 from fideslib.core.config import load_toml
 from sqlalchemy import inspect
 
-from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.schemas.connection_configuration import RedshiftSchema, SnowflakeSchema
-from fidesops.service.connectors import (
+from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesops.ops.schemas.connection_configuration import (
+    RedshiftSchema,
+    SnowflakeSchema,
+)
+from fidesops.ops.service.connectors import (
     RedshiftConnector,
     SnowflakeConnector,
     get_connector,
@@ -71,19 +74,21 @@ def snowflake_test_engine() -> Generator:
 def test_redshift_example_data(redshift_test_engine):
     """Confirm that we can connect to the redshift test db and get table names"""
     inspector = inspect(redshift_test_engine)
-    assert inspector.get_table_names(schema="test") == [
-        "report",
-        "service_request",
-        "login",
-        "visit",
-        "order_item",
-        "order",
-        "payment_card",
-        "employee",
-        "customer",
-        "address",
-        "product",
-    ]
+    assert sorted(inspector.get_table_names(schema="test")) == sorted(
+        [
+            "report",
+            "service_request",
+            "login",
+            "visit",
+            "order_item",
+            "order",
+            "payment_card",
+            "employee",
+            "customer",
+            "address",
+            "product",
+        ]
+    )
 
 
 @pytest.mark.integration_external
@@ -91,21 +96,23 @@ def test_redshift_example_data(redshift_test_engine):
 def test_snowflake_example_data(snowflake_test_engine):
     """Confirm that we can connect to the snowflake test db and get table names"""
     inspector = inspect(snowflake_test_engine)
-    assert inspector.get_table_names(schema="test") == [
-        "cc",
-        "report",
-        "address",
-        "customer",
-        "employee",
-        "login",
-        "order",
-        "order_item",
-        "payment_card",
-        "product",
-        "report",
-        "service_request",
-        "visit",
-    ]
+    assert sorted(inspector.get_table_names(schema="test")) == sorted(
+        [
+            "cc",
+            "report",
+            "address",
+            "customer",
+            "employee",
+            "login",
+            "order",
+            "order_item",
+            "payment_card",
+            "product",
+            "report",
+            "service_request",
+            "visit",
+        ]
+    )
 
 
 @pytest.mark.integration_external
@@ -113,16 +120,18 @@ def test_snowflake_example_data(snowflake_test_engine):
 def test_bigquery_example_data(bigquery_test_engine):
     """Confirm that we can connect to the bigquery test db and get table names"""
     inspector = inspect(bigquery_test_engine)
-    assert inspector.get_table_names(schema="fidesopstest") == [
-        "address",
-        "customer",
-        "employee",
-        "login",
-        "order_item",
-        "orders",
-        "payment_card",
-        "product",
-        "report",
-        "service_request",
-        "visit",
-    ]
+    assert sorted(inspector.get_table_names(schema="fidesopstest")) == sorted(
+        [
+            "address",
+            "customer",
+            "employee",
+            "login",
+            "order_item",
+            "orders",
+            "payment_card",
+            "product",
+            "report",
+            "service_request",
+            "visit",
+        ]
+    )

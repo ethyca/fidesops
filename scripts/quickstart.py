@@ -13,9 +13,9 @@ from typing import Optional
 import requests
 import yaml
 
-from fidesops.core.config import config
-from fidesops.models.connectionconfig import ConnectionType
-from fidesops.models.policy import ActionType
+from fidesops.ops.core.config import config
+from fidesops.ops.models.connectionconfig import ConnectionType
+from fidesops.ops.models.policy import ActionType
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -487,7 +487,7 @@ if __name__ == "__main__":
 
     # NOTE: In a real application, these secrets and config values would be provided
     # via ENV vars or similar, but we've inlined everything here for simplicity
-    FIDESOPS_URL = "http://0.0.0.0:8080"
+    FIDESOPS_URL = "http://webserver:8080"
     ROOT_CLIENT_ID = "fidesopsadmin"
     ROOT_CLIENT_SECRET = "fidesopsadminsecret"
 
@@ -650,7 +650,7 @@ if __name__ == "__main__":
     print(
         "-------------------------------------------------------------------------------------"
     )
-    data_category = "user.provided.identifiable"
+    data_category = "user"
     print(
         f"Press [enter] to create a Policy Rule that accesses information with the data category '{data_category}':"
     )

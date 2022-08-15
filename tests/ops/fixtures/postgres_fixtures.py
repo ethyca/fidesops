@@ -8,20 +8,20 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fidesops.core.config import config
-from fidesops.models.connectionconfig import (
+from fidesops.ops.core.config import config
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import ActionType
-from fidesops.models.privacy_request import (
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.policy import ActionType
+from fidesops.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
 )
-from fidesops.service.connectors import PostgreSQLConnector
+from fidesops.ops.service.connectors import PostgreSQLConnector
 
 from .application_fixtures import integration_secrets
 
@@ -85,7 +85,7 @@ def postgres_execution_log(
                 {
                     "path": "my-postgres-db:user:email",
                     "field_name": "email",
-                    "data_categories": ["user.provided.identifiable.contact.email"],
+                    "data_categories": ["user.contact.email"],
                 }
             ],
             "action_type": ActionType.access,
@@ -111,12 +111,12 @@ def second_postgres_execution_log(
                 {
                     "path": "my-postgres-db:address:street",
                     "field_name": "street",
-                    "data_categories": ["user.provided.identifiable.contact.street"],
+                    "data_categories": ["user.contact.address.street"],
                 },
                 {
                     "path": "my-postgres-db:address:city",
                     "field_name": "city",
-                    "data_categories": ["user.provided.identifiable.contact.city"],
+                    "data_categories": ["user.contact.address.city"],
                 },
             ],
             "action_type": ActionType.access,
