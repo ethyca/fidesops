@@ -30,20 +30,22 @@ def dispatch_email(
     if not email_config:
         raise EmailDispatchException("No email config found.")
     if not email_config.secrets:
-        logger.warning(f"Email secrets not found for config with key: {email_config.key}")
-        raise EmailDispatchException(f"Email secrets not found for config with key: {email_config.key}")
+        logger.warning(
+            f"Email secrets not found for config with key: {email_config.key}"
+        )
+        raise EmailDispatchException(
+            f"Email secrets not found for config with key: {email_config.key}"
+        )
     logger.info(f"Building appropriate email template for action type: {action_type}")
     email: EmailForActionType = _build_email(
         action_type=action_type, body_params=email_body_params
     )
     email_service: EmailServiceType = email_config.service_type  # type: ignore
+    logger.info(f"Retrieving appropriate dispatcher for email service: {email_service}")
+    dispatcher: Any = _get_dispatcher_from_config_type(email_service_type=email_service)
     logger.info(
-        f"Retrieving appropriate dispatcher for email service: {email_service}"
+        f"Starting email dispatch for email service with action type: {action_type}"
     )
-    dispatcher: Any = _get_dispatcher_from_config_type(
-        email_service_type=email_service
-    )
-    logger.info(f"Starting email dispatch for email service with action type: {action_type}")
     dispatcher(email_config=email_config, email=email, to_email=to_email)
 
 

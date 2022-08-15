@@ -176,7 +176,9 @@ def get_configs(
     Retrieves configs for email.
     """
     logger.info(f"Finding all email configurations with pagination params {params}")
-    return paginate(EmailConfig.query(db=db).order_by(EmailConfig.created_at.desc()), params=params)
+    return paginate(
+        EmailConfig.query(db=db).order_by(EmailConfig.created_at.desc()), params=params
+    )
 
 
 @router.get(

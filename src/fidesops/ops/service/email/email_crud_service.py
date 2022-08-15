@@ -62,9 +62,7 @@ def delete_email_config(db: Session, key: FidesKey) -> None:
     email_config.delete(db)
 
 
-def get_email_config_by_key(
-    db: Session, key: FidesKey
-) -> EmailConfigResponse:
+def get_email_config_by_key(db: Session, key: FidesKey) -> EmailConfigResponse:
     config = EmailConfig.get_by(db=db, field="key", value=key)
     if not config:
         raise EmailConfigNotFoundException(f"No email config found with key {key}")
