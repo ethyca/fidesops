@@ -83,7 +83,7 @@ YAML_DATASETS = YAML + DATASETS
 # SaaS Config URLs
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
-INSTANTIATE = "/connection/instantiate/{saas_connector_type}"
+SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{saas_connector_type}"
 
 
 # User URLs

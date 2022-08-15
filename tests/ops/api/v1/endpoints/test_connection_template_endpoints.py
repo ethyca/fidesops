@@ -4,13 +4,23 @@ import pytest
 from fideslib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
-from fidesops.ops.api.v1.scope_registry import CONNECTION_READ, CONNECTION_TYPE_READ
+from fidesops.ops.api.v1.scope_registry import (
+    CONNECTION_INSTANTIATE,
+    CONNECTION_READ,
+    CONNECTION_TYPE_READ,
+)
 from fidesops.ops.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
+    SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
-from fidesops.ops.models.connectionconfig import ConnectionType
+from fidesops.ops.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
+from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.schemas.connection_configuration.connection_config import (
     ConnectionSystemTypeMap,
     SystemType,
@@ -196,3 +206,81 @@ class TestGetConnectionSecretSchema:
             "required": ["hapikey"],
             "additionalProperties": False,
         }
+
+
+class TestInstantiateConnectionFromTemplate:
+    @pytest.fixture(scope="function")
+    def base_url(self) -> str:
+        return V1_URL_PREFIX + SAAS_CONNECTOR_FROM_TEMPLATE
+
+    def test_instantiate_connection_not_authenticated(self, api_client, base_url):
+        resp = api_client.post(
+            base_url.format(saas_connector_type="mailchimp"), headers={}
+        )
+        assert resp.status_code == 401
+
+    def test_instantiate_connection_wrong_scope(
+        self, generate_auth_header, api_client, base_url
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.post(
+            base_url.format(saas_connector_type="mailchimp"), headers=auth_header
+        )
+        assert resp.status_code == 403
+
+    def test_instantiate_mail_chimp_connection_from_template(
+        self, db, generate_auth_header, api_client, base_url
+    ):
+        connection_config = ConnectionConfig.filter(
+            db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")
+        ).first()
+        assert connection_config is None
+
+        dataset_config = DatasetConfig.filter(
+            db=db, conditions=(DatasetConfig.fides_key == "primary_mailchimp_instance")
+        ).first()
+        assert dataset_config is None
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_INSTANTIATE])
+        request_body = {
+            "instance_key": "secondary_mailchimp_instance",
+            "secrets": {
+                "domain": "test_mailchimp_domain",
+                "username": "test_mailchimp_username",
+                "api_key": "test_mailchimp_api_key",
+            },
+            "name": "Mailchimp Connector",
+            "description": "Mailchimp ConnectionConfig description",
+            "key": "mailchimp_connection_config",
+        }
+        resp = api_client.post(
+            base_url.format(saas_connector_type="mailchimp"),
+            headers=auth_header,
+            json=request_body,
+        )
+
+        assert resp.status_code == 200
+        assert resp.json()["fides_key"] == "secondary_mailchimp_instance"
+
+        connection_config = ConnectionConfig.filter(
+            db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")
+        ).first()
+        dataset_config = DatasetConfig.filter(
+            db=db,
+            conditions=(DatasetConfig.fides_key == "secondary_mailchimp_instance"),
+        ).first()
+
+        assert connection_config is not None
+        assert dataset_config is not None
+        assert connection_config.name == "Mailchimp Connector"
+        assert connection_config.description == "Mailchimp ConnectionConfig description"
+
+        assert connection_config.access == AccessLevel.write
+        assert connection_config.connection_type == ConnectionType.saas
+        assert connection_config.saas_config is not None
+
+        assert dataset_config.connection_config_id == connection_config.id
+        assert dataset_config.dataset is not None
+
+        dataset_config.delete(db)
+        connection_config.delete(db)

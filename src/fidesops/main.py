@@ -35,6 +35,7 @@ from fidesops.ops.db.database import init_db
 from fidesops.ops.schemas.analytics import Event, ExtraData
 from fidesops.ops.service.connectors.saas.connector_registry_service import (
     load_registry,
+    registry_file,
     update_connector_instances,
 )
 from fidesops.ops.tasks.scheduled.scheduler import scheduler
@@ -185,7 +186,7 @@ def start_webserver() -> None:
         config.log_all_config_values()
 
     logger.info("Validating SaaS connector templates...")
-    load_registry("saas_connector_registry.toml")
+    load_registry(registry_file)
 
     if config.database.enabled:
         logger.info("Running any pending DB migrations...")

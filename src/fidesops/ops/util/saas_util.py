@@ -34,10 +34,30 @@ def load_config(filename: str) -> Dict:
         return yaml.safe_load(file).get("saas_config", [])
 
 
+def load_config_with_replacement(
+    filename: str, string_to_replace: str, replacement: str
+) -> Dict:
+    """Loads the saas config from the yaml file and replaces any string with the given value"""
+    yaml_str: str = load_yaml_as_string(filename).replace(
+        string_to_replace, replacement
+    )
+    return yaml.safe_load(yaml_str).get("saas_config", [])
+
+
 def load_dataset(filename: str) -> Dict:
     yaml_file = load_file([filename])
     with open(yaml_file, "r") as file:
         return yaml.safe_load(file).get("dataset", [])
+
+
+def load_dataset_with_replacement(
+    filename: str, string_to_replace: str, replacement: str
+) -> Dict:
+    """Loads the dataset from the yaml file and replaces any string with the given value"""
+    yaml_str: str = load_yaml_as_string(filename).replace(
+        string_to_replace, replacement
+    )
+    return yaml.safe_load(yaml_str).get("dataset", [])
 
 
 def merge_fields(target: Field, source: Field) -> Field:
