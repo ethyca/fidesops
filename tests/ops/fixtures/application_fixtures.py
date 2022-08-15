@@ -9,6 +9,7 @@ import pytest
 import yaml
 from faker import Faker
 from fideslib.core.config import load_file, load_toml
+from fideslib.models.audit_log import AuditLog, AuditLogAction
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
@@ -292,7 +293,7 @@ def erasure_policy(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": erasure_rule.id,
         },
     )
@@ -343,7 +344,7 @@ def erasure_policy_aes(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": erasure_rule.id,
         },
     )
@@ -396,7 +397,7 @@ def erasure_policy_string_rewrite_long(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": erasure_rule.id,
         },
     )
@@ -444,9 +445,7 @@ def erasure_policy_two_rules(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory(
-                "user.provided.identifiable.contact.email"
-            ).value,
+            "data_category": DataCategory("user.contact.email").value,
             "rule_id": second_erasure_rule.id,
         },
     )
@@ -495,7 +494,7 @@ def policy(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable").value,
+            "data_category": DataCategory("user").value,
             "rule_id": access_request_rule.id,
         },
     )
@@ -545,7 +544,7 @@ def policy_drp_action(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable").value,
+            "data_category": DataCategory("user").value,
             "rule_id": access_request_rule.id,
         },
     )
@@ -594,7 +593,7 @@ def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Genera
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable").value,
+            "data_category": DataCategory("user").value,
             "rule_id": erasure_request_rule.id,
         },
     )
@@ -646,7 +645,7 @@ def erasure_policy_string_rewrite(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": erasure_rule.id,
         },
     )
@@ -699,7 +698,7 @@ def erasure_policy_hmac(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": erasure_rule.id,
         },
     )
@@ -797,6 +796,21 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
     )
     yield privacy_request
     privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def audit_log(db: Session, privacy_request) -> PrivacyRequest:
+    audit_log = AuditLog.create(
+        db=db,
+        data={
+            "user_id": "system",
+            "privacy_request_id": privacy_request.id,
+            "action": AuditLogAction.approved,
+            "message": "",
+        },
+    )
+    yield audit_log
+    audit_log.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -936,9 +950,7 @@ def dataset_config(
                             },
                             {
                                 "name": "email",
-                                "data_categories": [
-                                    "user.provided.identifiable.contact.email"
-                                ],
+                                "data_categories": ["user.contact.email"],
                                 "fidesops_meta": {
                                     "identity": "email",
                                 },
@@ -978,9 +990,7 @@ def dataset_config_preview(
                             },
                             {
                                 "name": "email",
-                                "data_categories": [
-                                    "user.provided.identifiable.contact.email"
-                                ],
+                                "data_categories": ["user.contact.email"],
                                 "fidesops_meta": {
                                     "identity": "email",
                                 },

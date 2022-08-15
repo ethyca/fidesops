@@ -198,7 +198,7 @@ class Endpoint(BaseModel):
 
 
 class ConnectorParam(BaseModel):
-    """Used to define the required parameters for the connector (user-provided and constants)"""
+    """Used to define the required parameters for the connector (user and constants)"""
 
     name: str
     default_value: Optional[str]
@@ -212,6 +212,7 @@ class SaaSType(Enum):
 
     adobe_campaign = "adobe_campaign"
     auth0 = "auth0"
+    logi_id = "logi_id"
     mailchimp = "mailchimp"
     hubspot = "hubspot"
     outreach = "outreach"
@@ -222,6 +223,7 @@ class SaaSType(Enum):
     zendesk = "zendesk"
     custom = "custom"
     sendgrid = "sendgrid"
+    datadog = "datadog"
 
 
 class SaaSConfigBase(BaseModel):

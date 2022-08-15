@@ -39,7 +39,9 @@ from .fixtures.postgres_fixtures import *
 from .fixtures.redshift_fixtures import *
 from .fixtures.saas.adobe_campaign_fixtures import *
 from .fixtures.saas.auth0_fixtures import *
+from .fixtures.saas.datadog_fixtures import *
 from .fixtures.saas.hubspot_fixtures import *
+from .fixtures.saas.logi_id_fixtures import *
 from .fixtures.saas.mailchimp_fixtures import *
 from .fixtures.saas.outreach_fixtures import *
 from .fixtures.saas.request_override.mailchimp_override_fixtures import *
