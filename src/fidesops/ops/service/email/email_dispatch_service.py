@@ -1,13 +1,11 @@
 import logging
-from typing import Any, Union, Optional
+from typing import Any, Optional, Union
 
 import requests
 from requests import Response
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import (
-    EmailDispatchException,
-)
+from fidesops.ops.common_exceptions import EmailDispatchException
 from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
