@@ -4,6 +4,7 @@ from fidesops.ops.api.v1.endpoints import (
     connection_type_endpoints,
     dataset_endpoints,
     drp_endpoints,
+    email_endpoints,
     encryption_endpoints,
     health_endpoints,
     masking_endpoints,
@@ -13,7 +14,6 @@ from fidesops.ops.api.v1.endpoints import (
     privacy_request_endpoints,
     saas_config_endpoints,
     storage_endpoints,
-    email_endpoints,
     user_endpoints,
     user_permission_endpoints,
 )
