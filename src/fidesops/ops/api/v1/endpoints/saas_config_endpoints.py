@@ -43,10 +43,12 @@ from fidesops.ops.service.authentication.authentication_strategy_factory import 
 from fidesops.ops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
+from fidesops.ops.service.connectors.saas.connector_registry_service import (
+    connector_types,
+    instantiate_connector_template,
+)
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.oauth_util import verify_oauth_client
-from fidesops.ops.service.connectors.saas.connector_registry_service import connector_types, \
-    instantiate_connector_template
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)

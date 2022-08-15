@@ -7,9 +7,9 @@ from typing import Any, Dict, List, Optional
 from fideslib.core.config import load_toml
 from pydantic import BaseModel, validator
 
-from fidesops.schemas.dataset import FidesopsDataset
-from fidesops.schemas.saas.saas_config import SaaSConfig
-from fidesops.util.saas_util import load_config, load_dataset, load_yaml_as_string
+from fidesops.ops.schemas.dataset import FidesopsDataset
+from fidesops.ops.schemas.saas.saas_config import SaaSConfig
+from fidesops.ops.util.saas_util import load_config, load_dataset, load_yaml_as_string
 
 _registry: ConnectorRegistry = {}
 
@@ -88,7 +88,7 @@ def instantiate_connector_template(
 
     # add dataset
     saas_dataset = load_yaml_as_string(template.dataset).replace(
-        "instance_fides_key", instance_keyx
+        "instance_fides_key", instance_key
     )
     logger.info(saas_dataset)
 
