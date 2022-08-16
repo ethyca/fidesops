@@ -11,6 +11,9 @@ class FidesOpsKey(FidesKey):
     @classmethod
     def validate(cls, value: Optional[str]) -> Optional[str]:
         """Throws ValueError if val is not a valid FidesKey"""
+        if value == "<instance_fides_key>":
+            return value
+
         if value is not None and not cls.regex.match(value):
             raise ValueError(
                 "FidesKey must only contain alphanumeric characters, '.', '_' or '-'."

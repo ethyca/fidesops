@@ -85,7 +85,7 @@ def create_connection_config_from_template_no_save(
     """Creates a SaaS connection config from a template without saving it."""
     # Load saas config from template
     config_from_template: Dict = load_config_with_replacement(
-        template.config, "instance_fides_key", template_values.instance_key
+        template.config, "<instance_fides_key>", template_values.instance_key
     )
 
     # Create SaaS ConnectionConfig
@@ -112,7 +112,7 @@ def create_dataset_config_from_template(
 ) -> DatasetConfig:
     """Creates a DatasetConfig from a template and associates it with a ConnectionConfig"""
     dataset_from_template: Dict = load_dataset_with_replacement(
-        template.dataset, "instance_fides_key", template_values.instance_key
+        template.dataset, "<instance_fides_key>", template_values.instance_key
     )[0]
     data = {
         "connection_config_id": connection_config.id,

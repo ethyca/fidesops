@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: instance_fides_key
+  - fides_key: <instance_fides_key>
     name: Datadog Dataset
     description: A sample dataset representing the Datadog connector for Fidesops
     collections:
