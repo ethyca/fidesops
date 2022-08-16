@@ -23,7 +23,7 @@ FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
 
 def load_yaml_as_string(filename: str) -> str:
     yaml_file = load_file([filename])
-    with open(yaml_file, "r") as file:
+    with open(yaml_file, "r", encoding="utf-8") as file:
         return file.read()
 
 
@@ -46,7 +46,7 @@ def load_config_with_replacement(
 
 def load_dataset(filename: str) -> Dict:
     yaml_file = load_file([filename])
-    with open(yaml_file, "r") as file:
+    with open(yaml_file, "r", encoding="utf-8") as file:
         return yaml.safe_load(file).get("dataset", [])
 
 

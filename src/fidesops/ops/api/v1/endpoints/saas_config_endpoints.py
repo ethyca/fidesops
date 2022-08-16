@@ -284,13 +284,13 @@ def instantiate_connection(
     )
     if not connector_template:
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
+            status_code=HTTP_404_NOT_FOUND,
             detail=f"SaaS connector type '{saas_connector_type}' is not registered.",
         )
 
     if DatasetConfig.filter(
         db=db,
-        conditions=((DatasetConfig.fides_key == template_values.instance_key)),
+        conditions=(DatasetConfig.fides_key == template_values.instance_key),
     ).count():
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,

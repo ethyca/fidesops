@@ -228,7 +228,89 @@ class TestInstantiateConnectionFromTemplate:
         )
         assert resp.status_code == 403
 
-    def test_instantiate_mail_chimp_connection_from_template(
+    def test_instantiate_nonexistent_template(
+        self, generate_auth_header, api_client, base_url
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_INSTANTIATE])
+        request_body = {
+            "instance_key": "test_instance_key",
+            "secrets": {},
+            "name": "Unsupported Connector",
+            "description": "Unsupported connector description",
+            "key": "unsupported_connector",
+        }
+        resp = api_client.post(
+            base_url.format(saas_connector_type="does_not_exist"),
+            headers=auth_header,
+            json=request_body,
+        )
+        assert resp.status_code == 404
+        assert (
+            resp.json()["detail"]
+            == f"SaaS connector type '{'does_not_exist'}' is not registered."
+        )
+
+    def test_instance_key_already_exists(
+        self, generate_auth_header, api_client, base_url, dataset_config
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_INSTANTIATE])
+        request_body = {
+            "instance_key": dataset_config.fides_key,
+            "secrets": {
+                "domain": "test_mailchimp_domain",
+                "username": "test_mailchimp_username",
+                "api_key": "test_mailchimp_api_key",
+            },
+            "name": "Mailchimp Connector",
+            "description": "Mailchimp ConnectionConfig description",
+            "key": "mailchimp_connection_config",
+        }
+        resp = api_client.post(
+            base_url.format(saas_connector_type="mailchimp"),
+            headers=auth_header,
+            json=request_body,
+        )
+        assert resp.status_code == 400
+        assert (
+            resp.json()["detail"]
+            == f"SaaS connector instance key '{dataset_config.fides_key}' already exists."
+        )
+
+    def test_template_secrets_validation(
+        self, generate_auth_header, api_client, base_url
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_INSTANTIATE])
+        # Secrets have one field missing, one field extra
+        request_body = {
+            "instance_key": "secondary_mailchimp_instance",
+            "secrets": {
+                "bad_mailchimp_secret_key": "bad_key",
+                "username": "test_mailchimp_username",
+                "api_key": "test_mailchimp_api_key",
+            },
+            "name": "Mailchimp Connector",
+            "description": "Mailchimp ConnectionConfig description",
+            "key": "mailchimp_connection_config",
+        }
+        resp = api_client.post(
+            base_url.format(saas_connector_type="mailchimp"),
+            headers=auth_header,
+            json=request_body,
+        )
+
+        assert resp.status_code == 422
+        assert resp.json()["detail"][0] == {
+            "loc": ["domain"],
+            "msg": "field required",
+            "type": "value_error.missing",
+        }
+        assert resp.json()["detail"][1] == {
+            "loc": ["bad_mailchimp_secret_key"],
+            "msg": "extra fields not permitted",
+            "type": "value_error.extra",
+        }
+
+    def test_instantiate_mailchimp_connection_from_template(
         self, db, generate_auth_header, api_client, base_url
     ):
         connection_config = ConnectionConfig.filter(

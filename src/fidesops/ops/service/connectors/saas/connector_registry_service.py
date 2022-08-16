@@ -79,13 +79,13 @@ class ConnectorRegistry(BaseModel):
 
 def create_connection_config_from_template(
     db: Session,
-    connector_template: ConnectorTemplate,
+    template: ConnectorTemplate,
     template_values: SaasConnectionTemplateValues,
 ) -> ConnectionConfig:
     """Creates a SaaS connection config from a template"""
     # Load saas config from template
     config_from_template: Dict = load_config_with_replacement(
-        connector_template.config, "instance_fides_key", template_values.instance_key
+        template.config, "instance_fides_key", template_values.instance_key
     )
 
     # Create SaaS ConnectionConfig
@@ -107,12 +107,12 @@ def create_connection_config_from_template(
 def create_dataset_config_from_template(
     db: Session,
     connection_config: ConnectionConfig,
-    connector_template: ConnectorTemplate,
+    template: ConnectorTemplate,
     template_values: SaasConnectionTemplateValues,
 ) -> DatasetConfig:
     """Creates a DatasetConfig from a template and associates it with a ConnectionConfig"""
     dataset_from_template: Dict = load_dataset_with_replacement(
-        connector_template.dataset, "instance_fides_key", template_values.instance_key
+        template.dataset, "instance_fides_key", template_values.instance_key
     )[0]
     data = {
         "connection_config_id": connection_config.id,
