@@ -1,0 +1,311 @@
+dataset:
+- fides_key: fidesops_dataset
+  name: Fidesops Database
+  description: Application database for Fidesops
+  collections:
+  - name: auditlog
+    fields:
+    - name: user_id
+      data_categories: [user.unique_id]
+    - name: privacy_request_id
+      data_categories: [system.operations]
+    - name: action
+      data_categories: [system.operations]
+    - name: action
+      data_categories: [system.operations]
+  - name: authenticationrequest
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: connection_key
+      data_categories: [system.operations]
+    - name: state
+      data_categories: [system.operations]
+  - name: client
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: hashed_secret
+      data_categories: [system.operations]
+    - name: salt
+      data_categories: [system.operations]
+    - name: scopes
+      data_categories: [system.operations]
+    - name: fides_key
+      data_categories: [system.operations]
+    - name: user_id
+      data_categories: [user.unique_id]
+  - name: connectionconfig
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: key
+      data_categories: [system.operations]
+    - name: connection_type
+      data_categories: [system.operations]
+    - name: access
+      data_categories: [system.operations]
+    - name: secrets
+      data_categories: [system.operations]
+    - name: last_test_timestamp
+      data_categories: [system.operations]
+    - name: last_test_succeeded
+      data_categories: [system.operations]
+    - name: saas_config
+      data_categories: [system.operations]
+    - name: disabled
+      data_categories: [system.operations]
+    - name: disabled_at
+      data_categories: [system.operations]
+    - name: description
+      data_categories: [system.operations]
+  - name: datasetconfig
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: connection_config_id
+      data_categories: [system.operations]
+    - name: fides_key
+      data_categories: [system.operations]
+    - name: dataset
+      data_categories: [system.operations]
+  - name: executionlog
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: dataset_name
+      data_categories: [system.operations]
+    - name: collection_name
+      data_categories: [system.operations]
+    - name: fields_affected
+      data_categories: [system.operations]
+    - name: message
+      data_categories: [system.operations]
+    - name: action_type
+      data_categories: [system.operations]
+    - name: status
+      data_categories: [system.operations]
+    - name: privacy_request_id
+      data_categories: [system.operations]
+  - name: fidesuser
+    fields:
+    - name: id
+      data_categories: [user.unique_id]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: username
+      data_categories: [user.credentials]
+    - name: hashed_password
+      data_categories: [user.credentials.password]
+    - name: salt
+      data_categories: [system.operations]
+    - name: last_login_at
+      data_categories: [system.operations]
+    - name: password_reset_at
+      data_categories: [system.operations]
+    - name: first_name
+      data_categories: [user.name.first]
+    - name: last_name
+      data_categories: [user.name.last]
+  - name: fidesuserpermissions
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: user_id
+      data_categories: [user.unique_id]
+    - name: scopes
+      data_categories: [system.operations]
+  - name: policy
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: key
+      data_categories: [system.operations]
+    - name: client_id
+      data_categories: [system.operations]
+    - name: drp_action
+      data_categories: [system.operations]
+  - name: policypostwebhook
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: key
+      data_categories: [system.operations]
+    - name: direction
+      data_categories: [system.operations]
+    - name: order
+      data_categories: [system.operations]
+    - name: policy_id
+      data_categories: [system.operations]
+    - name: connection_config_id
+      data_categories: [system.operations]
+  - name: policyprewebhook
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: key
+      data_categories: [system.operations]
+    - name: direction
+      data_categories: [system.operations]
+    - name: order
+      data_categories: [system.operations]
+    - name: policy_id
+      data_categories: [system.operations]
+    - name: connection_config_id
+      data_categories: [system.operations]
+  - name: privacyrequest
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: external_id
+      data_categories: [system.operations]
+    - name: started_processing
+      data_categories: [system.operations]
+    - name: finished_processing_at
+      data_categories: [system.operations]
+    - name: requested_at
+      data_categories: [system.operations]
+    - name: status
+      data_categories: [system.operations]
+    - name: client_id
+      data_categories: [system.operations]
+    - name: origin
+      data_categories: [system.operations]
+    - name: policy_id
+      data_categories: [system.operations]
+    - name: reviewed_at
+      data_categories: [system.operations]
+    - name: reviewed_by
+      data_categories: [user.name]
+    - name: paused_at
+      data_categories: [system.operations]
+    - name: cancel_reason
+      data_categories: [system.operations]
+    - name: canceled_at
+      data_categories: [system.operations]
+  - name: providedidentity
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: privacy_request_id
+      data_categories: [system.operations]
+    - name: field_name
+      data_categories: [system.operations]
+    - name: hashed_value
+      data_categories: [user]
+    - name: encrypted_value
+      data_categories: [user]
+  - name: rule
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: key
+      data_categories: [system.operations]
+    - name: policy_id
+      data_categories: [system.operations]
+    - name: action_type
+      data_categories: [system.operations]
+    - name: masking_strategy
+      data_categories: [system.operations]
+    - name: storage_destination_id
+      data_categories: [system.operations]
+    - name: client_id
+      data_categories: [system.operations]
+  - name: ruletarget
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: key
+      data_categories: [system.operations]
+    - name: data_category
+      data_categories: [system.operations]
+    - name: rule_id
+      data_categories: [system.operations]
+    - name: client_id
+      data_categories: [system.operations]
+  - name: storageconfig
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: type
+      data_categories: [system.operations]
+    - name: details
+      data_categories: [system.operations]
+    - name: key
+      data_categories: [system.operations]
+    - name: secrets
+      data_categories: [system.operations]
+    - name: format
+      data_categories: [system.operations]

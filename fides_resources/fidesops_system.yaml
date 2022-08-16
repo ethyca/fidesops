@@ -1,0 +1,17 @@
+dataset:
+- fides_key: fidesops_system
+  name: Fidesops
+  description: Privacy Request Fufillment
+  system_type: Application
+  privacy_declarations:
+  - name: Manage privacy request Fufillment
+    data_categories::
+    - user
+    - user.credentials.password
+    - user.name
+    - user.name.first
+    - user.name.last
+    - user.unique_id
+    - system.operations
+    dataset_references:
+    - fidesops_dataset
