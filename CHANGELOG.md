@@ -23,6 +23,9 @@ The types of changes are:
 
 * Access support for Datadog Logs [#1060](https://github.com/ethyca/fidesops/pull/1060)
 * Access and erasure support for Logi ID [#1074](https://github.com/ethyca/fidesops/pull/1074)
+* Add a Connection - SaaS connector's configuration parameters [#761](https://github.com/ethyca/fidesops/pull/1099)
+* Saas Connector configuration - left navigation to toggle between connection params and dataset config [#984](https://github.com/ethyca/fidesops/pull/1099)
+* SaaS Connector Configuration - Testing a Connection [#985](https://github.com/ethyca/fidesops/pull/1099)
 
 ### Developer Experience
 
