@@ -477,6 +477,10 @@ class TestInstantiateConnectionFromTemplate:
         assert connection_config.access == AccessLevel.write
         assert connection_config.connection_type == ConnectionType.saas
         assert connection_config.saas_config is not None
+        assert connection_config.disabled is False
+        assert connection_config.disabled_at is None
+        assert connection_config.last_test_timestamp is None
+        assert connection_config.last_test_succeeded is None
 
         assert dataset_config.connection_config_id == connection_config.id
         assert dataset_config.dataset is not None

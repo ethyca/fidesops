@@ -1,7 +1,6 @@
 from typing import Any, Dict, List, Optional
 
 from fideslang.models import Dataset, DatasetCollection, DatasetFieldBase
-from fideslang.validation import FidesKey
 from pydantic import BaseModel, ConstrainedStr, Field, validator
 
 from fidesops.ops.common_exceptions import (
