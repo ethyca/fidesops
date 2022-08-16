@@ -167,11 +167,11 @@ def put_config_secrets(
 @router.get(
     EMAIL_CONFIG,
     dependencies=[Security(verify_oauth_client, scopes=[EMAIL_READ])],
-    response_model=Page[EmailConfig],
+    response_model=Page[EmailConfigResponse],
 )
 def get_configs(
     *, db: Session = Depends(deps.get_db), params: Params = Depends()
-) -> AbstractPage[EmailConfigResponse]:
+) -> AbstractPage[EmailConfig]:
     """
     Retrieves configs for email.
     """
