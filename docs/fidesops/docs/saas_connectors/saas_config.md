@@ -160,6 +160,7 @@ authentication:
   configuration:
     token: <api_key>
 ```
+Fidesops also supports `oauth2` authentication, additional details can be found [here](saas_oauth2.md).
 
 #### Test request
 Once the base client is defined we can use a `test_request` to verify our hostname and credentials. This is in the form of an idempotent request (usually a read). The testing approach is the same for any [ConnectionConfig test](../guides/database_connectors.md#testing-your-connection).
@@ -519,7 +520,7 @@ collections:
       - name: from_label
         data_categories: [system.operations]
       - name: from_email
-        data_categories: [user.provided.identifiable.contact.email]
+        data_categories: [user.contact.email]
       - name: subject
         data_categories: [system.operations]
       - name: message
@@ -571,7 +572,7 @@ collections:
       - name: from_label
         data_categories: [system.operations]
       - name: from_email
-        data_categories: [user.provided.identifiable.contact.email]
+        data_categories: [user.contact.email]
       - name: subject
         data_categories: [system.operations]
       - name: message

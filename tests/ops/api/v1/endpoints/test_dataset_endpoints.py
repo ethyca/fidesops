@@ -11,20 +11,20 @@ from pydash import filter_
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fidesops.api.v1.scope_registry import (
+from fidesops.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
 )
-from fidesops.api.v1.urn_registry import (
+from fidesops.ops.api.v1.urn_registry import (
     DATASET_BY_KEY,
     DATASET_VALIDATE,
     DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
-from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.models.datasetconfig import DatasetConfig
 
 
 def _reject_key(dict: Dict, key: str) -> Dict:
@@ -130,7 +130,7 @@ class TestValidateDataset:
                 "fields": [
                     {
                         "name": "phone",
-                        "data_categories": ["user.provided.identifiable.contact"],
+                        "data_categories": ["user.contact"],
                     },
                     {"name": "count", "data_categories": ["system.operations"]},
                 ],
@@ -140,6 +140,7 @@ class TestValidateDataset:
             validate_dataset_url, headers=auth_header, json=invalid_dataset
         )
         json_response = json.loads(response.text)
+        print(json_response)
 
         # if we extract the details field from the response it will contain
         # the nested fields "phone" and "count"
@@ -346,6 +347,7 @@ class TestValidateDataset:
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=dataset
         )
+        print(response.text)
         assert response.status_code == 200
         response_body = json.loads(response.text)
         assert response_body["dataset"]
@@ -800,7 +802,7 @@ class TestPutDatasets:
             "'saas_connector_example' of the connection config"
         )
 
-    @mock.patch("fidesops.models.datasetconfig.DatasetConfig.create_or_update")
+    @mock.patch("fidesops.ops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,
@@ -894,7 +896,7 @@ class TestPutYamlDatasets:
         )
         assert response.status_code == 400
 
-    @mock.patch("fidesops.models.datasetconfig.DatasetConfig.create_or_update")
+    @mock.patch("fidesops.ops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,
