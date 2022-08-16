@@ -22,6 +22,9 @@ export type DatastoreConnection = {
   saas_config?: SaasConfig;
 };
 
+export const isDatastoreConnection = (obj: any): obj is DatastoreConnection =>
+  (obj as DatastoreConnection).connection_type !== undefined;
+
 export type DatastoreConnectionParams = {
   search: string;
   connection_type?: ConnectionType[];
