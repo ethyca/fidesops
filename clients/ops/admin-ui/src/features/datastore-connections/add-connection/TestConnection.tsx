@@ -10,7 +10,6 @@ import {
 import { ErrorWarningIcon, GreenCheckCircleIcon } from "common/Icon";
 import { capitalize, formatDate } from "common/utils";
 import { ConnectionOption } from "connection-type/types";
-import { format } from "date-fns-tz";
 import React from "react";
 
 type TestConnectionProps = {

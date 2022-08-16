@@ -40,6 +40,26 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
 }) => {
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
 
+  const validateField = (label: string, value: string) => {
+    let error;
+    if (!value) {
+      error = `${label} is required`;
+    }
+    return error;
+  };
+
+  const getFormLabel = (id: string, value: string): JSX.Element => (
+    <FormLabel
+      color="gray.900"
+      fontSize="14px"
+      fontWeight="semibold"
+      htmlFor={id}
+      minWidth="141px"
+    >
+      {value}
+    </FormLabel>
+  );
+
   const getFormField = (key: string, item: { title: string }): JSX.Element => (
     <Field
       id={key}
@@ -68,18 +88,6 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     </Field>
   );
 
-  const getFormLabel = (id: string, value: string): JSX.Element => (
-    <FormLabel
-      color="gray.900"
-      fontSize="14px"
-      fontWeight="semibold"
-      htmlFor={id}
-      minWidth="141px"
-    >
-      {value}
-    </FormLabel>
-  );
-
   const getInitialValues = () => {
     Object.entries(data.properties).forEach((key) => {
       defaultValues[key[0]] = "";
@@ -98,14 +106,6 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     trigger("app_postgres_db").then((response) => {
       onTestConnectionClick(response);
     });
-  };
-
-  const validateField = (label: string, value: string) => {
-    let error;
-    if (!value) {
-      error = `${label} is required`;
-    }
-    return error;
   };
 
   return (
