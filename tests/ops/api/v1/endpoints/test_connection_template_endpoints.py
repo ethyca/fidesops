@@ -5,9 +5,9 @@ from fideslib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
 from fidesops.ops.api.v1.scope_registry import (
-    CONNECTION_INSTANTIATE,
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
+    SAAS_CONNECTION_INSTANTIATE,
 )
 from fidesops.ops.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
@@ -231,7 +231,7 @@ class TestInstantiateConnectionFromTemplate:
     def test_instantiate_nonexistent_template(
         self, generate_auth_header, api_client, base_url
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_INSTANTIATE])
+        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
         request_body = {
             "instance_key": "test_instance_key",
             "secrets": {},
@@ -253,7 +253,7 @@ class TestInstantiateConnectionFromTemplate:
     def test_instance_key_already_exists(
         self, generate_auth_header, api_client, base_url, dataset_config
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_INSTANTIATE])
+        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
         request_body = {
             "instance_key": dataset_config.fides_key,
             "secrets": {
@@ -279,7 +279,7 @@ class TestInstantiateConnectionFromTemplate:
     def test_template_secrets_validation(
         self, generate_auth_header, api_client, base_url, db
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_INSTANTIATE])
+        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
         # Secrets have one field missing, one field extra
         request_body = {
             "instance_key": "secondary_mailchimp_instance",
@@ -318,7 +318,7 @@ class TestInstantiateConnectionFromTemplate:
     def test_connection_config_key_already_exists(
         self, db, generate_auth_header, api_client, base_url, connection_config
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_INSTANTIATE])
+        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
         request_body = {
             "instance_key": "secondary_mailchimp_instance",
             "secrets": {
@@ -344,7 +344,7 @@ class TestInstantiateConnectionFromTemplate:
     def test_connection_config_name_already_exists(
         self, db, generate_auth_header, api_client, base_url, connection_config
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_INSTANTIATE])
+        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
         request_body = {
             "instance_key": "secondary_mailchimp_instance",
             "secrets": {
@@ -367,7 +367,43 @@ class TestInstantiateConnectionFromTemplate:
             in resp.json()["detail"]
         )
 
-    def test_instantiate_mailchimp_connection_from_template(
+    def test_create_connection_from_template_without_supplying_connection_key(
+        self, db, generate_auth_header, api_client, base_url
+    ):
+        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
+        request_body = {
+            "instance_key": "secondary_mailchimp_instance",
+            "secrets": {
+                "domain": "test_mailchimp_domain",
+                "username": "test_mailchimp_username",
+                "api_key": "test_mailchimp_api_key",
+            },
+            "name": "Mailchimp Connector",
+            "description": "Mailchimp ConnectionConfig description",
+        }
+        resp = api_client.post(
+            base_url.format(saas_connector_type="mailchimp"),
+            headers=auth_header,
+            json=request_body,
+        )
+        assert resp.status_code == 200
+
+        connection_config = ConnectionConfig.filter(
+            db=db, conditions=(ConnectionConfig.name == "Mailchimp Connector")
+        ).first()
+        dataset_config = DatasetConfig.filter(
+            db=db,
+            conditions=(DatasetConfig.fides_key == "secondary_mailchimp_instance"),
+        ).first()
+
+        assert connection_config is not None
+        assert dataset_config is not None
+
+        assert connection_config.key == "mailchimp_connector"
+        dataset_config.delete(db)
+        connection_config.delete(db)
+
+    def test_instantiate_connection_from_template(
         self, db, generate_auth_header, api_client, base_url
     ):
         connection_config = ConnectionConfig.filter(
@@ -380,7 +416,7 @@ class TestInstantiateConnectionFromTemplate:
         ).first()
         assert dataset_config is None
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_INSTANTIATE])
+        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
         request_body = {
             "instance_key": "secondary_mailchimp_instance",
             "secrets": {

@@ -17,10 +17,10 @@ from fidesops.ops.api import deps
 from fidesops.ops.api.v1.endpoints.connection_endpoints import validate_secrets
 from fidesops.ops.api.v1.scope_registry import (
     CONNECTION_AUTHORIZE,
-    CONNECTION_INSTANTIATE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
+    SAAS_CONNECTION_INSTANTIATE,
 )
 from fidesops.ops.api.v1.urn_registry import (
     AUTHORIZE,
@@ -51,7 +51,7 @@ from fidesops.ops.service.authentication.authentication_strategy_oauth2 import (
 from fidesops.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     ConnectorTemplate,
-    create_connection_config_from_template,
+    create_connection_config_from_template_no_save,
     create_dataset_config_from_template,
     load_registry,
     registry_file,
@@ -265,15 +265,17 @@ def authorize_connection(
 
 @router.post(
     SAAS_CONNECTOR_FROM_TEMPLATE,
-    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_INSTANTIATE])],
+    dependencies=[Security(verify_oauth_client, scopes=[SAAS_CONNECTION_INSTANTIATE])],
     response_model=FidesopsDataset,
 )
-def instantiate_connection(
+def instantiate_connection_from_template(
     saas_connector_type: str,
     template_values: SaasConnectionTemplateValues,
     db: Session = Depends(deps.get_db),
 ) -> FidesopsDataset:
     """
+    Creates a SaaS Connector and a SaaS Dataset from a template.
+
     Looks up the connector type in the SaaS connector registry and, if all required
     fields are provided, persists the associated connection config and dataset to the database.
     """
@@ -298,8 +300,10 @@ def instantiate_connection(
         )
 
     try:
-        connection_config: ConnectionConfig = create_connection_config_from_template(
-            db, connector_template, template_values
+        connection_config: ConnectionConfig = (
+            create_connection_config_from_template_no_save(
+                db, connector_template, template_values
+            )
         )
     except KeyOrNameAlreadyExists as exc:
         raise HTTPException(
@@ -315,6 +319,5 @@ def instantiate_connection(
     dataset_config: DatasetConfig = create_dataset_config_from_template(
         db, connection_config, connector_template, template_values
     )
-    # TODO Roll back if there's an error.
 
     return dataset_config.dataset

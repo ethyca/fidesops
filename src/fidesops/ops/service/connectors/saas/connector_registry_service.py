@@ -77,12 +77,12 @@ class ConnectorRegistry(BaseModel):
         return self.__root__.get(connector_type)
 
 
-def create_connection_config_from_template(
+def create_connection_config_from_template_no_save(
     db: Session,
     template: ConnectorTemplate,
     template_values: SaasConnectionTemplateValues,
 ) -> ConnectionConfig:
-    """Creates a SaaS connection config from a template"""
+    """Creates a SaaS connection config from a template without saving it."""
     # Load saas config from template
     config_from_template: Dict = load_config_with_replacement(
         template.config, "instance_fides_key", template_values.instance_key

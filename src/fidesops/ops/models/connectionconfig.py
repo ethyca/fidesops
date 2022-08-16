@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import Any, Optional, Type, TypeVar
+from typing import Any, Optional, Type
 
 from fideslib.db.base import Base
 from fideslib.db.base_class import get_key_from_data
