@@ -89,7 +89,7 @@ def create_connection_config_from_template(
     )
 
     # Create SaaS ConnectionConfig
-    connection_config = ConnectionConfig.create_or_update(
+    connection_config = ConnectionConfig.create_without_saving(
         db,
         data={
             "name": template_values.name,
@@ -119,7 +119,7 @@ def create_dataset_config_from_template(
         "fides_key": template_values.instance_key,
         "dataset": dataset_from_template,
     }
-    dataset_config = DatasetConfig.create_or_update(db, data=data)
+    dataset_config = DatasetConfig.create(db, data=data)
     return dataset_config
 
 

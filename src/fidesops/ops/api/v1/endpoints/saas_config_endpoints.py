@@ -3,6 +3,7 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.params import Security
+from fideslib.exceptions import KeyOrNameAlreadyExists
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -277,7 +278,6 @@ def instantiate_connection(
     fields are provided, persists the associated connection config and dataset to the database.
     """
 
-    # verify connector type is registered
     registry: ConnectorRegistry = load_registry(registry_file)
     connector_template: Optional[ConnectorTemplate] = registry.get_connector_template(
         saas_connector_type
@@ -297,13 +297,20 @@ def instantiate_connection(
             detail=f"SaaS connector instance key '{template_values.instance_key}' already exists.",
         )
 
-    connection_config: ConnectionConfig = create_connection_config_from_template(
-        db, connector_template, template_values
-    )
+    try:
+        connection_config: ConnectionConfig = create_connection_config_from_template(
+            db, connector_template, template_values
+        )
+    except KeyOrNameAlreadyExists as exc:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=exc.args[0],
+        )
+
     connection_config.secrets = validate_secrets(
         template_values.secrets, connection_config
     ).dict()
-    connection_config.save(db=db)
+    connection_config.save(db=db)  # Not persisted to db until secrets are validated
 
     dataset_config: DatasetConfig = create_dataset_config_from_template(
         db, connection_config, connector_template, template_values

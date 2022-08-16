@@ -277,7 +277,7 @@ class TestInstantiateConnectionFromTemplate:
         )
 
     def test_template_secrets_validation(
-        self, generate_auth_header, api_client, base_url
+        self, generate_auth_header, api_client, base_url, db
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_INSTANTIATE])
         # Secrets have one field missing, one field extra
@@ -309,6 +309,63 @@ class TestInstantiateConnectionFromTemplate:
             "msg": "extra fields not permitted",
             "type": "value_error.extra",
         }
+
+        connection_config = ConnectionConfig.filter(
+            db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")
+        ).first()
+        assert connection_config is None, "ConnectionConfig not persisted"
+
+    def test_connection_config_key_already_exists(
+        self, db, generate_auth_header, api_client, base_url, connection_config
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_INSTANTIATE])
+        request_body = {
+            "instance_key": "secondary_mailchimp_instance",
+            "secrets": {
+                "domain": "test_mailchimp_domain",
+                "username": "test_mailchimp_username",
+                "api_key": "test_mailchimp_api_key",
+            },
+            "name": connection_config.name,
+            "description": "Mailchimp ConnectionConfig description",
+            "key": connection_config.key,
+        }
+        resp = api_client.post(
+            base_url.format(saas_connector_type="mailchimp"),
+            headers=auth_header,
+            json=request_body,
+        )
+        assert resp.status_code == 400
+        assert (
+            f"Key {connection_config.key} already exists in ConnectionConfig"
+            in resp.json()["detail"]
+        )
+
+    def test_connection_config_name_already_exists(
+        self, db, generate_auth_header, api_client, base_url, connection_config
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_INSTANTIATE])
+        request_body = {
+            "instance_key": "secondary_mailchimp_instance",
+            "secrets": {
+                "domain": "test_mailchimp_domain",
+                "username": "test_mailchimp_username",
+                "api_key": "test_mailchimp_api_key",
+            },
+            "name": connection_config.name,
+            "description": "Mailchimp ConnectionConfig description",
+            "key": "brand_new_key",
+        }
+        resp = api_client.post(
+            base_url.format(saas_connector_type="mailchimp"),
+            headers=auth_header,
+            json=request_body,
+        )
+        assert resp.status_code == 400
+        assert (
+            f"Name {connection_config.name} already exists in ConnectionConfig"
+            in resp.json()["detail"]
+        )
 
     def test_instantiate_mailchimp_connection_from_template(
         self, db, generate_auth_header, api_client, base_url
