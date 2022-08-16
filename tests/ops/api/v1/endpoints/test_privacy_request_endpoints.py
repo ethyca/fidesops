@@ -20,18 +20,19 @@ from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
 from starlette.testclient import TestClient
 
-from fidesops.api.v1.endpoints.privacy_request_endpoints import (
+from fidesops.ops.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
+    execution_and_audit_logs_by_dataset_name,
     validate_manual_input,
 )
-from fidesops.api.v1.scope_registry import (
+from fidesops.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
     STORAGE_CREATE_OR_UPDATE,
 )
-from fidesops.api.v1.urn_registry import (
+from fidesops.ops.api.v1.urn_registry import (
     DATASETS,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
@@ -43,23 +44,24 @@ from fidesops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
 )
-from fidesops.core.config import config
-from fidesops.graph.config import CollectionAddress
-from fidesops.graph.graph import DatasetGraph
-from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import ActionType, PausedStep
-from fidesops.models.privacy_request import (
+from fidesops.ops.core.config import config
+from fidesops.ops.graph.config import CollectionAddress
+from fidesops.ops.graph.graph import DatasetGraph
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.policy import ActionType, PausedStep
+from fidesops.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     ManualAction,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fidesops.schemas.dataset import DryRunDatasetResponse
-from fidesops.schemas.masking.masking_secrets import SecretType
-from fidesops.schemas.policy import PolicyResponse
-from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.util.cache import (
+from fidesops.ops.schemas.dataset import DryRunDatasetResponse
+from fidesops.ops.schemas.masking.masking_secrets import SecretType
+from fidesops.ops.schemas.policy import PolicyResponse
+from fidesops.ops.schemas.privacy_request import ExecutionAndAuditLogResponse
+from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
     get_masking_secret_cache_key,
@@ -78,7 +80,7 @@ class TestCreatePrivacyRequest:
         return V1_URL_PREFIX + PRIVACY_REQUESTS
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_privacy_request(
         self,
@@ -104,7 +106,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_privacy_request_stores_identities(
         self,
@@ -138,7 +140,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_privacy_request_require_manual_approval(
         self,
@@ -169,7 +171,7 @@ class TestCreatePrivacyRequest:
         config.execution.require_manual_request_approval = False
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_privacy_request_with_masking_configuration(
         self,
@@ -195,7 +197,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_access_request"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_access_request"
     )
     def test_create_privacy_request_limit_exceeded(
         self,
@@ -224,7 +226,7 @@ class TestCreatePrivacyRequest:
         )
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_privacy_request_starts_processing(
         self,
@@ -249,7 +251,7 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_privacy_request_with_external_id(
         self,
@@ -279,7 +281,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_privacy_request_caches_identity(
         self,
@@ -312,7 +314,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_privacy_request_caches_masking_secrets(
         self,
@@ -361,7 +363,7 @@ class TestCreatePrivacyRequest:
         assert resp.json()["detail"][0]["msg"] == "Encryption key must be 16 bytes long"
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_privacy_request_caches_encryption_keys(
         self,
@@ -439,7 +441,7 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_privacy_request_creates_system_audit_log(
         self,
@@ -955,6 +957,7 @@ class TestGetPrivacyRequests:
         api_client: TestClient,
         generate_auth_header,
         privacy_request: PrivacyRequest,
+        audit_log,
         postgres_execution_log,
         second_postgres_execution_log,
         mongo_execution_log,
@@ -1000,6 +1003,17 @@ class TestGetPrivacyRequests:
                     "stopped_collection_details": None,
                     "resume_endpoint": None,
                     "results": {
+                        "Request approved": [
+                            {
+                                "collection_name": None,
+                                "fields_affected": None,
+                                "message": "",
+                                "action_type": None,
+                                "status": "approved",
+                                "updated_at": stringify_date(audit_log.updated_at),
+                                "user_id": "system",
+                            }
+                        ],
                         "my-mongo-db": [
                             {
                                 "collection_name": "orders",
@@ -1007,9 +1021,7 @@ class TestGetPrivacyRequests:
                                     {
                                         "path": "my-mongo-db:orders:name",
                                         "field_name": "name",
-                                        "data_categories": [
-                                            "user.provided.identifiable.contact.name"
-                                        ],
+                                        "data_categories": ["user.contact.name"],
                                     }
                                 ],
                                 "message": None,
@@ -1018,6 +1030,7 @@ class TestGetPrivacyRequests:
                                 "updated_at": stringify_date(
                                     mongo_execution_log.updated_at
                                 ),
+                                "user_id": None,
                             }
                         ],
                         "my-postgres-db": [
@@ -1027,9 +1040,7 @@ class TestGetPrivacyRequests:
                                     {
                                         "path": "my-postgres-db:user:email",
                                         "field_name": "email",
-                                        "data_categories": [
-                                            "user.provided.identifiable.contact.email"
-                                        ],
+                                        "data_categories": ["user.contact.email"],
                                     }
                                 ],
                                 "message": None,
@@ -1038,6 +1049,7 @@ class TestGetPrivacyRequests:
                                 "updated_at": stringify_date(
                                     postgres_execution_log.updated_at
                                 ),
+                                "user_id": None,
                             },
                             {
                                 "collection_name": "address",
@@ -1046,14 +1058,14 @@ class TestGetPrivacyRequests:
                                         "path": "my-postgres-db:address:street",
                                         "field_name": "street",
                                         "data_categories": [
-                                            "user.provided.identifiable.contact.street"
+                                            "user.contact.address.street"
                                         ],
                                     },
                                     {
                                         "path": "my-postgres-db:address:city",
                                         "field_name": "city",
                                         "data_categories": [
-                                            "user.provided.identifiable.contact.city"
+                                            "user.contact.address.city"
                                         ],
                                     },
                                 ],
@@ -1063,6 +1075,7 @@ class TestGetPrivacyRequests:
                                 "updated_at": stringify_date(
                                     second_postgres_execution_log.updated_at
                                 ),
+                                "user_id": None,
                             },
                         ],
                     },
@@ -1332,9 +1345,7 @@ class TestGetExecutionLogs:
                         {
                             "path": "my-postgres-db:user:email",
                             "field_name": "email",
-                            "data_categories": [
-                                "user.provided.identifiable.contact.email"
-                            ],
+                            "data_categories": ["user.contact.email"],
                         }
                     ],
                     "message": None,
@@ -1349,9 +1360,7 @@ class TestGetExecutionLogs:
                         {
                             "path": "my-mongo-db:orders:name",
                             "field_name": "name",
-                            "data_categories": [
-                                "user.provided.identifiable.contact.name"
-                            ],
+                            "data_categories": ["user.contact.name"],
                         }
                     ],
                     "message": None,
@@ -1366,16 +1375,12 @@ class TestGetExecutionLogs:
                         {
                             "path": "my-postgres-db:address:street",
                             "field_name": "street",
-                            "data_categories": [
-                                "user.provided.identifiable.contact.street"
-                            ],
+                            "data_categories": ["user.contact.address.street"],
                         },
                         {
                             "path": "my-postgres-db:address:city",
                             "field_name": "city",
-                            "data_categories": [
-                                "user.provided.identifiable.contact.city"
-                            ],
+                            "data_categories": ["user.contact.address.city"],
                         },
                     ],
                     "message": "Database timed out.",
@@ -1535,7 +1540,7 @@ class TestApprovePrivacyRequest:
         assert response.status_code == 403
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_approve_privacy_request_does_not_exist(
         self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
@@ -1560,7 +1565,7 @@ class TestApprovePrivacyRequest:
         [PrivacyRequestStatus.complete, PrivacyRequestStatus.canceled],
     )
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_approve_privacy_request_in_non_pending_state(
         self,
@@ -1590,7 +1595,7 @@ class TestApprovePrivacyRequest:
         assert not submit_mock.called
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_approve_privacy_request_no_user_on_client(
         self,
@@ -1621,7 +1626,7 @@ class TestApprovePrivacyRequest:
         assert submit_mock.called
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_approve_privacy_request(
         self,
@@ -1664,7 +1669,7 @@ class TestApprovePrivacyRequest:
         privacy_request.delete(db)
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_approve_privacy_request_creates_audit_log(
         self,
@@ -1720,7 +1725,7 @@ class TestDenyPrivacyRequest:
         assert response.status_code == 403
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_deny_privacy_request_does_not_exist(
         self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
@@ -1741,7 +1746,7 @@ class TestDenyPrivacyRequest:
         assert not submit_mock.called
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_deny_completed_privacy_request(
         self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
@@ -1762,7 +1767,7 @@ class TestDenyPrivacyRequest:
         assert not submit_mock.called
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_deny_privacy_request_without_denial_reason(
         self,
@@ -1813,7 +1818,7 @@ class TestDenyPrivacyRequest:
         privacy_request.delete(db)
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_deny_privacy_request_with_denial_reason(
         self,
@@ -1969,7 +1974,7 @@ class TestResumePrivacyRequest:
         privacy_request.delete(db)
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_resume_privacy_request(
         self,
@@ -2119,7 +2124,7 @@ class TestResumeAccessRequestWithManualInput:
         privacy_request.delete(db)
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @pytest.mark.usefixtures(
         "postgres_example_test_dataset_config", "manual_dataset_config"
@@ -2300,7 +2305,7 @@ class TestResumeErasureRequestWithManualConfirmation:
         "postgres_example_test_dataset_config", "manual_dataset_config"
     )
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_resume_with_manual_count(
         self,
@@ -2380,7 +2385,7 @@ class TestRestartFromFailure:
         privacy_request.delete(db)
 
     @mock.patch(
-        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_restart_from_failure(
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_request

@@ -5,21 +5,21 @@ import pytest
 from fideslib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
-from fidesops.api.v1 import scope_registry as scopes
-from fidesops.api.v1.urn_registry import POLICY_DETAIL as POLICY_DETAIL_URI
-from fidesops.api.v1.urn_registry import POLICY_LIST as POLICY_CREATE_URI
-from fidesops.api.v1.urn_registry import RULE_DETAIL as RULE_DETAIL_URI
-from fidesops.api.v1.urn_registry import RULE_LIST as RULE_CREATE_URI
-from fidesops.api.v1.urn_registry import (
+from fidesops.ops.api.v1 import scope_registry as scopes
+from fidesops.ops.api.v1.urn_registry import POLICY_DETAIL as POLICY_DETAIL_URI
+from fidesops.ops.api.v1.urn_registry import POLICY_LIST as POLICY_CREATE_URI
+from fidesops.ops.api.v1.urn_registry import RULE_DETAIL as RULE_DETAIL_URI
+from fidesops.ops.api.v1.urn_registry import RULE_LIST as RULE_CREATE_URI
+from fidesops.ops.api.v1.urn_registry import (
     RULE_TARGET_DETAIL,
     RULE_TARGET_LIST,
     V1_URL_PREFIX,
 )
-from fidesops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
-from fidesops.service.masking.strategy.masking_strategy_nullify import (
+from fidesops.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
     NULL_REWRITE_STRATEGY_NAME,
 )
-from fidesops.util.data_category import DataCategory, generate_fides_data_categories
+from fidesops.ops.util.data_category import DataCategory, generate_fides_data_categories
 
 
 class TestGetPolicies:
@@ -224,13 +224,13 @@ class TestCreatePolicies:
             {
                 "name": "policy 1",
                 "action_type": "erasure",
-                "data_category": DataCategory("user.provided.identifiable").value,
+                "data_category": DataCategory("user").value,
                 "storage_destination_key": storage_config.key,
             },
             {
                 "name": "policy 2",
                 "action_type": "access",
-                "data_category": DataCategory("user.provided.identifiable").value,
+                "data_category": DataCategory("user").value,
                 "storage_destination_key": storage_config.key,
             },
         ]
@@ -257,7 +257,7 @@ class TestCreatePolicies:
                 {
                     "name": f"policy {i}",
                     "action_type": "erasure",
-                    "data_category": DataCategory("user.provided.identifiable").value,
+                    "data_category": DataCategory("user").value,
                     "storage_destination_key": storage_config.key,
                 }
             )
@@ -303,13 +303,13 @@ class TestCreatePolicies:
             {
                 "name": policy.name,
                 "action_type": "erasure",
-                "data_category": DataCategory("user.provided.identifiable").value,
+                "data_category": DataCategory("user").value,
                 "storage_destination_key": storage_config.key,
             },
             {
                 "name": policy.name,
                 "action_type": "erasure",
-                "data_category": DataCategory("user.provided.identifiable").value,
+                "data_category": DataCategory("user").value,
                 "storage_destination_key": storage_config.key,
             },
         ]
@@ -416,7 +416,7 @@ class TestCreatePolicies:
                 "name": "policy 1",
                 "action_type": "erasure",
                 "drp_action": "invalid",
-                "data_category": DataCategory("user.provided.identifiable").value,
+                "data_category": DataCategory("user").value,
                 "storage_destination_key": storage_config.key,
             }
         ]
@@ -444,7 +444,7 @@ class TestCreatePolicies:
                 "name": "policy 1",
                 "action_type": "erasure",
                 "drp_action": "deletion",
-                "data_category": DataCategory("user.provided.identifiable").value,
+                "data_category": DataCategory("user").value,
                 "storage_destination_key": storage_config.key,
             }
         ]
@@ -466,7 +466,7 @@ class TestCreatePolicies:
             {
                 "name": "test create policy api",
                 "action_type": "erasure",
-                "data_category": DataCategory("user.provided.identifiable").value,
+                "data_category": DataCategory("user").value,
                 "storage_destination_key": storage_config.key,
             }
         ]
@@ -494,7 +494,7 @@ class TestCreatePolicies:
             {
                 "name": "test create policy api",
                 "action_type": "erasure",
-                "data_category": DataCategory("user.provided.identifiable").value,
+                "data_category": DataCategory("user").value,
                 "storage_destination_key": storage_config.key,
                 "key": key,
             }
@@ -526,7 +526,7 @@ class TestCreatePolicies:
             {
                 "name": "test create policy api",
                 "action_type": "erasure",
-                "data_category": DataCategory("user.provided.identifiable").value,
+                "data_category": DataCategory("user").value,
                 "storage_destination_key": storage_config.key,
                 "key": key,
             }
@@ -861,12 +861,10 @@ class TestRuleTargets:
         rule = policy.rules[0]
         data = [
             {
-                "data_category": DataCategory("user.provided.identifiable.name").value,
+                "data_category": DataCategory("user.name").value,
             },
             {
-                "data_category": DataCategory(
-                    "user.provided.identifiable.contact.email"
-                ).value,
+                "data_category": DataCategory("user.contact.email").value,
             },
         ]
         auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
@@ -887,7 +885,7 @@ class TestRuleTargets:
         policy,
     ):
         rule = policy.rules[0]
-        data_category = DataCategory("user.provided.identifiable.name").value
+        data_category = DataCategory("user.name").value
         data = [
             {
                 "data_category": data_category,
@@ -956,7 +954,7 @@ class TestRuleTargets:
     ):
         rule = policy.rules[0]
         existing_target = rule.targets[0]
-        updated_data_category = DataCategory("user.provided.identifiable.name").value
+        updated_data_category = DataCategory("user.name").value
         data = [
             {
                 "data_category": updated_data_category,
@@ -1003,7 +1001,7 @@ class TestRuleTargets:
             },
         )
         existing_target = rule.targets[0]
-        updated_data_category = DataCategory("user.provided.identifiable.name").value
+        updated_data_category = DataCategory("user.name").value
         data = [
             {
                 "data_category": updated_data_category,
@@ -1074,8 +1072,8 @@ class TestRuleTargets:
             },
         )
 
-        target_1 = "user.provided.identifiable.contact.email"
-        target_2 = "user.provided.identifiable.contact"
+        target_1 = "user.contact.email"
+        target_2 = "user.contact"
         data = [
             {
                 "data_category": DataCategory(target_1).value,

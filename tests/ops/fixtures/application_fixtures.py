@@ -9,20 +9,21 @@ import pytest
 import yaml
 from faker import Faker
 from fideslib.core.config import load_file, load_toml
+from fideslib.models.audit_log import AuditLog, AuditLogAction
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
-from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
-from fidesops.models.connectionconfig import (
+from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import (
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.policy import (
     ActionType,
     Policy,
     PolicyPostWebhook,
@@ -30,23 +31,25 @@ from fidesops.models.policy import (
     Rule,
     RuleTarget,
 )
-from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fidesops.models.storage import ResponseFormat, StorageConfig
-from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.schemas.storage.storage import (
+from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesops.ops.models.storage import ResponseFormat, StorageConfig
+from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.storage.storage import (
     FileNaming,
     StorageDetails,
     StorageSecrets,
     StorageType,
 )
-from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC_STRATEGY_NAME
-from fidesops.service.masking.strategy.masking_strategy_nullify import (
+from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
+    HMAC_STRATEGY_NAME,
+)
+from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
     NULL_REWRITE_STRATEGY_NAME,
 )
-from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
+from fidesops.ops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE_STRATEGY_NAME,
 )
-from fidesops.util.data_category import DataCategory
+from fidesops.ops.util.data_category import DataCategory
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -99,7 +102,7 @@ integration_secrets = {
 @pytest.fixture(scope="session", autouse=True)
 def mock_upload_logic() -> Generator:
     with mock.patch(
-        "fidesops.service.storage.storage_uploader_service.upload_to_s3"
+        "fidesops.ops.service.storage.storage_uploader_service.upload_to_s3"
     ) as _fixture:
         yield _fixture
 
@@ -290,7 +293,7 @@ def erasure_policy(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": erasure_rule.id,
         },
     )
@@ -341,7 +344,7 @@ def erasure_policy_aes(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": erasure_rule.id,
         },
     )
@@ -394,7 +397,7 @@ def erasure_policy_string_rewrite_long(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": erasure_rule.id,
         },
     )
@@ -442,9 +445,7 @@ def erasure_policy_two_rules(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory(
-                "user.provided.identifiable.contact.email"
-            ).value,
+            "data_category": DataCategory("user.contact.email").value,
             "rule_id": second_erasure_rule.id,
         },
     )
@@ -493,7 +494,7 @@ def policy(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable").value,
+            "data_category": DataCategory("user").value,
             "rule_id": access_request_rule.id,
         },
     )
@@ -543,7 +544,7 @@ def policy_drp_action(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable").value,
+            "data_category": DataCategory("user").value,
             "rule_id": access_request_rule.id,
         },
     )
@@ -592,7 +593,7 @@ def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Genera
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable").value,
+            "data_category": DataCategory("user").value,
             "rule_id": erasure_request_rule.id,
         },
     )
@@ -644,7 +645,7 @@ def erasure_policy_string_rewrite(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": erasure_rule.id,
         },
     )
@@ -697,7 +698,7 @@ def erasure_policy_hmac(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": erasure_rule.id,
         },
     )
@@ -795,6 +796,21 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
     )
     yield privacy_request
     privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def audit_log(db: Session, privacy_request) -> PrivacyRequest:
+    audit_log = AuditLog.create(
+        db=db,
+        data={
+            "user_id": "system",
+            "privacy_request_id": privacy_request.id,
+            "action": AuditLogAction.approved,
+            "message": "",
+        },
+    )
+    yield audit_log
+    audit_log.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -934,9 +950,7 @@ def dataset_config(
                             },
                             {
                                 "name": "email",
-                                "data_categories": [
-                                    "user.provided.identifiable.contact.email"
-                                ],
+                                "data_categories": ["user.contact.email"],
                                 "fidesops_meta": {
                                     "identity": "email",
                                 },
@@ -976,9 +990,7 @@ def dataset_config_preview(
                             },
                             {
                                 "name": "email",
-                                "data_categories": [
-                                    "user.provided.identifiable.contact.email"
-                                ],
+                                "data_categories": ["user.contact.email"],
                                 "fidesops_meta": {
                                     "identity": "email",
                                 },

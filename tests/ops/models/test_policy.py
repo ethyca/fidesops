@@ -2,24 +2,26 @@ import pytest
 from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 
-from fidesops.common_exceptions import (
+from fidesops.ops.common_exceptions import (
     DataCategoryNotSupported,
     PolicyValidationError,
     RuleValidationError,
 )
-from fidesops.models.policy import (
+from fidesops.ops.models.policy import (
     ActionType,
     Policy,
     Rule,
     RuleTarget,
     _is_ancestor_of_contained_categories,
 )
-from fidesops.service.masking.strategy.masking_strategy_hash import HASH_STRATEGY_NAME
-from fidesops.service.masking.strategy.masking_strategy_nullify import (
+from fidesops.ops.service.masking.strategy.masking_strategy_hash import (
+    HASH_STRATEGY_NAME,
+)
+from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
     NULL_REWRITE_STRATEGY_NAME,
 )
-from fidesops.util.data_category import DataCategory
-from fidesops.util.text import to_snake_case
+from fidesops.ops.util.data_category import DataCategory
+from fidesops.ops.util.text import to_snake_case
 
 
 def test_policy_sets_slug(
@@ -250,9 +252,7 @@ def test_create_rule_target_valid_data_category(
         db=db,
         data={
             "client_id": policy.client.id,
-            "data_category": DataCategory(
-                "user.provided.identifiable.contact.email"
-            ).value,
+            "data_category": DataCategory("user.contact.email").value,
             "rule_id": policy.rules[0].id,
         },
     )
@@ -262,32 +262,32 @@ def test_create_rule_target_valid_data_category(
 
 def test_ancestor_detection():
     is_ancestor, _ = _is_ancestor_of_contained_categories(
-        fides_key="user.provided.identifiable.contact.email",
+        fides_key="user.contact.email",
         data_categories=[
-            "user.provided.identifiable",
+            "user",
         ],
     )
-    # "user.provided.identifiable.contact.email" is a descendent of
-    # "user.provided.identifiable"
+    # "user.contact.email" is a descendent of
+    # "user"
     assert is_ancestor
 
     is_ancestor, _ = _is_ancestor_of_contained_categories(
-        fides_key="user.provided.identifiable.contact.email",
+        fides_key="user.contact.email",
         data_categories=[
-            "user.provided.nonidentifiable",
+            "user.account",
         ],
     )
-    # "user.provided.identifiable.contact.email" is not a descendent of
-    # "user.provided.nonidentifiable"
+    # "user.contact.email" is not a descendent of
+    # "user.account"
     assert not is_ancestor
 
     is_ancestor, _ = _is_ancestor_of_contained_categories(
-        fides_key="user.provided.identifiable.contact.email",
+        fides_key="user.contact.email",
         data_categories=[
-            "user.provided.identifiable.contact.email",
+            "user.contact.email",
         ],
     )
-    # "user.provided.identifiable.contact.email" is not a descendent of
+    # "user.contact.email" is not a descendent of
     # itself
     assert not is_ancestor
 
@@ -322,8 +322,8 @@ def test_validate_policy(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable").value,
-            "name": "all user provided identifiable data",
+            "data_category": DataCategory("user").value,
+            "name": "all user data",
             "rule_id": erasure_rule.id,
         },
     )
@@ -346,10 +346,8 @@ def test_validate_policy(
             db=db,
             data={
                 "client_id": erasure_policy.client.id,
-                "data_category": DataCategory(
-                    "user.provided.identifiable.contact.email"
-                ).value,
-                "name": "all user provided contact emails",
+                "data_category": DataCategory("user.contact.email").value,
+                "name": "all user contact emails",
                 "rule_id": another_erasure_rule.id,
             },
         )

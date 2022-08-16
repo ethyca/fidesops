@@ -2,16 +2,16 @@ import uuid
 
 import pytest
 
-from fidesops.common_exceptions import PrivacyRequestPaused
-from fidesops.core.config import config
-from fidesops.graph.config import CollectionAddress
-from fidesops.models.policy import PausedStep
-from fidesops.models.privacy_request import (
+from fidesops.ops.common_exceptions import PrivacyRequestPaused
+from fidesops.ops.core.config import config
+from fidesops.ops.graph.config import CollectionAddress
+from fidesops.ops.models.policy import PausedStep
+from fidesops.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
 )
-from fidesops.task import graph_task
+from fidesops.ops.task import graph_task
 
 from ..graph.graph_test_util import assert_rows_match
 from ..task.traversal_data import postgres_and_manual_nodes
@@ -322,7 +322,7 @@ def test_collections_with_manual_erasure_confirmation(
     privacy_request.policy = erasure_policy
     rule = erasure_policy.rules[0]
     target = rule.targets[0]
-    target.data_category = "user.provided.identifiable"
+    target.data_category = "user"
 
     cached_data_for_erasures = {
         "postgres_example:payment_card": [

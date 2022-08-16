@@ -16,7 +16,28 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.3...main)
+
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.0...main)
+
+### Added
+
+* Access support for Datadog Logs [#1060](https://github.com/ethyca/fidesops/pull/1060)
+* Access and erasure support for Logi ID [#1074](https://github.com/ethyca/fidesops/pull/1074)
+
+### Developer Experience
+
+* When releases are published, dispatch a repository webhook event to ethyca/fidesdemo [#1075](https://github.com/ethyca/fidesops/pull/1075)
+
+### Fixed
+
+* HTTP headers are now preserved in requests generated from SaaS connector pagination [#1069](https://github.com/ethyca/fidesops/pull/1069)
+
+### Changed
+
+* Update request status endpoint to return both audit and execution logs [#1068] https://github.com/ethyca/fidesops/pull/1068/
+
+
+## [1.7.0](https://github.com/ethyca/fidesops/compare/1.6.3...1.7.0)
 
 ### Added
 
@@ -27,31 +48,35 @@ The types of changes are:
 * Access and erasure support for Adobe Campaign [#905](https://github.com/ethyca/fidesops/pull/905)
 * Added db vs saas to connection type api [#937](https://github.com/ethyca/fidesops/pull/937)
 * Retry a DSR (FE) [#863](https://github.com/ethyca/fidesops/pull/938)
-* Add a Connection - Select a connector to configure (front end) [#760] (https://github.com/ethyca/fidesops/pull/987)
-* Add a Connection - Front End layout structure [#866] (https://github.com/ethyca/fidesops/pull/987)
+* Add a Connection - Select a connector to configure (front end) [#760](https://github.com/ethyca/fidesops/pull/987)
+* Add a Connection - Front End layout structure [#866](https://github.com/ethyca/fidesops/pull/987)
 * Enable python function overrides for SaaS connector request execution [#986](https://github.com/ethyca/fidesops/pull/986)
 * add Events and logs section to Subject Request Details Page [#1018](https://github.com/ethyca/fidesops/pull/1018)
 * Access and erasure support for Auth0 [#991](https://github.com/ethyca/fidesops/pull/991)
-* Start better understanding how request execution fails [#993] (https://github.com/ethyca/fidesops/pull/993)
+* Start better understanding how request execution fails [#993](https://github.com/ethyca/fidesops/pull/993)
 * Add approval `AuditLog`s for user and sytem approved privacy requests [#1038](https://github.com/ethyca/fidesops/pull/1038)
+* Add finished `AuditLog` for subject requests [#1040](https://github.com/ethyca/fidesops/pull/1040)
 
 ### Changed
 
 * Users should be able to click on the full field of a dropdown-type filter to open up the dropdown [#747](https://github.com/ethyca/fidesops/pull/903)
-* Updated the python docker base image from slim-buster to slim-bullseye [928](https://github.com/ethyca/fidesops/pull/928)
-* Removed ipython from the docker install [928](https://github.com/ethyca/fidesops/pull/928)
+* Reorganize the core code logic to be easier to merge with fidesctl [#1058](https://github.com/ethyca/fidesops/pull/1058)
+* Updated the python docker base image from slim-buster to slim-bullseye [#928](https://github.com/ethyca/fidesops/pull/928)
+* Removed ipython from the docker install [#928](https://github.com/ethyca/fidesops/pull/928)
+* Run static nox checks outside of Docker [#1053](https://github.com/ethyca/fidesops/pull/1053)
 * Serve admin UI by default [#906](https://github.com/ethyca/fidesops/pull/936)
 * Move tests into an `ops` subdir [#935](https://github.com/ethyca/fidesops/pull/935)
 * Move client code into an `ops` subdir [#964](https://github.com/ethyca/fidesops/pull/964)
-* Updated the docs docker base image to be consistent with the fidesops image [949](https://github.com/ethyca/fidesops/pull/949)
-
-### Breaking Changes
-
+* Updated the docs docker base image to be consistent with the fidesops image [#949](https://github.com/ethyca/fidesops/pull/949)
 * Update fidesops to use bcrypt for hashing [#876](https://github.com/ethyca/fidesops/pull/876)
+
+### Changed
+
+* Updated fideslog==1.1.0 [#890](https://github.com/ethyca/fidesops/pull/890)
 
 ### Developer Experience
 
-* Fix randomly failing mssql integration tests [918](https://github.com/ethyca/fidesops/pull/918)
+* Fix randomly failing mssql integration tests [#918](https://github.com/ethyca/fidesops/pull/918)
 * Update the way `make clean` works [#767](https://github.com/ethyca/fidesops/pull/767)
 * When releases are published, dispatch a repository webhook event to ethyca/fidesops-plus [#945](https://github.com/ethyca/fidesops/pull/945)
 * Added `nox` commands to replace the `Makefile` [#919](https://github.com/ethyca/fidesops/pull/919)
@@ -67,8 +92,10 @@ The types of changes are:
 
 ### Fixed
 
-* Correct build arg variable name [925](https://github.com/ethyca/fidesops/pull/925)
+* Correct build arg variable name [#925](https://github.com/ethyca/fidesops/pull/925)
 * Reduce number of clients connected to the application db [#944](https://github.com/ethyca/fidesops/pull/944)
+* Patch versioneer to allow editable installs [#1070](https://github.com/ethyca/fidesops/pull/1070)
+* Add setuptools to dev-requirements to fix versioneer error and revert patch [#1072](https://github.com/ethyca/fidesops/pull/1072)
 
 ## [1.6.3](https://github.com/ethyca/fidesops/compare/1.6.2...1.6.3)
 
