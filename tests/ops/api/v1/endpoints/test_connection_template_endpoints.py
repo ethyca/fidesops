@@ -192,7 +192,7 @@ class TestGetConnectionSecretSchema:
         )
 
         assert resp.json() == {
-            "title": "hubspot_connector_example_schema",
+            "title": "hubspot_schema",
             "description": "Hubspot secrets schema",
             "type": "object",
             "properties": {
@@ -402,6 +402,30 @@ class TestInstantiateConnectionFromTemplate:
         assert connection_config.key == "mailchimp_connector"
         dataset_config.delete(db)
         connection_config.delete(db)
+
+    def test_invalid_instance_key(self, db, generate_auth_header, api_client, base_url):
+        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
+        request_body = {
+            "instance_key": "< this is an invalid key! >",
+            "secrets": {
+                "domain": "test_mailchimp_domain",
+                "username": "test_mailchimp_username",
+                "api_key": "test_mailchimp_api_key",
+            },
+            "name": "Mailchimp Connector",
+            "description": "Mailchimp ConnectionConfig description",
+            "key": "mailchimp_connection_config",
+        }
+        resp = api_client.post(
+            base_url.format(saas_connector_type="mailchimp"),
+            headers=auth_header,
+            json=request_body,
+        )
+        assert resp.json()["detail"][0] == {
+            "loc": ["body", "instance_key"],
+            "msg": "FidesKey must only contain alphanumeric characters, '.', '_' or '-'.",
+            "type": "value_error",
+        }
 
     def test_instantiate_connection_from_template(
         self, db, generate_auth_header, api_client, base_url
