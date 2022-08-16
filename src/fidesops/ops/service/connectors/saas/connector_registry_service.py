@@ -123,18 +123,6 @@ def create_dataset_config_from_template(
     return dataset_config
 
 
-def update_connector_instances() -> None:
-    """
-    Updates every SaaS connection config and dataset with the latest version
-    defined in the SaaS connector registry
-    """
-    # get all saas connection configs
-    # get version number from SaaS config (figure out versioning)
-    # if registry version is newer
-    # update saas config
-    # update dataset
-
-
 def load_registry(config_file: str) -> ConnectorRegistry:
     """Loads a SaaS connector registry from the given config file."""
     global _registry  # pylint: disable=W0603

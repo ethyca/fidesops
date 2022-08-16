@@ -36,7 +36,6 @@ from fidesops.ops.schemas.analytics import Event, ExtraData
 from fidesops.ops.service.connectors.saas.connector_registry_service import (
     load_registry,
     registry_file,
-    update_connector_instances,
 )
 from fidesops.ops.tasks.scheduled.scheduler import scheduler
 from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
@@ -195,9 +194,6 @@ def start_webserver() -> None:
         except Exception as error:  # pylint: disable=broad-except
             logger.error(f"Connection to database failed: {error}")
             return
-
-        logger.info("Updating SaaS connector instances...")
-        update_connector_instances()
 
     if config.redis.enabled:
         logger.info("Running Redis connection test...")
