@@ -26,7 +26,7 @@ from fidesops.ops.util.saas_util import (
 )
 
 _registry: Optional[ConnectorRegistry] = None
-registry_file = "saas_connector_registry.toml"
+registry_file = "data/saas/saas_connector_registry.toml"
 
 
 class ConnectorTemplate(BaseModel):

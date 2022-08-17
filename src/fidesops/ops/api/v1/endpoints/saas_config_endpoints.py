@@ -25,6 +25,7 @@ from fidesops.ops.api.v1.scope_registry import (
 )
 from fidesops.ops.api.v1.urn_registry import (
     AUTHORIZE,
+    CONNECTION_TYPES,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     SAAS_CONNECTOR_FROM_TEMPLATE,
@@ -288,7 +289,7 @@ def instantiate_connection_from_template(
     if not connector_template:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"SaaS connector type '{saas_connector_type}' is not registered.",
+            detail=f"SaaS connector type '{saas_connector_type}' is not yet available in Fidesops. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
         )
 
     if DatasetConfig.filter(
