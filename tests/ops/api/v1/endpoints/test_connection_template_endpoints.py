@@ -1,4 +1,5 @@
 from typing import List
+from unittest import mock
 
 import pytest
 from fideslib.models.client import ClientDetail
@@ -427,6 +428,48 @@ class TestInstantiateConnectionFromTemplate:
             "type": "value_error",
         }
 
+    @mock.patch(
+        "fidesops.ops.api.v1.endpoints.saas_config_endpoints.create_dataset_config_from_template"
+    )
+    def test_dataset_config_saving_fails(
+        self, mock_create_dataset, db, generate_auth_header, api_client, base_url
+    ):
+        mock_create_dataset.side_effect = Exception("KeyError")
+
+        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
+        request_body = {
+            "instance_key": "secondary_mailchimp_instance",
+            "secrets": {
+                "domain": "test_mailchimp_domain",
+                "username": "test_mailchimp_username",
+                "api_key": "test_mailchimp_api_key",
+            },
+            "name": "Mailchimp Connector",
+            "description": "Mailchimp ConnectionConfig description",
+            "key": "mailchimp_connection_config",
+        }
+        resp = api_client.post(
+            base_url.format(saas_connector_type="mailchimp"),
+            headers=auth_header,
+            json=request_body,
+        )
+        assert resp.status_code == 500
+        assert (
+            resp.json()["detail"]
+            == "SaaS Connector could not be created from the 'mailchimp' template at this time."
+        )
+
+        connection_config = ConnectionConfig.filter(
+            db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")
+        ).first()
+        assert connection_config is None
+
+        dataset_config = DatasetConfig.filter(
+            db=db,
+            conditions=(DatasetConfig.fides_key == "secondary_mailchimp_instance"),
+        ).first()
+        assert dataset_config is None
+
     def test_instantiate_connection_from_template(
         self, db, generate_auth_header, api_client, base_url
     ):
@@ -436,7 +479,8 @@ class TestInstantiateConnectionFromTemplate:
         assert connection_config is None
 
         dataset_config = DatasetConfig.filter(
-            db=db, conditions=(DatasetConfig.fides_key == "primary_mailchimp_instance")
+            db=db,
+            conditions=(DatasetConfig.fides_key == "secondary_mailchimp_instance"),
         ).first()
         assert dataset_config is None
 

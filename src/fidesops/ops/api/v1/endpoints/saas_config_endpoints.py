@@ -11,6 +11,7 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
 from fidesops.ops.api import deps
@@ -316,8 +317,17 @@ def instantiate_connection_from_template(
     ).dict()
     connection_config.save(db=db)  # Not persisted to db until secrets are validated
 
-    dataset_config: DatasetConfig = create_dataset_config_from_template(
-        db, connection_config, connector_template, template_values
+    try:
+        dataset_config: DatasetConfig = create_dataset_config_from_template(
+            db, connection_config, connector_template, template_values
+        )
+    except Exception:
+        connection_config.delete(db)
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"SaaS Connector could not be created from the '{saas_connector_type}' template at this time.",
+        )
+    logger.info(
+        f"SaaS Connector and Dataset {template_values.instance_key} successfully created from '{saas_connector_type}' template."
     )
-
     return dataset_config.dataset
