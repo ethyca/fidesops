@@ -15,6 +15,16 @@ def get_db() -> Generator:
         raise FunctionalityNotConfigured(
             "Application database required, but it is currently disabled! Please update your application configuration to enable integration with an application database."
         )
+    return _get_session()
+
+
+def get_db_for_health_check() -> Generator:
+    """Gets a database session regardless of whether the application db is disabled, for a health check."""
+    return _get_session()
+
+
+def _get_session() -> Generator:
+    """Gets a database session"""
     try:
         global _engine  # pylint: disable=W0603
         if not _engine:
