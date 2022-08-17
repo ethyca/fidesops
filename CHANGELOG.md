@@ -23,6 +23,8 @@ The types of changes are:
 
 * Access support for Datadog Logs [#1060](https://github.com/ethyca/fidesops/pull/1060)
 * Access and erasure support for Logi ID [#1074](https://github.com/ethyca/fidesops/pull/1074)
+* Adds infra for email config and dispatch [#1059](https://github.com/ethyca/fidesops/pull/1059)
+* Add an endpoint that allows you to create a Saas connector and all supporting resources with a single request [#1076](https://github.com/ethyca/fidesops/pull/1076)
 * Annotate fidesops with fidesctl [#1089](https://github.com/ethyca/fidesops/pull/1089)
 
 ### Developer Experience
@@ -32,6 +34,8 @@ The types of changes are:
 ### Fixed
 
 * HTTP headers are now preserved in requests generated from SaaS connector pagination [#1069](https://github.com/ethyca/fidesops/pull/1069)
+* Bump fideslib to fix issue where the authenticate button in the FastAPI docs did not work [#1092](https://github.com/ethyca/fidesops/pull/1092)
+* Reduced number of connections opened against app db during health checks [#1107](https://github.com/ethyca/fidesops/pull/1107)
 
 ### Changed
 
