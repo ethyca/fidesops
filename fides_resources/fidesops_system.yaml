@@ -5,13 +5,11 @@ dataset:
   system_type: Application
   privacy_declarations:
   - name: Manage privacy request Fufillment
-    data_categories::
-    - user
-    - user.credentials.password
-    - user.name
-    - user.name.first
-    - user.name.last
-    - user.unique_id
-    - system.operations
+    data_categories:: []
     dataset_references:
-    - fidesops_dataset
+    - fidesops_db_dataset
+    data_use: provide.service
+    data_subjects:
+    - customer
+    - employee
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
