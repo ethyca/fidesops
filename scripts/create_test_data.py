@@ -201,8 +201,8 @@ def create_test_data(db: orm.Session) -> FidesUser:
                 ),
             )
             for action_type in [
+                AuditLogAction.denied,  # Run denied before approved to simulate a realistic order
                 AuditLogAction.approved,
-                AuditLogAction.denied,
                 AuditLogAction.finished,
             ]:
                 AuditLog.create(
@@ -233,14 +233,30 @@ def create_test_data(db: orm.Session) -> FidesUser:
                         data={
                             "dataset_name": "dummy_dataset",
                             "collection_name": "dummy_collection",
-                            "fields_affected": ["dummy_field_1", "dummy_field_2"],
+                            "fields_affected": [
+                                {
+                                    "path": "dummy_dataset:dummy_collection:dummy_field_1",
+                                    "field_name": "dummy_field",
+                                    "data_categories": [
+                                        "data_category_1",
+                                        "data_category_2",
+                                    ],
+                                },
+                                {
+                                    "path": "dummy_dataset:dummy_collection:dummy_field_2",
+                                    "field_name": "dummy_field_2",
+                                    "data_categories": [
+                                        "data_category_2",
+                                        "data_category_3",
+                                    ],
+                                },
+                            ],
                             "action_type": action_type,
                             "status": exl_status,
                             "privacy_request_id": pr.id,
                             "message": f"Execution log for request id {pr.id} status {status} and action_type {action_type}",
                         },
                     )
-            # run_privacy_request.apply(args=[pr.id])  # Run the request synchronously
 
     print("Adding connection configs")
     _create_connection_configs(db)
