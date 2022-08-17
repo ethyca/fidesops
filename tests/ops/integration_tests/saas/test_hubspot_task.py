@@ -70,7 +70,12 @@ def test_saas_access_request_task(
         f"{dataset_name}:contacts",
         f"{dataset_name}:subscription_preferences",
     }
-    assert set(filtered_results[f"{dataset_name}:contacts"][0].keys()) == {"properties"}
+    assert set(filtered_results[f"{dataset_name}:contacts"][0].keys()) == {
+        "id",
+        "createdAt",
+        "updatedAt",
+        "properties",
+    }
 
     assert set(
         filtered_results[f"{dataset_name}:contacts"][0]["properties"].keys()
