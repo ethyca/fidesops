@@ -1,311 +1,658 @@
 dataset:
-- fides_key: fidesops_dataset
-  name: Fidesops Database
-  description: Application database for Fidesops
+- fides_key: public
+  organization_fides_key: default_organization
+  name: public
+  description: The dataset responsible for storing all of the data related to a fidesops instance.
+  data_categories: [system.operations]
+  data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  retention: No retention or erasure policy
   collections:
+  - name: alembic_version
+    description: null
+    data_categories: null
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: version_num
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: auditlog
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
-    - name: user_id
-      data_categories: [user.unique_id]
-    - name: privacy_request_id
-      data_categories: [system.operations]
     - name: action
+      description: null
       data_categories: [system.operations]
-    - name: action
-      data_categories: [system.operations]
-  - name: authenticationrequest
-    fields:
-    - name: id
-      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: created_at
+      description: null
       data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
-    - name: connection_key
-      data_categories: [system.operations]
-    - name: state
-      data_categories: [system.operations]
-  - name: client
-    fields:
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: id
+      description: null
       data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
-    - name: hashed_secret
-      data_categories: [system.operations]
-    - name: salt
-      data_categories: [system.operations]
-    - name: scopes
-      data_categories: [system.operations]
-    - name: fides_key
-      data_categories: [system.operations]
-    - name: user_id
-      data_categories: [user.unique_id]
-  - name: connectionconfig
-    fields:
-    - name: id
-      data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
-    - name: name
-      data_categories: [system.operations]
-    - name: key
-      data_categories: [system.operations]
-    - name: connection_type
-      data_categories: [system.operations]
-    - name: access
-      data_categories: [system.operations]
-    - name: secrets
-      data_categories: [system.operations]
-    - name: last_test_timestamp
-      data_categories: [system.operations]
-    - name: last_test_succeeded
-      data_categories: [system.operations]
-    - name: saas_config
-      data_categories: [system.operations]
-    - name: disabled
-      data_categories: [system.operations]
-    - name: disabled_at
-      data_categories: [system.operations]
-    - name: description
-      data_categories: [system.operations]
-  - name: datasetconfig
-    fields:
-    - name: id
-      data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
-    - name: connection_config_id
-      data_categories: [system.operations]
-    - name: fides_key
-      data_categories: [system.operations]
-    - name: dataset
-      data_categories: [system.operations]
-  - name: executionlog
-    fields:
-    - name: id
-      data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
-    - name: dataset_name
-      data_categories: [system.operations]
-    - name: collection_name
-      data_categories: [system.operations]
-    - name: fields_affected
-      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: message
+      description: null
       data_categories: [system.operations]
-    - name: action_type
-      data_categories: [system.operations]
-    - name: status
-      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: privacy_request_id
+      description: null
       data_categories: [system.operations]
-  - name: fidesuser
-    fields:
-    - name: id
-      data_categories: [user.unique_id]
-    - name: created_at
-      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: updated_at
+      description: null
       data_categories: [system.operations]
-    - name: username
-      data_categories: [user.credentials]
-    - name: hashed_password
-      data_categories: [user.credentials.password]
-    - name: salt
-      data_categories: [system.operations]
-    - name: last_login_at
-      data_categories: [system.operations]
-    - name: password_reset_at
-      data_categories: [system.operations]
-    - name: first_name
-      data_categories: [user.name.first]
-    - name: last_name
-      data_categories: [user.name.last]
-  - name: fidesuserpermissions
-    fields:
-    - name: id
-      data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: user_id
+      description: null
       data_categories: [user.unique_id]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: authenticationrequest
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: connection_key
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: state
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: client
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: created_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: fides_key
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: hashed_secret
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: salt
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: scopes
+      description: null
       data_categories: [system.operations]
-  - name: policy
-    fields:
-    - name: id
-      data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: updated_at
+      description: null
       data_categories: [system.operations]
-    - name: name
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: user_id
+      description: null
+      data_categories: [user.unique_id]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: connectionconfig
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: access
+      description: null
       data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: connection_type
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: description
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: disabled
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: disabled_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: key
+      description: null
       data_categories: [system.operations]
-    - name: client_id
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: last_test_succeeded
+      description: null
       data_categories: [system.operations]
-    - name: drp_action
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: last_test_timestamp
+      description: null
       data_categories: [system.operations]
-  - name: policypostwebhook
-    fields:
-    - name: id
-      data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: name
+      description: null
       data_categories: [system.operations]
-    - name: key
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: saas_config
+      description: null
       data_categories: [system.operations]
-    - name: direction
-      data_categories: [system.operations]
-    - name: order
-      data_categories: [system.operations]
-    - name: policy_id
-      data_categories: [system.operations]
-    - name: connection_config_id
-      data_categories: [system.operations]
-  - name: policyprewebhook
-    fields:
-    - name: id
-      data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
-    - name: name
-      data_categories: [system.operations]
-    - name: key
-      data_categories: [system.operations]
-    - name: direction
-      data_categories: [system.operations]
-    - name: order
-      data_categories: [system.operations]
-    - name: policy_id
-      data_categories: [system.operations]
-    - name: connection_config_id
-      data_categories: [system.operations]
-  - name: privacyrequest
-    fields:
-    - name: id
-      data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
-    - name: external_id
-      data_categories: [system.operations]
-    - name: started_processing
-      data_categories: [system.operations]
-    - name: finished_processing_at
-      data_categories: [system.operations]
-    - name: requested_at
-      data_categories: [system.operations]
-    - name: status
-      data_categories: [system.operations]
-    - name: client_id
-      data_categories: [system.operations]
-    - name: origin
-      data_categories: [system.operations]
-    - name: policy_id
-      data_categories: [system.operations]
-    - name: reviewed_at
-      data_categories: [system.operations]
-    - name: reviewed_by
-      data_categories: [user.name]
-    - name: paused_at
-      data_categories: [system.operations]
-    - name: cancel_reason
-      data_categories: [system.operations]
-    - name: canceled_at
-      data_categories: [system.operations]
-  - name: providedidentity
-    fields:
-    - name: id
-      data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
-    - name: privacy_request_id
-      data_categories: [system.operations]
-    - name: field_name
-      data_categories: [system.operations]
-    - name: hashed_value
-      data_categories: [user]
-    - name: encrypted_value
-      data_categories: [user]
-  - name: rule
-    fields:
-    - name: id
-      data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
-    - name: name
-      data_categories: [system.operations]
-    - name: key
-      data_categories: [system.operations]
-    - name: policy_id
-      data_categories: [system.operations]
-    - name: action_type
-      data_categories: [system.operations]
-    - name: masking_strategy
-      data_categories: [system.operations]
-    - name: storage_destination_id
-      data_categories: [system.operations]
-    - name: client_id
-      data_categories: [system.operations]
-  - name: ruletarget
-    fields:
-    - name: id
-      data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
-    - name: name
-      data_categories: [system.operations]
-    - name: key
-      data_categories: [system.operations]
-    - name: data_category
-      data_categories: [system.operations]
-    - name: rule_id
-      data_categories: [system.operations]
-    - name: client_id
-      data_categories: [system.operations]
-  - name: storageconfig
-    fields:
-    - name: id
-      data_categories: [system.operations]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
-    - name: name
-      data_categories: [system.operations]
-    - name: type
-      data_categories: [system.operations]
-    - name: details
-      data_categories: [system.operations]
-    - name: key
-      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: secrets
+      description: null
       data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: datasetconfig
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: connection_config_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: dataset
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: fides_key
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: executionlog
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: action_type
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: collection_name
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: dataset_name
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: fields_affected
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: message
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: privacy_request_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: status
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: fidesuser
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: created_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: first_name
+      description: null
+      data_categories: [user.name.first]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: hashed_password
+      description: null
+      data_categories: [user.credentials.password]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: null
+      data_categories: [user.unique_id]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: last_login_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: last_name
+      description: null
+      data_categories: [user.name.last]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: password_reset_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: salt
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: username
+      description: null
+      data_categories: [user.credentials]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: fidesuserpermissions
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: created_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: scopes
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: user_id
+      description: null
+      data_categories: [user.unique_id]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: policy
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: client_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: drp_action
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: key
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: name
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: policypostwebhook
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: connection_config_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: direction
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: key
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: name
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: order
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: policy_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: policyprewebhook
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: connection_config_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: direction
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: key
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: name
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: order
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: policy_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: privacyrequest
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: cancel_reason
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: canceled_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: client_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: external_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: finished_processing_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: origin
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: paused_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: policy_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: requested_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: reviewed_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: reviewed_by
+      description: null
+      data_categories: [user.name]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: started_processing_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: status
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: providedidentity
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: created_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: encrypted_value
+      description: null
+      data_categories: [user.contact, user.unique_id]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: field_name
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: hashed_value
+      description: null
+      data_categories: [user.contact, user.unique_id]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: privacy_request_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: rule
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: action_type
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: client_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: key
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: masking_strategy
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: name
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: policy_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: storage_destination_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: ruletarget
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: client_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: data_category
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: key
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: name
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: rule_id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: storageconfig
+    description: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: created_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: details
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: format
+      description: null
       data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: key
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: name
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: secrets
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: type
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: null
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
