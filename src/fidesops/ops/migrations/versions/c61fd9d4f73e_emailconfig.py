@@ -2,7 +2,7 @@
 emailconfig
 
 Revision ID: c61fd9d4f73e
-Revises: 3c5e1253465d
+Revises: 7abe778b7082
 Create Date: 2022-08-10 19:29:12.119401
 
 """
