@@ -1,6 +1,7 @@
 from typing import Generator
 
 from fideslib.db.session import get_db_engine, get_db_session
+from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import FunctionalityNotConfigured
 from fidesops.ops.core.config import config
@@ -15,25 +16,31 @@ def get_db() -> Generator:
         raise FunctionalityNotConfigured(
             "Application database required, but it is currently disabled! Please update your application configuration to enable integration with an application database."
         )
-    return _get_session()
+
+    try:
+        db = _get_session()
+        yield db
+    finally:
+        db.close()
 
 
 def get_db_for_health_check() -> Generator:
     """Gets a database session regardless of whether the application db is disabled, for a health check."""
-    return _get_session()
-
-
-def _get_session() -> Generator:
-    """Gets a database session"""
     try:
-        global _engine  # pylint: disable=W0603
-        if not _engine:
-            _engine = get_db_engine(config=config)
-        SessionLocal = get_db_session(config, engine=_engine)
-        db = SessionLocal()
+        db = _get_session()
         yield db
     finally:
         db.close()
+
+
+def _get_session() -> Session:
+    """Gets a database session"""
+    global _engine  # pylint: disable=W0603
+    if not _engine:
+        _engine = get_db_engine(config=config)
+    SessionLocal = get_db_session(config, engine=_engine)
+    db = SessionLocal()
+    return db
 
 
 def get_cache() -> Generator:
