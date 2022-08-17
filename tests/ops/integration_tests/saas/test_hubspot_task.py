@@ -175,9 +175,9 @@ def test_saas_erasure_request_task(
 
     # Masking request only issued to "contacts" and "subscription_preferences" endpoints
     assert erasure == {
-        "husbspot_instance:contacts": 1,
-        "husbspot_instance:owners": 0,
-        "husbspot_instance:subscription_preferences": 1,
+        "hubspot_instance:contacts": 1,
+        "hubspot_instance:owners": 0,
+        "hubspot_instance:subscription_preferences": 1,
     }
 
     connector = SaaSConnector(connection_config_hubspot)

@@ -42,7 +42,7 @@ def datadog_config() -> Dict[str, Any]:
         "data/saas/config/datadog_config.yml",
         "<instance_fides_key>",
         "datadog_instance",
-    )[0]
+    )
 
 
 @pytest.fixture

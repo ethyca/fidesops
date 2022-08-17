@@ -600,7 +600,7 @@ def test_create_and_process_access_request_saas_hubspot(
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"EN_{pr.id}__access_request__husbspot_instance:"
+    result_key_prefix = f"EN_{pr.id}__access_request__hubspot_instance:"
     contacts_key = result_key_prefix + "contacts"
     assert results[contacts_key][0]["properties"]["email"] == customer_email
 
