@@ -71,7 +71,7 @@ def connection_config_hubspot(
     hubspot_config,
     hubspot_secrets,
 ) -> Generator:
-    fides_key = "hubspot_instance"
+    fides_key = hubspot_config["fides_key"]
     connection_config = ConnectionConfig.create(
         db=db,
         data={

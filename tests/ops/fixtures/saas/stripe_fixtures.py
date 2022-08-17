@@ -54,7 +54,9 @@ def stripe_config() -> Dict[str, Any]:
 @pytest.fixture
 def stripe_dataset() -> Dict[str, Any]:
     return load_dataset_with_replacement(
-        "data/saas/dataset/stripe_dataset.yml", "<instance_fides_key>", "stripe_dataset"
+        "data/saas/dataset/stripe_dataset.yml",
+        "<instance_fides_key>",
+        "stripe_instance",
     )[0]
 
 
