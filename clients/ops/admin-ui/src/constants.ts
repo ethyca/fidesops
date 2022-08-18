@@ -30,6 +30,10 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "connection:instantiate",
   },
   {
+    privilege: "Read connection types",
+    scope: "connection_type:read",
+  },
+  {
     privilege: "Delete datastore connections",
     scope: "connection:delete",
   },
