@@ -26,6 +26,10 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "connection:create_or_update",
   },
   {
+    privilege: "Instantiate connections to SaaS datastores",
+    scope: "connection:instantiate",
+  },
+  {
     privilege: "Delete datastore connections",
     scope: "connection:delete",
   },
