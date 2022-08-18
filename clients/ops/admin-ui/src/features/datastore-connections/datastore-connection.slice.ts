@@ -240,7 +240,6 @@ export const datastoreConnectionApi = createApi({
       }),
       invalidatesTags: () => ["DatastoreConnection"],
     }),
-        url: `${CONNECTION_ROUTE}/${id}`,
     updateDatastoreConnectionSecrets: build.mutation({
       query: (id) => ({
         url: `${CONNECTION_ROUTE}/${id}/secret`,
