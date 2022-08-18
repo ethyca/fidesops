@@ -85,7 +85,6 @@ from fidesops.ops.schemas.privacy_request import (
     VerificationCode,
 )
 from fidesops.ops.service.privacy_request.request_runner_service import (
-    generate_id_verification_code,
     queue_privacy_request,
 )
 from fidesops.ops.service.privacy_request.request_service import (

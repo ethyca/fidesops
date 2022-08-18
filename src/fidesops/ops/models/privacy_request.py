@@ -27,7 +27,6 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 
 from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.ops.common_exceptions import (
-    FidesopsException,
     IdentityVerificationException,
     PrivacyRequestPaused,
 )
@@ -275,7 +274,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         """Verify the identification code supplied by the user"""
         if not self.status == PrivacyRequestStatus.identity_unverified:
             raise IdentityVerificationException(
-                f"Invalid identity verification request. Privacy request '{self.id}' status = {self.status.value}."  # type: ignore
+                f"Invalid identity verification request. Privacy request '{self.id}' status = {self.status.value}."  # type: ignore # pylint: disable=no-member
             )
 
         code: Optional[str] = self.get_cached_verification_code()
