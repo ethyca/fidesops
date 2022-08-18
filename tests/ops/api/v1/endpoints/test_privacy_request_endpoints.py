@@ -571,6 +571,7 @@ class TestGetPrivacyRequests:
                         privacy_request.started_processing_at
                     ),
                     "finished_processing_at": None,
+                    "identity_verified_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
                     "identity": None,
@@ -625,6 +626,7 @@ class TestGetPrivacyRequests:
                         privacy_request.started_processing_at
                     ),
                     "finished_processing_at": None,
+                    "identity_verified_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
                     "identity": None,
@@ -979,6 +981,7 @@ class TestGetPrivacyRequests:
                         privacy_request.started_processing_at
                     ),
                     "finished_processing_at": None,
+                    "identity_verified_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
                     "identity": None,
@@ -2001,6 +2004,7 @@ class TestResumePrivacyRequest:
                 privacy_request.started_processing_at
             ),
             "finished_processing_at": None,
+            "identity_verified_at": None,
             "status": "in_processing",
             "external_id": privacy_request.external_id,
             "identity": None,
