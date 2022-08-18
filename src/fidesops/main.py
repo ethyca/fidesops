@@ -143,13 +143,31 @@ if config.admin_ui.enabled:
     def generate_route_file_map() -> None:
         """Generates a map of frontend routes and the corresponding files to serve for each route.
         Each route is based frontend build directories and files."""
-        pattern = r"\[.+]"
+        exact_pattern = r"\[[a-zA-Z]+\]"
+        nested_pattern = r"\[...[a-zA-Z]+\]"
+
+        exact_pattern_replacement = "[a-zA-Z10-9-_]+/?$"
+        nested_pattern_replacement = "[a-zA-Z10-9-_/]+"
+
         for filepath in WEBAPP_DIRECTORY.glob("**/*.html"):
+            relative_web_dir_path = str(filepath.relative_to(WEBAPP_DIRECTORY))[:-5]
             if filepath != WEBAPP_INDEX:
-                path = re.sub(
-                    pattern, ".+", str(filepath.relative_to(WEBAPP_DIRECTORY))[:-5]
-                )
-                rule = re.compile(r"^" + path + "/?$")
+                path = None
+                if re.search(exact_pattern, str(filepath)):
+                    path = re.sub(
+                        exact_pattern, exact_pattern_replacement, relative_web_dir_path
+                    )
+                if re.search(nested_pattern, str(filepath)):
+                    path = re.sub(
+                        nested_pattern,
+                        nested_pattern_replacement,
+                        relative_web_dir_path,
+                    )
+                if path is None:
+                    path = relative_web_dir_path
+
+                rule = re.compile(r"^" + path)
+
                 route_file_map[rule] = FileResponse(str(filepath.relative_to(".")))
 
     @app.on_event("startup")
