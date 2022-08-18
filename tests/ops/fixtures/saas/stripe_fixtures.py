@@ -3,27 +3,27 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from fideslib.core.config import load_toml
 from fideslib.db import session
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from sqlalchemy.orm import Session
 
-from fidesops.models.connectionconfig import (
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.util.saas_util import load_config
-from tests.ops.fixtures.application_fixtures import load_dataset
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.util.saas_util import (
+    load_config_with_replacement,
+    load_dataset_with_replacement,
+)
 from tests.ops.test_helpers.vault_client import get_secrets
 
-saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("stripe")
 
 
 @pytest.fixture(scope="session")
-def stripe_secrets():
+def stripe_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "stripe.domain") or secrets["domain"],
         "api_key": pydash.get(saas_config, "stripe.api_key") or secrets["api_key"],
@@ -35,7 +35,7 @@ def stripe_secrets():
 
 
 @pytest.fixture(scope="session")
-def stripe_identity_email():
+def stripe_identity_email(saas_config):
     return pydash.get(saas_config, "stripe.identity_email") or secrets["identity_email"]
 
 
@@ -46,12 +46,18 @@ def stripe_erasure_identity_email():
 
 @pytest.fixture
 def stripe_config() -> Dict[str, Any]:
-    return load_config("data/saas/config/stripe_config.yml")
+    return load_config_with_replacement(
+        "data/saas/config/stripe_config.yml", "<instance_fides_key>", "stripe_instance"
+    )
 
 
 @pytest.fixture
 def stripe_dataset() -> Dict[str, Any]:
-    return load_dataset("data/saas/dataset/stripe_dataset.yml")[0]
+    return load_dataset_with_replacement(
+        "data/saas/dataset/stripe_dataset.yml",
+        "<instance_fides_key>",
+        "stripe_instance",
+    )[0]
 
 
 @pytest.fixture(scope="function")

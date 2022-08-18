@@ -1,6 +1,6 @@
 from typing import Optional, Tuple
 
-from fidesops.graph.config import (
+from fidesops.ops.graph.config import (
     Collection,
     CollectionAddress,
     Dataset,
@@ -8,7 +8,7 @@ from fidesops.graph.config import (
     ObjectField,
     ScalarField,
 )
-from fidesops.graph.data_type import (
+from fidesops.ops.graph.data_type import (
     DataType,
     IntTypeConverter,
     NoOpTypeConverter,
@@ -16,10 +16,10 @@ from fidesops.graph.data_type import (
     ObjectTypeConverter,
     StringTypeConverter,
 )
-from fidesops.graph.graph import DatasetGraph
-from fidesops.graph.traversal import Traversal
-from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.ops.graph.graph import DatasetGraph
+from fidesops.ops.graph.traversal import Traversal
+from fidesops.ops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 
 str_converter = DataType.string.value
 bool_converter = DataType.boolean.value
@@ -526,7 +526,7 @@ def manual_dataset(db_name: str, postgres_db_name) -> Dataset:
             ScalarField(
                 name="authorized_user",
                 data_type_converter=str_converter,
-                data_categories=["user.provided.identifiable"],
+                data_categories=["user"],
             ),
             ScalarField(
                 name="customer_id",
@@ -550,7 +550,7 @@ def manual_dataset(db_name: str, postgres_db_name) -> Dataset:
                 name="email",
                 identity="email",
                 data_type_converter=str_converter,
-                data_categories=["user.provided.identifiable"],
+                data_categories=["user"],
             ),
         ],
     )

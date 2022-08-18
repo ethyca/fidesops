@@ -3,15 +3,16 @@ import random
 import pytest
 import requests
 
-from fidesops.core.config import config
-from fidesops.graph.graph import DatasetGraph
-from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.task import graph_task
-from fidesops.task.graph_task import get_cached_data_for_erasures
+from fidesops.ops.core.config import config
+from fidesops.ops.graph.graph import DatasetGraph
+from fidesops.ops.models.privacy_request import PrivacyRequest
+from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.task import graph_task
+from fidesops.ops.task.graph_task import get_cached_data_for_erasures
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
+@pytest.mark.skip(reason="Pending development of OAuth2 JWT Bearer authentication")
 @pytest.mark.integration_saas
 @pytest.mark.integration_auth0
 def test_auth0_access_request_task(
@@ -83,6 +84,7 @@ def test_auth0_access_request_task(
     )
 
 
+@pytest.mark.skip(reason="Pending development of OAuth2 JWT Bearer authentication")
 @pytest.mark.integration_saas
 @pytest.mark.integration_auth0
 def test_auth0_erasure_request_task(

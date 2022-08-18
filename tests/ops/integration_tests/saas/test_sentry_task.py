@@ -5,12 +5,12 @@ from typing import Any, Dict, List, Optional
 import pytest
 import requests
 
-from fidesops.graph.graph import DatasetGraph
-from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.task import graph_task
-from fidesops.task.filter_results import filter_data_categories
-from fidesops.task.graph_task import get_cached_data_for_erasures
+from fidesops.ops.graph.graph import DatasetGraph
+from fidesops.ops.models.privacy_request import PrivacyRequest
+from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.task import graph_task
+from fidesops.ops.task.filter_results import filter_data_categories
+from fidesops.ops.task.graph_task import get_cached_data_for_erasures
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
@@ -140,7 +140,7 @@ def test_sentry_access_request_task(
         ],
     )
 
-    target_categories = {"user.provided"}
+    target_categories = {"user"}
     filtered_results = filter_data_categories(
         v,
         target_categories,
@@ -376,12 +376,12 @@ def test_sentry_erasure_request_task(
 
     # Masking request only issued to "issues" endpoint
     assert x == {
-        "sentry_connector:projects": 0,
-        "sentry_connector:person": 0,
-        "sentry_connector:issues": 1,
-        "sentry_connector:organizations": 0,
-        "sentry_connector:user_feedback": 0,
-        "sentry_connector:employees": 0,
+        "sentry_instance:projects": 0,
+        "sentry_instance:person": 0,
+        "sentry_instance:issues": 1,
+        "sentry_instance:organizations": 0,
+        "sentry_instance:user_feedback": 0,
+        "sentry_instance:employees": 0,
     }
 
     # Verify the user has been assigned to None

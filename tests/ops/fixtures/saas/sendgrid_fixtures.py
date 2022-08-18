@@ -3,36 +3,31 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from fideslib.core.config import load_toml
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_202_ACCEPTED
 
-from fidesops.models.connectionconfig import (
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.models.datasetconfig import DatasetConfig
-from tests.ops.fixtures.application_fixtures import load_dataset
-from tests.ops.fixtures.saas_example_fixtures import load_config
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.util.saas_util import (
+    load_config_with_replacement,
+    load_dataset_with_replacement,
+)
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
-saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("sendgrid")
 
 SENDGRID_ERASURE_FIRSTNAME = "Erasurefirstname"
 
 
-@pytest.fixture(scope="session")
-def sendgrid_erasure_identity_email():
-    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
-
-
 @pytest.fixture(scope="function")
-def sendgrid_secrets():
+def sendgrid_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "sendgrid.domain") or secrets["domain"],
         "api_key": pydash.get(saas_config, "sendgrid.api_key") or secrets["api_key"],
@@ -40,20 +35,33 @@ def sendgrid_secrets():
 
 
 @pytest.fixture(scope="function")
-def sendgrid_identity_email():
+def sendgrid_identity_email(saas_config):
     return (
         pydash.get(saas_config, "sendgrid.identity_email") or secrets["identity_email"]
     )
 
 
+@pytest.fixture(scope="session")
+def sendgrid_erasure_identity_email():
+    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+
+
 @pytest.fixture
 def sendgrid_config() -> Dict[str, Any]:
-    return load_config("data/saas/config/sendgrid_config.yml")
+    return load_config_with_replacement(
+        "data/saas/config/sendgrid_config.yml",
+        "<instance_fides_key>",
+        "sendgrid_instance",
+    )
 
 
 @pytest.fixture
 def sendgrid_dataset() -> Dict[str, Any]:
-    return load_dataset("data/saas/dataset/sendgrid_dataset.yml")[0]
+    return load_dataset_with_replacement(
+        "data/saas/dataset/sendgrid_dataset.yml",
+        "<instance_fides_key>",
+        "sendgrid_instance",
+    )[0]
 
 
 @pytest.fixture(scope="function")

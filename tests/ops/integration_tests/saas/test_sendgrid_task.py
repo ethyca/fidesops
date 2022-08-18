@@ -2,12 +2,12 @@ import random
 
 import pytest
 
-from fidesops.core.config import config
-from fidesops.graph.graph import DatasetGraph
-from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.task import graph_task
-from fidesops.task.graph_task import get_cached_data_for_erasures
+from fidesops.ops.core.config import config
+from fidesops.ops.graph.graph import DatasetGraph
+from fidesops.ops.models.privacy_request import PrivacyRequest
+from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.task import graph_task
+from fidesops.ops.task.graph_task import get_cached_data_for_erasures
 from tests.ops.fixtures.saas.sendgrid_fixtures import contact_exists
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
@@ -135,7 +135,7 @@ def test_sendgrid_erasure_request_task(
         get_cached_data_for_erasures(privacy_request.id),
         db,
     )
-    assert erasure == {"sendgrid_connector_example:contacts": 1}
+    assert erasure == {"sendgrid_instance:contacts": 1}
     error_message = f"Contact with email {sendgrid_erasure_identity_email} could not be deleted in Sendgrid"
     poll_for_existence(
         contact_exists,

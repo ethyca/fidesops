@@ -19,23 +19,30 @@ from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from starlette.status import HTTP_404_NOT_FOUND
 
-from fidesops.analytics import (
+from fidesops.ops.analytics import (
     accessed_through_local_host,
     in_docker_container,
     send_analytics_event,
 )
-from fidesops.api.v1.api import api_router
-from fidesops.api.v1.exception_handlers import ExceptionHandlers
-from fidesops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesops.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
-from fidesops.core.config import config
-from fidesops.db.database import init_db
-from fidesops.schemas.analytics import Event, ExtraData
-from fidesops.tasks.scheduled.scheduler import scheduler
-from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
-from fidesops.util.cache import get_cache
-from fidesops.util.logger import get_fides_log_record_factory
-from fidesops.util.oauth_util import get_db, verify_oauth_client
+from fidesops.ops.api.v1.api import api_router
+from fidesops.ops.api.v1.exception_handlers import ExceptionHandlers
+from fidesops.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fidesops.ops.common_exceptions import (
+    FunctionalityNotConfigured,
+    RedisConnectionError,
+)
+from fidesops.ops.core.config import config
+from fidesops.ops.db.database import init_db
+from fidesops.ops.schemas.analytics import Event, ExtraData
+from fidesops.ops.service.connectors.saas.connector_registry_service import (
+    load_registry,
+    registry_file,
+)
+from fidesops.ops.tasks.scheduled.scheduler import scheduler
+from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
+from fidesops.ops.util.cache import get_cache
+from fidesops.ops.util.logger import get_fides_log_record_factory
+from fidesops.ops.util.oauth_util import get_db, verify_oauth_client
 
 logging.basicConfig(level=config.security.log_level)
 logging.setLogRecordFactory(get_fides_log_record_factory())
@@ -127,7 +134,7 @@ app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 for handler in ExceptionHandlers.get_handlers():
     app.add_exception_handler(FunctionalityNotConfigured, handler)
 
-WEBAPP_DIRECTORY = Path("src/fidesops/build/static")
+WEBAPP_DIRECTORY = Path("src/fidesops/ops/build/static")
 WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
 if config.admin_ui.enabled:
@@ -150,7 +157,7 @@ if config.admin_ui.enabled:
             with open(
                 WEBAPP_DIRECTORY / "index.html", "w", encoding="utf-8"
             ) as index_file:
-                heading = "<h1>No src/fidesops/build/static/index.html found</h1>"
+                heading = "<h1>No src/fidesops/ops/build/static/index.html found</h1>"
                 help_message = "<h2>A docker-compose.yml volume may be overwriting the built in Admin UI files</h2>"
                 index_file.write(f"{heading}{help_message}")
                 logger.info(
@@ -198,6 +205,9 @@ def start_webserver() -> None:
             "Set FIDESOPS__SECURITY__LOG_LEVEL to INFO or higher in production."
         )
         config.log_all_config_values()
+
+    logger.info("Validating SaaS connector templates...")
+    load_registry(registry_file)
 
     if config.database.enabled:
         logger.info("Running any pending DB migrations...")

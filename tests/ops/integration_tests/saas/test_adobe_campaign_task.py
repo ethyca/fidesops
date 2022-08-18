@@ -2,13 +2,13 @@ import random
 
 import pytest
 
-from fidesops.core.config import config
-from fidesops.graph.graph import DatasetGraph
-from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.service.connectors import get_connector
-from fidesops.task import graph_task
-from fidesops.task.graph_task import get_cached_data_for_erasures
+from fidesops.ops.core.config import config
+from fidesops.ops.graph.graph import DatasetGraph
+from fidesops.ops.models.privacy_request import PrivacyRequest
+from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.service.connectors import get_connector
+from fidesops.ops.task import graph_task
+from fidesops.ops.task.graph_task import get_cached_data_for_erasures
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
@@ -305,8 +305,8 @@ def test_adobe_campaign_saas_erasure_request_task(
 
     # Assert erasure request made to adobe_campaign_user
     assert x == {
-        "adobe_campaign_connector_example:profile": 1,
-        "adobe_campaign_connector_example:marketing_history": 0,
+        "adobe_instance:profile": 1,
+        "adobe_instance:marketing_history": 0,
     }
 
     config.execution.masking_strict = masking_strict  # Reset

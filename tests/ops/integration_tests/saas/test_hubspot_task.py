@@ -3,15 +3,15 @@ import random
 
 import pytest
 
-from fidesops.graph.graph import DatasetGraph
-from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
-from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.service.connectors import SaaSConnector
-from fidesops.task import graph_task
-from fidesops.task.filter_results import filter_data_categories
-from fidesops.task.graph_task import get_cached_data_for_erasures
-from fidesops.util.saas_util import format_body
+from fidesops.ops.graph.graph import DatasetGraph
+from fidesops.ops.models.privacy_request import ExecutionLog, PrivacyRequest
+from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fidesops.ops.service.connectors import SaaSConnector
+from fidesops.ops.task import graph_task
+from fidesops.ops.task.filter_results import filter_data_categories
+from fidesops.ops.task.graph_task import get_cached_data_for_erasures
+from fidesops.ops.util.saas_util import format_body
 from tests.ops.graph.graph_test_util import assert_rows_match, records_matching_fields
 
 
@@ -59,7 +59,7 @@ def test_saas_access_request_task(
         keys=["recipient", "subscriptionStatuses"],
     )
 
-    target_categories = {"user.provided"}
+    target_categories = {"user"}
     filtered_results = filter_data_categories(
         v,
         target_categories,
@@ -70,7 +70,12 @@ def test_saas_access_request_task(
         f"{dataset_name}:contacts",
         f"{dataset_name}:subscription_preferences",
     }
-    assert set(filtered_results[f"{dataset_name}:contacts"][0].keys()) == {"properties"}
+    assert set(filtered_results[f"{dataset_name}:contacts"][0].keys()) == {
+        "id",
+        "createdAt",
+        "updatedAt",
+        "properties",
+    }
 
     assert set(
         filtered_results[f"{dataset_name}:contacts"][0]["properties"].keys()
@@ -175,9 +180,9 @@ def test_saas_erasure_request_task(
 
     # Masking request only issued to "contacts" and "subscription_preferences" endpoints
     assert erasure == {
-        "hubspot_connector_example:contacts": 1,
-        "hubspot_connector_example:owners": 0,
-        "hubspot_connector_example:subscription_preferences": 1,
+        "hubspot_instance:contacts": 1,
+        "hubspot_instance:owners": 0,
+        "hubspot_instance:subscription_preferences": 1,
     }
 
     connector = SaaSConnector(connection_config_hubspot)

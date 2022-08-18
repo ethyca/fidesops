@@ -2,26 +2,26 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
-from fideslib.core.config import load_toml
 from fideslib.db import session
 from sqlalchemy.orm import Session
 
-from fidesops.models.connectionconfig import (
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.util.saas_util import load_config
-from tests.ops.fixtures.application_fixtures import load_dataset
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.util.saas_util import (
+    load_config_with_replacement,
+    load_dataset_with_replacement,
+)
 from tests.ops.test_helpers.vault_client import get_secrets
 
-saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("sentry")
 
 
 @pytest.fixture(scope="session")
-def sentry_secrets():
+def sentry_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "sentry.domain") or secrets["sentry.domain"],
         "access_token": pydash.get(saas_config, "sentry.access_token")
@@ -40,18 +40,22 @@ def sentry_secrets():
 
 
 @pytest.fixture(scope="session")
-def sentry_identity_email():
+def sentry_identity_email(saas_config):
     return pydash.get(saas_config, "sentry.identity_email") or secrets["identity_email"]
 
 
 @pytest.fixture
 def sentry_config() -> Dict[str, Any]:
-    return load_config("data/saas/config/sentry_config.yml")
+    return load_config_with_replacement(
+        "data/saas/config/sentry_config.yml", "<instance_fides_key>", "sentry_instance"
+    )
 
 
 @pytest.fixture
 def sentry_dataset() -> Dict[str, Any]:
-    return load_dataset("data/saas/dataset/sentry_dataset.yml")[0]
+    return load_dataset_with_replacement(
+        "data/saas/dataset/sentry_dataset.yml", "<instance_fides_key>", "sentry_dataset"
+    )[0]
 
 
 @pytest.fixture(scope="function")

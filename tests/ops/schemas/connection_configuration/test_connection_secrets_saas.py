@@ -3,11 +3,11 @@ from typing import Any, Dict
 import pytest
 from pydantic import ValidationError
 
-from fidesops.schemas.connection_configuration.connection_secrets_saas import (
+from fidesops.ops.schemas.connection_configuration.connection_secrets_saas import (
     SaaSSchema,
     SaaSSchemaFactory,
 )
-from fidesops.schemas.saas.saas_config import SaaSConfig
+from fidesops.ops.schemas.saas.saas_config import SaaSConfig
 
 
 @pytest.mark.unit_saas
@@ -22,7 +22,7 @@ class TestSaaSConnectionSecrets:
         that the schema is a subclass of SaaSSchema
         """
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
-        assert schema.__name__ == f"{saas_config.fides_key}_schema"
+        assert schema.__name__ == f"{saas_config.type}_schema"
         assert issubclass(schema.__base__, SaaSSchema)
 
     def test_validation(
@@ -43,7 +43,7 @@ class TestSaaSConnectionSecrets:
             if not connector_param.default_value
         ]
         assert (
-            f"{saas_config.fides_key}_schema must be supplied all of: "
+            f"{saas_config.type}_schema must be supplied all of: "
             f"[{', '.join(required_fields)}]." in str(exc.value)
         )
 

@@ -3,26 +3,26 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from fideslib.core.config import load_toml
 from fideslib.cryptography import cryptographic_util
 from sqlalchemy.orm import Session
 
-from fidesops.models.connectionconfig import (
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.util.saas_util import load_config
-from tests.ops.fixtures.application_fixtures import load_dataset
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.util.saas_util import (
+    load_config_with_replacement,
+    load_dataset_with_replacement,
+)
 from tests.ops.test_helpers.vault_client import get_secrets
 
-saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("zendesk")
 
 
 @pytest.fixture(scope="session")
-def zendesk_secrets():
+def zendesk_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "zendesk.domain") or secrets["domain"],
         "username": pydash.get(saas_config, "zendesk.username") or secrets["username"],
@@ -31,7 +31,7 @@ def zendesk_secrets():
 
 
 @pytest.fixture(scope="session")
-def zendesk_identity_email():
+def zendesk_identity_email(saas_config):
     return (
         pydash.get(saas_config, "zendesk.identity_email") or secrets["identity_email"]
     )
@@ -44,12 +44,20 @@ def zendesk_erasure_identity_email() -> str:
 
 @pytest.fixture
 def zendesk_config() -> Dict[str, Any]:
-    return load_config("data/saas/config/zendesk_config.yml")
+    return load_config_with_replacement(
+        "data/saas/config/zendesk_config.yml",
+        "<instance_fides_key>",
+        "zendesk_instance",
+    )
 
 
 @pytest.fixture
 def zendesk_dataset() -> Dict[str, Any]:
-    return load_dataset("data/saas/dataset/zendesk_dataset.yml")[0]
+    return load_dataset_with_replacement(
+        "data/saas/dataset/zendesk_dataset.yml",
+        "<instance_fides_key>",
+        "zendesk_instance",
+    )[0]
 
 
 @pytest.fixture(scope="function")

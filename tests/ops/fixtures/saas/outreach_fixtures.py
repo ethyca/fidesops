@@ -3,27 +3,27 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from fideslib.core.config import load_toml
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
 
-from fidesops.models.connectionconfig import (
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.util.saas_util import load_config
-from tests.ops.fixtures.application_fixtures import load_dataset
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.util.saas_util import (
+    load_config_with_replacement,
+    load_dataset_with_replacement,
+)
 from tests.ops.test_helpers.vault_client import get_secrets
 
-saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("outreach")
 
 
 @pytest.fixture(scope="session")
-def outreach_secrets():
+def outreach_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "outreach.domain") or secrets["domain"],
         "requester_email": pydash.get(saas_config, "outreach.requester_email")
@@ -40,7 +40,7 @@ def outreach_secrets():
 
 
 @pytest.fixture(scope="session")
-def outreach_identity_email():
+def outreach_identity_email(saas_config):
     return (
         pydash.get(saas_config, "outreach.identity_email") or secrets["identity_email"]
     )
@@ -53,12 +53,20 @@ def outreach_erasure_identity_email() -> str:
 
 @pytest.fixture
 def outreach_config() -> Dict[str, Any]:
-    return load_config("data/saas/config/outreach_config.yml")
+    return load_config_with_replacement(
+        "data/saas/config/outreach_config.yml",
+        "<instance_fides_key>",
+        "outreach_instance",
+    )
 
 
 @pytest.fixture
 def outreach_dataset() -> Dict[str, Any]:
-    return load_dataset("data/saas/dataset/outreach_dataset.yml")[0]
+    return load_dataset_with_replacement(
+        "data/saas/dataset/outreach_dataset.yml",
+        "<instance_fides_key>",
+        "outreach_dataset",
+    )[0]
 
 
 @pytest.fixture(scope="function")
