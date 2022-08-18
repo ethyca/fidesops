@@ -48,7 +48,7 @@ const ChooseConnection: React.FC<ChooseConnectionProps> = ({ currentStep }) => {
   useEffect(() => {
     updateCachedFilters.current(filters);
     return () => {
-      setCachedFilters({ search: "", system_type: SystemType.SAAS });
+      setCachedFilters(filters);
     };
   }, [setCachedFilters, filters]);
 

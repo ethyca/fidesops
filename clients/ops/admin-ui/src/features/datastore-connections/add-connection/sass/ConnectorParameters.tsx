@@ -7,37 +7,54 @@ import {
   Input,
   Textarea,
   Tooltip,
+  useToast,
   VStack,
 } from "@fidesui/react";
+import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
 import { CircleHelpIcon } from "common/Icon";
 import { capitalize } from "common/utils";
 import {
   ConnectionOption,
   ConnectionTypeSecretSchemaReponse,
 } from "connection-type/types";
-import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
+import { SaasType } from "datastore-connections/constants";
+import {
+  useCreateSassConnectionConfigMutation,
+  useLazyGetDatastoreConnectionStatusQuery,
+} from "datastore-connections/datastore-connection.slice";
+import {
+  SassConnectionConfigRequest,
+  SassConnectionConfigResponse,
+} from "datastore-connections/types";
 import { Field, Form, Formik } from "formik";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-import { CustomFields } from "../types";
+import { SassConnectorTemplate } from "../types";
 
-const defaultValues: CustomFields = {
-  name: "",
+const defaultValues: SassConnectorTemplate = {
   description: "",
-  connectionIdentifier: "",
+  instance_key: "",
+  name: "",
 };
 
 type ConnectorParametersProps = {
   connectionOption: ConnectionOption;
   data: ConnectionTypeSecretSchemaReponse;
+  onSaveClick: (value: SassConnectionConfigResponse) => void;
   onTestConnectionClick: (value: any) => void;
 };
 
 export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   connectionOption,
   data,
+  onSaveClick,
   onTestConnectionClick,
 }) => {
+  const mounted = useRef(false);
+  const toast = useToast();
+  const [connectionKey, setConnectionKey] = useState("");
+
+  const [createSassConnectionConfig] = useCreateSassConnectionConfigMutation();
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
 
   const validateField = (label: string, value: string) => {
@@ -95,18 +112,60 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     return defaultValues;
   };
 
-  const handleSubmit = (values: any, actions: any) => {
-    actions.setSubmitting(false);
-  };
-
-  const handleTestConnectionClick = () => {
-    // TODO: Replace the connection key value with the
-    // actual connection key value from the handleSubmit function
-    // trigger("ci_create_test_data_datastore_connection_disabled").then(
-    trigger("app_postgres_db").then((response) => {
-      onTestConnectionClick(response);
+  const handleError = (error: any) => {
+    let errorMsg = "An unexpected error occurred. Please try again.";
+    if (isErrorWithDetail(error)) {
+      errorMsg = error.data.detail;
+    } else if (isErrorWithDetailArray(error)) {
+      errorMsg = error.data.detail[0].msg;
+    }
+    toast({
+      status: "error",
+      description: errorMsg,
     });
   };
+
+  const handleSubmit = async (values: any, actions: any) => {
+    try {
+      const params: SassConnectionConfigRequest = {
+        description: values.description,
+        instance_key: (values.instance_key as string)
+          .toLowerCase()
+          .replace(/ /g, "_"),
+        name: values.name,
+        saas_connector_type: connectionOption.identifier as SaasType,
+        secrets: {},
+      };
+      Object.entries(data.properties).forEach((key) => {
+        params.secrets[key[0]] = values[key[0]];
+      });
+      const payload = await createSassConnectionConfig(params).unwrap();
+      setConnectionKey(payload.connection.key);
+      onSaveClick(payload);
+    } catch (error) {
+      handleError(error);
+    } finally {
+      actions.setSubmitting(false);
+    }
+  };
+
+  const handleTestConnectionClick = async () => {
+    try {
+      await trigger(connectionKey).unwrap();
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
+  useEffect(() => {
+    mounted.current = true;
+    if (result.isSuccess) {
+      onTestConnectionClick(result);
+    }
+    return () => {
+      mounted.current = false;
+    };
+  }, [onTestConnectionClick, result]);
 
   return (
     <Formik
@@ -165,13 +224,10 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
               )}
             </Field>
             {/* Connection Identifier */}
-            <Field id="connectionIdentifier" name="connectionIdentifier">
+            <Field id="instance_key" name="instance_key">
               {({ field }: { field: any }) => (
-                <FormControl display="flex">
-                  {getFormLabel(
-                    "connectionIdentifier",
-                    "Connection Identifier"
-                  )}
+                <FormControl display="flex" isRequired>
+                  {getFormLabel("instance_key", "Connection Identifier")}
                   <Input
                     {...field}
                     color="gray.700"
@@ -195,19 +251,18 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
                 </FormControl>
               )}
             </Field>
-            {/* Dynamic custom fields */}
+            {/* Dynamic connector secret fields */}
             {Object.entries(data.properties).map(([key, item]) =>
               getFormField(key, item)
             )}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
               <Button
                 colorScheme="gray.700"
-                isDisabled={!props.isValid}
+                isDisabled={!connectionKey}
                 isLoading={result.isLoading || result.isFetching}
                 loadingText="Testing"
                 onClick={handleTestConnectionClick}
                 variant="outline"
-                _disabled={{ opacity: "inherit" }}
               >
                 Test connection
               </Button>

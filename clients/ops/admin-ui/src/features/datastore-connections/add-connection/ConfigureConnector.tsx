@@ -1,7 +1,7 @@
 import { Flex } from "@fidesui/react";
 import { ConnectionOption } from "connection-type/types";
 import { SystemType } from "datastore-connections/constants";
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 
 import ConfigurationSettingsNav from "./ConfigurationSettingsNav";
 import { ConnectorParameters } from "./ConnectorParameters";
@@ -21,9 +21,13 @@ const ConfigureConnector: React.FC<ConfigureConnectorProps> = ({
     CONNECTOR_PARAMETERS_OPTIONS[0]
   );
 
-  const handleNavChange = useCallback((value: string) => {
+  const handleNavChange = (value: string) => {
     setSelectedItem(value);
-  }, []);
+  };
+
+  const handleOnSaveClick = () => {
+    setSelectedItem(CONNECTOR_PARAMETERS_OPTIONS[1]);
+  };
 
   return (
     <Flex gap="18px">
@@ -36,6 +40,7 @@ const ConfigureConnector: React.FC<ConfigureConnectorProps> = ({
           <ConnectorParameters
             currentStep={currentStep}
             connectionOption={connectionOption}
+            onSaveClick={handleOnSaveClick}
           />
         )}
     </Flex>

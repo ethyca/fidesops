@@ -127,7 +127,11 @@ dmypy.json
 .pyre/
 
 .idea
-.vscode
+
+# VSCode
+.vscode/*
+!.vscode/launch.json
+
 *.code-workspace
 .mypy_cache
 docker-stack.yml

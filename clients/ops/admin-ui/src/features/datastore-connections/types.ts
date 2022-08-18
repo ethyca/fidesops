@@ -57,5 +57,21 @@ export type DatastoreConnectionUpdate = {
 };
 
 export type SaasConfig = {
+  fides_key: string;
+  name: string;
   type: SaasType;
+};
+
+export type SassConnectionConfigRequest = {
+  name: string;
+  description: string;
+  instance_key: string;
+  saas_connector_type: SaasType;
+  secrets: {
+    [key: string]: any;
+  };
+};
+
+export type SassConnectionConfigResponse = {
+  connection: DatastoreConnection;
 };

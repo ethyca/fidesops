@@ -6,9 +6,9 @@ export type AddConnectionStep = {
   parentStepId?: number;
 };
 
-export type CustomFields = {
+export type SassConnectorTemplate = {
+  description: string;
+  instance_key: string;
   name: string;
-  connectionIdentifier: string;
-  description?: string;
   [key: string]: any;
 };
