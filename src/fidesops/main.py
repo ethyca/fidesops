@@ -145,7 +145,7 @@ if config.admin_ui.enabled:
         Each route is based frontend build directories and files."""
         pattern = r"\[.+]"
         for filepath in WEBAPP_DIRECTORY.glob("**/*.html"):
-            if "index" not in str(filepath):
+            if filepath != WEBAPP_INDEX:
                 path = re.sub(
                     pattern, ".+", str(filepath.relative_to(WEBAPP_DIRECTORY))[:-5]
                 )
