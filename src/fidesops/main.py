@@ -141,6 +141,8 @@ if config.admin_ui.enabled:
     route_file_map = {}
 
     def generate_route_file_map() -> None:
+        """Generates a map of frontend routes and the corresponding files to serve for each route.
+        Each route is based frontend build directories and files."""
         pattern = r"\[.+]"
         for filepath in WEBAPP_DIRECTORY.glob("**/*.html"):
             if "index" not in str(filepath):
