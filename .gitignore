@@ -130,6 +130,8 @@ dmypy.json
 
 # VSCode
 .vscode/*
+
+# Congigure and save debugging details in VS Code launch.json file
 !.vscode/launch.json
 
 *.code-workspace
