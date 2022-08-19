@@ -99,6 +99,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
             <Input {...field} color="gray.700" size="sm" />
             <FormErrorMessage>{form.errors[key]}</FormErrorMessage>
           </VStack>
+          <CircleHelpIcon marginLeft="8px" visibility="hidden" />
         </FormControl>
       )}
     </Field>
@@ -200,6 +201,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
                     />
                     <FormErrorMessage>{form.errors.name}</FormErrorMessage>
                   </VStack>
+                  <CircleHelpIcon marginLeft="8px" visibility="hidden" />
                 </FormControl>
               )}
             </Field>
@@ -217,6 +219,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
                     resize="none"
                     size="sm"
                   />
+                  <CircleHelpIcon marginLeft="8px" visibility="hidden" />
                 </FormControl>
               )}
             </Field>
