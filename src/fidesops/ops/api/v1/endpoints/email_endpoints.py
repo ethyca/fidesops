@@ -2,8 +2,9 @@ import logging
 from typing import Optional
 
 from fastapi import Depends, Security
-from fastapi_pagination import Page, Params, paginate
+from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
+from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.status import (
@@ -97,10 +98,10 @@ def patch_config_by_key(
     try:
         return update_email_config(db=db, key=config_key, config=email_config)
     except EmailConfigNotFoundException:
-        logger.warning(f"No email config found with key {email_config.key}")
+        logger.warning(f"No email config found with key {config_key}")
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"No email config found with key {email_config.key}",
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No email config found with key {config_key}",
         )
 
     except Exception as exc:
