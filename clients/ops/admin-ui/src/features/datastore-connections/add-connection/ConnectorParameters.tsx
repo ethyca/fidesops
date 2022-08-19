@@ -2,7 +2,6 @@ import { Box, Center, Flex, Spinner, VStack } from "@fidesui/react";
 import { capitalize } from "common/utils";
 import { useGetConnectionTypeSecretSchemaQuery } from "connection-type/connection-type.slice";
 import { ConnectionOption } from "connection-type/types";
-import { SassConnectionConfigResponse } from "datastore-connections/types";
 import React, { useState } from "react";
 
 import { STEPS } from "./constants";
@@ -13,21 +12,15 @@ import { AddConnectionStep } from "./types";
 type ConnectorParametersProps = {
   currentStep: AddConnectionStep;
   connectionOption: ConnectionOption;
-  onSaveClick: (value: SassConnectionConfigResponse) => void;
 };
 
 export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   currentStep = STEPS.filter((s) => s.stepId === 2)[0],
   connectionOption,
-  onSaveClick,
 }) => {
   const { data, isFetching, isLoading, isSuccess } =
     useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier);
   const [response, setResponse] = useState<any>();
-
-  const handleOnSaveClick = (value: SassConnectionConfigResponse) => {
-    onSaveClick(value);
-  };
 
   const handleTestConnectionClick = (value: any) => {
     setResponse(value);
@@ -51,7 +44,6 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
           <SassConnectorParametersForm
             connectionOption={connectionOption}
             data={data}
-            onSaveClick={handleOnSaveClick}
             onTestConnectionClick={handleTestConnectionClick}
           />
         ) : null}

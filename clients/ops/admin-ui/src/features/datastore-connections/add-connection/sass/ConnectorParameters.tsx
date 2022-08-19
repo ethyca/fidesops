@@ -22,10 +22,7 @@ import {
   useCreateSassConnectionConfigMutation,
   useLazyGetDatastoreConnectionStatusQuery,
 } from "datastore-connections/datastore-connection.slice";
-import {
-  SassConnectionConfigRequest,
-  SassConnectionConfigResponse,
-} from "datastore-connections/types";
+import { SassConnectionConfigRequest } from "datastore-connections/types";
 import { Field, Form, Formik } from "formik";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -40,14 +37,12 @@ const defaultValues: SassConnectorTemplate = {
 type ConnectorParametersProps = {
   connectionOption: ConnectionOption;
   data: ConnectionTypeSecretSchemaReponse;
-  onSaveClick: (value: SassConnectionConfigResponse) => void;
   onTestConnectionClick: (value: any) => void;
 };
 
 export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   connectionOption,
   data,
-  onSaveClick,
   onTestConnectionClick,
 }) => {
   const mounted = useRef(false);

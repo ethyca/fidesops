@@ -49,4 +49,11 @@ export const STEPS: AddConnectionStep[] = [
       "Connect to your {identifier} environment by providing credential information below. Once you have saved your connector credentials, you can review what data is included when processing a privacy request in your Dataset configuration.",
     href: `${DATASTORE_CONNECTION_ROUTE}/new?step=2`,
   },
+  {
+    stepId: 3,
+    label: "Configure your {identifier} connection",
+    description:
+      "View your system yaml below! You can also modify the yaml if you need to assign any references between datasets.",
+    href: `${DATASTORE_CONNECTION_ROUTE}/new?step=3`,
+  },
 ];

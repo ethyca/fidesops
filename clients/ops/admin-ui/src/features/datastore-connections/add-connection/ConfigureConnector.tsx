@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import ConfigurationSettingsNav from "./ConfigurationSettingsNav";
 import { ConnectorParameters } from "./ConnectorParameters";
 import { CONNECTOR_PARAMETERS_OPTIONS } from "./constants";
+import DatasetConfiguration from "./sass/DatasetConfiguration";
 import { AddConnectionStep } from "./types";
 
 type ConfigureConnectorProps = {
@@ -25,10 +26,6 @@ const ConfigureConnector: React.FC<ConfigureConnectorProps> = ({
     setSelectedItem(value);
   };
 
-  const handleOnSaveClick = () => {
-    setSelectedItem(CONNECTOR_PARAMETERS_OPTIONS[1]);
-  };
-
   return (
     <Flex gap="18px">
       <ConfigurationSettingsNav
@@ -40,7 +37,13 @@ const ConfigureConnector: React.FC<ConfigureConnectorProps> = ({
           <ConnectorParameters
             currentStep={currentStep}
             connectionOption={connectionOption}
-            onSaveClick={handleOnSaveClick}
+          />
+        )}
+      {connectionOption.type === SystemType.SAAS.toString() &&
+        selectedItem === CONNECTOR_PARAMETERS_OPTIONS[2] && (
+          <DatasetConfiguration
+            currentStep={currentStep}
+            connectionOption={connectionOption}
           />
         )}
     </Flex>
