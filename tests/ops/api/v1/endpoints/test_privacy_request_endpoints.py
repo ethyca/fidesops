@@ -2423,7 +2423,7 @@ class TestVerifyIdentity:
         )
 
     def test_incorrect_privacy_request_status(self, api_client, url, privacy_request):
-        request_body = {"access_code": self.code}
+        request_body = {"code": self.code}
         resp = api_client.post(url, headers={}, json=request_body)
         assert resp.status_code == 400
         assert (
@@ -2435,7 +2435,7 @@ class TestVerifyIdentity:
         privacy_request.status = PrivacyRequestStatus.identity_unverified
         privacy_request.save(db)
 
-        request_body = {"access_code": self.code}
+        request_body = {"code": self.code}
         resp = api_client.post(url, headers={}, json=request_body)
         assert resp.status_code == 400
         assert (
@@ -2448,7 +2448,7 @@ class TestVerifyIdentity:
         privacy_request.save(db)
         privacy_request.cache_identity_verification_code("999999")
 
-        request_body = {"access_code": self.code}
+        request_body = {"code": self.code}
         resp = api_client.post(url, headers={}, json=request_body)
         assert resp.status_code == 403
         assert (
@@ -2466,7 +2466,7 @@ class TestVerifyIdentity:
         privacy_request.save(db)
         privacy_request.cache_identity_verification_code(self.code)
 
-        request_body = {"access_code": self.code}
+        request_body = {"code": self.code}
         resp = api_client.post(url, headers={}, json=request_body)
         assert resp.status_code == 200
 
@@ -2506,7 +2506,7 @@ class TestVerifyIdentity:
         privacy_request.save(db)
         privacy_request.cache_identity_verification_code(self.code)
 
-        request_body = {"access_code": self.code}
+        request_body = {"code": self.code}
         resp = api_client.post(url, headers={}, json=request_body)
         assert resp.status_code == 200
 
