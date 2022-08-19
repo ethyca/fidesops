@@ -69,9 +69,10 @@ class TestPostEmailConfig:
         auth_header = generate_auth_header([EMAIL_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
+        assert json.loads(response.text)["detail"][0]["msg"] == "field required"
         assert (
-            json.loads(response.text)["detail"][0]["msg"]
-            == "[\"field required ('domain',)\", \"extra fields not permitted ('invalid',)\"]"
+            json.loads(response.text)["detail"][1]["msg"]
+            == "extra fields not permitted"
         )
 
     def test_post_email_config_with_not_supported_service_type(
@@ -179,7 +180,7 @@ class TestPostEmailConfig:
         assert response.status_code == 422
         errors = response.json()["detail"]
         assert "details" in errors[0]["loc"]
-        assert errors[0]["msg"] == "[\"field required ('domain',)\"]"
+        assert errors[0]["msg"] == "field required"
 
     def test_post_email_config_already_exists(
         self,

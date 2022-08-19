@@ -13,6 +13,7 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
 from fidesops.ops.api import deps
@@ -76,7 +77,7 @@ def post_config(
     except Exception as exc:
         logger.warning(f"Create failed for email config {email_config.key}: {exc}")
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Config with key {email_config.key} failed to be added",
         )
 
@@ -107,7 +108,7 @@ def patch_config_by_key(
     except Exception as exc:
         logger.warning(f"Patch failed for email config {email_config.key}: {exc}")
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Config with key {email_config.key} failed to be added",
         )
 
