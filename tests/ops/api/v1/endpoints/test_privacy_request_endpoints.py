@@ -57,6 +57,7 @@ from fidesops.ops.models.privacy_request import (
     PrivacyRequestStatus,
 )
 from fidesops.ops.schemas.dataset import DryRunDatasetResponse
+from fidesops.ops.schemas.email.email import EmailForActionType
 from fidesops.ops.schemas.masking.masking_secrets import SecretType
 from fidesops.ops.schemas.policy import PolicyResponse
 from fidesops.ops.schemas.privacy_request import ExecutionAndAuditLogResponse
@@ -2528,3 +2529,90 @@ class TestVerifyIdentity:
 
         assert approved_audit_log is None
         assert not mock_run_privacy_request.called
+
+
+class TestPrivacyRequestEmailVerificationRequired:
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client: ClientDetail, policy) -> str:
+        return V1_URL_PREFIX + PRIVACY_REQUESTS
+
+    @pytest.mark.identity_verification_required
+    def test_create_privacy_request_no_email_config(
+        self,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+    ):
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": "test@example.com"},
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["failed"]
+        assert len(response_data) == 1
+        assert response_data[0]["message"] == "Verification email could not be sent."
+        assert (
+            response_data[0]["data"]["status"]
+            == PrivacyRequestStatus.identity_unverified.value
+        )
+        pr = PrivacyRequest.get(
+            db=db, object_id=response_data[0]["data"]["privacy_request_id"]
+        )
+        pr.delete(db=db)
+
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
+    )
+    @pytest.mark.identity_verification_required
+    def test_create_privacy_request_with_email_config(
+        self,
+        mock_dispatch_email,
+        mock_execute_request,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+        email_config,
+    ):
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": "test@example.com"},
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        approval_audit_log: AuditLog = AuditLog.filter(
+            db=db,
+            conditions=(
+                (AuditLog.privacy_request_id == pr.id)
+                & (AuditLog.action == AuditLogAction.approved)
+            ),
+        ).first()
+        assert approval_audit_log is None
+        assert not mock_execute_request.called
+
+        assert response_data[0]["status"] == PrivacyRequestStatus.identity_unverified
+        assert mock_dispatch_email.called
+        assert mock_dispatch_email.called_with(
+            email_config=email_config,
+            email=EmailForActionType(
+                subject="Your one-time code",
+                body=f"<html>Your one-time code is {pr.get_cached_verification_code()}. Hurry! It expires in 10 minutes.</html>",
+                to_email="test@example.com",
+            ),
+        )
+
+        pr.delete(db=db)
