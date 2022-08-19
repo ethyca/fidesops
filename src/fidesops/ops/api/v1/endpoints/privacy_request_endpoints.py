@@ -70,6 +70,7 @@ from fidesops.ops.schemas.dataset import (
     CollectionAddressResponse,
     DryRunDatasetResponse,
 )
+from fidesops.ops.schemas.email.email import SubjectIdentityVerificationBodyParams
 from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fidesops.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
@@ -82,7 +83,6 @@ from fidesops.ops.schemas.privacy_request import (
     ReviewPrivacyRequestIds,
     RowCountRequest,
     StoppedCollection,
-    VerificationCode,
 )
 from fidesops.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
@@ -971,7 +971,7 @@ def verify_identification_code(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
-    provided_code: VerificationCode,
+    provided_code: SubjectIdentityVerificationBodyParams,
 ) -> PrivacyRequestResponse:
     """Verify the supplied identity verification code
 
@@ -983,7 +983,7 @@ def verify_identification_code(
         db, privacy_request_id
     )
     try:
-        privacy_request.verify_identity(db, provided_code.code)
+        privacy_request.verify_identity(db, provided_code.access_code)
     except IdentityVerificationException as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
     except PermissionError as exc:
