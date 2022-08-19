@@ -8,7 +8,7 @@ REST API endpoint *before* or *after* a Privacy Request executes.
 You can define as many webhooks as you'd like.  Webhooks can be `one_way`, where we will just ping your API and move on,
 or `two_way`, where we will wait for a response. Any `derived_identities` returned from a `two_way` webhook will be saved
 and can be used to locate other user information.  For example, a webhook might take a known `email` `identity` and
-use that to find a `phone_number` `derived)identity`.
+use that to find a `phone_number` `derived_identity`.
 
 Another use case for a Policy Webhook might be to log a user out of your mobile app after you've cleared
 their data from your system.  In this case, you'd create a `Policy` and a `ConnectionConfig` to describe the URL to hit
