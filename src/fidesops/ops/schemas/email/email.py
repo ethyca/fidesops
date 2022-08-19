@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, Optional, Union
 
-from pydantic import BaseModel, Extra, ValidationError, validator
+from pydantic import BaseModel, Extra
 
 from fidesops.ops.schemas import Msg
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
