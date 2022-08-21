@@ -13,6 +13,7 @@ from fidesops.ops.task.filter_results import filter_data_categories
 from fidesops.ops.task.graph_task import get_cached_data_for_erasures
 from fidesops.ops.util.saas_util import format_body
 from tests.ops.graph.graph_test_util import assert_rows_match, records_matching_fields
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
 @pytest.mark.integration_saas
@@ -58,6 +59,11 @@ def test_saas_access_request_task(
         min_size=1,
         keys=["recipient", "subscriptionStatuses"],
     )
+    assert_rows_match(
+        v[f"{dataset_name}:users"],
+        min_size=1,
+        keys=["id", "email"],
+    )
 
     target_categories = {"user"}
     filtered_results = filter_data_categories(
@@ -69,8 +75,16 @@ def test_saas_access_request_task(
     assert set(filtered_results.keys()) == {
         f"{dataset_name}:contacts",
         f"{dataset_name}:subscription_preferences",
+        f"{dataset_name}:users",
+        f"{dataset_name}:owners",
     }
-    assert set(filtered_results[f"{dataset_name}:contacts"][0].keys()) == {"properties"}
+    assert set(filtered_results[f"{dataset_name}:contacts"][0].keys()
+    ) == {
+        "id",
+        "updatedAt",
+        "createdAt",
+        "properties"
+    }
 
     assert set(
         filtered_results[f"{dataset_name}:contacts"][0]["properties"].keys()
@@ -78,12 +92,24 @@ def test_saas_access_request_task(
         "lastname",
         "firstname",
         "email",
+        "lastmodifieddate"
     }
+    assert (
+        filtered_results[f"{dataset_name}:contacts"][0]["properties"]["email"]
+        == hubspot_identity_email
+    )
     assert set(
         filtered_results[f"{dataset_name}:subscription_preferences"][0].keys()
     ) == {"recipient"}
     assert (
         filtered_results[f"{dataset_name}:subscription_preferences"][0]["recipient"]
+        == hubspot_identity_email
+    )
+    assert set(
+        filtered_results[f"{dataset_name}:users"][0].keys()
+    ) == {"email", "id"}
+    assert (
+        filtered_results[f"{dataset_name}:users"][0]["email"]
         == hubspot_identity_email
     )
 
@@ -122,7 +148,16 @@ def test_saas_access_request_task(
         )
         > 0
     )
-
+    assert (
+        len(
+            records_matching_fields(
+                logs,
+                dataset_name=dataset_name,
+                collection_name="users",
+            )
+        )
+        > 0
+    )
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_hubspot
@@ -178,6 +213,7 @@ def test_saas_erasure_request_task(
         "hubspot_connector_example:contacts": 1,
         "hubspot_connector_example:owners": 0,
         "hubspot_connector_example:subscription_preferences": 1,
+        "hubspot_connector_example:users": 1
     }
 
     connector = SaaSConnector(connection_config_hubspot)

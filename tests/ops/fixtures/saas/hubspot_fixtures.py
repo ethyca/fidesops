@@ -110,7 +110,8 @@ def hubspot_erasure_data(
 
     connector = SaaSConnector(connection_config_hubspot)
 
-    body = json.dumps(
+    # create contact
+    contacts_request_body = json.dumps(
         {
             "properties": {
                 "company": "test company",
@@ -122,22 +123,37 @@ def hubspot_erasure_data(
             }
         }
     )
+    updated_headers, contacts_request_formatted_body = format_body({}, contacts_request_body)
 
-    updated_headers, formatted_body = format_body({}, body)
-
-    # create contact
     contacts_request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,
         path=f"/crm/v3/objects/contacts",
         headers=updated_headers,
-        body=formatted_body,
+        body=contacts_request_formatted_body,
     )
     contacts_response = connector.create_client().send(contacts_request)
     contacts_body = contacts_response.json()
     contact_id = contacts_body["id"]
 
-    # no need to subscribe contact, since creating a contact auto-subscribes them
+    # create user
+    users_request_body = json.dumps(
+        {
+            "email": hubspot_erasure_identity_email,
+        }
+    )
+    updated_users_request_headers, users_request_formatted_body = format_body({}, users_request_body)
 
+    users_request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path=f"/settings/v3/users/",
+        headers=updated_users_request_headers,
+        body=users_request_formatted_body,
+    )
+    users_response = connector.create_client().send(users_request)
+    users_body = users_response.json()
+    user_id = users_body["id"]
+
+    # no need to subscribe contact, since creating a contact auto-subscribes them
     # Allows contact to be propagated in Hubspot before calling access / erasure requests
     error_message = (
         f"Contact with contact id {contact_id} could not be added to Hubspot"
@@ -148,7 +164,15 @@ def hubspot_erasure_data(
         error_message=error_message,
     )
 
-    yield contact_id
+    error_message = (
+        f"User with user id {user_id} could not be added to Hubspot"
+    )
+    poll_for_existence(
+        _user_exists,
+        (user_id, hubspot_erasure_identity_email, connector),
+        error_message=error_message,
+    )
+    yield contact_id, user_id
 
     # delete contact
     delete_request: SaaSRequestParams = SaaSRequestParams(
@@ -168,6 +192,23 @@ def hubspot_erasure_data(
         existence_desired=False,
     )
 
+    # delete user
+    delete_request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.DELETE,
+        path=f"/settings/v3/users/{user_id}",
+    )
+    connector.create_client().send(delete_request)
+
+    # verify user is deleted
+    error_message = (
+        f"User with user id {user_id} could not be deleted from Hubspot"
+    )
+    poll_for_existence(
+        _user_exists,
+        (user_id, hubspot_erasure_identity_email, connector),
+        error_message=error_message,
+        existence_desired=False,
+    )
 
 def _contact_exists(
     hubspot_erasure_identity_email: str, connector: SaaSConnector
@@ -206,3 +247,24 @@ def _contact_exists(
         and contact_body["results"][0]["properties"]["firstname"] == HUBSPOT_FIRSTNAME
     ):
         return contact_body
+
+def _user_exists(
+    user_id: str, user_email: str, connector: SaaSConnector
+) -> Any:
+    """
+    Confirm whether user exists by calling search api and comparing email str.
+    """
+    user_request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path=f"/settings/v3/users/{user_id}",
+        headers={},
+    )
+    #ignore errors set to true because we could get a 404
+    user_response = connector.create_client().send(request_params=user_request, ignore_errors=True)
+
+    if user_response.status_code ==  404:
+        return None
+
+    user_body = user_response.json()
+    if user_body and user_body["email"] == user_email:
+        return user_body
