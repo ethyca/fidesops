@@ -147,6 +147,8 @@ async def verify_oauth_client(
     if not client:
         raise AuthorizationError(detail="Not Authorized for this action")
 
+    print(set(assigned_scopes).issubset(set(client.scopes)))
+
     if not set(assigned_scopes).issubset(set(client.scopes)):
         # If the scopes on the token are not a subset of the scopes available
         # to the associated oauth client, this token is not valid

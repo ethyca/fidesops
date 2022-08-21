@@ -2,7 +2,7 @@
 
 import logging
 import os
-from typing import Any, Dict, MutableMapping, Optional
+from typing import Any, Dict, List, MutableMapping, Optional
 
 import toml
 from fideslib.core.config import (
@@ -16,6 +16,7 @@ from fideslib.core.config import (
 from fideslog.sdk.python.utils import FIDESOPS, generate_client_id
 from pydantic import validator
 
+from fidesops.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.ops.util.logger import NotPii
 
 logger = logging.getLogger(__name__)
@@ -84,6 +85,7 @@ class FidesopsSecuritySettings(SecuritySettings):
     """Configuration settings for Security variables."""
 
     log_level: str = "INFO"
+    root_user_scopes: Optional[List[str]] = SCOPE_REGISTRY
 
     @validator("log_level", pre=True)
     def validate_log_level(cls, value: str) -> str:
