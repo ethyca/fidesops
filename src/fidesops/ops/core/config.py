@@ -3,6 +3,7 @@
 import logging
 import os
 from typing import Any, Dict, MutableMapping, Optional
+from urllib.parse import quote_plus
 
 import toml
 from fideslib.core.config import (
@@ -56,6 +57,7 @@ class RedisSettings(FidesSettings):
     charset: str = "utf8"
     decode_responses: bool = True
     default_ttl_seconds: int = 604800
+    identity_verification_code_ttl_seconds: int = 600
     db_index: Optional[int]
     enabled: bool = True
     ssl: bool = False
@@ -74,7 +76,7 @@ class RedisSettings(FidesSettings):
             # If the whole URL is provided via the config, preference that
             return v
 
-        return f"redis://{values.get('user', '')}:{values['password']}@{values['host']}:{values['port']}/{values.get('db_index', '')}"
+        return f"redis://{quote_plus(values.get('user', ''))}:{quote_plus(values['password'])}@{values['host']}:{values['port']}/{values.get('db_index', '')}"
 
     class Config:
         env_prefix = "FIDESOPS__REDIS__"
