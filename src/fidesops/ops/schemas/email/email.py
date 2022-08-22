@@ -31,6 +31,7 @@ class SubjectIdentityVerificationBodyParams(BaseModel):
     """Body params required for subject identity verification email template"""
 
     access_code: str
+    access_code_lifespan: str
 
 
 class EmailForActionType(BaseModel):

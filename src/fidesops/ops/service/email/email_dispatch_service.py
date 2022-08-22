@@ -15,6 +15,8 @@ from fidesops.ops.schemas.email.email import (
     EmailServiceType,
     SubjectIdentityVerificationBodyParams,
 )
+from fidesops.ops.email_templates import get_email_template
+
 
 logger = logging.getLogger(__name__)
 
@@ -54,10 +56,15 @@ def _build_email(
     body_params: Union[SubjectIdentityVerificationBodyParams],
 ) -> EmailForActionType:
     if action_type == EmailActionType.SUBJECT_IDENTITY_VERIFICATION:
+        template = get_email_template(action_type)
         return EmailForActionType(
             subject="Your one-time code",
-            # for 1st iteration, below will be replaced with actual template files
-            body=f"<html>Your one-time code is {body_params.access_code}. Hurry! It expires in 10 minutes.</html>",
+            body=template.render(
+                {
+                    "code": body_params.access_code,
+                    "minutes": body_params.access_code_lifespan,
+                }
+            ),
         )
     logger.error(f"Email action type {action_type} is not implemented")
     raise EmailDispatchException(f"Email action type {action_type} is not implemented")
