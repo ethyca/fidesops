@@ -1,8 +1,10 @@
-from jinja2 import Environment, FileSystemLoader, select_autoescape, Template
-from fidesops.ops.schemas.email.email import EmailActionType
+import logging
+
+from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
+
 from fidesops.ops.common_exceptions import EmailTemplateUnhandledActionType
 from fidesops.ops.email_templates.template_names import SUBJECT_IDENTITY_VERIFICATION
-import logging
+from fidesops.ops.schemas.email.email import EmailActionType
 
 logger = logging.getLogger(__name__)
 

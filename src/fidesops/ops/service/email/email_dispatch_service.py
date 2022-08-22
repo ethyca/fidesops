@@ -6,6 +6,7 @@ from requests import Response
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import EmailDispatchException
+from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
@@ -15,8 +16,6 @@ from fidesops.ops.schemas.email.email import (
     EmailServiceType,
     SubjectIdentityVerificationBodyParams,
 )
-from fidesops.ops.email_templates import get_email_template
-
 
 logger = logging.getLogger(__name__)
 
