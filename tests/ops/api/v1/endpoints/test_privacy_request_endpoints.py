@@ -2531,18 +2531,21 @@ class TestVerifyIdentity:
         assert not mock_run_privacy_request.called
 
 
-class TestPrivacyRequestEmailVerificationRequired:
+class TestCreatePrivacyRequestEmailVerificationRequired:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
         return V1_URL_PREFIX + PRIVACY_REQUESTS
 
-    @pytest.mark.identity_verification_required
+    @pytest.fixture(scope="function")
+    def identity_verification_required(self):
+        """Override autouse fixture to enable identity verification for tests"""
+        original_value = config.execution.identity_verification_required
+        config.execution.identity_verification_required = True
+        yield
+        config.execution.require_manual_request_approval = original_value
+
     def test_create_privacy_request_no_email_config(
-        self,
-        url,
-        db,
-        api_client: TestClient,
-        policy,
+        self, url, db, api_client: TestClient, policy, identity_verification_required
     ):
         data = [
             {
@@ -2571,7 +2574,6 @@ class TestPrivacyRequestEmailVerificationRequired:
     @mock.patch(
         "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
     )
-    @pytest.mark.identity_verification_required
     def test_create_privacy_request_with_email_config(
         self,
         mock_dispatch_email,
@@ -2581,6 +2583,7 @@ class TestPrivacyRequestEmailVerificationRequired:
         api_client: TestClient,
         policy,
         email_config,
+        identity_verification_required,
     ):
         data = [
             {
