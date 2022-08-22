@@ -33,7 +33,7 @@ class SubjectIdentityVerificationBodyParams(BaseModel):
     verification_code: str
     verification_code_ttl_seconds: int
 
-    def get_verification_code_ttl_minutes(self):
+    def get_verification_code_ttl_minutes(self) -> int:
         """returns verification_code_ttl_seconds in minutes"""
         if self.verification_code_ttl_seconds < 60:
             return 0
