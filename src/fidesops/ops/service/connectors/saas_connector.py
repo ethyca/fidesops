@@ -85,7 +85,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     def create_client(self) -> AuthenticatedClient:
         """Creates an authenticated request builder"""
         uri = self.build_uri()
-        logger.info(f"Creating client to {uri}")
+        logger.info("Creating client to %s", uri)
         return AuthenticatedClient(uri, self.configuration)
 
     def _build_client_with_config(

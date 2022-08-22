@@ -102,7 +102,7 @@ def _remove_paths_from_row(
         if matched_array is None:
             # This case shouldn't happen - if this gets logged, we've done something wrong
             logger.info(
-                f"_remove_paths_from_row call: Path {path} in row {row} not found."
+                "_remove_paths_from_row call: Path %s in row %s not found.", path, row
             )
             continue
         # Loop through array in *reverse* to delete/replace indices

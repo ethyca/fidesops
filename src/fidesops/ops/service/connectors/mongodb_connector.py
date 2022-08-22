@@ -59,7 +59,7 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         Connects to the Mongo database and makes two trivial queries to ensure connection is valid.
         """
         config = MongoDBSchema(**self.configuration.secrets or {})
-        logger.info(f"Starting test connection to {self.configuration.key}")
+        logger.info("Starting test connection to %s", self.configuration.key)
         client = self.client()
         try:
             # Make a couple of trivial requests - getting server info and fetching the collection names
@@ -103,10 +103,10 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         db = client[db_name]
         collection = db[collection_name]
         rows = []
-        logger.info(f"Starting data retrieval for {node.address}")
+        logger.info("Starting data retrieval for %s", node.address)
         for row in collection.find(query_data, fields):
             rows.append(row)
-        logger.info(f"Found {len(rows)} rows on {node.address}")
+        logger.info("Found %s rows on %s", len(rows), node.address)
         return rows
 
     def mask_data(

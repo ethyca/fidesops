@@ -524,7 +524,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                 "reply-to-token": generate_request_callback_jwe(webhook),
             }
 
-        logger.info(f"Calling webhook {webhook.key} for privacy_request {self.id}")
+        logger.info("Calling webhook %s for privacy_request %s", webhook.key, self.id)
         response: Optional[SecondPartyResponseFormat] = https_connector.execute(  # type: ignore
             request_body.dict(),
             response_expected=response_expected,
@@ -582,7 +582,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
             task_id = self.get_cached_task_id()
             if task_id:
-                logger.info(f"Revoking task {task_id} for request {self.id}")
+                logger.info("Revoking task %s for request %s", task_id, self.id)
                 # Only revokes if execution is not already in progress
                 celery_app.control.revoke(task_id, terminate=False)
 

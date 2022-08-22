@@ -68,7 +68,7 @@ logger = logging.getLogger(__name__)
 def _get_saas_connection_config(
     connection_key: FidesOpsKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
-    logger.info(f"Finding connection config with key '{connection_key}'")
+    logger.info("Finding connection config with key '%s'", connection_key)
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
     if not connection_config:
         raise HTTPException(
@@ -138,7 +138,7 @@ def validate_saas_config(
     - each connector_param only has one of references or identity, not both
     """
 
-    logger.info(f"Validation successful for SaaS config '{saas_config.fides_key}'")
+    logger.info("Validation successful for SaaS config '%s'", saas_config.fides_key)
     return ValidateSaaSConfigResponse(
         saas_config=saas_config,
         validation_details=SaaSConfigValidationDetails(
@@ -179,7 +179,7 @@ def get_saas_config(
 ) -> SaaSConfig:
     """Returns the SaaS config for the given connection config."""
 
-    logger.info(f"Finding SaaS config for connection '{connection_config.key}'")
+    logger.info("Finding SaaS config for connection '%s'", connection_config.key)
     saas_config = connection_config.saas_config
     if not saas_config:
         raise HTTPException(
@@ -201,7 +201,7 @@ def delete_saas_config(
     """Removes the SaaS config for the given connection config.
     The corresponding dataset and secrets must be deleted before deleting the SaaS config"""
 
-    logger.info(f"Finding SaaS config for connection '{connection_config.key}'")
+    logger.info("Finding SaaS config for connection '%s'", connection_config.key)
     saas_config = connection_config.saas_config
     if not saas_config:
         raise HTTPException(
@@ -238,7 +238,7 @@ def delete_saas_config(
     if warnings:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=" ".join(warnings))
 
-    logger.info(f"Deleting SaaS config for connection '{connection_config.key}'")
+    logger.info("Deleting SaaS config for connection '%s'", connection_config.key)
     connection_config.update(db, data={"saas_config": None})
 
 

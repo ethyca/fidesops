@@ -167,10 +167,11 @@ class FidesopsConfig(FidesSettings):
         case_sensitive = True
 
     logger.warning(
-        f"Startup configuration: reloading = {hot_reloading}, dev_mode = {dev_mode}"
+        "Startup configuration: reloading = %s, dev_mode = %s", hot_reloading, dev_mode
     )
     logger.warning(
-        f'Startup configuration: pii logging = {os.getenv("FIDESOPS__LOG_PII", "").lower() == "true"}'
+        "Startup configuration: pii logging = %s",
+        os.getenv("FIDESOPS__LOG_PII", "").lower() == "true",
     )
 
     def log_all_config_values(self) -> None:
@@ -257,7 +258,7 @@ def update_config_file(updates: Dict[str, Dict[str, Any]]) -> None:
     with open(config_path, "w") as config_file:  # pylint: disable=W1514
         toml.dump(current_config, config_file)
 
-    logger.info(f"Updated {config_path}:")
+    logger.info("Updated %s:", config_path)
 
     for key, value in updates.items():
         for subkey, val in value.items():

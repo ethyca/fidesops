@@ -72,7 +72,7 @@ def get_connection_config_or_error(
 ) -> ConnectionConfig:
     """Helper to load the ConnectionConfig object or throw a 404"""
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
-    logger.info(f"Finding connection configuration with key '{connection_key}'")
+    logger.info("Finding connection configuration with key '%s'", connection_key)
     if not connection_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -188,7 +188,7 @@ def patch_connections(
     """
     created_or_updated: List[ConnectionConfig] = []
     failed: List[BulkUpdateFailed] = []
-    logger.info(f"Starting bulk upsert for {len(configs)} connection configuration(s)")
+    logger.info("Starting bulk upsert for %s connection configuration(s)", len(configs))
 
     for config in configs:
         orig_data = config.dict().copy()
@@ -234,7 +234,7 @@ def delete_connection(
 ) -> None:
     """Removes the connection configuration with matching key."""
     connection_config = get_connection_config_or_error(db, connection_key)
-    logger.info(f"Deleting connection config with key '{connection_key}'.")
+    logger.info("Deleting connection config with key '%s'.", connection_key)
     connection_config.delete(db)
 
 
@@ -290,7 +290,7 @@ def connection_status(
             failure_reason=str(exc),
         )
 
-    logger.info(f"Connection test {status.value} on {connection_config.key}")  # type: ignore
+    logger.info("Connection test %s on %s", status.value, connection_config.key)  # type: ignore
     connection_config.update_test_status(test_status=status, db=db)  # type: ignore
 
     return TestStatusMessage(
@@ -324,7 +324,7 @@ async def put_connection_config_secrets(
         unvalidated_secrets, connection_config
     ).dict()
     # Save validated secrets, regardless of whether they've been verified.
-    logger.info(f"Updating connection config secrets for '{connection_key}'")
+    logger.info("Updating connection config secrets for '%s'", connection_key)
     connection_config.save(db=db)
 
     msg = f"Secrets updated for ConnectionConfig with key: {connection_key}."

@@ -331,7 +331,8 @@ class Traversal:
             else:
                 # traversal traversal_node dict diff finished nodes
                 logger.error(
-                    f"Node could not be reached given specified ordering [{','.join([str(tn.address) for tn in running_node_queue.data])}]"
+                    "Node could not be reached given specified ordering [%s]",
+                    ",".join([str(tn.address) for tn in running_node_queue.data]),
                 )
                 raise TraversalError(
                     f"""Node could not be reached given the specified ordering:
@@ -341,7 +342,8 @@ class Traversal:
         # error if there are nodes that have not been visited
         if remaining_node_keys:
             logger.error(
-                f"Some nodes were not reachable: {','.join([str(x) for x in remaining_node_keys])}"
+                "Some nodes were not reachable: %s",
+                ",".join([str(x) for x in remaining_node_keys]),
             )
             raise TraversalError(
                 f"Some nodes were not reachable: {','.join([str(x) for x in remaining_node_keys])}"
@@ -349,7 +351,8 @@ class Traversal:
         # error if there are edges that have not been visited
         if remaining_edges:
             logger.error(
-                f"Some edges were not reachable: {','.join([str(x) for x in remaining_edges])}"
+                "Some edges were not reachable: %s",
+                ",".join([str(x) for x in remaining_edges]),
             )
             raise TraversalError(
                 f"Some edges were not reachable: {','.join([str(x) for x in remaining_edges])}"
@@ -359,5 +362,5 @@ class Traversal:
             tn.address for tn in finished_nodes.values() if tn.is_terminal_node
         ]
         if environment:
-            logger.debug(f"Found {len(end_nodes)} end nodes: {end_nodes}")
+            logger.debug("Found %s end nodes: %s", len(end_nodes), end_nodes)
         return end_nodes

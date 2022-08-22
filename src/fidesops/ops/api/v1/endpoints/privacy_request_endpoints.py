@@ -108,7 +108,7 @@ def get_privacy_request_or_error(
     db: Session, privacy_request_id: str
 ) -> PrivacyRequest:
     """Load the privacy request or throw a 404"""
-    logger.info(f"Finding privacy request with id '{privacy_request_id}'")
+    logger.info("Finding privacy request with id '%s'", privacy_request_id)
 
     privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
 
@@ -147,7 +147,7 @@ def create_privacy_request(
     # Optional fields to validate here are those that are both nullable in the DB, and exist
     # on the Pydantic schema
 
-    logger.info(f"Starting creation for {len(data)} privacy requests")
+    logger.info("Starting creation for %s privacy requests", len(data))
 
     optional_fields = ["external_id", "started_processing_at", "finished_processing_at"]
     for privacy_request_data in data:
@@ -162,7 +162,7 @@ def create_privacy_request(
             failed.append(failure)
             continue
 
-        logger.info(f"Finding policy with key '{privacy_request_data.policy_key}'")
+        logger.info("Finding policy with key '%s'", privacy_request_data.policy_key)
         policy: Optional[Policy] = Policy.get_by(
             db=db,
             field="key",
@@ -526,7 +526,7 @@ def get_request_status(
     To see individual execution logs, use the verbose query param `?verbose=True`.
     """
 
-    logger.info(f"Finding all request statuses with pagination params {params}")
+    logger.info("Finding all request statuses with pagination params %s", params)
     query = db.query(PrivacyRequest)
     query = _filter_privacy_request_queryset(
         db,
@@ -666,7 +666,7 @@ def get_request_preview_queries(
             for key, value in queries.items()
         ]
     except TraversalError as err:
-        logger.info(f"Dry run failed: {err}")
+        logger.info("Dry run failed: %s", err)
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="Dry run failed",
@@ -988,10 +988,10 @@ def verify_identification_code(
     except IdentityVerificationException as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
     except PermissionError as exc:
-        logger.info(f"Invalid verification code provided for {privacy_request.id}.")
+        logger.info("Invalid verification code provided for %s.", privacy_request.id)
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
 
-    logger.info(f"Identity verified for {privacy_request.id}.")
+    logger.info("Identity verified for %s.", privacy_request.id)
 
     if not config.execution.require_manual_request_approval:
         AuditLog.create(

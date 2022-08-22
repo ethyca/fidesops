@@ -48,7 +48,7 @@ def get_db_health(database_url: Optional[str], db: Session) -> str:
             return "needs migration"
         return "healthy"
     except Exception as error:  # pylint: disable=broad-except
-        logger.error(f"Unable to reach the database: {error}")
+        logger.error("Unable to reach the database: %s", error)
         return "unhealthy"
 
 
@@ -60,5 +60,5 @@ def get_cache_health() -> str:
         get_cache()
         return "healthy"
     except (RedisConnectionError, ResponseError) as e:
-        logger.error(f"Unable to reach cache: {e}")
+        logger.error("Unable to reach cache: %s", e)
         return "unhealthy"

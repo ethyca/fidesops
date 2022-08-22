@@ -155,7 +155,9 @@ def queue_privacy_request(
             task.task_id,
         )
     except DataError:
-        logger.debug(f"Error tracking task_id for request with id {privacy_request_id}")
+        logger.debug(
+            "Error tracking task_id for request with id %s", privacy_request_id
+        )
 
     return task.task_id
 

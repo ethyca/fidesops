@@ -162,7 +162,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.action, self.collection_name, current_request, param_values  # type: ignore
         )
 
-        logger.info(f"Populated request params for {current_request.path}")
+        logger.info("Populated request params for %s", current_request.path)
 
         return saas_request_params
 
@@ -268,7 +268,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.action, self.collection_name, masking_request, param_values  # type: ignore
         )
 
-        logger.info(f"Populated request params for {masking_request.path}")
+        logger.info("Populated request params for %s", masking_request.path)
 
         return saas_request_params
 

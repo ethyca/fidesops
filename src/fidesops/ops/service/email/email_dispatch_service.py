@@ -37,15 +37,17 @@ def dispatch_email(
         raise EmailDispatchException(
             f"Email secrets not found for config with key: {email_config.key}"
         )
-    logger.info(f"Building appropriate email template for action type: {action_type}")
+    logger.info("Building appropriate email template for action type: %s", action_type)
     email: EmailForActionType = _build_email(
         action_type=action_type, body_params=email_body_params
     )
     email_service: EmailServiceType = email_config.service_type  # type: ignore
-    logger.info(f"Retrieving appropriate dispatcher for email service: {email_service}")
+    logger.info(
+        "Retrieving appropriate dispatcher for email service: %s", email_service
+    )
     dispatcher: Any = _get_dispatcher_from_config_type(email_service_type=email_service)
     logger.info(
-        f"Starting email dispatch for email service with action type: {action_type}"
+        "Starting email dispatch for email service with action type: %s", action_type
     )
     dispatcher(email_config=email_config, email=email, to_email=to_email)
 
@@ -60,7 +62,7 @@ def _build_email(
             # for 1st iteration, below will be replaced with actual template files
             body=f"<html>Your one-time code is {body_params.access_code}. Hurry! It expires in 10 minutes.</html>",
         )
-    logger.error(f"Email action type {action_type} is not implemented")
+    logger.error("Email action type %s is not implemented", action_type)
     raise EmailDispatchException(f"Email action type {action_type} is not implemented")
 
 

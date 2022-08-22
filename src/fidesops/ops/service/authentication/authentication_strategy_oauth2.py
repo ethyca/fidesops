@@ -121,7 +121,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         and connection config secrets.
         """
 
-        logger.info(f"Attempting {action} token request for {connection_config.key}")
+        logger.info("Attempting %s token request for %s", action, connection_config.key)
 
         # get the client config from the token request or default to the
         # protocol and host specified by the root client config (no auth)

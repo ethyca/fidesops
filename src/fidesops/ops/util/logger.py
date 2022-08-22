@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import os
-from numbers import Number
 from typing import Any, Mapping, Union
 
 MASKED = "MASKED"
@@ -57,11 +56,10 @@ def _mask_pii_for_logs(parameter: Any) -> Any:
     Don't mask numeric values as this can throw errors in consumers
     format strings.
     """
+    if isinstance(parameter, Pii):
+        return MASKED
 
-    if isinstance(parameter, (NotPii, Number)):
-        return parameter
-
-    return MASKED
+    return parameter
 
 
 def _log_exception(exc: BaseException, dev_mode: bool = False) -> None:

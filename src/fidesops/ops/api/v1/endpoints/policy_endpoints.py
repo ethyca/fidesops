@@ -51,14 +51,14 @@ def get_policy_list(
     """
     Return a paginated list of all Policy records in this system
     """
-    logger.info(f"Finding all policies with pagination params '{params}'")
+    logger.info("Finding all policies with pagination params '%s'", params)
     policies = Policy.query(db=db).order_by(Policy.created_at.desc())
     return paginate(policies, params=params)
 
 
 def get_policy_or_error(db: Session, policy_key: FidesOpsKey) -> Policy:
     """Helper method to load Policy or throw a 404"""
-    logger.info(f"Finding policy with key '{policy_key}'")
+    logger.info("Finding policy with key '%s'", policy_key)
     policy = Policy.get_by(db=db, field="key", value=policy_key)
     if not policy:
         raise HTTPException(
@@ -106,7 +106,7 @@ def create_or_update_policies(
     """
     created_or_updated: List[Policy] = []
     failed: List[BulkUpdateFailed] = []
-    logger.info(f"Starting bulk upsert for {len(data)} policies")
+    logger.info("Starting bulk upsert for %s policies", len(data))
 
     for policy_schema in data:
         policy_data: Dict[str, Any] = dict(policy_schema)
@@ -168,7 +168,7 @@ def create_or_update_rules(
     Given a list of Rule data elements, create or update corresponding Rule objects
     or report failure
     """
-    logger.info(f"Finding policy with key '{policy_key}'")
+    logger.info("Finding policy with key '%s'", policy_key)
 
     policy = get_policy_or_error(db, policy_key)
 
@@ -274,7 +274,7 @@ def delete_rule(
     """
     policy = get_policy_or_error(db, policy_key)
 
-    logger.info(f"Finding rule with key '{rule_key}'")
+    logger.info("Finding rule with key '%s'", rule_key)
 
     rule = Rule.filter(
         db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)
@@ -285,7 +285,7 @@ def delete_rule(
             detail=f"No Rule found for key {rule_key} on Policy {policy_key}.",
         )
 
-    logger.info(f"Deleting rule with key '{rule_key}'")
+    logger.info("Deleting rule with key '%s'", rule_key)
     rule.delete(db=db)
 
 
@@ -310,7 +310,7 @@ def create_or_update_rule_targets(
     """
     policy = get_policy_or_error(db, policy_key)
 
-    logger.info(f"Finding rule with key '{rule_key}'")
+    logger.info("Finding rule with key '%s'", rule_key)
     rule = Rule.filter(
         db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)
     ).first()
@@ -396,7 +396,7 @@ def delete_rule_target(
     """
     policy = get_policy_or_error(db, policy_key)
 
-    logger.info(f"Finding rule with key '{rule_key}'")
+    logger.info("Finding rule with key '%s'", rule_key)
     rule = Rule.filter(
         db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)
     ).first()
@@ -406,7 +406,7 @@ def delete_rule_target(
             detail=f"No Rule found for key {rule_key} on Policy {policy_key}.",
         )
 
-    logger.info(f"Finding rule target with key '{rule_target_key}'")
+    logger.info("Finding rule target with key '%s'", rule_target_key)
     target = RuleTarget.filter(
         db=db,
         conditions=(
@@ -419,6 +419,6 @@ def delete_rule_target(
             detail=f"No RuleTarget found for key {rule_target_key} at Rule {rule_key} on Policy {policy_key}.",
         )
 
-    logger.info(f"Deleting rule target with key '{rule_target_key}'")
+    logger.info("Deleting rule target with key '%s'", rule_target_key)
 
     target.delete(db=db)

@@ -64,7 +64,7 @@ router = APIRouter(tags=["Datasets"], prefix=V1_URL_PREFIX)
 def _get_connection_config(
     connection_key: FidesOpsKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
-    logger.info(f"Finding connection config with key '{connection_key}'")
+    logger.info("Finding connection config with key '%s'", connection_key)
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
     if not connection_config:
         raise HTTPException(
@@ -127,7 +127,7 @@ def validate_dataset(
             ),
         )
 
-    logger.info(f"Validation successful for dataset '{dataset.fides_key}'!")
+    logger.info("Validation successful for dataset '%s'!", dataset.fides_key)
     return ValidateDatasetResponse(
         dataset=dataset,
         traversal_details=DatasetTraversalDetails(
@@ -160,7 +160,7 @@ def patch_datasets(
 
     created_or_updated: List[FidesopsDataset] = []
     failed: List[BulkUpdateFailed] = []
-    logger.info(f"Starting bulk upsert for {len(datasets)} datasets")
+    logger.info("Starting bulk upsert for %s datasets", len(datasets))
 
     # warn if there are duplicate fides_keys within the datasets
     # valid datasets with the same fides_key will override each other
@@ -260,7 +260,7 @@ def create_or_update_dataset(
             )
         )
     except Exception:
-        logger.warning(f"Create/update failed for dataset '{data['fides_key']}'.")
+        logger.warning("Create/update failed for dataset '%s'.", data["fides_key"])
         failed.append(
             BulkUpdateFailed(
                 message="Dataset create/update failed.",
