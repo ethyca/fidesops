@@ -3,6 +3,7 @@ import random
 
 import pytest
 
+from fidesops.ops.core.config import config
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.privacy_request import ExecutionLog, PrivacyRequest
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
@@ -12,6 +13,7 @@ from fidesops.ops.task import graph_task
 from fidesops.ops.task.filter_results import filter_data_categories
 from fidesops.ops.task.graph_task import get_cached_data_for_erasures
 from fidesops.ops.util.saas_util import format_body
+from tests.ops.fixtures.saas.hubspot_fixtures import user_exists
 from tests.ops.graph.graph_test_util import assert_rows_match, records_matching_fields
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
@@ -64,6 +66,11 @@ def test_saas_access_request_task(
         min_size=1,
         keys=["id", "email"],
     )
+    assert_rows_match(
+        v[f"{dataset_name}:owners"],
+        min_size=1,
+        keys=["id", "email", "lastName", "updatedAt", "firstName", "userId"],
+    )
 
     target_categories = {"user"}
     filtered_results = filter_data_categories(
@@ -110,6 +117,13 @@ def test_saas_access_request_task(
     ) == {"email", "id"}
     assert (
         filtered_results[f"{dataset_name}:users"][0]["email"]
+        == hubspot_identity_email
+    )
+    assert set(
+        filtered_results[f"{dataset_name}:owners"][0].keys()
+    ) == {"email", "id", "userId", "updatedAt", "firstName", "lastName"}
+    assert (
+        filtered_results[f"{dataset_name}:owners"][0]["email"]
         == hubspot_identity_email
     )
 
@@ -198,6 +212,8 @@ def test_saas_erasure_request_task(
         keys=["recipient", "subscriptionStatuses"],
     )
 
+    temp_masking = config.execution.masking_strict
+    config.execution.masking_strict = False  # Allow delete
     erasure = graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
@@ -207,6 +223,7 @@ def test_saas_erasure_request_task(
         get_cached_data_for_erasures(privacy_request.id),
         db,
     )
+    config.execution.masking_strict = temp_masking
 
     # Masking request only issued to "contacts" and "subscription_preferences" endpoints
     assert erasure == {
@@ -255,3 +272,15 @@ def test_saas_erasure_request_task(
     subscription_response = connector.create_client().send(subscription_request)
     subscription_body = subscription_response.json()
     assert subscription_body["subscriptionStatuses"][0]["status"] == "NOT_SUBSCRIBED"
+
+    # verify user is deleted
+    _, user_id = hubspot_erasure_data
+    error_message = (
+        f"User with user id {user_id} could not be deleted from Hubspot"
+    )
+    poll_for_existence(
+        user_exists,
+        (user_id, hubspot_erasure_identity_email, connector),
+        error_message=error_message,
+        existence_desired=False,
+    )

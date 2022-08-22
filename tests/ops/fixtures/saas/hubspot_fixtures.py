@@ -28,7 +28,7 @@ HUBSPOT_FIRSTNAME = "SomeoneFirstname"
 def hubspot_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "hubspot.domain") or secrets["domain"],
-        "hapikey": pydash.get(saas_config, "hubspot.hapikey") or secrets["hapikey"],
+        "private_app_token": pydash.get(saas_config, "hubspot.private_app_token") or secrets["private_app_token"],
     }
 
 
@@ -168,7 +168,7 @@ def hubspot_erasure_data(
         f"User with user id {user_id} could not be added to Hubspot"
     )
     poll_for_existence(
-        _user_exists,
+        user_exists,
         (user_id, hubspot_erasure_identity_email, connector),
         error_message=error_message,
     )
@@ -188,24 +188,6 @@ def hubspot_erasure_data(
     poll_for_existence(
         _contact_exists,
         (hubspot_erasure_identity_email, connector),
-        error_message=error_message,
-        existence_desired=False,
-    )
-
-    # delete user
-    delete_request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.DELETE,
-        path=f"/settings/v3/users/{user_id}",
-    )
-    connector.create_client().send(delete_request)
-
-    # verify user is deleted
-    error_message = (
-        f"User with user id {user_id} could not be deleted from Hubspot"
-    )
-    poll_for_existence(
-        _user_exists,
-        (user_id, hubspot_erasure_identity_email, connector),
         error_message=error_message,
         existence_desired=False,
     )
@@ -248,7 +230,7 @@ def _contact_exists(
     ):
         return contact_body
 
-def _user_exists(
+def user_exists(
     user_id: str, user_email: str, connector: SaaSConnector
 ) -> Any:
     """
