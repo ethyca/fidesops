@@ -1,1 +1,1 @@
-SUBJECT_IDENTITY_VERIFICATION = "subject_identity_verification.html"
+SUBJECT_IDENTITY_VERIFICATION_TEMPLATE = "subject_identity_verification.html"
