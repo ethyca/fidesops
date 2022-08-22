@@ -27,6 +27,7 @@ The types of changes are:
 * Add an endpoint that allows you to create a Saas connector and all supporting resources with a single request [#1076](https://github.com/ethyca/fidesops/pull/1076)
 * Add an endpoint for verifying the user's identity before queuing the privacy request. [#1111](https://github.com/ethyca/fidesops/pull/1111)
 * Adds tests for email endpoints and service [#1112](https://github.com/ethyca/fidesops/pull/1112)
+* Adds the ability to verify a subject's identity before processing a Privacy Request  [#1115] https://github.com/ethyca/fidesops/pull/1115
 
 ### Developer Experience
 
