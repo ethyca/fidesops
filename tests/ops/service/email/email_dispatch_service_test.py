@@ -29,7 +29,7 @@ def test_email_dispatch_mailgun_success(
         action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
         to_email="test@email.com",
         email_body_params=SubjectIdentityVerificationBodyParams(
-            access_code="2348", verification_code_ttl_seconds="10"
+            verification_code="2348", verification_code_ttl_seconds=600
         ),
     )
     body = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <title>ID Code</title>\n</head>\n<body>\n<main>\n    <p>\n        Your privacy request verification code is 2348.\n        Please return to the Privacy Center and enter the code to\n        continue. This code will expire in 10 minutes\n    </p>\n</main>\n</body>\n</html>'
@@ -54,7 +54,7 @@ def test_email_dispatch_mailgun_config_not_found(
             action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_email="test@email.com",
             email_body_params=SubjectIdentityVerificationBodyParams(
-                access_code="2348", verification_code_ttl_seconds="10"
+                verification_code="2348", verification_code_ttl_seconds=600
             ),
         )
     assert exc.value.args[0] == "No email config found."
@@ -85,7 +85,7 @@ def test_email_dispatch_mailgun_config_no_secrets(
             action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_email="test@email.com",
             email_body_params=SubjectIdentityVerificationBodyParams(
-                access_code="2348", verification_code_ttl_seconds="10"
+                verification_code="2348", verification_code_ttl_seconds=600
             ),
         )
     assert (
@@ -114,7 +114,7 @@ def test_email_dispatch_mailgun_failed_email(db: Session, email_config) -> None:
                 action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
                 to_email="test@email.com",
                 email_body_params=SubjectIdentityVerificationBodyParams(
-                    access_code="2348", verification_code_ttl_seconds="10"
+                    verification_code="2348", verification_code_ttl_seconds=600
                 ),
             )
         assert (

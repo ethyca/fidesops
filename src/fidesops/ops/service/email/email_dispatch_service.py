@@ -60,8 +60,8 @@ def _build_email(
             subject="Your one-time code",
             body=template.render(
                 {
-                    "code": body_params.access_code,
-                    "minutes": body_params.verification_code_ttl_seconds,
+                    "code": body_params.verification_code,
+                    "minutes": body_params.get_verification_code_ttl_minutes(),
                 }
             ),
         )
