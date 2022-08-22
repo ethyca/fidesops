@@ -14,7 +14,7 @@ from fidesops.ops.schemas.connection_configuration.connection_secrets_mongodb im
 )
 from fidesops.ops.service.connectors.base_connector import BaseConnector
 from fidesops.ops.service.connectors.query_config import MongoQueryConfig, QueryConfig
-from fidesops.ops.util.logger import NotPii
+from fidesops.ops.util.logger import NotPii, Pii
 
 logger = logging.getLogger(__name__)
 
@@ -135,8 +135,8 @@ class MongoDBConnector(BaseConnector[MongoClient]):
                 logger.info(
                     "db.%s.update_one(%s, %s, upsert=False)",
                     NotPii(collection_name),
-                    query,
-                    update,
+                    Pii(query),
+                    Pii(update),
                 )
 
         return update_ct

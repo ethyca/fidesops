@@ -15,6 +15,7 @@ from fidesops.ops.schemas.email.email import (
     EmailServiceType,
     SubjectIdentityVerificationBodyParams,
 )
+from fidesops.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
 
@@ -103,5 +104,5 @@ def _mailgun_dispatcher(
                 f"Email failed to send with status code {response.status_code}"
             )
     except Exception as e:
-        logger.error("Email failed to send: %s", str(e))
+        logger.error("Email failed to send: %s", Pii(str(e)))
         raise EmailDispatchException(f"Email failed to send due to: {e}")

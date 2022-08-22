@@ -8,6 +8,10 @@ from typing import Any, Mapping, Union
 MASKED = "MASKED"
 
 
+class Pii(str):
+    """Mask pii data"""
+
+
 class NotPii(str):
     """whitelist non pii data"""
 

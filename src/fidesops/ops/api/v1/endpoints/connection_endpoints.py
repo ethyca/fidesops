@@ -59,7 +59,7 @@ from fidesops.ops.schemas.connection_configuration.connection_secrets import (
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.service.connectors import get_connector
 from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.logger import NotPii
+from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
@@ -278,8 +278,8 @@ def connection_status(
     except (ConnectionException, ClientUnsuccessfulException) as exc:
         logger.warning(
             "Connection test failed on %s: %s",
-            NotPii(connection_config.key),
-            str(exc),
+            connection_config.key,
+            Pii(str(exc)),
         )
         connection_config.update_test_status(
             test_status=ConnectionTestStatus.failed, db=db

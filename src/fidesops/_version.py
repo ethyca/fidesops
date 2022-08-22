@@ -18,6 +18,8 @@ import re
 import subprocess
 import sys
 
+from fidesops.ops.util.logger import Pii
+
 
 def get_keywords():
     """Get the keywords needed to look up the version information."""
@@ -92,18 +94,18 @@ def run_command(commands, args, cwd=None, verbose=False, hide_stderr=False, env=
             if e.errno == errno.ENOENT:
                 continue
             if verbose:
-                print("unable to run %s" % dispcmd)
+                print("unable to run %s" % Pii(dispcmd))
                 print(e)
             return None, None
     else:
         if verbose:
-            print("unable to find command, tried %s" % (commands,))
+            print("unable to find command, tried %s" % (Pii(commands),))
         return None, None
     stdout = p.communicate()[0].strip().decode()
     if p.returncode != 0:
         if verbose:
-            print("unable to run %s (error)" % dispcmd)
-            print("stdout was %s" % stdout)
+            print("unable to run %s (error)" % Pii(dispcmd))
+            print("stdout was %s" % Pii(stdout))
         return None, p.returncode
     return stdout, p.returncode
 
@@ -134,7 +136,7 @@ def versions_from_parentdir(parentdir_prefix, root, verbose):
     if verbose:
         print(
             "Tried directories %s but none started with prefix %s"
-            % (str(rootdirs), parentdir_prefix)
+            % (Pii(str(rootdirs)), Pii(parentdir_prefix))
         )
     raise NotThisMethod("rootdir doesn't start with parentdir_prefix")
 

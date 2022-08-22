@@ -29,6 +29,7 @@ from fidesops.ops.schemas import policy as schemas
 from fidesops.ops.schemas.api import BulkUpdateFailed
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.util.api_router import APIRouter
+from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Policy"], prefix=urls.V1_URL_PREFIX)
@@ -124,7 +125,7 @@ def create_or_update_policies(
             DrpActionValidationError,
             IntegrityError,
         ) as exc:
-            logger.warning("Create/update failed for policy: %s", exc)
+            logger.warning("Create/update failed for policy: %s", Pii(exc))
             failure = {
                 "message": exc.args[0],
                 "data": policy_data,
@@ -132,7 +133,7 @@ def create_or_update_policies(
             failed.append(BulkUpdateFailed(**failure))
             continue
         except PolicyValidationError as exc:
-            logger.warning("Create/update failed for policy: %s", exc)
+            logger.warning("Create/update failed for policy: %s", Pii(exc))
             failure = {
                 "message": "This record could not be added because the data provided was invalid.",
                 "data": policy_data,

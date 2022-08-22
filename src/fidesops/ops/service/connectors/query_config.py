@@ -31,6 +31,7 @@ from fidesops.ops.task.refine_target_path import (
     join_detailed_path,
 )
 from fidesops.ops.util.collection_util import append, filter_nonempty_values
+from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.querytoken import QueryToken
 
 logger = logging.getLogger(__name__)
@@ -447,7 +448,7 @@ class SQLQueryConfig(QueryConfig[Executable]):
             update_clauses,
             pk_clauses,
         )
-        logger.info("query = %s, params = %s", query_str, update_value_map)
+        logger.info("query = %s, params = %s", Pii(query_str), Pii(update_value_map))
         return text(query_str).params(update_value_map)
 
     def query_to_str(self, t: TextClause, input_data: Dict[str, List[Any]]) -> str:

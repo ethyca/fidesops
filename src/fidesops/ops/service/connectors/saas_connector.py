@@ -31,6 +31,7 @@ from fidesops.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
 )
+from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
@@ -371,7 +372,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         except Exception:
             logger.error(
                 "Encountered error executing override access function '%s'",
-                override_function_name,
+                Pii(override_function_name),
                 exc_info=True,
             )
             raise FidesopsException(
@@ -419,7 +420,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         except Exception:
             logger.error(
                 "Encountered error executing override mask function '%s",
-                override_function_name,
+                Pii(override_function_name),
                 exc_info=True,
             )
             raise FidesopsException(

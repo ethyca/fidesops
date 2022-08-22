@@ -42,6 +42,7 @@ from fidesops.ops.service.privacy_request.request_service import (
 )
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.cache import FidesopsRedis
+from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.oauth_util import verify_oauth_client
 
 logger = logging.getLogger(__name__)
@@ -120,7 +121,7 @@ def create_drp_privacy_request(
         )
 
     except common_exceptions.RedisConnectionError as exc:
-        logger.error("RedisConnectionError: %s", exc)
+        logger.error("RedisConnectionError: %s", Pii(exc))
         # Thrown when cache.ping() fails on cache connection retrieval
         raise HTTPException(
             status_code=HTTP_424_FAILED_DEPENDENCY,

@@ -22,7 +22,7 @@ from fidesops.ops.service.authentication.authentication_strategy import (
 from fidesops.ops.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
 )
-from fidesops.ops.util.logger import NotPii
+from fidesops.ops.util.logger import NotPii, Pii
 from fidesops.ops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
@@ -157,9 +157,9 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         except Exception as exc:
             logger.error(
                 "Error occurred during the %s request for %s: %s",
-                action,
+                Pii(action),
                 NotPii(connection_config.key),
-                str(exc),
+                Pii(str(exc)),
             )
             raise OAuth2TokenException(
                 f"Error occurred during the {action} request for {connection_config.key}: {str(exc)}"

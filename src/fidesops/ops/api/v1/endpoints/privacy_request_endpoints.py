@@ -96,6 +96,7 @@ from fidesops.ops.task.task_resources import TaskResources
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.cache import FidesopsRedis
 from fidesops.ops.util.collection_util import Row
+from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 
 logger = logging.getLogger(__name__)
@@ -214,14 +215,14 @@ def create_privacy_request(
                 queue_privacy_request(privacy_request.id)
 
         except common_exceptions.RedisConnectionError as exc:
-            logger.error("RedisConnectionError: %s", exc)
+            logger.error("RedisConnectionError: %s", Pii(exc))
             # Thrown when cache.ping() fails on cache connection retrieval
             raise HTTPException(
                 status_code=HTTP_424_FAILED_DEPENDENCY,
                 detail=exc.args[0],
             )
         except Exception as exc:
-            logger.error("Exception: %s", exc)
+            logger.error("Exception: %s", Pii(exc))
             failure = {
                 "message": "This record could not be added",
                 "data": kwargs,
