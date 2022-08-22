@@ -61,7 +61,7 @@ def _build_email(
             body=template.render(
                 {
                     "code": body_params.access_code,
-                    "minutes": body_params.access_code_lifespan,
+                    "minutes": body_params.verification_code_ttl_seconds,
                 }
             ),
         )

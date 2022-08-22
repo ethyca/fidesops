@@ -1,6 +1,12 @@
 import logging
 
-from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
+from jinja2 import (
+    Environment,
+    FileSystemLoader,
+    Template,
+    TemplateNotFound,
+    select_autoescape,
+)
 
 from fidesops.ops.common_exceptions import EmailTemplateUnhandledActionType
 from fidesops.ops.email_templates.template_names import SUBJECT_IDENTITY_VERIFICATION
