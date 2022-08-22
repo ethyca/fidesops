@@ -27,6 +27,7 @@ The types of changes are:
 * Add an endpoint that allows you to create a Saas connector and all supporting resources with a single request [#1076](https://github.com/ethyca/fidesops/pull/1076)
 * Add an endpoint for verifying the user's identity before queuing the privacy request. [#1111](https://github.com/ethyca/fidesops/pull/1111)
 * Adds tests for email endpoints and service [#1112](https://github.com/ethyca/fidesops/pull/1112)
+* Added email templates [#1123](https://github.com/ethyca/fidesops/pull/1123)
 
 ### Developer Experience
 
@@ -42,7 +43,7 @@ The types of changes are:
 
 ### Changed
 
-* Update request status endpoint to return both audit and execution logs [#1068] https://github.com/ethyca/fidesops/pull/1068/
+* Update request status endpoint to return both audit and execution logs [#1068] (https://github.com/ethyca/fidesops/pull/1068/)
 
 
 ## [1.7.0](https://github.com/ethyca/fidesops/compare/1.6.3...1.7.0)
