@@ -41,7 +41,7 @@ export const statusPropMap: {
   identity_unverified: {
     bg: "red.400",
     label: "Unverified",
-  }
+  },
 };
 
 interface RequestBadgeProps {
