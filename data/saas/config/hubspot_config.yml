@@ -74,10 +74,8 @@ saas_config:
           param_values:
             - name: placeholder
               identity: email
+          data_path: results
           postprocessors:
-            - strategy: unwrap
-              configuration:
-                data_path: results
             - strategy: filter
               configuration:
                 field: email
