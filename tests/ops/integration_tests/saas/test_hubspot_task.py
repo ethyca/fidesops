@@ -93,12 +93,7 @@ def test_saas_access_request_task(
     }
     assert set(
         filtered_results[f"{dataset_name}:contacts"][0]["properties"].keys()
-    ) == {
-        "lastname",
-        "firstname",
-        "email",
-        "lastmodifieddate"
-    }
+    ) == {"lastname", "firstname", "email", "lastmodifieddate"}
     assert (
         filtered_results[f"{dataset_name}:contacts"][0]["properties"]["email"]
         == hubspot_identity_email
@@ -110,19 +105,20 @@ def test_saas_access_request_task(
         filtered_results[f"{dataset_name}:subscription_preferences"][0]["recipient"]
         == hubspot_identity_email
     )
-    assert set(
-        filtered_results[f"{dataset_name}:users"][0].keys()
-    ) == {"email", "id"}
+    assert set(filtered_results[f"{dataset_name}:users"][0].keys()) == {"email", "id"}
     assert (
-        filtered_results[f"{dataset_name}:users"][0]["email"]
-        == hubspot_identity_email
+        filtered_results[f"{dataset_name}:users"][0]["email"] == hubspot_identity_email
     )
-    assert set(
-        filtered_results[f"{dataset_name}:owners"][0].keys()
-    ) == {"email", "id", "userId", "updatedAt", "firstName", "lastName"}
+    assert set(filtered_results[f"{dataset_name}:owners"][0].keys()) == {
+        "email",
+        "id",
+        "userId",
+        "updatedAt",
+        "firstName",
+        "lastName",
+    }
     assert (
-        filtered_results[f"{dataset_name}:owners"][0]["email"]
-        == hubspot_identity_email
+        filtered_results[f"{dataset_name}:owners"][0]["email"] == hubspot_identity_email
     )
 
     logs = (
@@ -170,6 +166,7 @@ def test_saas_access_request_task(
         )
         > 0
     )
+
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_hubspot
@@ -273,9 +270,7 @@ def test_saas_erasure_request_task(
 
     # verify user is deleted
     _, user_id = hubspot_erasure_data
-    error_message = (
-        f"User with user id {user_id} could not be deleted from Hubspot"
-    )
+    error_message = f"User with user id {user_id} could not be deleted from Hubspot"
     poll_for_existence(
         user_exists,
         (user_id, hubspot_erasure_identity_email, connector),

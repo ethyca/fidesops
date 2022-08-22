@@ -31,7 +31,8 @@ HUBSPOT_FIRSTNAME = "SomeoneFirstname"
 def hubspot_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "hubspot.domain") or secrets["domain"],
-        "private_app_token": pydash.get(saas_config, "hubspot.private_app_token") or secrets["private_app_token"],
+        "private_app_token": pydash.get(saas_config, "hubspot.private_app_token")
+        or secrets["private_app_token"],
     }
 
 
@@ -134,7 +135,9 @@ def hubspot_erasure_data(
             }
         }
     )
-    updated_headers, contacts_request_formatted_body = format_body({}, contacts_request_body)
+    updated_headers, contacts_request_formatted_body = format_body(
+        {}, contacts_request_body
+    )
 
     contacts_request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,
@@ -152,7 +155,9 @@ def hubspot_erasure_data(
             "email": hubspot_erasure_identity_email,
         }
     )
-    updated_users_request_headers, users_request_formatted_body = format_body({}, users_request_body)
+    updated_users_request_headers, users_request_formatted_body = format_body(
+        {}, users_request_body
+    )
 
     users_request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,
@@ -175,9 +180,7 @@ def hubspot_erasure_data(
         error_message=error_message,
     )
 
-    error_message = (
-        f"User with user id {user_id} could not be added to Hubspot"
-    )
+    error_message = f"User with user id {user_id} could not be added to Hubspot"
     poll_for_existence(
         user_exists,
         (user_id, hubspot_erasure_identity_email, connector),
@@ -202,6 +205,7 @@ def hubspot_erasure_data(
         error_message=error_message,
         existence_desired=False,
     )
+
 
 def _contact_exists(
     hubspot_erasure_identity_email: str, connector: SaaSConnector
@@ -241,9 +245,8 @@ def _contact_exists(
     ):
         return contact_body
 
-def user_exists(
-    user_id: str, user_email: str, connector: SaaSConnector
-) -> Any:
+
+def user_exists(user_id: str, user_email: str, connector: SaaSConnector) -> Any:
     """
     Confirm whether user exists by calling search api and comparing email str.
     """
@@ -252,10 +255,12 @@ def user_exists(
         path=f"/settings/v3/users/{user_id}",
         headers={},
     )
-    #ignore errors set to true because we could get a 404
-    user_response = connector.create_client().send(request_params=user_request, ignore_errors=True)
+    # ignore errors set to true because we could get a 404
+    user_response = connector.create_client().send(
+        request_params=user_request, ignore_errors=True
+    )
 
-    if user_response.status_code ==  404:
+    if user_response.status_code == 404:
         return None
 
     user_body = user_response.json()
