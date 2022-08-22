@@ -47,7 +47,7 @@ variable in your `fidesops.toml` to `TRUE`. You must also set up an EmailConfig 
 to your users.
 
 When a user submits a PrivacyRequest, they will be emailed a six-digit code.  They must supply that verification code to Fidesops
-to continue privacy request execution.
+to continue privacy request execution.  Until the Privacy Request identity is verified, it will have a status of: `identity_unverified`.
 
 ```json title="<code>POST api/v1/privacy-request/<privacy_request_id>/verify</code>"
 {"code": "<verification code here>"}

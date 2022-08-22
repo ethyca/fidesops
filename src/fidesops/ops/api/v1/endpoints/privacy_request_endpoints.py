@@ -1010,7 +1010,7 @@ def verify_identification_code(
     db: Session = Depends(deps.get_db),
     provided_code: VerificationCode,
 ) -> PrivacyRequestResponse:
-    """Verify the supplied identity verification code
+    """Verify the supplied identity verification code.
 
     If successful, and we don't need separate manual request approval, queue the privacy request
     for execution.

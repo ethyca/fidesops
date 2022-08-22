@@ -18,7 +18,11 @@ logger = logging.getLogger(__name__)
 def build_required_privacy_request_kwargs(
     requested_at: Optional[datetime], policy_id: str
 ) -> Dict[str, Any]:
-    """Build kwargs required for creating privacy request"""
+    """Build kwargs required for creating privacy request
+
+    If identity verification is on, the request will have an initial status of
+    "identity_unverified", otherwise, it will have an initial status of "pending".
+    """
     status = (
         PrivacyRequestStatus.identity_unverified
         if config.execution.identity_verification_required
