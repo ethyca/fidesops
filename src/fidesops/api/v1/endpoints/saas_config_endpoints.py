@@ -34,9 +34,7 @@ from fidesops.schemas.saas.saas_config import (
     ValidateSaaSConfigResponse,
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
-from fidesops.service.authentication.authentication_strategy_factory_generic import (
-    get_strategy,
-)
+from fidesops.service.authentication.authentication_strategy_factory import get_strategy
 from fidesops.service.authentication.authentication_strategy_oauth2 import (
     OAUTH_2_STRATEGY_NAME,
     OAuth2AuthenticationStrategy,

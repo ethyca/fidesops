@@ -25,9 +25,7 @@ from fidesops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
 
-from fidesops.service.authentication.authentication_strategy_factory_generic import (
-    register,
-)
+from fidesops.service.authentication.authentication_strategy_factory import register
 
 OAUTH_2_STRATEGY_NAME = "oauth2"
 

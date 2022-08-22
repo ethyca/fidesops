@@ -8,9 +8,7 @@ from fidesops.schemas.saas.strategy_configuration import (
 from fidesops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fidesops.service.authentication.authentication_strategy_factory_generic import (
-    register,
-)
+from fidesops.service.authentication.authentication_strategy_factory import register
 from fidesops.util.saas_util import assign_placeholders
 
 

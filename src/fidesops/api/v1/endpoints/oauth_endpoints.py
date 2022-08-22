@@ -43,9 +43,7 @@ from fidesops.core.config import config
 from fidesops.models.authentication_request import AuthenticationRequest
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.client import ClientCreatedResponse
-from fidesops.service.authentication.authentication_strategy_factory_generic import (
-    get_strategy,
-)
+from fidesops.service.authentication.authentication_strategy_factory import get_strategy
 from fidesops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
