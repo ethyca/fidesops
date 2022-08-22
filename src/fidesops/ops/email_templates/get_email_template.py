@@ -4,7 +4,6 @@ from jinja2 import (
     Environment,
     FileSystemLoader,
     Template,
-    TemplateNotFound,
     select_autoescape,
 )
 
