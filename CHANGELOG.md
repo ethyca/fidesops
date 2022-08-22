@@ -30,6 +30,7 @@ The types of changes are:
 * SaaS Connector Configuration - Testing a Connection [#985](https://github.com/ethyca/fidesops/pull/1099)
 * Add an endpoint for verifying the user's identity before queuing the privacy request. [#1111](https://github.com/ethyca/fidesops/pull/1111)
 * Adds tests for email endpoints and service [#1112](https://github.com/ethyca/fidesops/pull/1112)
+* Adds users and owners configuration for hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
 
 ### Developer Experience
 
