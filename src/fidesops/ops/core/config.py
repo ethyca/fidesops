@@ -17,8 +17,6 @@ from fideslib.core.config import (
 from fideslog.sdk.python.utils import FIDESOPS, generate_client_id
 from pydantic import validator
 
-from fidesops.ops.util.logger import NotPii
-
 logger = logging.getLogger(__name__)
 
 
@@ -186,9 +184,9 @@ class FidesopsConfig(FidesSettings):
             for key, value in settings.dict().items():  # type: ignore
                 logger.debug(
                     "Using config: %s%s = %s",
-                    NotPii(settings.Config.env_prefix),  # type: ignore
-                    NotPii(key),
-                    NotPii(value),
+                    settings.Config.env_prefix,  # type: ignore
+                    key,
+                    value,
                 )
 
 
@@ -262,7 +260,7 @@ def update_config_file(updates: Dict[str, Dict[str, Any]]) -> None:
 
     for key, value in updates.items():
         for subkey, val in value.items():
-            logger.info("\tSet %s.%s = %s", NotPii(key), NotPii(subkey), NotPii(val))
+            logger.info("\tSet %s.%s = %s", key, subkey, val)
 
 
 config = get_config(FidesopsConfig)

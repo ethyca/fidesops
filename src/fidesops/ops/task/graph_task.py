@@ -37,7 +37,7 @@ from fidesops.ops.task.refine_target_path import FieldPathNodeInput
 from fidesops.ops.task.task_resources import TaskResources
 from fidesops.ops.util.cache import get_cache
 from fidesops.ops.util.collection_util import NodeInput, Row, append, partition
-from fidesops.ops.util.logger import NotPii, Pii
+from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
 
 logger = logging.getLogger(__name__)
@@ -257,9 +257,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         if not len(data) == len(self.input_keys):
             logger.warning(
                 "%s expected %s input keys, received %s",
-                NotPii(self),
-                NotPii(len(self.input_keys)),
-                NotPii(len(data)),
+                self,
+                len(self.input_keys),
+                len(data),
             )
 
         output: Dict[str, List[Any]] = {FIDESOPS_GROUPED_INPUTS: []}

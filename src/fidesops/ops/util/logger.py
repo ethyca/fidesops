@@ -11,10 +11,6 @@ class Pii(str):
     """Mask pii data"""
 
 
-class NotPii(str):
-    """whitelist non pii data"""
-
-
 def get_fides_log_record_factory() -> Any:
     """intercepts default LogRecord for custom handling of params"""
 
@@ -53,13 +49,10 @@ def _mask_pii_for_logs(parameter: Any) -> Any:
     :param parameter: param that contains possible pii
     :return: depending on ENV config, returns masked pii param.
 
-    Don't mask numeric values as this can throw errors in consumers
-    format strings.
-    """
-    if isinstance(parameter, Pii):
-        return MASKED
+    Logging args must be specifically wrapped in Pii in order to mask.
 
-    return parameter
+    """
+    return MASKED if isinstance(parameter, Pii) else parameter
 
 
 def _log_exception(exc: BaseException, dev_mode: bool = False) -> None:
