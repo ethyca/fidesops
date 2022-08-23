@@ -45,6 +45,10 @@ The types of changes are:
 
 * Update request status endpoint to return both audit and execution logs [#1068] https://github.com/ethyca/fidesops/pull/1068/
 
+### Removed
+
+* Removed create superuser [#1116](https://github.com/ethyca/fidesops/pull/1116)
+
 
 ## [1.7.0](https://github.com/ethyca/fidesops/compare/1.6.3...1.7.0)
 
