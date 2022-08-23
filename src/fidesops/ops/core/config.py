@@ -2,7 +2,7 @@
 
 import logging
 import os
-from typing import Any, Dict, MutableMapping, Optional
+from typing import Any, Dict, List, MutableMapping, Optional
 from urllib.parse import quote_plus
 
 import toml
@@ -16,6 +16,8 @@ from fideslib.core.config import (
 )
 from fideslog.sdk.python.utils import FIDESOPS, generate_client_id
 from pydantic import validator
+
+from fidesops.ops.api.v1.scope_registry import SCOPE_REGISTRY
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +38,7 @@ class ExecutionSettings(FidesSettings):
     task_retry_count: int
     task_retry_delay: int  # In seconds
     task_retry_backoff: int
+    subject_identity_verification_required: bool = False
     require_manual_request_approval: bool = False
     masking_strict: bool = True
     worker_enabled: bool = True
@@ -84,6 +87,7 @@ class FidesopsSecuritySettings(SecuritySettings):
     """Configuration settings for Security variables."""
 
     log_level: str = "INFO"
+    root_user_scopes: Optional[List[str]] = SCOPE_REGISTRY
 
     @validator("log_level", pre=True)
     def validate_log_level(cls, value: str) -> str:
