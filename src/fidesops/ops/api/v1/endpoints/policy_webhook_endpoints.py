@@ -237,7 +237,7 @@ def get_policy_webhook_or_error(
     if not loaded_webhook:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail="No {webhook_cls.prefix.capitalize()}-Execution Webhook found for key '{webhook_key}' on Policy '{policy.key}'.",
+            detail=f"No {webhook_cls.prefix.capitalize()}-Execution Webhook found for key '{webhook_key}' on Policy '{policy.key}'.",
         )
     return loaded_webhook
 
@@ -338,7 +338,7 @@ def _patch_webhook(
             new_order=[
                 webhook
                 for webhook in getattr(
-                    policy, "{webhook_cls.prefix}_execution_webhooks"
+                    policy, f"{webhook_cls.prefix}_execution_webhooks"
                 ).order_by(webhook_cls.order)
             ],
         )

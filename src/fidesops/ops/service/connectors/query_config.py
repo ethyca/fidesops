@@ -165,7 +165,7 @@ class QueryConfig(Generic[T], ABC):
                     logger.warning(
                         "Unable to generate a query for field %s: data_type is either not present on the field or not supported for the %s masking strategy. Received data type: %s",
                         rule_field_path.string_path,
-                        strategy_config[strategy],
+                        strategy_config["strategy"],
                         masking_override.data_type_converter.name,  # type: ignore
                     )
                     continue

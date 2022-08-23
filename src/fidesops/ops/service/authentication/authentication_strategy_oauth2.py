@@ -187,9 +187,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
                 filter(
                     None,
                     (
-                        "Unable to retrieve token for %s (%s).",
-                        connection_config.key,
-                        response.get("error"),
+                        f"Unable to retrieve token for {connection_config.key} ({response.get('error')}).",
                         response.get("error_description"),
                         response.get("error_uri"),
                     ),
