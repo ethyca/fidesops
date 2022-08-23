@@ -1,4 +1,5 @@
 import logging
+import pathlib
 
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
@@ -8,10 +9,12 @@ from fidesops.ops.email_templates.template_names import (
 )
 from fidesops.ops.schemas.email.email import EmailActionType
 
+pathlib.Path(__file__).parent.resolve()
 logger = logging.getLogger(__name__)
 
+abs_path_to_current_file_dir = pathlib.Path(__file__).parent.resolve()
 template_env = Environment(
-    loader=FileSystemLoader("templates"),
+    loader=FileSystemLoader(f"{abs_path_to_current_file_dir}/templates"),
     autoescape=select_autoescape(),
 )
 
