@@ -11,7 +11,7 @@ from fidesops.ops.schemas.email.email import EmailActionType
 logger = logging.getLogger(__name__)
 
 template_env = Environment(
-    loader=FileSystemLoader("src/fidesops/ops/email_templates/templates"),
+    loader=FileSystemLoader("templates"),
     autoescape=select_autoescape(),
 )
 
