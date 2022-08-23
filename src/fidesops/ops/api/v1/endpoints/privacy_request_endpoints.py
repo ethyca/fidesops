@@ -264,11 +264,12 @@ def _send_verification_code_to_user(
     verification_code: str = generate_id_verification_code()
     privacy_request.cache_identity_verification_code(verification_code)
     dispatch_email(
-        db,
+        db=db,
         action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
         to_email=email,
         email_body_params=SubjectIdentityVerificationBodyParams(
-            access_code=verification_code
+            verification_code=verification_code,
+            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
         ),
     )
 

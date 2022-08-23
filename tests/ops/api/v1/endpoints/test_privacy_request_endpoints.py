@@ -45,6 +45,7 @@ from fidesops.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.ops.core.config import config
+from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.datasetconfig import DatasetConfig
@@ -57,7 +58,11 @@ from fidesops.ops.models.privacy_request import (
     PrivacyRequestStatus,
 )
 from fidesops.ops.schemas.dataset import DryRunDatasetResponse
-from fidesops.ops.schemas.email.email import EmailForActionType
+from fidesops.ops.schemas.email.email import (
+    EmailActionType,
+    EmailForActionType,
+    SubjectIdentityVerificationBodyParams,
+)
 from fidesops.ops.schemas.masking.masking_secrets import SecretType
 from fidesops.ops.schemas.policy import PolicyResponse
 from fidesops.ops.schemas.privacy_request import ExecutionAndAuditLogResponse
@@ -2614,13 +2619,13 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
 
         assert response_data[0]["status"] == PrivacyRequestStatus.identity_unverified
         assert mock_dispatch_email.called
-        assert mock_dispatch_email.called_with(
-            email_config=email_config,
-            email=EmailForActionType(
-                subject="Your one-time code",
-                body=f"<html>Your one-time code is {pr.get_cached_verification_code()}. Hurry! It expires in 10 minutes.</html>",
-                to_email="test@example.com",
-            ),
+
+        call_args = mock_dispatch_email.call_args[1]
+        assert call_args["action_type"] == EmailActionType.SUBJECT_IDENTITY_VERIFICATION
+        assert call_args["to_email"] == "test@example.com"
+        assert call_args["email_body_params"] == SubjectIdentityVerificationBodyParams(
+            verification_code=pr.get_cached_verification_code(),
+            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
         )
 
         pr.delete(db=db)
