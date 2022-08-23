@@ -176,7 +176,7 @@ def create_or_update_rules(
     failed: List[BulkUpdateFailed] = []
 
     logger.info(
-        f"Starting bulk upsert for {len(input_data)} rules on policy {policy_key}"
+        "Starting bulk upsert for %s rules on policy %s", len(input_data), policy_key
     )
 
     for schema in input_data:
@@ -192,7 +192,7 @@ def create_or_update_rules(
             )
             if not associated_storage_config:
                 logger.warning(
-                    f"No storage config found with key {storage_destination_key}"
+                    "No storage config found with key %s", storage_destination_key
                 )
                 failure = {
                     "message": f"A StorageConfig with key {storage_destination_key} does not exist",
@@ -224,7 +224,10 @@ def create_or_update_rules(
             )
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
-                f"Create/update failed for rule '{schema.key}' on policy {policy_key}: {exc}"
+                "Create/update failed for rule '%s' on policy %s: %s",
+                schema.key,
+                policy_key,
+                Pii(exc),
             )
             failure = {
                 "message": exc.args[0],
@@ -234,7 +237,10 @@ def create_or_update_rules(
             continue
         except RuleValidationError as exc:
             logger.warning(
-                f"Create/update failed for rule '{schema.key}' on policy {policy_key}: {exc}"
+                "Create/update failed for rule '%s}' on policy %s: %s",
+                schema.key,
+                policy_key,
+                Pii(exc),
             )
             failure = {
                 "message": exc.args[0],
@@ -244,7 +250,10 @@ def create_or_update_rules(
             continue
         except ValueError as exc:
             logger.warning(
-                f"Create/update failed for rule '{schema.key}' on policy {policy_key}: {exc}"
+                "Create/update failed for rule '%s' on policy %s: %s",
+                schema.key,
+                policy_key,
+                Pii(exc),
             )
             failure = {
                 "message": exc.args[0],
@@ -323,7 +332,7 @@ def create_or_update_rule_targets(
     created_or_updated = []
     failed = []
     logger.info(
-        f"Starting bulk upsert for {len(input_data)} rule targets on rule {rule_key}"
+        "Starting bulk upsert for %s rule targets on rule %s", len(input_data), rule_key
     )
     for schema in input_data:
         try:
@@ -339,7 +348,10 @@ def create_or_update_rule_targets(
             )
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
-                f"Create/update failed for rule target {schema.key} on rule {rule_key}: {exc}"
+                "Create/update failed for rule target %s on rule %s: %s",
+                schema.key,
+                policy_key,
+                Pii(exc),
             )
             failure = {
                 "message": exc.args[0],
@@ -353,7 +365,10 @@ def create_or_update_rule_targets(
             RuleTargetValidationError,
         ) as exc:
             logger.warning(
-                f"Create/update failed for rule target {schema.key} on rule {rule_key}: {exc}"
+                "Create/update failed for rule target %s on rule %s: %s",
+                schema.key,
+                rule_key,
+                Pii(exc),
             )
             failure = {
                 "message": exc.args[0],
@@ -363,7 +378,10 @@ def create_or_update_rule_targets(
             continue
         except IntegrityError as exc:
             logger.warning(
-                f"Create/update failed for rule target {schema.key} on rule {rule_key}: {exc}"
+                "Create/update failed for rule target %s on rule %s: %s",
+                schema.key,
+                rule_key,
+                Pii(exc),
             )
             failure = {
                 "message": f"DataCategory {schema.data_category} is already specified on Rule with ID {rule.id}",

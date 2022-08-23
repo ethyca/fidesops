@@ -104,7 +104,8 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         """Check if the access_token will expire in the next 10 minutes"""
         if expires_at is None:
             logger.info(
-                f"The expires_at value is not defined for {connection_config.key}, skipping token refresh"
+                "The expires_at value is not defined for %s, skipping token refresh",
+                connection_config.key,
             )
             return False
 
@@ -186,7 +187,9 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
                 filter(
                     None,
                     (
-                        f"Unable to retrieve token for {connection_config.key} ({response.get('error')}).",
+                        "Unable to retrieve token for %s (%s).",
+                        connection_config.key,
+                        response.get("error"),
                         response.get("error_description"),
                         response.get("error_uri"),
                     ),
@@ -227,7 +230,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         updated_secrets = {**connection_config.secrets, **data}  # type: ignore
         connection_config.update(db, data={"secrets": updated_secrets})
         logger.info(
-            f"Successfully updated the OAuth2 token(s) for {connection_config.key}"
+            "Successfully updated the OAuth2 token(s) for %s", connection_config.key
         )
 
         return access_token

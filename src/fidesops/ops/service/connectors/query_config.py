@@ -163,9 +163,10 @@ class QueryConfig(Generic[T], ABC):
                     masking_override, null_masking, strategy
                 ):
                     logger.warning(
-                        f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not "  # type: ignore
-                        f"present on the field or not supported for the {strategy_config['strategy']} masking "
-                        f"strategy. Received data type: {masking_override.data_type_converter.name}"
+                        "Unable to generate a query for field %s: data_type is either not present on the field or not supported for the %s masking strategy. Received data type: %s",
+                        rule_field_path.string_path,
+                        strategy_config[strategy],
+                        masking_override.data_type_converter.name,  # type: ignore
                     )
                     continue
 
@@ -214,7 +215,9 @@ class QueryConfig(Generic[T], ABC):
         masked_val = strategy.mask([val], request_id)[0]  # type: ignore
 
         logger.debug(
-            f"Generated the following masked val for field {str_field_path}: {masked_val}"
+            "Generated the following masked val for field %s: %s",
+            str_field_path,
+            masked_val,
         )
 
         # special case for null masking
@@ -223,8 +226,8 @@ class QueryConfig(Generic[T], ABC):
 
         if masking_override.length:
             logger.warning(
-                f"Because a length has been specified for field {str_field_path}, we will truncate length "
-                f"of masked value to match, regardless of masking strategy"
+                "Because a length has been specified for field %s, we will truncate length of masked value to match, regardless of masking strategy",
+                str_field_path,
             )
             #  for strategies other than null masking we assume that masked data type is the same as specified data type
             masked_val = masking_override.data_type_converter.truncate(  # type: ignore
@@ -406,7 +409,8 @@ class SQLQueryConfig(QueryConfig[Executable]):
                 return text(query_str).params(query_data)
 
         logger.warning(
-            f"There is not enough data to generate a valid query for {self.node.address}"
+            "There is not enough data to generate a valid query for %s",
+            self.node.address,
         )
         return None
 
@@ -440,7 +444,8 @@ class SQLQueryConfig(QueryConfig[Executable]):
         valid = len(pk_clauses) > 0 and len(update_clauses) > 0
         if not valid:
             logger.warning(
-                f"There is not enough data to generate a valid update statement for {self.node.address}"
+                "There is not enough data to generate a valid update statement for %s",
+                self.node.address,
             )
             return None
 
@@ -550,7 +555,8 @@ class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
                 return text(query_str).params(query_data)
 
         logger.warning(
-            f"There is not enough data to generate a valid query for {self.node.address}"
+            "There is not enough data to generate a valid query for %s",
+            self.node.address,
         )
         return None
 
@@ -651,7 +657,8 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         valid = len(non_empty_primary_keys) > 0 and update_value_map
         if not valid:
             logger.warning(
-                f"There is not enough data to generate a valid update statement for {self.node.address}"
+                "There is not enough data to generate a valid update statement for %s",
+                self.node.address,
             )
             return None
 
@@ -714,7 +721,8 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
                 return query_fields, return_fields
 
         logger.warning(
-            f"There is not enough data to generate a valid query for {self.node.address}"
+            "There is not enough data to generate a valid query for %s",
+            self.node.address,
         )
         return None
 
@@ -734,7 +742,8 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         valid = len(pk_clauses) > 0 and len(update_clauses) > 0
         if not valid:
             logger.warning(
-                f"There is not enough data to generate a valid update for {self.node.address}"
+                "There is not enough data to generate a valid update for %s",
+                self.node.address,
             )
             return None
         return pk_clauses, {"$set": update_clauses}

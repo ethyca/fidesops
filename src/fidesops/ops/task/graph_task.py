@@ -37,7 +37,7 @@ from fidesops.ops.task.refine_target_path import FieldPathNodeInput
 from fidesops.ops.task.task_resources import TaskResources
 from fidesops.ops.util.cache import get_cache
 from fidesops.ops.util.collection_util import NodeInput, Row, append, partition
-from fidesops.ops.util.logger import NotPii
+from fidesops.ops.util.logger import NotPii, Pii
 from fidesops.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
 
 logger = logging.getLogger(__name__)
@@ -369,7 +369,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         if ex:
             traceback.print_exc()
             logger.warning(
-                "Ending %s, %s with failure %s", self.resources.request.id, self.key, ex
+                "Ending %s, %s with failure %s",
+                self.resources.request.id,
+                self.key,
+                Pii(ex),
             )
             self.update_status(str(ex), [], action_type, ExecutionLogStatus.error)
         else:

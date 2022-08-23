@@ -170,7 +170,8 @@ def create_privacy_request(
         )
         if policy is None:
             logger.warning(
-                f"Create failed for privacy request with invalid policy key {privacy_request_data.policy_key}'"
+                "Create failed for privacy request with invalid policy key %s'",
+                privacy_request_data.policy_key,
             )
 
             failure = {
@@ -589,7 +590,9 @@ def get_request_status_logs(
     get_privacy_request_or_error(db, privacy_request_id)
 
     logger.info(
-        f"Finding all execution logs for privacy request {privacy_request_id} with params '{params}'"
+        "Finding all execution logs for privacy request %s with params '%s'",
+        privacy_request_id,
+        params,
     )
 
     return paginate(
@@ -701,7 +704,9 @@ def resume_privacy_request(
         )
 
     logger.info(
-        f"Resuming privacy request '{privacy_request_id}' from webhook '{webhook.key}'"
+        "Resuming privacy request '%s' from webhook '%s'",
+        privacy_request_id,
+        webhook.key,
     )
 
     privacy_request.status = PrivacyRequestStatus.in_processing
@@ -785,19 +790,25 @@ def resume_privacy_request_with_manual_input(
     if paused_step == PausedStep.access:
         validate_manual_input(manual_rows, paused_collection, dataset_graph)
         logger.info(
-            f"Caching manual input for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
+            "Caching manual input for privacy request '%s', collection: '%s'",
+            privacy_request_id,
+            paused_collection,
         )
         privacy_request.cache_manual_input(paused_collection, manual_rows)
 
     elif paused_step == PausedStep.erasure:
         logger.info(
-            f"Caching manually erased row count for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
+            "Caching manually erased row count for privacy request '%s', collection: '%s'",
+            privacy_request_id,
+            paused_collection,
         )
         privacy_request.cache_manual_erasure_count(paused_collection, manual_count)  # type: ignore
 
     logger.info(
-        f"Resuming privacy request '{privacy_request_id}', {paused_step.value} step, from collection "
-        f"'{paused_collection.value}'"
+        "Resuming privacy request '%s', %s step, from collection '%s'",
+        privacy_request_id,
+        paused_step.value,
+        paused_collection.value,
     )
 
     privacy_request.status = PrivacyRequestStatus.in_processing
@@ -902,7 +913,10 @@ def restart_privacy_request_from_failure(
     failed_collection: CollectionAddress = failed_details.collection
 
     logger.info(
-        f"Restarting failed privacy request '{privacy_request_id}' from '{failed_step} step, 'collection '{failed_collection}'"
+        "Restarting failed privacy request '%s' from '%s step, 'collection '%s'",
+        privacy_request_id,
+        failed_step,
+        failed_collection,
     )
 
     privacy_request.status = PrivacyRequestStatus.in_processing

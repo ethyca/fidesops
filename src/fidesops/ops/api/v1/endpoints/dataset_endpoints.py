@@ -117,7 +117,7 @@ def validate_dataset(
         Traversal(complete_graph, {k: None for k in unique_identities})
     except (TraversalError, ValidationError) as err:
         logger.warning(
-            f"Traversal validation failed for dataset '{dataset.fides_key}': {err}"
+            "Traversal validation failed for dataset '%s': %s", dataset.fides_key, err
         )
         return ValidateDatasetResponse(
             dataset=dataset,
@@ -309,7 +309,9 @@ def get_datasets(
     """Returns all datasets in the database."""
 
     logger.info(
-        f"Finding all datasets for connection '{connection_config.key}' with pagination params {params}"
+        "Finding all datasets for connection '%s' with pagination params %s",
+        connection_config.key,
+        params,
     )
     dataset_configs = DatasetConfig.filter(
         db=db, conditions=(DatasetConfig.connection_config_id == connection_config.id)
@@ -339,7 +341,7 @@ def get_dataset(
     """Returns a single dataset based on the given key."""
 
     logger.info(
-        f"Finding dataset '{fides_key}' for connection '{connection_config.key}'"
+        "Finding dataset '%s' for connection '%s'", fides_key, connection_config.key
     )
     dataset_config = DatasetConfig.filter(
         db=db,
@@ -370,7 +372,7 @@ def delete_dataset(
     """Removes the dataset based on the given key."""
 
     logger.info(
-        f"Finding dataset '{fides_key}' for connection '{connection_config.key}'"
+        "Finding dataset '%s' for connection '%s'", fides_key, connection_config.key
     )
     dataset_config = DatasetConfig.filter(
         db=db,
@@ -386,6 +388,6 @@ def delete_dataset(
         )
 
     logger.info(
-        f"Deleting dataset '{fides_key}' for connection '{connection_config.key}'"
+        "Deleting dataset '%s' for connection '%s'", fides_key, connection_config.key
     )
     dataset_config.delete(db)

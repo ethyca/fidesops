@@ -54,6 +54,7 @@ from fidesops.ops.service.storage.storage_authenticator_service import secrets_a
 from fidesops.ops.service.storage.storage_uploader_service import upload
 from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.ops.util.api_router import APIRouter
+from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
@@ -124,7 +125,9 @@ def patch_config(
             )
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
-                f"Create/update failed for storage config {destination.key}: {exc}"
+                "Create/update failed for storage config %s: %s",
+                destination.key,
+                Pii(exc),
             )
             failure = {
                 "message": exc.args[0],
@@ -134,7 +137,9 @@ def patch_config(
             continue
         except Exception as exc:
             logger.warning(
-                f"Create/update failed for storage config {destination.key}: {exc}"
+                "Create/update failed for storage config %s: %s",
+                destination.key,
+                Pii(exc),
             )
             failed.append(
                 BulkUpdateFailed(
@@ -211,7 +216,7 @@ def put_config_secrets(
             )
         else:
             logger.warning(
-                f"Storage secrets are invalid for config with key '{config_key}'"
+                "Storage secrets are invalid for config with key '%s'", config_key
             )
 
         return TestStatusMessage(

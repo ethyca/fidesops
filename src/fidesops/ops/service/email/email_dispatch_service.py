@@ -32,7 +32,7 @@ def dispatch_email(
         raise EmailDispatchException("No email config found.")
     if not email_config.secrets:
         logger.warning(
-            f"Email secrets not found for config with key: {email_config.key}"
+            "Email secrets not found for config with key: %s", email_config.key
         )
         raise EmailDispatchException(
             f"Email secrets not found for config with key: {email_config.key}"
@@ -100,7 +100,7 @@ def _mailgun_dispatcher(
         )
         if not response.ok:
             logger.error(
-                f"Email failed to send with status code: {response.status_code}"
+                "Email failed to send with status code: %s", response.status_code
             )
             raise EmailDispatchException(
                 f"Email failed to send with status code {response.status_code}"

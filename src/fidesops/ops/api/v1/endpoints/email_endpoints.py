@@ -47,6 +47,7 @@ from fidesops.ops.service.email.email_crud_service import (
     update_email_config,
 )
 from fidesops.ops.util.api_router import APIRouter
+from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["email"], prefix=V1_URL_PREFIX)
@@ -106,7 +107,9 @@ def patch_config_by_key(
         )
 
     except Exception as exc:
-        logger.warning("Patch failed for email config %s: %s", email_config.key, exc)
+        logger.warning(
+            "Patch failed for email config %s: %s", email_config.key, Pii(exc)
+        )
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Config with key {email_config.key} failed to be added",

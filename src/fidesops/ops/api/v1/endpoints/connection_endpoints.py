@@ -108,7 +108,9 @@ def get_connections(
     into an "or" query.
     """
     logger.info(
-        f"Finding connection configurations with pagination params {params} and search query: '{search if search else ''}'."
+        "Finding connection configurations with pagination params %s and search query: '%s'.",
+        params,
+        search if search else "",
     )
     query = ConnectionConfig.query(db)
 
@@ -199,7 +201,9 @@ def patch_connections(
             created_or_updated.append(connection_config)
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
-                f"Create/update failed for connection config with key '{config.key}': {exc}"
+                "Create/update failed for connection config with key '%s': %s",
+                config.key,
+                Pii(exc),
             )
             failed.append(
                 BulkUpdateFailed(
@@ -209,7 +213,7 @@ def patch_connections(
             )
         except Exception:
             logger.warning(
-                f"Create/update failed for connection config with key '{config.key}'."
+                "Create/update failed for connection config with key '%s'.", config.key
             )
             failed.append(
                 BulkUpdateFailed(
@@ -255,7 +259,8 @@ def validate_secrets(
     try:
         schema = get_connection_secrets_validator(connection_type.value, saas_config)  # type: ignore
         logger.info(
-            f"Validating secrets on connection config with key '{connection_config.key}'"
+            "Validating secrets on connection config with key '%s'",
+            connection_config.key,
         )
         connection_secrets = schema.parse_obj(request_body)
     except ValidationError as e:

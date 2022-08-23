@@ -130,7 +130,7 @@ def create_drp_privacy_request(
             detail=exc.args[0],
         )
     except Exception as exc:
-        logger.error("Exception: %s", exc)
+        logger.error("Exception: %s", Pii(exc))
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail="DRP privacy request could not be exercised",

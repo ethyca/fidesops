@@ -163,7 +163,9 @@ def patch_saas_config(
     or report failure
     """
     logger.info(
-        f"Updating SaaS config '{saas_config.fides_key}' on connection config '{connection_config.key}'"
+        "Updating SaaS config '%s' on connection config '%s'",
+        saas_config.fides_key,
+        connection_config.key,
     )
     connection_config.update_saas_config(db, saas_config=saas_config)
     return connection_config.saas_config  # type: ignore
@@ -329,7 +331,9 @@ def instantiate_connection_from_template(
             detail=f"SaaS Connector could not be created from the '{saas_connector_type}' template at this time.",
         )
     logger.info(
-        f"SaaS Connector and Dataset {template_values.instance_key} successfully created from '{saas_connector_type}' template."
+        "SaaS Connector and Dataset %s successfully created from '%s' template.",
+        template_values.instance_key,
+        saas_connector_type,
     )
     return SaasConnectionTemplateResponse(
         connection=connection_config, dataset=dataset_config.dataset
