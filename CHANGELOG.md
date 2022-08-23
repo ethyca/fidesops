@@ -30,7 +30,7 @@ The types of changes are:
 * SaaS Connector Configuration - Testing a Connection [#985](https://github.com/ethyca/fidesops/pull/1099)
 * Add an endpoint for verifying the user's identity before queuing the privacy request. [#1111](https://github.com/ethyca/fidesops/pull/1111)
 * Adds tests for email endpoints and service [#1112](https://github.com/ethyca/fidesops/pull/1112)
-* Retry a DSR (FE) [#863](https://github.com/ethyca/fidesops/pull/938)
+* Add Retry button back into the subject request detail view [#1128](https://github.com/ethyca/fidesops/pull/1131)
 
 ### Developer Experience
 
@@ -60,6 +60,7 @@ The types of changes are:
 * Added saas config base info to connection config responses [#904](https://github.com/ethyca/fidesops/pull/904)
 * Access and erasure support for Adobe Campaign [#905](https://github.com/ethyca/fidesops/pull/905)
 * Added db vs saas to connection type api [#937](https://github.com/ethyca/fidesops/pull/937)
+* Retry a DSR (FE) [#863](https://github.com/ethyca/fidesops/pull/938)
 * Add a Connection - Select a connector to configure (front end) [#760](https://github.com/ethyca/fidesops/pull/987)
 * Add a Connection - Front End layout structure [#866](https://github.com/ethyca/fidesops/pull/987)
 * Enable python function overrides for SaaS connector request execution [#986](https://github.com/ethyca/fidesops/pull/986)
