@@ -25,7 +25,7 @@ def build_required_privacy_request_kwargs(
     """
     status = (
         PrivacyRequestStatus.identity_unverified
-        if config.execution.identity_verification_required
+        if config.execution.subject_identity_verification_required
         else PrivacyRequestStatus.pending
     )
     return {

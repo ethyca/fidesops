@@ -2537,15 +2537,20 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         return V1_URL_PREFIX + PRIVACY_REQUESTS
 
     @pytest.fixture(scope="function")
-    def identity_verification_required(self):
+    def subject_identity_verification_required(self):
         """Override autouse fixture to enable identity verification for tests"""
-        original_value = config.execution.identity_verification_required
-        config.execution.identity_verification_required = True
+        original_value = config.execution.subject_identity_verification_required
+        config.execution.subject_identity_verification_required = True
         yield
-        config.execution.require_manual_request_approval = original_value
+        config.execution.subject_identity_verification_required = original_value
 
     def test_create_privacy_request_no_email_config(
-        self, url, db, api_client: TestClient, policy, identity_verification_required
+        self,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+        subject_identity_verification_required,
     ):
         data = [
             {
@@ -2583,7 +2588,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         api_client: TestClient,
         policy,
         email_config,
-        identity_verification_required,
+        subject_identity_verification_required,
     ):
         data = [
             {

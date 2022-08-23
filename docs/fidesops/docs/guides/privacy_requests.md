@@ -42,7 +42,7 @@ A full list of attributes available to set on the Privacy Request can be found i
 
 ## Subject Identity Verification 
 
-To have users verify their identity before their Privacy Request is executed, set the `identity_verification_required` 
+To have users verify their identity before their Privacy Request is executed, set the `subject_identity_verification_required` 
 variable in your `fidesops.toml` to `TRUE`. You must also set up an EmailConfig that lets Fidesops send automated emails 
 to your users.
 

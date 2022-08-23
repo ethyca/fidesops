@@ -208,7 +208,7 @@ def create_privacy_request(
                 None,
             )
 
-            if config.execution.identity_verification_required:
+            if config.execution.subject_identity_verification_required:
                 _send_verification_code_to_user(
                     db, privacy_request, privacy_request_data.identity.email
                 )
