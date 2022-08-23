@@ -1,18 +1,10 @@
+import pytest
 from fidesops.ops.schemas.email.email import SubjectIdentityVerificationBodyParams
 
 
-def test_get_verification_code_ttl_minutes_calc():
-    model_1 = SubjectIdentityVerificationBodyParams(
-        verification_code="123123", verification_code_ttl_seconds=600
+@pytest.mark.parametrize("ttl, expected", [(600, 10), (155, 2), (33, 0)])
+def test_get_verification_code_ttl_minutes_calc(ttl, expected):
+    result = SubjectIdentityVerificationBodyParams(
+        verification_code="123123", verification_code_ttl_seconds=ttl
     )
-    assert model_1.get_verification_code_ttl_minutes() == 10
-
-    model_2 = SubjectIdentityVerificationBodyParams(
-        verification_code="123123", verification_code_ttl_seconds=155
-    )
-    assert model_2.get_verification_code_ttl_minutes() == 2
-
-    model_3 = SubjectIdentityVerificationBodyParams(
-        verification_code="123123", verification_code_ttl_seconds=33
-    )
-    assert model_3.get_verification_code_ttl_minutes() == 0
+    assert result.get_verification_code_ttl_minutes() == expected
