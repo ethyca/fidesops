@@ -9,7 +9,7 @@ A root user can be created by adding a `root_username` and `root_password` to th
 security section of `fidesops.toml` file, or by setting `FIDESOPS__SECURITY__ROOT_USERNAME`
 and `FIDESOPS__SECURITY__ROOT_PASSWORD` environment variables.
 
-This will all you to login in with a root user that can be used to access
+This will allow you to login in with a root user that can be used to access
 additional [user endpoints](#managing-users).
 
 ### Accessing the Control Panel
