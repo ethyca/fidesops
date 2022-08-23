@@ -125,7 +125,7 @@ def create_or_update_policies(
             DrpActionValidationError,
             IntegrityError,
         ) as exc:
-            logger.warning("Create/update failed for policy: %s", Pii(exc))
+            logger.warning("Create/update failed for policy: %s", Pii(str(exc)))
             failure = {
                 "message": exc.args[0],
                 "data": policy_data,
@@ -133,7 +133,7 @@ def create_or_update_policies(
             failed.append(BulkUpdateFailed(**failure))
             continue
         except PolicyValidationError as exc:
-            logger.warning("Create/update failed for policy: %s", Pii(exc))
+            logger.warning("Create/update failed for policy: %s", Pii(str(exc)))
             failure = {
                 "message": "This record could not be added because the data provided was invalid.",
                 "data": policy_data,
@@ -227,7 +227,7 @@ def create_or_update_rules(
                 "Create/update failed for rule '%s' on policy %s: %s",
                 schema.key,
                 policy_key,
-                Pii(exc),
+                exc,
             )
             failure = {
                 "message": exc.args[0],
@@ -240,7 +240,7 @@ def create_or_update_rules(
                 "Create/update failed for rule '%s}' on policy %s: %s",
                 schema.key,
                 policy_key,
-                Pii(exc),
+                Pii(str(exc)),
             )
             failure = {
                 "message": exc.args[0],
@@ -253,7 +253,7 @@ def create_or_update_rules(
                 "Create/update failed for rule '%s' on policy %s: %s",
                 schema.key,
                 policy_key,
-                Pii(exc),
+                Pii(str(exc)),
             )
             failure = {
                 "message": exc.args[0],
@@ -350,8 +350,8 @@ def create_or_update_rule_targets(
             logger.warning(
                 "Create/update failed for rule target %s on rule %s: %s",
                 schema.key,
-                policy_key,
-                Pii(exc),
+                rule_key,
+                exc,
             )
             failure = {
                 "message": exc.args[0],
@@ -368,7 +368,7 @@ def create_or_update_rule_targets(
                 "Create/update failed for rule target %s on rule %s: %s",
                 schema.key,
                 rule_key,
-                Pii(exc),
+                Pii(str(exc)),
             )
             failure = {
                 "message": exc.args[0],
@@ -381,7 +381,7 @@ def create_or_update_rule_targets(
                 "Create/update failed for rule target %s on rule %s: %s",
                 schema.key,
                 rule_key,
-                Pii(exc),
+                Pii(str(exc)),
             )
             failure = {
                 "message": f"DataCategory {schema.data_category} is already specified on Rule with ID {rule.id}",

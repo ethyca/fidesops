@@ -92,7 +92,7 @@ class EmailConfig(Base):
             KeyError,
             ValidationError,
         ) as exc:
-            logger.error("Error: %s", Pii(exc))
+            logger.error("Error: %s", Pii(str(exc)))
             # We don't want to handle these explicitly here, only in the API view
             raise
 

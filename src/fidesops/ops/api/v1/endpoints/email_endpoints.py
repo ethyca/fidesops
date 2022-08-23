@@ -76,7 +76,9 @@ def post_config(
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=e.message)
 
     except Exception as exc:
-        logger.warning("Create failed for email config %s: %s", email_config.key, exc)
+        logger.warning(
+            "Create failed for email config %s: %s", email_config.key, Pii(str(exc))
+        )
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Config with key {email_config.key} failed to be added",
@@ -108,7 +110,7 @@ def patch_config_by_key(
 
     except Exception as exc:
         logger.warning(
-            "Patch failed for email config %s: %s", email_config.key, Pii(exc)
+            "Patch failed for email config %s: %s", email_config.key, Pii(str(exc))
         )
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,

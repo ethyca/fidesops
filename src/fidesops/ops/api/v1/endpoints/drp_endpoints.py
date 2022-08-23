@@ -123,14 +123,14 @@ def create_drp_privacy_request(
         )
 
     except common_exceptions.RedisConnectionError as exc:
-        logger.error("RedisConnectionError: %s", Pii(exc))
+        logger.error("RedisConnectionError: %s", Pii(str(exc)))
         # Thrown when cache.ping() fails on cache connection retrieval
         raise HTTPException(
             status_code=HTTP_424_FAILED_DEPENDENCY,
             detail=exc.args[0],
         )
     except Exception as exc:
-        logger.error("Exception: %s", Pii(exc))
+        logger.error("Exception: %s", Pii(str(exc)))
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail="DRP privacy request could not be exercised",

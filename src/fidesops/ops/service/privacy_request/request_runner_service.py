@@ -90,7 +90,7 @@ def run_webhooks_and_report_status(
                 "Privacy Request '%s' exited after response from webhook '%s': %s.",
                 privacy_request.id,
                 webhook.key,
-                Pii(exc.args[0]),
+                Pii(str(exc.args[0])),
             )
             privacy_request.error_processing(db)
             return False
@@ -146,7 +146,7 @@ def upload_access_results(
                 rule.key,
                 policy.key,
                 privacy_request.id,
-                Pii(exc),
+                Pii(str(exc)),
             )
             privacy_request.status = PrivacyRequestStatus.error
 

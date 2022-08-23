@@ -203,7 +203,7 @@ def patch_connections(
             logger.warning(
                 "Create/update failed for connection config with key '%s': %s",
                 config.key,
-                Pii(exc),
+                exc,
             )
             failed.append(
                 BulkUpdateFailed(

@@ -127,7 +127,7 @@ def patch_config(
             logger.warning(
                 "Create/update failed for storage config %s: %s",
                 destination.key,
-                Pii(exc),
+                exc,
             )
             failure = {
                 "message": exc.args[0],
@@ -139,7 +139,7 @@ def patch_config(
             logger.warning(
                 "Create/update failed for storage config %s: %s",
                 destination.key,
-                Pii(exc),
+                Pii(str(exc)),
             )
             failed.append(
                 BulkUpdateFailed(

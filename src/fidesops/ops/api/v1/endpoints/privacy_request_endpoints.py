@@ -216,14 +216,14 @@ def create_privacy_request(
                 queue_privacy_request(privacy_request.id)
 
         except common_exceptions.RedisConnectionError as exc:
-            logger.error("RedisConnectionError: %s", Pii(exc))
+            logger.error("RedisConnectionError: %s", Pii(str(exc)))
             # Thrown when cache.ping() fails on cache connection retrieval
             raise HTTPException(
                 status_code=HTTP_424_FAILED_DEPENDENCY,
                 detail=exc.args[0],
             )
         except Exception as exc:
-            logger.error("Exception: %s", Pii(exc))
+            logger.error("Exception: %s", Pii(str(exc)))
             failure = {
                 "message": "This record could not be added",
                 "data": kwargs,

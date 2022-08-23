@@ -234,7 +234,7 @@ def start_webserver() -> None:
         try:
             init_db(config.database.sqlalchemy_database_uri)
         except Exception as error:  # pylint: disable=broad-except
-            logger.error("Connection to database failed: %s", Pii(error))
+            logger.error("Connection to database failed: %s", Pii(str(error)))
             return
 
     if config.redis.enabled:
@@ -242,7 +242,7 @@ def start_webserver() -> None:
         try:
             get_cache()
         except (RedisConnectionError, ResponseError) as e:
-            logger.error("Connection to cache failed: %s", Pii(e))
+            logger.error("Connection to cache failed: %s", Pii(str(e)))
             return
 
     scheduler.start()
