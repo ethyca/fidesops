@@ -25,9 +25,13 @@ The types of changes are:
 * Access and erasure support for Logi ID [#1074](https://github.com/ethyca/fidesops/pull/1074)
 * Adds infra for email config and dispatch [#1059](https://github.com/ethyca/fidesops/pull/1059)
 * Add an endpoint that allows you to create a Saas connector and all supporting resources with a single request [#1076](https://github.com/ethyca/fidesops/pull/1076)
+* Add a Connection - SaaS connector's configuration parameters [#761](https://github.com/ethyca/fidesops/pull/1099)
+* Saas Connector configuration - left navigation to toggle between connection params and dataset config [#984](https://github.com/ethyca/fidesops/pull/1099)
+* SaaS Connector Configuration - Testing a Connection [#985](https://github.com/ethyca/fidesops/pull/1099)
 * Add an endpoint for verifying the user's identity before queuing the privacy request. [#1111](https://github.com/ethyca/fidesops/pull/1111)
 * Adds tests for email endpoints and service [#1112](https://github.com/ethyca/fidesops/pull/1112)
 * Adds the ability to verify a subject's identity before processing a Privacy Request  [#1115] https://github.com/ethyca/fidesops/pull/1115
+* Add Retry button back into the subject request detail view [#1128](https://github.com/ethyca/fidesops/pull/1131)
 
 ### Developer Experience
 
@@ -40,10 +44,12 @@ The types of changes are:
 * Escape the Redis user and password to make them URL friendly [#1104](https://github.com/ethyca/fidesops/pull/1104)
 * Reduced number of connections opened against app db during health checks [#1107](https://github.com/ethyca/fidesops/pull/1107)
 * Fix FIDESOPS__ROOT_USER__ANALYTICS_ID generation when env var is set [#1113](https://github.com/ethyca/fidesops/pull/1113) 
+* Set localhost to None for non-endpoint events [#1130](https://github.com/ethyca/fidesops/pull/1130)
 
 ### Changed
 
-* Update request status endpoint to return both audit and execution logs [#1068] https://github.com/ethyca/fidesops/pull/1068/
+* Update request status endpoint to return both audit and execution logs [#1068] (https://github.com/ethyca/fidesops/pull/1068/)
+* Update backend routing to handle dynamic frontend routes [#1033](https://github.com/ethyca/fidesops/pull/1033)
 
 
 ## [1.7.0](https://github.com/ethyca/fidesops/compare/1.6.3...1.7.0)
