@@ -73,7 +73,7 @@ def create_drp_privacy_request(
             detail="JWT key must be provided",
         )
 
-    logger.info("Finding policy with drp action '%s}'", data.exercise[0])
+    logger.info("Finding policy with drp action '%s'", data.exercise[0])
     policy: Optional[Policy] = Policy.get_by(
         db=db,
         field="drp_action",

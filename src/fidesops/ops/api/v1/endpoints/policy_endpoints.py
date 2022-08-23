@@ -237,7 +237,7 @@ def create_or_update_rules(
             continue
         except RuleValidationError as exc:
             logger.warning(
-                "Create/update failed for rule '%s}' on policy %s: %s",
+                "Create/update failed for rule '%s' on policy %s: %s",
                 schema.key,
                 policy_key,
                 Pii(str(exc)),

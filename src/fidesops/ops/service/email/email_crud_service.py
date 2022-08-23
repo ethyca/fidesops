@@ -54,7 +54,7 @@ def _create_or_update_email_config(
 
 
 def delete_email_config(db: Session, key: FidesKey) -> None:
-    logger.info("Finding email config with key '%s}'", key)
+    logger.info("Finding email config with key '%s'", key)
     email_config: EmailConfig = EmailConfig.get_by(db, field="key", value=key)
     if not email_config:
         raise EmailConfigNotFoundException(f"No email config found with key {key}")
