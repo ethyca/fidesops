@@ -1,9 +1,6 @@
 from typing import List, Optional
 
-from fidesops.schemas.masking.masking_configuration import (
-    MaskingConfiguration,
-    NullMaskingConfiguration,
-)
+from fidesops.schemas.masking.masking_configuration import NullMaskingConfiguration
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
@@ -13,7 +10,7 @@ from fidesops.service.masking.strategy.masking_strategy_factory import register
 NULL_REWRITE_STRATEGY_NAME = "null_rewrite"
 
 
-@register(NULL_REWRITE_STRATEGY_NAME)
+@register(NULL_REWRITE_STRATEGY_NAME, NullMaskingConfiguration)
 class NullMaskingStrategy(MaskingStrategy):
     """Masks provided values each with a null value."""
 
@@ -36,10 +33,6 @@ class NullMaskingStrategy(MaskingStrategy):
 
     def secrets_required(self) -> bool:
         return False
-
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        return NullMaskingConfiguration  # type: ignore
 
     @staticmethod
     def get_description() -> MaskingStrategyDescription:

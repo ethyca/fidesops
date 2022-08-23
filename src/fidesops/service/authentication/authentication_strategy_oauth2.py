@@ -30,7 +30,7 @@ from fidesops.service.authentication.authentication_strategy_factory import regi
 OAUTH_2_STRATEGY_NAME = "oauth2"
 
 
-@register(OAUTH_2_STRATEGY_NAME)
+@register(OAUTH_2_STRATEGY_NAME, OAuth2AuthenticationConfiguration)
 class OAuth2AuthenticationStrategy(AuthenticationStrategy):
     """
     Checks the expiration date on the stored access token and refreshes
@@ -308,7 +308,3 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
             raise FidesopsException(
                 f"Missing required secret(s) '{', '.join(missing_secrets)}' for {connection_config.key}"
             )
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return OAuth2AuthenticationConfiguration  # type: ignore

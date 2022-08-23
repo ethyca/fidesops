@@ -15,7 +15,7 @@ from fidesops.service.masking.strategy.masking_strategy_factory import register
 STRING_REWRITE_STRATEGY_NAME = "string_rewrite"
 
 
-@register(STRING_REWRITE_STRATEGY_NAME)
+@register(STRING_REWRITE_STRATEGY_NAME, StringRewriteMaskingConfiguration)
 class StringRewriteMaskingStrategy(MaskingStrategy):
     """Masks the values with a pre-determined value"""
 
@@ -44,10 +44,6 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
 
     def secrets_required(self) -> bool:
         return False
-
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        return StringRewriteMaskingConfiguration  # type: ignore
 
     # MR Note - We will need a way to ensure that this does not fall out of date. Given that it
     # includes subjective instructions, this is not straightforward to automate

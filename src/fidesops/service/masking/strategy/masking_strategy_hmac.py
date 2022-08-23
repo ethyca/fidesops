@@ -24,7 +24,7 @@ from fidesops.util.encryption.secrets_util import SecretsUtil
 HMAC_STRATEGY_NAME = "hmac"
 
 
-@register(HMAC_STRATEGY_NAME)
+@register(HMAC_STRATEGY_NAME, HmacMaskingConfiguration)
 class HmacMaskingStrategy(MaskingStrategy):
     """
     Masks a value by generating a hash using a hash algorithm and a required secret key.  One of the differences
@@ -73,10 +73,6 @@ class HmacMaskingStrategy(MaskingStrategy):
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
         return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
-
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        return HmacMaskingConfiguration  # type: ignore
 
     @staticmethod
     def get_description() -> MaskingStrategyDescription:

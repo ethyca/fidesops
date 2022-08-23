@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from requests import Response
 
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
-from fidesops.service.generic_strategy import GenericStrategy
 
 if TYPE_CHECKING:
     from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
 
 
-class PaginationStrategy(GenericStrategy):
+class PaginationStrategy(ABC):
     """Abstract base class for SaaS pagination strategies"""
 
     @abstractmethod

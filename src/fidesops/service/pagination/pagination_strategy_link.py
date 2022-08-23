@@ -20,7 +20,7 @@ STRATEGY_NAME = "link"
 logger = logging.getLogger(__name__)
 
 
-@register(STRATEGY_NAME)
+@register(STRATEGY_NAME, LinkPaginationConfiguration)
 class LinkPaginationStrategy(PaginationStrategy):
     def __init__(self, configuration: LinkPaginationConfiguration):
         self.source = configuration.source
@@ -66,7 +66,3 @@ class LinkPaginationStrategy(PaginationStrategy):
             query_params=updated_query_params,
             body=request_params.body,
         )
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return LinkPaginationConfiguration  # type: ignore

@@ -25,7 +25,7 @@ from fidesops.util.encryption.secrets_util import SecretsUtil
 HASH_STRATEGY_NAME = "hash"
 
 
-@register(HASH_STRATEGY_NAME)
+@register(HASH_STRATEGY_NAME, HashMaskingConfiguration)
 class HashMaskingStrategy(MaskingStrategy):
     """Masks a value by hashing it"""
 
@@ -73,10 +73,6 @@ class HashMaskingStrategy(MaskingStrategy):
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
         return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
-
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        return HashMaskingConfiguration  # type: ignore
 
     # MR Note - We will need a way to ensure that this does not fall out of date. Given that it
     # includes subjective instructions, this is not straightforward to automate

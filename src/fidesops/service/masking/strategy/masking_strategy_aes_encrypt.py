@@ -26,7 +26,7 @@ from fidesops.util.encryption.secrets_util import SecretsUtil
 AES_ENCRYPT_STRATEGY_NAME = "aes_encrypt"
 
 
-@register(AES_ENCRYPT_STRATEGY_NAME)
+@register(AES_ENCRYPT_STRATEGY_NAME, AesEncryptionMaskingConfiguration)
 class AesEncryptionMaskingStrategy(MaskingStrategy):
     def __init__(self, configuration: AesEncryptionMaskingConfiguration):
         self.mode = configuration.mode
@@ -76,11 +76,6 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
         return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
-
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        """Used to get the configuration model to configure the strategy"""
-        return AesEncryptionMaskingConfiguration  # type: ignore
 
     @staticmethod
     def get_description() -> MaskingStrategyDescription:

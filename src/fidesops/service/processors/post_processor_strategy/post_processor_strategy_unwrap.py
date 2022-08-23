@@ -19,7 +19,7 @@ STRATEGY_NAME = "unwrap"
 logger = logging.getLogger(__name__)
 
 
-@register(STRATEGY_NAME)
+@register(STRATEGY_NAME, UnwrapPostProcessorConfiguration)
 class UnwrapPostProcessorStrategy(PostProcessorStrategy):
     """
     Given a path to a dict/list, returns the dict/list
@@ -80,7 +80,3 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
             result = pydash.flatten(result)
 
         return result
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return UnwrapPostProcessorConfiguration  # type: ignore

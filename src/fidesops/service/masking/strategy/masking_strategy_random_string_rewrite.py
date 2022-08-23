@@ -17,7 +17,7 @@ from fidesops.service.masking.strategy.masking_strategy_factory import register
 RANDOM_STRING_REWRITE_STRATEGY_NAME = "random_string_rewrite"
 
 
-@register(RANDOM_STRING_REWRITE_STRATEGY_NAME)
+@register(RANDOM_STRING_REWRITE_STRATEGY_NAME, RandomStringMaskingConfiguration)
 class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     """Masks each provied value with a random string of the length specified in the configuration."""
 
@@ -50,10 +50,6 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
 
     def secrets_required(self) -> bool:
         return False
-
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        return RandomStringMaskingConfiguration  # type: ignore
 
     @staticmethod
     def get_description() -> MaskingStrategyDescription:

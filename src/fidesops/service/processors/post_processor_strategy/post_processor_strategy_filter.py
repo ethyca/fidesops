@@ -21,7 +21,7 @@ STRATEGY_NAME = "filter"
 logger = logging.getLogger(__name__)
 
 
-@register(STRATEGY_NAME)
+@register(STRATEGY_NAME, FilterPostProcessorConfiguration)
 class FilterPostProcessorStrategy(PostProcessorStrategy):
     """
     Filters object or array given field name and value
@@ -158,7 +158,3 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
 
         # base case, compare filter_value to a single string
         return filter_value == target if exact else filter_value in target
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return FilterPostProcessorConfiguration  # type: ignore

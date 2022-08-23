@@ -4,17 +4,14 @@ import pydash
 from requests import Response
 
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
-from fidesops.schemas.saas.strategy_configuration import (
-    CursorPaginationConfiguration,
-    StrategyConfiguration,
-)
+from fidesops.schemas.saas.strategy_configuration import CursorPaginationConfiguration
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
 from fidesops.service.pagination.pagination_strategy_factory import register
 
 STRATEGY_NAME = "cursor"
 
 
-@register(STRATEGY_NAME)
+@register(STRATEGY_NAME, CursorPaginationConfiguration)
 class CursorPaginationStrategy(PaginationStrategy):
     def __init__(self, configuration: CursorPaginationConfiguration):
         self.cursor_param = configuration.cursor_param
@@ -50,7 +47,3 @@ class CursorPaginationStrategy(PaginationStrategy):
             query_params=request_params.query_params,
             body=request_params.body,
         )
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return CursorPaginationConfiguration  # type: ignore

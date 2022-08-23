@@ -3,7 +3,6 @@ from requests import PreparedRequest
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.strategy_configuration import (
     BasicAuthenticationConfiguration,
-    StrategyConfiguration,
 )
 from fidesops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
@@ -12,7 +11,7 @@ from fidesops.service.authentication.authentication_strategy_factory import regi
 from fidesops.util.saas_util import assign_placeholders
 
 
-@register("basic")
+@register("basic", BasicAuthenticationConfiguration)
 class BasicAuthenticationStrategy(AuthenticationStrategy):
     """
     Replaces the username and password placeholders with the actual credentials
@@ -36,7 +35,3 @@ class BasicAuthenticationStrategy(AuthenticationStrategy):
             )
         )
         return request
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return BasicAuthenticationConfiguration  # type: ignore

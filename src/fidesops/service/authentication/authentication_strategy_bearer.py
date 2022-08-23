@@ -12,7 +12,7 @@ from fidesops.service.authentication.authentication_strategy_factory import regi
 from fidesops.util.saas_util import assign_placeholders
 
 
-@register("bearer")
+@register("bearer", BearerAuthenticationConfiguration)
 class BearerAuthenticationStrategy(AuthenticationStrategy):
     """
     Replaces the token placeholder with the actual credentials
@@ -30,7 +30,3 @@ class BearerAuthenticationStrategy(AuthenticationStrategy):
             self.token, connection_config.secrets  # type: ignore
         )
         return request
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return BearerAuthenticationConfiguration  # type: ignore

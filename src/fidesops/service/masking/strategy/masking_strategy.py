@@ -2,15 +2,13 @@
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
-from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
-from fidesops.service.generic_strategy import GenericStrategy
 
 
-class MaskingStrategy(GenericStrategy):
+class MaskingStrategy(ABC):
     """Abstract base class for masking strategies"""
 
     @abstractmethod

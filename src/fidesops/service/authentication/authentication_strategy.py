@@ -1,13 +1,11 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 from requests import PreparedRequest
 
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
-from fidesops.service.generic_strategy import GenericStrategy
 
 
-class AuthenticationStrategy(GenericStrategy):
+class AuthenticationStrategy(ABC):
     """Abstract base class for SaaS authentication strategies"""
 
     @abstractmethod
