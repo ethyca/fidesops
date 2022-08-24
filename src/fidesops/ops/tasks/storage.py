@@ -106,7 +106,7 @@ def upload_to_s3(  # pylint: disable=R0913
     auth_method: S3AuthMethod,
 ) -> str:
     """Uploads arbitrary data to s3 returned from an access request"""
-    logger.info(f"Starting S3 Upload of {file_key}")
+    logger.info("Starting S3 Upload of %s", file_key)
     try:
         my_session = get_s3_session(auth_method, storage_secrets)
 
@@ -132,7 +132,7 @@ def upload_to_onetrust(
     ref_id: str,
 ) -> str:
     """Uploads arbitrary data to onetrust returned from an access request"""
-    logger.info(f"Starting OneTrust Upload for ref_id {ref_id}")
+    logger.info("Starting OneTrust Upload for ref_id %s", ref_id)
 
     onetrust_hostname = storage_secrets[StorageSecrets.ONETRUST_HOSTNAME.value]  # type: ignore
     access_token = get_onetrust_access_token(

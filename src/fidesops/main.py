@@ -10,6 +10,7 @@ import uvicorn
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
+from fideslib.oauth.api.deps import get_config as lib_get_config
 from fideslib.oauth.api.deps import get_db as lib_get_db
 from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
 from fideslib.oauth.api.routes.user_endpoints import router as user_router
@@ -24,6 +25,7 @@ from fidesops.ops.analytics import (
     in_docker_container,
     send_analytics_event,
 )
+from fidesops.ops.api.deps import get_config, get_db
 from fidesops.ops.api.v1.api import api_router
 from fidesops.ops.api.v1.exception_handlers import ExceptionHandlers
 from fidesops.ops.api.v1.urn_registry import V1_URL_PREFIX
@@ -41,8 +43,8 @@ from fidesops.ops.service.connectors.saas.connector_registry_service import (
 from fidesops.ops.tasks.scheduled.scheduler import scheduler
 from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.ops.util.cache import get_cache
-from fidesops.ops.util.logger import get_fides_log_record_factory
-from fidesops.ops.util.oauth_util import get_db, verify_oauth_client
+from fidesops.ops.util.logger import Pii, get_fides_log_record_factory
+from fidesops.ops.util.oauth_util import verify_oauth_client
 
 logging.basicConfig(level=config.security.log_level)
 logging.setLogRecordFactory(get_fides_log_record_factory())
@@ -129,8 +131,10 @@ def prepare_and_log_request(
 
 app.include_router(api_router)
 app.include_router(user_router, tags=["Users"], prefix=f"{V1_URL_PREFIX}")
+app.dependency_overrides[lib_get_config] = get_config
 app.dependency_overrides[lib_get_db] = get_db
 app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
+
 for handler in ExceptionHandlers.get_handlers():
     app.add_exception_handler(FunctionalityNotConfigured, handler)
 
@@ -234,7 +238,7 @@ def start_webserver() -> None:
         try:
             init_db(config.database.sqlalchemy_database_uri)
         except Exception as error:  # pylint: disable=broad-except
-            logger.error(f"Connection to database failed: {error}")
+            logger.error("Connection to database failed: %s", Pii(str(error)))
             return
 
     if config.redis.enabled:
@@ -242,7 +246,7 @@ def start_webserver() -> None:
         try:
             get_cache()
         except (RedisConnectionError, ResponseError) as e:
-            logger.error(f"Connection to cache failed: {e}")
+            logger.error("Connection to cache failed: %s", Pii(str(e)))
             return
 
     scheduler.start()
