@@ -10,7 +10,7 @@ from fidesops.ops.service.connectors import get_connector
 from fidesops.ops.task import graph_task
 from fidesops.ops.task.filter_results import filter_data_categories
 from fidesops.ops.task.graph_task import get_cached_data_for_erasures
-from tests.ops.fixtures.saas.hubspot_fixtures import user_exists, HubspotTestClient
+from tests.ops.fixtures.saas.hubspot_fixtures import HubspotTestClient, user_exists
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
