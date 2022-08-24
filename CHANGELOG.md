@@ -17,7 +17,9 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.0...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.1...main)
+
+## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
 
 ### Added
 
@@ -48,12 +50,14 @@ The types of changes are:
 * Fix FIDESOPS__ROOT_USER__ANALYTICS_ID generation when env var is set [#1113](https://github.com/ethyca/fidesops/pull/1113) 
 * Set localhost to None for non-endpoint events [#1130](https://github.com/ethyca/fidesops/pull/1130)
 * Fixed docs build in CI [#1138](https://github.com/ethyca/fidesops/pull/1138)
+* Added future annotatioins to privacy_request.py for backwards compatibility [#1136](https://github.com/ethyca/fidesops/pull/1136)
 
 ### Changed
 
 * Update request status endpoint to return both audit and execution logs [#1068] (https://github.com/ethyca/fidesops/pull/1068/)
 * Update backend routing to handle dynamic frontend routes [#1033](https://github.com/ethyca/fidesops/pull/1033)
 * Make connection type search case-insensitive [#1133](https://github.com/ethyca/fidesops/pull/1133)
+* Adjust log formatting to be %-style instead of f-string [#1132](https://github.com/ethyca/fidesops/pull/1132)
 
 ### Docs
 
