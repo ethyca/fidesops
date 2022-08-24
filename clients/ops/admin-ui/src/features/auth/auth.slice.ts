@@ -10,7 +10,12 @@ import { BASE_URL, STORED_CREDENTIALS_KEY } from "../../constants";
 import { addCommonHeaders } from "../common/CommonHeaders";
 import { utf8ToB64 } from "../common/utils";
 import { User } from "../user-management/types";
-import { LoginRequest, LoginResponse, LogoutRequest, LogoutResponse } from "./types";
+import {
+  LoginRequest,
+  LoginResponse,
+  LogoutRequest,
+  LogoutResponse,
+} from "./types";
 
 export interface AuthState {
   user: User | null;

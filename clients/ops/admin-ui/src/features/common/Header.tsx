@@ -30,8 +30,10 @@ const Header: React.FC = () => {
   const dispatch = useDispatch();
 
   const handleLogout = async () => {
-    logoutMutation({}).unwrap().then(() => dispatch(logout()));
-  }
+    logoutMutation({})
+      .unwrap()
+      .then(() => dispatch(logout()));
+  };
 
   return (
     <header>

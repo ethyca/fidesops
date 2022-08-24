@@ -12,6 +12,5 @@ export interface LoginResponse {
   };
 }
 
-
-export interface LogoutRequest { }
-export interface LogoutResponse { }
+export interface LogoutRequest {}
+export interface LogoutResponse {}
