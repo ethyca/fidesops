@@ -29,6 +29,8 @@ from fidesops.ops.schemas.storage.storage import (
     StorageDetails,
     StorageSecrets,
     StorageType,
+    S3AuthMethod,
+    StorageSecretsS3,
 )
 
 PAGE_SIZE = Params().size
@@ -108,6 +110,7 @@ class TestPatchStorageConfig:
                 "name": "test destination",
                 "type": "s3",
                 "details": {
+                    "auth_method": S3AuthMethod.SECRET_KEYS.value,
                     "bucket": "some-bucket",
                     "object_name": "requests",
                     "naming": "some-filename-convention-enum",
@@ -279,6 +282,7 @@ class TestPatchStorageConfig:
                     "name": "test destination",
                     "type": "s3",
                     "details": {
+                        "auth_method": S3AuthMethod.SECRET_KEYS.value,
                         "bucket": "some-bucket",
                         "naming": "some-filename-convention-enum",
                         "max_retries": 10,
@@ -311,6 +315,7 @@ class TestPatchStorageConfig:
                 "name": "my-test-dest",
                 "type": "s3",
                 "details": {
+                    "auth_method": S3AuthMethod.SECRET_KEYS.value,
                     "bucket": "some-bucket",
                     "object_name": "requests",
                     "naming": "some-filename-convention-enum",
@@ -353,11 +358,12 @@ class TestPatchStorageConfig:
             headers=auth_header,
             json=[
                 {
-                    "key": "my_onetrust_upload",
+                    "key": "my_s3_upload",
                     "name": "my-test-dest",
                     "type": "s3",
                     "details": {
                         # "bucket": "removed-from-payload",
+                        "auth_method": S3AuthMethod.SECRET_KEYS.value,
                         "object_name": "some-object",
                         "naming": "request_id",
                         "max_retries": 10,
@@ -521,7 +527,13 @@ class TestPutStorageConfigSecretsS3:
         auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
-        get_s3_session_mock.assert_called_once_with(**payload)
+        get_s3_session_mock.assert_called_once_with(
+            S3AuthMethod.SECRET_KEYS,
+            StorageSecretsS3(
+                aws_access_key_id=payload["aws_access_key_id"],
+                aws_secret_access_key=payload["aws_secret_access_key"],
+            ),
+        )
 
     @mock.patch(
         "fidesops.ops.service.storage.storage_authenticator_service.get_onetrust_access_token"

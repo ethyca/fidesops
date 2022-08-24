@@ -21,6 +21,7 @@ from fidesops.ops.schemas.storage.storage import (
     StorageDetails,
     StorageSecrets,
     StorageType,
+    S3AuthMethod,
 )
 from fidesops.ops.service.storage.storage_uploader_service import get_extension, upload
 from fidesops.ops.tasks.storage import (
@@ -45,6 +46,7 @@ def test_uploader_s3_success(
         "key": "test_dest_key",
         "type": StorageType.s3.value,
         "details": {
+            "auth_method": S3AuthMethod.SECRET_KEYS.value,
             "bucket": "some-bucket",
             "naming": FileNaming.request_id.value,
             "max_retries": 10,
@@ -76,6 +78,7 @@ def test_uploader_s3_success(
         f"{request_id}.json",
         "json",
         request_id,
+        S3AuthMethod.SECRET_KEYS.value,
     )
 
     storage_config.delete(db)

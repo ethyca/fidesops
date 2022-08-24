@@ -11,6 +11,7 @@ from fidesops.ops.schemas.storage.storage import (
     StorageDetails,
     StorageSecrets,
     StorageType,
+    S3AuthMethod,
 )
 
 
@@ -22,6 +23,7 @@ class TestStorageConfigModel:
             StorageDetails.NAMING.value: "some naming",
             StorageDetails.OBJECT_NAME.value: "some object name",
             StorageDetails.MAX_RETRIES.value: 0,
+            StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
         }
 
     @pytest.fixture(scope="function")
