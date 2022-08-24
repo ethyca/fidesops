@@ -147,6 +147,6 @@ saas_config:
           param_values:
             - name: userId
               references:
-                - dataset: hubspot_connector_example
+                - dataset: <instance_fides_key>
                   field: users.id
                   direction: from
