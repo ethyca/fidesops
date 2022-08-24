@@ -213,7 +213,7 @@ def run_privacy_request(
         privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
         if privacy_request.status == PrivacyRequestStatus.canceled:
             logging.info(
-                "Terminating privacy request %s}: request canceled.", privacy_request.id
+                "Terminating privacy request %s: request canceled.", privacy_request.id
             )
             return
         logging.info("Dispatching privacy request %s", privacy_request.id)
