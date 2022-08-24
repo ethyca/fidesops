@@ -1,8 +1,9 @@
-import json
 from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+import requests
+
 from fideslib.cryptography import cryptographic_util
 from sqlalchemy.orm import Session
 
@@ -12,10 +13,7 @@ from fidesops.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.ops.service.connectors import SaaSConnector
 from fidesops.ops.util.saas_util import (
-    format_body,
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
@@ -23,8 +21,6 @@ from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("hubspot")
-
-HUBSPOT_FIRSTNAME = "SomeoneFirstname"
 
 
 @pytest.fixture(scope="session")
@@ -111,61 +107,152 @@ def dataset_config_hubspot(
     dataset.delete(db=db)
 
 
-@pytest.fixture(scope="function")
-def hubspot_erasure_data(
-    connection_config_hubspot, hubspot_erasure_identity_email
-) -> Generator:
-    """
-    Gets the current value of the resource and restores it after the test is complete.
-    Used for erasure tests.
-    """
+class HubspotTestClient:
 
-    connector = SaaSConnector(connection_config_hubspot)
+    headers: object = {}
+    base_url: str = ""
 
-    # create contact
-    contacts_request_body = json.dumps(
-        {
+    def __init__(self, connection_config_hubspot: ConnectionConfig):
+        hubspot_secrets = connection_config_hubspot.secrets
+        self.headers = {
+            "Authorization": f"Bearer {hubspot_secrets['private_app_token']}",
+        }
+        self.base_url = f"https://{hubspot_secrets['domain']}"
+
+    def get_user(self, user_id: str) -> requests.Response:
+        user_response: requests.Response = requests.get(
+            url=f"{self.base_url}/settings/v3/users/{user_id}", headers=self.headers
+        )
+        return user_response
+
+    def get_contact(self, contact_id: str) -> requests.Response:
+        contact_response: requests.Response = requests.get(
+            url=f"{self.base_url}/crm/v3/objects/contacts/{contact_id}",
+            headers=self.headers,
+        )
+        return contact_response
+
+    def get_contact_by_email(self, email: str) -> requests.Response:
+        body = {
+            "filterGroups": [
+                {
+                    "filters": [
+                        {
+                            "value": email,
+                            "propertyName": "email",
+                            "operator": "EQ",
+                        }
+                    ]
+                }
+            ]
+        }
+        contact_search_response: requests.Response = requests.post(
+            url=f"{self.base_url}/crm/v3/objects/contacts/search",
+            json=body,
+            headers=self.headers,
+        )
+        return contact_search_response
+
+    def create_contact(self, email: str) -> requests.Response:
+        contacts_request_body = {
             "properties": {
                 "company": "test company",
-                "email": hubspot_erasure_identity_email,
-                "firstname": HUBSPOT_FIRSTNAME,
+                "email": email,
+                "firstname": "SomeoneFirstname",
                 "lastname": "SomeoneLastname",
                 "phone": "(123) 123-1234",
                 "website": "someone.net",
             }
         }
-    )
-    updated_headers, contacts_request_formatted_body = format_body(
-        {}, contacts_request_body
-    )
+        contact_response: requests.Response = requests.post(
+            url=f"{self.base_url}/crm/v3/objects/contacts",
+            headers=self.headers,
+            json=contacts_request_body,
+        )
+        return contact_response
 
-    contacts_request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.POST,
-        path=f"/crm/v3/objects/contacts",
-        headers=updated_headers,
-        body=contacts_request_formatted_body,
+    def create_user(self, email: str) -> requests.Response:
+        users_request_body = {
+            "email": email,
+        }
+        user_response: requests.Response = requests.post(
+            url=f"{self.base_url}/settings/v3/users/",
+            headers=self.headers,
+            json=users_request_body,
+        )
+        return user_response
+
+    def delete_contact(self, contact_id: str) -> requests.Response:
+        contact_response: requests.Response = requests.delete(
+            url=f"{self.base_url}/crm/v3/objects/contacts/{contact_id}",
+            headers=self.headers,
+        )
+        return contact_response
+
+    def get_email_subscriptions(self, email: str) -> requests.Response:
+        email_subscriptions: requests.Response = requests.get(
+            url=f"{self.base_url}/communication-preferences/v3/status/email/{email}",
+            headers=self.headers,
+        )
+        return email_subscriptions
+
+
+@pytest.fixture(scope="function")
+def hubspot_test_client(
+    connection_config_hubspot: HubspotTestClient,
+) -> Generator:
+    test_client = HubspotTestClient(connection_config_hubspot=connection_config_hubspot)
+    yield test_client
+
+
+def _contact_exists(
+    contact_id: str, email: str, hubspot_test_client: HubspotTestClient
+) -> Any:
+    """
+    Confirm whether contact exists. We check the crm search endpoint as this is
+    what our connectors use.
+    """
+    contact_response = hubspot_test_client.get_contact(contact_id=contact_id)
+    contact_search_response = hubspot_test_client.get_contact_by_email(email=email)
+
+    if (
+        not contact_response.status_code == 404
+        and contact_search_response.json()["results"]
+    ):
+        contact_body = contact_response.json()
+        return contact_body
+
+
+def user_exists(user_id: str, hubspot_test_client: HubspotTestClient) -> Any:
+    """
+    Confirm whether user exists
+    """
+    user_response: requests.Response = hubspot_test_client.get_user(user_id=user_id)
+    if not user_response.status_code == 404:
+        user_body = user_response.json()
+        return user_body
+
+
+@pytest.fixture(scope="function")
+def hubspot_erasure_data(
+    hubspot_test_client: HubspotTestClient,
+    hubspot_erasure_identity_email: str,
+) -> Generator:
+    """
+    Gets the current value of the resource and restores it after the test is complete.
+    Used for erasure tests.
+    """
+    # create contact
+    contacts_response = hubspot_test_client.create_contact(
+        email=hubspot_erasure_identity_email
     )
-    contacts_response = connector.create_client().send(contacts_request)
     contacts_body = contacts_response.json()
     contact_id = contacts_body["id"]
 
     # create user
-    users_request_body = json.dumps(
-        {
-            "email": hubspot_erasure_identity_email,
-        }
+    users_response = hubspot_test_client.create_user(
+        email=hubspot_erasure_identity_email
     )
-    updated_users_request_headers, users_request_formatted_body = format_body(
-        {}, users_request_body
-    )
-
-    users_request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.POST,
-        path=f"/settings/v3/users/",
-        headers=updated_users_request_headers,
-        body=users_request_formatted_body,
-    )
-    users_response = connector.create_client().send(users_request)
     users_body = users_response.json()
     user_id = users_body["id"]
 
@@ -176,24 +263,21 @@ def hubspot_erasure_data(
     )
     poll_for_existence(
         _contact_exists,
-        (hubspot_erasure_identity_email, connector),
+        (contact_id, hubspot_erasure_identity_email, hubspot_test_client),
         error_message=error_message,
     )
 
     error_message = f"User with user id {user_id} could not be added to Hubspot"
     poll_for_existence(
         user_exists,
-        (user_id, hubspot_erasure_identity_email, connector),
+        (user_id, hubspot_test_client),
         error_message=error_message,
     )
+
     yield contact_id, user_id
 
     # delete contact
-    delete_request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.DELETE,
-        path=f"/crm/v3/objects/contacts/{contact_id}",
-    )
-    connector.create_client().send(delete_request)
+    hubspot_test_client.delete_contact(contact_id=contact_id)
 
     # verify contact is deleted
     error_message = (
@@ -201,68 +285,7 @@ def hubspot_erasure_data(
     )
     poll_for_existence(
         _contact_exists,
-        (hubspot_erasure_identity_email, connector),
+        (contact_id, hubspot_erasure_identity_email, hubspot_test_client),
         error_message=error_message,
         existence_desired=False,
     )
-
-
-def _contact_exists(
-    hubspot_erasure_identity_email: str, connector: SaaSConnector
-) -> Any:
-    """
-    Confirm whether contact exists by calling search api and comparing firstname str.
-    """
-
-    body = json.dumps(
-        {
-            "filterGroups": [
-                {
-                    "filters": [
-                        {
-                            "value": hubspot_erasure_identity_email,
-                            "propertyName": "email",
-                            "operator": "EQ",
-                        }
-                    ]
-                }
-            ]
-        }
-    )
-
-    updated_headers, formatted_body = format_body({}, body)
-    contact_request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.POST,
-        path="/crm/v3/objects/contacts/search",
-        headers=updated_headers,
-        body=formatted_body,
-    )
-    contact_response = connector.create_client().send(contact_request)
-    contact_body = contact_response.json()
-    if (
-        contact_body["results"]
-        and contact_body["results"][0]["properties"]["firstname"] == HUBSPOT_FIRSTNAME
-    ):
-        return contact_body
-
-
-def user_exists(user_id: str, user_email: str, connector: SaaSConnector) -> Any:
-    """
-    Confirm whether user exists by calling search api and comparing email str.
-    """
-    user_request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.GET,
-        path=f"/settings/v3/users/{user_id}",
-        headers={},
-    )
-    # ignore errors set to true because we could get a 404
-    user_response = connector.create_client().send(
-        request_params=user_request, ignore_errors=True
-    )
-
-    if user_response.status_code == 404:
-        return None
-
-    user_body = user_response.json()
-    if user_body and user_body["email"] == user_email:
-        return user_body

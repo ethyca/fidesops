@@ -1,21 +1,24 @@
-import json
 import random
 
 import pytest
 
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.graph import DatasetGraph
-from fidesops.ops.models.privacy_request import ExecutionLog, PrivacyRequest
+from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.ops.service.connectors import SaaSConnector
+from fidesops.ops.service.connectors import get_connector
 from fidesops.ops.task import graph_task
 from fidesops.ops.task.filter_results import filter_data_categories
 from fidesops.ops.task.graph_task import get_cached_data_for_erasures
-from fidesops.ops.util.saas_util import format_body
-from tests.ops.fixtures.saas.hubspot_fixtures import user_exists
-from tests.ops.graph.graph_test_util import assert_rows_match, records_matching_fields
+from tests.ops.fixtures.saas.hubspot_fixtures import user_exists, HubspotTestClient
+from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_hubspot
+def test_hubspot_connection_test(connection_config_hubspot) -> None:
+    get_connector(connection_config_hubspot).test_connection()
 
 
 @pytest.mark.integration_saas
@@ -121,52 +124,6 @@ def test_saas_access_request_task(
         filtered_results[f"{dataset_name}:owners"][0]["email"] == hubspot_identity_email
     )
 
-    logs = (
-        ExecutionLog.query(db=db)
-        .filter(ExecutionLog.privacy_request_id == privacy_request.id)
-        .all()
-    )
-
-    logs = [log.__dict__ for log in logs]
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="contacts"
-            )
-        )
-        > 0
-    )
-    assert (
-        len(
-            records_matching_fields(
-                logs,
-                dataset_name=dataset_name,
-                collection_name="owners",
-            )
-        )
-        > 0
-    )
-    assert (
-        len(
-            records_matching_fields(
-                logs,
-                dataset_name=dataset_name,
-                collection_name="subscription_preferences",
-            )
-        )
-        > 0
-    )
-    assert (
-        len(
-            records_matching_fields(
-                logs,
-                dataset_name=dataset_name,
-                collection_name="users",
-            )
-        )
-        > 0
-    )
-
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_hubspot
@@ -178,8 +135,10 @@ def test_saas_erasure_request_task(
     dataset_config_hubspot,
     hubspot_erasure_identity_email,
     hubspot_erasure_data,
+    hubspot_test_client: HubspotTestClient,
 ) -> None:
     """Full erasure request based on the Hubspot SaaS config"""
+    contact_id, user_id = hubspot_erasure_data
     privacy_request = PrivacyRequest(
         id=f"test_hubspot_erasure_request_task_{random.randint(0, 1000)}"
     )
@@ -220,7 +179,7 @@ def test_saas_erasure_request_task(
     )
     config.execution.masking_strict = temp_masking
 
-    # Masking request only issued to "contacts" and "subscription_preferences" endpoints
+    # Masking request only issued to "contacts", "subscription_preferences", and "users" endpoints
     assert erasure == {
         "hubspot_instance:contacts": 1,
         "hubspot_instance:owners": 0,
@@ -228,52 +187,23 @@ def test_saas_erasure_request_task(
         "hubspot_instance:users": 1,
     }
 
-    connector = SaaSConnector(connection_config_hubspot)
-
-    body = json.dumps(
-        {
-            "filterGroups": [
-                {
-                    "filters": [
-                        {
-                            "value": hubspot_erasure_identity_email,
-                            "propertyName": "email",
-                            "operator": "EQ",
-                        }
-                    ]
-                }
-            ]
-        }
-    )
-
-    updated_headers, formatted_body = format_body({}, body)
-
     # Verify the user has been assigned to None
-    contact_request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.POST,
-        path="/crm/v3/objects/contacts/search",
-        headers=updated_headers,
-        body=formatted_body,
-    )
-    contact_response = connector.create_client().send(contact_request)
+    contact_response = hubspot_test_client.get_contact(contact_id=contact_id)
     contact_body = contact_response.json()
-    assert contact_body["results"][0]["properties"]["firstname"] == "MASKED"
+    assert contact_body["properties"]["firstname"] == "MASKED"
 
     # verify user is unsubscribed
-    subscription_request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.GET,
-        path=f"/communication-preferences/v3/status/email/{hubspot_erasure_identity_email}",
+    email_subscription_response = hubspot_test_client.get_email_subscriptions(
+        email=hubspot_erasure_identity_email
     )
-    subscription_response = connector.create_client().send(subscription_request)
-    subscription_body = subscription_response.json()
+    subscription_body = email_subscription_response.json()
     assert subscription_body["subscriptionStatuses"][0]["status"] == "NOT_SUBSCRIBED"
 
     # verify user is deleted
-    _, user_id = hubspot_erasure_data
     error_message = f"User with user id {user_id} could not be deleted from Hubspot"
     poll_for_existence(
         user_exists,
-        (user_id, hubspot_erasure_identity_email, connector),
+        (user_id, hubspot_test_client),
         error_message=error_message,
         existence_desired=False,
     )
