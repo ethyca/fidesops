@@ -18,10 +18,10 @@ from fidesops.ops.models.storage import StorageConfig
 from fidesops.ops.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
+    S3AuthMethod,
     StorageDetails,
     StorageSecrets,
     StorageType,
-    S3AuthMethod,
 )
 from fidesops.ops.service.storage.storage_uploader_service import get_extension, upload
 from fidesops.ops.tasks.storage import (

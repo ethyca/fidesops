@@ -26,11 +26,11 @@ from fidesops.ops.schemas.storage.data_upload_location_response import DataUploa
 from fidesops.ops.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
+    S3AuthMethod,
     StorageDetails,
     StorageSecrets,
-    StorageType,
-    S3AuthMethod,
     StorageSecretsS3,
+    StorageType,
 )
 
 PAGE_SIZE = Params().size

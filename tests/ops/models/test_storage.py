@@ -7,11 +7,11 @@ from sqlalchemy.orm import Session
 from fidesops.ops.models.storage import StorageConfig
 from fidesops.ops.schemas.storage.storage import (
     ResponseFormat,
+    S3AuthMethod,
     StorageDestination,
     StorageDetails,
     StorageSecrets,
     StorageType,
-    S3AuthMethod,
 )
 
 
