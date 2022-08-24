@@ -34,7 +34,7 @@ The types of changes are:
 * Add option to login as root user from config[#1116](https://github.com/ethyca/fidesops/pull/1116)
 * Added email templates [#1123](https://github.com/ethyca/fidesops/pull/1123)
 * Add Retry button back into the subject request detail view [#1128](https://github.com/ethyca/fidesops/pull/1131)
-* Adds users and owners configuration for hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
+* Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
 
 ### Developer Experience
 
@@ -48,13 +48,22 @@ The types of changes are:
 * Reduced number of connections opened against app db during health checks [#1107](https://github.com/ethyca/fidesops/pull/1107)
 * Fix FIDESOPS__ROOT_USER__ANALYTICS_ID generation when env var is set [#1113](https://github.com/ethyca/fidesops/pull/1113) 
 * Set localhost to None for non-endpoint events [#1130](https://github.com/ethyca/fidesops/pull/1130)
-* Added future annotatioins to privacy_request.py for backwards compatibility [#1136](https://github.com/ethyca/fidesops/pull/1136)
+* Added future annotations to privacy_request.py for backwards compatibility [#1136](https://github.com/ethyca/fidesops/pull/1136)
 
 ### Changed
 
 * Update request status endpoint to return both audit and execution logs [#1068] (https://github.com/ethyca/fidesops/pull/1068/)
 * Update backend routing to handle dynamic frontend routes [#1033](https://github.com/ethyca/fidesops/pull/1033)
+* Make connection type search case-insensitive [#1133](https://github.com/ethyca/fidesops/pull/1133)
+* Adjust log formatting to be %-style instead of f-string [#1132](https://github.com/ethyca/fidesops/pull/1132)
 
+### Docs
+
+* Minor formatting updates to [Policy Webhooks](https://ethyca.github.io/fidesops/guides/policy_webhooks/) documentation [#1114](https://github.com/ethyca/fidesops/pull/1114)
+
+### Removed
+
+* Removed create superuser [#1116](https://github.com/ethyca/fidesops/pull/1116)
 
 ## [1.7.0](https://github.com/ethyca/fidesops/compare/1.6.3...1.7.0)
 
