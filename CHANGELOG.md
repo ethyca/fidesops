@@ -30,6 +30,10 @@ The types of changes are:
 * SaaS Connector Configuration - Testing a Connection [#985](https://github.com/ethyca/fidesops/pull/1099)
 * Add an endpoint for verifying the user's identity before queuing the privacy request. [#1111](https://github.com/ethyca/fidesops/pull/1111)
 * Adds tests for email endpoints and service [#1112](https://github.com/ethyca/fidesops/pull/1112)
+* Adds the ability to verify a subject's identity before processing a Privacy Request  [#1115](https://github.com/ethyca/fidesops/pull/1115)
+* Add option to login as root user from config[#1116](https://github.com/ethyca/fidesops/pull/1116)
+* Added email templates [#1123](https://github.com/ethyca/fidesops/pull/1123)
+* Add Retry button back into the subject request detail view [#1128](https://github.com/ethyca/fidesops/pull/1131)
 * Adds users and owners configuration for hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
 
 ### Developer Experience
@@ -43,6 +47,7 @@ The types of changes are:
 * Escape the Redis user and password to make them URL friendly [#1104](https://github.com/ethyca/fidesops/pull/1104)
 * Reduced number of connections opened against app db during health checks [#1107](https://github.com/ethyca/fidesops/pull/1107)
 * Fix FIDESOPS__ROOT_USER__ANALYTICS_ID generation when env var is set [#1113](https://github.com/ethyca/fidesops/pull/1113) 
+* Set localhost to None for non-endpoint events [#1130](https://github.com/ethyca/fidesops/pull/1130)
 
 ### Changed
 
