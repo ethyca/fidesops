@@ -15,7 +15,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { INDEX_ROUTE } from "../../constants";
-import { useLogoutMutation, logout, selectUser } from "../auth";
+import { logout, selectUser, useLogoutMutation } from "../auth";
 import { UserIcon } from "./Icon";
 import Image from "./Image";
 
