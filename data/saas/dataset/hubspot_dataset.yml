@@ -101,7 +101,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: updatedAt
-            data_categories: [system.operations]
+            data_categories: [user.sensor]
             fidesops_meta:
               data_type: string
       - name: subscription_preferences
