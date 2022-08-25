@@ -36,7 +36,7 @@ from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import (
 
 
 @mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_s3")
-def test_uploader_s3_success(
+def test_uploader_s3_success_secrets_auth(
     mock_upload_to_s3: Mock, db: Session, privacy_request
 ) -> None:
     request_id = privacy_request.id
@@ -79,6 +79,51 @@ def test_uploader_s3_success(
         "json",
         request_id,
         S3AuthMethod.SECRET_KEYS.value,
+    )
+
+    storage_config.delete(db)
+
+
+@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_s3")
+def test_uploader_s3_success_automatic_auth(
+    mock_upload_to_s3: Mock, db: Session, privacy_request
+) -> None:
+    request_id = privacy_request.id
+
+    mock_config = {
+        "name": "test dest",
+        "key": "test_dest_key",
+        "type": StorageType.s3.value,
+        "details": {
+            "auth_method": S3AuthMethod.AUTOMATIC.value,
+            "bucket": "some-bucket",
+            "naming": FileNaming.request_id.value,
+            "max_retries": 10,
+            "object_name": "something",
+        },
+    }
+    storage_config = StorageConfig.create(db, data=mock_config)
+
+    mock_upload_to_s3.return_value = (
+        f"https://some-bucket.s3.amazonaws.com/{request_id}.json"
+    )
+    upload_data = {"phone": "1231231234"}
+
+    upload(
+        db=db,
+        request_id=request_id,
+        data=upload_data,
+        storage_key=mock_config["key"],
+    )
+
+    mock_upload_to_s3.assert_called_with(
+        None,
+        upload_data,
+        mock_config["details"][StorageDetails.BUCKET.value],
+        f"{request_id}.json",
+        "json",
+        request_id,
+        S3AuthMethod.AUTOMATIC.value,
     )
 
     storage_config.delete(db)

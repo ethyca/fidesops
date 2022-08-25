@@ -297,6 +297,29 @@ class TestPatchStorageConfig:
         assert expected_response == response_body
         storage_config.delete(db)
 
+    @pytest.mark.parametrize(
+        "auth_method", [S3AuthMethod.SECRET_KEYS.value, S3AuthMethod.AUTOMATIC.value]
+    )
+    def test_patch_storage_config_with_different_auth_methods(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+        auth_method,
+    ):
+        payload[0]["key"] = "my_s3_bucket"
+        payload[0]["details"]["auth_method"] = auth_method
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+
+        assert 200 == response.status_code
+        response_body = json.loads(response.text)
+        storage_config = db.query(StorageConfig).filter_by(key="my_s3_bucket")[0]
+        assert auth_method == response_body["succeeded"][0]["details"]["auth_method"]
+        storage_config.delete(db)
+
     @mock.patch(
         "fidesops.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
     )
