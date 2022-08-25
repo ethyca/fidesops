@@ -9,10 +9,10 @@ from fidesops.ops.schemas.connection_configuration.connection_secrets import (
 class EmailSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed for the EmailConnector"""
 
-    to_emails: List[str]
+    to_email: str
     test_email: Optional[str]  # Email to send a connection test email
 
-    _required_components: List[str] = ["to_emails"]
+    _required_components: List[str] = ["to_email"]
 
 
 class EmailDocsSchema(EmailSchema, NoValidationSchema):

@@ -1157,7 +1157,7 @@ class TestPutConnectionConfigSecrets:
         url,
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = {"url": None, "to_emails": ["test@example.com"]}
+        payload = {"url": None, "to_email": "test@example.com"}
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{email_connection_config.key}/secret"
 
         resp = api_client.put(
@@ -1175,7 +1175,7 @@ class TestPutConnectionConfigSecrets:
         assert body["test_status"] == "skipped" ""
         db.refresh(email_connection_config)
         assert email_connection_config.secrets == {
-            "to_emails": ["test@example.com"],
+            "to_email": "test@example.com",
             "url": None,
             "test_email": None,
         }
