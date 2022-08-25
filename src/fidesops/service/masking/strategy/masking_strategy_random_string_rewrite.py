@@ -1,9 +1,8 @@
 import string
 from secrets import choice
-from typing import List, Optional
+from typing import List, Optional, Type
 
 from fidesops.schemas.masking.masking_configuration import (
-    MaskingConfiguration,
     RandomStringMaskingConfiguration,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
@@ -12,14 +11,15 @@ from fidesops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_factory import register
-
-RANDOM_STRING_REWRITE_STRATEGY_NAME = "random_string_rewrite"
+from fidesops.service.strategy_factory import register
 
 
-@register(RANDOM_STRING_REWRITE_STRATEGY_NAME, RandomStringMaskingConfiguration)
+@register
 class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     """Masks each provied value with a random string of the length specified in the configuration."""
+
+    name = "random_string_rewrite"
+    configuration_model = RandomStringMaskingConfiguration
 
     def __init__(
         self,
@@ -27,6 +27,7 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     ):
         self.length = configuration.length
         self.format_preservation = configuration.format_preservation
+        super().__init__(configuration)
 
     def mask(
         self, values: Optional[List[str]], request_id: Optional[str]
@@ -51,10 +52,10 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     def secrets_required(self) -> bool:
         return False
 
-    @staticmethod
-    def get_description() -> MaskingStrategyDescription:
+    @classmethod
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=RANDOM_STRING_REWRITE_STRATEGY_NAME,
+            name=cls.name,
             description="Masks the input value with a random string of a specified length",
             configurations=[
                 MaskingStrategyConfigurationDescription(

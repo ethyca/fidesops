@@ -14,34 +14,34 @@ from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.saas_config import ClientConfig, SaaSRequest
 from fidesops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
-    StrategyConfiguration,
 )
 from fidesops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
 from fidesops.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fidesops.service.strategy_factory import register
 from fidesops.util.logger import NotPii
 from fidesops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
 
-from fidesops.service.authentication.authentication_strategy_factory import register
 
-OAUTH_2_STRATEGY_NAME = "oauth2"
-
-
-@register(OAUTH_2_STRATEGY_NAME, OAuth2AuthenticationConfiguration)
+@register
 class OAuth2AuthenticationStrategy(AuthenticationStrategy):
     """
     Checks the expiration date on the stored access token and refreshes
     it if needed using the configured token refresh request.
     """
 
+    name = "oauth2"
+    configuration_model = OAuth2AuthenticationConfiguration
+
     def __init__(self, configuration: OAuth2AuthenticationConfiguration):
         self.expires_in = configuration.expires_in
         self.authorization_request = configuration.authorization_request
         self.token_request = configuration.token_request
         self.refresh_request = configuration.refresh_request
+        super().__init__(configuration)
 
     def add_authentication(
         self, request: PreparedRequest, connection_config: ConnectionConfig

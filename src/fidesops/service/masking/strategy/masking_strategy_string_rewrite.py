@@ -1,7 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, Type
 
 from fidesops.schemas.masking.masking_configuration import (
-    MaskingConfiguration,
     StringRewriteMaskingConfiguration,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
@@ -10,14 +9,18 @@ from fidesops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_factory import register
+from fidesops.service.strategy_factory import register
 
+# this constant is kept around because it is leveraged in generated alembic migrations
 STRING_REWRITE_STRATEGY_NAME = "string_rewrite"
 
 
-@register(STRING_REWRITE_STRATEGY_NAME, StringRewriteMaskingConfiguration)
+@register
 class StringRewriteMaskingStrategy(MaskingStrategy):
     """Masks the values with a pre-determined value"""
+
+    name = STRING_REWRITE_STRATEGY_NAME
+    configuration_model = StringRewriteMaskingConfiguration
 
     def __init__(
         self,
@@ -25,6 +28,7 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
     ):
         self.rewrite_value = configuration.rewrite_value
         self.format_preservation = configuration.format_preservation
+        super().__init__(configuration)
 
     def mask(
         self, values: Optional[List[str]], request_id: Optional[str]
@@ -47,10 +51,10 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
 
     # MR Note - We will need a way to ensure that this does not fall out of date. Given that it
     # includes subjective instructions, this is not straightforward to automate
-    @staticmethod
-    def get_description() -> MaskingStrategyDescription:
+    @classmethod
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=STRING_REWRITE_STRATEGY_NAME,
+            name=cls.name,
             description="Masks the input value with a default string value",
             configurations=[
                 MaskingStrategyConfigurationDescription(

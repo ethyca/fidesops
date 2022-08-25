@@ -10,22 +10,23 @@ from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.schemas.saas.strategy_configuration import (
     LinkPaginationConfiguration,
     LinkSource,
-    StrategyConfiguration,
 )
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
-from fidesops.service.pagination.pagination_strategy_factory import register
-
-STRATEGY_NAME = "link"
+from fidesops.service.strategy_factory import register
 
 logger = logging.getLogger(__name__)
 
 
-@register(STRATEGY_NAME, LinkPaginationConfiguration)
+@register
 class LinkPaginationStrategy(PaginationStrategy):
+    name = "link"
+    configuration_model = LinkPaginationConfiguration
+
     def __init__(self, configuration: LinkPaginationConfiguration):
         self.source = configuration.source
         self.rel = configuration.rel
         self.path = configuration.path
+        super().__init__(configuration)
 
     def get_next_request(
         self,

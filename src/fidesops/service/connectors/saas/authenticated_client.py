@@ -7,6 +7,10 @@ from requests import PreparedRequest, Request, Response, Session
 
 from fidesops.common_exceptions import ClientUnsuccessfulException, ConnectionException
 from fidesops.core.config import config
+from fidesops.service.authentication.authentication_strategy import (
+    AuthenticationStrategy,
+)
+from fidesops.service.strategy_factory import strategy
 
 if TYPE_CHECKING:
     from fidesops.models.connectionconfig import ConnectionConfig
@@ -49,10 +53,6 @@ class AuthenticatedClient:
         incoming path, headers, query, and body params.
         """
 
-        from fidesops.service.authentication.authentication_strategy_factory import (  # pylint: disable=R0401
-            get_strategy,
-        )
-
         req: PreparedRequest = Request(
             method=request_params.method,
             url=f"{self.uri}{request_params.path}",
@@ -63,7 +63,7 @@ class AuthenticatedClient:
 
         # add authentication if provided
         if self.client_config.authentication:
-            auth_strategy = get_strategy(
+            auth_strategy: AuthenticationStrategy = strategy(  # type: ignore
                 self.client_config.authentication.strategy,
                 self.client_config.authentication.configuration,
             )

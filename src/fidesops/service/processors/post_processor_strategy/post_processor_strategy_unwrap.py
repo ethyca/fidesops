@@ -4,22 +4,17 @@ from typing import Any, Dict, List, Union
 import pydash
 
 from fidesops.schemas.saas.strategy_configuration import (
-    StrategyConfiguration,
     UnwrapPostProcessorConfiguration,
 )
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
-from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
-    register,
-)
-
-STRATEGY_NAME = "unwrap"
+from fidesops.service.strategy_factory import register
 
 logger = logging.getLogger(__name__)
 
 
-@register(STRATEGY_NAME, UnwrapPostProcessorConfiguration)
+@register
 class UnwrapPostProcessorStrategy(PostProcessorStrategy):
     """
     Given a path to a dict/list, returns the dict/list
@@ -41,8 +36,12 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
     If given a list, the unwrap will apply to the dicts inside the list.
     """
 
+    name = "unwrap"
+    configuration_model = UnwrapPostProcessorConfiguration
+
     def __init__(self, configuration: UnwrapPostProcessorConfiguration):
         self.data_path = configuration.data_path
+        super().__init__(configuration)
 
     def process(
         self,
@@ -61,7 +60,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
             if unwrapped is None:
                 logger.warning(
                     f"{self.data_path} could not be found for the following "
-                    f"post processing strategy: {STRATEGY_NAME}"
+                    f"post processing strategy: {self.name}"
                 )
             else:
                 result = unwrapped
@@ -71,7 +70,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
                 if unwrapped is None:
                     logger.warning(
                         f"{self.data_path} could not be found for the following "
-                        f"post processing strategy: {STRATEGY_NAME}"
+                        f"post processing strategy: {self.name}"
                     )
                 else:
                     result.append(unwrapped)

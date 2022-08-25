@@ -7,7 +7,8 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
+from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.service.strategy_factory import strategy
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ def cache_data(
         if strategy_name in unique_masking_strategies_by_name:
             continue
         unique_masking_strategies_by_name.add(strategy_name)
-        masking_strategy = get_strategy(strategy_name, configuration)
+        masking_strategy: MaskingStrategy = strategy(strategy_name, configuration)  # type: ignore
         if masking_strategy.secrets_required():
             masking_secrets: List[
                 MaskingSecretCache

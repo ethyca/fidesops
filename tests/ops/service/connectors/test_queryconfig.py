@@ -22,10 +22,7 @@ from fidesops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSReques
 from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors.query_config import MongoQueryConfig, SQLQueryConfig
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
-from fidesops.service.masking.strategy.masking_strategy_hash import (
-    HASH_STRATEGY_NAME,
-    HashMaskingStrategy,
-)
+from fidesops.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
 from fidesops.util.data_category import DataCategory
 
 from ...task.traversal_data import combined_mongo_postgresql_graph, integration_db_graph
@@ -294,7 +291,7 @@ class TestSQLQueryConfig:
         # cache secrets for hash strategy
         secret = MaskingSecretCache[str](
             secret="adobo",
-            masking_strategy=HASH_STRATEGY_NAME,
+            masking_strategy=HashMaskingStrategy.name,
             secret_type=SecretType.salt,
         )
         cache_secret(secret, privacy_request.id)
@@ -589,7 +586,7 @@ class TestMongoQueryConfig:
         # cache secrets for hash strategy
         secret = MaskingSecretCache[str](
             secret="adobo",
-            masking_strategy=HASH_STRATEGY_NAME,
+            masking_strategy=HashMaskingStrategy.name,
             secret_type=SecretType.salt,
         )
         cache_secret(secret, privacy_request.id)

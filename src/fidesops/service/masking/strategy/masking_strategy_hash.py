@@ -1,13 +1,10 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Type
 
 from fidesops.core.config import config
-from fidesops.schemas.masking.masking_configuration import (
-    HashMaskingConfiguration,
-    MaskingConfiguration,
-)
+from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
     MaskingSecretMeta,
@@ -19,26 +16,27 @@ from fidesops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_factory import register
+from fidesops.service.strategy_factory import register
 from fidesops.util.encryption.secrets_util import SecretsUtil
 
-HASH_STRATEGY_NAME = "hash"
 
-
-@register(HASH_STRATEGY_NAME, HashMaskingConfiguration)
+@register
 class HashMaskingStrategy(MaskingStrategy):
-    """Masks a value by hashing it"""
+    """
+    Masks a value by hashing it
+    """
 
-    def __init__(
-        self,
-        configuration: HashMaskingConfiguration,
-    ):
+    name = "hash"
+    configuration_model = HashMaskingConfiguration
+
+    def __init__(self, configuration: HashMaskingConfiguration):
         self.algorithm = configuration.algorithm
         if self.algorithm == HashMaskingConfiguration.Algorithm.SHA_256:
             self.algorithm_function = self._hash_sha256
         elif self.algorithm == HashMaskingConfiguration.Algorithm.SHA_512:
             self.algorithm_function = self._hash_sha512
         self.format_preservation = configuration.format_preservation
+        super().__init__(configuration)
 
     def mask(
         self, values: Optional[List[str]], request_id: Optional[str]
@@ -76,10 +74,10 @@ class HashMaskingStrategy(MaskingStrategy):
 
     # MR Note - We will need a way to ensure that this does not fall out of date. Given that it
     # includes subjective instructions, this is not straightforward to automate
-    @staticmethod
-    def get_description() -> MaskingStrategyDescription:
+    @classmethod
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=HASH_STRATEGY_NAME,
+            name=cls.name,
             description="Masks the input value by returning a hashed version of the input value",
             configurations=[
                 MaskingStrategyConfigurationDescription(
@@ -114,11 +112,13 @@ class HashMaskingStrategy(MaskingStrategy):
             (value + salt).encode(config.security.encoding)
         ).hexdigest()
 
-    @staticmethod
-    def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
+    @classmethod
+    def _build_masking_secret_meta(
+        cls: Type[MaskingStrategy],
+    ) -> Dict[SecretType, MaskingSecretMeta]:
         return {
             SecretType.salt: MaskingSecretMeta[str](
-                masking_strategy=HASH_STRATEGY_NAME,
+                masking_strategy=cls.name,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             )
         }

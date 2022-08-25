@@ -8,20 +8,22 @@ from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.schemas.saas.strategy_configuration import (
     ConnectorParamRef,
     OffsetPaginationConfiguration,
-    StrategyConfiguration,
 )
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
-from fidesops.service.pagination.pagination_strategy_factory import register
-
-STRATEGY_NAME = "offset"
+from fidesops.service.strategy_factory import register
 
 
-@register(STRATEGY_NAME, OffsetPaginationConfiguration)
+@register
 class OffsetPaginationStrategy(PaginationStrategy):
+
+    name = "offset"
+    configuration_model = OffsetPaginationConfiguration
+
     def __init__(self, configuration: OffsetPaginationConfiguration):
         self.incremental_param = configuration.incremental_param
         self.increment_by = configuration.increment_by
         self.limit = configuration.limit
+        super().__init__(configuration)
 
     def get_next_request(
         self,

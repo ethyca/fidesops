@@ -20,10 +20,10 @@ from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.policy import ActionType, Policy, Rule
 from fidesops.models.privacy_request import ManualAction, PrivacyRequest
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.masking.strategy.masking_strategy_nullify import (
-    NULL_REWRITE_STRATEGY_NAME,
+    NullMaskingStrategy,
 )
+from fidesops.service.strategy_factory import strategy
 from fidesops.task.refine_target_path import (
     build_refined_target_paths,
     join_detailed_path,
@@ -144,7 +144,7 @@ class QueryConfig(Generic[T], ABC):
             strategy_config = rule.masking_strategy
             if not strategy_config:
                 continue
-            strategy: MaskingStrategy = get_strategy(
+            masking_strategy: MaskingStrategy = strategy(  # type: ignore
                 strategy_config["strategy"], strategy_config["configuration"]
             )
             for rule_field_path in field_paths:
@@ -154,10 +154,10 @@ class QueryConfig(Generic[T], ABC):
                     if field_path == rule_field_path
                 ][0]
                 null_masking: bool = (
-                    strategy_config.get("strategy") == NULL_REWRITE_STRATEGY_NAME
+                    strategy_config.get("strategy") == NullMaskingStrategy.name
                 )
                 if not self._supported_data_type(
-                    masking_override, null_masking, strategy
+                    masking_override, null_masking, masking_strategy
                 ):
                     logger.warning(
                         f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not "  # type: ignore
@@ -175,7 +175,7 @@ class QueryConfig(Generic[T], ABC):
                 for detailed_path in paths_to_mask:
                     value_map[detailed_path] = self._generate_masked_value(
                         request_id=request.id,
-                        strategy=strategy,
+                        masking_strategy=masking_strategy,
                         val=pydash.objects.get(row, detailed_path),
                         masking_override=masking_override,
                         null_masking=null_masking,
@@ -185,14 +185,16 @@ class QueryConfig(Generic[T], ABC):
 
     @staticmethod
     def _supported_data_type(
-        masking_override: MaskingOverride, null_masking: bool, strategy: MaskingStrategy
+        masking_override: MaskingOverride,
+        null_masking: bool,
+        masking_strategy: MaskingStrategy,
     ) -> bool:
         """Helper method to determine whether given data_type exists and is supported by the masking strategy"""
         if null_masking:
             return True
         if not masking_override.data_type_converter:
             return False
-        if not strategy.data_type_supported(
+        if not masking_strategy.data_type_supported(
             data_type=masking_override.data_type_converter.name
         ):
             return False
@@ -201,14 +203,14 @@ class QueryConfig(Generic[T], ABC):
     @staticmethod
     def _generate_masked_value(  # pylint: disable=R0913
         request_id: str,
-        strategy: MaskingStrategy,
+        masking_strategy: MaskingStrategy,
         val: Any,
         masking_override: MaskingOverride,
         null_masking: bool,
         str_field_path: str,
     ) -> T:
         # masking API takes and returns lists, but here we are only leveraging single elements
-        masked_val = strategy.mask([val], request_id)[0]  # type: ignore
+        masked_val = masking_strategy.mask([val], request_id)[0]  # type: ignore
 
         logger.debug(
             f"Generated the following masked val for field {str_field_path}: {masked_val}"

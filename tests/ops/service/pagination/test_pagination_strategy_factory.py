@@ -4,11 +4,11 @@ from fidesops.common_exceptions import NoSuchStrategyException, ValidationError
 from fidesops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
 )
-from fidesops.service.pagination.pagination_strategy_factory import get_strategy
 from fidesops.service.pagination.pagination_strategy_link import LinkPaginationStrategy
 from fidesops.service.pagination.pagination_strategy_offset import (
     OffsetPaginationStrategy,
 )
+from fidesops.service.strategy_factory import strategy
 
 
 def test_get_strategy_offset():
@@ -17,27 +17,27 @@ def test_get_strategy_offset():
         "increment_by": 1,
         "limit": 100,
     }
-    strategy = get_strategy(strategy_name="offset", configuration=config)
-    assert isinstance(strategy, OffsetPaginationStrategy)
+    offset_strategy = strategy(strategy_name="offset", configuration=config)
+    assert isinstance(offset_strategy, OffsetPaginationStrategy)
 
 
 def test_get_strategy_link():
     config = {"source": "body", "path": "body.next_link"}
-    strategy = get_strategy(strategy_name="link", configuration=config)
-    assert isinstance(strategy, LinkPaginationStrategy)
+    link_strategy = strategy(strategy_name="link", configuration=config)
+    assert isinstance(link_strategy, LinkPaginationStrategy)
 
 
 def test_get_strategy_cursor():
     config = {"cursor_param": "after", "field": "id"}
-    strategy = get_strategy(strategy_name="cursor", configuration=config)
-    assert isinstance(strategy, CursorPaginationStrategy)
+    cursor_strategy = strategy(strategy_name="cursor", configuration=config)
+    assert isinstance(cursor_strategy, CursorPaginationStrategy)
 
 
 def test_get_strategy_invalid_config():
     with pytest.raises(ValidationError):
-        get_strategy(strategy_name="offset", configuration={"invalid": "thing"})
+        strategy(strategy_name="offset", configuration={"invalid": "thing"})
 
 
 def test_get_strategy_invalid_strategy():
     with pytest.raises(NoSuchStrategyException):
-        get_strategy("invalid", {})
+        strategy("invalid", {})

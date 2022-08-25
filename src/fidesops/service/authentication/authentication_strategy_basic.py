@@ -7,20 +7,24 @@ from fidesops.schemas.saas.strategy_configuration import (
 from fidesops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fidesops.service.authentication.authentication_strategy_factory import register
+from fidesops.service.strategy_factory import register
 from fidesops.util.saas_util import assign_placeholders
 
 
-@register("basic", BasicAuthenticationConfiguration)
+@register
 class BasicAuthenticationStrategy(AuthenticationStrategy):
     """
     Replaces the username and password placeholders with the actual credentials
     and uses them to add a basic authentication header to the incoming request.
     """
 
+    name = "basic"
+    configuration_model = BasicAuthenticationConfiguration
+
     def __init__(self, configuration: BasicAuthenticationConfiguration):
         self.username = configuration.username
         self.password = configuration.password
+        super().__init__(configuration)
 
     def add_authentication(
         self, request: PreparedRequest, connection_config: ConnectionConfig

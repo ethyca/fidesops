@@ -7,21 +7,16 @@ from fidesops.common_exceptions import FidesopsException
 from fidesops.schemas.saas.shared_schemas import IdentityParamRef
 from fidesops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
-    StrategyConfiguration,
 )
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
-from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
-    register,
-)
-
-STRATEGY_NAME = "filter"
+from fidesops.service.strategy_factory import register
 
 logger = logging.getLogger(__name__)
 
 
-@register(STRATEGY_NAME, FilterPostProcessorConfiguration)
+@register
 class FilterPostProcessorStrategy(PostProcessorStrategy):
     """
     Filters object or array given field name and value
@@ -48,11 +43,15 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
     }
     """
 
+    name = "filter"
+    configuration_model = FilterPostProcessorConfiguration
+
     def __init__(self, configuration: FilterPostProcessorConfiguration):
         self.field = configuration.field
         self.value = configuration.value
         self.exact = configuration.exact
         self.case_sensitive = configuration.case_sensitive
+        super().__init__(configuration)
 
     def process(
         self,
@@ -76,7 +75,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                 logger.warning(
                     f"Could not retrieve identity reference '{self.value.identity}' "
                     "due to missing identity data for the following post processing "
-                    f"strategy: {STRATEGY_NAME}"
+                    f"strategy: {self.name}"
                 )
                 return []
             filter_value = identity_data.get(self.value.identity)  # type: ignore
@@ -105,7 +104,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
             )
         except KeyError:
             logger.warning(
-                f"{self.field} could not be found on data for the following post processing strategy: {STRATEGY_NAME}"
+                f"{self.field} could not be found on data for the following post processing strategy: {self.name}"
             )
             return []
 

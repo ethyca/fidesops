@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Type
 
 from fidesops.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
     HmacMaskingConfiguration,
-    MaskingConfiguration,
 )
 from fidesops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
@@ -18,19 +17,21 @@ from fidesops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_factory import register
+from fidesops.service.strategy_factory import register
 from fidesops.util.encryption.aes_gcm_encryption_scheme import encrypt
 from fidesops.util.encryption.hmac_encryption_scheme import hmac_encrypt_return_bytes
 from fidesops.util.encryption.secrets_util import SecretsUtil
 
-AES_ENCRYPT_STRATEGY_NAME = "aes_encrypt"
 
-
-@register(AES_ENCRYPT_STRATEGY_NAME, AesEncryptionMaskingConfiguration)
+@register
 class AesEncryptionMaskingStrategy(MaskingStrategy):
+    name = "aes_encrypt"
+    configuration_model = AesEncryptionMaskingConfiguration
+
     def __init__(self, configuration: AesEncryptionMaskingConfiguration):
         self.mode = configuration.mode
         self.format_preservation = configuration.format_preservation
+        super().__init__(configuration)
 
     def mask(
         self, values: Optional[List[str]], request_id: Optional[str]
@@ -77,12 +78,12 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         ] = self._build_masking_secret_meta()
         return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
 
-    @staticmethod
-    def get_description() -> MaskingStrategyDescription:
+    @classmethod
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         """Returns the description used for documentation. In particular, used by the
         documentation endpoint in masking_endpoints.list_masking_strategies"""
         return MaskingStrategyDescription(
-            name=AES_ENCRYPT_STRATEGY_NAME,
+            name=cls.name,
             description="Masks by encrypting the value using AES",
             configurations=[
                 MaskingStrategyConfigurationDescription(
@@ -118,19 +119,21 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
             value, key, salt, HmacMaskingConfiguration.Algorithm.sha_256  # type: ignore
         )[:12]
 
-    @staticmethod
-    def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
+    @classmethod
+    def _build_masking_secret_meta(
+        cls: Type[MaskingStrategy],
+    ) -> Dict[SecretType, MaskingSecretMeta]:
         return {
             SecretType.key: MaskingSecretMeta[bytes](
-                masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
+                masking_strategy=cls.name,
                 generate_secret_func=SecretsUtil.generate_secret_bytes,
             ),
             SecretType.key_hmac: MaskingSecretMeta[str](
-                masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
+                masking_strategy=cls.name,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             ),
             SecretType.salt_hmac: MaskingSecretMeta[str](
-                masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
+                masking_strategy=cls.name,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             ),
         }
