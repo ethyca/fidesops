@@ -2444,7 +2444,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"to_email\": \"customer-1@example.com\",\n    \"details\": {\n        \"domain\": \"{{mailgun_domain}}\"\n    },\n    \"secrets\": {\n        \"mailgun_api_key\": \"{{mailgun_api_key}}\"\n    }\n}",
+							"raw": "{\n    \"to_email\": \"customer-1@example.com\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
