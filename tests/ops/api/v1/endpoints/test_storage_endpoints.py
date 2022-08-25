@@ -725,7 +725,11 @@ class TestGetStorageConfigs:
                     "key": "my_test_config",
                     "name": storage_config.name,
                     "type": storage_config.type.value,
-                    "details": {"bucket": "test_bucket", "naming": "request_id"},
+                    "details": {
+                        "auth_method": S3AuthMethod.SECRET_KEYS.value,
+                        "bucket": "test_bucket",
+                        "naming": "request_id",
+                    },
                     "format": "json",
                 }
             ],
@@ -775,7 +779,11 @@ class TestGetStorageConfig:
         assert response_body == {
             "name": storage_config.name,
             "type": "s3",
-            "details": {"bucket": "test_bucket", "naming": "request_id"},
+            "details": {
+                "auth_method": S3AuthMethod.SECRET_KEYS.value,
+                "bucket": "test_bucket",
+                "naming": "request_id",
+            },
             "key": "my_test_config",
             "format": "json",
         }
