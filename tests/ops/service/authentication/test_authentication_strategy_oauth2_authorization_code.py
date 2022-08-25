@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Generator
 from unittest import mock
 from unittest.mock import Mock
 
@@ -8,121 +7,12 @@ from requests import PreparedRequest, Request
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import FidesopsException, OAuth2TokenException
-from fidesops.ops.models.connectionconfig import (
-    AccessLevel,
-    ConnectionConfig,
-    ConnectionType,
-)
-from fidesops.ops.schemas.saas.strategy_configuration import (
-    OAuth2AuthenticationCodeConfiguration,
-)
 from fidesops.ops.service.authentication.authentication_strategy_factory import (
     get_strategy,
 )
 from fidesops.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
-
-
-@pytest.fixture(scope="function")
-def oauth2_authorization_code_configuration() -> OAuth2AuthenticationCodeConfiguration:
-    return {
-        "authorization_request": {
-            "method": "GET",
-            "path": "/auth/authorize",
-            "query_params": [
-                {"name": "client_id", "value": "<client_id>"},
-                {"name": "redirect_uri", "value": "<redirect_uri>"},
-                {"name": "response_type", "value": "code"},
-                {
-                    "name": "scope",
-                    "value": "admin.read admin.write",
-                },
-                {"name": "state", "value": "<state>"},
-            ],
-        },
-        "token_request": {
-            "method": "POST",
-            "path": "/oauth/token",
-            "headers": [
-                {
-                    "name": "Content-Type",
-                    "value": "application/x-www-form-urlencoded",
-                }
-            ],
-            "query_params": [
-                {"name": "client_id", "value": "<client_id>"},
-                {"name": "client_secret", "value": "<client_secret>"},
-                {"name": "grant_type", "value": "authorization_code"},
-                {"name": "code", "value": "<code>"},
-                {"name": "redirect_uri", "value": "<redirect_uri>"},
-            ],
-        },
-        "refresh_request": {
-            "method": "POST",
-            "path": "/oauth/token",
-            "headers": [
-                {
-                    "name": "Content-Type",
-                    "value": "application/x-www-form-urlencoded",
-                }
-            ],
-            "query_params": [
-                {"name": "client_id", "value": "<client_id>"},
-                {"name": "client_secret", "value": "<client_secret>"},
-                {"name": "redirect_uri", "value": "<redirect_uri>"},
-                {"name": "grant_type", "value": "refresh_token"},
-                {"name": "refresh_token", "value": "<refresh_token>"},
-            ],
-        },
-    }
-
-
-@pytest.fixture(scope="function")
-def oauth2_authorization_code_connection_config(
-    db: Session, oauth2_authorization_code_configuration
-) -> Generator:
-    secrets = {
-        "domain": "localhost",
-        "client_id": "client",
-        "client_secret": "secret",
-        "redirect_uri": "https://localhost/callback",
-        "access_token": "access",
-        "refresh_token": "refresh",
-    }
-    saas_config = {
-        "fides_key": "oauth2_authorization_code_connector",
-        "name": "OAuth2 Auth Code Connector",
-        "type": "custom",
-        "description": "Generic OAuth2 connector for testing",
-        "version": "0.0.1",
-        "connector_params": [{"name": item} for item in secrets.keys()],
-        "client_config": {
-            "protocol": "https",
-            "host": secrets["domain"],
-            "authentication": {
-                "strategy": "oauth2_authorization_code",
-                "configuration": oauth2_authorization_code_configuration,
-            },
-        },
-        "endpoints": [],
-        "test_request": {"method": "GET", "path": "/test"},
-    }
-
-    fides_key = saas_config["fides_key"]
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "key": fides_key,
-            "name": fides_key,
-            "connection_type": ConnectionType.saas,
-            "access": AccessLevel.write,
-            "secrets": secrets,
-            "saas_config": saas_config,
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
 
 
 class TestAddAuthentication:
@@ -318,7 +208,7 @@ class TestAddAuthentication:
 
 class TestAuthorizationUrl:
     @mock.patch(
-        "fidesops.ops.service.authentication.authentication_strategy_oauth2_authorization_code.OAuth2AuthCodeAuthenticationStrategy._generate_state"
+        "fidesops.ops.service.authentication.authentication_strategy_oauth2_authorization_code.OAuth2AuthorizationCodeAuthenticationStrategy._generate_state"
     )
     @mock.patch(
         "fidesops.ops.models.authentication_request.AuthenticationRequest.create_or_update"

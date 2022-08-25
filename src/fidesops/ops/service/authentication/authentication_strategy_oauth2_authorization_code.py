@@ -31,10 +31,8 @@ class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategy
     strategy_name = "oauth2_authorization_code"
 
     def __init__(self, configuration: OAuth2AuthenticationCodeConfiguration):
-        self.expires_in = configuration.expires_in
+        super().__init__(configuration)
         self.authorization_request = configuration.authorization_request
-        self.token_request = configuration.token_request
-        self.refresh_request = configuration.refresh_request
 
     def add_authentication(
         self, request: PreparedRequest, connection_config: ConnectionConfig
@@ -59,15 +57,14 @@ class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategy
         #
         # https://datatracker.ietf.org/doc/html/rfc6749#section-5.1
 
-        if self.refresh_request:
-            access_token = self._refresh_token(connection_config)
+        access_token = self._refresh_token(connection_config)
 
         # add access_token to request
         request.headers["Authorization"] = "Bearer " + access_token
         return request
 
-    @staticmethod
-    def _required_secrets() -> List[str]:
+    @property
+    def _required_secrets(self) -> List[str]:
         return ["client_id", "client_secret", "redirect_uri"]
 
     def get_authorization_url(

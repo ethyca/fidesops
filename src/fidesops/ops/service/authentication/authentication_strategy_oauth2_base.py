@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from fidesops.ops.common_exceptions import FidesopsException, OAuth2TokenException
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
+from fidesops.ops.schemas.saas.strategy_configuration import OAuth2BaseConfiguration
 from fidesops.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
@@ -27,14 +28,20 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
     for processing token requests and responses.
     """
 
+    def __init__(self, configuration: OAuth2BaseConfiguration) -> None:
+        self.expires_in = configuration.expires_in
+        self.token_request = configuration.token_request
+        self.refresh_request = configuration.refresh_request
+
     @abstractmethod
     def add_authentication(
         self, request: PreparedRequest, connection_config: ConnectionConfig
     ) -> PreparedRequest:
         """Retrieves and adds an access token to the request based on the OAuth2 flow in use."""
 
+    @property
     @abstractmethod
-    def _required_secrets() -> List[str]:
+    def _required_secrets(self) -> List[str]:
         """A list of required secrets for the given OAuth2 strategy."""
 
     @staticmethod
@@ -115,9 +122,7 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         """
 
         secrets = connection_config.secrets or {}
-        required_secrets = {
-            name: secrets.get(name) for name in self._required_secrets()
-        }
+        required_secrets = {name: secrets.get(name) for name in self._required_secrets}
         if not all(required_secrets.values()):
             missing_secrets = [
                 name for name, value in required_secrets.items() if not value
@@ -212,12 +217,13 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         Otherwise just returns the existing access_token.
         """
 
-        expires_at = connection_config.secrets.get("expires_at")  # type: ignore
-        if self._close_to_expiration(expires_at, connection_config):
-            refresh_response = self._call_token_request(
-                "refresh", self.refresh_request, connection_config
-            )
-            return self._validate_and_store_response(
-                refresh_response, connection_config, None
-            )
-        return connection_config.secrets.get("access_token")
+        if self.refresh_request:
+            expires_at = connection_config.secrets.get("expires_at")  # type: ignore
+            if self._close_to_expiration(expires_at, connection_config):
+                refresh_response = self._call_token_request(
+                    "refresh", self.refresh_request, connection_config
+                )
+                return self._validate_and_store_response(
+                    refresh_response, connection_config, None
+                )
+        return connection_config.secrets.get("access_token")  # type: ignore
