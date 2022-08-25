@@ -22,13 +22,13 @@ from fidesops.ops.util.saas_util import assign_placeholders, map_param_values
 logger = logging.getLogger(__name__)
 
 
-class OAuth2AuthCodeAuthenticationStrategy(OAuth2AuthenticationStrategyBase):
+class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategyBase):
     """
     Checks the expiration date on the stored access token and refreshes
     it if needed using the configured token refresh request.
     """
 
-    strategy_name = "oauth2_auth_code"
+    strategy_name = "oauth2_authorization_code"
 
     def __init__(self, configuration: OAuth2AuthCodeAuthenticationConfiguration):
         self.expires_in = configuration.expires_in

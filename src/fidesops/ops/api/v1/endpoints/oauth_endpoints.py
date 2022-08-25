@@ -45,8 +45,8 @@ from fidesops.ops.schemas.client import ClientCreatedResponse
 from fidesops.ops.service.authentication.authentication_strategy_factory import (
     get_strategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_oauth2_auth_code import (
-    OAuth2AuthCodeAuthenticationStrategy,
+from fidesops.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
+    OAuth2AuthorizationCodeAuthenticationStrategy,
 )
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.oauth_util import verify_oauth_client
@@ -214,7 +214,7 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None
         authentication = (
             connection_config.get_saas_config().client_config.authentication  # type: ignore
         )
-        auth_strategy: OAuth2AuthCodeAuthenticationStrategy = get_strategy(  # type: ignore
+        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = get_strategy(  # type: ignore
             authentication.strategy, authentication.configuration  # type: ignore
         )
         connection_config.secrets = {**connection_config.secrets, "code": code}  # type: ignore

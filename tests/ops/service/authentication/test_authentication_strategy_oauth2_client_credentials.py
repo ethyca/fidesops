@@ -130,7 +130,7 @@ class TestAddAuthentication:
         )
 
     @mock.patch(
-        "fidesops.ops.service.authentication.authentication_strategy_oauth2_client_credentials.OAuth2ClientCredentialsAuthenticationStrategy.get_access_token"
+        "fidesops.ops.service.authentication.authentication_strategy_oauth2_base.OAuth2AuthenticationStrategyBase.get_access_token"
     )
     def test_oauth2_authentication_missing_access_token(
         self,
@@ -157,7 +157,7 @@ class TestAddAuthentication:
         )
 
     @mock.patch(
-        "fidesops.ops.service.authentication.authentication_strategy_oauth2_client_credentials.OAuth2ClientCredentialsAuthenticationStrategy.get_access_token"
+        "fidesops.ops.service.authentication.authentication_strategy_oauth2_base.OAuth2AuthenticationStrategyBase.get_access_token"
     )
     def test_oauth2_authentication_empty_access_token(
         self,
