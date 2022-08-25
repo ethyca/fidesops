@@ -14,7 +14,7 @@ from fidesops.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.ops.schemas.saas.strategy_configuration import (
-    OAuth2AuthCodeAuthenticationConfiguration,
+    OAuth2AuthenticationCodeConfiguration,
 )
 from fidesops.ops.service.authentication.authentication_strategy_factory import (
     get_strategy,
@@ -25,7 +25,7 @@ from fidesops.ops.service.authentication.authentication_strategy_oauth2_authoriz
 
 
 @pytest.fixture(scope="function")
-def oauth2_authorization_code_configuration() -> OAuth2AuthCodeAuthenticationConfiguration:
+def oauth2_authorization_code_configuration() -> OAuth2AuthenticationCodeConfiguration:
     return {
         "authorization_request": {
             "method": "GET",

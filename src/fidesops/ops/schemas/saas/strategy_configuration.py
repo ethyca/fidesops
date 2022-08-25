@@ -113,7 +113,7 @@ class QueryParamAuthenticationConfiguration(StrategyConfiguration):
     value: str
 
 
-class OAuth2AuthCodeAuthenticationConfiguration(StrategyConfiguration):
+class OAuth2AuthenticationCodeConfiguration(StrategyConfiguration):
     """
     OAuth2 endpoints for authentication, token retrieval, and token refresh.
     Includes an optional expires_in parameter (in seconds) for OAuth2 integrations that
@@ -126,7 +126,7 @@ class OAuth2AuthCodeAuthenticationConfiguration(StrategyConfiguration):
     refresh_request: Optional[SaaSRequest]
 
 
-class OAuth2ClientCredentialsAuthenticationConfiguration(StrategyConfiguration):
+class OAuth2ClientCredentialsConfiguration(StrategyConfiguration):
     """
     OAuth2 endpoints for token retrieval, and token refresh.
     Includes an optional expires_in parameter (in seconds) for OAuth2 integrations that

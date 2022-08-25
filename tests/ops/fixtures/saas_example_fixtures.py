@@ -12,8 +12,8 @@ from fidesops.ops.models.connectionconfig import (
 )
 from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.schemas.saas.strategy_configuration import (
-    OAuth2AuthCodeAuthenticationConfiguration,
-    OAuth2ClientCredentialsAuthenticationConfiguration,
+    OAuth2AuthenticationCodeConfiguration,
+    OAuth2ClientCredentialsConfiguration,
 )
 from fidesops.ops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
@@ -128,7 +128,7 @@ def saas_example_connection_config_with_invalid_saas_config(
 
 
 @pytest.fixture(scope="function")
-def oauth2_client_credentials_configuration() -> OAuth2ClientCredentialsAuthenticationConfiguration:
+def oauth2_client_credentials_configuration() -> OAuth2ClientCredentialsConfiguration:
     return {
         "authorization_request": {
             "method": "GET",

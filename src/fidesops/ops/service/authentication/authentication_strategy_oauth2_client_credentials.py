@@ -5,7 +5,7 @@ from requests import PreparedRequest
 
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.schemas.saas.strategy_configuration import (
-    OAuth2ClientCredentialsAuthenticationConfiguration,
+    OAuth2ClientCredentialsConfiguration,
     StrategyConfiguration,
 )
 from fidesops.ops.service.authentication.authentication_strategy_oauth2_base import (
@@ -23,9 +23,7 @@ class OAuth2ClientCredentialsAuthenticationStrategy(OAuth2AuthenticationStrategy
 
     strategy_name = "oauth2_client_credentials"
 
-    def __init__(
-        self, configuration: OAuth2ClientCredentialsAuthenticationConfiguration
-    ):
+    def __init__(self, configuration: OAuth2ClientCredentialsConfiguration):
         self.expires_in = configuration.expires_in
         self.token_request = configuration.token_request
         self.refresh_request = configuration.refresh_request
@@ -54,4 +52,4 @@ class OAuth2ClientCredentialsAuthenticationStrategy(OAuth2AuthenticationStrategy
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
-        return OAuth2ClientCredentialsAuthenticationConfiguration  # type: ignore
+        return OAuth2ClientCredentialsConfiguration  # type: ignore

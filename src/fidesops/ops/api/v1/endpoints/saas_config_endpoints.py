@@ -50,6 +50,9 @@ from fidesops.ops.service.authentication.authentication_strategy_factory import 
 from fidesops.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
+from fidesops.ops.service.authentication.authentication_strategy_oauth2_client_credentials import (
+    OAuth2ClientCredentialsAuthenticationStrategy,
+)
 from fidesops.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     ConnectorTemplate,
@@ -113,7 +116,10 @@ def verify_oauth_connection_config(
             detail="The connection config does not contain an authentication configuration.",
         )
 
-    if authentication.strategy != OAuth2AuthCode.strategy_name:
+    if authentication.strategy not in [
+        OAuth2AuthorizationCodeAuthenticationStrategy.strategy_name,
+        OAuth2ClientCredentialsAuthenticationStrategy.strategy_name,
+    ]:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail="The connection config does not use OAuth2 authentication.",
