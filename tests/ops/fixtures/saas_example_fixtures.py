@@ -12,7 +12,8 @@ from fidesops.ops.models.connectionconfig import (
 )
 from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.schemas.saas.strategy_configuration import (
-    OAuth2AuthenticationConfiguration,
+    OAuth2AuthCodeAuthenticationConfiguration,
+    OAuth2ClientCredentialsAuthenticationConfiguration,
 )
 from fidesops.ops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
@@ -127,7 +128,7 @@ def saas_example_connection_config_with_invalid_saas_config(
 
 
 @pytest.fixture(scope="function")
-def oauth2_configuration() -> OAuth2AuthenticationConfiguration:
+def oauth2_client_credentials_configuration() -> OAuth2ClientCredentialsAuthenticationConfiguration:
     return {
         "authorization_request": {
             "method": "GET",
@@ -178,51 +179,6 @@ def oauth2_configuration() -> OAuth2AuthenticationConfiguration:
             ],
         },
     }
-
-
-@pytest.fixture(scope="function")
-def oauth2_connection_config(db: Session, oauth2_configuration) -> Generator:
-    secrets = {
-        "domain": "localhost",
-        "client_id": "client",
-        "client_secret": "secret",
-        "redirect_uri": "https://localhost/callback",
-        "access_token": "access",
-        "refresh_token": "refresh",
-    }
-    saas_config = {
-        "fides_key": "oauth2_connector",
-        "name": "OAuth2 Connector",
-        "type": "custom",
-        "description": "Generic OAuth2 connector for testing",
-        "version": "0.0.1",
-        "connector_params": [{"name": item} for item in secrets.keys()],
-        "client_config": {
-            "protocol": "https",
-            "host": secrets["domain"],
-            "authentication": {
-                "strategy": "oauth2",
-                "configuration": oauth2_configuration,
-            },
-        },
-        "endpoints": [],
-        "test_request": {"method": "GET", "path": "/test"},
-    }
-
-    fides_key = saas_config["fides_key"]
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "key": fides_key,
-            "name": fides_key,
-            "connection_type": ConnectionType.saas,
-            "access": AccessLevel.write,
-            "secrets": secrets,
-            "saas_config": saas_config,
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
 
 
 @pytest.fixture(scope="session")
