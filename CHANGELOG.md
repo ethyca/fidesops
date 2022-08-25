@@ -19,6 +19,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.1...main)
 
+### Added
+
+* Foundations for a new email connector type [#1142] https://github.com/ethyca/fidesops/pull/1142
+
 ## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
 
 ### Added
