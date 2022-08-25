@@ -16,7 +16,8 @@ from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.service.connectors import (
     BaseConnector,
     BigQueryConnector,
-    EmailConnector, ManualConnector,
+    EmailConnector,
+    ManualConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
     MongoDBConnector,
