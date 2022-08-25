@@ -108,7 +108,7 @@ class TestPatchStorageConfig:
         return [
             {
                 "name": "test destination",
-                "type": "s3",
+                "type": StorageType.s3.value,
                 "details": {
                     "auth_method": S3AuthMethod.SECRET_KEYS.value,
                     "bucket": "some-bucket",
@@ -280,7 +280,7 @@ class TestPatchStorageConfig:
             "succeeded": [
                 {
                     "name": "test destination",
-                    "type": "s3",
+                    "type": StorageType.s3.value,
                     "details": {
                         "auth_method": S3AuthMethod.SECRET_KEYS.value,
                         "bucket": "some-bucket",
@@ -313,7 +313,7 @@ class TestPatchStorageConfig:
             {
                 "key": key,
                 "name": "my-test-dest",
-                "type": "s3",
+                "type": StorageType.s3.value,
                 "details": {
                     "auth_method": S3AuthMethod.SECRET_KEYS.value,
                     "bucket": "some-bucket",
@@ -360,7 +360,7 @@ class TestPatchStorageConfig:
                 {
                     "key": "my_s3_upload",
                     "name": "my-test-dest",
-                    "type": "s3",
+                    "type": StorageType.s3.value,
                     "details": {
                         # "bucket": "removed-from-payload",
                         "auth_method": S3AuthMethod.SECRET_KEYS.value,
@@ -778,7 +778,7 @@ class TestGetStorageConfig:
 
         assert response_body == {
             "name": storage_config.name,
-            "type": "s3",
+            "type": StorageType.s3.value,
             "details": {
                 "auth_method": S3AuthMethod.SECRET_KEYS.value,
                 "bucket": "test_bucket",
