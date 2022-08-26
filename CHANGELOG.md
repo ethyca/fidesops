@@ -19,6 +19,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
 
+### Added
+* Unified `StrategyFactory` and `@register` decorator for a more centralized and extensible `Strategy` implementation framework [#1163](https://github.com/ethyca/fidesops/pull/1163)
 
 ## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.7.2)
 
