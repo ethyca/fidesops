@@ -1,28 +1,71 @@
-import { Box, VStack } from "@fidesui/react";
+import { Box, Center, Spinner, useToast, VStack } from "@fidesui/react";
+import { useAppSelector } from "app/hooks";
+import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
 import { capitalize } from "common/utils";
-import { ConnectionOption } from "connection-type/types";
-import React from "react";
+import { selectConnectionTypeState } from "connection-type/connection-type.slice";
+import { useGetDatasetQuery } from "datastore-connections/datastore-connection.slice";
+import React, { useState } from "react";
 
-import { STEPS } from "../constants";
-import { AddConnectionStep } from "../types";
+import YamlEditorForm from "../YamlEditorForm";
 
-type DatasetConfigurationProps = {
-  connectionOption: ConnectionOption;
-  currentStep: AddConnectionStep;
-};
+const DatasetConfiguration: React.FC = () => {
+  const toast = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { connectionKey, connectionOption, fidesKey, step } = useAppSelector(
+    selectConnectionTypeState
+  );
+  const { data, isFetching, isLoading, isSuccess } = useGetDatasetQuery({
+    connection_key: connectionKey,
+    fides_key: fidesKey,
+  });
 
-const DatasetConfiguration: React.FC<DatasetConfigurationProps> = ({
-  connectionOption,
-  currentStep = STEPS.filter((s) => s.stepId === 3)[0],
-}) => (
-  <VStack align="stretch">
-    <Box color="gray.700" fontSize="14px" h="80px" w="475px">
-      {currentStep.description?.replace(
-        "{identifier}",
-        capitalize(connectionOption.identifier)
+  const handleError = (error: any) => {
+    let errorMsg = "An unexpected error occurred. Please try again.";
+    if (isErrorWithDetail(error)) {
+      errorMsg = error.data.detail;
+    } else if (isErrorWithDetailArray(error)) {
+      errorMsg = error.data.detail[0].msg;
+    }
+    toast({
+      status: "error",
+      description: errorMsg,
+    });
+  };
+
+  const handleSubmit = (value: Object) => {
+    console.log(value)
+    setIsSubmitting(true);
+    // eslint-disable-next-line no-empty
+    try {
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <VStack align="stretch">
+      <Box color="gray.700" fontSize="14px" w="475px" mb={4}>
+        {step.description?.replace(
+          "{identifier}",
+          capitalize(connectionOption!.identifier)
+        )}
+      </Box>
+      {(isFetching || isLoading) && (
+        <Center>
+          <Spinner />
+        </Center>
       )}
-    </Box>
-  </VStack>
-);
+      {isSuccess ? (
+        <YamlEditorForm
+          data={data}
+          isSubmitting={isSubmitting}
+          onSubmit={handleSubmit}
+        />
+      ) : null}
+    </VStack>
+  );
+};
 
 export default DatasetConfiguration;

@@ -1,5 +1,13 @@
 import { SaasType, SystemType } from "datastore-connections/constants";
 
+export type AddConnectionStep = {
+  stepId: number;
+  label: string;
+  href: string;
+  description?: string;
+  parentStepId?: number;
+};
+
 export type AllConnectionTypesResponse = {
   items: ConnectionOption[];
   total: number;
@@ -30,4 +38,11 @@ export type ConnectionTypeSecretSchemaReponse = {
   required: string[];
   title: string;
   type: string;
+};
+
+export type ConnectionTypeState = ConnectionTypeParams & {
+  connectionKey: string;
+  connectionOption?: ConnectionOption;
+  fidesKey: string;
+  step: AddConnectionStep;
 };

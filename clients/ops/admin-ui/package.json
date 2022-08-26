@@ -28,6 +28,7 @@
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@fidesui/react": "^0.0.12",
+    "@focus-reactive/react-yaml": "^1.1.2",
     "@fontsource/inter": "^4.5.4",
     "@reduxjs/toolkit": "^1.8.0",
     "date-fns": "^2.28.0",

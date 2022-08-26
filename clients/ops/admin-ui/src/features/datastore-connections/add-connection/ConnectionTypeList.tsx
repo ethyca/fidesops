@@ -1,17 +1,16 @@
 import { Box, Center, SimpleGrid, Text } from "@fidesui/react";
 import { capitalize } from "common/utils";
+import { ConnectionOption } from "connection-type/types";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
 import Link from "next/link";
 import React from "react";
-
-import { ConnectionOption } from "../../connection-type/types";
 
 type ConnectionTypeListProps = {
   items: ConnectionOption[];
 };
 
 const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => (
-  <SimpleGrid minChildWidth="232px" spacing="16px">
+  <SimpleGrid columns={4} spacingX="16px" spacingY="16px">
     {items.map((i) => (
       <Link
         href={{

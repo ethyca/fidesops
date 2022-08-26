@@ -1,25 +1,20 @@
 import { Box, Center, Flex, Spinner, VStack } from "@fidesui/react";
+import { useAppSelector } from "app/hooks";
 import { capitalize } from "common/utils";
-import { useGetConnectionTypeSecretSchemaQuery } from "connection-type/connection-type.slice";
-import { ConnectionOption } from "connection-type/types";
+import {
+  selectConnectionTypeState,
+  useGetConnectionTypeSecretSchemaQuery,
+} from "connection-type/connection-type.slice";
 import React, { useState } from "react";
 
-import { STEPS } from "./constants";
-import { ConnectorParameters as SassConnectorParametersForm } from "./sass/ConnectorParameters";
+import { ConnectorParameters as SassConnectorParameters } from "./sass/ConnectorParameters";
 import TestConnection from "./TestConnection";
-import { AddConnectionStep } from "./types";
 
-type ConnectorParametersProps = {
-  currentStep: AddConnectionStep;
-  connectionOption: ConnectionOption;
-};
+export const ConnectorParameters: React.FC = () => {
+  const { connectionOption, step } = useAppSelector(selectConnectionTypeState);
 
-export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
-  currentStep = STEPS.filter((s) => s.stepId === 2)[0],
-  connectionOption,
-}) => {
   const { data, isFetching, isLoading, isSuccess } =
-    useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier);
+    useGetConnectionTypeSecretSchemaQuery(connectionOption!.identifier);
   const [response, setResponse] = useState<any>();
 
   const handleTestConnectionClick = (value: any) => {
@@ -30,9 +25,9 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     <Flex gap="97px">
       <VStack w="579px" gap="24px" align="stretch">
         <Box color="gray.700" fontSize="14px" h="80px" w="475px">
-          {currentStep.description?.replace(
+          {step.description?.replace(
             "{identifier}",
-            capitalize(connectionOption.identifier)
+            capitalize(connectionOption!.identifier)
           )}
         </Box>
         {(isFetching || isLoading) && (
@@ -41,8 +36,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
           </Center>
         )}
         {isSuccess && data ? (
-          <SassConnectorParametersForm
-            connectionOption={connectionOption}
+          <SassConnectorParameters
             data={data}
             onTestConnectionClick={handleTestConnectionClick}
           />
@@ -50,10 +44,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       </VStack>
       {response && (
         <Box w="480px" mt="16px">
-          <TestConnection
-            connectionOption={connectionOption}
-            response={response}
-          />
+          <TestConnection response={response} />
         </Box>
       )}
     </Flex>

@@ -10,13 +10,16 @@ import {
   useToast,
   VStack,
 } from "@fidesui/react";
+import { useAppSelector } from "app/hooks";
 import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
 import { CircleHelpIcon } from "common/Icon";
 import { capitalize } from "common/utils";
 import {
-  ConnectionOption,
-  ConnectionTypeSecretSchemaReponse,
-} from "connection-type/types";
+  selectConnectionTypeState,
+  setConnectionKey,
+  setFidesKey,
+} from "connection-type/connection-type.slice";
+import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
 import { SaasType } from "datastore-connections/constants";
 import {
   useCreateSassConnectionConfigMutation,
@@ -24,7 +27,8 @@ import {
 } from "datastore-connections/datastore-connection.slice";
 import { SassConnectionConfigRequest } from "datastore-connections/types";
 import { Field, Form, Formik } from "formik";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
+import { useDispatch } from "react-redux";
 
 import { SassConnectorTemplate } from "../types";
 
@@ -35,20 +39,21 @@ const defaultValues: SassConnectorTemplate = {
 };
 
 type ConnectorParametersProps = {
-  connectionOption: ConnectionOption;
   data: ConnectionTypeSecretSchemaReponse;
   onTestConnectionClick: (value: any) => void;
 };
 
 export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
-  connectionOption,
   data,
   onTestConnectionClick,
 }) => {
+  const dispatch = useDispatch();
   const mounted = useRef(false);
   const toast = useToast();
-  const [connectionKey, setConnectionKey] = useState("");
 
+  const { connectionKey, connectionOption } = useAppSelector(
+    selectConnectionTypeState
+  );
   const [createSassConnectionConfig] = useCreateSassConnectionConfigMutation();
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
 
@@ -78,7 +83,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       name={key}
       key={key}
       validate={
-        data.required.includes(key)
+        data.required?.includes(key)
           ? (value: string) => validateField(item.title, value)
           : false
       }
@@ -86,12 +91,12 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       {({ field, form }: { field: any; form: any }) => (
         <FormControl
           display="flex"
-          isRequired={data.required.includes(key)}
+          isRequired={data.required?.includes(key)}
           isInvalid={form.errors[key] && form.touched[key]}
         >
           {getFormLabel(key, item.title)}
           <VStack align="flex-start" w="inherit">
-            <Input {...field} color="gray.700" size="sm" />
+            <Input {...field} autoComplete="off" color="gray.700" size="sm" />
             <FormErrorMessage>{form.errors[key]}</FormErrorMessage>
           </VStack>
           <CircleHelpIcon marginLeft="8px" visibility="hidden" />
@@ -128,14 +133,15 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
           .toLowerCase()
           .replace(/ /g, "_"),
         name: values.name,
-        saas_connector_type: connectionOption.identifier as SaasType,
+        saas_connector_type: connectionOption!.identifier as SaasType,
         secrets: {},
       };
       Object.entries(data.properties).forEach((key) => {
         params.secrets[key[0]] = values[key[0]];
       });
       const payload = await createSassConnectionConfig(params).unwrap();
-      setConnectionKey(payload.connection.key);
+      dispatch(setConnectionKey(payload.connection.key));
+      dispatch(setFidesKey(payload.dataset.fides_key));
       toast({
         status: "success",
         description: "Connector successfully added!",
@@ -170,6 +176,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       initialValues={getInitialValues()}
       onSubmit={handleSubmit}
       validateOnBlur={false}
+      validateOnChange={false}
     >
       {(props) => (
         <Form noValidate>
@@ -190,10 +197,11 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
                   <VStack align="flex-start" w="inherit">
                     <Input
                       {...field}
+                      autoComplete="off"
                       autoFocus
                       color="gray.700"
                       placeholder={`Enter a friendly name for your new ${capitalize(
-                        connectionOption.identifier
+                        connectionOption!.identifier
                       )} connection`}
                       size="sm"
                     />
@@ -212,7 +220,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
                     {...field}
                     color="gray.700"
                     placeholder={`Enter a description for your new ${capitalize(
-                      connectionOption.identifier
+                      connectionOption!.identifier
                     )} connection`}
                     resize="none"
                     size="sm"
@@ -228,9 +236,10 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
                   {getFormLabel("instance_key", "Connection Identifier")}
                   <Input
                     {...field}
+                    autoComplete="off"
                     color="gray.700"
                     placeholder={`A a unique identifier for your new ${capitalize(
-                      connectionOption.identifier
+                      connectionOption!.identifier
                     )} connection`}
                     size="sm"
                   />

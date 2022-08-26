@@ -7,49 +7,44 @@ import {
   InputLeftElement,
   Spinner,
 } from "@fidesui/react";
+import { useAppSelector } from "app/hooks";
 import { SearchLineIcon } from "common/Icon";
 import { debounce } from "common/utils";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useDispatch } from "react-redux";
-
-import { useAppSelector } from "../../../app/hooks";
 import {
   selectConnectionTypeFilters,
+  selectConnectionTypeState,
   setSearch,
   useGetAllConnectionTypesQuery,
-} from "../../connection-type";
-import { ConnectionTypeParams } from "../../connection-type/types";
+} from "connection-type/connection-type.slice";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { useDispatch } from "react-redux";
+
+import Breadcrumb from "./Breadcrumb";
 import ConnectionTypeFilter from "./ConnectionTypeFilter";
 import ConnectionTypeList from "./ConnectionTypeList";
-import { AddConnectionStep } from "./types";
+import { STEPS } from "./constants";
 
-type ChooseConnectionProps = {
-  currentStep: AddConnectionStep;
-};
-
-const ChooseConnection: React.FC<ChooseConnectionProps> = ({ currentStep }) => {
+const ChooseConnection: React.FC = () => {
   const dispatch = useDispatch();
+  const mounted = useRef(false);
+  const { step } = useAppSelector(selectConnectionTypeState);
   const filters = useAppSelector(selectConnectionTypeFilters);
-  const [cachedFilters, setCachedFilters] = useState(filters);
-  const updateCachedFilters = useRef(
-    debounce(
-      (updatedFilters: React.SetStateAction<ConnectionTypeParams>) =>
-        setCachedFilters(updatedFilters),
-      250
-    )
-  );
   const { data, isFetching, isLoading, isSuccess } =
-    useGetAllConnectionTypesQuery(cachedFilters);
+    useGetAllConnectionTypesQuery(filters);
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>
-    dispatch(setSearch(event.target.value));
+  const handleSearchChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (event.target.value.length === 0 || event.target.value.length > 1) {
+        dispatch(setSearch(event.target.value));
+      }
+    },
+    [dispatch]
+  );
 
-  useEffect(() => {
-    updateCachedFilters.current(filters);
-    return () => {
-      setCachedFilters(filters);
-    };
-  }, [setCachedFilters, filters]);
+  const debounceHandleSearchChange = useMemo(
+    () => debounce(handleSearchChange, 250),
+    [handleSearchChange]
+  );
 
   const sortedItems = useMemo(
     () =>
@@ -58,11 +53,20 @@ const ChooseConnection: React.FC<ChooseConnectionProps> = ({ currentStep }) => {
     [data]
   );
 
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      dispatch(setSearch(""));
+      mounted.current = false;
+    };
+  }, [dispatch]);
+
   return (
     <>
+      <Breadcrumb steps={[STEPS[0], STEPS[1]]} />
       <Flex minWidth="max-content">
         <Box color="gray.700" fontSize="14px" maxHeight="80px" maxWidth="474px">
-          {currentStep.description}
+          {step.description}
         </Box>
       </Flex>
       <Flex
@@ -82,11 +86,10 @@ const ChooseConnection: React.FC<ChooseConnectionProps> = ({ currentStep }) => {
             autoFocus
             borderRadius="md"
             name="search"
-            onChange={handleSearchChange}
+            onChange={debounceHandleSearchChange}
             placeholder="Search Integrations"
             size="sm"
             type="search"
-            value={filters.search}
           />
         </InputGroup>
       </Flex>

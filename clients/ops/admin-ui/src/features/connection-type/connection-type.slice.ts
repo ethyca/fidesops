@@ -1,15 +1,19 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
+import { STEPS } from "datastore-connections/add-connection/constants";
 import { SystemType } from "datastore-connections/constants";
 
 import type { RootState } from "../../app/store";
 import { BASE_URL, CONNECTION_TYPE_ROUTE } from "../../constants";
 import { selectToken } from "../auth";
 import {
+  AddConnectionStep,
   AllConnectionTypesResponse,
+  ConnectionOption,
   ConnectionTypeParams,
   ConnectionTypeSecretSchemaReponse,
+  ConnectionTypeState,
 } from "./types";
 
 // Helpers
@@ -29,18 +33,41 @@ const mapFiltersToSearchParams = ({
   return queryString ? `?${queryString}` : "";
 };
 
-const initialState: ConnectionTypeParams = {
+const initialState: ConnectionTypeState = {
+  connectionKey: "",
+  connectionOption: undefined,
+  fidesKey: "",
   search: "",
-  system_type: SystemType.SAAS, // TODO: Remove this default value when Database connectors are supported
+  step: STEPS.find((step) => step.stepId === 1)!,
+  system_type: undefined,
 };
 
 export const connectionTypeSlice = createSlice({
   name: "connectionType",
   initialState,
   reducers: {
+    setConnectionKey: (state, action: PayloadAction<string>) => ({
+      ...state,
+      connectionKey: action.payload,
+    }),
+    setConnectionOption: (
+      state,
+      action: PayloadAction<ConnectionOption | undefined>
+    ) => ({
+      ...state,
+      connectionOption: action.payload,
+    }),
+    setFidesKey: (state, action: PayloadAction<string>) => ({
+      ...state,
+      fidesKey: action.payload,
+    }),
     setSearch: (state, action: PayloadAction<string>) => ({
       ...state,
       search: action.payload,
+    }),
+    setStep: (state, action: PayloadAction<AddConnectionStep>) => ({
+      ...state,
+      step: action.payload,
     }),
     setSystemType: (state, action: PayloadAction<SystemType | string>) => ({
       ...state,
@@ -49,10 +76,19 @@ export const connectionTypeSlice = createSlice({
   },
 });
 
-export const { setSearch, setSystemType } = connectionTypeSlice.actions;
+export const {
+  setConnectionKey,
+  setConnectionOption,
+  setFidesKey,
+  setSearch,
+  setStep,
+  setSystemType,
+} = connectionTypeSlice.actions;
 
 export const { reducer } = connectionTypeSlice;
 
+export const selectConnectionTypeState = (state: RootState) =>
+  state.connectionType;
 export const selectConnectionTypeFilters = (
   state: RootState
 ): ConnectionTypeParams => ({

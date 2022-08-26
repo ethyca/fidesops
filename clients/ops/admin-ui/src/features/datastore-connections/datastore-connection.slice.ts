@@ -12,6 +12,7 @@ import {
   TestingStatus,
 } from "./constants";
 import {
+  DatasetRequest,
   DatastoreConnection,
   DatastoreConnectionParams,
   DatastoreConnectionResponse,
@@ -188,6 +189,12 @@ export const datastoreConnectionApi = createApi({
       ],
       keepUnusedDataFor: 1,
     }),
+    getDataset: build.query<any, DatasetRequest>({
+      query: (params) => ({
+        url: `${CONNECTION_ROUTE}/${params.connection_key}/dataset/${params.fides_key}`,
+      }),
+      providesTags: () => ["DatastoreConnection"],
+    }),
     getDatastoreConnectionStatus: build.query<
       DatastoreConnectionStatus,
       string
@@ -254,6 +261,7 @@ export const datastoreConnectionApi = createApi({
 export const {
   useCreateSassConnectionConfigMutation,
   useGetAllDatastoreConnectionsQuery,
+  useGetDatasetQuery,
   useLazyGetDatastoreConnectionStatusQuery,
   usePatchDatastoreConnectionsMutation,
   useDeleteDatastoreConnectionMutation,

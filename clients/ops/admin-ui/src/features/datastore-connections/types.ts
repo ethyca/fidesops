@@ -8,6 +8,11 @@ import {
   TestingStatus,
 } from "./constants";
 
+export type DatasetRequest = {
+  connection_key: string;
+  fides_key: string;
+};
+
 export type DatastoreConnection = {
   name: string;
   key: string;
@@ -74,4 +79,7 @@ export type SassConnectionConfigRequest = {
 
 export type SassConnectionConfigResponse = {
   connection: DatastoreConnection;
+  dataset: {
+    fides_key: string;
+  };
 };
