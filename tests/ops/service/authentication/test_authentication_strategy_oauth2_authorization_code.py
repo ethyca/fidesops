@@ -316,8 +316,6 @@ class TestAccessTokenRequest:
             },
         )
 
-    # make sure we can use the expires_in value in the config if no expires_in is provided
-    # in the access token response
     @mock.patch("datetime.datetime")
     @mock.patch("fidesops.ops.models.connectionconfig.ConnectionConfig.update")
     @mock.patch(
@@ -332,6 +330,11 @@ class TestAccessTokenRequest:
         oauth2_authorization_code_connection_config,
         oauth2_authorization_code_configuration,
     ):
+        """
+        Make sure we can use the expires_in value in the config if no expires_in
+        is provided in the access token response.
+        """
+
         # set a fixed time
         mock_time.utcnow.return_value = datetime(2022, 5, 22)
 

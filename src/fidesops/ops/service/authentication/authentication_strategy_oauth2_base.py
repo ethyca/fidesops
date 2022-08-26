@@ -33,12 +33,6 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         self.token_request = configuration.token_request
         self.refresh_request = configuration.refresh_request
 
-    @abstractmethod
-    def add_authentication(
-        self, request: PreparedRequest, connection_config: ConnectionConfig
-    ) -> PreparedRequest:
-        """Retrieves and adds an access token to the request based on the OAuth2 flow in use."""
-
     @property
     def _required_secrets(self) -> List[str]:
         """A list of required secrets for the given OAuth2 strategy."""
