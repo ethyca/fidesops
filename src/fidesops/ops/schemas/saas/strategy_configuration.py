@@ -125,7 +125,7 @@ class OAuth2BaseConfiguration(StrategyConfiguration):
     refresh_request: Optional[SaaSRequest]
 
 
-class OAuth2AuthenticationCodeConfiguration(OAuth2BaseConfiguration):
+class OAuth2AuthorizationCodeConfiguration(OAuth2BaseConfiguration):
     """
     The standard OAuth2 configuration but with an additional property to configure
     the authorization request for the Authorization Code flow.

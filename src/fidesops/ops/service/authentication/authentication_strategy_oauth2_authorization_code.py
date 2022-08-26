@@ -11,7 +11,7 @@ from fidesops.ops.core.config import config
 from fidesops.ops.models.authentication_request import AuthenticationRequest
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.schemas.saas.strategy_configuration import (
-    OAuth2AuthenticationCodeConfiguration,
+    OAuth2AuthorizationCodeConfiguration,
     StrategyConfiguration,
 )
 from fidesops.ops.service.authentication.authentication_strategy_oauth2_base import (
@@ -30,7 +30,7 @@ class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategy
 
     strategy_name = "oauth2_authorization_code"
 
-    def __init__(self, configuration: OAuth2AuthenticationCodeConfiguration):
+    def __init__(self, configuration: OAuth2AuthorizationCodeConfiguration):
         super().__init__(configuration)
         self.authorization_request = configuration.authorization_request
 
@@ -129,4 +129,4 @@ class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategy
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
-        return OAuth2AuthenticationCodeConfiguration  # type: ignore
+        return OAuth2AuthorizationCodeConfiguration  # type: ignore
