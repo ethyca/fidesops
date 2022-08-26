@@ -239,6 +239,14 @@ export const datastoreConnectionApi = createApi({
         }
       },
     }),
+    patchDataset: build.mutation<any, any>({
+      query: (params) => ({
+        url: `${CONNECTION_ROUTE}/${params.connection_key}/dataset`,
+        method: "PATCH",
+        body: { ...params },
+      }),
+      invalidatesTags: () => ["DatastoreConnection"],
+    }),
     patchDatastoreConnections: build.mutation({
       query: ({ key, name, disabled, connection_type, access }) => ({
         url: CONNECTION_ROUTE,
@@ -263,6 +271,7 @@ export const {
   useGetAllDatastoreConnectionsQuery,
   useGetDatasetQuery,
   useLazyGetDatastoreConnectionStatusQuery,
+  usePatchDatasetMutation,
   usePatchDatastoreConnectionsMutation,
   useDeleteDatastoreConnectionMutation,
 } = datastoreConnectionApi;

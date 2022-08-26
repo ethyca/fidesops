@@ -8,7 +8,7 @@ import {
   HStack,
   Tag,
   Text,
-  VStack
+  VStack,
 } from "@fidesui/react";
 import YamlEditor from "@focus-reactive/react-yaml";
 import { ErrorWarningIcon } from "common/Icon";
@@ -58,7 +58,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
 
   return (
     <Flex gap="97px">
-      <VStack align="stretch">
+      <VStack align="stretch" w="579px">
         <Divider color="gray.100" />
         <YamlEditor
           json={data}
@@ -94,7 +94,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
         </ButtonGroup>
       </VStack>
       {yamlError && (
-        <Box>
+        <Box w="480px">
           <Divider color="gray.100" />
           <HStack mt="16px">
             <Heading as="h5" color="gray.700" size="xs">

@@ -3,7 +3,10 @@ import { useAppSelector } from "app/hooks";
 import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
 import { capitalize } from "common/utils";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
-import { useGetDatasetQuery } from "datastore-connections/datastore-connection.slice";
+import {
+  useGetDatasetQuery,
+  usePatchDatasetMutation,
+} from "datastore-connections/datastore-connection.slice";
 import React, { useState } from "react";
 
 import YamlEditorForm from "../YamlEditorForm";
@@ -19,6 +22,8 @@ const DatasetConfiguration: React.FC = () => {
     fides_key: fidesKey,
   });
 
+  const [patchDataset] = usePatchDatasetMutation();
+
   const handleError = (error: any) => {
     let errorMsg = "An unexpected error occurred. Please try again.";
     if (isErrorWithDetail(error)) {
@@ -32,11 +37,20 @@ const DatasetConfiguration: React.FC = () => {
     });
   };
 
-  const handleSubmit = (value: Object) => {
-    console.log(value)
+  const handleSubmit = async (value: Object) => {
     setIsSubmitting(true);
-    // eslint-disable-next-line no-empty
+
     try {
+      const params = {
+        connection_key: connectionKey,
+        ...value
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const payload = await patchDataset(params).unwrap();
+      toast({
+        status: "success",
+        description: "Dataset successfully updated!",
+      });
     } catch (error) {
       handleError(error);
     } finally {
