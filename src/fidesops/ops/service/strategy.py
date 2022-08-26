@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 class Strategy(ABC):
     """Abstract base class for strategies"""
 
-    name: str = None  # type: ignore
-    configuration_model: Type[StrategyConfiguration] = None  # type: ignore
+    name: str
+    configuration_model: Type[StrategyConfiguration]
 
     def __init__(self, configuration: StrategyConfiguration):
         pass

@@ -73,12 +73,12 @@ def _validate_strategy_class(strategy_class: Type[Strategy]) -> None:
     """
     Ensure the strategy class being registered has the necessary class variables set
     """
-    if not strategy_class.name:
+    if not hasattr(strategy_class, "name"):
         raise NotImplementedError(
             "A 'name' class variable is not defined for this Strategy subclass"
         )
 
-    if not strategy_class.configuration_model:
+    if not hasattr(strategy_class, "configuration_model"):
         raise NotImplementedError(
             "A 'configuration_model' class variable is not defined for this Strategy subclass"
         )
