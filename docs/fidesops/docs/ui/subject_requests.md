@@ -30,6 +30,8 @@ Hovering over a request row will provide access to the **approve** and **deny** 
 ![subject request details](../img/admin_ui/subject_request_details.png)
 Double-clicking a request row will display the request detail page, which allows access to additional information about the request, including the request ID, request type, and current status. 
 
-The bottom of the Request Details panel displays the selected request's full event history. Selecting **View Details** on any event displays a summary of the event, and selecting **View Log** displays a detailed event log, which includes fidesops' traversal through third-party connections and collections.
+Requests with a status of **Error** can also be retried from this panel by selecting the **Retry** button.
+
+The bottom of the Request Details panel displays the selected request's full event history. Selecting **View Details** on any event displays a summary of the event. **View Log** displays a detailed event log, which includes fidesops' traversal through third-party connections and collections.
 
 ![subject request log](../img/admin_ui/subject_request_log.png)
