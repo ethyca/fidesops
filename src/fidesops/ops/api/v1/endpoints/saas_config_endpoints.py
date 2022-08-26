@@ -50,9 +50,6 @@ from fidesops.ops.service.authentication.authentication_strategy_factory import 
 from fidesops.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_oauth2_client_credentials import (
-    OAuth2ClientCredentialsAuthenticationStrategy,
-)
 from fidesops.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     ConnectorTemplate,
