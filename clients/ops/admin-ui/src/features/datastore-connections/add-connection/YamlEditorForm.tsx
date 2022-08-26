@@ -15,9 +15,9 @@ import { ErrorWarningIcon } from "common/Icon";
 import React, { useLayoutEffect, useRef, useState } from "react";
 
 type YamlEditorFormProps = {
-  data: Object;
+  data: any;
   isSubmitting: boolean;
-  onSubmit: (value: Object) => void;
+  onSubmit: (value: any) => void;
 };
 
 const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
@@ -29,7 +29,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   const [editData, setEditData] = useState(data);
   const [yamlError, setYamlError] = useState("" as any);
 
-  const handleChange = ({ json }: { json: Object }) => {
+  const handleChange = ({ json }: { json: any }) => {
     setEditData(json);
     setYamlError("");
   };
@@ -61,7 +61,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
       <VStack align="stretch" w="579px">
         <Divider color="gray.100" />
         <YamlEditor
-          json={data}
+          json={editData}
           onChange={handleChange}
           onError={handleError}
           ref={actions}

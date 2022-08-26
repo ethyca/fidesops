@@ -4,7 +4,7 @@ import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
 import { capitalize } from "common/utils";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {
-  useGetDatasetQuery,
+  useGetDatasetsQuery,
   usePatchDatasetMutation,
 } from "datastore-connections/datastore-connection.slice";
 import React, { useState } from "react";
@@ -14,14 +14,11 @@ import YamlEditorForm from "./YamlEditorForm";
 const DatasetConfiguration: React.FC = () => {
   const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { connectionKey, connectionOption, fidesKey, step } = useAppSelector(
+  const { connectionKey, connectionOption, step } = useAppSelector(
     selectConnectionTypeState
   );
-  const { data, isFetching, isLoading, isSuccess } = useGetDatasetQuery({
-    connection_key: connectionKey,
-    fides_key: fidesKey,
-  });
-
+  const { data, isFetching, isLoading, isSuccess } =
+    useGetDatasetsQuery(connectionKey);
   const [patchDataset] = usePatchDatasetMutation();
 
   const handleError = (error: any) => {
@@ -37,11 +34,11 @@ const DatasetConfiguration: React.FC = () => {
     });
   };
 
-  const handleSubmit = async (value: Object) => {
+  const handleSubmit = async (value: any) => {
     try {
       const params = {
         connection_key: connectionKey,
-        items: [{ ...value }],
+        items: [...value],
       };
       const payload = await patchDataset(params).unwrap();
       if (payload.failed?.length > 0) {
@@ -75,9 +72,9 @@ const DatasetConfiguration: React.FC = () => {
           <Spinner />
         </Center>
       )}
-      {isSuccess && data ? (
+      {isSuccess && data!?.items ? (
         <YamlEditorForm
-          data={data}
+          data={data.items}
           isSubmitting={isSubmitting}
           onSubmit={handleSubmit}
         />

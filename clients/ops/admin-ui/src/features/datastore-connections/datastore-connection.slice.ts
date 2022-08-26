@@ -9,16 +9,15 @@ import {
   ConnectionType,
   DisabledStatus,
   SystemType,
-  TestingStatus,
+  TestingStatus
 } from "./constants";
 import {
-  DatasetRequest,
   DatastoreConnection,
   DatastoreConnectionParams,
   DatastoreConnectionResponse,
   DatastoreConnectionStatus,
   SassConnectionConfigRequest,
-  SassConnectionConfigResponse,
+  SassConnectionConfigResponse
 } from "./types";
 
 function mapFiltersToSearchParams({
@@ -189,9 +188,9 @@ export const datastoreConnectionApi = createApi({
       ],
       keepUnusedDataFor: 1,
     }),
-    getDataset: build.query<any, DatasetRequest>({
-      query: (params) => ({
-        url: `${CONNECTION_ROUTE}/${params.connection_key}/dataset/${params.fides_key}`,
+    getDatasets: build.query<any, string>({
+      query: (connection_key) => ({
+        url: `${CONNECTION_ROUTE}/${connection_key}/dataset`,
       }),
       providesTags: () => ["DatastoreConnection"],
     }),
@@ -243,7 +242,7 @@ export const datastoreConnectionApi = createApi({
       query: (params) => ({
         url: `${CONNECTION_ROUTE}/${params.connection_key}/dataset`,
         method: "PATCH",
-        body:  params.items,
+        body: params.items,
       }),
       invalidatesTags: () => ["DatastoreConnection"],
     }),
@@ -269,7 +268,7 @@ export const datastoreConnectionApi = createApi({
 export const {
   useCreateSassConnectionConfigMutation,
   useGetAllDatastoreConnectionsQuery,
-  useGetDatasetQuery,
+  useGetDatasetsQuery,
   useLazyGetDatastoreConnectionStatusQuery,
   usePatchDatasetMutation,
   usePatchDatastoreConnectionsMutation,
