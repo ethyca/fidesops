@@ -7,7 +7,7 @@ import Breadcrumb from "./Breadcrumb";
 import ConfigurationSettingsNav from "./ConfigurationSettingsNav";
 import { ConnectorParameters } from "./ConnectorParameters";
 import { CONNECTOR_PARAMETERS_OPTIONS, STEPS } from "./constants";
-import DatasetConfiguration from "./sass/DatasetConfiguration";
+import DatasetConfiguration from "./DatasetConfiguration";
 
 const ConfigureConnector: React.FC = () => {
   const dispatch = useDispatch();

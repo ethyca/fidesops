@@ -9,7 +9,7 @@ import {
 } from "datastore-connections/datastore-connection.slice";
 import React, { useState } from "react";
 
-import YamlEditorForm from "../YamlEditorForm";
+import YamlEditorForm from "./YamlEditorForm";
 
 const DatasetConfiguration: React.FC = () => {
   const toast = useToast();
@@ -38,19 +38,23 @@ const DatasetConfiguration: React.FC = () => {
   };
 
   const handleSubmit = async (value: Object) => {
-    setIsSubmitting(true);
-
     try {
       const params = {
         connection_key: connectionKey,
-        ...value
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        items: [{ ...value }],
+      };
       const payload = await patchDataset(params).unwrap();
-      toast({
-        status: "success",
-        description: "Dataset successfully updated!",
-      });
+      if (payload.failed?.length > 0) {
+        toast({
+          status: "error",
+          description: payload.failed[0].message,
+        });
+      } else {
+        toast({
+          status: "success",
+          description: "Dataset successfully updated!",
+        });
+      }
     } catch (error) {
       handleError(error);
     } finally {
@@ -71,7 +75,7 @@ const DatasetConfiguration: React.FC = () => {
           <Spinner />
         </Center>
       )}
-      {isSuccess ? (
+      {isSuccess && data ? (
         <YamlEditorForm
           data={data}
           isSubmitting={isSubmitting}

@@ -243,7 +243,7 @@ export const datastoreConnectionApi = createApi({
       query: (params) => ({
         url: `${CONNECTION_ROUTE}/${params.connection_key}/dataset`,
         method: "PATCH",
-        body: { ...params },
+        body:  params.items,
       }),
       invalidatesTags: () => ["DatastoreConnection"],
     }),
