@@ -89,7 +89,7 @@ from fidesops.ops.schemas.privacy_request import (
     StoppedCollection,
     VerificationCode,
 )
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task
 from fidesops.ops.service.privacy_request.request_runner_service import (
     generate_id_verification_code,
     queue_privacy_request,
@@ -265,14 +265,16 @@ def _send_verification_code_to_user(
     """Generate and cache a verification code, and then email to the user"""
     verification_code: str = generate_id_verification_code()
     privacy_request.cache_identity_verification_code(verification_code)
-    dispatch_email(
-        db=db,
-        action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
-        to_email=email,
-        email_body_params=SubjectIdentityVerificationBodyParams(
-            verification_code=verification_code,
-            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
-        ),
+    dispatch_email_task.apply_async(
+        queue="fidesops.email",
+        kwargs={
+            "action_type": EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
+            "to_email": email,
+            "email_body_params": SubjectIdentityVerificationBodyParams(
+                verification_code=verification_code,
+                verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+            ),
+        }
     )
 
 

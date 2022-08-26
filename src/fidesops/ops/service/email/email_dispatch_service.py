@@ -16,9 +16,26 @@ from fidesops.ops.schemas.email.email import (
     EmailServiceType,
     SubjectIdentityVerificationBodyParams,
 )
+from fidesops.ops.tasks import celery_app, DatabaseTask
 from fidesops.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
+
+
+@celery_app.task(base=DatabaseTask, bind=True)
+def dispatch_email_task(
+    self: DatabaseTask,
+    action_type: EmailActionType,
+    to_email: str,
+    email_body_params: Union[SubjectIdentityVerificationBodyParams],
+):
+    with self.session as db:
+        dispatch_email(
+            db,
+            action_type,
+            to_email,
+            email_body_params,
+        )
 
 
 def dispatch_email(
