@@ -91,8 +91,8 @@ def verify_oauth_connection_config(
 ) -> None:
     """
     Verifies that the connection config is present and contains
-    the necessary configurations for OAuth2 authentication. Returns
-    an HTTPException with the appropriate error message indicating
+    the necessary configurations for OAuth2 Authorization Code authentication.
+    Returns an HTTPException with the appropriate error message indicating
     which configurations are missing or incorrect.
     """
 
@@ -116,13 +116,13 @@ def verify_oauth_connection_config(
             detail="The connection config does not contain an authentication configuration.",
         )
 
-    if authentication.strategy not in [
-        OAuth2AuthorizationCodeAuthenticationStrategy.strategy_name,
-        OAuth2ClientCredentialsAuthenticationStrategy.strategy_name,
-    ]:
+    if (
+        authentication.strategy
+        != OAuth2AuthorizationCodeAuthenticationStrategy.strategy_name
+    ):
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="The connection config does not use OAuth2 authentication.",
+            detail="The connection config does not use OAuth2 Authorization Code authentication.",
         )
 
 
