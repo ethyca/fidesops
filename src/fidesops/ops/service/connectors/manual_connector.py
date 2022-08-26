@@ -73,6 +73,7 @@ class ManualConnector(BaseConnector[None]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
+        input_data: Dict[str, List[Any]],
     ) -> Optional[int]:
         """If erasure confirmation has been added to the manual cache, continue, otherwise,
         pause and wait for manual input.
