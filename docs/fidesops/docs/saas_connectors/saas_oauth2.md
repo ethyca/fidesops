@@ -1,6 +1,6 @@
 SaaS connectors support two OAuth2 flows:
 
-- [Authorization Code](https://oauth.net/2/grant-types/authorization-code/): `oauth2_authentication_code`
+- [Authorization Code](https://oauth.net/2/grant-types/authorization-code/): `oauth2_authorization_code`
 - [Client Credentials](https://oauth.net/2/grant-types/client-credentials/): `oauth2_client_credentials`
 
 This Authentication Code flow has the following configuration values:
