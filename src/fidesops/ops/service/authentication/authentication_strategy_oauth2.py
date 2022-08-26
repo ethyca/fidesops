@@ -14,7 +14,6 @@ from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
 from fidesops.ops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
-    StrategyConfiguration,
 )
 from fidesops.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
@@ -22,25 +21,29 @@ from fidesops.ops.service.authentication.authentication_strategy import (
 from fidesops.ops.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
 )
+from fidesops.ops.service.strategy_factory import register
 from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
 
 
+@register
 class OAuth2AuthenticationStrategy(AuthenticationStrategy):
     """
     Checks the expiration date on the stored access token and refreshes
     it if needed using the configured token refresh request.
     """
 
-    strategy_name = "oauth2"
+    name = "oauth2"
+    configuration_model = OAuth2AuthenticationConfiguration
 
     def __init__(self, configuration: OAuth2AuthenticationConfiguration):
         self.expires_in = configuration.expires_in
         self.authorization_request = configuration.authorization_request
         self.token_request = configuration.token_request
         self.refresh_request = configuration.refresh_request
+        super().__init__(configuration)
 
     def add_authentication(
         self, request: PreparedRequest, connection_config: ConnectionConfig
@@ -308,7 +311,3 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
             raise FidesopsException(
                 f"Missing required secret(s) '{', '.join(missing_secrets)}' for {connection_config.key}"
             )
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return OAuth2AuthenticationConfiguration  # type: ignore

@@ -4,42 +4,42 @@ from fidesops.ops.common_exceptions import NoSuchStrategyException, ValidationEr
 from fidesops.ops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
 )
-from fidesops.ops.service.pagination.pagination_strategy_factory import get_strategy
 from fidesops.ops.service.pagination.pagination_strategy_link import (
     LinkPaginationStrategy,
 )
 from fidesops.ops.service.pagination.pagination_strategy_offset import (
     OffsetPaginationStrategy,
 )
+from fidesops.ops.service.strategy_factory import strategy
 
 
-def test_get_strategy_offset():
+def test_strategy_offset():
     config = {
         "incremental_param": "page",
         "increment_by": 1,
         "limit": 100,
     }
-    strategy = get_strategy(strategy_name="offset", configuration=config)
-    assert isinstance(strategy, OffsetPaginationStrategy)
+    offset_strategy = strategy(strategy_name="offset", configuration=config)
+    assert isinstance(offset_strategy, OffsetPaginationStrategy)
 
 
-def test_get_strategy_link():
+def test_strategy_link():
     config = {"source": "body", "path": "body.next_link"}
-    strategy = get_strategy(strategy_name="link", configuration=config)
-    assert isinstance(strategy, LinkPaginationStrategy)
+    link_strategy = strategy(strategy_name="link", configuration=config)
+    assert isinstance(link_strategy, LinkPaginationStrategy)
 
 
-def test_get_strategy_cursor():
+def test_strategy_cursor():
     config = {"cursor_param": "after", "field": "id"}
-    strategy = get_strategy(strategy_name="cursor", configuration=config)
-    assert isinstance(strategy, CursorPaginationStrategy)
+    cursor_strategy = strategy(strategy_name="cursor", configuration=config)
+    assert isinstance(cursor_strategy, CursorPaginationStrategy)
 
 
-def test_get_strategy_invalid_config():
+def test_strategy_invalid_config():
     with pytest.raises(ValidationError):
-        get_strategy(strategy_name="offset", configuration={"invalid": "thing"})
+        strategy(strategy_name="offset", configuration={"invalid": "thing"})
 
 
-def test_get_strategy_invalid_strategy():
+def test_strategy_invalid_strategy():
     with pytest.raises(NoSuchStrategyException):
-        get_strategy("invalid", {})
+        strategy("invalid", {})

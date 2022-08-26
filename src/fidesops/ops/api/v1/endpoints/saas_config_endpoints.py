@@ -31,7 +31,7 @@ from fidesops.ops.api.v1.urn_registry import (
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
-from fidesops.ops.common_exceptions import FidesopsException
+from fidesops.ops.common_exceptions import FidesopsException, NoSuchStrategyException
 from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.schemas.connection_configuration.connection_config import (
@@ -44,9 +44,6 @@ from fidesops.ops.schemas.saas.saas_config import (
     ValidateSaaSConfigResponse,
 )
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.service.authentication.authentication_strategy_factory import (
-    get_strategy,
-)
 from fidesops.ops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
@@ -58,6 +55,7 @@ from fidesops.ops.service.connectors.saas.connector_registry_service import (
     load_registry,
     registry_file,
 )
+from fidesops.ops.service.strategy_factory import strategy
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.oauth_util import verify_oauth_client
 
@@ -113,7 +111,7 @@ def verify_oauth_connection_config(
             detail="The connection config does not contain an authentication configuration.",
         )
 
-    if authentication.strategy != OAuth2AuthenticationStrategy.strategy_name:
+    if authentication.strategy != OAuth2AuthenticationStrategy.name:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail="The connection config does not use OAuth2 authentication.",
@@ -259,11 +257,11 @@ def authorize_connection(
     authentication = connection_config.get_saas_config().client_config.authentication  # type: ignore
 
     try:
-        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
+        auth_strategy: OAuth2AuthenticationStrategy = strategy(
             authentication.strategy, authentication.configuration  # type: ignore
         )
         return auth_strategy.get_authorization_url(db, connection_config)
-    except FidesopsException as exc:
+    except (FidesopsException, NoSuchStrategyException) as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc))
 
 

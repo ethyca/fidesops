@@ -10,24 +10,25 @@ from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.ops.schemas.saas.strategy_configuration import (
     LinkPaginationConfiguration,
     LinkSource,
-    StrategyConfiguration,
 )
 from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
+from fidesops.ops.service.strategy_factory import register
 from fidesops.ops.util.logger import Pii
-
-STRATEGY_NAME = "link"
 
 logger = logging.getLogger(__name__)
 
 
+@register
 class LinkPaginationStrategy(PaginationStrategy):
+
+    name = "link"
+    configuration_model = LinkPaginationConfiguration
+
     def __init__(self, configuration: LinkPaginationConfiguration):
         self.source = configuration.source
         self.rel = configuration.rel
         self.path = configuration.path
-
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
+        super().__init__(configuration)
 
     def get_next_request(
         self,
@@ -71,7 +72,3 @@ class LinkPaginationStrategy(PaginationStrategy):
             query_params=updated_query_params,
             body=request_params.body,
         )
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return LinkPaginationConfiguration  # type: ignore

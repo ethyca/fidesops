@@ -37,15 +37,13 @@ from fidesops.ops.service.connectors.sql_connector import (
     RedshiftConnector,
     SnowflakeConnector,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
-    MaskingStrategyFactory,
-)
 from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
     HmacMaskingStrategy,
 )
 from fidesops.ops.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
 )
+from fidesops.ops.service.strategy_factory import strategy
 from fidesops.ops.util.data_category import DataCategory
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
@@ -234,9 +232,7 @@ def get_privacy_request_results(
         if strategy_name in unique_masking_strategies_by_name:
             continue
         unique_masking_strategies_by_name.add(strategy_name)
-        masking_strategy = MaskingStrategyFactory.get_strategy(
-            strategy_name, configuration
-        )
+        masking_strategy = strategy(strategy_name, configuration)
         if masking_strategy.secrets_required():
             masking_secrets: List[
                 MaskingSecretCache

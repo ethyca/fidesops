@@ -3,26 +3,29 @@ from requests import PreparedRequest
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.schemas.saas.strategy_configuration import (
     QueryParamAuthenticationConfiguration,
-    StrategyConfiguration,
 )
 from fidesops.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
+from fidesops.ops.service.strategy_factory import register
 from fidesops.ops.util.saas_util import assign_placeholders
 from fidesops.ops.util.url_util import set_query_parameter
 
 
+@register
 class QueryParamAuthenticationStrategy(AuthenticationStrategy):
     """
     Replaces the value placeholder with the actual credentials
     and adds it as a query param to the incoming request.
     """
 
-    strategy_name = "query_param"
+    name = "query_param"
+    configuration_model = QueryParamAuthenticationConfiguration
 
     def __init__(self, configuration: QueryParamAuthenticationConfiguration):
         self.name = configuration.name
         self.value = configuration.value
+        super().__init__(configuration)
 
     def add_authentication(
         self, request: PreparedRequest, connection_config: ConnectionConfig
@@ -34,7 +37,3 @@ class QueryParamAuthenticationStrategy(AuthenticationStrategy):
             assign_placeholders(self.value, connection_config.secrets),  # type: ignore
         )
         return request
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return QueryParamAuthenticationConfiguration  # type: ignore

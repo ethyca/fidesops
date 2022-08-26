@@ -10,7 +10,7 @@ from fidesops.ops.graph.traversal import Row, TraversalNode
 from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fidesops.ops.models.policy import Policy
 from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
+from fidesops.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest, Strategy
 from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.ops.service.connectors.base_connector import BaseConnector
 from fidesops.ops.service.connectors.saas.authenticated_client import (
@@ -18,19 +18,14 @@ from fidesops.ops.service.connectors.saas.authenticated_client import (
 )
 from fidesops.ops.service.connectors.saas_query_config import SaaSQueryConfig
 from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
-from fidesops.ops.service.pagination.pagination_strategy_factory import (
-    get_strategy as get_pagination_strategy,
-)
 from fidesops.ops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
-)
-from fidesops.ops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
-    get_strategy as get_postprocessor_strategy,
 )
 from fidesops.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
 )
+from fidesops.ops.service.strategy_factory import strategy
 from fidesops.ops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
@@ -189,11 +184,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         # use the pagination strategy (if available) to get the next request
         next_request = None
         if saas_request.pagination:
-            strategy: PaginationStrategy = get_pagination_strategy(
+            pagination_strategy: PaginationStrategy = strategy(  # type: ignore
                 saas_request.pagination.strategy,
                 saas_request.pagination.configuration,
             )
-            next_request = strategy.get_next_request(
+            next_request = pagination_strategy.get_next_request(
                 prepared_request, self.secrets, response, saas_request.data_path  # type: ignore
             )
 
@@ -210,7 +205,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self,
         response_data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Dict[str, Any],
-        postprocessors: Optional[List[PostProcessorStrategy]],
+        postprocessors: Optional[List[Strategy]],
     ) -> List[Row]:
         """
         Runs the raw response through all available postprocessors for the request,
@@ -222,7 +217,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         rows: List[Row] = []
         processed_data = response_data
         for postprocessor in postprocessors or []:
-            strategy: PostProcessorStrategy = get_postprocessor_strategy(
+            postprocessor_strategy: PostProcessorStrategy = strategy(
                 postprocessor.strategy, postprocessor.configuration  # type: ignore
             )
             logger.info(
@@ -231,7 +226,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 postprocessor.strategy,  # type: ignore
             )
             try:
-                processed_data = strategy.process(processed_data, identity_data)
+                processed_data = postprocessor_strategy.process(
+                    processed_data, identity_data
+                )
             except Exception as exc:
                 raise PostProcessingException(
                     f"Exception occurred during the '{postprocessor.strategy}' postprocessor "  # type: ignore

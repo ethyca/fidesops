@@ -3,8 +3,10 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from fidesops.ops.schemas.saas.strategy_configuration import StrategyConfiguration
 
-class MaskingConfiguration(BaseModel):
+
+class MaskingConfiguration(StrategyConfiguration):
     """Base class for masking configuration"""
 
 

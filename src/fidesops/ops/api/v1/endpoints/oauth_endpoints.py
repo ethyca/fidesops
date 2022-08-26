@@ -36,18 +36,17 @@ from fidesops.ops.api.v1.urn_registry import (
 from fidesops.ops.common_exceptions import (
     AuthenticationFailure,
     FidesopsException,
+    NoSuchStrategyException,
     OAuth2TokenException,
 )
 from fidesops.ops.core.config import config
 from fidesops.ops.models.authentication_request import AuthenticationRequest
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.schemas.client import ClientCreatedResponse
-from fidesops.ops.service.authentication.authentication_strategy_factory import (
-    get_strategy,
-)
 from fidesops.ops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
+from fidesops.ops.service.strategy_factory import strategy
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.oauth_util import verify_oauth_client
 
@@ -214,9 +213,9 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None
         authentication = (
             connection_config.get_saas_config().client_config.authentication  # type: ignore
         )
-        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(  # type: ignore
+        auth_strategy: OAuth2AuthenticationStrategy = strategy(  # type: ignore
             authentication.strategy, authentication.configuration  # type: ignore
         )
         auth_strategy.get_access_token(db, code, connection_config)
-    except (OAuth2TokenException, FidesopsException) as exc:
+    except (OAuth2TokenException, FidesopsException, NoSuchStrategyException) as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc))

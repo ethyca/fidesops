@@ -3,24 +3,27 @@ from requests import PreparedRequest
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.schemas.saas.strategy_configuration import (
     BearerAuthenticationConfiguration,
-    StrategyConfiguration,
 )
 from fidesops.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
+from fidesops.ops.service.strategy_factory import register
 from fidesops.ops.util.saas_util import assign_placeholders
 
 
+@register
 class BearerAuthenticationStrategy(AuthenticationStrategy):
     """
     Replaces the token placeholder with the actual credentials
     and uses it to add a bearer authentication header to the incoming request.
     """
 
-    strategy_name = "bearer"
+    name = "bearer"
+    configuration_model = BearerAuthenticationConfiguration
 
     def __init__(self, configuration: BearerAuthenticationConfiguration):
         self.token = configuration.token
+        super().__init__(configuration)
 
     def add_authentication(
         self, request: PreparedRequest, connection_config: ConnectionConfig
@@ -30,7 +33,3 @@ class BearerAuthenticationStrategy(AuthenticationStrategy):
             self.token, connection_config.secrets  # type: ignore
         )
         return request
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return BearerAuthenticationConfiguration  # type: ignore

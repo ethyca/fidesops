@@ -116,13 +116,16 @@ class SaaSRequest(BaseModel):
         """
 
         # delay import to avoid cyclic-dependency error - We still ignore the pylint error
-        from fidesops.ops.service.pagination.pagination_strategy_factory import (  # pylint: disable=R0401
-            get_strategy,
+        from fidesops.ops.service.pagination.pagination_strategy import (  # pylint: disable=R0401
+            PaginationStrategy,
+        )
+        from fidesops.ops.service.strategy_factory import (
+            strategy,  # pylint: disable=R0401
         )
 
         pagination = values.get("pagination")
         if pagination is not None:
-            pagination_strategy = get_strategy(
+            pagination_strategy: PaginationStrategy = strategy(  # type: ignore
                 pagination.get("strategy"), pagination.get("configuration")
             )
             pagination_strategy.validate_request(values)

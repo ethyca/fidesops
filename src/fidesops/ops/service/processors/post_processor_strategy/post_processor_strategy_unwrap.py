@@ -4,18 +4,17 @@ from typing import Any, Dict, List, Union
 import pydash
 
 from fidesops.ops.schemas.saas.strategy_configuration import (
-    StrategyConfiguration,
     UnwrapPostProcessorConfiguration,
 )
 from fidesops.ops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
-
-STRATEGY_NAME = "unwrap"
+from fidesops.ops.service.strategy_factory import register
 
 logger = logging.getLogger(__name__)
 
 
+@register
 class UnwrapPostProcessorStrategy(PostProcessorStrategy):
     """
     Given a path to a dict/list, returns the dict/list
@@ -37,11 +36,12 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
     If given a list, the unwrap will apply to the dicts inside the list.
     """
 
+    name = "unwrap"
+    configuration_model = UnwrapPostProcessorConfiguration
+
     def __init__(self, configuration: UnwrapPostProcessorConfiguration):
         self.data_path = configuration.data_path
-
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
+        super().__init__(configuration)
 
     def process(
         self,
@@ -61,7 +61,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
                 logger.warning(
                     "%s could not be found for the following post processing strategy: %s",
                     self.data_path,
-                    self.get_strategy_name(),
+                    self.name,
                 )
             else:
                 result = unwrapped
@@ -72,7 +72,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
                     logger.warning(
                         "%s could not be found for the following post processing strategy: %s",
                         self.data_path,
-                        self.get_strategy_name(),
+                        self.name,
                     )
                 else:
                     result.append(unwrapped)
@@ -81,7 +81,3 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
             result = pydash.flatten(result)
 
         return result
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return UnwrapPostProcessorConfiguration  # type: ignore

@@ -7,34 +7,34 @@ from fidesops.ops.schemas.masking.masking_api import MaskingAPIResponse
 from fidesops.ops.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
 )
+from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
-    AES_ENCRYPT_STRATEGY_NAME,
-)
-from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
-    MaskingStrategyFactory,
+    AesEncryptionMaskingStrategy,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_hash import (
-    HASH_STRATEGY_NAME,
+    HashMaskingStrategy,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
-    HMAC_STRATEGY_NAME,
+    HmacMaskingStrategy,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
-    NULL_REWRITE_STRATEGY_NAME,
+    NullMaskingStrategy,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_random_string_rewrite import (
-    RANDOM_STRING_REWRITE_STRATEGY_NAME,
+    RandomStringRewriteMaskingStrategy,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE_STRATEGY_NAME,
 )
+from fidesops.ops.service.strategy_factory import strategies
 
 
 class TestGetMaskingStrategies:
     def test_read_strategies(self, api_client: TestClient):
         expected_response = []
-        for strategy in MaskingStrategyFactory.get_strategies():
-            expected_response.append(strategy.get_description())
+        for strategy in strategies():
+            if issubclass(strategy, MaskingStrategy):
+                expected_response.append(strategy.get_description())
 
         response = api_client.get(V1_URL_PREFIX + MASKING_STRATEGY)
         response_body = json.loads(response.text)
@@ -69,7 +69,7 @@ class TestMaskValues:
         request = {
             "values": [value],
             "masking_strategy": {
-                "strategy": RANDOM_STRING_REWRITE_STRATEGY_NAME,
+                "strategy": RandomStringRewriteMaskingStrategy.name,
                 "configuration": {"length": length},
             },
         }
@@ -84,7 +84,7 @@ class TestMaskValues:
         request = {
             "values": [value],
             "masking_strategy": {
-                "strategy": HMAC_STRATEGY_NAME,
+                "strategy": HmacMaskingStrategy.name,
                 "configuration": {},
             },
         }
@@ -99,7 +99,7 @@ class TestMaskValues:
         request = {
             "values": [value],
             "masking_strategy": {
-                "strategy": HASH_STRATEGY_NAME,
+                "strategy": HashMaskingStrategy.name,
                 "configuration": {},
             },
         }
@@ -115,7 +115,7 @@ class TestMaskValues:
         request = {
             "values": [value, value2],
             "masking_strategy": {
-                "strategy": HASH_STRATEGY_NAME,
+                "strategy": HashMaskingStrategy.name,
                 "configuration": {},
             },
         }
@@ -135,7 +135,7 @@ class TestMaskValues:
         request = {
             "values": [value, value],
             "masking_strategy": {
-                "strategy": HASH_STRATEGY_NAME,
+                "strategy": HashMaskingStrategy.name,
                 "configuration": {},
             },
         }
@@ -155,7 +155,7 @@ class TestMaskValues:
         request = {
             "values": [value],
             "masking_strategy": {
-                "strategy": AES_ENCRYPT_STRATEGY_NAME,
+                "strategy": AesEncryptionMaskingStrategy.name,
                 "configuration": {
                     "mode": AesEncryptionMaskingConfiguration.Mode.GCM.value
                 },
@@ -201,7 +201,7 @@ class TestMaskValues:
         request = {
             "values": [value],
             "masking_strategy": {
-                "strategy": NULL_REWRITE_STRATEGY_NAME,
+                "strategy": NullMaskingStrategy.name,
                 "configuration": {},
             },
         }

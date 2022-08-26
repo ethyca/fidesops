@@ -154,7 +154,7 @@ class ClientUnsuccessfulException(FidesopsException):
 
 
 class NoSuchStrategyException(ValueError):
-    """Exception for when a masking strategy does not exist"""
+    """Exception for when a strategy does not exist"""
 
 
 class FunctionalityNotConfigured(Exception):
