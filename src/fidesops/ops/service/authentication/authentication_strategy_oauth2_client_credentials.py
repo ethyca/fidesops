@@ -33,17 +33,13 @@ class OAuth2ClientCredentialsAuthenticationStrategy(OAuth2AuthenticationStrategy
 
         access_token = connection_config.secrets.get("access_token")  # type: ignore
         if not access_token:
-            access_token = self.get_access_token(connection_config, None)
+            access_token = self.get_access_token(connection_config)
         else:
             access_token = self._refresh_token(connection_config)
 
         # add access_token to request
         request.headers["Authorization"] = "Bearer " + access_token
         return request
-
-    @property
-    def _required_secrets(self) -> List[str]:
-        return ["client_id", "client_secret"]
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:

@@ -40,9 +40,9 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         """Retrieves and adds an access token to the request based on the OAuth2 flow in use."""
 
     @property
-    @abstractmethod
     def _required_secrets(self) -> List[str]:
         """A list of required secrets for the given OAuth2 strategy."""
+        return ["client_id", "client_secret"]
 
     @staticmethod
     def _close_to_expiration(
@@ -135,7 +135,7 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         self,
         response: Dict[str, Any],
         connection_config: ConnectionConfig,
-        db: Optional[Session],
+        db: Optional[Session] = None,
     ) -> str:
         """
         Persists and returns the new access token.
@@ -197,7 +197,7 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         return access_token
 
     def get_access_token(
-        self, connection_config: ConnectionConfig, db: Optional[Session]
+        self, connection_config: ConnectionConfig, db: Optional[Session] = None
     ) -> str:
         """
         Executes the access token request based on the OAuth2 config
@@ -224,6 +224,6 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
                     "refresh", self.refresh_request, connection_config
                 )
                 return self._validate_and_store_response(
-                    refresh_response, connection_config, None
+                    refresh_response, connection_config
                 )
         return connection_config.secrets.get("access_token")  # type: ignore
