@@ -119,8 +119,8 @@ class SaaSRequest(BaseModel):
         from fidesops.ops.service.pagination.pagination_strategy import (  # pylint: disable=R0401
             PaginationStrategy,
         )
-        from fidesops.ops.service.strategy_factory import (
-            strategy,  # pylint: disable=R0401
+        from fidesops.ops.service.strategy_factory import (  # pylint: disable=R0401
+            strategy,
         )
 
         pagination = values.get("pagination")
