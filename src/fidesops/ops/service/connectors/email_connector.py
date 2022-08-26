@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 from fidesops.ops.graph.config import FieldPath
 from fidesops.ops.graph.traversal import TraversalNode
 from fidesops.ops.models.connectionconfig import ConnectionTestStatus
-from fidesops.ops.models.policy import Policy, Rule
+from fidesops.ops.models.policy import CurrentStep, Policy, Rule
 from fidesops.ops.models.privacy_request import ManualAction, PrivacyRequest
 from fidesops.ops.service.connectors.base_connector import BaseConnector
 from fidesops.ops.service.connectors.query_config import ManualQueryConfig
@@ -50,14 +50,25 @@ class EmailConnector(BaseConnector[None]):
         rows: List[Row],
         input_data: Dict[str, List[Any]],
     ) -> Optional[int]:
-        """Send an email to the configured user to instruct them to mask data."""
+        """Cache instructions for how to mask data in this collection.
+        One email will be sent for all collections in this dataset at the end of the privacy request execution.
+        """
 
-        manual_action = self.build_masking_instructions(node, policy, input_data)
-        logger.info(
-            f"Manual action {manual_action.dict()} for collection {node.address.value}"
+        manual_action: Optional[ManualAction] = self.build_masking_instructions(
+            node, policy, input_data
         )
 
-        return 0
+        if not manual_action:
+            logger.info("No masking required for collection %s", node.address.value)
+            return 0
+
+        privacy_request.cache_email_connector_contents(
+            step=CurrentStep.erasure,
+            collection=node.address,
+            action_needed=[manual_action],
+        )
+
+        return 0  # Fidesops itself does not mask this collection.
 
     def build_masking_instructions(
         self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]

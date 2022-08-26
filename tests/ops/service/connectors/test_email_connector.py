@@ -121,7 +121,9 @@ class TestEmailConnector:
     def email_connector(self, email_connection_config):
         return EmailConnector(email_connection_config)
 
-    def test_build_masking_instructions_no_matching_data_categories(self, email_connector, c_traversal_node):
+    def test_build_masking_instructions_no_matching_data_categories(
+        self, email_connector, c_traversal_node
+    ):
         policy = erasure_policy("D")
         mock_input_data = {"id": [1], "email": ["customer-1@example.com"]}
         manual_action = email_connector.build_masking_instructions(
@@ -129,9 +131,28 @@ class TestEmailConnector:
         )
         assert manual_action is None
 
-    def test_build_masking_instructions(
+    def test_build_masking_instructions_no_data_locators(
         self, email_connector, c_traversal_node
     ):
+        policy = erasure_policy("A")
+        mock_input_data = {}
+        manual_action = email_connector.build_masking_instructions(
+            c_traversal_node, policy, mock_input_data
+        )
+        assert manual_action == ManualAction(
+            locators={
+                "id": ["email_db:b_collection:id"],
+            },
+            get=None,
+            update={
+                "upstream_id": "null_rewrite",
+                "C_info": "null_rewrite",
+                "email": "null_rewrite",
+                "id": "null_rewrite",
+            },
+        )
+
+    def test_build_masking_instructions(self, email_connector, c_traversal_node):
         policy = erasure_policy("A")
 
         mock_input_data = {"id": [1], "email": ["customer-1@example.com"]}

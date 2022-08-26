@@ -707,6 +707,7 @@ def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
             return dependent_values
 
         access_request_data[ROOT_COLLECTION_ADDRESS.value] = [identity]
+
         dsk: Dict[CollectionAddress, Any] = {
             k: (
                 t.erasure_request,

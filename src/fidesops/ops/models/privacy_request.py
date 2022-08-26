@@ -39,7 +39,7 @@ from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.graph.graph_differences import GraphRepr
 from fidesops.ops.models.policy import (
     ActionType,
-    PausedStep,
+    CurrentStep,
     Policy,
     PolicyPreWebhook,
     WebhookDirection,
@@ -96,10 +96,13 @@ class ManualAction(BaseSchema):
         return values
 
 
-class StoppedCollection(BaseSchema):
-    """Class that contains details about the collection that halted privacy request execution"""
+class CollectionActionRequired(BaseSchema):
+    """Class that represents details about a collection where further action is required.  Examples are
+    a collection that was paused while we waiting on manual resume input, a collection that failed,
+    or a collection where we need to send supporting details to a third party.
+    """
 
-    step: PausedStep
+    step: CurrentStep
     collection: CollectionAddress
     action_needed: Optional[List[ManualAction]] = None
 
@@ -372,16 +375,46 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         result_prefix = f"{self.id}__*"
         return cache.get_encoded_objects_by_prefix(result_prefix)
 
+    def cache_email_connector_contents(
+        self,
+        step: CurrentStep,
+        collection: CollectionAddress,
+        action_needed: List[ManualAction],
+    ) -> None:
+        """Cache the raw details needed to email to a third party service regarding some action that they
+        need to take for a given collection"""
+        cache_action_required(
+            cache_key=f"EMAIL_INFORMATION__{self.id}__{step.value}__{collection.dataset}__{collection.collection}",
+            step=step,
+            collection=collection,
+            action_needed=action_needed,
+        )
+
+    def get_email_connector_contents_by_dataset(
+        self, step: CurrentStep, dataset: str
+    ) -> Dict[str, Optional[CollectionActionRequired]]:
+        """Retrieve the raw details to populate an email template
+        for all the collections on the given dataset where applicable.
+        """
+        cache: FidesopsRedis = get_cache()
+        email_contents: Dict[str, Optional[Any]] = cache.get_encoded_objects_by_prefix(
+            f"EMAIL_INFORMATION__{self.id}__{step.value}__{dataset}"
+        )
+        return {
+            k.split("__")[-1]: CollectionActionRequired.parse_obj(v) if v else None
+            for k, v in email_contents.items()
+        }
+
     def cache_paused_collection_details(
         self,
-        step: Optional[PausedStep] = None,
+        step: Optional[CurrentStep] = None,
         collection: Optional[CollectionAddress] = None,
         action_needed: Optional[List[ManualAction]] = None,
     ) -> None:
         """
         Cache details about the paused step, paused collection, and any action needed to resume the privacy request.
         """
-        cache_restart_details(
+        cache_action_required(
             cache_key=f"PAUSED_LOCATION__{self.id}",
             step=step,
             collection=collection,
@@ -390,25 +423,25 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
     def get_paused_collection_details(
         self,
-    ) -> Optional[StoppedCollection]:
+    ) -> Optional[CollectionActionRequired]:
         """Return details about the paused step, paused collection, and any action needed to resume the paused privacy request.
 
         The paused step lets us know if we should resume privacy request execution from the "access" or the "erasure"
         portion of the privacy request flow, and the collection tells us where we should cache manual input data for later use,
         In other words, this manual data belongs to this collection.
         """
-        return get_restart_details(cached_key=f"EN_PAUSED_LOCATION__{self.id}")
+        return get_action_required_details(cached_key=f"EN_PAUSED_LOCATION__{self.id}")
 
     def cache_failed_collection_details(
         self,
-        step: Optional[PausedStep] = None,
+        step: Optional[CurrentStep] = None,
         collection: Optional[CollectionAddress] = None,
     ) -> None:
         """
         Cache details about the failed step and failed collection details. No specific input data is required to resume
         a failed request, so action_needed is None.
         """
-        cache_restart_details(
+        cache_action_required(
             cache_key=f"FAILED_LOCATION__{self.id}",
             step=step,
             collection=collection,
@@ -417,13 +450,13 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
     def get_failed_collection_details(
         self,
-    ) -> Optional[StoppedCollection]:
+    ) -> Optional[CollectionActionRequired]:
         """Get details about the failed step (access or erasure) and collection that triggered failure.
 
         The failed step lets us know if we should resume privacy request execution from the "access" or the "erasure"
         portion of the privacy request flow.
         """
-        return get_restart_details(cached_key=f"EN_FAILED_LOCATION__{self.id}")
+        return get_action_required_details(cached_key=f"EN_FAILED_LOCATION__{self.id}")
 
     def cache_manual_input(
         self, collection: CollectionAddress, manual_rows: Optional[List[Row]]
@@ -671,14 +704,13 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
 PAUSED_SEPARATOR = "__fidesops_paused_sep__"
 
 
-def cache_restart_details(
+def cache_action_required(
     cache_key: str,
-    step: Optional[PausedStep] = None,
+    step: Optional[CurrentStep] = None,
     collection: Optional[CollectionAddress] = None,
     action_needed: Optional[List[ManualAction]] = None,
 ) -> None:
-    """Generic method to cache which collection and step(access/erasure) halted PrivacyRequest execution,
-    as well as data (action_needed) to resume the privacy request if applicable.
+    """Generic method to cache information about remaining action required for a given collection.
 
     For example, we might pause a privacy request at the access step of the postgres_example:address collection.  The
     user might need to retrieve an "email" field and an "address" field where the customer_id is 22 to resume the request.
@@ -688,30 +720,34 @@ def cache_restart_details(
     We need to know if we should resume execution from the access or the erasure portion of the request.
     """
     cache: FidesopsRedis = get_cache()
-    cache_stopped: Optional[StoppedCollection] = None
+    current_collection: Optional[CollectionActionRequired] = None
     if collection and step:
-        cache_stopped = StoppedCollection(
+        current_collection = CollectionActionRequired(
             step=step, collection=collection, action_needed=action_needed
         )
 
     cache.set_encoded_object(
         cache_key,
-        cache_stopped.dict() if cache_stopped else None,
+        current_collection.dict() if current_collection else None,
     )
 
 
-def get_restart_details(
+def get_action_required_details(
     cached_key: str,
-) -> Optional[StoppedCollection]:
-    """Get details about the collection that halted privacy request execution and details to resume if applicable.
+) -> Optional[CollectionActionRequired]:
+    """Get details about the action required for a given collection.
 
     The "step" lets us know if we should resume privacy request execution from the "access" or the "erasure"
     portion of the privacy request flow, and the collection lets us know which node we stopped on.  "action_needed"
     describes actions that need to be manually performed before resuming request.
     """
     cache: FidesopsRedis = get_cache()
-    cached_stopped: Optional[StoppedCollection] = cache.get_encoded_by_key(cached_key)
-    return StoppedCollection.parse_obj(cached_stopped) if cached_stopped else None
+    cached_stopped: Optional[CollectionActionRequired] = cache.get_encoded_by_key(
+        cached_key
+    )
+    return (
+        CollectionActionRequired.parse_obj(cached_stopped) if cached_stopped else None
+    )
 
 
 class ExecutionLogStatus(EnumType):

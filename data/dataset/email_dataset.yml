@@ -16,6 +16,8 @@ dataset:
                 - dataset: postgres_example_test_dataset
                   field: customer.id
                   direction: from
+          - name: scholarship
+            data_categories: [user.childrens]
       - name: children
         fields:
           - name: id
