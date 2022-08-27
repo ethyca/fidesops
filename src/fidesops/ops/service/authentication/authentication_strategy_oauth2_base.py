@@ -1,9 +1,7 @@
 import logging
-from abc import abstractmethod
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Literal, Optional
 
-from requests import PreparedRequest
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import FidesopsException, OAuth2TokenException
