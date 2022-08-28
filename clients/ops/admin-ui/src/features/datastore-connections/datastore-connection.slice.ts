@@ -9,7 +9,7 @@ import {
   ConnectionType,
   DisabledStatus,
   SystemType,
-  TestingStatus
+  TestingStatus,
 } from "./constants";
 import {
   DatastoreConnection,
@@ -17,7 +17,7 @@ import {
   DatastoreConnectionResponse,
   DatastoreConnectionStatus,
   SassConnectionConfigRequest,
-  SassConnectionConfigResponse
+  SassConnectionConfigResponse,
 } from "./types";
 
 function mapFiltersToSearchParams({

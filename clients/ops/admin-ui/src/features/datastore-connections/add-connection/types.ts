@@ -1,4 +1,4 @@
-export type SassConnectorTemplate = {
+export type ConnectorParametersFormFields = {
   description: string;
   instance_key: string;
   name: string;

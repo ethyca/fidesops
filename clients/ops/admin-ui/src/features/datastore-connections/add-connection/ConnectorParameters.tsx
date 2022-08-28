@@ -5,8 +5,10 @@ import {
   selectConnectionTypeState,
   useGetConnectionTypeSecretSchemaQuery,
 } from "connection-type/connection-type.slice";
+import { SystemType } from "datastore-connections/constants";
 import React, { useState } from "react";
 
+import { ConnectorParameters as DatabaseConnectorParameters } from "./database/ConnectorParameters";
 import { ConnectorParameters as SassConnectorParameters } from "./sass/ConnectorParameters";
 import TestConnection from "./TestConnection";
 
@@ -35,7 +37,13 @@ export const ConnectorParameters: React.FC = () => {
             <Spinner />
           </Center>
         )}
-        {isSuccess && data ? (
+        {connectionOption?.type === SystemType.DATABASE && isSuccess && data ? (
+          <DatabaseConnectorParameters
+            data={data}
+            onTestConnectionClick={handleTestConnectionClick}
+          />
+        ) : null}
+        {connectionOption?.type === SystemType.SAAS && isSuccess && data ? (
           <SassConnectorParameters
             data={data}
             onTestConnectionClick={handleTestConnectionClick}
