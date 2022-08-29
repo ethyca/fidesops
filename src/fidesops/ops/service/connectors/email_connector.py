@@ -54,14 +54,11 @@ class EmailConnector(BaseConnector[None]):
         One email will be sent for all collections in this dataset at the end of the privacy request execution.
         """
 
-        manual_action: Optional[ManualAction] = self.build_masking_instructions(
+        manual_action: ManualAction = self.build_masking_instructions(
             node, policy, input_data
         )
 
-        if not manual_action:
-            logger.info("No masking required for collection %s", node.address.value)
-            return 0
-
+        logger.info("Caching action needed for collection: '%s", node.address.value)
         privacy_request.cache_email_connector_template_contents(
             step=CurrentStep.erasure,
             collection=node.address,
@@ -72,7 +69,7 @@ class EmailConnector(BaseConnector[None]):
 
     def build_masking_instructions(
         self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
-    ) -> Optional[ManualAction]:
+    ) -> ManualAction:
         """
         Generate information on how to find and mask relevant records on this collection.
 
@@ -101,4 +98,6 @@ class EmailConnector(BaseConnector[None]):
                     else None
                 )
 
+        # Returns a ManualAction even if there are no fields to mask on this collection,
+        # because the locators still may be needed to find data to mask on dependent collections
         return ManualAction(locators=locators, update=mask_map if mask_map else None)

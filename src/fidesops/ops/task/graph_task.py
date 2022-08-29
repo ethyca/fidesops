@@ -717,7 +717,8 @@ def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
                 *[
                     access_request_data[
                         str(upstream_key)
-                    ]  # Additionally pass in the original input data we used for the access request. It's sometimes helpful.
+                    ]  # Additionally pass in the original input data we used for the access request. It's helpful in
+                    # cases like the EmailConnector where the access request doesn't actually retrieve data.
                     for upstream_key in t.input_keys
                 ],
             )
