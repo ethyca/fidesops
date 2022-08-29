@@ -20,8 +20,8 @@ const ConfigurationSettingsNav: React.FC<ConfigurationSettingsNavProps> = ({
   onChange,
   selectedItem,
 }) => {
-  const { connectionKey } = useAppSelector(selectConnectionTypeState);
-  const options = connectionKey
+  const { connection } = useAppSelector(selectConnectionTypeState);
+  const options = connection?.key
     ? [...CONNECTOR_PARAMETERS_OPTIONS]
     : [...CONNECTOR_PARAMETERS_OPTIONS].splice(0, 1);
 

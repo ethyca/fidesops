@@ -20,7 +20,7 @@ import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/
 import { Field, Form, Formik } from "formik";
 import React, { useEffect, useRef } from "react";
 
-import { ConnectorParametersFormFields } from "./types";
+import { ConnectorParametersFormFields } from "../types";
 
 const defaultValues: ConnectorParametersFormFields = {
   description: "",
@@ -44,7 +44,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   const mounted = useRef(false);
   const toast = useToast();
 
-  const { connectionKey, fidesKey, connectionOption } = useAppSelector(
+  const { connection, connectionOption } = useAppSelector(
     selectConnectionTypeState
   );
 
@@ -124,7 +124,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const handleTestConnectionClick = async () => {
     try {
-      await trigger(connectionKey).unwrap();
+      await trigger(connection!.key).unwrap();
     } catch (error) {
       handleError(error);
     }
@@ -206,7 +206,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   {...field}
                   autoComplete="off"
                   color="gray.700"
-                  isDisabled={!!fidesKey}
+                  isDisabled={connection?.key}
                   placeholder={`A a unique identifier for your new ${capitalize(
                     connectionOption!.identifier
                   )} connection`}
@@ -234,7 +234,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
           <ButtonGroup size="sm" spacing="8px" variant="outline">
             <Button
               colorScheme="gray.700"
-              isDisabled={!connectionKey}
+              isDisabled={!connection?.key}
               isLoading={result.isLoading || result.isFetching}
               loadingText="Testing"
               onClick={handleTestConnectionClick}

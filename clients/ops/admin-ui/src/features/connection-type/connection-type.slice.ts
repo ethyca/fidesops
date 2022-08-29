@@ -3,6 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 import { STEPS } from "datastore-connections/add-connection/constants";
 import { SystemType } from "datastore-connections/constants";
+import { DatastoreConnection } from "datastore-connections/types";
 
 import type { RootState } from "../../app/store";
 import { BASE_URL, CONNECTION_TYPE_ROUTE } from "../../constants";
@@ -34,9 +35,8 @@ const mapFiltersToSearchParams = ({
 };
 
 const initialState: ConnectionTypeState = {
-  connectionKey: "",
+  connection: undefined,
   connectionOption: undefined,
-  fidesKey: "",
   search: "",
   step: STEPS.find((step) => step.stepId === 1)!,
   system_type: undefined,
@@ -46,9 +46,12 @@ export const connectionTypeSlice = createSlice({
   name: "connectionType",
   initialState,
   reducers: {
-    setConnectionKey: (state, action: PayloadAction<string>) => ({
+    setConnection: (
+      state,
+      action: PayloadAction<DatastoreConnection | undefined>
+    ) => ({
       ...state,
-      connectionKey: action.payload,
+      connection: action.payload,
     }),
     setConnectionOption: (
       state,
@@ -56,10 +59,6 @@ export const connectionTypeSlice = createSlice({
     ) => ({
       ...state,
       connectionOption: action.payload,
-    }),
-    setFidesKey: (state, action: PayloadAction<string>) => ({
-      ...state,
-      fidesKey: action.payload,
     }),
     setSearch: (state, action: PayloadAction<string>) => ({
       ...state,
@@ -77,9 +76,8 @@ export const connectionTypeSlice = createSlice({
 });
 
 export const {
-  setConnectionKey,
+  setConnection,
   setConnectionOption,
-  setFidesKey,
   setSearch,
   setStep,
   setSystemType,

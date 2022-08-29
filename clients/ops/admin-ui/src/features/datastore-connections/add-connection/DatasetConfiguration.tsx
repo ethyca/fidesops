@@ -7,18 +7,21 @@ import {
   useGetDatasetsQuery,
   usePatchDatasetMutation,
 } from "datastore-connections/datastore-connection.slice";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-import YamlEditorForm from "./YamlEditorForm";
+import YamlEditorForm from "./forms/YamlEditorForm";
+import { replaceURL } from "./helpers";
 
 const DatasetConfiguration: React.FC = () => {
+  const mounted = useRef(false);
   const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { connectionKey, connectionOption, step } = useAppSelector(
+  const { connection, connectionOption, step } = useAppSelector(
     selectConnectionTypeState
   );
-  const { data, isFetching, isLoading, isSuccess } =
-    useGetDatasetsQuery(connectionKey);
+  const { data, isFetching, isLoading, isSuccess } = useGetDatasetsQuery(
+    connection!.key
+  );
   const [patchDataset] = usePatchDatasetMutation();
 
   const handleError = (error: any) => {
@@ -37,7 +40,7 @@ const DatasetConfiguration: React.FC = () => {
   const handleSubmit = async (value: any) => {
     try {
       const params = {
-        connection_key: connectionKey,
+        connection_key: connection?.key,
         items: [...value],
       };
       const payload = await patchDataset(params).unwrap();
@@ -58,6 +61,16 @@ const DatasetConfiguration: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    mounted.current = true;
+    if (connection?.key) {
+      replaceURL(connection.key, step.href);
+    }
+    return () => {
+      mounted.current = false;
+    };
+  }, [connection?.key, step.href]);
 
   return (
     <VStack align="stretch">

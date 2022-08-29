@@ -8,6 +8,25 @@ import {
   TestingStatus,
 } from "./constants";
 
+export type DatastoreConnectionRequest = {
+  name: string;
+  key: string;
+  connection_type: ConnectionType;
+  access: string;
+  disabled: boolean;
+  description: string;
+};
+
+export type DatastoreConnectionResponse = {
+  succeeded: DatastoreConnection[];
+  failed: [
+    {
+      message: string;
+      data: Object;
+    }
+  ];
+};
+
 export type DatastoreConnection = {
   name: string;
   key: string;
@@ -35,11 +54,24 @@ export type DatastoreConnectionParams = {
   size: number;
 };
 
-export type DatastoreConnectionResponse = {
+export type DatastoreConnectionsResponse = {
   items: DatastoreConnection[];
   total: number;
   page: number;
   size: number;
+};
+
+export type DatastoreConnectionSecretsRequest = {
+  connection_key: string;
+  secrets: {
+    [key: string]: any;
+  };
+};
+
+export type DatastoreConnectionSecretsResponse = {
+  msg: string;
+  test_status: string;
+  failure_reason: string;
 };
 
 export type DatastoreConnectionStatus = {

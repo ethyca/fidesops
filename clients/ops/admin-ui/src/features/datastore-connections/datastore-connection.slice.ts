@@ -14,7 +14,11 @@ import {
 import {
   DatastoreConnection,
   DatastoreConnectionParams,
+  DatastoreConnectionRequest,
   DatastoreConnectionResponse,
+  DatastoreConnectionSecretsRequest,
+  DatastoreConnectionSecretsResponse,
+  DatastoreConnectionsResponse,
   DatastoreConnectionStatus,
   SassConnectionConfigRequest,
   SassConnectionConfigResponse,
@@ -171,7 +175,7 @@ export const datastoreConnectionApi = createApi({
       invalidatesTags: () => ["DatastoreConnection"],
     }),
     getAllDatastoreConnections: build.query<
-      DatastoreConnectionResponse,
+      DatastoreConnectionsResponse,
       Partial<DatastoreConnectionParams>
     >({
       query: (filters) => ({
@@ -246,6 +250,17 @@ export const datastoreConnectionApi = createApi({
       }),
       invalidatesTags: () => ["DatastoreConnection"],
     }),
+    patchDatastoreConnection: build.mutation<
+      DatastoreConnectionResponse,
+      DatastoreConnectionRequest
+    >({
+      query: (params) => ({
+        url: `${CONNECTION_ROUTE}`,
+        method: "PATCH",
+        body: [params],
+      }),
+      invalidatesTags: () => ["DatastoreConnection"],
+    }),
     patchDatastoreConnections: build.mutation({
       query: ({ key, name, disabled, connection_type, access }) => ({
         url: CONNECTION_ROUTE,
@@ -254,11 +269,14 @@ export const datastoreConnectionApi = createApi({
       }),
       invalidatesTags: () => ["DatastoreConnection"],
     }),
-    updateDatastoreConnectionSecrets: build.mutation({
-      query: (id) => ({
-        url: `${CONNECTION_ROUTE}/${id}/secret`,
+    updateDatastoreConnectionSecrets: build.mutation<
+      DatastoreConnectionSecretsResponse,
+      DatastoreConnectionSecretsRequest
+    >({
+      query: (params) => ({
+        url: `${CONNECTION_ROUTE}/${params.connection_key}/secret`,
         method: "PUT",
-        body: {},
+        body: params.secrets,
       }),
       invalidatesTags: () => ["DatastoreConnection"],
     }),
@@ -269,8 +287,10 @@ export const {
   useCreateSassConnectionConfigMutation,
   useGetAllDatastoreConnectionsQuery,
   useGetDatasetsQuery,
+  useDeleteDatastoreConnectionMutation,
   useLazyGetDatastoreConnectionStatusQuery,
   usePatchDatasetMutation,
+  usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionsMutation,
-  useDeleteDatastoreConnectionMutation,
+  useUpdateDatastoreConnectionSecretsMutation,
 } = datastoreConnectionApi;

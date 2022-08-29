@@ -3,7 +3,7 @@ import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
 import { useState } from "react";
 
-import ConnectorParametersForm from "../ConnectorParametersForm";
+import ConnectorParametersForm from "../forms/ConnectorParametersForm";
 
 type ConnectorParametersProps = {
   data: ConnectionTypeSecretSchemaReponse;

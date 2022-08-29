@@ -6,14 +6,18 @@ import {
   useGetConnectionTypeSecretSchemaQuery,
 } from "connection-type/connection-type.slice";
 import { SystemType } from "datastore-connections/constants";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { ConnectorParameters as DatabaseConnectorParameters } from "./database/ConnectorParameters";
+import { replaceURL } from "./helpers";
 import { ConnectorParameters as SassConnectorParameters } from "./sass/ConnectorParameters";
 import TestConnection from "./TestConnection";
 
 export const ConnectorParameters: React.FC = () => {
-  const { connectionOption, step } = useAppSelector(selectConnectionTypeState);
+  const mounted = useRef(false);
+  const { connection, connectionOption, step } = useAppSelector(
+    selectConnectionTypeState
+  );
 
   const { data, isFetching, isLoading, isSuccess } =
     useGetConnectionTypeSecretSchemaQuery(connectionOption!.identifier);
@@ -22,6 +26,16 @@ export const ConnectorParameters: React.FC = () => {
   const handleTestConnectionClick = (value: any) => {
     setResponse(value);
   };
+
+  useEffect(() => {
+    mounted.current = true;
+    if (connection?.key) {
+      replaceURL(connection.key, step.href);
+    }
+    return () => {
+      mounted.current = false;
+    };
+  }, [connection?.key, step.href]);
 
   return (
     <Flex gap="97px">

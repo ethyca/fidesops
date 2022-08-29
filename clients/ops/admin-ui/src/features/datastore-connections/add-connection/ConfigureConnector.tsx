@@ -11,7 +11,6 @@ import DatasetConfiguration from "./DatasetConfiguration";
 
 const ConfigureConnector: React.FC = () => {
   const dispatch = useDispatch();
-
   const [steps, setSteps] = useState([STEPS[0], STEPS[1], STEPS[2]]);
   const [selectedItem, setSelectedItem] = useState(
     CONNECTOR_PARAMETERS_OPTIONS[0]

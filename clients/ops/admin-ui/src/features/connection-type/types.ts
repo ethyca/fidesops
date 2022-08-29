@@ -1,4 +1,5 @@
 import { SaasType, SystemType } from "datastore-connections/constants";
+import { DatastoreConnection } from "datastore-connections/types";
 
 export type AddConnectionStep = {
   stepId: number;
@@ -41,8 +42,7 @@ export type ConnectionTypeSecretSchemaReponse = {
 };
 
 export type ConnectionTypeState = ConnectionTypeParams & {
-  connectionKey: string;
+  connection?: DatastoreConnection;
   connectionOption?: ConnectionOption;
-  fidesKey: string;
   step: AddConnectionStep;
 };
