@@ -189,7 +189,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-def run_privacy_request(
+async def run_privacy_request(
     self: DatabaseTask,
     privacy_request_id: str,
     from_webhook_id: Optional[str] = None,
@@ -248,7 +248,7 @@ def run_privacy_request(
             if (
                 from_step != PausedStep.erasure
             ):  # Skip if we're resuming from erasure step
-                access_result: Dict[str, List[Row]] = run_access_request(
+                access_result: Dict[str, List[Row]] = await run_access_request(
                     privacy_request=privacy_request,
                     policy=policy,
                     graph=dataset_graph,
@@ -267,7 +267,7 @@ def run_privacy_request(
 
             if policy.get_rules_for_action(action_type=ActionType.erasure):
                 # We only need to run the erasure once until masking strategies are handled
-                run_erasure(
+                await run_erasure(
                     privacy_request=privacy_request,
                     policy=policy,
                     graph=dataset_graph,
@@ -287,7 +287,9 @@ def run_privacy_request(
         except BaseException as exc:  # pylint: disable=broad-except
             privacy_request.error_processing(db=session)
             # If dev mode, log traceback
-            fideslog_graph_failure(failed_graph_analytics_event(privacy_request, exc))
+            await fideslog_graph_failure(
+                failed_graph_analytics_event(privacy_request, exc)
+            )
             _log_exception(exc, config.dev_mode)
             return
 

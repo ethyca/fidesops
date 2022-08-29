@@ -39,7 +39,7 @@ async def send_analytics_event(event: AnalyticsEvent) -> None:
     if config.root_user.analytics_opt_out:
         return
     try:
-        await analytics_client.__send(event)
+        await analytics_client.__send(event)  # pylint: disable=protected-access
     except AnalyticsError as err:
         logger.warning("Error sending analytics event: %s", err)
     else:
