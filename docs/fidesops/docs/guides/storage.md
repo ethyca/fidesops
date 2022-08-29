@@ -57,7 +57,7 @@ Params:
 
 Additional params needed for S3:
 
-- `auth_method`: Authentication method for creating a session with S3. 
+- `auth_method`: Authentication method for creating a session with S3, either `automatic` or `secret_keys`.
 - `bucket`: Name of bucket in S3.
 - `naming`: This defines how the uploaded files will be named. Currently, fidesops only supports upload file naming by `request_id`. Use this value for all your storage destinations.
 
@@ -120,10 +120,9 @@ Params needed for S3:
 - `aws_access_key_id`: AWS access key id, obtained from AWS console.
 - `aws_secret_access_key`: AWS secret access key, obtained from AWS console.
 
-Fidesops also supports automatically creating a session for S3. When this authentication method is selected no secrets need to be provided. Boto3 will look for credentials on the server.
+Fidesops also supports automatically creating a session for S3. If your `auth_method` is set to `automatic`, no secrets need to be provided. Boto3 will look for credentials on the server.
 
 Params needed for OneTrust:
-
 - `onetrust_hostname`: Your unique OneTrust hostname, used to call OneTrust REST APIs, e.g. `my-company.onetrust`
 - `onetrust_client_id`: OneTrust client id, obtained from OneTrust portal.
 - `onetrust_client_secret`: OneTrust client id, obtained from OneTrust portal.
