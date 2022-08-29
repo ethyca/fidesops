@@ -107,7 +107,7 @@ def test_uploader_s3_success_automatic_auth(
     mock_upload_to_s3.return_value = (
         f"https://some-bucket.s3.amazonaws.com/{request_id}.json"
     )
-    upload_data = {"phone": "1231231234"}
+    upload_data = {"phone": "2018675309"}
 
     upload(
         db=db,
