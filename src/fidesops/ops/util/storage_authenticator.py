@@ -13,7 +13,7 @@ from fidesops.ops.schemas.third_party.onetrust import OneTrustOAuthResponse
 logger = logging.getLogger(__name__)
 
 
-def get_s3_session(  # pylint: disable=inconsistent-return-statements
+def get_s3_session(
     auth_method: S3AuthMethod, storage_secrets: Dict[StorageSecrets, Any]
 ) -> Session:
     """Abstraction to retrieve s3 session using secrets"""
@@ -42,6 +42,7 @@ def get_s3_session(  # pylint: disable=inconsistent-return-statements
         return session
 
     logger.error("No S3 session created. Auth method used: %s", auth_method)
+    raise ValueError(f"No S3 session created. Auth method used: {auth_method}")
 
 
 def get_onetrust_access_token(client_id: str, client_secret: str, hostname: str) -> str:
