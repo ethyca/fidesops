@@ -35,11 +35,11 @@ analytics_client = AnalyticsClient(
 )
 
 
-def send_analytics_event(event: AnalyticsEvent) -> None:
+async def send_analytics_event(event: AnalyticsEvent) -> None:
     if config.root_user.analytics_opt_out:
         return
     try:
-        analytics_client.send(event)
+        await analytics_client.__send(event)
     except AnalyticsError as err:
         logger.warning("Error sending analytics event: %s", err)
     else:
