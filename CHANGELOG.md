@@ -26,8 +26,12 @@ The types of changes are:
 
 ### Added
 * Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
+* Foundations for a new email connector type [#1142](https://github.com/ethyca/fidesops/pull/1142)
 
 ## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
+
+### Breaking Changes
+The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order to make a distinction between the newly introduced `oauth2_client_credentials` strategy [#1159](https://github.com/ethyca/fidesops/pull/1159)
 
 ### Added
 
