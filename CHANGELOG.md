@@ -19,6 +19,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
 
+### Docs
+
+* Fix analytics opt out environment variable name [#1170](https://github.com/ethyca/fidesops/pull/1170)
+
 ### Fixed
 
 * Fix issue with fideslog event loop errors [#1174](https://github.com/ethyca/fidesops/pull/1174)
