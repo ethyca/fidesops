@@ -60,12 +60,10 @@ from fidesops.ops.models.privacy_request import (
 from fidesops.ops.schemas.dataset import DryRunDatasetResponse
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
-    EmailForActionType,
     SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.schemas.masking.masking_secrets import SecretType
 from fidesops.ops.schemas.policy import PolicyResponse
-from fidesops.ops.schemas.privacy_request import ExecutionAndAuditLogResponse
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.ops.util.cache import (
     get_encryption_cache_key,

@@ -129,7 +129,14 @@ class TestEmailConnector:
         manual_action = email_connector.build_masking_instructions(
             c_traversal_node, policy, mock_input_data
         )
-        assert manual_action is None
+        assert manual_action == ManualAction(
+            locators={
+                "id": [1, "email_db:b_collection:id"],
+                "email": ["customer-1@example.com"],
+            },
+            get=None,
+            update=None,
+        )
 
     def test_build_masking_instructions_no_data_locators(
         self, email_connector, c_traversal_node

@@ -13,7 +13,11 @@ from fidesops.ops.common_exceptions import (
 )
 from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.models.policy import CurrentStep, Policy
-from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesops.ops.models.privacy_request import (
+    CollectionActionRequired,
+    PrivacyRequest,
+    PrivacyRequestStatus,
+)
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.ops.service.connectors.manual_connector import ManualAction
 from fidesops.ops.util.cache import FidesopsRedis, get_identity_cache_key
@@ -475,3 +479,41 @@ class TestCacheIdentityVerificationCode:
         privacy_request.cache_identity_verification_code("123456")
 
         assert privacy_request.get_cached_verification_code() == "123456"
+
+
+class TestCacheEmailConnectorTemplateContents:
+    def test_cache_template_contents(self, privacy_request):
+        assert (
+            privacy_request.get_email_connector_template_contents_by_dataset(
+                CurrentStep.erasure, "email_dataset"
+            )
+            == {}
+        )
+
+        privacy_request.cache_email_connector_template_contents(
+            step=CurrentStep.erasure,
+            collection=CollectionAddress("email_dataset", "test_collection"),
+            action_needed=[
+                ManualAction(
+                    locators={"email": "test@example.com"},
+                    get=None,
+                    update={"phone": "null_rewrite"},
+                )
+            ],
+        )
+
+        assert privacy_request.get_email_connector_template_contents_by_dataset(
+            CurrentStep.erasure, "email_dataset"
+        ) == {
+            "test_collection": CollectionActionRequired(
+                step=CurrentStep.erasure,
+                collection=CollectionAddress("email_dataset", "test_collection"),
+                action_needed=[
+                    ManualAction(
+                        locators={"email": "test@example.com"},
+                        get=None,
+                        update={"phone": "null_rewrite"},
+                    )
+                ],
+            )
+        }

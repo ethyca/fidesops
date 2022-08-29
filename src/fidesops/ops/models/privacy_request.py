@@ -16,7 +16,6 @@ from fideslib.models.audit_log import AuditLog
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.jwt import generate_jwe
-from pydantic import root_validator
 from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, String
@@ -71,35 +70,24 @@ logger = logging.getLogger(__name__)
 
 
 class ManualAction(BaseSchema):
-    """Surface how to manually retrieve or mask data in a database-agnostic way
+    """Surface how to retrieve or mask data in a database-agnostic way
 
     "locators" are similar to the SQL "WHERE" information.
     "get" contains a list of fields that should be retrieved from the source
-    "update" is a dictionary of fields and the value they should be replaced with.
+    "update" is a dictionary of fields and the replacement value/masking strategy
     """
 
     locators: Dict[str, Any]
     get: Optional[List[str]]
     update: Optional[Dict[str, Any]]
 
-    @root_validator
-    @classmethod
-    def get_or_update_details(  # type: ignore
-        cls: BaseSchema, values: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Validate that 'get' or 'update' details are supplied."""
-        if values and not values.get("get") and not values.get("update"):
-            raise ValueError(
-                "A ManualAction requires either 'get' or 'update' instructions."
-            )
-
-        return values
-
 
 class CollectionActionRequired(BaseSchema):
-    """Class that represents details about a collection where further action is required.  Examples are
-    a collection that was paused while we waiting on manual resume input, a collection that failed,
-    or a collection where we need to send supporting details to a third party.
+    """Describes actions needed on a given collection.
+
+    Examples are a paused collection that needs manual input, a failed collection that
+    needs to be restarted, or a collection where instructions need to be emailed to a third
+    party to complete the request.
     """
 
     step: CurrentStep
@@ -375,14 +363,14 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         result_prefix = f"{self.id}__*"
         return cache.get_encoded_objects_by_prefix(result_prefix)
 
-    def cache_email_connector_contents(
+    def cache_email_connector_template_contents(
         self,
         step: CurrentStep,
         collection: CollectionAddress,
         action_needed: List[ManualAction],
     ) -> None:
-        """Cache the raw details needed to email to a third party service regarding some action that they
-        need to take for a given collection"""
+        """Cache the raw details needed to email to a third party service regarding action they must complete
+        on their end for the given collection"""
         cache_action_required(
             cache_key=f"EMAIL_INFORMATION__{self.id}__{step.value}__{collection.dataset}__{collection.collection}",
             step=step,
@@ -390,12 +378,10 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             action_needed=action_needed,
         )
 
-    def get_email_connector_contents_by_dataset(
+    def get_email_connector_template_contents_by_dataset(
         self, step: CurrentStep, dataset: str
     ) -> Dict[str, Optional[CollectionActionRequired]]:
-        """Retrieve the raw details to populate an email template
-        for all the collections on the given dataset where applicable.
-        """
+        """Retrieve the raw details to populate an email template for collections on a given dataset."""
         cache: FidesopsRedis = get_cache()
         email_contents: Dict[str, Optional[Any]] = cache.get_encoded_objects_by_prefix(
             f"EMAIL_INFORMATION__{self.id}__{step.value}__{dataset}"
@@ -710,14 +696,12 @@ def cache_action_required(
     collection: Optional[CollectionAddress] = None,
     action_needed: Optional[List[ManualAction]] = None,
 ) -> None:
-    """Generic method to cache information about remaining action required for a given collection.
+    """Generic method to cache information about additional action required for a collection.
 
     For example, we might pause a privacy request at the access step of the postgres_example:address collection.  The
     user might need to retrieve an "email" field and an "address" field where the customer_id is 22 to resume the request.
 
-    The "step" is needed because we may build and execute multiple graphs as part of running a privacy request.
-    An erasure request builds two graphs, one to access the data, and the second to mask it.
-    We need to know if we should resume execution from the access or the erasure portion of the request.
+    The "step" describes whether action is needed in the access or the erasure portion of the request.
     """
     cache: FidesopsRedis = get_cache()
     current_collection: Optional[CollectionActionRequired] = None
@@ -737,9 +721,9 @@ def get_action_required_details(
 ) -> Optional[CollectionActionRequired]:
     """Get details about the action required for a given collection.
 
-    The "step" lets us know if we should resume privacy request execution from the "access" or the "erasure"
-    portion of the privacy request flow, and the collection lets us know which node we stopped on.  "action_needed"
-    describes actions that need to be manually performed before resuming request.
+    The "step" lets us know if action is needed in the "access" or the "erasure" portion of the privacy request flow.
+    The "collection" is the node in question, and the "action_needed" describes actions that must be manually
+    performed to complete the request.
     """
     cache: FidesopsRedis = get_cache()
     cached_stopped: Optional[CollectionActionRequired] = cache.get_encoded_by_key(

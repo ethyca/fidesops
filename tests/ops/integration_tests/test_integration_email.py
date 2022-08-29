@@ -9,11 +9,6 @@ from fidesops.ops.schemas.dataset import FidesopsDataset
 from fidesops.ops.task import graph_task
 
 
-@pytest.fixture(scope="function")
-def email_and_postgres_dataset_graph():
-    pass
-
-
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_collections_with_manual_erasure_confirmation(
@@ -91,8 +86,10 @@ def test_collections_with_manual_erasure_confirmation(
         "postgres_example_test_dataset:product": 0,
     }, "No data masked by Fidesops for the email collections"
 
-    raw_email_template_values = privacy_request.get_email_connector_contents_by_dataset(
-        CurrentStep.erasure, "email_dataset"
+    raw_email_template_values = (
+        privacy_request.get_email_connector_template_contents_by_dataset(
+            CurrentStep.erasure, "email_dataset"
+        )
     )
 
     assert raw_email_template_values == {
@@ -130,4 +127,15 @@ def test_collections_with_manual_erasure_confirmation(
                 )
             ],
         ),
-    }, "Only two collections need masking, there are no user.childrens data categories on one of the email_dataset collections"
+        "payment": CollectionActionRequired(
+            step=CurrentStep.erasure,
+            collection=CollectionAddress("email_dataset", "payment"),
+            action_needed=[
+                ManualAction(
+                    locators={"payer_email": ["customer-1@example.com"]},
+                    get=None,
+                    update=None,  # Nothing to mask on this collection
+                )
+            ],
+        ),
+    }, "Only two collections need masking, but all are included in case they include relevant data locators."

@@ -62,7 +62,7 @@ class EmailConnector(BaseConnector[None]):
             logger.info("No masking required for collection %s", node.address.value)
             return 0
 
-        privacy_request.cache_email_connector_contents(
+        privacy_request.cache_email_connector_template_contents(
             step=CurrentStep.erasure,
             collection=node.address,
             action_needed=[manual_action],
@@ -101,4 +101,4 @@ class EmailConnector(BaseConnector[None]):
                     else None
                 )
 
-        return ManualAction(locators=locators, update=mask_map) if mask_map else None
+        return ManualAction(locators=locators, update=mask_map if mask_map else None)
