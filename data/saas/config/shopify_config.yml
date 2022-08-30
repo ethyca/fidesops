@@ -70,6 +70,7 @@ saas_config:
               configuration:
                 source: headers
                 rel: next
+            data_path: orders
       - name: customer_addresses
         requests:
           read:
@@ -91,6 +92,7 @@ saas_config:
               configuration:
                 source: headers
                 rel: next
+            data_path: addresses
       - name: customer_order_transactions
         requests:
           read:
@@ -103,10 +105,11 @@ saas_config:
               - name: order_id
                 references:
                   - dataset: <instance_fides_key>
-                    field: customer_orders.orders.id
+                    field: customer_orders.id
                     direction: from
               - name: access_token
                 connector_param: access_token
+            data_path: transactions
       - name: blogs
         requests:
           read:
@@ -164,3 +167,10 @@ saas_config:
                     direction: from
               - name: access_token
                 connector_param: access_token
+            data_path: comments
+            postprocessors:
+              - strategy: filter
+                configuration:
+                  field: email
+                  value:
+                    identity: email

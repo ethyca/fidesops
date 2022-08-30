@@ -1,11 +1,11 @@
 import random
-from fidesops.ops.service.connectors import get_connector
 
 import pytest
 
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.service.connectors import get_connector
 from fidesops.ops.task import graph_task
 from tests.ops.graph.graph_test_util import assert_rows_match
 
@@ -77,7 +77,7 @@ def test_shopify_access_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:customer_orders"][0]["orders"],
+        v[f"{dataset_name}:customer_orders"],
         min_size=1,
         keys=[
             "id",
@@ -148,59 +148,55 @@ def test_shopify_access_request_task(
         ],
     )
 
-    addresses = v[f"{dataset_name}:customer_addresses"]
-    for address in addresses:
-        assert_rows_match(
-            address["addresses"],
-            min_size=1,
-            keys=[
-                "id",
-                "customer_id",
-                "first_name",
-                "last_name",
-                "company",
-                "address1",
-                "address2",
-                "city",
-                "province",
-                "country",
-                "zip",
-                "phone",
-                "name",
-                "province_code",
-                "country_code",
-                "country_name",
-                "default",
-            ],
-        )
+    assert_rows_match(
+        v[f"{dataset_name}:customer_addresses"],
+        min_size=1,
+        keys=[
+            "id",
+            "customer_id",
+            "first_name",
+            "last_name",
+            "company",
+            "address1",
+            "address2",
+            "city",
+            "province",
+            "country",
+            "zip",
+            "phone",
+            "name",
+            "province_code",
+            "country_code",
+            "country_name",
+            "default",
+        ],
+    )
 
-    transactions = v[f"{dataset_name}:customer_order_transactions"]
-    for transaction in transactions:
-        assert_rows_match(
-            transaction["transactions"],
-            min_size=1,
-            keys=[
-                "id",
-                "order_id",
-                "kind",
-                "gateway",
-                "status",
-                "message",
-                "created_at",
-                "test",
-                "authorization",
-                "location_id",
-                "user_id",
-                "parent_id",
-                "processed_at",
-                "device_id",
-                "error_code",
-                "source_name",
-                "amount",
-                "currency",
-                "admin_graphql_api_id",
-            ],
-        )
+    assert_rows_match(
+        v[f"{dataset_name}:customer_order_transactions"],
+        min_size=1,
+        keys=[
+            "id",
+            "order_id",
+            "kind",
+            "gateway",
+            "status",
+            "message",
+            "created_at",
+            "test",
+            "authorization",
+            "location_id",
+            "user_id",
+            "parent_id",
+            "processed_at",
+            "device_id",
+            "error_code",
+            "source_name",
+            "amount",
+            "currency",
+            "admin_graphql_api_id",
+        ],
+    )
 
     assert_rows_match(
         v[f"{dataset_name}:blogs"],
@@ -241,24 +237,22 @@ def test_shopify_access_request_task(
         ],
     )
 
-    comments = v[f"{dataset_name}:blog_article_comments"]
-    for comment in comments:
-        assert_rows_match(
-            comment["comments"],
-            min_size=1,
-            keys=[
-                "id",
-                "body",
-                "body_html",
-                "author",
-                "email",
-                "status",
-                "article_id",
-                "blog_id",
-                "created_at",
-                "updated_at",
-                "ip",
-                "user_agent",
-                "published_at",
-            ],
-        )
+    assert_rows_match(
+        v[f"{dataset_name}:blog_article_comments"],
+        min_size=1,
+        keys=[
+            "id",
+            "body",
+            "body_html",
+            "author",
+            "email",
+            "status",
+            "article_id",
+            "blog_id",
+            "created_at",
+            "updated_at",
+            "ip",
+            "user_agent",
+            "published_at",
+        ],
+    )
