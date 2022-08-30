@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from fastapi import Depends, Security
+from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from fidesops.ops.api import deps
@@ -12,7 +12,6 @@ from fidesops.ops.schemas.identity_verification import (
     IdentityVerificationConfigResponse,
 )
 from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.oauth_util import verify_oauth_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Identity Verification"], prefix=urls.V1_URL_PREFIX)
