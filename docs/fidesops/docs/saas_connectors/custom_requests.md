@@ -2,6 +2,8 @@
 
 When creating a SaaS connection, fidesops provides the option to override the default configuration with a custom Python function to process an access or erasure request. 
 
+## Define a custom request
+
 ```yaml
 endpoints:
     - name: messages
@@ -15,3 +17,5 @@ endpoints:
                   field: conversations.id
                   direction: from
 ```
+
+## 
