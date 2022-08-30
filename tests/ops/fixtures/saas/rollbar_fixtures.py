@@ -2,8 +2,11 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+import requests
+from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_404_NOT_FOUND
 
 from fidesops.ops.models.connectionconfig import (
     AccessLevel,
@@ -13,6 +16,7 @@ from fidesops.ops.models.connectionconfig import (
 from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("rollbar")
@@ -22,8 +26,10 @@ secrets = get_secrets("rollbar")
 def rollbar_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "rollbar.domain") or secrets["domain"],
-        "read_access_token": pydash.get(saas_config, "rollbar.read_access_token") or secrets["read_access_token"],
-        "write_access_token": pydash.get(saas_config, "rollbar.write_access_token") or secrets["write_access_token"],
+        "read_access_token": pydash.get(saas_config, "rollbar.read_access_token")
+        or secrets["read_access_token"],
+        "write_access_token": pydash.get(saas_config, "rollbar.write_access_token")
+        or secrets["write_access_token"],
     }
 
 
@@ -85,3 +91,58 @@ def rollbar_dataset_config(
     )
     yield dataset
     dataset.delete(db=db)
+
+
+@pytest.fixture(scope="session")
+def rollbar_erasure_identity_email():
+    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+
+
+def rollbar_erasure_data(
+    rollbar_connection_config: ConnectionConfig, rollbar_erasure_identity_email: str
+) -> Generator:
+    """
+    Creates a dynamic test data record for erasure tests.
+    Yields User ID as this may be useful to have in test scenarios
+    """
+    rollbar_secrets = rollbar_connection_config.secrets
+    base_url = f"https://{rollbar_secrets['domain']}"
+    body = {
+        "email": rollbar_erasure_identity_email,
+        "password": "k1UhfAg8hBu",
+        "email_verified": True,
+        "name": "Test",
+        "given_name": "First Name",
+        "family_name": "Last Name",
+    }
+    users_response = requests.post(
+        url=f"{base_url}/websso/signup?response_type=code&redirect_uri={base_url}/version",
+        json=body,
+    )
+    user = users_response.json()
+    assert users_response.ok
+    error_message = f"User with email {rollbar_erasure_identity_email} could not be added to Logi ID"
+    user = poll_for_existence(
+        user_exists,
+        (rollbar_erasure_identity_email, rollbar_secrets),
+        error_message=error_message,
+    )
+    yield user
+
+
+def user_exists(rollbar_erasure_identity_email: str, rollbar_secrets):
+    """
+    Confirm whether user exists by calling user search by email api
+    Returns user ID if it exists, returns None if it does not.
+    """
+    base_url = f"https://{rollbar_secrets['domain']}"
+    auth = rollbar_secrets["client_id"], rollbar_secrets["client_secret"]
+
+    user_response = requests.get(
+        url=f"{base_url}/identity/search?email={rollbar_erasure_identity_email}",
+        auth=auth,
+    )
+    # we expect 404 if user doesn't exist
+    if HTTP_404_NOT_FOUND == user_response.status_code:
+        return None
+    return user_response.json()

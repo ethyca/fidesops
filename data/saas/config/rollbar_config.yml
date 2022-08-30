@@ -67,6 +67,9 @@ saas_config:
             headers:
               - name: X-ROLLBAR-ACCESS-TOKEN
                 value: <project_read_token>
+            query_params:
+              - name: page
+                value: 1
             param_values:
               - name: project_read_token
                 references:

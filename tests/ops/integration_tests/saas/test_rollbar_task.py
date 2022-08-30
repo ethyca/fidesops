@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 def test_rollbar_connection_test(rollbar_connection_config) -> None:
     get_connector(rollbar_connection_config).test_connection()
 
+
 @pytest.mark.integration_saas
 @pytest.mark.integration_rollbar
 def test_saas_access_request_task(
@@ -58,7 +59,6 @@ def test_saas_access_request_task(
             "name",
         ],
     )
-
     assert_rows_match(
         v[f"{dataset_name}:project_access_token"],
         min_size=1,
@@ -68,13 +68,24 @@ def test_saas_access_request_task(
             "access_token",
         ],
     )
+    results = v[f"{dataset_name}:instances"]
+
     assert_rows_match(
-        v[f"{dataset_name}:instances"],
+        results,
         min_size=1,
         keys=[
-            "id",
-            "project_id",
-            "timestamp",
-            "access_token",
+            "instances",
         ],
     )
+    for instances in results:
+        for item in instances["instances"]:
+            assert_rows_match(
+                [item],
+                min_size=1,
+                keys=[
+                    "id",
+                    "timestamp",
+                    "data",
+                ],
+            )
+
