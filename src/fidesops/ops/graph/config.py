@@ -306,7 +306,11 @@ class ObjectField(Field):
     fields: Dict[str, Field]
 
     @validator("data_categories")
-    def validate_data_categories(  # type: ignore
+    @validator("data_categories")
+    @classmethod
+    def validate_data_categories(
+        cls, value: Optional[List[FidesOpsKey]]
+    ) -> Optional[List[FidesOpsKey]]:
         cls: "ObjectField", value: Optional[List[FidesOpsKey]]
     ) -> Optional[List[FidesOpsKey]]:
         """To prevent mismatches between data categories on an ObjectField and a nested ScalarField, only
