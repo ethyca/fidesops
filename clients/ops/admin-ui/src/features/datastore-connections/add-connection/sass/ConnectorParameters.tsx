@@ -1,4 +1,10 @@
-import { useToast } from "@fidesui/react";
+import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  Box,
+  useToast,
+} from "@fidesui/react";
 import { useAppSelector } from "app/hooks";
 import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
 import {
@@ -21,7 +27,8 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import ConnectorParametersForm from "../forms/ConnectorParametersForm";
-import { replaceURL } from "../helpers";
+import { formatKey, replaceURL } from "../helpers";
+import { SaasConnectorParametersFormFields } from "../types";
 
 type ConnectorParametersProps = {
   data: ConnectionTypeSecretSchemaReponse;
@@ -34,6 +41,11 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
 }) => {
   const dispatch = useDispatch();
   const toast = useToast();
+  const [defaultValues, setDefaultValues] = useState({
+    description: "",
+    instance_key: "",
+    name: "",
+  } as SaasConnectorParametersFormFields);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { connection, connectionOption, step } = useAppSelector(
@@ -45,6 +57,30 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   const [updateDatastoreConnectionSecrets] =
     useUpdateDatastoreConnectionSecretsMutation();
 
+  const displayError = (content: string | JSX.Element) => {
+    toast({
+      render: () => (
+        <Alert status="error">
+          <AlertIcon />
+          <Box>
+            <AlertDescription>{content}</AlertDescription>
+          </Box>
+        </Alert>
+      ),
+    });
+  };
+
+  const displaySuccess = (content: string) => {
+    toast({
+      render: () => (
+        <Alert status="success" variant="subtle">
+          <AlertIcon />
+          {content}
+        </Alert>
+      ),
+    });
+  };
+
   const handleError = (error: any) => {
     let errorMsg = "An unexpected error occurred. Please try again.";
     if (isErrorWithDetail(error)) {
@@ -52,10 +88,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     } else if (isErrorWithDetailArray(error)) {
       errorMsg = error.data.detail[0].msg;
     }
-    toast({
-      status: "error",
-      description: errorMsg,
-    });
+    displayError(errorMsg);
   };
 
   const handleSubmit = async (values: any) => {
@@ -64,42 +97,46 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       if (connection) {
         // Update existing Sass connector
         const params1: DatastoreConnectionRequest = {
-          access: "read",
+          access: "write",
           connection_type: connection.connection_type,
           description: values.description,
           disabled: false,
           key: connection.key,
           name: values.name,
         };
-        const params2: DatastoreConnectionSecretsRequest = {
-          connection_key: connection.key,
-          secrets: {},
-        };
-        Object.entries(data.properties).forEach((key) => {
-          params2.secrets[key[0]] = values[key[0]];
-        });
-        Promise.all([
-          patchDatastoreConnection(params1),
-          updateDatastoreConnectionSecrets(params2),
-        ])
-          .then(() => {
-            toast({
-              status: "success",
-              description: `Connector successfully updated!`,
-            });
-            setIsSubmitting(false);
-          })
-          .catch((error) => {
-            throw error;
+        const payload1 = await patchDatastoreConnection(params1).unwrap();
+        if (payload1.failed?.length > 0) {
+          displayError(payload1.failed[0].message);
+        } else {
+          dispatch(setConnection(payload1.succeeded[0]));
+          const params2: DatastoreConnectionSecretsRequest = {
+            connection_key: connection.key,
+            secrets: {},
+          };
+          Object.entries(data.properties).forEach((key) => {
+            params2.secrets[key[0]] = values[key[0]];
           });
+          const payload2 = await updateDatastoreConnectionSecrets(
+            params2
+          ).unwrap();
+          if (payload2.test_status === "failed") {
+            displayError(
+              <>
+                <b>Message:</b> {payload2.msg}
+                <br />
+                <b>Failure Reason:</b> {payload2.failure_reason}
+              </>
+            );
+          } else {
+            displaySuccess(`Connector successfully updated!`);
+          }
+        }
       } else {
         // Create new Sass connector
         const params: SassConnectionConfigRequest = {
           description: values.description,
-          instance_key: (values.instance_key as string)
-            .toLowerCase()
-            .replace(/ /g, "_"),
           name: values.name,
+          instance_key: formatKey(values.instance_key as string),
           saas_connector_type: connectionOption!.identifier as SaasType,
           secrets: {},
         };
@@ -110,14 +147,11 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         dispatch(setConnection(payload.connection));
         // Update the current browser url with the new key created
         replaceURL(payload.connection.key, step.href);
-        toast({
-          status: "success",
-          description: `Connector successfully added!`,
-        });
-        setIsSubmitting(false);
+        displaySuccess(`Connector successfully added!`);
       }
     } catch (error) {
       handleError(error);
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -125,6 +159,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   return (
     <ConnectorParametersForm
       data={data}
+      defaultValues={defaultValues}
       isSubmitting={isSubmitting}
       onSaveClick={handleSubmit}
       onTestConnectionClick={onTestConnectionClick}

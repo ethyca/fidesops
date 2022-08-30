@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import {
   Button,
   ButtonGroup,
@@ -20,16 +21,16 @@ import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/
 import { Field, Form, Formik } from "formik";
 import React, { useEffect, useRef } from "react";
 
-import { ConnectorParametersFormFields } from "../types";
-
-const defaultValues: ConnectorParametersFormFields = {
-  description: "",
-  instance_key: "",
-  name: "",
-};
+import {
+  DatabaseConnectorParametersFormFields,
+  SaasConnectorParametersFormFields,
+} from "../types";
 
 type ConnectorParametersFormProps = {
   data: ConnectionTypeSecretSchemaReponse;
+  defaultValues:
+    | DatabaseConnectorParametersFormFields
+    | SaasConnectorParametersFormFields;
   isSubmitting: boolean;
   onSaveClick: (values: any) => void;
   onTestConnectionClick: (value: any) => void;
@@ -37,6 +38,7 @@ type ConnectorParametersFormProps = {
 
 const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   data,
+  defaultValues,
   isSubmitting = false,
   onSaveClick,
   onTestConnectionClick,
