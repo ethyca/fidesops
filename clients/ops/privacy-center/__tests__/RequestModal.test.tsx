@@ -11,7 +11,7 @@ import { act } from "react-dom/test-utils";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
 
-import { RequestModal } from "../components/RequestModal";
+import { RequestModal } from "../components/modals/RequestModal";
 import IndexPage from "../pages/index";
 
 import mockConfig from "../config/__mocks__/config.json";
