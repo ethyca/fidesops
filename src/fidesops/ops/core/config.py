@@ -40,7 +40,6 @@ class ExecutionSettings(FidesSettings):
     task_retry_backoff: int
     subject_identity_verification_required: bool = False
     require_manual_request_approval: bool = False
-    require_identity_verification: bool = True
     masking_strict: bool = True
     worker_enabled: bool = True
     celery_config_path: Optional[str] = "celery.toml"
@@ -221,7 +220,7 @@ CONFIG_KEY_ALLOWLIST = {
         "task_retry_delay",
         "task_retry_backoff",
         "require_manual_request_approval",
-        "require_identity_verification",
+        "subject_identity_verification_required",
     ],
 }
 

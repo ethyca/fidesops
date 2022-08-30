@@ -54,7 +54,6 @@ The `fidesops.toml` file should specify the following variables:
 |`task_retry_backoff` | `FIDESOPS__EXECUTION__TASK_RETRY_BACKOFF` | int | 2 | 1 | The backoff factor for retries, to space out repeated retries.
 |`subject_identity_verification_required` | `FIDESOPS__EXECUTION__SUBJECT_IDENTITY_VERIFICATION_REQUIRED` | bool | False | False | Whether privacy requests require user identity verification
 |`require_manual_request_approval` | `FIDESOPS__EXECUTION__REQUIRE_MANUAL_REQUEST_APPROVAL` | bool | False | False | Whether privacy requests require explicit approval to execute
-|`require_identity_verification` | `FIDESOPS__EXECUTION__REQUIRE_IDENTITY_VERIFICATION` | bool | True | True | Whether privacy requests require subject identity verification to execute
 |`masking_strict` | `FIDESOPS__EXECUTION__MASKING_STRICT` | bool | True | True | If masking_strict is True, we only use "update" requests to mask data. (For third-party integrations, you should define an `update` endpoint to use.)  If masking_strict is False, you are allowing fidesops to use any defined DELETE or GDPR DELETE endpoints to remove PII. In this case, you should define `delete` or `data_protection_request` endpoints for your third-party integrations.  Note that setting masking_strict to False means that data may be deleted beyond the specific data categories that you've configured in your Policy.
 |`celery_config_path` | `FIDESOPS__EXECUTION__CELERY_CONFIG_PATH` | string | data/config/celery.toml | N/A | An optional override for the [Celery](#celery-configuration) configuration file path.
 |`worker_enabled` | `FIDESOPS__EXECUTION__WORKER_ENABLED` | bool | True | True | By default, fidesops uses a dedicated [Celery worker](#celery-configuration) to process privacy requests asynchronously. Setting `worker_enabled` to `False` will run the worker on the same node as the webserver.
@@ -98,12 +97,12 @@ root_password = "Testpassword1!"
 [execution]
 masking_strict = true
 require_manual_request_approval = true
+subject_identity_verification_required = false
 task_retry_count = 3
 task_retry_delay = 20
 task_retry_backoff = 2
 worker_enabled = true
 celery_config_path="data/config/celery.toml"
-require_identity_verification = true
 
 
 [root_user]
