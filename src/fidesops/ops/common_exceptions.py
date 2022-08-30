@@ -117,6 +117,10 @@ class EmailDispatchException(FidesopsException):
     """Custom Exception - Email Dispatch Error"""
 
 
+class EmailTemplateUnhandledActionType(FidesopsException):
+    """Custom Exception - Email Template Unhandled ActionType Error"""
+
+
 class OAuth2TokenException(FidesopsException):
     """Custom Exception - Unable to access or refresh OAuth2 tokens for SaaS connector"""
 
@@ -163,3 +167,7 @@ class InvalidSaaSRequestOverrideException(ValueError):
 
 class NoSuchSaaSRequestOverrideException(ValueError):
     """Exception for when a requested SaaS request override function does not exist"""
+
+
+class IdentityVerificationException(FidesopsException):
+    """Custom exceptions for when we cannot verify the identity of a subjct"""

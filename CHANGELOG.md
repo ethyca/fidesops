@@ -17,7 +17,22 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.0...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
+
+### Docs
+* Fix analytics opt out environment variable name [#1170](https://github.com/ethyca/fidesops/pull/1170)
+* Added how to view a subject request history and reprocess a subject request [#1164](https://github.com/ethyca/fidesops/pull/1164)
+
+## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.7.2)
+
+### Added
+* Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
+* Foundations for a new email connector type [#1142](https://github.com/ethyca/fidesops/pull/1142)
+
+## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
+
+### Breaking Changes
+The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order to make a distinction between the newly introduced `oauth2_client_credentials` strategy [#1159](https://github.com/ethyca/fidesops/pull/1159)
 
 ### Added
 
@@ -25,6 +40,15 @@ The types of changes are:
 * Access and erasure support for Logi ID [#1074](https://github.com/ethyca/fidesops/pull/1074)
 * Adds infra for email config and dispatch [#1059](https://github.com/ethyca/fidesops/pull/1059)
 * Add an endpoint that allows you to create a Saas connector and all supporting resources with a single request [#1076](https://github.com/ethyca/fidesops/pull/1076)
+* Add a Connection - SaaS connector's configuration parameters [#761](https://github.com/ethyca/fidesops/pull/1099)
+* Saas Connector configuration - left navigation to toggle between connection params and dataset config [#984](https://github.com/ethyca/fidesops/pull/1099)
+* SaaS Connector Configuration - Testing a Connection [#985](https://github.com/ethyca/fidesops/pull/1099)
+* Add an endpoint for verifying the user's identity before queuing the privacy request. [#1111](https://github.com/ethyca/fidesops/pull/1111)
+* Adds tests for email endpoints and service [#1112](https://github.com/ethyca/fidesops/pull/1112)
+* Adds the ability to verify a subject's identity before processing a Privacy Request  [#1115](https://github.com/ethyca/fidesops/pull/1115)
+* Add option to login as root user from config[#1116](https://github.com/ethyca/fidesops/pull/1116)
+* Added email templates [#1123](https://github.com/ethyca/fidesops/pull/1123)
+* Add Retry button back into the subject request detail view [#1128](https://github.com/ethyca/fidesops/pull/1131)
 
 ### Developer Experience
 
@@ -36,11 +60,25 @@ The types of changes are:
 * Bump fideslib to fix issue where the authenticate button in the FastAPI docs did not work [#1092](https://github.com/ethyca/fidesops/pull/1092)
 * Escape the Redis user and password to make them URL friendly [#1104](https://github.com/ethyca/fidesops/pull/1104)
 * Reduced number of connections opened against app db during health checks [#1107](https://github.com/ethyca/fidesops/pull/1107)
+* Fix FIDESOPS__ROOT_USER__ANALYTICS_ID generation when env var is set [#1113](https://github.com/ethyca/fidesops/pull/1113) 
+* Set localhost to None for non-endpoint events [#1130](https://github.com/ethyca/fidesops/pull/1130)
+* Fixed docs build in CI [#1138](https://github.com/ethyca/fidesops/pull/1138)
+* Added future annotations to privacy_request.py for backwards compatibility [#1136](https://github.com/ethyca/fidesops/pull/1136)
 
 ### Changed
 
-* Update request status endpoint to return both audit and execution logs [#1068] https://github.com/ethyca/fidesops/pull/1068/
+* Update request status endpoint to return both audit and execution logs [#1068] (https://github.com/ethyca/fidesops/pull/1068/)
+* Update backend routing to handle dynamic frontend routes [#1033](https://github.com/ethyca/fidesops/pull/1033)
+* Make connection type search case-insensitive [#1133](https://github.com/ethyca/fidesops/pull/1133)
+* Adjust log formatting to be %-style instead of f-string [#1132](https://github.com/ethyca/fidesops/pull/1132)
 
+### Docs
+
+* Minor formatting updates to [Policy Webhooks](https://ethyca.github.io/fidesops/guides/policy_webhooks/) documentation [#1114](https://github.com/ethyca/fidesops/pull/1114)
+
+### Removed
+
+* Removed create superuser [#1116](https://github.com/ethyca/fidesops/pull/1116)
 
 ## [1.7.0](https://github.com/ethyca/fidesops/compare/1.6.3...1.7.0)
 

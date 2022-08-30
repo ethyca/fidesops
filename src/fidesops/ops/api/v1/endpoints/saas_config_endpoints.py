@@ -47,8 +47,8 @@ from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.service.authentication.authentication_strategy_factory import (
     get_strategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_oauth2 import (
-    OAuth2AuthenticationStrategy,
+from fidesops.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
+    OAuth2AuthorizationCodeAuthenticationStrategy,
 )
 from fidesops.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
@@ -68,7 +68,7 @@ logger = logging.getLogger(__name__)
 def _get_saas_connection_config(
     connection_key: FidesOpsKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
-    logger.info(f"Finding connection config with key '{connection_key}'")
+    logger.info("Finding connection config with key '%s'", connection_key)
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
     if not connection_config:
         raise HTTPException(
@@ -88,8 +88,8 @@ def verify_oauth_connection_config(
 ) -> None:
     """
     Verifies that the connection config is present and contains
-    the necessary configurations for OAuth2 authentication. Returns
-    an HTTPException with the appropriate error message indicating
+    the necessary configurations for OAuth2 Authorization Code authentication.
+    Returns an HTTPException with the appropriate error message indicating
     which configurations are missing or incorrect.
     """
 
@@ -113,10 +113,13 @@ def verify_oauth_connection_config(
             detail="The connection config does not contain an authentication configuration.",
         )
 
-    if authentication.strategy != OAuth2AuthenticationStrategy.strategy_name:
+    if (
+        authentication.strategy
+        != OAuth2AuthorizationCodeAuthenticationStrategy.strategy_name
+    ):
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="The connection config does not use OAuth2 authentication.",
+            detail="The connection config does not use OAuth2 Authorization Code authentication.",
         )
 
 
@@ -138,7 +141,7 @@ def validate_saas_config(
     - each connector_param only has one of references or identity, not both
     """
 
-    logger.info(f"Validation successful for SaaS config '{saas_config.fides_key}'")
+    logger.info("Validation successful for SaaS config '%s'", saas_config.fides_key)
     return ValidateSaaSConfigResponse(
         saas_config=saas_config,
         validation_details=SaaSConfigValidationDetails(
@@ -163,7 +166,9 @@ def patch_saas_config(
     or report failure
     """
     logger.info(
-        f"Updating SaaS config '{saas_config.fides_key}' on connection config '{connection_config.key}'"
+        "Updating SaaS config '%s' on connection config '%s'",
+        saas_config.fides_key,
+        connection_config.key,
     )
     connection_config.update_saas_config(db, saas_config=saas_config)
     return connection_config.saas_config  # type: ignore
@@ -179,7 +184,7 @@ def get_saas_config(
 ) -> SaaSConfig:
     """Returns the SaaS config for the given connection config."""
 
-    logger.info(f"Finding SaaS config for connection '{connection_config.key}'")
+    logger.info("Finding SaaS config for connection '%s'", connection_config.key)
     saas_config = connection_config.saas_config
     if not saas_config:
         raise HTTPException(
@@ -201,7 +206,7 @@ def delete_saas_config(
     """Removes the SaaS config for the given connection config.
     The corresponding dataset and secrets must be deleted before deleting the SaaS config"""
 
-    logger.info(f"Finding SaaS config for connection '{connection_config.key}'")
+    logger.info("Finding SaaS config for connection '%s'", connection_config.key)
     saas_config = connection_config.saas_config
     if not saas_config:
         raise HTTPException(
@@ -238,7 +243,7 @@ def delete_saas_config(
     if warnings:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=" ".join(warnings))
 
-    logger.info(f"Deleting SaaS config for connection '{connection_config.key}'")
+    logger.info("Deleting SaaS config for connection '%s'", connection_config.key)
     connection_config.update(db, data={"saas_config": None})
 
 
@@ -257,7 +262,7 @@ def authorize_connection(
     authentication = connection_config.get_saas_config().client_config.authentication  # type: ignore
 
     try:
-        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
+        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = get_strategy(
             authentication.strategy, authentication.configuration  # type: ignore
         )
         return auth_strategy.get_authorization_url(db, connection_config)
@@ -329,7 +334,9 @@ def instantiate_connection_from_template(
             detail=f"SaaS Connector could not be created from the '{saas_connector_type}' template at this time.",
         )
     logger.info(
-        f"SaaS Connector and Dataset {template_values.instance_key} successfully created from '{saas_connector_type}' template."
+        "SaaS Connector and Dataset %s successfully created from '%s' template.",
+        template_values.instance_key,
+        saas_connector_type,
     )
     return SaasConnectionTemplateResponse(
         connection=connection_config, dataset=dataset_config.dataset
