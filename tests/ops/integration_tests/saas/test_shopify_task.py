@@ -1,4 +1,5 @@
 import random
+from fidesops.ops.service.connectors import get_connector
 
 import pytest
 
@@ -7,6 +8,12 @@ from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.ops.task import graph_task
 from tests.ops.graph.graph_test_util import assert_rows_match
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_shopify
+def test_shopify_connection_test(shopify_connection_config) -> None:
+    get_connector(shopify_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas

@@ -50,10 +50,13 @@ saas_config:
         requests:
           read:
             method: GET
-            path: /admin/api/2022-07/customers/<customer_id>/orders.json?status=any
+            path: /admin/api/2022-07/customers/<customer_id>/orders.json
             headers:
               - name: X-Shopify-Access-Token
                 value: <access_token>
+            query_params:
+              - name: status
+                value: any
             param_values:
               - name: customer_id
                 references:
