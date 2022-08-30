@@ -35,6 +35,7 @@ task_retry_count = 0
 task_retry_delay = 1
 task_retry_backoff = 1
 worker_enabled = false
+require_identity_verification = true
 
 [root_user]
 analytics_opt_out = false
