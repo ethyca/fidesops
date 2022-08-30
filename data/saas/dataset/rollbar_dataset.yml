@@ -44,10 +44,6 @@ dataset:
         data_categories: [system.operations]
         fidesops_meta:
           data_type: integer
-      - name: project_id
-        data_categories: [system.operations]
-        fidesops_meta:
-          data_type: integer
       - name: timestamp
         data_categories: [system.operations]
         fidesops_meta:
