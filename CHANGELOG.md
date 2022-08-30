@@ -17,9 +17,22 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.1...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
+
+### Docs
+* Fix analytics opt out environment variable name [#1170](https://github.com/ethyca/fidesops/pull/1170)
+* Added how to view a subject request history and reprocess a subject request [#1164](https://github.com/ethyca/fidesops/pull/1164)
+
+## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.7.2)
+
+### Added
+* Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
+* Foundations for a new email connector type [#1142](https://github.com/ethyca/fidesops/pull/1142)
 
 ## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
+
+### Breaking Changes
+The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order to make a distinction between the newly introduced `oauth2_client_credentials` strategy [#1159](https://github.com/ethyca/fidesops/pull/1159)
 
 ### Added
 
@@ -50,7 +63,7 @@ The types of changes are:
 * Fix FIDESOPS__ROOT_USER__ANALYTICS_ID generation when env var is set [#1113](https://github.com/ethyca/fidesops/pull/1113) 
 * Set localhost to None for non-endpoint events [#1130](https://github.com/ethyca/fidesops/pull/1130)
 * Fixed docs build in CI [#1138](https://github.com/ethyca/fidesops/pull/1138)
-* Added future annotatioins to privacy_request.py for backwards compatibility [#1136](https://github.com/ethyca/fidesops/pull/1136)
+* Added future annotations to privacy_request.py for backwards compatibility [#1136](https://github.com/ethyca/fidesops/pull/1136)
 
 ### Changed
 
