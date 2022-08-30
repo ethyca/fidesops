@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, Optional, Union
 
-from pydantic import BaseModel, Extra, ValidationError, validator
+from pydantic import BaseModel, Extra
 
 from fidesops.ops.schemas import Msg
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
@@ -24,13 +24,20 @@ class EmailActionType(Enum):
 class EmailTemplateBodyParams(Enum):
     """Enum for all possible email template body params"""
 
-    ACCESS_CODE = "access_code"
+    VERIFICATION_CODE = "verification_code"
 
 
 class SubjectIdentityVerificationBodyParams(BaseModel):
     """Body params required for subject identity verification email template"""
 
-    access_code: str
+    verification_code: str
+    verification_code_ttl_seconds: int
+
+    def get_verification_code_ttl_minutes(self) -> int:
+        """returns verification_code_ttl_seconds in minutes"""
+        if self.verification_code_ttl_seconds < 60:
+            return 0
+        return self.verification_code_ttl_seconds // 60
 
 
 class EmailForActionType(BaseModel):
@@ -93,38 +100,6 @@ class EmailConfigRequest(BaseModel):
     class Config:
         use_enum_values = False
         orm_mode = True
-
-    @validator("details", pre=True, always=True)
-    def validate_details(
-        cls,
-        v: Dict[str, str],
-        values: Dict[str, Any],
-    ) -> Dict[str, str]:
-        """
-        Custom validation logic for the `details` field.
-        """
-        service_type = values.get("service_type")
-        if not service_type:
-            raise ValueError("A `service_type` field must be specified.")
-
-        try:
-            schema = {
-                EmailServiceType.MAILGUN: EmailServiceDetailsMailgun,
-            }[service_type]
-        except KeyError:
-            raise ValueError(
-                f"`service type` {service_type} has no supported `details` validation."
-            )
-
-        try:
-            schema.parse_obj(v)  # type: ignore
-        except ValidationError as exc:
-            # Pydantic requires validators raise either a ValueError, TypeError, or AssertionError
-            # so this exception is cast into a `ValueError`.
-            errors = [f"{err['msg']} {str(err['loc'])}" for err in exc.errors()]
-            raise ValueError(errors)
-
-        return v
 
 
 class EmailConfigResponse(BaseModel):
