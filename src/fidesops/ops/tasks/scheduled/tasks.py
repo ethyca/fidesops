@@ -49,6 +49,6 @@ def initiate_scheduled_request_intake() -> None:
     db.close()
 
 
-def _intake_onetrust_requests(config_key: FidesOpsKey) -> None:
+async def _intake_onetrust_requests(config_key: FidesOpsKey) -> None:
     """Begins onetrust request intake"""
-    OneTrustService.intake_onetrust_requests(config_key)
+    await OneTrustService.intake_onetrust_requests(config_key)

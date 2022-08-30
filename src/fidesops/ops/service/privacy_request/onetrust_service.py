@@ -47,7 +47,7 @@ class OneTrustService:
     """OneTrust Service for privacy requests"""
 
     @staticmethod
-    def intake_onetrust_requests(config_key: FidesOpsKey) -> None:
+    async def intake_onetrust_requests(config_key: FidesOpsKey) -> None:
         """Intake onetrust requests"""
         SessionLocal = get_db_session(config)
         db = SessionLocal()
@@ -99,7 +99,7 @@ class OneTrustService:
             if fides_task is None:
                 # no fides task associated with this request
                 continue
-            OneTrustService._create_privacy_request(
+            await OneTrustService._create_privacy_request(
                 fides_task.subTaskId,  # type: ignore
                 request.dateCreated,  # type: ignore
                 identity,
@@ -131,7 +131,7 @@ class OneTrustService:
             )
 
     @staticmethod
-    def _create_privacy_request(  # pylint: disable=R0913
+    async def _create_privacy_request(  # pylint: disable=R0913
         subtask_id: str,
         requested_at: str,
         identity: PrivacyRequestIdentity,

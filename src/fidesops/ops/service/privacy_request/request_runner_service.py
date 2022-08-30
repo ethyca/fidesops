@@ -49,6 +49,7 @@ from fidesops.ops.util.cache import (
 )
 from fidesops.ops.util.collection_util import Row
 from fidesops.ops.util.logger import Pii, _log_exception, _log_warning
+from fidesops.ops.util.wrappers import sync
 
 logger = get_task_logger(__name__)
 
@@ -189,6 +190,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
+@sync
 async def run_privacy_request(
     self: DatabaseTask,
     privacy_request_id: str,

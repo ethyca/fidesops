@@ -65,14 +65,14 @@ def test_policy_upload_called(
     assert upload_mock.called
 
 
-def test_start_processing_sets_started_processing_at(
+async def test_start_processing_sets_started_processing_at(
     db: Session,
     privacy_request_status_pending: PrivacyRequest,
     run_privacy_request_task,
 ) -> None:
     updated_at = privacy_request_status_pending.updated_at
     assert privacy_request_status_pending.started_processing_at is None
-    run_privacy_request_task.delay(privacy_request_status_pending.id).get(
+    await run_privacy_request_task.delay(privacy_request_status_pending.id).get(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
 
@@ -81,7 +81,7 @@ def test_start_processing_sets_started_processing_at(
     assert privacy_request_status_pending.updated_at > updated_at
 
 
-def test_start_processing_doesnt_overwrite_started_processing_at(
+async def test_start_processing_doesnt_overwrite_started_processing_at(
     db: Session,
     privacy_request: PrivacyRequest,
     run_privacy_request_task,
@@ -90,7 +90,7 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
     assert before is not None
     updated_at = privacy_request.updated_at
 
-    run_privacy_request_task.delay(privacy_request.id).get(
+    await run_privacy_request_task.delay(privacy_request.id).get(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
 
