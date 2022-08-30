@@ -305,8 +305,8 @@ class ObjectField(Field):
 
     fields: Dict[str, Field]
 
-    @classmethod
     @validator("data_categories")
+    @classmethod
     def validate_data_categories(
         cls, value: Optional[List[FidesOpsKey]]
     ) -> Optional[List[FidesOpsKey]]:

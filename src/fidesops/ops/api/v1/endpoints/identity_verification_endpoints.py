@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 
 from fidesops.ops.api import deps
 from fidesops.ops.api.v1 import urn_registry as urls
-from fidesops.ops.api.v1.scope_registry import IDENTITY_VERIFICATION_READ
 from fidesops.ops.core.config import config
 from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.schemas.identity_verification import (
@@ -21,7 +20,7 @@ router = APIRouter(tags=["Identity Verification"], prefix=urls.V1_URL_PREFIX)
 
 @router.get(
     urls.ID_VERIFICATION_CONFIG,
-    dependencies=[Security(verify_oauth_client, scopes=[IDENTITY_VERIFICATION_READ])],
+    dependencies=[Security(verify_oauth_client, scopes=[])],
     response_model=IdentityVerificationConfigResponse,
 )
 def get_id_verification_config(
