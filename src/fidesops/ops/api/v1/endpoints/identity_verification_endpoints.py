@@ -20,7 +20,6 @@ router = APIRouter(tags=["Identity Verification"], prefix=urls.V1_URL_PREFIX)
 
 @router.get(
     urls.ID_VERIFICATION_CONFIG,
-    dependencies=[Security(verify_oauth_client, scopes=[])],
     response_model=IdentityVerificationConfigResponse,
 )
 def get_id_verification_config(
