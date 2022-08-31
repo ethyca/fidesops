@@ -146,6 +146,7 @@ saas_config:
           read:
             method: GET
             path: /admin/api/2022-07/comments.json
+            grouped_inputs: [blog_id, article_id]
             headers:
               - name: X-Shopify-Access-Token
                 value: <access_token>
@@ -158,7 +159,7 @@ saas_config:
               - name: blog_id
                 references:
                   - dataset: <instance_fides_key>
-                    field: blogs.id
+                    field: blog_articles.blog_id
                     direction: from
               - name: article_id
                 references:
