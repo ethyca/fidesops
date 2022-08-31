@@ -41,6 +41,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   const toast = useToast();
   const [defaultValues, setDefaultValues] = useState({
     description: "",
+    instance_key: "",
     name: "",
   } as DatabaseConnectorParametersFormFields);
   const [isSubmitting, setIsSubmitting] = useState(false);

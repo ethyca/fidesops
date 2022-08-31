@@ -6,6 +6,11 @@ import {
   FormErrorMessage,
   FormLabel,
   Input,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
   Textarea,
   Tooltip,
   useToast,
@@ -54,7 +59,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const validateField = (label: string, value: string) => {
     let error;
-    if (!value) {
+    if (typeof value === "undefined" || value === "") {
       error = `${label} is required`;
     }
     return error;
@@ -72,13 +77,16 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     </FormLabel>
   );
 
-  const getFormField = (key: string, item: { title: string }): JSX.Element => (
+  const getFormField = (
+    key: string,
+    item: { title: string; type: string }
+  ): JSX.Element => (
     <Field
       id={key}
       name={key}
       key={key}
       validate={
-        data.required?.includes(key)
+        data.required?.includes(key) || item.type === "integer"
           ? (value: string) => validateField(item.title, value)
           : false
       }
@@ -91,7 +99,24 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         >
           {getFormLabel(key, item.title)}
           <VStack align="flex-start" w="inherit">
-            <Input {...field} autoComplete="off" color="gray.700" size="sm" />
+            {item.type !== "integer" && (
+              <Input {...field} autoComplete="off" color="gray.700" size="sm" />
+            )}
+            {item.type === "integer" && (
+              <NumberInput
+                allowMouseWheel
+                color="gray.700"
+                defaultValue={0}
+                min={0}
+                size="sm"
+              >
+                <NumberInputField {...field} autoComplete="off" />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+            )}
             <FormErrorMessage>{form.errors[key]}</FormErrorMessage>
           </VStack>
           <CircleHelpIcon marginLeft="8px" visibility="hidden" />
@@ -102,7 +127,12 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const getInitialValues = () => {
     Object.entries(data.properties).forEach((key) => {
-      defaultValues[key[0]] = "";
+      // eslint-disable-next-line no-nested-ternary
+      defaultValues[key[0]] = key[1].default
+        ? key[1].default
+        : key[1].type === "integer"
+        ? 0
+        : "";
     });
     return defaultValues;
   };
