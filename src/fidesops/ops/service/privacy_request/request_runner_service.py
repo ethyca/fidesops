@@ -204,6 +204,9 @@ async def run_privacy_request(
         2. Take the provided identity data
         3. Start the access request / erasure request execution
         4. When finished, upload the results to the configured storage destination if applicable
+
+    Celery does not like for the function to be async so the @sync decorator runs the
+    coroutine for it.
     """
     if from_step is not None:
         # Re-cast `from_step` into an Enum to enforce the validation since unserializable objects

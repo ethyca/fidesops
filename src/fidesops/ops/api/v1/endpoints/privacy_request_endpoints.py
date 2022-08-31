@@ -777,7 +777,6 @@ def validate_manual_input(
                 )
 
 
-@sync
 async def resume_privacy_request_with_manual_input(
     privacy_request_id: str,
     db: Session,
@@ -1066,7 +1065,7 @@ async def verify_identification_code(
     status_code=HTTP_200_OK,
     response_model=BulkReviewResponse,
 )
-async def approve_privacy_request(
+def approve_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
@@ -1078,7 +1077,7 @@ async def approve_privacy_request(
     """Approve and dispatch a list of privacy requests and/or report failure"""
     user_id = client.user_id
 
-    async def _approve_request(privacy_request: PrivacyRequest) -> None:
+    def _approve_request(privacy_request: PrivacyRequest) -> None:
         """Method for how to process requests - approved"""
         privacy_request.status = PrivacyRequestStatus.approved
         privacy_request.reviewed_at = datetime.utcnow()

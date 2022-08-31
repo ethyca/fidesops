@@ -8,6 +8,10 @@ def sync(func: Callable) -> Any:
 
     @wraps(func)
     def wrap(*args: Any, **kwargs: Any) -> Any:
-        return asyncio.run(func(*args, **kwargs))
+        try:
+            loop = asyncio.get_running_loop()
+            return loop.run_until_complete(func(*args, **kwargs))
+        except RuntimeError:
+            return asyncio.run(func(*args, **kwargs))
 
     return wrap
