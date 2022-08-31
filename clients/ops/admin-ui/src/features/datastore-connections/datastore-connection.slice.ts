@@ -274,7 +274,7 @@ export const datastoreConnectionApi = createApi({
       DatastoreConnectionSecretsRequest
     >({
       query: (params) => ({
-        url: `${CONNECTION_ROUTE}/${params.connection_key}/secret`,
+        url: `${CONNECTION_ROUTE}/${params.connection_key}/secret?verify=false`,
         method: "PUT",
         body: params.secrets,
       }),
@@ -287,6 +287,7 @@ export const {
   useCreateSassConnectionConfigMutation,
   useGetAllDatastoreConnectionsQuery,
   useGetDatasetsQuery,
+  useGetDatastoreConnectionByKeyQuery,
   useDeleteDatastoreConnectionMutation,
   useLazyGetDatastoreConnectionStatusQuery,
   usePatchDatasetMutation,
