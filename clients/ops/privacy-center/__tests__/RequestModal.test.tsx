@@ -1,20 +1,15 @@
 // __tests__/RequestModal.test.tsx
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  waitForElementToBeRemoved,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, waitForElementToBeRemoved } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { act } from "react-dom/test-utils";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
 
-import { RequestModal } from "../components/modals/RequestModal";
+import { RequestModal, RequestModalProps } from "../components/modals/RequestModal";
 import IndexPage from "../pages/index";
 
 import mockConfig from "../config/__mocks__/config.json";
+import { ModalViews } from "../components/modals/types";
 
 jest.mock("../config/config.json");
 
@@ -23,11 +18,16 @@ beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-const defaultModalProperties = {
+const defaultModalProperties: RequestModalProps = {
   isOpen: true,
   onClose: () => {},
   openAction: mockConfig.actions[0].policy_key,
   setAlert: () => {},
+  currentView: ModalViews.PrivacyRequest,
+  setCurrentView: ()=>{},
+  privacyRequestId: "",
+  setPrivacyRequestId: ()=>{},
+  isVerificationRequired: false
 };
 
 describe("RequestModal", () => {

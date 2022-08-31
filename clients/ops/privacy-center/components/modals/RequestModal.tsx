@@ -42,7 +42,7 @@ export const useRequestModal = () => {
   };
 };
 
-type RequestModalProps = {
+export type RequestModalProps = {
   isOpen: boolean;
   onClose: () => void;
   openAction: string | null;
