@@ -16,7 +16,10 @@ from fidesops.ops.schemas.email.email import (
     EmailServiceType,
     SubjectIdentityVerificationBodyParams,
 )
-from fidesops.ops.tasks import celery_app, DatabaseTask
+from fidesops.ops.tasks import (
+    DatabaseTask,
+    celery_app,
+)
 from fidesops.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
