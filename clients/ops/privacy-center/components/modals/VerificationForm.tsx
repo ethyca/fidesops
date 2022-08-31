@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  Text,
   Button,
   chakra,
-  Stack,
   FormControl,
-  Input,
   FormErrorMessage,
+  HStack,
+  Input,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  Stack,
+  Text,
+  VStack,
 } from "@fidesui/react";
 
 import { useFormik } from "formik";
@@ -34,6 +36,10 @@ const useVerificationForm = ({
   setCurrentView: (view: ModalViews) => void;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const resetVerificationProcess = useCallback(() => {
+    setCurrentView(ModalViews.PrivacyRequest);
+  }, [setCurrentView]);
+
   const formik = useFormik({
     initialValues: {
       code: "",
@@ -101,7 +107,7 @@ const useVerificationForm = ({
     },
   });
 
-  return { ...formik, isLoading };
+  return { ...formik, isLoading, resetVerificationProcess };
 };
 
 type VerificationFormProps = {
@@ -135,6 +141,7 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
     isValid,
     dirty,
     resetForm,
+    resetVerificationProcess,
   } = useVerificationForm({
     onClose,
     action,
@@ -182,18 +189,44 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
         </ModalBody>
 
         <ModalFooter pb={6}>
-          <Button
-            type="submit"
-            flex="1"
-            bg="primary.800"
-            _hover={{ bg: "primary.400" }}
-            _active={{ bg: "primary.500" }}
-            colorScheme="primary"
-            disabled={!(isValid && dirty)}
-            size="sm"
-          >
-            Submit code
-          </Button>
+          <VStack id="test" width="100%">
+            <HStack width="100%">
+              <Button
+                type="submit"
+                flex="1"
+                bg="primary.800"
+                _hover={{ bg: "primary.400" }}
+                _active={{ bg: "primary.500" }}
+                colorScheme="primary"
+                disabled={!(isValid && dirty)}
+                size="sm"
+              >
+                Submit code
+              </Button>
+            </HStack>
+            <HStack pt="8px" width="100%">
+              <Text
+                fontSize="sm"
+                fontWeight="normal"
+                lineHeight={5}
+                color="gray.500"
+              >
+                Didn&apos;t receive a code?
+              </Text>{" "}
+              <Text
+                fontSize="sm"
+                fontWeight="normal"
+                lineHeight={5}
+                color="primary.700"
+                textDecoration="underline"
+                cursor="pointer"
+                _active={{ bg: "primary.500" }}
+                onClick={resetVerificationProcess}
+              >
+                Click here to try again
+              </Text>
+            </HStack>
+          </VStack>
         </ModalFooter>
       </chakra.form>
     </>
