@@ -8,7 +8,7 @@ import config from "../../config/config.json";
 import { ModalViews } from "./types";
 import PrivacyRequestForm from "./PrivacyRequestForm";
 import VerificationForm from "./VerificationForm";
-import RequestSubmitted from "./RequestSubmitted"
+import RequestSubmitted from "./RequestSubmitted";
 
 export const useRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -51,6 +51,7 @@ type RequestModalProps = {
   setCurrentView: (view: ModalViews) => void;
   privacyRequestId: string;
   setPrivacyRequestId: (id: string) => void;
+  isVerificationRequired: boolean;
 };
 
 export const RequestModal: React.FC<RequestModalProps> = ({
@@ -62,6 +63,7 @@ export const RequestModal: React.FC<RequestModalProps> = ({
   setCurrentView,
   privacyRequestId,
   setPrivacyRequestId,
+  isVerificationRequired,
 }) => {
   const action = openAction
     ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
@@ -80,6 +82,7 @@ export const RequestModal: React.FC<RequestModalProps> = ({
         setAlert={setAlert}
         setCurrentView={setCurrentView}
         setPrivacyRequestId={setPrivacyRequestId}
+        isVerificationRequired={isVerificationRequired}
       />
     );
   }
@@ -97,10 +100,8 @@ export const RequestModal: React.FC<RequestModalProps> = ({
     );
   }
 
-  if( currentView === ModalViews.RequestSubmitted){
-    form = (
-      <RequestSubmitted onClose={onClose} action={action}/>
-    )
+  if (currentView === ModalViews.RequestSubmitted) {
+    form = <RequestSubmitted onClose={onClose} action={action} />;
   }
 
   return (

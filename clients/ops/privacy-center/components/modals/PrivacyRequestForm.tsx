@@ -18,7 +18,7 @@ import type { AlertState } from "../../types/AlertState";
 
 import config from "../../config/config.json";
 
-import { ModalViews, isVerificationRequired } from "./types";
+import { ModalViews } from "./types";
 import { hostUrl } from "../../constants";
 
 const usePrivacyRequestForm = ({
@@ -27,12 +27,14 @@ const usePrivacyRequestForm = ({
   setAlert,
   setCurrentView,
   setPrivacyRequestId,
+  isVerificationRequired,
 }: {
   onClose: () => void;
   action: typeof config.actions[0] | null;
   setAlert: (state: AlertState) => void;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
+  isVerificationRequired: boolean;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const formik = useFormik({
@@ -146,6 +148,7 @@ type PrivacyRequestFormProps = {
   setAlert: (state: AlertState) => void;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
+  isVerificationRequired: boolean;
 };
 
 const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
@@ -155,6 +158,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
   setAlert,
   setCurrentView,
   setPrivacyRequestId,
+  isVerificationRequired,
 }) => {
   const action = openAction
     ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
@@ -176,6 +180,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
     setAlert,
     setCurrentView,
     setPrivacyRequestId,
+    isVerificationRequired,
   });
 
   useEffect(() => resetForm(), [isOpen, resetForm]);

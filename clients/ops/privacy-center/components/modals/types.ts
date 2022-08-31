@@ -5,5 +5,3 @@ export enum ModalViews {
   IdentityVerification = "identityVerification",
   RequestSubmitted = "requestSubmitted",
 }
-
-export const isVerificationRequired = true;

@@ -21,9 +21,12 @@ import PrivacyCard from "../components/PrivacyCard";
 import type { AlertState } from "../types/AlertState";
 
 import config from "../config/config.json";
+import { hostUrl } from "../constants";
 
 const Home: NextPage = () => {
   const [alert, setAlert] = useState<AlertState | null>(null);
+  const [isVerificationRequired, setIsVerificationRequired] =
+    useState<boolean>(false);
   const {
     isOpen,
     onClose,
@@ -42,6 +45,19 @@ const Home: NextPage = () => {
     }
     return () => false;
   }, [alert]);
+
+  useEffect(() => {
+    const getConfig = async () => {
+      const response = await fetch(`${hostUrl}/id-verification/config`, {
+        headers: {
+          "X-Fides-Source": "fidesops-privacy-center",
+        },
+      });
+      const data = await response.json();
+      setIsVerificationRequired(data.identity_verification_required);
+    };
+    getConfig();
+  }, [setIsVerificationRequired]);
 
   return (
     <div>
@@ -129,6 +145,7 @@ const Home: NextPage = () => {
           setCurrentView={setCurrentView}
           privacyRequestId={privacyRequestId}
           setPrivacyRequestId={setPrivacyRequestId}
+          isVerificationRequired={isVerificationRequired}
         />
       </main>
     </div>

@@ -79,11 +79,8 @@ const useVerificationForm = ({
           return;
         }
 
-
         setCurrentView(ModalViews.RequestSubmitted);
-
       } catch (error) {
-        console.error("unhandled error occured", error)
         handleError("");
       }
     },
