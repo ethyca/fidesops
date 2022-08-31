@@ -589,7 +589,7 @@ def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, An
     return g
 
 
-def run_access_request(
+async def run_access_request(
     privacy_request: PrivacyRequest,
     policy: Policy,
     graph: DatasetGraph,
@@ -629,7 +629,7 @@ def run_access_request(
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
         update_mapping_from_cache(dsk, resources, start_function)
 
-        fideslog_graph_rerun(
+        await fideslog_graph_rerun(
             prepare_rerun_graph_analytics_event(
                 privacy_request, env, end_nodes, resources, ActionType.access
             )
@@ -673,7 +673,7 @@ def update_erasure_mapping_from_cache(
         )
 
 
-def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
+async def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
     privacy_request: PrivacyRequest,
     policy: Policy,
     graph: DatasetGraph,
@@ -727,7 +727,7 @@ def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
         # terminator function waits for all keys
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
         update_erasure_mapping_from_cache(dsk, resources, start_function)
-        fideslog_graph_rerun(
+        await fideslog_graph_rerun(
             prepare_rerun_graph_analytics_event(
                 privacy_request, env, end_nodes, resources, ActionType.erasure
             )
