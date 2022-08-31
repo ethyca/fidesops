@@ -22,7 +22,15 @@ import { ModalViews } from "../components/modals/types";
 
 jest.mock("../config/config.json");
 
-const server = setupServer();
+const server = setupServer(
+  rest.get("http://localhost:8080/api/v1/id-verification/config",(req, res, ctx)=>res(
+    ctx.json(
+
+{"identity_verification_required":false,"valid_email_config_exists":false}
+
+    )
+  ))
+);
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
