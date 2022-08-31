@@ -28,6 +28,7 @@ The types of changes are:
 ### Added
 * Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
 * Foundations for a new email connector type [#1142](https://github.com/ethyca/fidesops/pull/1142)
+* Access support for Shopify [#1220](https://github.com/ethyca/fidesops/pull/1220)
 
 ## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
 
