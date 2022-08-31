@@ -24,7 +24,16 @@ import config from "../config/config.json";
 
 const Home: NextPage = () => {
   const [alert, setAlert] = useState<AlertState | null>(null);
-  const { isOpen, onClose, onOpen, openAction } = useRequestModal();
+  const {
+    isOpen,
+    onClose,
+    onOpen,
+    openAction,
+    currentView,
+    setCurrentView,
+    privacyRequestId,
+    setPrivacyRequestId,
+  } = useRequestModal();
 
   useEffect(() => {
     if (alert?.status) {
@@ -116,6 +125,10 @@ const Home: NextPage = () => {
           onClose={onClose}
           openAction={openAction}
           setAlert={setAlert}
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+          privacyRequestId={privacyRequestId}
+          setPrivacyRequestId={setPrivacyRequestId}
         />
       </main>
     </div>

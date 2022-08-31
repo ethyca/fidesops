@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import {
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  Text,
   Button,
   chakra,
-  Stack,
   FormControl,
-  Input,
   FormErrorMessage,
+  Input,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  Stack,
+  Text,
 } from "@fidesui/react";
 
 import { useFormik } from "formik";
@@ -18,14 +18,21 @@ import type { AlertState } from "../../types/AlertState";
 
 import config from "../../config/config.json";
 
+import { ModalViews, isVerificationRequired } from "./types";
+import { hostUrl } from "../../constants";
+
 const usePrivacyRequestForm = ({
   onClose,
   action,
   setAlert,
+  setCurrentView,
+  setPrivacyRequestId,
 }: {
   onClose: () => void;
   action: typeof config.actions[0] | null;
   setAlert: (state: AlertState) => void;
+  setCurrentView: (view: ModalViews) => void;
+  setPrivacyRequestId: (id: string) => void;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const formik = useFormik({
@@ -41,10 +48,7 @@ const usePrivacyRequestForm = ({
       }
 
       setIsLoading(true);
-      const host =
-        process.env.NODE_ENV === "development"
-          ? config.fidesops_host_development
-          : config.fidesops_host_production;
+
       const body = [
         {
           identity: {
@@ -66,7 +70,7 @@ const usePrivacyRequestForm = ({
       };
 
       try {
-        const response = await fetch(`${host}/privacy-request`, {
+        const response = await fetch(`${hostUrl}/privacy-request`, {
           method: "POST",
           headers: {
             Accept: "application/json",
@@ -83,12 +87,19 @@ const usePrivacyRequestForm = ({
 
         const data = await response.json();
 
-        if (data.succeeded.length) {
+        if (!isVerificationRequired && data.succeeded.length) {
           setAlert({
             status: "success",
             description:
               "Your request was successful, please await further instructions.",
           });
+        } else if (
+          isVerificationRequired &&
+          data.succeeded.length &&
+          data.succeeded[0].status === "identity_unverified"
+        ) {
+          setPrivacyRequestId(data.succeeded[0].id);
+          setCurrentView(ModalViews.IdentityVerification);
         } else {
           handleError();
         }
@@ -97,7 +108,9 @@ const usePrivacyRequestForm = ({
         return;
       }
 
-      onClose();
+      if (!isVerificationRequired) {
+        onClose();
+      }
     },
     validate: (values) => {
       if (!action) return {};
@@ -126,12 +139,23 @@ const usePrivacyRequestForm = ({
   return { ...formik, isLoading };
 };
 
-export const PrivacyRequestForm: React.FC<{
+type PrivacyRequestFormProps = {
   isOpen: boolean;
   onClose: () => void;
   openAction: string | null;
   setAlert: (state: AlertState) => void;
-}> = ({ isOpen, onClose, openAction, setAlert }) => {
+  setCurrentView: (view: ModalViews) => void;
+  setPrivacyRequestId: (id: string) => void;
+};
+
+const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
+  isOpen,
+  onClose,
+  openAction,
+  setAlert,
+  setCurrentView,
+  setPrivacyRequestId,
+}) => {
   const action = openAction
     ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
     : null;
@@ -146,7 +170,13 @@ export const PrivacyRequestForm: React.FC<{
     isValid,
     dirty,
     resetForm,
-  } = usePrivacyRequestForm({ onClose, action, setAlert });
+  } = usePrivacyRequestForm({
+    onClose,
+    action,
+    setAlert,
+    setCurrentView,
+    setPrivacyRequestId,
+  });
 
   useEffect(() => resetForm(), [isOpen, resetForm]);
 
@@ -258,3 +288,5 @@ export const PrivacyRequestForm: React.FC<{
     </>
   );
 };
+
+export default PrivacyRequestForm;
