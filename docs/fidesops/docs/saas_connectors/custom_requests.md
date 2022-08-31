@@ -1,10 +1,10 @@
 # Custom SaaS Requests
 
-Fidesops provides the option to override a SaaS connection's default configuration with a custom Python function. Implementing a custom request override allows you to process access or erasure requests which cannot be described by a standard configuration file, or which need more complex post-processing and pagination.
+Fidesops provides the option to extend a SaaS connection's configuration with a custom Python function. Implementing a custom request function allows you to process access or erasure requests which cannot be described by a standard configuration file, or which need more complex post-processing and pagination.
 
 ## Define a custom request
 
-To use a request override in your SaaS Config, your request must include a `request_override` field along with the request's `param_values`. 
+To extend your SaaS request, your request configuration must include a `request_override` field along with the request's `param_values`. 
 
 For more information on building a request and the required fields, see the [SaaS Config guide](saas_config.md).
 
@@ -32,12 +32,12 @@ The above YAML snippet replaces the usual `read` request fields with the require
 
 Including any other fields will result in an invalid request.
 
-## Create and register your override function
+## Create and register an override function
 
-The string value of `request_override` is used by fidesops to call a registered function for additional processing. 
+The value of `request_override` points to your registered Python function. The function should be defined with matching input parameters, and will perform any additional processing before returning the appropriate data type.
 
-```py
-#register your function - note the name matches the request_override
+```py title="Sample Python function"
+# register your function 
 @SaaSRequestOverrideFactory.register(
     "mailchimp_messages_access", [SaaSRequestType.READ]
 )
@@ -88,6 +88,52 @@ def mailchimp_messages_access(
             processed_data.extend(filtered_data)
 
     return processed_data
-  ```
+```
 
-    Above is an example Python function to add additional processing to a Mailchimp connector. 
+The above Python function adds additional processing to a Mailchimp connector, defined as `mailchimp_messages_access`. Note that this name matches the function pointed to by `request_override`.
+
+### Method signatures
+
+The method signatures of override functions must adhere to the arguments and return type required by their request type:
+
+```py title="Read request method signature"
+def my_read_override_function(
+    node: TraversalNode,
+    policy: Policy,
+    privacy_request: PrivacyRequest,
+    input_data: Dict[str, List[Any]],
+    secrets: Dict[str, Any],
+) -> List[Row]:
+```
+
+```py title="Update, delete, or data_protection_request method signature"
+def my_update_override_function(
+    param_values_per_row: List[Dict[str, Any]],
+    policy: Policy,
+    privacy_request: PrivacyRequest,
+    secrets: Dict[str, Any],
+) -> int:
+```
+
+### Register your function
+
+To register your override function, you must include the following decorator. 
+
+The first argument specifies the value by which the function is referenced in your SaaS config, and the second argument is a List of SaaSRequestType enum values:
+
+```py
+@SaaSRequestOverrideFactory.register( "my_read_override_function", [SaaSRequestType.READ] )
+```
+
+The `SaaSRequestType` enum values are:
+```py
+class SaaSRequestType(Enum):
+    """
+    An `Enum` containing the different possible types of SaaS requests
+    """
+
+    READ = "read'"
+    UPDATE = "update"
+    DATA_PROTECTION_REQUEST = "data_protection_request"
+    DELETE = "delete"
+```
