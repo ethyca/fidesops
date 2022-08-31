@@ -3,6 +3,7 @@ import { useAppSelector } from "app/hooks";
 import { capitalize } from "common/utils";
 import {
   selectConnectionTypeState,
+  setConnection,
   setConnectionOption,
   setStep,
 } from "connection-type/connection-type.slice";
@@ -34,7 +35,10 @@ const AddConnection: React.FC = () => {
       const item = STEPS.find((s) => s.stepId === Number(router.query.step));
       dispatch(setStep(item || STEPS[1]));
     }
-  }, [dispatch, router.query.connectorType, router.query.step]);
+    return () => {
+      dispatch(setConnection(undefined));
+    };
+  }, [dispatch, router.events, router.query.connectorType, router.query.step]);
 
   const getComponent = useCallback(() => {
     switch (step.stepId) {
