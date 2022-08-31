@@ -27,6 +27,7 @@ The types of changes are:
 
 * Fix analytics opt out environment variable name [#1170](https://github.com/ethyca/fidesops/pull/1170)
 * Added how to view a subject request history and reprocess a subject request [#1164](https://github.com/ethyca/fidesops/pull/1164)
+* Added saas config override docs [#1229](https://github.com/ethyca/fidesops/pull/1229)
 
 ## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.7.2)
 
