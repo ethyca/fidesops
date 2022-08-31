@@ -256,3 +256,6 @@ def test_shopify_access_request_task(
             "published_at",
         ],
     )
+
+    for comment in v[f"{dataset_name}:blog_article_comments"]:
+        assert comment["email"] == shopify_identity_email
