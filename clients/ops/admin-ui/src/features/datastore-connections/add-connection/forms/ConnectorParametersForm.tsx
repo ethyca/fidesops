@@ -58,6 +58,17 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
 
+  const validateConnectionIdentifier = (value: string) => {
+    let error;
+    if (typeof value === "undefined" || value === "") {
+      error = "Connection Identifier is required";
+    }
+    if (value && isNumeric(value)) {
+      error = "Connection Identifier must be an alphanumeric value";
+    }
+    return error;
+  };
+
   const validateField = (label: string, value: string) => {
     let error;
     if (typeof value === "undefined" || value === "") {
@@ -234,16 +245,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
           <Field
             id="instance_key"
             name="instance_key"
-            validate={(value: any) => {
-              let error;
-              if (typeof value === "undefined" || value === "") {
-                error = "Connection Identifier is required";
-              }
-              if (value && isNumeric(value)) {
-                error = "Connection Identifier must be an alphanumeric value";
-              }
-              return error;
-            }}
+            validate={validateConnectionIdentifier}
           >
             {({ field, form }: { field: any; form: any }) => (
               <FormControl
