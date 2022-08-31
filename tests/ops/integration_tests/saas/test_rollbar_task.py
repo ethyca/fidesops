@@ -12,6 +12,7 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 logger = logging.getLogger(__name__)
 
+
 @pytest.mark.integration_saas
 @pytest.mark.integration_rollbar
 def test_rollbar_connection_test(rollbar_connection_config) -> None:
@@ -88,4 +89,3 @@ def test_saas_access_request_task(
                     "data",
                 ],
             )
-
