@@ -112,6 +112,8 @@ The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order t
 * Add option to login as root user from config[#1116](https://github.com/ethyca/fidesops/pull/1116)
 * Added email templates [#1123](https://github.com/ethyca/fidesops/pull/1123)
 * Add Retry button back into the subject request detail view [#1128](https://github.com/ethyca/fidesops/pull/1131)
+* Access and erasure support for Rollbar [#1227](https://github.com/ethyca/fidesops/pull/1227)
+
 
 ### Developer Experience
 

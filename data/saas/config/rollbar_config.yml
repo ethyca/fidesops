@@ -1,0 +1,88 @@
+saas_config:
+  - fides_key: rollbar_connector
+    name: Rollbar SaaS Config
+    type: rollbar
+    description: A sample schema representing the Rollbar connector for Fidesops
+    version: 0.0.1
+
+    connector_params:
+      - name: domain
+      - name: read_access_token
+      - name: write_access_token
+      - name: page_size
+
+    client_config:
+      protocol: https
+      host: <domain>
+
+    test_request:
+      method: GET
+      path: /api/1/status/ping
+
+    endpoints:
+      - name: projects
+        requests:
+          read:
+            method: GET
+            path: /api/1/projects
+            headers:
+              - name: X-ROLLBAR-ACCESS-TOKEN
+                value: <read_access_token>
+            param_values:
+              - name: read_access_token
+                connector_param: read_access_token
+              - name: placeholder
+                identity: email
+            data_path: result
+
+      - name: project_access_token
+        requests:
+          read:
+            method: GET
+            path: /api/1/project/<project_id>/access_tokens
+            headers:
+              - name: X-ROLLBAR-ACCESS-TOKEN
+                value: <read_access_token>
+            param_values:
+              - name: read_access_token
+                connector_param: read_access_token
+              - name: project_id
+                references:
+                  - dataset: rollbar_connector
+                    field: projects.id
+                    direction: from
+            postprocessors:
+              - strategy: filter
+                configuration:
+                  field: name
+                  value: read
+
+            data_path: result
+
+      - name: instances
+        requests:
+          read:
+            method: GET
+            path: /api/1/instances
+            headers:
+              - name: X-ROLLBAR-ACCESS-TOKEN
+                value: <project_read_token>
+            param_values:
+              - name: project_read_token
+                references:
+                  - dataset: rollbar_connector
+                    field: project_access_token.access_token
+                    direction: from
+            pagination:
+              strategy: offset
+              configuration:
+                incremental_param: page
+                increment_by: 1
+                limit: 20
+            postprocessors:
+              - strategy: filter
+                configuration:
+                  field: email
+                  value:
+                    identity: email
+            data_path: result
