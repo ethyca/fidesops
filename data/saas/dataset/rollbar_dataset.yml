@@ -1,0 +1,86 @@
+dataset:
+- fides_key: rollbar_connector
+  name: Rollbar Dataset
+  description: A sample dataset representing the Rollbar connector for Fidesops
+  collections:
+  - name: projects
+    fields:
+    - name: id
+      data_categories: [system.operations]
+      fidesops_meta:
+        data_type: integer
+        primary_key: true
+    - name: account_id
+      data_categories: [system.operations]
+      fidesops_meta:
+        data_type: integer
+    - name: name
+      data_categories: [system.operations]
+      fidesops_meta:
+        data_type: string
+
+  - name: project_access_token
+    fields:
+      - name: access_token
+        data_categories: [ system.operations ]
+        fidesops_meta:
+            data_type: string
+      - name: project_id
+        data_categories: [ system.operations ]
+        fidesops_meta:
+            data_type: integer
+      - name: name
+        data_categories: [ system.operations ]
+        fidesops_meta:
+          data_type: string
+
+  - name: instances
+    fields:
+    - name: instances
+      fidesops_meta:
+        data_type: object
+      fields:
+      - name: id
+        data_categories: [system.operations]
+        fidesops_meta:
+          data_type: integer
+      - name: project_id
+        data_categories: [system.operations]
+        fidesops_meta:
+          data_type: integer
+      - name: timestamp
+        data_categories: [system.operations]
+        fidesops_meta:
+          data_type: integer
+      - name: data
+        fidesops_meta:
+          data_type: object
+        fields:
+        - name: body
+          fidesops_meta:
+            data_type: object
+          fields:
+          - name: message
+            fidesops_meta:
+              data_type: object
+            fields:
+            - name: body
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+      - name: person
+        fidesops_meta:
+          data_type: object
+        fields:
+        - name: id
+          data_categories: [system.operations]
+          fidesops_meta:
+            data_type: integer
+        - name: username
+          data_categories: [system.operations]
+          fidesops_meta:
+            data_type: string
+        - name: email
+          data_categories: [system.operations]
+          fidesops_meta:
+            data_type: string
