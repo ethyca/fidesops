@@ -1,4 +1,5 @@
 /* eslint-disable no-param-reassign */
+import { isNumeric } from "@chakra-ui/utils";
 import {
   Button,
   ButtonGroup,
@@ -230,20 +231,44 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             )}
           </Field>
           {/* Connection Identifier */}
-          <Field id="instance_key" name="instance_key">
-            {({ field }: { field: any }) => (
-              <FormControl display="flex" isRequired>
+          <Field
+            id="instance_key"
+            name="instance_key"
+            validate={(value: any) => {
+              let error;
+              if (typeof value === "undefined" || value === "") {
+                error = "Connection Identifier is required";
+              }
+              if (value && isNumeric(value)) {
+                error = "Connection Identifier must be an alphanumeric value";
+              }
+              return error;
+            }}
+          >
+            {({ field, form }: { field: any; form: any }) => (
+              <FormControl
+                display="flex"
+                isRequired
+                isInvalid={
+                  form.errors.instance_key && form.touched.instance_key
+                }
+              >
                 {getFormLabel("instance_key", "Connection Identifier")}
-                <Input
-                  {...field}
-                  autoComplete="off"
-                  color="gray.700"
-                  isDisabled={connection?.key}
-                  placeholder={`A a unique identifier for your new ${capitalize(
-                    connectionOption!.identifier
-                  )} connection`}
-                  size="sm"
-                />
+                <VStack align="flex-start" w="inherit">
+                  <Input
+                    {...field}
+                    autoComplete="off"
+                    color="gray.700"
+                    isDisabled={connection?.key}
+                    placeholder={`A a unique identifier for your new ${capitalize(
+                      connectionOption!.identifier
+                    )} connection`}
+                    size="sm"
+                  />
+                  <FormErrorMessage>
+                    {form.errors.instance_key}
+                  </FormErrorMessage>
+                </VStack>
                 <Tooltip
                   aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
                   hasArrow
