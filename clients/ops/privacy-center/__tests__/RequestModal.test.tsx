@@ -18,20 +18,19 @@ import {
 import IndexPage from "../pages/index";
 
 import mockConfig from "../config/__mocks__/config.json";
+import { hostUrl } from "../constants";
 import { ModalViews } from "../components/modals/types";
 
 jest.mock("../config/config.json");
 
 const server = setupServer(
-  rest.get(
-    "http://localhost:8080/api/v1/id-verification/config",
-    (req, res, ctx) =>
-      res(
-        ctx.json({
-          identity_verification_required: false,
-          valid_email_config_exists: false,
-        })
-      )
+  rest.get(`${hostUrl}/id-verification/config`, (req, res, ctx) =>
+    res(
+      ctx.json({
+        identity_verification_required: false,
+        valid_email_config_exists: false,
+      })
+    )
   )
 );
 beforeAll(() => server.listen());
