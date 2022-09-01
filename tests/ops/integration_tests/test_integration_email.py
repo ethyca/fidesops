@@ -11,7 +11,7 @@ from fidesops.ops.task import graph_task
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-def test_collections_with_manual_erasure_confirmation(
+async def test_collections_with_manual_erasure_confirmation(
     db,
     erasure_policy,
     integration_postgres_config,
@@ -59,7 +59,7 @@ def test_collections_with_manual_erasure_confirmation(
     email_graph = convert_dataset_to_graph(dataset_email, email_connection_config.key)
     dataset_graph = DatasetGraph(*[postgres_graph, email_graph])
 
-    v = graph_task.run_erasure(
+    v = await graph_task.run_erasure(
         privacy_request,
         erasure_policy,
         dataset_graph,
