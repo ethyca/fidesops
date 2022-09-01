@@ -56,6 +56,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
 
   const displayError = (content: string | JSX.Element) => {
     toast({
+      position: "top",
       render: () => (
         <Alert status="error">
           <AlertIcon />
@@ -69,6 +70,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
 
   const displaySuccess = (content: string) => {
     toast({
+      position: "top",
       render: () => (
         <Alert status="success" variant="subtle">
           <AlertIcon />

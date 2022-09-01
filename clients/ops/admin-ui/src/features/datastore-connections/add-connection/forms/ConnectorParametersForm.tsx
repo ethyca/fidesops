@@ -1,6 +1,10 @@
 /* eslint-disable no-param-reassign */
 import { isNumeric } from "@chakra-ui/utils";
 import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  Box,
   Button,
   ButtonGroup,
   FormControl,
@@ -76,6 +80,20 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       error = `${label} is required`;
     }
     return error;
+  };
+
+  const displayError = (content: string | JSX.Element) => {
+    toast({
+      position: "top",
+      render: () => (
+        <Alert status="error">
+          <AlertIcon />
+          <Box>
+            <AlertDescription>{content}</AlertDescription>
+          </Box>
+        </Alert>
+      ),
+    });
   };
 
   const getFormLabel = (id: string, value: string): JSX.Element => (
@@ -174,10 +192,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     } else if (isErrorWithDetailArray(error)) {
       errorMsg = error.data.detail[0].msg;
     }
-    toast({
-      status: "error",
-      description: errorMsg,
-    });
+    displayError(errorMsg);
   };
 
   const handleSubmit = (values: any, actions: any) => {

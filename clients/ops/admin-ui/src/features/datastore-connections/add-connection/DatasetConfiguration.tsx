@@ -1,4 +1,13 @@
-import { Box, Center, Spinner, useToast, VStack } from "@fidesui/react";
+import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  Box,
+  Center,
+  Spinner,
+  useToast,
+  VStack,
+} from "@fidesui/react";
 import { useAppSelector } from "app/hooks";
 import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
 import { capitalize } from "common/utils";
@@ -24,6 +33,32 @@ const DatasetConfiguration: React.FC = () => {
   );
   const [patchDataset] = usePatchDatasetMutation();
 
+  const displayError = (content: string | JSX.Element) => {
+    toast({
+      position: "top",
+      render: () => (
+        <Alert status="error">
+          <AlertIcon />
+          <Box>
+            <AlertDescription>{content}</AlertDescription>
+          </Box>
+        </Alert>
+      ),
+    });
+  };
+
+  const displaySuccess = (content: string) => {
+    toast({
+      position: "top",
+      render: () => (
+        <Alert status="success" variant="subtle">
+          <AlertIcon />
+          {content}
+        </Alert>
+      ),
+    });
+  };
+
   const handleError = (error: any) => {
     let errorMsg = "An unexpected error occurred. Please try again.";
     if (isErrorWithDetail(error)) {
@@ -31,10 +66,7 @@ const DatasetConfiguration: React.FC = () => {
     } else if (isErrorWithDetailArray(error)) {
       errorMsg = error.data.detail[0].msg;
     }
-    toast({
-      status: "error",
-      description: errorMsg,
-    });
+    displayError(errorMsg);
   };
 
   const handleSubmit = async (value: any) => {
@@ -45,15 +77,9 @@ const DatasetConfiguration: React.FC = () => {
       };
       const payload = await patchDataset(params).unwrap();
       if (payload.failed?.length > 0) {
-        toast({
-          status: "error",
-          description: payload.failed[0].message,
-        });
+        displayError(payload.failed[0].message);
       } else {
-        toast({
-          status: "success",
-          description: "Dataset successfully updated!",
-        });
+        displaySuccess("Dataset successfully updated!");
       }
     } catch (error) {
       handleError(error);
