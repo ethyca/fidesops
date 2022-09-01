@@ -12,7 +12,7 @@ from fidesops.ops.graph.traversal import TraversalNode
 from fidesops.ops.models.connectionconfig import ConnectionTestStatus
 from fidesops.ops.models.policy import CurrentStep, Policy, Rule
 from fidesops.ops.models.privacy_request import (
-    CollectionActionRequired,
+    CheckpointActionRequired,
     ManualAction,
     PrivacyRequest,
 )
@@ -55,7 +55,7 @@ class EmailConnector(BaseConnector[None]):
                 action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
                 to_email=config.test_email,
                 email_body_params={
-                    "test_collection": CollectionActionRequired(
+                    "test_collection": CheckpointActionRequired(
                         step=CurrentStep.erasure,
                         collection=CollectionAddress("test_dataset", "test_collection"),
                         action_needed=[

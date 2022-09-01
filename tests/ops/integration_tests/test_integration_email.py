@@ -8,7 +8,7 @@ from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.ops.models.policy import CurrentStep
 from fidesops.ops.models.privacy_request import (
-    CollectionActionRequired,
+    CheckpointActionRequired,
     ExecutionLog,
     ExecutionLogStatus,
     ManualAction,
@@ -27,7 +27,7 @@ from fidesops.ops.task import graph_task
     "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
 )
 @pytest.mark.asyncio
-async def test_collections_with_manual_erasure_confirmation(
+async def test_email_connector_cache_and_delayed_send(
     mock_email_dispatch,
     db,
     erasure_policy,
@@ -114,7 +114,7 @@ async def test_collections_with_manual_erasure_confirmation(
     )
 
     assert raw_email_template_values == {
-        "children": CollectionActionRequired(
+        "children": CheckpointActionRequired(
             step=CurrentStep.erasure,
             collection=CollectionAddress("email_dataset", "children"),
             action_needed=[
@@ -135,7 +135,7 @@ async def test_collections_with_manual_erasure_confirmation(
                 )
             ],
         ),
-        "daycare_customer": CollectionActionRequired(
+        "daycare_customer": CheckpointActionRequired(
             step=CurrentStep.erasure,
             collection=CollectionAddress("email_dataset", "daycare_customer"),
             action_needed=[
@@ -148,7 +148,7 @@ async def test_collections_with_manual_erasure_confirmation(
                 )
             ],
         ),
-        "payment": CollectionActionRequired(
+        "payment": CheckpointActionRequired(
             step=CurrentStep.erasure,
             collection=CollectionAddress("email_dataset", "payment"),
             action_needed=[

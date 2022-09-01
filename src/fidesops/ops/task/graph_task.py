@@ -118,7 +118,7 @@ def retry(
                     raised_ex = ex
 
             self.log_end(action_type, raised_ex)
-            self.resources.request.cache_failed_collection_details(
+            self.resources.request.cache_failed_checkpoint_details(
                 step=action_type, collection=self.traversal_node.address
             )
             # Re-raise to stop privacy request execution on failure.

@@ -21,7 +21,7 @@ from fidesops.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PR
 from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.models.policy import CurrentStep
-from fidesops.ops.models.privacy_request import CollectionActionRequired, ManualAction
+from fidesops.ops.models.privacy_request import CheckpointActionRequired, ManualAction
 from fidesops.ops.schemas.email.email import EmailActionType
 
 page_size = Params().size
@@ -1199,7 +1199,7 @@ class TestPutConnectionConfigSecrets:
         )
         assert kwargs["to_email"] == "test@example.com"
         assert kwargs["email_body_params"] == {
-            "test_collection": CollectionActionRequired(
+            "test_collection": CheckpointActionRequired(
                 step=CurrentStep.erasure,
                 collection=CollectionAddress("test_dataset", "test_collection"),
                 action_needed=[

@@ -20,6 +20,7 @@ from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.models.policy import CurrentStep, PolicyPostWebhook
 from fidesops.ops.models.privacy_request import (
     ActionType,
+    CheckpointActionRequired,
     ExecutionLog,
     PolicyPreWebhook,
     PrivacyRequest,
@@ -1448,6 +1449,10 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert not proceed
         assert privacy_request.status == PrivacyRequestStatus.error
         assert privacy_request.finished_processing_at is not None
+        assert (
+            privacy_request.get_failed_checkpoint_details()
+            == CheckpointActionRequired(step=CurrentStep.pre_webhooks)
+        )
         assert privacy_request.paused_at is None
 
     @mock.patch(
@@ -1593,3 +1598,53 @@ def test_create_and_process_erasure_request_email_connector(
     kwargs = mailgun_send.call_args.kwargs
     assert type(kwargs["email_config"]) == EmailConfig
     assert type(kwargs["email"]) == EmailForActionType
+
+
+@mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+@pytest.mark.integration
+def test_create_and_process_erasure_request_email_connector_email_send_error(
+    mailgun_send,
+    email_connection_config,
+    erasure_policy,
+    integration_postgres_config,
+    run_privacy_request_task,
+    email_dataset_config,
+    postgres_example_test_dataset_config_read_access,
+    db,
+):
+    """
+    Force error by having no email config setup
+    """
+    rule = erasure_policy.rules[0]
+    target = rule.targets[0]
+    target.data_category = "user.childrens"
+    target.save(db=db)
+
+    email = "customer-1@example.com"
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy.key,
+        "identity": {"email": email},
+    }
+
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
+    db.refresh(pr)
+    assert pr.status == PrivacyRequestStatus.error
+    assert pr.get_failed_checkpoint_details() == CheckpointActionRequired(
+        step=CurrentStep.erasure_email_post_send, collection=None, action_needed=None
+    )
+    cached_email_contents = pr.get_email_connector_template_contents_by_dataset(
+        CurrentStep.erasure, "email_dataset"
+    )
+    assert list(cached_email_contents.keys()) == [
+        "payment",
+        "children",
+        "daycare_customer",
+    ]
+    pr.delete(db=db)
+    assert mailgun_send.called is False

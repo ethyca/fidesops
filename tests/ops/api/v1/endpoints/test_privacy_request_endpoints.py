@@ -594,7 +594,7 @@ class TestGetPrivacyRequests:
                             ).rules
                         ],
                     },
-                    "stopped_collection_details": None,
+                    "action_required_details": None,
                     "resume_endpoint": None,
                 }
             ],
@@ -649,7 +649,7 @@ class TestGetPrivacyRequests:
                             ).rules
                         ],
                     },
-                    "stopped_collection_details": None,
+                    "action_required_details": None,
                     "resume_endpoint": None,
                 }
             ],
@@ -1004,7 +1004,7 @@ class TestGetPrivacyRequests:
                             ).rules
                         ],
                     },
-                    "stopped_collection_details": None,
+                    "action_required_details": None,
                     "resume_endpoint": None,
                     "results": {
                         "Request approved": [
@@ -1198,7 +1198,7 @@ class TestGetPrivacyRequests:
 
         data = response.json()["items"][0]
         assert data["status"] == "paused"
-        assert data["stopped_collection_details"] == {
+        assert data["action_required_details"] == {
             "step": "access",
             "collection": "manual_dataset:manual_collection",
             "action_needed": [
@@ -1239,7 +1239,7 @@ class TestGetPrivacyRequests:
 
         data = response.json()["items"][0]
         assert data["status"] == "paused"
-        assert data["stopped_collection_details"] == {
+        assert data["action_required_details"] == {
             "step": "erasure",
             "collection": "manual_dataset:another_collection",
             "action_needed": [
@@ -1266,7 +1266,7 @@ class TestGetPrivacyRequests:
 
         data = response.json()["items"][0]
         assert data["status"] == "paused"
-        assert data["stopped_collection_details"] is None
+        assert data["action_required_details"] is None
         assert data["resume_endpoint"] == "/privacy-request/{}/resume".format(
             privacy_request.id
         )
@@ -1277,7 +1277,7 @@ class TestGetPrivacyRequests:
         # Mock the privacy request being in an errored state waiting for retry
         privacy_request.status = PrivacyRequestStatus.error
         privacy_request.save(db)
-        privacy_request.cache_failed_collection_details(
+        privacy_request.cache_failed_checkpoint_details(
             step=CurrentStep.erasure,
             collection=CollectionAddress("manual_example", "another_collection"),
         )
@@ -1288,7 +1288,7 @@ class TestGetPrivacyRequests:
 
         data = response.json()["items"][0]
         assert data["status"] == "error"
-        assert data["stopped_collection_details"] == {
+        assert data["action_required_details"] == {
             "step": "erasure",
             "collection": "manual_example:another_collection",
             "action_needed": None,
@@ -2025,7 +2025,7 @@ class TestResumePrivacyRequest:
                     for rule in PolicyResponse.from_orm(privacy_request.policy).rules
                 ],
             },
-            "stopped_collection_details": None,
+            "action_required_details": None,
             "resume_endpoint": None,
         }
 
@@ -2373,7 +2373,7 @@ class TestRestartFromFailure:
             == f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = in_processing."
         )
 
-    def test_restart_from_failure_no_stopped_collection(
+    def test_restart_from_failure_no_stopped_step(
         self, api_client, url, generate_auth_header, db, privacy_request
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
@@ -2392,14 +2392,14 @@ class TestRestartFromFailure:
     @mock.patch(
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    def test_restart_from_failure(
+    def test_restart_from_failure_from_specific_collection(
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_request
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
         privacy_request.status = PrivacyRequestStatus.error
         privacy_request.save(db)
 
-        privacy_request.cache_failed_collection_details(
+        privacy_request.cache_failed_checkpoint_details(
             step=CurrentStep.access,
             collection=CollectionAddress("test_dataset", "test_collection"),
         )
@@ -2413,6 +2413,33 @@ class TestRestartFromFailure:
         submit_mock.assert_called_with(
             privacy_request_id=privacy_request.id,
             from_step=CurrentStep.access.value,
+            from_webhook_id=None,
+        )
+
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_restart_from_failure_outside_graph(
+        self, submit_mock, api_client, url, generate_auth_header, db, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request.status = PrivacyRequestStatus.error
+        privacy_request.save(db)
+
+        privacy_request.cache_failed_checkpoint_details(
+            step=CurrentStep.erasure_email_post_send,
+            collection=None,
+        )
+
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 200
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+        submit_mock.assert_called_with(
+            privacy_request_id=privacy_request.id,
+            from_step=CurrentStep.erasure_email_post_send.value,
             from_webhook_id=None,
         )
 
