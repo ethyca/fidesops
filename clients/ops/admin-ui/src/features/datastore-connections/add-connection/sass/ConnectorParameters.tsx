@@ -41,11 +41,11 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
 }) => {
   const dispatch = useDispatch();
   const toast = useToast();
-  const [defaultValues, setDefaultValues] = useState({
+  const defaultValues = {
     description: "",
     instance_key: "",
     name: "",
-  } as SaasConnectorParametersFormFields);
+  } as SaasConnectorParametersFormFields;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { connection, connectionOption, step } = useAppSelector(

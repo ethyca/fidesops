@@ -52,7 +52,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
     setTimeout(() => {
       // Adjust the height of the YAML editor dynamically
       const editor = document.querySelector<HTMLElement>(".cm-editor")!;
-      editor.style.height = "calc(100vh - 399px)";
+      editor.style.height = "calc(100vh - 425px)";
     }, 0);
   }, []);
 

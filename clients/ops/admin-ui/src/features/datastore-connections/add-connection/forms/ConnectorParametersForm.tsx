@@ -23,6 +23,7 @@ import { CircleHelpIcon } from "common/Icon";
 import { capitalize } from "common/utils";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
+import { ConnectionType } from "datastore-connections/constants";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import { Field, Form, Formik } from "formik";
 import React, { useEffect, useRef } from "react";
@@ -138,14 +139,31 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   );
 
   const getInitialValues = () => {
-    Object.entries(data.properties).forEach((key) => {
-      // eslint-disable-next-line no-nested-ternary
-      defaultValues[key[0]] = key[1].default
-        ? key[1].default
-        : key[1].type === "integer"
-        ? 0
-        : "";
-    });
+    if (connection?.key) {
+      defaultValues.name = connection.name;
+      defaultValues.description = connection.description as string;
+      defaultValues.instance_key =
+        connection.connection_type === ConnectionType.SAAS
+          ? (connection.saas_config?.fides_key as string)
+          : connection.key;
+      Object.entries(data.properties).forEach((key) => {
+        // eslint-disable-next-line no-nested-ternary
+        defaultValues[key[0]] = key[1].default
+          ? key[1].default
+          : key[1].type === "integer"
+          ? 0
+          : "";
+      });
+    } else {
+      Object.entries(data.properties).forEach((key) => {
+        // eslint-disable-next-line no-nested-ternary
+        defaultValues[key[0]] = key[1].default
+          ? key[1].default
+          : key[1].type === "integer"
+          ? 0
+          : "";
+      });
+    }
     return defaultValues;
   };
 
