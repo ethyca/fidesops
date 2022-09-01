@@ -274,7 +274,7 @@ def _send_verification_code_to_user(
                 verification_code=verification_code,
                 verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
             ),
-        }
+        },
     )
 
 

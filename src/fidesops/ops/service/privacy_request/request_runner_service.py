@@ -39,10 +39,7 @@ from fidesops.ops.task.graph_task import (
     run_access_request,
     run_erasure,
 )
-from fidesops.ops.tasks import (
-    DatabaseTask,
-    celery_app,
-)
+from fidesops.ops.tasks import DatabaseTask, celery_app
 from fidesops.ops.tasks.scheduled.scheduler import scheduler
 from fidesops.ops.util.cache import (
     FidesopsRedis,
