@@ -27,6 +27,13 @@ The types of changes are:
 
 * Fix analytics opt out environment variable name [#1170](https://github.com/ethyca/fidesops/pull/1170)
 * Added how to view a subject request history and reprocess a subject request [#1164](https://github.com/ethyca/fidesops/pull/1164)
+* Adds section on email communications, and exposes previously hidden guides in nav bar [1233](https://github.com/ethyca/fidesops/pull/1233)
+
+### Fixed
+
+* Fix issue with fideslog event loop errors [#1174](https://github.com/ethyca/fidesops/pull/1174)
+* Allow passwords to be sent either base64 encode or as plaintext. [#1236](https://github.com/ethyca/fidesops/pull/1236)
+
 
 ## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.7.2)
 
@@ -35,6 +42,7 @@ The types of changes are:
 * Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
 * Foundations for a new email connector type [#1142](https://github.com/ethyca/fidesops/pull/1142)
 * Adds endpoint for GET identity verification config [#1221](https://github.com/ethyca/fidesops/pull/1221)
+* Access support for Shopify [#1220](https://github.com/ethyca/fidesops/pull/1220)
 
 ## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
 
