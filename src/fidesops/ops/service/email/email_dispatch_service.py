@@ -5,7 +5,7 @@ import requests
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import EmailDispatchException, ValidationError
+from fidesops.ops.common_exceptions import EmailDispatchException
 from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.schemas.email.email import (
@@ -73,7 +73,7 @@ def dispatch_email(
     if not to_email:
         raise EmailDispatchException("No email supplied.")
     logger.info("Retrieving email config")
-    email_config: EmailConfig = EmailConfig.get_configuration()
+    email_config: EmailConfig = EmailConfig.get_configuration(db=db)
     logger.info("Building appropriate email template for action type: %s", action_type)
     email: EmailForActionType = _build_email(
         action_type=action_type, body_params=email_body_params
