@@ -10,6 +10,8 @@ from fidesops.ops.core.config import config
 
 logger = get_task_logger(__name__)
 
+EMAIL_QUEUE_NAME = "fidesops.email"
+
 
 class DatabaseTask(Task):  # pylint: disable=W0223
     _session = None
@@ -69,7 +71,7 @@ def start_worker() -> None:
             "worker",
             "--loglevel=info",
             "--concurrency=2",
-            "-Q default,fidesops.email",
+            f"-Q default,{EMAIL_QUEUE_NAME}",
         ]
     )
 

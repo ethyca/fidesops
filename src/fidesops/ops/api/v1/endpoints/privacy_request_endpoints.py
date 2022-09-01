@@ -106,6 +106,7 @@ from fidesops.ops.util.cache import FidesopsRedis
 from fidesops.ops.util.collection_util import Row
 from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
+from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Privacy Requests"], prefix=urls.V1_URL_PREFIX)
@@ -268,7 +269,7 @@ def _send_verification_code_to_user(
     verification_code: str = generate_id_verification_code()
     privacy_request.cache_identity_verification_code(verification_code)
     dispatch_email_task.apply_async(
-        queue="fidesops.email",
+        queue=EMAIL_QUEUE_NAME,
         kwargs={
             "action_type": EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
             "to_email": email,
