@@ -1,6 +1,8 @@
 import logging
+from typing import Optional
 
 from fideslib.db.base import Base
+from fidesops.ops.common_exceptions import EmailDispatchException
 from pydantic import ValidationError
 from sqlalchemy import Column, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -68,6 +70,24 @@ class EmailConfig(Base):
         ),
         nullable=True,
     )  # Type bytea in the db
+
+    @classmethod
+    def get_configuration(cls, db: Session) -> Base:
+        """
+        Validate whether Fidesops is capable of sending this email while the flow
+        is still synchronous
+        """
+        instance: Optional[cls] = cls.query(db=db).first()
+        if not instance:
+            raise EmailDispatchException("No email config found.")
+        if not instance.secrets:
+            logger.warning(
+                "Email secrets not found for config with key: %s", instance.key
+            )
+            raise EmailDispatchException(
+                f"Email secrets not found for config with key: {instance.key}"
+            )
+        return instance
 
     def set_secrets(
         self,
