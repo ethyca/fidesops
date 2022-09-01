@@ -16,6 +16,7 @@ from fidesops.ops.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
+from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.models.policy import CurrentStep, PolicyPostWebhook
 from fidesops.ops.models.privacy_request import (
     ActionType,
@@ -24,6 +25,7 @@ from fidesops.ops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
+from fidesops.ops.schemas.email.email import EmailForActionType
 from fidesops.ops.schemas.external_https import SecondPartyResponseFormat
 from fidesops.ops.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
@@ -1550,3 +1552,44 @@ def test_privacy_request_log_failure(
         assert sent_event.status_code == 500
         assert sent_event.error == "KeyError"
         assert sent_event.extra_data == {"privacy_request": pr.id}
+
+
+@mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+@pytest.mark.integration
+def test_create_and_process_erasure_request_email_connector(
+    mailgun_send,
+    email_connection_config,
+    erasure_policy,
+    integration_postgres_config,
+    run_privacy_request_task,
+    email_dataset_config,
+    postgres_example_test_dataset_config_read_access,
+    email_config,
+    db,
+):
+    """
+    Asserts that mailgun was called and verifies email template renders without error
+    """
+    rule = erasure_policy.rules[0]
+    target = rule.targets[0]
+    target.data_category = "user.childrens"
+    target.save(db=db)
+
+    email = "customer-1@example.com"
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy.key,
+        "identity": {"email": email},
+    }
+
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
+    pr.delete(db=db)
+    assert mailgun_send.called
+    kwargs = mailgun_send.call_args.kwargs
+    assert type(kwargs["email_config"]) == EmailConfig
+    assert type(kwargs["email"]) == EmailForActionType

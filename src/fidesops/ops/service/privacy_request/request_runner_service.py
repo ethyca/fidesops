@@ -22,7 +22,7 @@ from fidesops.ops.graph.analytics_events import (
     fideslog_graph_failure,
 )
 from fidesops.ops.graph.graph import DatasetGraph
-from fidesops.ops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.models.policy import (
     ActionType,
@@ -32,7 +32,13 @@ from fidesops.ops.models.policy import (
     PolicyPreWebhook,
     WebhookTypes,
 )
-from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesops.ops.models.privacy_request import (
+    CollectionActionRequired,
+    PrivacyRequest,
+    PrivacyRequestStatus,
+)
+from fidesops.ops.schemas.email.email import EmailActionType
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email
 from fidesops.ops.service.storage.storage_uploader_service import upload
 from fidesops.ops.task.filter_results import filter_data_categories
 from fidesops.ops.task.graph_task import (
@@ -298,6 +304,8 @@ async def run_privacy_request(
             _log_exception(exc, config.dev_mode)
             return
 
+        email_connector_send(db=session, privacy_request=privacy_request)
+
         # Run post-execution webhooks
         proceed = run_webhooks_and_report_status(
             db=session,
@@ -360,3 +368,37 @@ def generate_id_verification_code() -> str:
     Generate one-time identity verification code
     """
     return str(random.choice(range(100000, 999999)))
+
+
+def email_connector_send(db: Session, privacy_request: PrivacyRequest) -> None:
+    """
+    Send emails to configured third-parties with instructions on how to erase remaining data.
+    Combined all the collections on each email-based dataset into one email.
+    """
+    email_dataset_configs = db.query(DatasetConfig, ConnectionConfig).filter(
+        DatasetConfig.connection_config_id == ConnectionConfig.id,
+        ConnectionConfig.connection_type == ConnectionType.email,
+    )
+    for ds, cc in email_dataset_configs:
+        template_values: Dict[
+            str, Optional[CollectionActionRequired]
+        ] = privacy_request.get_email_connector_template_contents_by_dataset(
+            CurrentStep.erasure, ds.dataset.get("fides_key")
+        )
+
+        dispatch_email(
+            db,
+            action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
+            to_email=cc.secrets.get("to_email"),
+            email_body_params=template_values,
+        )
+
+        AuditLog.create(
+            db=db,
+            data={
+                "user_id": "system",
+                "privacy_request_id": privacy_request.id,
+                "action": AuditLogAction.email_sent,
+                "message": f"Erasure email instructions dispatched for '{ds.dataset.get('fides_key')}'",
+            },
+        )
