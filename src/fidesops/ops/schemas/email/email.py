@@ -14,7 +14,7 @@ class EmailServiceType(Enum):
     MAILGUN = "mailgun"
 
 
-class EmailActionType(Enum):
+class EmailActionType(str, Enum):
     """Enum for email action type"""
 
     # verify email upon acct creation
