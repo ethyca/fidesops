@@ -67,12 +67,12 @@ from fidesops.ops.schemas.masking.masking_secrets import SecretType
 from fidesops.ops.schemas.policy import PolicyResponse
 from fidesops.ops.schemas.privacy_request import ExecutionAndAuditLogResponse
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 from fidesops.ops.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
-from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 
 page_size = Params().size
 
@@ -2623,12 +2623,17 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
 
         call_args = mock_dispatch_email.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert task_kwargs["action_type"] == EmailActionType.SUBJECT_IDENTITY_VERIFICATION
+        assert (
+            task_kwargs["action_type"] == EmailActionType.SUBJECT_IDENTITY_VERIFICATION
+        )
         assert task_kwargs["to_email"] == "test@example.com"
-        assert task_kwargs["email_body_params"] == SubjectIdentityVerificationBodyParams(
-            verification_code=pr.get_cached_verification_code(),
-            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
-        ).dict()
+        assert (
+            task_kwargs["email_body_params"]
+            == SubjectIdentityVerificationBodyParams(
+                verification_code=pr.get_cached_verification_code(),
+                verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+            ).dict()
+        )
         queue = call_args["queue"]
         assert queue == EMAIL_QUEUE_NAME
 

@@ -101,12 +101,12 @@ from fidesops.ops.service.privacy_request.request_service import (
 )
 from fidesops.ops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fidesops.ops.task.task_resources import TaskResources
+from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.cache import FidesopsRedis
 from fidesops.ops.util.collection_util import Row
 from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
-from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Privacy Requests"], prefix=urls.V1_URL_PREFIX)
@@ -265,7 +265,9 @@ def _send_verification_code_to_user(
     db: Session, privacy_request: PrivacyRequest, email: Optional[str]
 ) -> None:
     """Generate and cache a verification code, and then email to the user"""
-    EmailConfig.get_configuration(db=db)  # Validates Fidesops is currently configured to send emails
+    EmailConfig.get_configuration(
+        db=db
+    )  # Validates Fidesops is currently configured to send emails
     verification_code: str = generate_id_verification_code()
     privacy_request.cache_identity_verification_code(verification_code)
     dispatch_email_task.apply_async(

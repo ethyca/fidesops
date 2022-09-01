@@ -2,7 +2,6 @@ import logging
 from typing import Optional
 
 from fideslib.db.base import Base
-from fidesops.ops.common_exceptions import EmailDispatchException
 from pydantic import ValidationError
 from sqlalchemy import Column, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -13,6 +12,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
+from fidesops.ops.common_exceptions import EmailDispatchException
 from fidesops.ops.core.config import config
 from fidesops.ops.db.base_class import JSONTypeOverride
 from fidesops.ops.schemas.email.email import (
