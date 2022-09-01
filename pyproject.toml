@@ -100,6 +100,7 @@ disable=[
     "missing-class-docstring",
     "missing-function-docstring",
     "missing-module-docstring",
+    "missing-timeout",
     "no-self-argument",
     "no-self-use",
     "raise-missing-from",
@@ -137,3 +138,4 @@ addopts = ["--cov-report=term-missing",
             "-vv",
             "--no-cov-on-fail",
             "--disable-pytest-warnings"]
+asyncio_mode = "auto"

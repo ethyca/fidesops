@@ -1,5 +1,6 @@
 # pylint: disable=unused-wildcard-import, wildcard-import
 
+import asyncio
 import json
 import logging
 from typing import Any, Callable, Dict, Generator, List
@@ -29,6 +30,7 @@ from fidesops.ops.util.cache import get_cache
 
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *
+from .fixtures.email_fixtures import *
 from .fixtures.integration_fixtures import *
 from .fixtures.manual_fixtures import *
 from .fixtures.mariadb_fixtures import *
@@ -49,6 +51,7 @@ from .fixtures.saas.salesforce_fixtures import *
 from .fixtures.saas.segment_fixtures import *
 from .fixtures.saas.sendgrid_fixtures import *
 from .fixtures.saas.sentry_fixtures import *
+from .fixtures.saas.shopify_fixtures import *
 from .fixtures.saas.stripe_fixtures import *
 from .fixtures.saas.zendesk_fixtures import *
 from .fixtures.saas_example_fixtures import *
@@ -242,10 +245,20 @@ def require_manual_request_approval():
     config.execution.require_manual_request_approval = original_value
 
 
-@pytest.fixture(autouse=True, scope="session")
-def subject_identity_verification_required():
+@pytest.fixture(autouse=True, scope="function")
+def subject_identity_verification_not_required():
     """Disable identity verification for most tests unless overridden"""
     original_value = config.execution.subject_identity_verification_required
     config.execution.subject_identity_verification_required = False
     yield
     config.execution.subject_identity_verification_required = original_value
+
+
+@pytest.fixture(scope="session", autouse=True)
+def event_loop():
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()

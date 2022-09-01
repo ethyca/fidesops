@@ -19,13 +19,43 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
 
+### Developer Experience
+
+* Created a docker image for the privacy center [1165](https://github.com/ethyca/fidesops/pull/1165)
+* Adds email scopes to postman collection [1241](https://github.com/ethyca/fidesops/pull/1241)
+
+
+### Added
+
+* Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
+* Foundations for a new email connector type [#1142](https://github.com/ethyca/fidesops/pull/1142)
+* Have the new email connector cache action needed for each collection [#1168](https://github.com/ethyca/fidesops/pull/1168)
+
+### Docs
+
+* Fix analytics opt out environment variable name [#1170](https://github.com/ethyca/fidesops/pull/1170)
+* Added how to view a subject request history and reprocess a subject request [#1164](https://github.com/ethyca/fidesops/pull/1164)
+* Adds section on email communications, and exposes previously hidden guides in nav bar [1233](https://github.com/ethyca/fidesops/pull/1233)
+
+### Fixed
+
+* Fix issue with fideslog event loop errors [#1174](https://github.com/ethyca/fidesops/pull/1174)
+* Allow passwords to be sent either base64 encode or as plaintext. [#1236](https://github.com/ethyca/fidesops/pull/1236)
 
 ## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.7.2)
 
 ### Added
+
 * Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
+* Foundations for a new email connector type [#1142](https://github.com/ethyca/fidesops/pull/1142)
+* Adds endpoint for GET identity verification config [#1221](https://github.com/ethyca/fidesops/pull/1221)
+* Add user identification flow to privacy center [#1231](https://github.com/ethyca/fidesops/pull/1231)
+* Access support for Shopify [#1220](https://github.com/ethyca/fidesops/pull/1220)
 
 ## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
+
+### Breaking Changes
+The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order to make a distinction between the newly introduced `oauth2_client_credentials` strategy [#1159](https://github.com/ethyca/fidesops/pull/1159)
 
 ### Added
 
@@ -64,6 +94,7 @@ The types of changes are:
 * Update backend routing to handle dynamic frontend routes [#1033](https://github.com/ethyca/fidesops/pull/1033)
 * Make connection type search case-insensitive [#1133](https://github.com/ethyca/fidesops/pull/1133)
 * Adjust log formatting to be %-style instead of f-string [#1132](https://github.com/ethyca/fidesops/pull/1132)
+* Update `StorageConfig` to support multiple auth methods for S3 [#1140](https://github.com/ethyca/fidesops/pull/1140)
 
 ### Docs
 
