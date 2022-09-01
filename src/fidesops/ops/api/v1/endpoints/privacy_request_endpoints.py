@@ -60,6 +60,7 @@ from fidesops.ops.graph.graph import DatasetGraph, Node
 from fidesops.ops.graph.traversal import Traversal
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.models.policy import PausedStep, Policy, PolicyPreWebhook
 from fidesops.ops.models.privacy_request import (
     ExecutionLog,
@@ -263,6 +264,7 @@ def _send_verification_code_to_user(
     db: Session, privacy_request: PrivacyRequest, email: Optional[str]
 ) -> None:
     """Generate and cache a verification code, and then email to the user"""
+    EmailConfig.get_configuration(db=db)  # Validates Fidesops is currently configured to send emails
     verification_code: str = generate_id_verification_code()
     privacy_request.cache_identity_verification_code(verification_code)
     dispatch_email_task.apply_async(
@@ -273,7 +275,7 @@ def _send_verification_code_to_user(
             "email_body_params": SubjectIdentityVerificationBodyParams(
                 verification_code=verification_code,
                 verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
-            ),
+            ).dict(),
         },
     )
 

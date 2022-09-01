@@ -1,11 +1,11 @@
 import logging
-from typing import Any, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import requests
-from requests import Response
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import EmailDispatchException
+from fidesops.ops.common_exceptions import EmailDispatchException, ValidationError
 from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.schemas.email.email import (
@@ -22,19 +22,45 @@ from fidesops.ops.util.logger import Pii
 logger = logging.getLogger(__name__)
 
 
+class InvalidBodyParams(Exception):
+    """An exception thrown when passed email body data does not match an allowed schema"""
+
+
+def _validate_email_body_params(
+    email_body_params: Dict[str, Union[str, int]]
+) -> SubjectIdentityVerificationBodyParams:
+    """Raises an exception if `email_body_params` doesn't fit one of the allowed schemas"""
+    email_body_schema_allowlist = [SubjectIdentityVerificationBodyParams]
+    for schema in email_body_schema_allowlist:
+        try:
+            # If the schema is valid, exit early
+            return schema(email_body_params)
+        except ValidationError:
+            continue
+
+    allowed_schemas_str = ",".join(email_body_schema_allowlist)
+    raise InvalidBodyParams(
+        f"`email_body_params` must match one of {allowed_schemas_str}"
+    )
+
+
 @celery_app.task(base=DatabaseTask, bind=True)
 def dispatch_email_task(
     self: DatabaseTask,
     action_type: EmailActionType,
     to_email: str,
-    email_body_params: Union[SubjectIdentityVerificationBodyParams],
+    email_body_params: Dict[str, Union[str, int]],
 ) -> None:
+    """
+    A wrapper function to dispatch an email task into the Celery queues
+    """
+    valid_params_schema = _validate_email_body_params(email_body_params)
     with self.session as db:
         dispatch_email(
             db,
             action_type,
             to_email,
-            email_body_params,
+            valid_params_schema,
         )
 
 
@@ -42,21 +68,12 @@ def dispatch_email(
     db: Session,
     action_type: EmailActionType,
     to_email: Optional[str],
-    email_body_params: Union[SubjectIdentityVerificationBodyParams],
+    email_body_params: SubjectIdentityVerificationBodyParams,
 ) -> None:
     if not to_email:
         raise EmailDispatchException("No email supplied.")
     logger.info("Retrieving email config")
-    email_config: Optional[EmailConfig] = db.query(EmailConfig).first()
-    if not email_config:
-        raise EmailDispatchException("No email config found.")
-    if not email_config.secrets:
-        logger.warning(
-            "Email secrets not found for config with key: %s", email_config.key
-        )
-        raise EmailDispatchException(
-            f"Email secrets not found for config with key: {email_config.key}"
-        )
+    email_config: EmailConfig = EmailConfig.get_configuration()
     logger.info("Building appropriate email template for action type: %s", action_type)
     email: EmailForActionType = _build_email(
         action_type=action_type, body_params=email_body_params
@@ -74,7 +91,7 @@ def dispatch_email(
 
 def _build_email(
     action_type: EmailActionType,
-    body_params: Union[SubjectIdentityVerificationBodyParams],
+    body_params: SubjectIdentityVerificationBodyParams,
 ) -> EmailForActionType:
     if action_type == EmailActionType.SUBJECT_IDENTITY_VERIFICATION:
         template = get_email_template(action_type)
@@ -115,7 +132,7 @@ def _mailgun_dispatcher(
         "html": email.body,
     }
     try:
-        response: Response = requests.post(
+        response: requests.Response = requests.post(
             f"{base_url}/{email_config.details[EmailServiceDetails.API_VERSION.value]}/{domain}/messages",
             auth=(
                 "api",
