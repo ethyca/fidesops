@@ -1,6 +1,6 @@
 import { Flex } from "@fidesui/react";
-import { setStep } from "connection-type/connection-type.slice";
-import React, { useState } from "react";
+import { setConnection, setStep } from "connection-type/connection-type.slice";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 
 import Breadcrumb from "./Breadcrumb";
@@ -11,6 +11,7 @@ import DatasetConfiguration from "./DatasetConfiguration";
 
 const ConfigureConnector: React.FC = () => {
   const dispatch = useDispatch();
+  const mounted = useRef(false);
   const [steps, setSteps] = useState([STEPS[0], STEPS[1], STEPS[2]]);
   const [selectedItem, setSelectedItem] = useState(
     CONNECTOR_PARAMETERS_OPTIONS[0]
@@ -29,6 +30,14 @@ const ConfigureConnector: React.FC = () => {
     }
     setSelectedItem(value);
   };
+
+  useEffect(() => {
+    mounted.current = true;
+    dispatch(setConnection(undefined));
+    return () => {
+      mounted.current = false;
+    };
+  }, [dispatch]);
 
   return (
     <>
