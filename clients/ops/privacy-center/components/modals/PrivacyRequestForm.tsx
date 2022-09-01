@@ -14,7 +14,10 @@ import {
 
 import { useFormik } from "formik";
 
+import { Headers } from "headers-polyfill";
 import type { AlertState } from "../../types/AlertState";
+import { PrivacyRequestStatus } from "../../types";
+import { addCommonHeaders } from "../../common/CommonHeaders";
 
 import config from "../../config/config.json";
 
@@ -72,13 +75,12 @@ const usePrivacyRequestForm = ({
       };
 
       try {
+        const headers: Headers = new Headers();
+        addCommonHeaders(headers, null);
+
         const response = await fetch(`${hostUrl}/privacy-request`, {
           method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            "X-Fides-Source": "fidesops-privacy-center",
-          },
+          headers,
           body: JSON.stringify(body),
         });
 
@@ -98,7 +100,7 @@ const usePrivacyRequestForm = ({
         } else if (
           isVerificationRequired &&
           data.succeeded.length &&
-          data.succeeded[0].status === "identity_unverified"
+          data.succeeded[0].status === PrivacyRequestStatus.IDENTITY_UNVERIFIED
         ) {
           setPrivacyRequestId(data.succeeded[0].id);
           setCurrentView(ModalViews.IdentityVerification);

@@ -16,8 +16,10 @@ import {
 
 import { useFormik } from "formik";
 
+import { Headers } from "headers-polyfill";
 import type { AlertState } from "../../types/AlertState";
 import { ModalViews } from "./types";
+import { addCommonHeaders } from "../../common/CommonHeaders";
 
 import config from "../../config/config.json";
 import { hostUrl } from "../../constants";
@@ -66,15 +68,14 @@ const useVerificationForm = ({
         onClose();
       };
       try {
+        const headers: Headers = new Headers();
+        addCommonHeaders(headers, null);
+
         const response = await fetch(
           `${hostUrl}/privacy-request/${privacyRequestId}/verify`,
           {
             method: "POST",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-              "X-Fides-Source": "fidesops-privacy-center",
-            },
+            headers,
             body: JSON.stringify(body),
           }
         );
