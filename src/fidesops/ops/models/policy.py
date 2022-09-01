@@ -104,6 +104,7 @@ class Policy(Base):
     name = Column(String, unique=True, nullable=False)
     key = Column(String, index=True, unique=True, nullable=False)
     drp_action = Column(EnumColumn(DrpAction), index=True, unique=True, nullable=True)
+    execution_timeframe = Column(Integer, nullable=True)
     client_id = Column(
         String,
         ForeignKey(ClientDetail.id_field_path),
@@ -462,7 +463,7 @@ class WebhookBase:
 
     @declared_attr
     def policy_id(cls: "WebhookBase") -> Column:
-        """Policy id defined as declared_attr because this is needed for FK's on mixins"""
+        """Policy id defined as declared_attr because this is neeyded for FK's on mixins"""
         return Column(
             String,
             ForeignKey(Policy.id_field_path),
