@@ -77,7 +77,7 @@ class EmailConfig(Base):
         Validate whether Fidesops is capable of sending this email while the flow
         is still synchronous
         """
-        instance: Optional[cls] = cls.query(db=db).first()
+        instance: Optional[Base] = cls.query(db=db).first()
         if not instance:
             raise EmailDispatchException("No email config found.")
         if not instance.secrets:
