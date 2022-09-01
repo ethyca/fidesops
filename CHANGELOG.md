@@ -19,9 +19,12 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
 
+### Added
+* Added `execution_timeframe` to Policy model and schema [#1244](https://github.com/ethyca/fidesops/pull/1244)
+
 ### Developer Experience
 
-* Created a docker image for the privacy center [1165](https://github.com/ethyca/fidesops/pull/1165)
+* Created a docker image for the privacy center [#1165](https://github.com/ethyca/fidesops/pull/1165)
 
 ### Docs
 
