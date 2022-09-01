@@ -72,6 +72,7 @@ from fidesops.ops.util.cache import (
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
+from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 
 page_size = Params().size
 
@@ -2582,7 +2583,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
     )
     def test_create_privacy_request_with_email_config(
         self,
@@ -2621,11 +2622,14 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         assert mock_dispatch_email.called
 
         call_args = mock_dispatch_email.call_args[1]
-        assert call_args["action_type"] == EmailActionType.SUBJECT_IDENTITY_VERIFICATION
-        assert call_args["to_email"] == "test@example.com"
-        assert call_args["email_body_params"] == SubjectIdentityVerificationBodyParams(
+        task_kwargs = call_args["kwargs"]
+        assert task_kwargs["action_type"] == EmailActionType.SUBJECT_IDENTITY_VERIFICATION
+        assert task_kwargs["to_email"] == "test@example.com"
+        assert task_kwargs["email_body_params"] == SubjectIdentityVerificationBodyParams(
             verification_code=pr.get_cached_verification_code(),
             verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
-        )
+        ).dict()
+        queue = call_args["queue"]
+        assert queue == EMAIL_QUEUE_NAME
 
         pr.delete(db=db)
