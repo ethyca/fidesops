@@ -25,7 +25,7 @@ import { selectConnectionTypeState } from "connection-type/connection-type.slice
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
 import { ConnectionType } from "datastore-connections/constants";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
-import { Field, Form, Formik } from "formik";
+import { Field, Form, Formik, FormikProps } from "formik";
 import React, { useEffect, useRef } from "react";
 
 import {
@@ -39,7 +39,7 @@ type ConnectorParametersFormProps = {
     | DatabaseConnectorParametersFormFields
     | SaasConnectorParametersFormFields;
   isSubmitting: boolean;
-  onSaveClick: (values: any) => void;
+  onSaveClick: (values: any, actions: any) => void;
   onTestConnectionClick: (value: any) => void;
 };
 
@@ -180,8 +180,8 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     });
   };
 
-  const handleSubmit = (values: any) => {
-    onSaveClick(values);
+  const handleSubmit = (values: any, actions: any) => {
+    onSaveClick(values, actions);
   };
 
   const handleTestConnectionClick = async () => {
@@ -209,133 +209,135 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       validateOnBlur={false}
       validateOnChange={false}
     >
-      <Form noValidate>
-        <VStack align="stretch" gap="24px">
-          {/* Name */}
-          <Field
-            id="name"
-            name="name"
-            validate={(value: string) => validateField("Name", value)}
-          >
-            {({ field, form }: { field: any; form: any }) => (
-              <FormControl
-                display="flex"
-                isRequired
-                isInvalid={form.errors.name && form.touched.name}
-              >
-                {getFormLabel("name", "Name")}
-                <VStack align="flex-start" w="inherit">
-                  <Input
-                    {...field}
-                    autoComplete="off"
-                    autoFocus
-                    color="gray.700"
-                    placeholder={`Enter a friendly name for your new ${capitalize(
-                      connectionOption!.identifier
-                    )} connection`}
-                    size="sm"
-                  />
-                  <FormErrorMessage>{form.errors.name}</FormErrorMessage>
-                </VStack>
-                <CircleHelpIcon marginLeft="8px" visibility="hidden" />
-              </FormControl>
-            )}
-          </Field>
-          {/* Description */}
-          <Field id="description" name="description">
-            {({ field }: { field: any }) => (
-              <FormControl display="flex">
-                {getFormLabel("description", "Description")}
-                <Textarea
-                  {...field}
-                  color="gray.700"
-                  placeholder={`Enter a description for your new ${capitalize(
-                    connectionOption!.identifier
-                  )} connection`}
-                  resize="none"
-                  size="sm"
-                />
-                <CircleHelpIcon marginLeft="8px" visibility="hidden" />
-              </FormControl>
-            )}
-          </Field>
-          {/* Connection Identifier */}
-          <Field
-            id="instance_key"
-            name="instance_key"
-            validate={validateConnectionIdentifier}
-          >
-            {({ field, form }: { field: any; form: any }) => (
-              <FormControl
-                display="flex"
-                isRequired
-                isInvalid={
-                  form.errors.instance_key && form.touched.instance_key
-                }
-              >
-                {getFormLabel("instance_key", "Connection Identifier")}
-                <VStack align="flex-start" w="inherit">
-                  <Input
-                    {...field}
-                    autoComplete="off"
-                    color="gray.700"
-                    isDisabled={connection?.key}
-                    placeholder={`A a unique identifier for your new ${capitalize(
-                      connectionOption!.identifier
-                    )} connection`}
-                    size="sm"
-                  />
-                  <FormErrorMessage>
-                    {form.errors.instance_key}
-                  </FormErrorMessage>
-                </VStack>
-                <Tooltip
-                  aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
-                  hasArrow
-                  label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
-                  placement="right-start"
-                  openDelay={500}
+      {(props: FormikProps<Values>) => (
+        <Form noValidate>
+          <VStack align="stretch" gap="24px">
+            {/* Name */}
+            <Field
+              id="name"
+              name="name"
+              validate={(value: string) => validateField("Name", value)}
+            >
+              {({ field }: { field: any }) => (
+                <FormControl
+                  display="flex"
+                  isRequired
+                  isInvalid={props.errors.name && props.touched.name}
                 >
-                  <CircleHelpIcon
-                    marginLeft="8px"
-                    _hover={{ cursor: "pointer" }}
+                  {getFormLabel("name", "Name")}
+                  <VStack align="flex-start" w="inherit">
+                    <Input
+                      {...field}
+                      autoComplete="off"
+                      autoFocus
+                      color="gray.700"
+                      placeholder={`Enter a friendly name for your new ${capitalize(
+                        connectionOption!.identifier
+                      )} connection`}
+                      size="sm"
+                    />
+                    <FormErrorMessage>{props.errors.name}</FormErrorMessage>
+                  </VStack>
+                  <CircleHelpIcon marginLeft="8px" visibility="hidden" />
+                </FormControl>
+              )}
+            </Field>
+            {/* Description */}
+            <Field id="description" name="description">
+              {({ field }: { field: any }) => (
+                <FormControl display="flex">
+                  {getFormLabel("description", "Description")}
+                  <Textarea
+                    {...field}
+                    color="gray.700"
+                    placeholder={`Enter a description for your new ${capitalize(
+                      connectionOption!.identifier
+                    )} connection`}
+                    resize="none"
+                    size="sm"
                   />
-                </Tooltip>
-              </FormControl>
+                  <CircleHelpIcon marginLeft="8px" visibility="hidden" />
+                </FormControl>
+              )}
+            </Field>
+            {/* Connection Identifier */}
+            <Field
+              id="instance_key"
+              name="instance_key"
+              validate={validateConnectionIdentifier}
+            >
+              {({ field }: { field: any }) => (
+                <FormControl
+                  display="flex"
+                  isRequired
+                  isInvalid={
+                    props.errors.instance_key && props.touched.instance_key
+                  }
+                >
+                  {getFormLabel("instance_key", "Connection Identifier")}
+                  <VStack align="flex-start" w="inherit">
+                    <Input
+                      {...field}
+                      autoComplete="off"
+                      color="gray.700"
+                      isDisabled={connection?.key}
+                      placeholder={`A a unique identifier for your new ${capitalize(
+                        connectionOption!.identifier
+                      )} connection`}
+                      size="sm"
+                    />
+                    <FormErrorMessage>
+                      {props.errors.instance_key}
+                    </FormErrorMessage>
+                  </VStack>
+                  <Tooltip
+                    aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
+                    hasArrow
+                    label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
+                    placement="right-start"
+                    openDelay={500}
+                  >
+                    <CircleHelpIcon
+                      marginLeft="8px"
+                      _hover={{ cursor: "pointer" }}
+                    />
+                  </Tooltip>
+                </FormControl>
+              )}
+            </Field>
+            {/* Dynamic connector secret fields */}
+            {Object.entries(data.properties).map(([key, item]) =>
+              getFormField(key, item)
             )}
-          </Field>
-          {/* Dynamic connector secret fields */}
-          {Object.entries(data.properties).map(([key, item]) =>
-            getFormField(key, item)
-          )}
-          <ButtonGroup size="sm" spacing="8px" variant="outline">
-            <Button
-              colorScheme="gray.700"
-              isDisabled={!connection?.key}
-              isLoading={result.isLoading || result.isFetching}
-              loadingText="Testing"
-              onClick={handleTestConnectionClick}
-              variant="outline"
-            >
-              Test connection
-            </Button>
-            <Button
-              bg="primary.800"
-              color="white"
-              isLoading={isSubmitting}
-              loadingText="Submitting"
-              size="sm"
-              variant="solid"
-              type="submit"
-              _active={{ bg: "primary.500" }}
-              _disabled={{ opacity: "inherit" }}
-              _hover={{ bg: "primary.400" }}
-            >
-              Save
-            </Button>
-          </ButtonGroup>
-        </VStack>
-      </Form>
+            <ButtonGroup size="sm" spacing="8px" variant="outline">
+              <Button
+                colorScheme="gray.700"
+                isDisabled={!connection?.key}
+                isLoading={result.isLoading || result.isFetching}
+                loadingText="Testing"
+                onClick={handleTestConnectionClick}
+                variant="outline"
+              >
+                Test connection
+              </Button>
+              <Button
+                bg="primary.800"
+                color="white"
+                isLoading={isSubmitting}
+                loadingText="Submitting"
+                size="sm"
+                variant="solid"
+                type="submit"
+                _active={{ bg: "primary.500" }}
+                _disabled={{ opacity: "inherit" }}
+                _hover={{ bg: "primary.400" }}
+              >
+                Save
+              </Button>
+            </ButtonGroup>
+          </VStack>
+        </Form>
+      )}
     </Formik>
   );
 };

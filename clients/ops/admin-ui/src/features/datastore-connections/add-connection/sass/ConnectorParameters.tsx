@@ -91,7 +91,8 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     displayError(errorMsg);
   };
 
-  const handleSubmit = async (values: any) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleSubmit = async (values: any, _actions: any) => {
     try {
       setIsSubmitting(true);
       if (connection) {
