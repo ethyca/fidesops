@@ -1,6 +1,6 @@
 import string
 from secrets import choice
-from typing import List, Optional
+from typing import List, Optional, Type
 
 from fidesops.ops.schemas.masking.masking_configuration import (
     MaskingConfiguration,
@@ -60,8 +60,8 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     def get_configuration_model() -> MaskingConfiguration:
         return RandomStringMaskingConfiguration  # type: ignore
 
-    @staticmethod
-    def get_description() -> MaskingStrategyDescription:
+    @classmethod
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
             name=RANDOM_STRING_REWRITE_STRATEGY_NAME,
             description="Masks the input value with a random string of a specified length",

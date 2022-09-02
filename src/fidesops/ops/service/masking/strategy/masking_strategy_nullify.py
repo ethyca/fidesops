@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Type
 
 from fidesops.ops.schemas.masking.masking_configuration import (
     MaskingConfiguration,
@@ -46,8 +46,8 @@ class NullMaskingStrategy(MaskingStrategy):
     def get_configuration_model() -> MaskingConfiguration:
         return NullMaskingConfiguration  # type: ignore
 
-    @staticmethod
-    def get_description() -> MaskingStrategyDescription:
+    @classmethod
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
             name=NULL_REWRITE_STRATEGY_NAME,
             description="Masks the input value with a null value",

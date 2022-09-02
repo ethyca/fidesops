@@ -1,6 +1,8 @@
 # MR Note - It would be nice to enforce this at compile time
+from __future__ import annotations
+
 from abc import abstractmethod
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Type
 
 from fidesops.ops.schemas.masking.masking_configuration import MaskingConfiguration
 from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
@@ -31,9 +33,9 @@ class MaskingStrategy(Strategy):
     def get_configuration_model() -> MaskingConfiguration:
         """Used to get the configuration model to configure the strategy"""
 
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def get_description() -> MaskingStrategyDescription:
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         """Returns the description used for documentation. In particular, used by the
         documentation endpoint in masking_endpoints.list_masking_strategies"""
 

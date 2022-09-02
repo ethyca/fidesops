@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Type
 
 from fidesops.ops.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
@@ -83,8 +83,8 @@ class HmacMaskingStrategy(MaskingStrategy):
     def get_configuration_model() -> MaskingConfiguration:
         return HmacMaskingConfiguration  # type: ignore
 
-    @staticmethod
-    def get_description() -> MaskingStrategyDescription:
+    @classmethod
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
             name=HMAC_STRATEGY_NAME,
             description="Masks the input value by using the HMAC algorithm along with a hashed version of the data "

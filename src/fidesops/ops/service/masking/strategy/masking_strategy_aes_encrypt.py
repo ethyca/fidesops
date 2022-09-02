@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Type
 
 from fidesops.ops.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
@@ -90,8 +90,8 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         """Used to get the configuration model to configure the strategy"""
         return AesEncryptionMaskingConfiguration  # type: ignore
 
-    @staticmethod
-    def get_description() -> MaskingStrategyDescription:
+    @classmethod
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         """Returns the description used for documentation. In particular, used by the
         documentation endpoint in masking_endpoints.list_masking_strategies"""
         return MaskingStrategyDescription(

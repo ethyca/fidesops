@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Type
 
 from fidesops.ops.schemas.masking.masking_configuration import (
     MaskingConfiguration,
@@ -56,8 +56,8 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
 
     # MR Note - We will need a way to ensure that this does not fall out of date. Given that it
     # includes subjective instructions, this is not straightforward to automate
-    @staticmethod
-    def get_description() -> MaskingStrategyDescription:
+    @classmethod
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
             name=STRING_REWRITE_STRATEGY_NAME,
             description="Masks the input value with a default string value",
