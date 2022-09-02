@@ -27,10 +27,10 @@ const AddConnection: React.FC = () => {
    * NOTE: If the user reloads the web page via F5, the react redux store state is lost.
    * By default its persisted in internal memory. As a result, a runtime exception occurs
    * which impedes the page rendering.
-   * 
-   * @example 
+   *
+   * @example
    * The above error occurred in the <AddConnection> component
-   * 
+   *
    * For now, a temporary solution is to redirect the user
    * to the "Choose your connection" step. This allows a better overall user experience.
    * A permanent solution will be to persist the react redux store state to either local storage
