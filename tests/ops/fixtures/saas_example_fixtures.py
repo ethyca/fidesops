@@ -28,7 +28,7 @@ def saas_example_secrets():
         "api_key": "api_key",
         "api_version": "2.0",
         "account_types": ["checking"],
-        "page_size": 10,
+        "page_size": "10",
     }
 
 

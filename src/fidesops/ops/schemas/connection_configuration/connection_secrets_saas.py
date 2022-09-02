@@ -15,7 +15,7 @@ class SaaSSchema(BaseModel, abc.ABC):
     @root_validator
     @classmethod
     def required_components_supplied(  # type: ignore
-        cls: BaseModel, values: Dict[str, Any]
+        cls, values: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Validate that the minimum required components have been supplied."""
 
