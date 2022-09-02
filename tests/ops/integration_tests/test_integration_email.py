@@ -15,9 +15,7 @@ from fidesops.ops.models.privacy_request import (
 )
 from fidesops.ops.schemas.dataset import FidesopsDataset
 from fidesops.ops.schemas.email.email import EmailActionType
-from fidesops.ops.service.privacy_request.request_runner_service import (
-    email_connector_erasure_send,
-)
+from fidesops.ops.service.connectors.email_connector import email_connector_erasure_send
 from fidesops.ops.task import graph_task
 
 

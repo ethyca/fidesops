@@ -68,7 +68,7 @@ from fidesops.ops.util.collection_util import Row
 
 logger = logging.getLogger(__name__)
 
-
+# Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
     CurrentStep.pre_webhooks,
     CurrentStep.access,
