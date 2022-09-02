@@ -28,7 +28,8 @@ class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategy
     it if needed using the configured token refresh request.
     """
 
-    strategy_name = "oauth2_authorization_code"
+    name = "oauth2_authorization_code"
+    configuration_model = OAuth2AuthorizationCodeConfiguration
 
     def __init__(self, configuration: OAuth2AuthorizationCodeConfiguration):
         super().__init__(configuration)

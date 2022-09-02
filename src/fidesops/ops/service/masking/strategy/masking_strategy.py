@@ -1,5 +1,5 @@
 # MR Note - It would be nice to enforce this at compile time
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, List, Optional
 
 from fidesops.ops.schemas.masking.masking_configuration import MaskingConfiguration
@@ -7,9 +7,10 @@ from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.ops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
+from fidesops.ops.service.strategy import Strategy
 
 
-class MaskingStrategy(ABC):
+class MaskingStrategy(Strategy):
     """Abstract base class for masking strategies"""
 
     @abstractmethod

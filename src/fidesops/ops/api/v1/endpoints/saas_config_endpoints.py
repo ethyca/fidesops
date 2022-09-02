@@ -113,10 +113,7 @@ def verify_oauth_connection_config(
             detail="The connection config does not contain an authentication configuration.",
         )
 
-    if (
-        authentication.strategy
-        != OAuth2AuthorizationCodeAuthenticationStrategy.strategy_name
-    ):
+    if authentication.strategy != OAuth2AuthorizationCodeAuthenticationStrategy.name:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail="The connection config does not use OAuth2 Authorization Code authentication.",

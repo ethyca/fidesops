@@ -21,6 +21,9 @@ STRING_REWRITE_STRATEGY_NAME = "string_rewrite"
 class StringRewriteMaskingStrategy(MaskingStrategy):
     """Masks the values with a pre-determined value"""
 
+    name = "string_rewrite"
+    configuration_model = StringRewriteMaskingConfiguration
+
     def __init__(
         self,
         configuration: StringRewriteMaskingConfiguration,

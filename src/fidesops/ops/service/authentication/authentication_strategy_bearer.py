@@ -17,7 +17,8 @@ class BearerAuthenticationStrategy(AuthenticationStrategy):
     and uses it to add a bearer authentication header to the incoming request.
     """
 
-    strategy_name = "bearer"
+    name = "bearer"
+    configuration_model = BearerAuthenticationConfiguration
 
     def __init__(self, configuration: BearerAuthenticationConfiguration):
         self.token = configuration.token

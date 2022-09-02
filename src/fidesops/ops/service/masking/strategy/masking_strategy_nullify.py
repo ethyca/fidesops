@@ -19,6 +19,9 @@ NULL_REWRITE_STRATEGY_NAME = "null_rewrite"
 class NullMaskingStrategy(MaskingStrategy):
     """Masks provided values each with a null value."""
 
+    name = "null_rewrite"
+    configuration_model = NullMaskingConfiguration
+
     def __init__(
         self,
         configuration: NullMaskingConfiguration,

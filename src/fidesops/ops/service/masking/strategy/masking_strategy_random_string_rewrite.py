@@ -23,6 +23,9 @@ RANDOM_STRING_REWRITE_STRATEGY_NAME = "random_string_rewrite"
 class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     """Masks each provied value with a random string of the length specified in the configuration."""
 
+    name = "random_string_rewrite"
+    configuration_model = RandomStringMaskingConfiguration
+
     def __init__(
         self,
         configuration: RandomStringMaskingConfiguration,

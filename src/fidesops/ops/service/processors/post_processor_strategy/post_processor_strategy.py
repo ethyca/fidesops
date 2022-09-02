@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
 
+from fidesops.ops.service.strategy import Strategy
 
-class PostProcessorStrategy(ABC):
+
+class PostProcessorStrategy(Strategy):
     """Abstract base class for SaaS post processor strategies"""
 
     @abstractmethod

@@ -37,6 +37,9 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
     If given a list, the unwrap will apply to the dicts inside the list.
     """
 
+    name = "unwrap"
+    configuration_model = UnwrapPostProcessorConfiguration
+
     def __init__(self, configuration: UnwrapPostProcessorConfiguration):
         self.data_path = configuration.data_path
 

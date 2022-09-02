@@ -17,7 +17,8 @@ class BasicAuthenticationStrategy(AuthenticationStrategy):
     and uses them to add a basic authentication header to the incoming request.
     """
 
-    strategy_name = "basic"
+    name = "basic"
+    configuration_model = BasicAuthenticationConfiguration
 
     def __init__(self, configuration: BasicAuthenticationConfiguration):
         self.username = configuration.username

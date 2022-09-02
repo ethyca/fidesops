@@ -21,6 +21,10 @@ logger = logging.getLogger(__name__)
 
 
 class LinkPaginationStrategy(PaginationStrategy):
+
+    name = "link"
+    configuration_model = LinkPaginationConfiguration
+
     def __init__(self, configuration: LinkPaginationConfiguration):
         self.source = configuration.source
         self.rel = configuration.rel

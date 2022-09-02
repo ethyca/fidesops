@@ -44,6 +44,9 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
     }
     """
 
+    name = "filter"
+    configuration_model = FilterPostProcessorConfiguration
+
     def __init__(self, configuration: FilterPostProcessorConfiguration):
         self.field = configuration.field
         self.value = configuration.value

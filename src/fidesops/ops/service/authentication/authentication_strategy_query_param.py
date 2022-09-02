@@ -18,7 +18,8 @@ class QueryParamAuthenticationStrategy(AuthenticationStrategy):
     and adds it as a query param to the incoming request.
     """
 
-    strategy_name = "query_param"
+    name = "query_param"
+    configuration_model = QueryParamAuthenticationConfiguration
 
     def __init__(self, configuration: QueryParamAuthenticationConfiguration):
         self.name = configuration.name

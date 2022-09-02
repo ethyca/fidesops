@@ -16,6 +16,10 @@ STRATEGY_NAME = "offset"
 
 
 class OffsetPaginationStrategy(PaginationStrategy):
+
+    name = "offset"
+    configuration_model = OffsetPaginationConfiguration
+
     def __init__(self, configuration: OffsetPaginationConfiguration):
         self.incremental_param = configuration.incremental_param
         self.increment_by = configuration.increment_by

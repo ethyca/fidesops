@@ -32,6 +32,9 @@ class HmacMaskingStrategy(MaskingStrategy):
     Masks a value by generating a hash using a hash algorithm and a required secret key.  One of the differences
     between this and the HashMaskingStrategy is the required secret key."""
 
+    name = "hmac"
+    configuration_model = HmacMaskingConfiguration
+
     def __init__(
         self,
         configuration: HmacMaskingConfiguration,

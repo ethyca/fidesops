@@ -20,7 +20,8 @@ class OAuth2ClientCredentialsAuthenticationStrategy(OAuth2AuthenticationStrategy
     it if needed using the configured token refresh request.
     """
 
-    strategy_name = "oauth2_client_credentials"
+    name = "oauth2_client_credentials"
+    configuration_model = OAuth2BaseConfiguration
 
     def add_authentication(
         self, request: PreparedRequest, connection_config: ConnectionConfig

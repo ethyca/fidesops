@@ -14,6 +14,10 @@ STRATEGY_NAME = "cursor"
 
 
 class CursorPaginationStrategy(PaginationStrategy):
+
+    name = "cursor"
+    configuration_model = CursorPaginationConfiguration
+
     def __init__(self, configuration: CursorPaginationConfiguration):
         self.cursor_param = configuration.cursor_param
         self.field = configuration.field

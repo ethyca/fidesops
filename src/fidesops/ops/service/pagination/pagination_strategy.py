@@ -6,12 +6,13 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 from requests import Response
 
 from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from fidesops.ops.service.strategy import Strategy
 
 if TYPE_CHECKING:
     from fidesops.ops.schemas.saas.strategy_configuration import StrategyConfiguration
 
 
-class PaginationStrategy(ABC):
+class PaginationStrategy(Strategy):
     """Abstract base class for SaaS pagination strategies"""
 
     @abstractmethod

@@ -32,6 +32,10 @@ AES_ENCRYPT_STRATEGY_NAME = "aes_encrypt"
 
 @MaskingStrategyFactory.register(AES_ENCRYPT_STRATEGY_NAME)
 class AesEncryptionMaskingStrategy(MaskingStrategy):
+
+    name = "aes_encrypt"
+    configuration_model = AesEncryptionMaskingConfiguration
+
     def __init__(self, configuration: AesEncryptionMaskingConfiguration):
         self.mode = configuration.mode
         self.format_preservation = configuration.format_preservation

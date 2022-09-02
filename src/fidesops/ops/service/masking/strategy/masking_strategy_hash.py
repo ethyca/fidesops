@@ -31,6 +31,9 @@ HASH_STRATEGY_NAME = "hash"
 class HashMaskingStrategy(MaskingStrategy):
     """Masks a value by hashing it"""
 
+    name = "hash"
+    configuration_model = HashMaskingConfiguration
+
     def __init__(
         self,
         configuration: HashMaskingConfiguration,
