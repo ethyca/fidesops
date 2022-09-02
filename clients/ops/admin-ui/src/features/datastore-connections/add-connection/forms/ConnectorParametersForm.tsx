@@ -224,6 +224,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       validateOnBlur={false}
       validateOnChange={false}
     >
+      {/* @ts-ignore */}
       {(props: FormikProps<Values>) => (
         <Form noValidate>
           <VStack align="stretch" gap="24px">
