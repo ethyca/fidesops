@@ -34,11 +34,11 @@ def _validate_email_body_params(
     for schema in email_body_schema_allowlist:
         try:
             # If the schema is valid, exit early
-            return schema(email_body_params)
+            return schema.parse_obj(email_body_params)
         except ValidationError:
             continue
 
-    allowed_schemas_str = ",".join(email_body_schema_allowlist)
+    allowed_schemas_str = ",".join(str(email_body_schema_allowlist))
     raise InvalidBodyParams(
         f"`email_body_params` must match one of {allowed_schemas_str}"
     )
