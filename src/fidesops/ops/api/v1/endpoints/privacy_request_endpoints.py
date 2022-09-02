@@ -515,7 +515,7 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     if action_required_details:
         action_required_details.step = action_required_details.step.value  # type: ignore
         action_required_details.collection = (
-            action_required_details.collection.value  # type: ignore
+            action_required_details.collection.value if action_required_details.collection else None  # type: ignore
         )
 
     privacy_request.action_required_details = action_required_details

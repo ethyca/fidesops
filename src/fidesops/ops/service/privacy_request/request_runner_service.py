@@ -209,7 +209,7 @@ async def run_privacy_request(
     from_webhook_id: Optional[str] = None,
     from_step: Optional[str] = None,
 ) -> None:
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals, too-many-statements
     """
     Dispatch a privacy_request into the execution layer by:
         1. Generate a graph from all the currently configured datasets
@@ -221,6 +221,8 @@ async def run_privacy_request(
     coroutine for it.
     """
     resume_step: Optional[CurrentStep] = CurrentStep(from_step) if from_step else None  # type: ignore
+    if from_step:
+        logger.info("Resuming privacy request from checkpoint: '%s'", from_step)
 
     with self.session as session:
 
@@ -442,6 +444,11 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
             email_body_params=template_values,
         )
 
+        logger.info(
+            "Email send succeeded for request '%s' for dataset: '%s'",
+            privacy_request.id,
+            ds.dataset.get("fides_key"),
+        )
         AuditLog.create(
             db=db,
             data={
