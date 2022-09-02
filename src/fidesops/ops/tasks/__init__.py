@@ -71,7 +71,7 @@ def start_worker() -> None:
             "worker",
             "--loglevel=info",
             "--concurrency=2",
-            f"-Q default,{EMAIL_QUEUE_NAME}",
+            f"-Q celery,{EMAIL_QUEUE_NAME}",
         ]
     )
 
