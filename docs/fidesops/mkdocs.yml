@@ -28,6 +28,7 @@ nav:
       - Configure OneTrust Integration: guides/onetrust.md
       - Preview Query Execution: guides/query_execution.md
       - Data Rights Protocol: guides/data_rights_protocol.md
+      - Configure Email Connectors: guides/email_connectors.md
   - SaaS Connectors:
       - Connect to SaaS Applications: saas_connectors/saas_connectors.md
       - SaaS Configuration: saas_connectors/saas_config.md

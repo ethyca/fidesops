@@ -6,7 +6,7 @@ Fidesops supports email server configurations for sending processing notices to 
 Supported modes of use:
 
 - Subject Identity Verification - for more information on identity verification in subject requests, see the [Privacy Requests](privacy_requests.md#subject-identity-verification) guide.
-
+- Erasure Request Email Fulfillment - sends an email to configured third parties to process erasures for a given data subject.  See [Email Connectors](email_connectors.md) for more information.
 
 ## Prerequisites
 
