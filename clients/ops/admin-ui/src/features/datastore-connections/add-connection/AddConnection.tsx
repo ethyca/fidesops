@@ -1,4 +1,4 @@
-import { Box, Center, Heading, Spinner, Text } from "@fidesui/react";
+import { Box, Heading, Text } from "@fidesui/react";
 import { useAppSelector } from "app/hooks";
 import { capitalize } from "common/utils";
 import {
@@ -8,10 +8,9 @@ import {
 } from "connection-type/connection-type.slice";
 import { AddConnectionStep } from "connection-type/types";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
-import { useGetDatastoreConnectionByKeyQuery } from "datastore-connections/datastore-connection.slice";
 import { useRouter } from "next/router";
-import React, { useCallback, useEffect, useState } from "react";
-import { batch, useDispatch } from "react-redux";
+import React, { useCallback, useEffect } from "react";
+import { useDispatch } from "react-redux";
 
 import ChooseConnection from "./ChooseConnection";
 import ConfigureConnector from "./ConfigureConnector";
@@ -20,28 +19,30 @@ import { STEPS } from "./constants";
 const AddConnection: React.FC = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const [connectionKey, setConnectionKey] = useState("");
-  const [isReloading, setIsReloading] = useState(false);
   const { connectorType, key, step: currentStep } = router.query;
 
-  const { connection, connectionOption, step } = useAppSelector(
-    selectConnectionTypeState
-  );
-  const { data, isSuccess } = useGetDatastoreConnectionByKeyQuery(
-    connectionKey,
-    { skip: !connectionKey }
-  );
+  const { connectionOption, step } = useAppSelector(selectConnectionTypeState);
 
+  /**
+   * NOTE: If the user reloads the web page via F5, the react redux store state is lost.
+   * By default its persisted in internal memory. As a result, a runtime exception occurs
+   * which impedes the page rendering.
+   * 
+   * @example 
+   * The above error occurred in the <AddConnection> component
+   * 
+   * For now, a temporary solution is to redirect the user
+   * to the "Choose your connection" step. This allows a better overall user experience.
+   * A permanent solution will be to persist the react redux store state to either local storage
+   * or session storage. Once completed, this method can be deleted.
+   */
   const reload = useCallback(() => {
     if (
       key &&
       currentStep &&
       (currentStep as unknown as number) !== step?.stepId
     ) {
-      batch(() => {
-        setIsReloading(true);
-        setConnectionKey(key as string);
-      });
+      window.location.href = STEPS[1].href;
     }
   }, [currentStep, key, step?.stepId]);
 
@@ -91,31 +92,24 @@ const AddConnection: React.FC = () => {
 
   return (
     <>
-      {!isReloading && (
-        <Heading
-          fontSize="2xl"
-          fontWeight="semibold"
-          maxHeight="40px"
-          mb="4px"
-          whiteSpace="nowrap"
-        >
-          <Box alignItems="center" display="flex">
-            {connectionOption && (
-              <>
-                <ConnectionTypeLogo data={connectionOption.identifier} />
-                <Text ml="8px">{getLabel(step)}</Text>
-              </>
-            )}
-            {!connectionOption && <Text>{getLabel(step)}</Text>}
-          </Box>
-        </Heading>
-      )}
-      {!isReloading && getComponent()}
-      {isReloading && (
-        <Center>
-          <Spinner />
-        </Center>
-      )}
+      <Heading
+        fontSize="2xl"
+        fontWeight="semibold"
+        maxHeight="40px"
+        mb="4px"
+        whiteSpace="nowrap"
+      >
+        <Box alignItems="center" display="flex">
+          {connectionOption && (
+            <>
+              <ConnectionTypeLogo data={connectionOption.identifier} />
+              <Text ml="8px">{getLabel(step)}</Text>
+            </>
+          )}
+          {!connectionOption && <Text>{getLabel(step)}</Text>}
+        </Box>
+      </Heading>
+      {getComponent()}
     </>
   );
 };

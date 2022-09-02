@@ -51,6 +51,9 @@ The types of changes are:
 * Adds endpoint for GET identity verification config [#1221](https://github.com/ethyca/fidesops/pull/1221)
 * Add user identification flow to privacy center [#1231](https://github.com/ethyca/fidesops/pull/1231)
 * Access support for Shopify [#1220](https://github.com/ethyca/fidesops/pull/1220)
+* Add a Connector - upload a DB Dataset YAML [#923](https://github.com/ethyca/fidesops/issues/923)
+* Add a Connector - DB connector configs [#922](https://github.com/ethyca/fidesops/issues/922)
+* Add a Connector - SaaS Dataset Management (YAML method) [#1090](https://github.com/ethyca/fidesops/issues/1090)
 
 ## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
 
