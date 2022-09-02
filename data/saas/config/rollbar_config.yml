@@ -9,7 +9,6 @@ saas_config:
       - name: domain
       - name: read_access_token
       - name: write_access_token
-      - name: page_size
 
     client_config:
       protocol: https
@@ -26,7 +25,7 @@ saas_config:
             method: GET
             path: /api/1/projects
             headers:
-              - name: X-ROLLBAR-ACCESS-TOKEN
+              - name: X-Rollbar-Access-Token
                 value: <read_access_token>
             param_values:
               - name: read_access_token
@@ -41,7 +40,7 @@ saas_config:
             method: GET
             path: /api/1/project/<project_id>/access_tokens
             headers:
-              - name: X-ROLLBAR-ACCESS-TOKEN
+              - name: X-Rollbar-Access-Token
                 value: <read_access_token>
             param_values:
               - name: read_access_token
@@ -56,7 +55,6 @@ saas_config:
                 configuration:
                   field: name
                   value: read
-
             data_path: result
 
       - name: instances
@@ -65,7 +63,7 @@ saas_config:
             method: GET
             path: /api/1/instances
             headers:
-              - name: X-ROLLBAR-ACCESS-TOKEN
+              - name: X-Rollbar-Access-Token
                 value: <project_read_token>
             query_params:
               - name: page
@@ -82,10 +80,10 @@ saas_config:
                 incremental_param: page
                 increment_by: 1
                 limit: 20
-            postprocessors:
-              - strategy: filter
-                configuration:
-                  field: email
-                  value:
-                    identity: email
+#             postprocessors:
+#               - strategy: filter
+#                 configuration:
+#                   field: email
+#                   value:
+#                     identity: email
             data_path: result

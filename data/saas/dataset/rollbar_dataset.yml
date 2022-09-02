@@ -22,15 +22,15 @@ dataset:
   - name: project_access_token
     fields:
       - name: access_token
-        data_categories: [ system.operations ]
+        data_categories: [system.operations]
         fidesops_meta:
             data_type: string
       - name: project_id
-        data_categories: [ system.operations ]
+        data_categories: [system.operations]
         fidesops_meta:
             data_type: integer
       - name: name
-        data_categories: [ system.operations ]
+        data_categories: [system.operations]
         fidesops_meta:
           data_type: string
 
