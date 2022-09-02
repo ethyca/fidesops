@@ -44,3 +44,6 @@ analytics_opt_out = false
 
 [admin_ui]
 enabled = true
+
+[notifications]
+send_request_completion_notification = true

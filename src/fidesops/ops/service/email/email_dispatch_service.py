@@ -14,7 +14,7 @@ from fidesops.ops.schemas.email.email import (
     EmailServiceDetails,
     EmailServiceSecrets,
     EmailServiceType,
-    SubjectIdentityVerificationBodyParams,
+    SubjectIdentityVerificationBodyParams, AccessRequestCompleteBodyParams,
 )
 from fidesops.ops.util.logger import Pii
 
@@ -25,7 +25,7 @@ def dispatch_email(
     db: Session,
     action_type: EmailActionType,
     to_email: Optional[str],
-    email_body_params: Union[SubjectIdentityVerificationBodyParams],
+    email_body_params: Optional[Union[SubjectIdentityVerificationBodyParams, AccessRequestCompleteBodyParams]],
 ) -> None:
     if not to_email:
         raise EmailDispatchException("No email supplied.")
@@ -57,7 +57,7 @@ def dispatch_email(
 
 def _build_email(
     action_type: EmailActionType,
-    body_params: Union[SubjectIdentityVerificationBodyParams],
+    body_params: Union[SubjectIdentityVerificationBodyParams, AccessRequestCompleteBodyParams],
 ) -> EmailForActionType:
     if action_type == EmailActionType.SUBJECT_IDENTITY_VERIFICATION:
         template = get_email_template(action_type)
@@ -69,6 +69,22 @@ def _build_email(
                     "minutes": body_params.get_verification_code_ttl_minutes(),
                 }
             ),
+        )
+    elif action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
+        template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Your data is ready to be downloaded",
+            body=template.render(
+                {
+                    "download_link": body_params.download_link,
+                }
+            ),
+        )
+    elif action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
+        template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Your data has been deleted",
+            body=template.render(),
         )
     logger.error("Email action type %s is not implemented", action_type)
     raise EmailDispatchException(f"Email action type {action_type} is not implemented")

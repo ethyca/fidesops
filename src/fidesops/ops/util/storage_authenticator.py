@@ -7,7 +7,7 @@ from boto3 import Session
 from requests import Response
 
 from fidesops.ops.common_exceptions import StorageUploadError
-from fidesops.ops.schemas.storage.storage import S3AuthMethod, StorageSecrets
+from fidesops.ops.schemas.storage.storage import S3AuthMethod, StorageSecretsS3, StorageSecrets
 from fidesops.ops.schemas.third_party.onetrust import OneTrustOAuthResponse
 
 logger = logging.getLogger(__name__)
@@ -36,13 +36,14 @@ def get_s3_session(
         client.get_caller_identity()
         return session
 
-    if auth_method == S3AuthMethod.AUTOMATIC.value:
+    elif auth_method == S3AuthMethod.AUTOMATIC.value:
         session = boto3.session.Session()
         logger.info("Successfully created automatic session")
         return session
 
-    logger.error("No S3 session created. Auth method used: %s", auth_method)
-    raise ValueError(f"No S3 session created. Auth method used: {auth_method}")
+    else:
+        logger.error("Auth method not supported for S3: %s", auth_method)
+        raise ValueError(f"Auth method not supported for S3: {auth_method}")
 
 
 def get_onetrust_access_token(client_id: str, client_secret: str, hostname: str) -> str:

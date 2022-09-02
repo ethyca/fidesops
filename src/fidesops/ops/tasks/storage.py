@@ -7,7 +7,7 @@ import secrets
 import zipfile
 from datetime import datetime
 from io import BytesIO
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional
 
 import pandas as pd
 import requests
@@ -27,7 +27,6 @@ from fidesops.ops.util.storage_authenticator import (
 )
 
 logger = logging.getLogger(__name__)
-
 
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 
@@ -58,7 +57,7 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
 
 
 def write_to_in_memory_buffer(
-    resp_format: str, data: Dict[str, Any], request_id: str
+        resp_format: str, data: Dict[str, Any], request_id: str
 ) -> BytesIO:
     """Write JSON/CSV data to in-memory file-like object to be passed to S3. Encrypt data if encryption key/nonce
     has been cached for the given privacy request id
@@ -96,30 +95,52 @@ def write_to_in_memory_buffer(
     raise NotImplementedError(f"No handling for response format {resp_format}.")
 
 
+def create_presigned_url_for_s3(s3_client, bucket_name, object_name, expiration=86400) -> Optional[str]:  # todo- have expiry configurable
+    """"Generate a presigned URL to share an S3 object
+
+    :param bucket_name: string
+    :param object_name: string
+    :param expiration: Time in seconds for the presigned URL to remain valid, default to 1 day
+    :return: Presigned URL as string. If error, returns None.
+    """
+
+    try:
+        response = s3_client.generate_presigned_url('get_object',
+                                                    Params={'Bucket': bucket_name,
+                                                            'Key': object_name},
+                                                    ExpiresIn=expiration)
+    except ClientError as e:
+        raise e
+
+    # The response contains the presigned URL
+    return response
+
+
 def upload_to_s3(  # pylint: disable=R0913
-    storage_secrets: Dict[StorageSecrets, Any],
-    data: Dict,
-    bucket_name: str,
-    file_key: str,
-    resp_format: str,
-    request_id: str,
-    auth_method: S3AuthMethod,
+        storage_secrets: Dict[StorageSecrets, Any],
+        data: Dict,
+        bucket_name: str,
+        file_key: str,
+        resp_format: str,
+        request_id: str,
+        auth_method: S3AuthMethod,
 ) -> str:
     """Uploads arbitrary data to s3 returned from an access request"""
     logger.info("Starting S3 Upload of %s", file_key)
     try:
         my_session = get_s3_session(auth_method, storage_secrets)
-
-        s3 = my_session.client("s3")
+        s3_client = my_session.client("s3")
 
         # handles file chunking
-        s3.upload_fileobj(
+        s3_client.upload_fileobj(
             Fileobj=write_to_in_memory_buffer(resp_format, data, request_id),
             Bucket=bucket_name,
             Key=file_key,
         )
-        # todo- move to outbound_urn_registry
-        return f"https://{bucket_name}.s3.amazonaws.com/{file_key}"
+
+        presigned_url: str = create_presigned_url_for_s3(s3_client, bucket_name, file_key)
+
+        return presigned_url
     except ClientError as e:
         raise e
     except ParamValidationError as e:
@@ -127,9 +148,9 @@ def upload_to_s3(  # pylint: disable=R0913
 
 
 def upload_to_onetrust(
-    payload: Dict,
-    storage_secrets: Dict[StorageSecrets, Any],
-    ref_id: str,
+        payload: Dict,
+        storage_secrets: Dict[StorageSecrets, Any],
+        ref_id: str,
 ) -> str:
     """Uploads arbitrary data to onetrust returned from an access request"""
     logger.info("Starting OneTrust Upload for ref_id %s", ref_id)

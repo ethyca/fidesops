@@ -1,1 +1,3 @@
 SUBJECT_IDENTITY_VERIFICATION_TEMPLATE = "subject_identity_verification.html"
+PRIVACY_REQUEST_COMPLETE_DELETION_TEMPLATE = "privacy_request_complete_deletion.html"
+PRIVACY_REQUEST_COMPLETE_ACCESS_TEMPLATE = "privacy_request_complete_access.html"
