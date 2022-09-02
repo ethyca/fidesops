@@ -58,7 +58,7 @@ class SaaSSchema(BaseModel, abc.ABC):
 
     @classmethod
     def get_connector_param(cls, name: str) -> Dict[str, Any]:
-        return cls.__private_attributes__.get("_connector_params").default.get(name)
+        return cls.__private_attributes__.get("_connector_params").default.get(name)  # type: ignore
 
     class Config:
         """Only permit selected secret fields to be stored."""
@@ -81,11 +81,11 @@ class SaaSSchemaFactory:
         """Returns the schema for the current configuration"""
         field_definitions: Dict[str, Any] = {}
         for connector_param in self.saas_config.connector_params:
-            type = list if connector_param.multiselect else str
+            param_type = list if connector_param.multiselect else str
             field_definitions[connector_param.name] = (
                 connector_param.default_value
                 if connector_param.default_value
-                else (type, ...)
+                else (param_type, ...)
             )
         SaaSSchema.__doc__ = f"{str(self.saas_config.type).capitalize()} secrets schema"  # Dynamically override the docstring to create a description
 

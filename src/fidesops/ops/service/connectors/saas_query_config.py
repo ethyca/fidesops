@@ -135,11 +135,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         # list_ids: [[1,2,3]] -> list_ids: [1,2,3]
         inputs_to_flatten = [
             param_value.name
-            for param_value in current_request.param_values
+            for param_value in current_request.param_values or []
             if param_value.flatten
         ]
-        for input in inputs_to_flatten:
-            input_data[input] = pydash.flatten(input_data.get(input))
+        for value in inputs_to_flatten:
+            input_data[value] = pydash.flatten(input_data.get(value))
 
         # we want to preserve the grouped_input relationships so we take each
         # individual group and generate the product with the ungrouped inputs
@@ -161,14 +161,15 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         """Return a filtered map of secrets used by the request"""
 
         param_names = [
-            param_value.connector_param for param_value in current_request.param_values
+            param_value.connector_param
+            for param_value in current_request.param_values or []
         ]
         return {
             name: value for name, value in self.secrets.items() if name in param_names
         }
 
     @staticmethod
-    def _generate_product_list(*args) -> List[Dict[str, Any]]:
+    def _generate_product_list(*args: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Accepts a variable number of dicts and produces the product of the values from all the dicts.
         """

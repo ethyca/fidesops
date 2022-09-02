@@ -212,9 +212,9 @@ class ConnectorParam(BaseModel):
         """Verify the default_value is one of the values specified in the options list"""
 
         name = values.get("name")
-        options: List[str] = values.get("options")
+        options: Optional[List[str]] = values.get("options")
         default_value: Optional[Union[str, List[str]]] = values.get("default_value")
-        multiselect: bool = values.get("multiselect")
+        multiselect: Optional[bool] = values.get("multiselect")
 
         if options:
             if isinstance(default_value, str) and default_value not in options:
