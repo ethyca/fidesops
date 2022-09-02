@@ -19,15 +19,10 @@ from fidesops.ops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.ops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
-    MaskingStrategyFactory,
-)
 from fidesops.ops.util.encryption.secrets_util import SecretsUtil
 
 HASH_STRATEGY_NAME = "hash"
 
-
-@MaskingStrategyFactory.register(HASH_STRATEGY_NAME)
 class HashMaskingStrategy(MaskingStrategy):
     """Masks a value by hashing it"""
 

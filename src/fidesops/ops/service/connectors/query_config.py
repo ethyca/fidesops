@@ -20,9 +20,6 @@ from fidesops.ops.graph.traversal import Row, TraversalNode
 from fidesops.ops.models.policy import ActionType, Policy, Rule
 from fidesops.ops.models.privacy_request import ManualAction, PrivacyRequest
 from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
-    MaskingStrategyFactory,
-)
 from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
     NULL_REWRITE_STRATEGY_NAME,
 )
@@ -147,7 +144,7 @@ class QueryConfig(Generic[T], ABC):
             strategy_config = rule.masking_strategy
             if not strategy_config:
                 continue
-            strategy: MaskingStrategy = MaskingStrategyFactory.get_strategy(
+            strategy: MaskingStrategy = MaskingStrategy.get_strategy(
                 strategy_config["strategy"], strategy_config["configuration"]
             )
             for rule_field_path in field_paths:

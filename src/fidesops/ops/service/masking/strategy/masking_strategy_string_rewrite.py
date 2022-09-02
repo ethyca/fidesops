@@ -10,14 +10,9 @@ from fidesops.ops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.ops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
-    MaskingStrategyFactory,
-)
-
 STRING_REWRITE_STRATEGY_NAME = "string_rewrite"
 
 
-@MaskingStrategyFactory.register(STRING_REWRITE_STRATEGY_NAME)
 class StringRewriteMaskingStrategy(MaskingStrategy):
     """Masks the values with a pre-determined value"""
 

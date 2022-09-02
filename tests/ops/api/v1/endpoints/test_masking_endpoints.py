@@ -7,11 +7,11 @@ from fidesops.ops.schemas.masking.masking_api import MaskingAPIResponse
 from fidesops.ops.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
 )
+from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
     AES_ENCRYPT_STRATEGY_NAME,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
-    MaskingStrategyFactory,
+    AesEncryptionMaskingStrategy,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_hash import (
     HASH_STRATEGY_NAME,
@@ -33,7 +33,7 @@ from fidesops.ops.service.masking.strategy.masking_strategy_string_rewrite impor
 class TestGetMaskingStrategies:
     def test_read_strategies(self, api_client: TestClient):
         expected_response = []
-        for strategy in MaskingStrategyFactory.get_strategies():
+        for strategy in MaskingStrategy.get_strategies():
             expected_response.append(strategy.get_description())
 
         response = api_client.get(V1_URL_PREFIX + MASKING_STRATEGY)
