@@ -14,7 +14,10 @@ from fidesops.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.util.saas_util import load_config
+from fidesops.ops.util.saas_util import (
+    load_config_with_replacement,
+    load_dataset_with_replacement,
+)
 from tests.ops.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
@@ -40,14 +43,27 @@ def rollbar_identity_email(saas_config):
     )
 
 
+@pytest.fixture(scope="function")
+def rollbar_erasure_identity_email() -> str:
+    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+
+
 @pytest.fixture
 def rollbar_config() -> Dict[str, Any]:
-    return load_config("data/saas/config/rollbar_config.yml")[0]
+    return load_config_with_replacement(
+        "data/saas/config/rollbar_config.yml",
+        "<instance_fides_key>",
+        "rollbar_instance",
+    )
 
 
 @pytest.fixture
 def rollbar_dataset() -> Dict[str, Any]:
-    return load_dataset("data/saas/dataset/rollbar_dataset.yml")[0]
+    return load_dataset_with_replacement(
+        "data/saas/dataset/rollbar_dataset.yml",
+        "<instance_fides_key>",
+        "rollbar_instance",
+    )[0]
 
 
 @pytest.fixture(scope="function")
@@ -121,28 +137,4 @@ def rollbar_erasure_data(
     )
     user = users_response.json()
     assert users_response.ok
-    error_message = f"User with email {rollbar_erasure_identity_email} could not be added to Logi ID"
-    user = poll_for_existence(
-        user_exists,
-        (rollbar_erasure_identity_email, rollbar_secrets),
-        error_message=error_message,
-    )
     yield user
-
-
-def user_exists(rollbar_erasure_identity_email: str, rollbar_secrets):
-    """
-    Confirm whether user exists by calling user search by email api
-    Returns user ID if it exists, returns None if it does not.
-    """
-    base_url = f"https://{rollbar_secrets['domain']}"
-    auth = rollbar_secrets["client_id"], rollbar_secrets["client_secret"]
-
-    user_response = requests.get(
-        url=f"{base_url}/identity/search?email={rollbar_erasure_identity_email}",
-        auth=auth,
-    )
-    # we expect 404 if user doesn't exist
-    if HTTP_404_NOT_FOUND == user_response.status_code:
-        return None
-    return user_response.json()
