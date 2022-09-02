@@ -47,7 +47,7 @@ saas_config:
               connector_param: read_access_token
             - name: project_id
               references:
-                - dataset: rollbar_connector
+                - dataset: <instance_fides_key>
                   field: projects.id
                   direction: from
           postprocessors:
@@ -71,7 +71,7 @@ saas_config:
           param_values:
             - name: project_read_token
               references:
-                - dataset: rollbar_connector
+                - dataset: <instance_fides_key>
                   field: project_access_token.access_token
                   direction: from
           pagination:
