@@ -28,7 +28,7 @@ def test_saas_access_request_task(
     rollbar_dataset_config,
     rollbar_identity_email,
 ) -> None:
-    """Full access request based on the rollbar SaaS config"""
+    """Full access request based on the Rollbar SaaS config"""
 
     privacy_request = PrivacyRequest(
         id=f"test_rollbar_access_request_task_{random.randint(0, 1000)}"
