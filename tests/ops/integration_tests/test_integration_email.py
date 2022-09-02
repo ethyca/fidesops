@@ -16,7 +16,7 @@ from fidesops.ops.models.privacy_request import (
 from fidesops.ops.schemas.dataset import FidesopsDataset
 from fidesops.ops.schemas.email.email import EmailActionType
 from fidesops.ops.service.privacy_request.request_runner_service import (
-    email_connector_send,
+    email_connector_erasure_send,
 )
 from fidesops.ops.task import graph_task
 
@@ -173,7 +173,7 @@ async def test_email_connector_cache_and_delayed_send(
         log.status for log in children_logs
     }
 
-    email_connector_send(db, privacy_request)
+    email_connector_erasure_send(db, privacy_request)
     assert mock_email_dispatch.called
     call_args = mock_email_dispatch.call_args[1]
     assert call_args["action_type"] == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT

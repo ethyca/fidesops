@@ -320,7 +320,9 @@ async def run_privacy_request(
             from_checkpoint=resume_step,
         ):
             try:
-                email_connector_send(db=session, privacy_request=privacy_request)
+                email_connector_erasure_send(
+                    db=session, privacy_request=privacy_request
+                )
             except EmailDispatchException as exc:
                 privacy_request.cache_failed_checkpoint_details(
                     step=CurrentStep.erasure_email_post_send, collection=None
@@ -397,7 +399,7 @@ def generate_id_verification_code() -> str:
     return str(random.choice(range(100000, 999999)))
 
 
-def email_connector_send(db: Session, privacy_request: PrivacyRequest) -> None:
+def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -> None:
     """
     Send emails to configured third-parties with instructions on how to erase remaining data.
     Combined all the collections on each email-based dataset into one email.
@@ -412,6 +414,26 @@ def email_connector_send(db: Session, privacy_request: PrivacyRequest) -> None:
         ] = privacy_request.get_email_connector_template_contents_by_dataset(
             CurrentStep.erasure, ds.dataset.get("fides_key")
         )
+
+        if not template_values:
+            logger.info(
+                "No email sent: no template values saved for '%s'",
+                ds.dataset.get("fides_key"),
+            )
+            return
+
+        if not any(
+            (
+                action_required.action_needed[0].update
+                if action_required and action_required.action_needed
+                else False
+                for action_required in template_values.values()
+            )
+        ):
+            logger.info(
+                "No email sent: no masking needed on '%s'", ds.dataset.get("fides_key")
+            )
+            return
 
         dispatch_email(
             db,
