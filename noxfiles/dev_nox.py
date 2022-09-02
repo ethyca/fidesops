@@ -32,7 +32,7 @@ def dev_with_worker(session: nox.Session) -> None:
     """Spin up the entire application with the celery worker in a separate container."""
     build(session, "dev")
     session.notify("teardown")
-    session.run("docker-compose", "up", "--detach", "worker",  external=True)
+    session.run("docker-compose", "up", "--detach", "worker", external=True)
     session.run(
         "docker-compose",
         "run",
