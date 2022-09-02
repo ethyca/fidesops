@@ -3,7 +3,6 @@ from requests import PreparedRequest
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.schemas.saas.strategy_configuration import (
     QueryParamAuthenticationConfiguration,
-    StrategyConfiguration,
 )
 from fidesops.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
@@ -35,7 +34,3 @@ class QueryParamAuthenticationStrategy(AuthenticationStrategy):
             assign_placeholders(self.value, connection_config.secrets),  # type: ignore
         )
         return request
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return QueryParamAuthenticationConfiguration  # type: ignore

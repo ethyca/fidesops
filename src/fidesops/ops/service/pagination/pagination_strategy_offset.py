@@ -8,7 +8,6 @@ from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.ops.schemas.saas.strategy_configuration import (
     ConnectorParamRef,
     OffsetPaginationConfiguration,
-    StrategyConfiguration,
 )
 from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
 
@@ -67,10 +66,6 @@ class OffsetPaginationStrategy(PaginationStrategy):
             query_params=request_params.query_params,
             body=request_params.body,
         )
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return OffsetPaginationConfiguration  # type: ignore
 
     def validate_request(self, request: Dict[str, Any]) -> None:
         """Ensures that the query param specified by 'incremental_param' exists in the request"""

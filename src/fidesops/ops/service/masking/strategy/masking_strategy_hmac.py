@@ -2,10 +2,7 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, Type
 
-from fidesops.ops.schemas.masking.masking_configuration import (
-    HmacMaskingConfiguration,
-    MaskingConfiguration,
-)
+from fidesops.ops.schemas.masking.masking_configuration import HmacMaskingConfiguration
 from fidesops.ops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
     MaskingSecretMeta,
@@ -72,10 +69,6 @@ class HmacMaskingStrategy(MaskingStrategy):
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
         return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
-
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        return HmacMaskingConfiguration  # type: ignore
 
     @classmethod
     def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:

@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Union
 import pydash
 
 from fidesops.ops.schemas.saas.strategy_configuration import (
-    StrategyConfiguration,
     UnwrapPostProcessorConfiguration,
 )
 from fidesops.ops.service.processors.post_processor_strategy.post_processor_strategy import (
@@ -79,7 +78,3 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
             result = pydash.flatten(result)
 
         return result
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return UnwrapPostProcessorConfiguration  # type: ignore

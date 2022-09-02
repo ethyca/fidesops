@@ -4,7 +4,6 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Any, List, Optional, Type
 
-from fidesops.ops.schemas.masking.masking_configuration import MaskingConfiguration
 from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.ops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
@@ -27,11 +26,6 @@ class MaskingStrategy(Strategy):
 
     def generate_secrets_for_cache(self) -> List[MaskingSecretCache]:
         """Generates secrets for strategy"""
-
-    @staticmethod
-    @abstractmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        """Used to get the configuration model to configure the strategy"""
 
     @classmethod
     @abstractmethod

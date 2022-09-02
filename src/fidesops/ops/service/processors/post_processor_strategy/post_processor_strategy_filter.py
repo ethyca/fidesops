@@ -7,7 +7,6 @@ from fidesops.ops.common_exceptions import FidesopsException
 from fidesops.ops.schemas.saas.shared_schemas import IdentityParamRef
 from fidesops.ops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
-    StrategyConfiguration,
 )
 from fidesops.ops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
@@ -157,7 +156,3 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
 
         # base case, compare filter_value to a single string
         return filter_value == target if exact else filter_value in target
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return FilterPostProcessorConfiguration  # type: ignore

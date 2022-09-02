@@ -4,10 +4,7 @@ import hashlib
 from typing import Dict, List, Optional, Type
 
 from fidesops.ops.core.config import config
-from fidesops.ops.schemas.masking.masking_configuration import (
-    HashMaskingConfiguration,
-    MaskingConfiguration,
-)
+from fidesops.ops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.ops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
     MaskingSecretMeta,
@@ -72,10 +69,6 @@ class HashMaskingStrategy(MaskingStrategy):
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
         return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
-
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        return HashMaskingConfiguration  # type: ignore
 
     # MR Note - We will need a way to ensure that this does not fall out of date. Given that it
     # includes subjective instructions, this is not straightforward to automate

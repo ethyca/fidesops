@@ -5,7 +5,6 @@ from typing import Dict, List, Optional, Type
 from fidesops.ops.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
     HmacMaskingConfiguration,
-    MaskingConfiguration,
 )
 from fidesops.ops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
@@ -78,11 +77,6 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
         return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
-
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        """Used to get the configuration model to configure the strategy"""
-        return AesEncryptionMaskingConfiguration  # type: ignore
 
     @classmethod
     def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:

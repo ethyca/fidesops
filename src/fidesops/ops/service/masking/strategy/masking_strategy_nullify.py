@@ -1,9 +1,6 @@
 from typing import List, Optional, Type
 
-from fidesops.ops.schemas.masking.masking_configuration import (
-    MaskingConfiguration,
-    NullMaskingConfiguration,
-)
+from fidesops.ops.schemas.masking.masking_configuration import NullMaskingConfiguration
 from fidesops.ops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
@@ -35,10 +32,6 @@ class NullMaskingStrategy(MaskingStrategy):
 
     def secrets_required(self) -> bool:
         return False
-
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        return NullMaskingConfiguration  # type: ignore
 
     @classmethod
     def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:

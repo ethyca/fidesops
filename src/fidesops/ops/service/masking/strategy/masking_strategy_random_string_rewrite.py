@@ -3,7 +3,6 @@ from secrets import choice
 from typing import List, Optional, Type
 
 from fidesops.ops.schemas.masking.masking_configuration import (
-    MaskingConfiguration,
     RandomStringMaskingConfiguration,
 )
 from fidesops.ops.schemas.masking.masking_strategy_description import (
@@ -49,10 +48,6 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
 
     def secrets_required(self) -> bool:
         return False
-
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        return RandomStringMaskingConfiguration  # type: ignore
 
     @classmethod
     def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:

@@ -3,7 +3,6 @@ from requests import PreparedRequest
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.schemas.saas.strategy_configuration import (
     BearerAuthenticationConfiguration,
-    StrategyConfiguration,
 )
 from fidesops.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
@@ -31,7 +30,3 @@ class BearerAuthenticationStrategy(AuthenticationStrategy):
             self.token, connection_config.secrets  # type: ignore
         )
         return request
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return BearerAuthenticationConfiguration  # type: ignore

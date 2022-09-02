@@ -3,10 +3,7 @@ import logging
 from requests import PreparedRequest
 
 from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.schemas.saas.strategy_configuration import (
-    OAuth2BaseConfiguration,
-    StrategyConfiguration,
-)
+from fidesops.ops.schemas.saas.strategy_configuration import OAuth2BaseConfiguration
 from fidesops.ops.service.authentication.authentication_strategy_oauth2_base import (
     OAuth2AuthenticationStrategyBase,
 )
@@ -40,7 +37,3 @@ class OAuth2ClientCredentialsAuthenticationStrategy(OAuth2AuthenticationStrategy
         # add access_token to request
         request.headers["Authorization"] = "Bearer " + access_token
         return request
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return OAuth2BaseConfiguration  # type: ignore

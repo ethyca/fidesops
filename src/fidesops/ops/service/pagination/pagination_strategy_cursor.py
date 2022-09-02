@@ -6,7 +6,6 @@ from requests import Response
 from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.ops.schemas.saas.strategy_configuration import (
     CursorPaginationConfiguration,
-    StrategyConfiguration,
 )
 from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
 
@@ -51,7 +50,3 @@ class CursorPaginationStrategy(PaginationStrategy):
             query_params=request_params.query_params,
             body=request_params.body,
         )
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return CursorPaginationConfiguration  # type: ignore

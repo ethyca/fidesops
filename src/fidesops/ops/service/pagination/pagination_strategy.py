@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from requests import Response
@@ -24,11 +24,6 @@ class PaginationStrategy(Strategy):
         data_path: str,
     ) -> Optional[SaaSRequestParams]:
         """Build request for next page of data"""
-
-    @staticmethod
-    @abstractmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        """Used to get the configuration model to configure the strategy"""
 
     def validate_request(self, request: Dict[str, Any]) -> None:
         """
