@@ -10,7 +10,6 @@ from fidesops.ops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.ops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-STRING_REWRITE_STRATEGY_NAME = "string_rewrite"
 
 
 class StringRewriteMaskingStrategy(MaskingStrategy):
@@ -54,7 +53,7 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
     @classmethod
     def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=STRING_REWRITE_STRATEGY_NAME,
+            name=cls.name,
             description="Masks the input value with a default string value",
             configurations=[
                 MaskingStrategyConfigurationDescription(

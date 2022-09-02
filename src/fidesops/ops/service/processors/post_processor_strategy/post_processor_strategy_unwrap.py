@@ -11,8 +11,6 @@ from fidesops.ops.service.processors.post_processor_strategy.post_processor_stra
     PostProcessorStrategy,
 )
 
-STRATEGY_NAME = "unwrap"
-
 logger = logging.getLogger(__name__)
 
 
@@ -43,9 +41,6 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
     def __init__(self, configuration: UnwrapPostProcessorConfiguration):
         self.data_path = configuration.data_path
 
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
-
     def process(
         self,
         data: Union[List[Dict[str, Any]], Dict[str, Any]],
@@ -64,7 +59,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
                 logger.warning(
                     "%s could not be found for the following post processing strategy: %s",
                     self.data_path,
-                    self.get_strategy_name(),
+                    self.name,
                 )
             else:
                 result = unwrapped
@@ -75,7 +70,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
                     logger.warning(
                         "%s could not be found for the following post processing strategy: %s",
                         self.data_path,
-                        self.get_strategy_name(),
+                        self.name,
                     )
                 else:
                     result.append(unwrapped)

@@ -9,24 +9,22 @@ from fidesops.ops.schemas.masking.masking_configuration import (
 )
 from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
-    AES_ENCRYPT_STRATEGY_NAME,
-)
     AesEncryptionMaskingStrategy,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_hash import (
-    HASH_STRATEGY_NAME,
+    HashMaskingStrategy,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
-    HMAC_STRATEGY_NAME,
+    HmacMaskingStrategy,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
-    NULL_REWRITE_STRATEGY_NAME,
+    NullMaskingStrategy,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_random_string_rewrite import (
-    RANDOM_STRING_REWRITE_STRATEGY_NAME,
+    RandomStringRewriteMaskingStrategy,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_string_rewrite import (
-    STRING_REWRITE_STRATEGY_NAME,
+    StringRewriteMaskingStrategy,
 )
 
 
@@ -50,7 +48,7 @@ class TestMaskValues:
         request = {
             "values": [value],
             "masking_strategy": {
-                "strategy": STRING_REWRITE_STRATEGY_NAME,
+                "strategy": StringRewriteMaskingStrategy.name,
                 "configuration": {"rewrite_value": rewrite_val},
             },
         }
@@ -69,7 +67,7 @@ class TestMaskValues:
         request = {
             "values": [value],
             "masking_strategy": {
-                "strategy": RANDOM_STRING_REWRITE_STRATEGY_NAME,
+                "strategy": RandomStringRewriteMaskingStrategy.name,
                 "configuration": {"length": length},
             },
         }
@@ -84,7 +82,7 @@ class TestMaskValues:
         request = {
             "values": [value],
             "masking_strategy": {
-                "strategy": HMAC_STRATEGY_NAME,
+                "strategy": HmacMaskingStrategy.name,
                 "configuration": {},
             },
         }
@@ -99,7 +97,7 @@ class TestMaskValues:
         request = {
             "values": [value],
             "masking_strategy": {
-                "strategy": HASH_STRATEGY_NAME,
+                "strategy": HashMaskingStrategy.name,
                 "configuration": {},
             },
         }
@@ -115,7 +113,7 @@ class TestMaskValues:
         request = {
             "values": [value, value2],
             "masking_strategy": {
-                "strategy": HASH_STRATEGY_NAME,
+                "strategy": HashMaskingStrategy.name,
                 "configuration": {},
             },
         }
@@ -135,7 +133,7 @@ class TestMaskValues:
         request = {
             "values": [value, value],
             "masking_strategy": {
-                "strategy": HASH_STRATEGY_NAME,
+                "strategy": HashMaskingStrategy.name,
                 "configuration": {},
             },
         }
@@ -155,7 +153,7 @@ class TestMaskValues:
         request = {
             "values": [value],
             "masking_strategy": {
-                "strategy": AES_ENCRYPT_STRATEGY_NAME,
+                "strategy": AesEncryptionMaskingStrategy.name,
                 "configuration": {
                     "mode": AesEncryptionMaskingConfiguration.Mode.GCM.value
                 },
@@ -187,7 +185,7 @@ class TestMaskValues:
         request = {
             "values": [value],
             "masking_strategy": {
-                "strategy": STRING_REWRITE_STRATEGY_NAME,
+                "strategy": StringRewriteMaskingStrategy.name,
                 "configuration": {"wrong": "config"},
             },
         }
@@ -201,7 +199,7 @@ class TestMaskValues:
         request = {
             "values": [value],
             "masking_strategy": {
-                "strategy": NULL_REWRITE_STRATEGY_NAME,
+                "strategy": NullMaskingStrategy.name,
                 "configuration": {},
             },
         }

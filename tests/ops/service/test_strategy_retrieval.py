@@ -36,9 +36,6 @@ class TestStrategyRetrieval:
             ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
                 pass
 
-            def get_strategy_name(self) -> str:
-                raise NotImplementedError
-
         config = SomeStrategyConfiguration(some_key="non default value")
         retrieved_strategy = PostProcessorStrategy.get_strategy(
             SomeStrategy.name, config.dict()
@@ -66,9 +63,6 @@ class TestStrategyRetrieval:
                 self, data: Any, identity_data: Dict[str, Any] = None
             ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
                 pass
-
-            def get_strategy_name(self) -> str:
-                raise NotImplementedError
 
         class SomeSubStrategy(SomeStrategy):
             """
@@ -124,9 +118,6 @@ class TestStrategyRetrieval:
                 self, data: Any, identity_data: Dict[str, Any] = None
             ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
                 pass
-
-            def get_strategy_name(self) -> str:
-                raise NotImplementedError
 
         config = SomeStrategyConfiguration(some_key="non default value")
         retrieved_strategy = PostProcessorStrategy.get_strategy(

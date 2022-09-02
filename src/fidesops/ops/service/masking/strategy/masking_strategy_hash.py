@@ -21,7 +21,6 @@ from fidesops.ops.service.masking.strategy.format_preservation import FormatPres
 from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.ops.util.encryption.secrets_util import SecretsUtil
 
-HASH_STRATEGY_NAME = "hash"
 
 class HashMaskingStrategy(MaskingStrategy):
     """Masks a value by hashing it"""
@@ -83,7 +82,7 @@ class HashMaskingStrategy(MaskingStrategy):
     @classmethod
     def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=HASH_STRATEGY_NAME,
+            name=cls.name,
             description="Masks the input value by returning a hashed version of the input value",
             configurations=[
                 MaskingStrategyConfigurationDescription(
@@ -118,11 +117,13 @@ class HashMaskingStrategy(MaskingStrategy):
             (value + salt).encode(config.security.encoding)
         ).hexdigest()
 
-    @staticmethod
-    def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
+    @classmethod
+    def _build_masking_secret_meta(
+        cls: Type[MaskingStrategy],
+    ) -> Dict[SecretType, MaskingSecretMeta]:
         return {
             SecretType.salt: MaskingSecretMeta[str](
-                masking_strategy=HASH_STRATEGY_NAME,
+                masking_strategy=cls.name,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             )
         }

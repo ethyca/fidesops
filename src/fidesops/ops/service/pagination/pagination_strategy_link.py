@@ -15,8 +15,6 @@ from fidesops.ops.schemas.saas.strategy_configuration import (
 from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
 from fidesops.ops.util.logger import Pii
 
-STRATEGY_NAME = "link"
-
 logger = logging.getLogger(__name__)
 
 
@@ -29,9 +27,6 @@ class LinkPaginationStrategy(PaginationStrategy):
         self.source = configuration.source
         self.rel = configuration.rel
         self.path = configuration.path
-
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
 
     def get_next_request(
         self,

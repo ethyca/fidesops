@@ -12,7 +12,6 @@ from fidesops.ops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.ops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-RANDOM_STRING_REWRITE_STRATEGY_NAME = "random_string_rewrite"
 
 
 class RandomStringRewriteMaskingStrategy(MaskingStrategy):
@@ -58,7 +57,7 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     @classmethod
     def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=RANDOM_STRING_REWRITE_STRATEGY_NAME,
+            name=cls.name,
             description="Masks the input value with a random string of a specified length",
             configurations=[
                 MaskingStrategyConfigurationDescription(

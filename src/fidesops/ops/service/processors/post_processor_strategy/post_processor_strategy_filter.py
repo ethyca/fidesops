@@ -13,8 +13,6 @@ from fidesops.ops.service.processors.post_processor_strategy.post_processor_stra
     PostProcessorStrategy,
 )
 
-STRATEGY_NAME = "filter"
-
 logger = logging.getLogger(__name__)
 
 
@@ -53,9 +51,6 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         self.exact = configuration.exact
         self.case_sensitive = configuration.case_sensitive
 
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
-
     def process(
         self,
         data: Union[List[Dict[str, Any]], Dict[str, Any]],
@@ -78,7 +73,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                 logger.warning(
                     "Could not retrieve identity reference '%s' due to missing identity data for the following post processing strategy: %s",
                     self.value.identity,
-                    self.get_strategy_name(),
+                    self.name,
                 )
                 return []
             filter_value = identity_data.get(self.value.identity)  # type: ignore
@@ -109,7 +104,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
             logger.warning(
                 "%s could not be found on data for the following post processing strategy: %s",
                 self.field,
-                self.get_strategy_name(),
+                self.name,
             )
             return []
 

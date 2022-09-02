@@ -20,7 +20,6 @@ from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrate
 from fidesops.ops.util.encryption.hmac_encryption_scheme import hmac_encrypt_return_str
 from fidesops.ops.util.encryption.secrets_util import SecretsUtil
 
-HMAC_STRATEGY_NAME = "hmac"
 
 class HmacMaskingStrategy(MaskingStrategy):
     """
@@ -81,7 +80,7 @@ class HmacMaskingStrategy(MaskingStrategy):
     @classmethod
     def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=HMAC_STRATEGY_NAME,
+            name=cls.name,
             description="Masks the input value by using the HMAC algorithm along with a hashed version of the data "
             "and a secret key.",
             configurations=[
@@ -103,15 +102,17 @@ class HmacMaskingStrategy(MaskingStrategy):
         supported_data_types = {"string"}
         return data_type in supported_data_types
 
-    @staticmethod
-    def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
+    @classmethod
+    def _build_masking_secret_meta(
+        cls: Type[MaskingStrategy],
+    ) -> Dict[SecretType, MaskingSecretMeta]:
         return {
             SecretType.key: MaskingSecretMeta[str](
-                masking_strategy=HMAC_STRATEGY_NAME,
+                masking_strategy=cls.name,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             ),
             SecretType.salt: MaskingSecretMeta[str](
-                masking_strategy=HMAC_STRATEGY_NAME,
+                masking_strategy=cls.name,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             ),
         }

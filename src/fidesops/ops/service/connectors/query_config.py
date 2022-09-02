@@ -21,7 +21,7 @@ from fidesops.ops.models.policy import ActionType, Policy, Rule
 from fidesops.ops.models.privacy_request import ManualAction, PrivacyRequest
 from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
-    NULL_REWRITE_STRATEGY_NAME,
+    NullMaskingStrategy,
 )
 from fidesops.ops.task.refine_target_path import (
     build_refined_target_paths,
@@ -154,7 +154,7 @@ class QueryConfig(Generic[T], ABC):
                     if field_path == rule_field_path
                 ][0]
                 null_masking: bool = (
-                    strategy_config.get("strategy") == NULL_REWRITE_STRATEGY_NAME
+                    strategy_config.get("strategy") == NullMaskingStrategy.name
                 )
                 if not self._supported_data_type(
                     masking_override, null_masking, strategy

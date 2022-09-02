@@ -12,8 +12,6 @@ from fidesops.ops.schemas.saas.strategy_configuration import (
 )
 from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
 
-STRATEGY_NAME = "offset"
-
 
 class OffsetPaginationStrategy(PaginationStrategy):
 
@@ -24,9 +22,6 @@ class OffsetPaginationStrategy(PaginationStrategy):
         self.incremental_param = configuration.incremental_param
         self.increment_by = configuration.increment_by
         self.limit = configuration.limit
-
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
 
     def get_next_request(
         self,
