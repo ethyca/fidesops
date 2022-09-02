@@ -1,7 +1,7 @@
 """audit log email send
 
 Revision ID: 912d801f06c0
-Revises: c2f7a29c4780
+Revises: bde646a6f51e
 Create Date: 2022-09-01 16:23:10.905356
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "912d801f06c0"
-down_revision = "c2f7a29c4780"
+down_revision = "bde646a6f51e"
 branch_labels = None
 depends_on = None
 
