@@ -47,7 +47,7 @@ class TestSaaSQueryConfig:
         # static path with single query param
         config = SaaSQueryConfig(member, endpoints, {})
         prepared_request: SaaSRequestParams = config.generate_requests(
-            {"email": ["customer-1@example.com"]}, policy
+            {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]}, policy
         )[0]
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/search-members"
@@ -57,7 +57,11 @@ class TestSaaSQueryConfig:
         # static path with multiple query params with default values
         config = SaaSQueryConfig(conversations, endpoints, {})
         prepared_request = config.generate_requests(
-            {"placeholder": ["customer-1@example.com"]}, policy
+            {
+                "fidesops_grouped_inputs": [],
+                "placeholder": ["adaptors.india@ethyca.com"],
+            },
+            policy,
         )[0]
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations"
@@ -67,7 +71,7 @@ class TestSaaSQueryConfig:
         # dynamic path with no query params
         config = SaaSQueryConfig(messages, endpoints, {})
         prepared_request = config.generate_requests(
-            {"conversation_id": ["abc"]}, policy
+            {"fidesops_grouped_inputs": [], "conversation_id": ["abc"]}, policy
         )[0]
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations/abc/messages"
@@ -81,7 +85,7 @@ class TestSaaSQueryConfig:
             {"api_version": "2.0", "page_size": 10, "api_key": "letmein"},
         )
         prepared_request = config.generate_requests(
-            {"email": ["customer-1@example.com"]}, policy
+            {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]}, policy
         )[0]
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/2.0/payment_methods"
@@ -103,7 +107,7 @@ class TestSaaSQueryConfig:
             {"api_version": "2.0", "page_size": 10, "api_key": "letmein"},
         )
         prepared_request: SaaSRequestParams = config.generate_requests(
-            {"email": ["customer-1@example.com"]}, policy
+            {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]}, policy
         )[0]
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/2.0/payment_methods"

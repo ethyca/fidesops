@@ -129,7 +129,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         request_params = []
 
         filtered_secrets = self._filtered_secrets(current_request)
-        grouped_inputs_list = input_data.pop(FIDESOPS_GROUPED_INPUTS, [{}])
+        grouped_inputs_list = input_data.pop(FIDESOPS_GROUPED_INPUTS, None)
 
         # flatten the inputs
         # list_ids: [[1,2,3]] -> list_ids: [1,2,3]
@@ -143,7 +143,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # we want to preserve the grouped_input relationships so we take each
         # individual group and generate the product with the ungrouped inputs
-        for grouped_inputs in grouped_inputs_list:
+        for grouped_inputs in grouped_inputs_list or [{}]:
             param_value_maps = self._generate_product_list(
                 input_data, filtered_secrets, grouped_inputs
             )
