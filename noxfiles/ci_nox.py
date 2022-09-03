@@ -1,3 +1,5 @@
+from pathlib import Path
+
 """Contains the nox sessions used during CI checks."""
 import nox
 from constants_nox import (
@@ -104,7 +106,15 @@ def xenon(session: nox.Session) -> None:
 @nox.session()
 def check_install(session: nox.Session) -> None:
     """Check that fidesops is installed in the container."""
-    session.run("docker", "run", IMAGE_LOCAL, "fidesops", external=True)
+    session.run(
+        "docker",
+        "run",
+        "-v",
+        f"{Path().absolute()}:/fidesops",
+        IMAGE_LOCAL,
+        "fidesops",
+        external=True,
+    )
 
 
 @nox.session()
