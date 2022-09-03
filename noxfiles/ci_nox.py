@@ -1,6 +1,7 @@
+"""Contains the nox sessions used during CI checks."""
+
 from pathlib import Path
 
-"""Contains the nox sessions used during CI checks."""
 import nox
 from constants_nox import (
     CI_ARGS,
