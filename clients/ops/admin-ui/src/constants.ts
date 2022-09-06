@@ -42,6 +42,18 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "connection:delete",
   },
   {
+    privilege: "View Datasets",
+    scope: "dataset:read",
+  },
+  {
+    privilege: "Create or Update Datasets",
+    scope: "dataset:create_or_update",
+  },
+  {
+    privilege: "Delete Datasets",
+    scope: "dataset:delete",
+  },
+  {
     privilege: "View policies",
     scope: "policy:read",
   },
