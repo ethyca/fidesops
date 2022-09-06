@@ -132,11 +132,14 @@ def upload_to_s3(  # pylint: disable=R0913
         s3_client = my_session.client("s3")
 
         # handles file chunking
-        s3_client.upload_fileobj(
-            Fileobj=write_to_in_memory_buffer(resp_format, data, request_id),
-            Bucket=bucket_name,
-            Key=file_key,
-        )
+        try:
+            s3_client.upload_fileobj(
+                Fileobj=write_to_in_memory_buffer(resp_format, data, request_id),
+                Bucket=bucket_name,
+                Key=file_key,
+            )
+        except Exception as e:
+            logger.info(e)
 
         presigned_url: str = create_presigned_url_for_s3(s3_client, bucket_name, file_key)
 
