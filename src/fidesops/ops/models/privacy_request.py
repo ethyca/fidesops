@@ -197,25 +197,25 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     identity_verified_at = Column(DateTime(timezone=True), nullable=True)
     due_date = Column(DateTime(timezone=True), nullable=True)
 
-
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
         """
         Check whether this object has been passed a `requested_at` value. Default to
         the current datetime if not.
         """
-        now = datetime.utcnow()
         if data.get("requested_at", None) is None:
-            data["requested_at"] = now
+            data["requested_at"] = datetime.utcnow()
 
         policy: Policy = Policy.get_by(
             db=db,
             field="id",
             value=data["policy_id"],
-        ).first()
+        )
 
         if policy.execution_timeframe:
-            data["due_date"] = now + timedelta(days=7)
+            data["due_date"] = data["requested_at"] + timedelta(
+                days=policy.execution_timeframe
+            )
 
         return super().create(db=db, data=data)
 

@@ -73,6 +73,34 @@ def test_create_privacy_request_sets_requested_at(
     pr.delete(db)
 
 
+def test_create_privacy_request_sets_due_date(
+    db: Session,
+    policy: Policy,
+) -> None:
+    pr = PrivacyRequest.create(
+        db=db,
+        data={
+            "policy_id": policy.id,
+            "status": "pending",
+        },
+    )
+    assert pr.due_date is not None
+    pr.delete(db)
+
+    requested_at = datetime.now(timezone.utc)
+    due_date = timedelta(days=policy.execution_timeframe) + requested_at
+    pr = PrivacyRequest.create(
+        db=db,
+        data={
+            "requested_at": requested_at,
+            "policy_id": policy.id,
+            "status": "pending",
+        },
+    )
+    assert pr.due_date == due_date
+    pr.delete(db)
+
+
 def test_update_privacy_requests(db: Session, privacy_requests: PrivacyRequest) -> None:
     privacy_request = privacy_requests[0]
     EXTERNAL_ID_TO_UPDATE = privacy_request.external_id
