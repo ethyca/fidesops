@@ -107,6 +107,11 @@ class CheckpointActionRequired(BaseSchema):
         arbitrary_types_allowed = True
 
 
+EmailRequestFulfillmentBodyParams = Dict[
+    CollectionAddress, Optional[CheckpointActionRequired]
+]
+
+
 class PrivacyRequestStatus(str, EnumType):
     """Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"""
 
@@ -389,14 +394,18 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
     def get_email_connector_template_contents_by_dataset(
         self, step: CurrentStep, dataset: str
-    ) -> Dict[str, Optional[CheckpointActionRequired]]:
+    ) -> EmailRequestFulfillmentBodyParams:
         """Retrieve the raw details to populate an email template for collections on a given dataset."""
         cache: FidesopsRedis = get_cache()
         email_contents: Dict[str, Optional[Any]] = cache.get_encoded_objects_by_prefix(
             f"EMAIL_INFORMATION__{self.id}__{step.value}__{dataset}"
         )
         return {
-            k.split("__")[-1]: CheckpointActionRequired.parse_obj(v) if v else None
+            CollectionAddress(
+                k.split("__")[-2], k.split("__")[-1]
+            ): CheckpointActionRequired.parse_obj(v)
+            if v
+            else None
             for k, v in email_contents.items()
         }
 

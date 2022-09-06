@@ -110,7 +110,7 @@ async def test_email_connector_cache_and_delayed_send(
     )
 
     assert raw_email_template_values == {
-        "children": CheckpointActionRequired(
+        CollectionAddress("email_dataset", "children"): CheckpointActionRequired(
             step=CurrentStep.erasure,
             collection=CollectionAddress("email_dataset", "children"),
             action_needed=[
@@ -131,7 +131,9 @@ async def test_email_connector_cache_and_delayed_send(
                 )
             ],
         ),
-        "daycare_customer": CheckpointActionRequired(
+        CollectionAddress(
+            "email_dataset", "daycare_customer"
+        ): CheckpointActionRequired(
             step=CurrentStep.erasure,
             collection=CollectionAddress("email_dataset", "daycare_customer"),
             action_needed=[
@@ -144,7 +146,7 @@ async def test_email_connector_cache_and_delayed_send(
                 )
             ],
         ),
-        "payment": CheckpointActionRequired(
+        CollectionAddress("email_dataset", "payment"): CheckpointActionRequired(
             step=CurrentStep.erasure,
             collection=CollectionAddress("email_dataset", "payment"),
             action_needed=[

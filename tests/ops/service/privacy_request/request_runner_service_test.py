@@ -16,6 +16,7 @@ from fidesops.ops.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
+from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.models.connectionconfig import AccessLevel
 from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.models.policy import CurrentStep, PolicyPostWebhook
@@ -1647,9 +1648,9 @@ class TestPrivacyRequestsEmailConnector:
             CurrentStep.erasure, "email_dataset"
         )
         assert set(cached_email_contents.keys()) == {
-            "payment",
-            "children",
-            "daycare_customer",
+            CollectionAddress("email_dataset", "payment"),
+            CollectionAddress("email_dataset", "children"),
+            CollectionAddress("email_dataset", "daycare_customer"),
         }
         pr.delete(db=db)
         assert mailgun_send.called is False
@@ -1747,13 +1748,30 @@ class TestPrivacyRequestsEmailConnector:
             CurrentStep.erasure, "email_dataset"
         )
         assert set(cached_email_contents.keys()) == {
-            "payment",
-            "children",
-            "daycare_customer",
+            CollectionAddress("email_dataset", "payment"),
+            CollectionAddress("email_dataset", "children"),
+            CollectionAddress("email_dataset", "daycare_customer"),
         }
-        assert cached_email_contents["payment"].action_needed[0].update is None
-        assert cached_email_contents["children"].action_needed[0].update is None
-        assert cached_email_contents["daycare_customer"].action_needed[0].update is None
+        assert (
+            cached_email_contents[CollectionAddress("email_dataset", "payment")]
+            .action_needed[0]
+            .update
+            is None
+        )
+        assert (
+            cached_email_contents[CollectionAddress("email_dataset", "children")]
+            .action_needed[0]
+            .update
+            is None
+        )
+        assert (
+            cached_email_contents[
+                CollectionAddress("email_dataset", "daycare_customer")
+            ]
+            .action_needed[0]
+            .update
+            is None
+        )
 
         pr.delete(db=db)
         assert (

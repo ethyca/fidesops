@@ -96,7 +96,7 @@ Once your email connector is created, configure any outbound email addresses:
 ```json title="<code>PUT api/v1/connection/{email_connection_config_key}/secret</code>" 
 {
     "test_email": "my_email@example.com",
-    "to_email": "third_party@example.com
+    "to_email": "third_party@example.com"
 }
 ```
 

@@ -506,7 +506,9 @@ class TestCacheEmailConnectorTemplateContents:
         assert privacy_request.get_email_connector_template_contents_by_dataset(
             CurrentStep.erasure, "email_dataset"
         ) == {
-            "test_collection": CheckpointActionRequired(
+            CollectionAddress(
+                "email_dataset", "test_collection"
+            ): CheckpointActionRequired(
                 step=CurrentStep.erasure,
                 collection=CollectionAddress("email_dataset", "test_collection"),
                 action_needed=[
