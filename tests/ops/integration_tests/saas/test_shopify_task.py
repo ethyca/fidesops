@@ -2,11 +2,13 @@ import random
 
 import pytest
 
+from fidesops.ops.core.config import config
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.ops.service.connectors import get_connector
 from fidesops.ops.task import graph_task
+from fidesops.ops.task.graph_task import get_cached_data_for_erasures
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
@@ -259,3 +261,62 @@ def test_shopify_access_request_task(
 
     for comment in v[f"{dataset_name}:blog_article_comments"]:
         assert comment["email"] == shopify_identity_email
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_shopify
+def test_shopify_erasure_request_task(
+    db,
+    policy,
+    erasure_policy_string_rewrite,
+    shopify_connection_config,
+    shopify_dataset_config,
+    shopify_erasure_identity_email,
+    shopify_erasure_data,
+) -> None:
+    """Full erasure request based on the Shopify SaaS config"""
+
+    privacy_request = PrivacyRequest(
+        id=f"test_shopify_erasure_request_task_{random.randint(0, 1000)}"
+    )
+    identity = PrivacyRequestIdentity(**{"email": shopify_erasure_identity_email})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = shopify_connection_config.get_saas_config().fides_key
+    merged_graph = shopify_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    v = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [shopify_connection_config],
+        {"email": shopify_erasure_identity_email},
+        db,
+    )
+
+    # Add assetions here
+    temp_masking = config.execution.masking_strict
+    config.execution.masking_strict = True
+
+    x = graph_task.run_erasure(
+        privacy_request,
+        erasure_policy_string_rewrite,
+        graph,
+        [shopify_connection_config],
+        {"email": shopify_erasure_identity_email},
+        get_cached_data_for_erasures(privacy_request.id),
+        db,
+    )
+
+    assert x == {
+        f"{dataset_name}:customers": 1,
+        f"{dataset_name}:blogs": 0,
+        f"{dataset_name}:customer_orders": 1,
+        f"{dataset_name}:customer_addresses": 1,
+        f"{dataset_name}:blog_articles": 1,
+        f"{dataset_name}:blog_article_comments": 1,
+        f"{dataset_name}:customer_order_transactions": 0,
+    }
+
+    config.execution.masking_strict = temp_masking
