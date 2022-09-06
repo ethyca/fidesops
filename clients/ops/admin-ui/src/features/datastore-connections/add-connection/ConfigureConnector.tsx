@@ -42,7 +42,7 @@ const ConfigureConnector: React.FC = () => {
   return (
     <>
       <Breadcrumb steps={steps} />
-      <Flex gap="18px">
+      <Flex flex="1" gap="18px">
         <ConfigurationSettingsNav
           onChange={handleNavChange}
           selectedItem={selectedItem}

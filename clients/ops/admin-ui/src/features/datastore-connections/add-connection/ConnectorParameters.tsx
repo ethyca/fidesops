@@ -1,4 +1,4 @@
-import { Box, Center, Flex, Spinner, VStack } from "@fidesui/react";
+import { Box, Center, Flex, SlideFade, Spinner, VStack } from "@fidesui/react";
 import { useAppSelector } from "app/hooks";
 import { capitalize } from "common/utils";
 import {
@@ -65,9 +65,12 @@ export const ConnectorParameters: React.FC = () => {
         ) : null}
       </VStack>
       {response && (
-        <Box w="480px" mt="16px">
-          <TestConnection response={response} />
-        </Box>
+        <SlideFade in>
+          {" "}
+          <Box mt="16px" w="fit-content">
+            <TestConnection response={response} />
+          </Box>
+        </SlideFade>
       )}
     </Flex>
   );

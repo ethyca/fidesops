@@ -64,7 +64,7 @@ const ChooseConnection: React.FC = () => {
   return (
     <>
       <Breadcrumb steps={[STEPS[0], STEPS[1]]} />
-      <Flex minWidth="max-content">
+      <Flex minWidth="fit-content">
         <Box color="gray.700" fontSize="14px" maxHeight="80px" maxWidth="474px">
           {step.description}
         </Box>
@@ -74,7 +74,7 @@ const ChooseConnection: React.FC = () => {
         gap="4"
         mb="24px"
         mt="24px"
-        minWidth="max-content"
+        minWidth="fit-content"
       >
         <ConnectionTypeFilter />
         <InputGroup size="sm">

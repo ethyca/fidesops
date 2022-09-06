@@ -71,6 +71,7 @@ const DatasetConfiguration: React.FC = () => {
 
   const handleSubmit = async (value: any) => {
     try {
+      setIsSubmitting(true);
       const params = {
         connection_key: connection?.key,
         items: [...value],
@@ -99,7 +100,7 @@ const DatasetConfiguration: React.FC = () => {
   }, [connection?.key, step.href]);
 
   return (
-    <VStack align="stretch">
+    <VStack align="stretch" flex="1">
       <Box color="gray.700" fontSize="14px" w="475px" mb={4}>
         {step.description?.replace(
           "{identifier}",
