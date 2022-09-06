@@ -27,10 +27,15 @@ def _find_strategy_subclass(
     return None
 
 
-def _find_all_strategy_subclasses(cls: Type[T]) -> List[Type[T]]:
-    subs = [cls] if hasattr(cls, "name") else []
+def _find_all_strategy_subclasses(
+    cls: Type[T], subs: List[Type[T]] = None
+) -> List[Type[T]]:
+    if not subs:
+        subs = []
+    if hasattr(cls, "name"):
+        subs.append(cls)
     for sub in cls.__subclasses__():
-        subs.extend(_find_all_strategy_subclasses(sub))
+        _find_all_strategy_subclasses(sub, subs)
     return subs
 
 
