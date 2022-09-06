@@ -1199,7 +1199,9 @@ class TestPutConnectionConfigSecrets:
         )
         assert kwargs["to_email"] == "test@example.com"
         assert kwargs["email_body_params"] == {
-            "test_collection": CheckpointActionRequired(
+            CollectionAddress(
+                "test_dataset", "test_collection"
+            ): CheckpointActionRequired(
                 step=CurrentStep.erasure,
                 collection=CollectionAddress("test_dataset", "test_collection"),
                 action_needed=[
