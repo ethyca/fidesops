@@ -8,6 +8,74 @@ import {
   TestingStatus,
 } from "./constants";
 
+export type DatasetsReponse = {
+  items: Dataset[];
+  total: number;
+  page: number;
+  size: number;
+};
+
+export type Dataset = {
+  fides_key: string;
+  organization_fides_key: string;
+  tags: string[];
+  name: string;
+  description: string;
+  meta: {
+    [key: string]: string;
+  };
+  data_categories: string[];
+  data_qualifier: string;
+  fidesctl_meta: {
+    resource_id: string;
+  };
+  joint_controller: {
+    name: string;
+    address: string;
+    email: string;
+    phone: string;
+  };
+  retention: string;
+  third_country_transfers: string[];
+  collections: DatasetCollection[];
+  fidesops_meta: {
+    after: string[];
+  };
+};
+
+export type DatasetCollection = {
+  name: string;
+  description: string;
+  data_categories: string[];
+  data_qualifier: string;
+  retention: string;
+  fields: DatasetCollectionField[];
+};
+
+export type DatasetCollectionField = {
+  name: string;
+  description: string;
+  data_categories: string[];
+  data_qualifier: string;
+  retention: string;
+  fidesops_meta: {
+    references: FidesOpsMetaReference[];
+    identity: string;
+    primary_key: boolean;
+    data_type: string;
+    length: number;
+    return_all_elements: boolean;
+    read_only: boolean;
+  };
+  fields: DatasetCollection[];
+};
+
+export type FidesOpsMetaReference = {
+  dataset: string;
+  field: string;
+  direction: string;
+};
+
 export type DatastoreConnectionRequest = {
   name: string;
   key: string;

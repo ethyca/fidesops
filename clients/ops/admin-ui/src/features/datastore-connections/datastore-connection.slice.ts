@@ -12,6 +12,7 @@ import {
   TestingStatus,
 } from "./constants";
 import {
+  DatasetsReponse,
   DatastoreConnection,
   DatastoreConnectionParams,
   DatastoreConnectionRequest,
@@ -192,7 +193,7 @@ export const datastoreConnectionApi = createApi({
       ],
       keepUnusedDataFor: 1,
     }),
-    getDatasets: build.query<any, string>({
+    getDatasets: build.query<DatasetsReponse, string>({
       query: (connection_key) => ({
         url: `${CONNECTION_ROUTE}/${connection_key}/dataset`,
       }),

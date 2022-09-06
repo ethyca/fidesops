@@ -16,6 +16,7 @@ import {
   VStack,
 } from "@fidesui/react";
 import { ErrorWarningIcon } from "common/Icon";
+import { Dataset } from "datastore-connections/types";
 import yaml, { YAMLException } from "js-yaml";
 import { narrow } from "narrow-minded";
 import dynamic from "next/dynamic";
@@ -30,24 +31,20 @@ const Editor = dynamic(
 const isYamlException = (error: unknown): error is YAMLException =>
   narrow({ name: "string" }, error) && error.name === "YAMLException";
 
-export type Values = {
-  dataset: string;
-};
-
 type YamlEditorFormProps = {
-  data: any;
+  data: Dataset[];
   isSubmitting: boolean;
   onSubmit: (value: any) => void;
 };
 
 const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
-  data,
+  data = [],
   isSubmitting = false,
   onSubmit,
 }) => {
   const monacoRef = useRef(null);
   const toast = useToast();
-  const yamlData = yaml.dump(data);
+  const yamlData = data.length > 0 ? yaml.dump(data) : undefined;
   const [editYamlData, setEditYamlData] = useState(yamlData);
   const [yamlError, setYamlError] = useState(
     undefined as unknown as YAMLException
