@@ -52,8 +52,6 @@ async def test_saas_access_request_task(
         db,
     )
 
-    print(v[f"{dataset_name}:events"])
-
     assert_rows_match(
         v[f"{dataset_name}:events"],
         min_size=1,
