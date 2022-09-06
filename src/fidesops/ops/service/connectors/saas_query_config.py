@@ -176,7 +176,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # Example:
         #
-        # generate_product_list({ "first": ["a", "b"] }, { "second": ["1", "2", "3"] })
+        # _generate_product_list({ "first": ["a", "b"] }, { "second": ["1", "2", "3"] })
         #
         # Returns:
         # [
