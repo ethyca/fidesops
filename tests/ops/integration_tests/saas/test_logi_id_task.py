@@ -94,6 +94,7 @@ async def test_logi_id_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_logi_id
+@pytest.mark.asyncio
 async def test_logi_id_erasure_request_task(
     db,
     policy,
