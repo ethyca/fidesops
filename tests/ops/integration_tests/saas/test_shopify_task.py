@@ -18,6 +18,7 @@ def test_shopify_connection_test(shopify_connection_config) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_shopify
+@pytest.mark.asyncio
 async def test_shopify_access_request_task(
     db,
     policy,
