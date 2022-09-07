@@ -284,7 +284,6 @@ async def run_privacy_request(
                     dataset_graph,
                     privacy_request,
                 )
-                logger.info(f"privacy request url is at: {access_result_url}")
 
             if policy.get_rules_for_action(
                 action_type=ActionType.erasure
