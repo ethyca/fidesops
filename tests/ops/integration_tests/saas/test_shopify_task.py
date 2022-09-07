@@ -266,7 +266,8 @@ async def test_shopify_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_shopify
-def test_shopify_erasure_request_task(
+@pytest.mark.asyncio
+async def test_shopify_erasure_request_task(
     db,
     policy,
     erasure_policy_string_rewrite,
@@ -287,7 +288,7 @@ def test_shopify_erasure_request_task(
     merged_graph = shopify_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -296,11 +297,195 @@ def test_shopify_erasure_request_task(
         db,
     )
 
-    # Add assetions here
+    assert_rows_match(
+        v[f"{dataset_name}:customers"],
+        min_size=1,
+        keys=[
+            "id",
+            "email",
+            "accepts_marketing",
+            "created_at",
+            "updated_at",
+            "first_name",
+            "last_name",
+            "orders_count",
+            "state",
+            "total_spent",
+            "last_order_id",
+            "note",
+            "verified_email",
+            "multipass_identifier",
+            "tax_exempt",
+            "tags",
+            "last_order_name",
+            "currency",
+            "phone",
+            "accepts_marketing_updated_at",
+            "marketing_opt_in_level",
+            "tax_exemptions",
+            "admin_graphql_api_id",
+        ],
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:customer_orders"],
+        min_size=1,
+        keys=[
+            "id",
+            "admin_graphql_api_id",
+            "app_id",
+            "browser_ip",
+            "buyer_accepts_marketing",
+            "cancel_reason",
+            "cancelled_at",
+            "cart_token",
+            "checkout_id",
+            "checkout_token",
+            "closed_at",
+            "confirmed",
+            "contact_email",
+            "created_at",
+            "currency",
+            "current_subtotal_price",
+            "current_total_discounts",
+            "current_total_price",
+            "current_total_tax",
+            "customer_locale",
+            "device_id",
+            "discount_codes",
+            "email",
+            "estimated_taxes",
+            "financial_status",
+            "fulfillment_status",
+            "gateway",
+            "landing_site",
+            "landing_site_ref",
+            "location_id",
+            "name",
+            "note",
+            "note_attributes",
+            "number",
+            "order_number",
+            "order_status_url",
+            "payment_gateway_names",
+            "phone",
+            "presentment_currency",
+            "processed_at",
+            "processing_method",
+            "reference",
+            "referring_site",
+            "source_identifier",
+            "source_name",
+            "source_url",
+            "subtotal_price",
+            "tags",
+            "tax_lines",
+            "taxes_included",
+            "test",
+            "token",
+            "total_discounts",
+            "total_line_items_price",
+            "total_outstanding",
+            "total_price",
+            "total_price_usd",
+            "total_tax",
+            "total_tip_received",
+            "total_weight",
+            "updated_at",
+            "user_id",
+            "customer",
+            "discount_applications",
+            "payment_terms",
+        ],
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:customer_addresses"],
+        min_size=1,
+        keys=[
+            "id",
+            "customer_id",
+            "first_name",
+            "last_name",
+            "company",
+            "address1",
+            "address2",
+            "city",
+            "province",
+            "country",
+            "zip",
+            "phone",
+            "name",
+            "province_code",
+            "country_code",
+            "country_name",
+            "default",
+        ],
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:blogs"],
+        min_size=1,
+        keys=[
+            "id",
+            "handle",
+            "title",
+            "updated_at",
+            "commentable",
+            "feedburner",
+            "feedburner_location",
+            "created_at",
+            "template_suffix",
+            "tags",
+            "admin_graphql_api_id",
+        ],
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:blog_articles"],
+        min_size=1,
+        keys=[
+            "id",
+            "title",
+            "created_at",
+            "body_html",
+            "blog_id",
+            "author",
+            "user_id",
+            "published_at",
+            "updated_at",
+            "summary_html",
+            "template_suffix",
+            "handle",
+            "tags",
+            "admin_graphql_api_id",
+        ],
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:blog_article_comments"],
+        min_size=1,
+        keys=[
+            "id",
+            "body",
+            "body_html",
+            "author",
+            "email",
+            "status",
+            "article_id",
+            "blog_id",
+            "created_at",
+            "updated_at",
+            "ip",
+            "user_agent",
+            "published_at",
+        ],
+    )
+
     temp_masking = config.execution.masking_strict
     config.execution.masking_strict = True
 
-    x = graph_task.run_erasure(
+    x = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
@@ -314,8 +499,8 @@ def test_shopify_erasure_request_task(
         f"{dataset_name}:customers": 1,
         f"{dataset_name}:blogs": 0,
         f"{dataset_name}:customer_orders": 1,
-        f"{dataset_name}:customer_addresses": 1,
-        f"{dataset_name}:blog_articles": 1,
+        f"{dataset_name}:customer_addresses": 0,
+        f"{dataset_name}:blog_articles": 0,
         f"{dataset_name}:blog_article_comments": 1,
         f"{dataset_name}:customer_order_transactions": 0,
     }

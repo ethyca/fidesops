@@ -161,31 +161,33 @@ def shopify_erasure_data(
             "send_receipt": True,
             "financial_status": "paid",
             "send_fulfillment_receipt": True,
-            "line_items": [{"variant_id": 31009151549533, "quantity": 1}],
-            "transaction": {
-                "currency": "USD",
-                "amount": "0.50",
-                "kind": "capture",
-                "parent_id": None,
-                "authorization": "authorization-key",
-                "source": "external",
-            },
+            "line_items": [
+                {
+                    "product_id": 6923717967965,
+                    "name": "Short leeve t-shirt",
+                    "title": "Short sleeve t-shirt",
+                    "price": 10,
+                    "quantity": 1,
+                }
+            ],
         }
     }
     orders_response = requests.post(
         url=f"{base_url}/admin/api/2022-07/orders.json", json=body, headers=headers
     )
+
     assert orders_response.ok
     order = orders_response.json()
+    order_id = order["order"]["id"]
 
-    # Create Blog
-    body = {"blog": {"title": "Test blog", "commentable": "yes"}}
-    blogs_response = requests.post(
-        url=f"{base_url}/admin/api/2022-07/blogs.json", json=body, headers=headers
+    # Get Blog
+    blogs_response = requests.get(
+        url=f"{base_url}/admin/api/2022-07/blogs.json", headers=headers
     )
     assert blogs_response.ok
-    blog = blogs_response.json()
-    blog_id = blog["blog"]["id"]
+    blog = blogs_response.json()["blogs"][1]
+
+    blog_id = blog["id"]
     # Create Article
     body = {
         "article": {
@@ -221,12 +223,17 @@ def shopify_erasure_data(
 
     yield customer, order, blog, article, comment
 
-    # Deleting blog after verifying update request
-    blog_delete_response = requests.delete(
-        url=f"{base_url}/admin/api/2022-07/blogs/{blog_id}.json",
+    # Deleting order and article after verifying update request
+    order_delete_response = requests.delete(
+        url=f"{base_url}/admin/api/2022-07/orders/{order_id}.json",
         headers=headers,
     )
-    assert blog_delete_response.ok
+    assert order_delete_response.ok
+    article_delete_response = requests.delete(
+        url=f"{base_url}/admin/api/2022-07/articles/{article_id}.json",
+        headers=headers,
+    )
+    assert article_delete_response.ok
 
 
 def customer_exists(shopify_erasure_identity_email: str, shopify_secrets):

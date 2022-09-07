@@ -1390,7 +1390,7 @@ dataset:
       - name: id
         data_categories: [system.operations]
         fidesops_meta:
-          primary_key: True
+          # primary_key: True
           data_type: integer
       - name: customer_id
         data_categories: [user.unique_id]
@@ -1465,7 +1465,6 @@ dataset:
         - name: id
           data_categories: [system.operations]
           fidesops_meta:
-            # primary_key: True
             data_type: integer
         - name: order_id
           data_categories: [system.operations]
@@ -1548,7 +1547,6 @@ dataset:
       - name: id
         data_categories: [system.operations]
         fidesops_meta:
-          # primary_key: True
           data_type: integer
       - name: handle
         data_categories: [system.operations]
@@ -1595,7 +1593,6 @@ dataset:
       - name: id
         data_categories: [system.operations]
         fidesops_meta:
-          primary_key: True
           data_type: integer
       - name: title
         data_categories: [system.operations]
