@@ -22,7 +22,7 @@ def _find_strategy_subclass(
         return cls
     for sub in cls.__subclasses__():
         found = _find_strategy_subclass(sub, strategy_name)
-        if found is not None:
+        if found:
             return found
     return None
 
