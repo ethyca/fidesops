@@ -48,6 +48,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   const [yamlError, setYamlError] = useState(
     undefined as unknown as YAMLException
   );
+  const [isEmptyState, setIsEmptyState] = useState(!yamlData);
 
   const displayError = (content: string | JSX.Element) => {
     toast({
@@ -71,6 +72,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   const handleChange = (value: string | undefined) => {
     try {
       validate(value as string);
+      setIsEmptyState(!!(!value || value.trim() === ""));
     } catch (error) {
       if (isYamlException(error)) {
         setYamlError(error);
@@ -88,6 +90,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleMount = (editor: any, _monaco: any) => {
     monacoRef.current = editor;
+    (monacoRef.current as any).focus();
   };
 
   const handleSubmit = () => {
@@ -128,7 +131,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
           <Button
             bg="primary.800"
             color="white"
-            isDisabled={!!yamlError}
+            isDisabled={isEmptyState || !!yamlError}
             isLoading={isSubmitting}
             loadingText="Saving Yaml system"
             onClick={handleSubmit}
@@ -143,7 +146,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
           </Button>
         </ButtonGroup>
       </VStack>
-      {yamlError && (
+      {(isEmptyState || yamlError) && (
         <SlideFade in>
           <Box w="fit-content">
             <Divider color="gray.100" />
@@ -168,27 +171,44 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
                 margin={["14px", "17px", "14px", "17px"]}
               >
                 <ErrorWarningIcon />
-                <Box>
-                  <Heading
-                    as="h5"
-                    color="red.500"
-                    fontWeight="semibold"
-                    size="xs"
-                  >
-                    Error message:
-                  </Heading>
-                  <Text color="gray.700" fontSize="sm" fontWeight="400">
-                    {yamlError.message}
-                  </Text>
-                  <Text color="gray.700" fontSize="sm" fontWeight="400">
-                    {yamlError.reason}
-                  </Text>
-                  <Text color="gray.700" fontSize="sm" fontWeight="400">
-                    Ln <b>{yamlError.mark.line}</b>, Col{" "}
-                    <b>{yamlError.mark.column}</b>, Pos{" "}
-                    <b>{yamlError.mark.position}</b>
-                  </Text>
-                </Box>
+                {isEmptyState && (
+                  <Box>
+                    <Heading
+                      as="h5"
+                      color="red.500"
+                      fontWeight="semibold"
+                      size="xs"
+                    >
+                      Error message:
+                    </Heading>
+                    <Text color="gray.700" fontSize="sm" fontWeight="400">
+                      Yaml system is required
+                    </Text>
+                  </Box>
+                )}
+                {yamlError && (
+                  <Box>
+                    <Heading
+                      as="h5"
+                      color="red.500"
+                      fontWeight="semibold"
+                      size="xs"
+                    >
+                      Error message:
+                    </Heading>
+                    <Text color="gray.700" fontSize="sm" fontWeight="400">
+                      {yamlError.message}
+                    </Text>
+                    <Text color="gray.700" fontSize="sm" fontWeight="400">
+                      {yamlError.reason}
+                    </Text>
+                    <Text color="gray.700" fontSize="sm" fontWeight="400">
+                      Ln <b>{yamlError.mark.line}</b>, Col{" "}
+                      <b>{yamlError.mark.column}</b>, Pos{" "}
+                      <b>{yamlError.mark.position}</b>
+                    </Text>
+                  </Box>
+                )}
               </HStack>
             </Box>
           </Box>
