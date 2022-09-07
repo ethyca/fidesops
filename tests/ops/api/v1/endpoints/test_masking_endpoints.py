@@ -38,6 +38,7 @@ class TestGetMaskingStrategies:
         response_body = json.loads(response.text)
 
         assert 200 == response.status_code
+        assert response_body
         assert expected_response == response_body
 
 
