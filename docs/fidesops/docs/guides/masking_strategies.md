@@ -245,4 +245,4 @@ any defaults that should be applied in their absence. All configuration classes 
 
 ### Integrate the masking strategy factory
 
-In order to leverage an implemented masking strategy, the `MaskingStrategy` subclass must be imported into the application runtime. Also, the `MaskingStrategy` class must define two class variables: `name`, which is the unique, registered name that callers [callers](#using-fidesops-as-a-masking-service) will use in their `"masking_strategy"."strategy"` field to invoke the strategy; and `configuration_model`, which references the configuration class used to parameterize the strategy.
+In order to leverage an implemented masking strategy, the `MaskingStrategy` subclass must be imported into the application runtime. Also, the `MaskingStrategy` class must define two class variables: `name`, which is the unique, registered name that [callers](#using-fidesops-as-a-masking-service) will use in their `"masking_strategy"."strategy"` field to invoke the strategy; and `configuration_model`, which references the configuration class used to parameterize the strategy.
