@@ -31,7 +31,10 @@ def _validate_email_body_params(
     email_body_params: Dict[str, Union[str, int]]
 ) -> SubjectIdentityVerificationBodyParams:
     """Raises an exception if `email_body_params` doesn't fit one of the allowed schemas"""
-    email_body_schema_allowlist = [SubjectIdentityVerificationBodyParams]
+    email_body_schema_allowlist = [
+        SubjectIdentityVerificationBodyParams,
+        EmailRequestFulfillmentBodyParams,
+    ]
     for schema in email_body_schema_allowlist:
         try:
             # If the schema is valid, exit early
