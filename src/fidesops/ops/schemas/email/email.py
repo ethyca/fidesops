@@ -19,6 +19,7 @@ class EmailActionType(Enum):
 
     # verify email upon acct creation
     SUBJECT_IDENTITY_VERIFICATION = "subject_identity_verification"
+    EMAIL_ERASURE_REQUEST_FULFILLMENT = "email_erasure_fulfillment"
     PRIVACY_REQUEST_COMPLETE_ACCESS = "privacy_request_complete_access"
     PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion"
 

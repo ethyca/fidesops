@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from fidesops.ops import common_exceptions
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
+    EmailDispatchException,
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
@@ -32,6 +33,12 @@ from fidesops.ops.models.policy import (
     PolicyPreWebhook,
     WebhookTypes,
 )
+from fidesops.ops.models.privacy_request import (
+    PrivacyRequest,
+    PrivacyRequestStatus,
+    can_run_checkpoint,
+)
+from fidesops.ops.service.connectors.email_connector import email_connector_erasure_send
 from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus, ProvidedIdentityType
 from fidesops.ops.schemas.email.email import EmailActionType, AccessRequestCompleteBodyParams
 from fidesops.ops.service.email.email_dispatch_service import dispatch_email
@@ -76,6 +83,8 @@ def run_webhooks_and_report_status(
             webhook_cls.order > pre_webhook.order,
         )
 
+    current_step = CurrentStep[f"{webhook_cls.prefix}_webhooks"]
+
     for webhook in webhooks.order_by(webhook_cls.order):
         try:
             privacy_request.trigger_policy_webhook(webhook)
@@ -96,6 +105,7 @@ def run_webhooks_and_report_status(
                 Pii(str(exc.args[0])),
             )
             privacy_request.error_processing(db)
+            privacy_request.cache_failed_checkpoint_details(current_step)
             return False
         except ValidationError:
             logging.error(
@@ -104,6 +114,7 @@ def run_webhooks_and_report_status(
                 webhook.key,
             )
             privacy_request.error_processing(db)
+            privacy_request.cache_failed_checkpoint_details(current_step)
             return False
 
     return True
@@ -200,7 +211,7 @@ async def run_privacy_request(
     from_webhook_id: Optional[str] = None,
     from_step: Optional[str] = None,
 ) -> None:
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals, too-many-statements
     """
     Dispatch a privacy_request into the execution layer by:
         1. Generate a graph from all the currently configured datasets
@@ -211,11 +222,9 @@ async def run_privacy_request(
     Celery does not like for the function to be async so the @sync decorator runs the
     coroutine for it.
     """
-    logger.info("in async func for privacy request dispatch")
-    if from_step is not None:
-        # Re-cast `from_step` into an Enum to enforce the validation since unserializable objects
-        # can't be passed into and between tasks
-        from_step = CurrentStep(from_step)  # type: ignore
+    resume_step: Optional[CurrentStep] = CurrentStep(from_step) if from_step else None  # type: ignore
+    if from_step:
+        logger.info("Resuming privacy request from checkpoint: '%s'", from_step)
 
     with self.session as session:
 
@@ -228,7 +237,9 @@ async def run_privacy_request(
         logging.info("Dispatching privacy request %s", privacy_request.id)
         privacy_request.start_processing(session)
 
-        if not from_step:  # Skip if we're resuming from the access or erasure step.
+        if can_run_checkpoint(
+            request_checkpoint=CurrentStep.pre_webhooks, from_checkpoint=resume_step
+        ):
             # Run pre-execution webhooks
             proceed = run_webhooks_and_report_status(
                 session,
@@ -254,9 +265,9 @@ async def run_privacy_request(
             identity_data = privacy_request.get_cached_identity_data()
             connection_configs = ConnectionConfig.all(db=session)
 
-            if (
-                from_step != CurrentStep.erasure
-            ):  # Skip if we're resuming from erasure step
+            if can_run_checkpoint(
+                request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
+            ):
                 access_result: Dict[str, List[Row]] = await run_access_request(
                     privacy_request=privacy_request,
                     policy=policy,
@@ -275,7 +286,11 @@ async def run_privacy_request(
                 )
                 logger.info(f"privacy request url is at: {access_result_url}")
 
-            if policy.get_rules_for_action(action_type=ActionType.erasure):
+            if policy.get_rules_for_action(
+                action_type=ActionType.erasure
+            ) and can_run_checkpoint(
+                request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
+            ):
                 # We only need to run the erasure once until masking strategies are handled
                 await run_erasure(
                     privacy_request=privacy_request,
@@ -296,12 +311,34 @@ async def run_privacy_request(
 
         except BaseException as exc:  # pylint: disable=broad-except
             privacy_request.error_processing(db=session)
-            # If dev mode, log traceback
+            # Send analytics to Fideslog
             await fideslog_graph_failure(
                 failed_graph_analytics_event(privacy_request, exc)
             )
+            # If dev mode, log traceback
             _log_exception(exc, config.dev_mode)
             return
+
+        # Send erasure requests via email to third parties where applicable
+        if can_run_checkpoint(
+            request_checkpoint=CurrentStep.erasure_email_post_send,
+            from_checkpoint=resume_step,
+        ):
+            try:
+                email_connector_erasure_send(
+                    db=session, privacy_request=privacy_request
+                )
+            except EmailDispatchException as exc:
+                privacy_request.cache_failed_checkpoint_details(
+                    step=CurrentStep.erasure_email_post_send, collection=None
+                )
+                privacy_request.error_processing(db=session)
+                await fideslog_graph_failure(
+                    failed_graph_analytics_event(privacy_request, exc)
+                )
+                # If dev mode, log traceback
+                _log_exception(exc, config.dev_mode)
+                return
 
         # Run post-execution webhooks
         proceed = run_webhooks_and_report_status(

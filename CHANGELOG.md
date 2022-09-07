@@ -21,8 +21,9 @@ The types of changes are:
 
 ### Developer Experience
 
-* Created a docker image for the privacy center [1165](https://github.com/ethyca/fidesops/pull/1165)
-* Adds email scopes to postman collection [1241](https://github.com/ethyca/fidesops/pull/1241)
+* Created a docker image for the privacy center [#1165](https://github.com/ethyca/fidesops/pull/1165)
+* Adds email scopes to postman collection [#1241](https://github.com/ethyca/fidesops/pull/1241)
+* Clean up docker build [#1252](https://github.com/ethyca/fidesops/pull/1252)
 
 
 ### Added
@@ -30,6 +31,8 @@ The types of changes are:
 * Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
 * Foundations for a new email connector type [#1142](https://github.com/ethyca/fidesops/pull/1142)
 * Have the new email connector cache action needed for each collection [#1168](https://github.com/ethyca/fidesops/pull/1168)
+* Added `execution_timeframe` to Policy model and schema [#1244](https://github.com/ethyca/fidesops/pull/1244)
+* Wrap up the email connector - it sends an email with erasure instructions as part of request execution [#1246](https://github.com/ethyca/fidesops/pull/1246)
 
 ### Docs
 
@@ -41,6 +44,9 @@ The types of changes are:
 
 * Fix issue with fideslog event loop errors [#1174](https://github.com/ethyca/fidesops/pull/1174)
 * Allow passwords to be sent either base64 encode or as plaintext. [#1236](https://github.com/ethyca/fidesops/pull/1236)
+* Allow worker to start up successfully for dev and dev_with_worker nox commands [#1250](https://github.com/ethyca/fidesops/pull/1250)
+* Fix for pytest-asyncio bug [#1260](https://github.com/ethyca/fidesops/pull/1260)
+* Fix download link in privacy center [#1264](https://github.com/ethyca/fidesops/pull/1264)
 
 ## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.7.2)
 
