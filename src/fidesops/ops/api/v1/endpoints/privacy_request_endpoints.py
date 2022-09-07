@@ -74,6 +74,7 @@ from fidesops.ops.schemas.dataset import (
 )
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
+    FidesopsEmail,
     SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
@@ -273,12 +274,14 @@ def _send_verification_code_to_user(
     dispatch_email_task.apply_async(
         queue=EMAIL_QUEUE_NAME,
         kwargs={
-            "action_type": EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
-            "to_email": email,
-            "email_body_params": SubjectIdentityVerificationBodyParams(
-                verification_code=verification_code,
-                verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+            "email_meta": FidesopsEmail(
+                action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
+                body_params=SubjectIdentityVerificationBodyParams(
+                    verification_code=verification_code,
+                    verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+                ),
             ).dict(),
+            "to_email": email,
         },
     )
 

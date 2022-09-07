@@ -2,7 +2,6 @@ import logging
 from typing import Any, Dict, Optional, Union
 
 import requests
-from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import EmailDispatchException
@@ -15,6 +14,7 @@ from fidesops.ops.schemas.email.email import (
     EmailServiceDetails,
     EmailServiceSecrets,
     EmailServiceType,
+    FidesopsEmail,
     SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.tasks import DatabaseTask, celery_app
@@ -23,48 +23,22 @@ from fidesops.ops.util.logger import Pii
 logger = logging.getLogger(__name__)
 
 
-class InvalidBodyParams(Exception):
-    """An exception thrown when passed email body data does not match an allowed schema"""
-
-
-def _validate_email_body_params(
-    email_body_params: Dict[str, Union[str, int]]
-) -> SubjectIdentityVerificationBodyParams:
-    """Raises an exception if `email_body_params` doesn't fit one of the allowed schemas"""
-    email_body_schema_allowlist = [
-        SubjectIdentityVerificationBodyParams,
-        EmailRequestFulfillmentBodyParams,
-    ]
-    for schema in email_body_schema_allowlist:
-        try:
-            # If the schema is valid, exit early
-            return schema.parse_obj(email_body_params)
-        except ValidationError:
-            continue
-
-    allowed_schemas_str = ",".join(str(email_body_schema_allowlist))
-    raise InvalidBodyParams(
-        f"`email_body_params` must match one of {allowed_schemas_str}"
-    )
-
-
 @celery_app.task(base=DatabaseTask, bind=True)
 def dispatch_email_task(
     self: DatabaseTask,
-    action_type: EmailActionType,
+    email_meta: Dict[str, Any],
     to_email: str,
-    email_body_params: Dict[str, Union[str, int]],
 ) -> None:
     """
     A wrapper function to dispatch an email task into the Celery queues
     """
-    valid_params_schema = _validate_email_body_params(email_body_params)
+    schema = FidesopsEmail.parse_obj(email_meta)
     with self.session as db:
         dispatch_email(
             db,
-            action_type,
+            schema.action_type,
             to_email,
-            valid_params_schema,
+            schema.body_params,
         )
 
 
@@ -77,13 +51,18 @@ def dispatch_email(
         EmailRequestFulfillmentBodyParams,
     ],
 ) -> None:
+    """
+    Sends an email to `to_email` with content supplied in `email_body_params`
+    """
     if not to_email:
         raise EmailDispatchException("No email supplied.")
+
     logger.info("Retrieving email config")
     email_config: EmailConfig = EmailConfig.get_configuration(db=db)
     logger.info("Building appropriate email template for action type: %s", action_type)
     email: EmailForActionType = _build_email(
-        action_type=action_type, body_params=email_body_params
+        action_type=action_type,
+        body_params=email_body_params,
     )
     email_service: EmailServiceType = email_config.service_type  # type: ignore
     logger.info(
@@ -93,7 +72,11 @@ def dispatch_email(
     logger.info(
         "Starting email dispatch for email service with action type: %s", action_type
     )
-    dispatcher(email_config=email_config, email=email, to_email=to_email)
+    dispatcher(
+        email_config=email_config,
+        email=email,
+        to_email=to_email,
+    )
 
 
 def _build_email(

@@ -2676,12 +2676,14 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
 
         call_args = mock_dispatch_email.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert (
-            task_kwargs["action_type"] == EmailActionType.SUBJECT_IDENTITY_VERIFICATION
-        )
         assert task_kwargs["to_email"] == "test@example.com"
+
+        email_meta = task_kwargs["email_meta"]
         assert (
-            task_kwargs["email_body_params"]
+            email_meta["action_type"] == EmailActionType.SUBJECT_IDENTITY_VERIFICATION
+        )
+        assert (
+            email_meta["body_params"]
             == SubjectIdentityVerificationBodyParams(
                 verification_code=pr.get_cached_verification_code(),
                 verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,

@@ -5,6 +5,7 @@ from pydantic import BaseModel, Extra
 
 from fidesops.ops.schemas import Msg
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
+from fidesops.ops.models.privacy_request import EmailRequestFulfillmentBodyParams
 
 
 class EmailServiceType(Enum):
@@ -39,6 +40,19 @@ class SubjectIdentityVerificationBodyParams(BaseModel):
         if self.verification_code_ttl_seconds < 60:
             return 0
         return self.verification_code_ttl_seconds // 60
+
+
+class FidesopsEmail(
+    BaseModel,
+    smart_union=True,
+    arbitrary_types_allowed=True,
+):
+    """A mapping of action_type to body_params"""
+    action_type: EmailActionType
+    body_params: Union[
+        SubjectIdentityVerificationBodyParams,
+        EmailRequestFulfillmentBodyParams,
+    ]
 
 
 class EmailForActionType(BaseModel):
