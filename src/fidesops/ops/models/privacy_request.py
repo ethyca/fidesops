@@ -9,7 +9,6 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional
 
 from celery.result import AsyncResult
-from dateutil.parser import parse as datetime_parser
 from fideslib.cryptography.cryptographic_util import hash_with_salt
 from fideslib.db.base import Base
 from fideslib.db.base_class import FidesBase
@@ -216,7 +215,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         if policy.execution_timeframe:
             requested_at = data["requested_at"]
             if isinstance(requested_at, str):
-                requested_at = datetime_parser(requested_at)
+                requested_at = datetime.strptime(requested_at, "%Y-%m-%dT%H:%M:%S.%fZ")
             data["due_date"] = requested_at + timedelta(days=policy.execution_timeframe)
 
         return super().create(db=db, data=data)

@@ -100,6 +100,22 @@ def test_create_privacy_request_sets_due_date(
     assert pr.due_date == due_date
     pr.delete(db)
 
+    requested_at_str = "2021-08-30T16:09:37.359Z"
+    requested_at = datetime.strptime(requested_at_str, "%Y-%m-%dT%H:%M:%S.%fZ").replace(
+        tzinfo=timezone.utc
+    )
+    due_date = timedelta(days=policy.execution_timeframe) + requested_at
+    pr = PrivacyRequest.create(
+        db=db,
+        data={
+            "requested_at": requested_at_str,
+            "policy_id": policy.id,
+            "status": "pending",
+        },
+    )
+    assert pr.due_date == due_date
+    pr.delete(db)
+
 
 def test_update_privacy_requests(db: Session, privacy_requests: PrivacyRequest) -> None:
     privacy_request = privacy_requests[0]
