@@ -1,7 +1,7 @@
 """add_due_date
 
 Revision ID: d8df7ff7aab4
-Revises: bde646a6f51e
+Revises: 912d801f06c0
 Create Date: 2022-09-06 15:21:21.181463
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "d8df7ff7aab4"
-down_revision = "bde646a6f51e"
+down_revision = "912d801f06c0"
 branch_labels = None
 depends_on = None
 
