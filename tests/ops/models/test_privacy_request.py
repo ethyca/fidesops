@@ -22,6 +22,7 @@ from fidesops.ops.models.privacy_request import (
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.ops.service.connectors.manual_connector import ManualAction
 from fidesops.ops.util.cache import FidesopsRedis, get_identity_cache_key
+from fidesops.ops.util.constants import API_DATE_FORMAT
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
@@ -102,7 +103,7 @@ def test_create_privacy_request_sets_due_date(
     pr.delete(db)
 
     requested_at_str = "2021-08-30T16:09:37.359Z"
-    requested_at = datetime.strptime(requested_at_str, "%Y-%m-%dT%H:%M:%S.%fZ").replace(
+    requested_at = datetime.strptime(requested_at_str, API_DATE_FORMAT).replace(
         tzinfo=timezone.utc
     )
     due_date = timedelta(days=policy.execution_timeframe) + requested_at

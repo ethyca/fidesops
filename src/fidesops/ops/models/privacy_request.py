@@ -65,6 +65,7 @@ from fidesops.ops.util.cache import (
     get_masking_secret_cache_key,
 )
 from fidesops.ops.util.collection_util import Row
+from fidesops.ops.util.constants import API_DATE_FORMAT
 
 logger = logging.getLogger(__name__)
 
@@ -229,7 +230,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         if policy.execution_timeframe:
             requested_at = data["requested_at"]
             if isinstance(requested_at, str):
-                requested_at = datetime.strptime(requested_at, "%Y-%m-%dT%H:%M:%S.%fZ")
+                requested_at = datetime.strptime(requested_at, API_DATE_FORMAT)
             data["due_date"] = requested_at + timedelta(days=policy.execution_timeframe)
 
         return super().create(db=db, data=data)
