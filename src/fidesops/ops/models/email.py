@@ -74,8 +74,9 @@ class EmailConfig(Base):
     @classmethod
     def get_configuration(cls, db: Session) -> Base:
         """
-        Validate whether Fidesops is capable of sending this email while the flow
-        is still synchronous
+        Fetches the first configured EmailConfig record. As of v1.7.3 Fidesops does not support
+        multiple configured email connectors. Once fetched this function validates that
+        the EmailConfig is configured with secrets.
         """
         instance: Optional[Base] = cls.query(db=db).first()
         if not instance:
