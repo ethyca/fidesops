@@ -34,6 +34,7 @@ The types of changes are:
 * Added `execution_timeframe` to Policy model and schema [#1244](https://github.com/ethyca/fidesops/pull/1244)
 * Added `due_date` to Privacy request model [#1259](https://github.com/ethyca/fidesops/pull/1259)
 * Wrap up the email connector - it sends an email with erasure instructions as part of request execution [#1246](https://github.com/ethyca/fidesops/pull/1246)
+* Foundations for a new "manual_webhook" connector type [#1267](https://github.com/ethyca/fidesops/pull/1267)
 
 ### Docs
 
