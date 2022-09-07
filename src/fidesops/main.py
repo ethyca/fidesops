@@ -177,7 +177,7 @@ if config.admin_ui.enabled:
                 rule = re.compile(r"^" + path)
 
                 route_file_map[rule] = FileResponse(
-                    f"/admin_ui/{str(filepath.relative_to(WEBAPP_DIRECTORY))}"
+                    f"{WEBAPP_DIRECTORY}/{str(filepath.relative_to(WEBAPP_DIRECTORY))}"
                 )
 
     @app.on_event("startup")
