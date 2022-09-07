@@ -136,14 +136,14 @@ def upload_to_s3(  # pylint: disable=R0913
                 Key=file_key,
             )
         except Exception as e:
-            logger.info(f"Encountered error trying to upload s3 object: {e}")
+            logger.error(f"Encountered error while uploading s3 object: {e}")
             raise e
 
         presigned_url: str = create_presigned_url_for_s3(s3_client, bucket_name, file_key)
 
         return presigned_url
     except ClientError as e:
-        logger.info(f"Encountered error trying to upload and generate link for s3 object: {e}")
+        logger.error(f"Encountered error while uploading and generating link for s3 object: {e}")
         raise e
     except ParamValidationError as e:
         raise ValueError(f"The parameters you provided are incorrect: {e}")
