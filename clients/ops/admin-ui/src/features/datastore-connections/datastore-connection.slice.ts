@@ -21,6 +21,7 @@ import {
   DatastoreConnectionSecretsResponse,
   DatastoreConnectionsResponse,
   DatastoreConnectionStatus,
+  PatchDatasetsRequest,
   SassConnectionConfigRequest,
   SassConnectionConfigResponse,
 } from "./types";
@@ -243,11 +244,11 @@ export const datastoreConnectionApi = createApi({
         }
       },
     }),
-    patchDataset: build.mutation<any, any>({
+    patchDataset: build.mutation<any, PatchDatasetsRequest>({
       query: (params) => ({
         url: `${CONNECTION_ROUTE}/${params.connection_key}/dataset`,
         method: "PATCH",
-        body: params.items,
+        body: params.datasets,
       }),
       invalidatesTags: () => ["DatastoreConnection"],
     }),

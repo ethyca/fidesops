@@ -45,7 +45,6 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   const monacoRef = useRef(null);
   const toast = useToast();
   const yamlData = data.length > 0 ? yaml.dump(data) : undefined;
-  const [editYamlData, setEditYamlData] = useState(yamlData);
   const [yamlError, setYamlError] = useState(
     undefined as unknown as YAMLException
   );
@@ -66,7 +65,6 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
 
   const validate = (value: string) => {
     yaml.load(value, { json: true });
-    setEditYamlData(yaml.dump(value));
     setYamlError(undefined as unknown as YAMLException);
   };
 
@@ -84,7 +82,6 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
 
   const handleReset = () => {
     (monacoRef.current as any).setValue(yamlData);
-    setEditYamlData(yamlData);
     setYamlError(undefined as unknown as YAMLException);
   };
 
@@ -94,7 +91,9 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   };
 
   const handleSubmit = () => {
-    onSubmit(editYamlData);
+    const value = (monacoRef.current as any).getValue();
+    const yamlDoc = yaml.load(value, { json: true });
+    onSubmit(yamlDoc);
   };
 
   return (
@@ -103,7 +102,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
         <Divider color="gray.100" />
         <Editor
           defaultLanguage="yaml"
-          defaultValue={editYamlData}
+          defaultValue={yamlData}
           height="calc(100vh - 450px)"
           onChange={handleChange}
           onMount={handleMount}

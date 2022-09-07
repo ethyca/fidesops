@@ -8,6 +8,11 @@ import {
   TestingStatus,
 } from "./constants";
 
+export type PatchDatasetsRequest = {
+  connection_key: string;
+  datasets: Dataset[];
+};
+
 export type DatasetsReponse = {
   items: Dataset[];
   total: number;

@@ -16,6 +16,7 @@ import {
   useGetDatasetsQuery,
   usePatchDatasetMutation,
 } from "datastore-connections/datastore-connection.slice";
+import { PatchDatasetsRequest } from "datastore-connections/types";
 import React, { useEffect, useRef, useState } from "react";
 
 import YamlEditorForm from "./forms/YamlEditorForm";
@@ -72,9 +73,9 @@ const DatasetConfiguration: React.FC = () => {
   const handleSubmit = async (value: any) => {
     try {
       setIsSubmitting(true);
-      const params = {
-        connection_key: connection?.key,
-        items: [...value],
+      const params: PatchDatasetsRequest = {
+        connection_key: connection?.key as string,
+        datasets: value,
       };
       const payload = await patchDataset(params).unwrap();
       if (payload.failed?.length > 0) {
