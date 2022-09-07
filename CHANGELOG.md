@@ -23,6 +23,7 @@ The types of changes are:
 
 * Created a docker image for the privacy center [#1165](https://github.com/ethyca/fidesops/pull/1165)
 * Adds email scopes to postman collection [#1241](https://github.com/ethyca/fidesops/pull/1241)
+* Clean up docker build [#1252](https://github.com/ethyca/fidesops/pull/1252)
 
 
 ### Added
@@ -44,6 +45,7 @@ The types of changes are:
 * Fix issue with fideslog event loop errors [#1174](https://github.com/ethyca/fidesops/pull/1174)
 * Allow passwords to be sent either base64 encode or as plaintext. [#1236](https://github.com/ethyca/fidesops/pull/1236)
 * Allow worker to start up successfully for dev and dev_with_worker nox commands [#1250](https://github.com/ethyca/fidesops/pull/1250)
+* Fix for pytest-asyncio bug [#1260](https://github.com/ethyca/fidesops/pull/1260)
 
 ## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.7.2)
 
