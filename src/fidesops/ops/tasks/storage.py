@@ -95,22 +95,19 @@ def write_to_in_memory_buffer(
     raise NotImplementedError(f"No handling for response format {resp_format}.")
 
 
-def create_presigned_url_for_s3(s3_client, bucket_name, object_name, expiration=86400) -> Optional[str]:  # todo- have expiry configurable
+def create_presigned_url_for_s3(s3_client, bucket_name, object_name) -> Optional[str]:
     """"Generate a presigned URL to share an S3 object
 
     :param bucket_name: string
     :param object_name: string
-    :param expiration: Time in seconds for the presigned URL to remain valid, default to 1 day
+    :param expiration: Time in seconds for a subject data package download link to remain valid, default to 1 day
     :return: Presigned URL as string. If error, returns None.
     """
 
-    try:
-        response = s3_client.generate_presigned_url('get_object',
-                                                    Params={'Bucket': bucket_name,
-                                                            'Key': object_name},
-                                                    ExpiresIn=expiration)
-    except ClientError as e:
-        raise e
+    response = s3_client.generate_presigned_url('get_object',
+                                                Params={'Bucket': bucket_name,
+                                                        'Key': object_name},
+                                                ExpiresIn=config.security.subject_request_download_link_ttl_seconds)
 
     # The response contains the presigned URL
     return response
@@ -139,12 +136,14 @@ def upload_to_s3(  # pylint: disable=R0913
                 Key=file_key,
             )
         except Exception as e:
-            logger.info(e)
+            logger.info(f"Encountered error trying to upload s3 object: {e}")
+            raise e
 
         presigned_url: str = create_presigned_url_for_s3(s3_client, bucket_name, file_key)
 
         return presigned_url
     except ClientError as e:
+        logger.info(f"Encountered error trying to upload and generate link for s3 object: {e}")
         raise e
     except ParamValidationError as e:
         raise ValueError(f"The parameters you provided are incorrect: {e}")

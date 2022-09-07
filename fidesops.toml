@@ -29,7 +29,7 @@ drp_jwt_secret = "secret"
 log_level = "INFO"
 root_username = "root_user"
 root_password = "Testpassword1!"
-subject_request_download_link_ttl_in_seconds = 123
+subject_request_download_link_ttl_seconds = 86400
 
 [execution]
 masking_strict = true

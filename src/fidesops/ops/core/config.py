@@ -88,6 +88,7 @@ class FidesopsSecuritySettings(SecuritySettings):
 
     log_level: str = "INFO"
     root_user_scopes: Optional[List[str]] = SCOPE_REGISTRY
+    subject_request_download_link_ttl_seconds: int = 86400
 
     @validator("log_level", pre=True)
     def validate_log_level(cls, value: str) -> str:
@@ -224,6 +225,7 @@ CONFIG_KEY_ALLOWLIST = {
         "cors_origins",
         "encoding",
         "oauth_access_token_expire_minutes",
+        "subject_request_download_link_ttl_seconds",
     ],
     "execution": [
         "task_retry_count",
