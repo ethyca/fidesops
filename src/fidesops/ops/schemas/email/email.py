@@ -3,9 +3,9 @@ from typing import Any, Dict, Optional, Union
 
 from pydantic import BaseModel, Extra
 
+from fidesops.ops.models.privacy_request import EmailRequestFulfillmentBodyParams
 from fidesops.ops.schemas import Msg
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.models.privacy_request import EmailRequestFulfillmentBodyParams
 
 
 class EmailServiceType(Enum):
@@ -48,6 +48,7 @@ class FidesopsEmail(
     arbitrary_types_allowed=True,
 ):
     """A mapping of action_type to body_params"""
+
     action_type: EmailActionType
     body_params: Union[
         SubjectIdentityVerificationBodyParams,
