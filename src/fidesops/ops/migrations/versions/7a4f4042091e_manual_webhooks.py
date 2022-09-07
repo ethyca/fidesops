@@ -1,7 +1,7 @@
 """manual webhooks
 
 Revision ID: 7a4f4042091e
-Revises: bde646a6f51e
+Revises: d8df7ff7aab4
 Create Date: 2022-09-07 14:10:28.106679
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "7a4f4042091e"
-down_revision = "bde646a6f51e"
+down_revision = "d8df7ff7aab4"
 branch_labels = None
 depends_on = None
 
