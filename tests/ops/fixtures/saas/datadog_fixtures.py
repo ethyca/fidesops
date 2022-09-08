@@ -101,6 +101,10 @@ def datadog_dataset_config(
 
 @pytest.fixture(scope="session")
 def datadog_access_data(datadog_secrets, datadog_identity_email):
+    """
+    Checks if logs exist for the identity email, logs are created if they
+    don't exist and we poll until the logs are present in the events endpoint
+    """
 
     if not _logs_exist(datadog_identity_email, datadog_secrets):
         url = "https://http-intake.logs.datadoghq.com/api/v2/logs"
@@ -128,6 +132,8 @@ def datadog_access_data(datadog_secrets, datadog_identity_email):
 
 
 def _logs_exist(datadog_identity_email: str, datadog_secrets):
+    """Checks if logs exist for the given identity email"""
+
     url = "https://api.datadoghq.com/api/v2/logs/events"
     params = {
         "filter[from]": 0,
