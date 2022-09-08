@@ -7,8 +7,8 @@
    <body>
       <main>
          <p>Please locate and erase the associated records from the following collections:</p>
-         {% for collection_address, action_required in dataset_collection_action_required.items() -%}
-         <p><b>{{ collection_address.collection }}</b></p>
+         {% for action_required in dataset_collection_action_required -%}
+         <p><b>{{ action_required.collection.collection }}</b></p>
          {% for action in action_required.action_needed -%}
          <p>Locate the relevant records with:</p>
          <ul>
