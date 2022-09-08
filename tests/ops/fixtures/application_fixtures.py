@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
+from fidesops.ops.core.config import config
 from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -172,6 +173,15 @@ def storage_config_onetrust(db: Session) -> Generator:
     )
     yield storage_config
     storage_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_complete_email_notification_enabled():
+    """Enable request completion email"""
+    original_value = config.notifications.send_request_completion_notification
+    config.notifications.send_request_completion_notification = True
+    yield
+    config.notifications.send_request_completion_notification = original_value
 
 
 @pytest.fixture(scope="function")

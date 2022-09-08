@@ -66,6 +66,7 @@ def test_policy_upload_dispatch_email_called(
     mock_email_dispatch: Mock,
     privacy_request_status_pending: PrivacyRequest,
     run_privacy_request_task,
+    privacy_request_complete_email_notification_enabled,
 ) -> None:
     upload_mock.return_value = "http://www.data-download-url"
     run_privacy_request_task.delay(privacy_request_status_pending.id).get(
@@ -80,6 +81,7 @@ def test_policy_dispatch_email_no_config(
     upload_mock: Mock,
     privacy_request_status_pending: PrivacyRequest,
     run_privacy_request_task,
+    privacy_request_complete_email_notification_enabled,
 ) -> None:
     upload_mock.return_value = "http://www.data-download-url"
     with pytest.raises(EmailDispatchException):
@@ -99,6 +101,7 @@ def test_start_processing_sets_started_processing_at(
     db: Session,
     privacy_request_status_pending: PrivacyRequest,
     run_privacy_request_task,
+    privacy_request_complete_email_notification_enabled,
 ) -> None:
     upload_mock.return_value = "http://www.data-download-url"
     updated_at = privacy_request_status_pending.updated_at
@@ -124,6 +127,7 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
     db: Session,
     privacy_request: PrivacyRequest,
     run_privacy_request_task,
+    privacy_request_complete_email_notification_enabled,
 ) -> None:
     upload_mock.return_value = "http://www.data-download-url"
     before = privacy_request.started_processing_at
@@ -149,6 +153,7 @@ def test_halts_proceeding_if_cancelled(
     db: Session,
     privacy_request_status_canceled: PrivacyRequest,
     run_privacy_request_task,
+    privacy_request_complete_email_notification_enabled,
 ) -> None:
     assert privacy_request_status_canceled.status == PrivacyRequestStatus.canceled
     run_privacy_request_task.delay(privacy_request_status_canceled.id).get(
@@ -186,6 +191,7 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     privacy_request: PrivacyRequest,
     run_privacy_request_task,
     erasure_policy,
+    privacy_request_complete_email_notification_enabled,
 ) -> None:
     upload_mock.return_value = "http://www.data-download-url"
     privacy_request.started_processing_at = None
@@ -231,6 +237,7 @@ def test_resume_privacy_request_from_erasure(
     privacy_request: PrivacyRequest,
     run_privacy_request_task,
     erasure_policy,
+    privacy_request_complete_email_notification_enabled,
 ) -> None:
     privacy_request.started_processing_at = None
     privacy_request.policy = erasure_policy
@@ -1829,3 +1836,108 @@ class TestPrivacyRequestsEmailConnector:
         assert (
             mailgun_send.called is False
         ), "Email not sent because no updates are needed. Data category doesn't apply to any of the collections."
+
+
+class TestPrivacyRequestsEmailNotifications:
+    @pytest.mark.integration_postgres
+    @pytest.mark.integration
+    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    def test_email_complete_send_erasure(
+        self,
+        mailgun_send,
+        postgres_integration_db,
+        postgres_example_test_dataset_config,
+        cache,
+        db,
+        generate_auth_header,
+        erasure_policy,
+        read_connection_config,
+        email_config,
+        privacy_request_complete_email_notification_enabled,
+        run_privacy_request_task,
+    ):
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            erasure_policy,
+            run_privacy_request_task,
+            data,
+        )
+        pr.delete(db=db)
+
+        mailgun_send.assert_called_once_with(email_config, Any, customer_email)
+
+    @pytest.mark.integration_postgres
+    @pytest.mark.integration
+    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    def test_email_complete_send_access(
+        self,
+        mailgun_send,
+        postgres_integration_db,
+        postgres_example_test_dataset_config,
+        cache,
+        db,
+        generate_auth_header,
+        policy,
+        read_connection_config,
+        email_config,
+        privacy_request_complete_email_notification_enabled,
+        run_privacy_request_task,
+    ):
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+        )
+        pr.delete(db=db)
+
+        mailgun_send.assert_called_once_with(email_config, Any, customer_email)
+
+    @pytest.mark.integration_postgres
+    @pytest.mark.integration
+    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    def test_email_complete_send_access_no_email_config(
+        self,
+        mailgun_send,
+        postgres_integration_db,
+        postgres_example_test_dataset_config,
+        cache,
+        db,
+        generate_auth_header,
+        policy,
+        read_connection_config,
+        privacy_request_complete_email_notification_enabled,
+        run_privacy_request_task,
+    ):
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        with pytest.raises(EmailDispatchException):
+
+            pr = get_privacy_request_results(
+                db,
+                policy,
+                run_privacy_request_task,
+                data,
+            )
+            pr.delete(db=db)
+
+        assert mailgun_send.called is False
