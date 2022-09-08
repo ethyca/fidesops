@@ -6,9 +6,9 @@ from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 from fidesops.ops.common_exceptions import EmailTemplateUnhandledActionType
 from fidesops.ops.email_templates.template_names import (
     EMAIL_ERASURE_REQUEST_FULFILLMENT,
-    SUBJECT_IDENTITY_VERIFICATION_TEMPLATE,
     PRIVACY_REQUEST_COMPLETE_ACCESS_TEMPLATE,
     PRIVACY_REQUEST_COMPLETE_DELETION_TEMPLATE,
+    SUBJECT_IDENTITY_VERIFICATION_TEMPLATE,
 )
 from fidesops.ops.schemas.email.email import EmailActionType
 

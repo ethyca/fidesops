@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 import requests
 from requests import Response
@@ -8,14 +8,12 @@ from sqlalchemy.orm import Session
 from fidesops.ops.common_exceptions import EmailDispatchException
 from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.models.email import EmailConfig
-from fidesops.ops.models.privacy_request import EmailRequestFulfillmentBodyParams
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
     EmailForActionType,
     EmailServiceDetails,
     EmailServiceSecrets,
     EmailServiceType,
-    SubjectIdentityVerificationBodyParams, AccessRequestCompleteBodyParams,
 )
 from fidesops.ops.util.logger import Pii
 
@@ -26,11 +24,7 @@ def dispatch_email(
     db: Session,
     action_type: EmailActionType,
     to_email: Optional[str],
-    email_body_params: Optional[Union[
-        SubjectIdentityVerificationBodyParams,
-        EmailRequestFulfillmentBodyParams,
-        AccessRequestCompleteBodyParams,
-    ]],
+    email_body_params: Any,
 ) -> None:
     if not to_email:
         raise EmailDispatchException("No email supplied.")
@@ -62,11 +56,7 @@ def dispatch_email(
 
 def _build_email(
     action_type: EmailActionType,
-    body_params: Union[
-        SubjectIdentityVerificationBodyParams,
-        EmailRequestFulfillmentBodyParams,
-        AccessRequestCompleteBodyParams,
-    ],
+    body_params: Any,
 ) -> EmailForActionType:
     if action_type == EmailActionType.SUBJECT_IDENTITY_VERIFICATION:
         template = get_email_template(action_type)
@@ -87,17 +77,17 @@ def _build_email(
                 {"dataset_collection_action_required": body_params}
             ),
         )
-    elif action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
+    if action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
         base_template = get_email_template(action_type)
         return EmailForActionType(
             subject="Your data is ready to be downloaded",
             body=base_template.render(
                 {
-                    "download_link": body_params.download_link,
+                    "download_links": body_params.download_links,
                 }
             ),
         )
-    elif action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
+    if action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
         base_template = get_email_template(action_type)
         return EmailForActionType(
             subject="Your data has been deleted",

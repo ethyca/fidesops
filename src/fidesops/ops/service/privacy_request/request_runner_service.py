@@ -1,7 +1,7 @@
 import logging
 import random
 from datetime import datetime, timedelta
-from typing import ContextManager, Dict, List, Optional, Set
+from typing import ContextManager, Dict, List, Optional, Set, Any
 
 from celery import Task
 from celery.utils.log import get_task_logger
@@ -15,7 +15,7 @@ from fidesops.ops import common_exceptions
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
     EmailDispatchException,
-    PrivacyRequestPaused,
+    PrivacyRequestPaused, IdentityNotFoundException,
 )
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.analytics_events import (
@@ -36,11 +36,14 @@ from fidesops.ops.models.policy import (
 from fidesops.ops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
+    ProvidedIdentityType,
     can_run_checkpoint,
 )
+from fidesops.ops.schemas.email.email import (
+    AccessRequestCompleteBodyParams,
+    EmailActionType,
+)
 from fidesops.ops.service.connectors.email_connector import email_connector_erasure_send
-from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus, ProvidedIdentityType
-from fidesops.ops.schemas.email.email import EmailActionType, AccessRequestCompleteBodyParams
 from fidesops.ops.service.email.email_dispatch_service import dispatch_email
 from fidesops.ops.service.storage.storage_uploader_service import upload
 from fidesops.ops.task.filter_results import filter_data_categories
@@ -126,11 +129,11 @@ def upload_access_results(
     access_result: Dict[str, List[Row]],
     dataset_graph: DatasetGraph,
     privacy_request: PrivacyRequest,
-) -> Optional[str]:
+) -> List[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
+    download_urls: List[str] = []
     if not access_result:
         logging.info("No results returned for access request %s", privacy_request.id)
-
     for rule in policy.get_rules_for_action(action_type=ActionType.access):
         if not rule.storage_destination:
             raise common_exceptions.RuleValidationError(
@@ -148,12 +151,14 @@ def upload_access_results(
             privacy_request.id,
         )
         try:
-            return upload(
+            download_url: Optional[str] = upload(
                 db=session,
                 request_id=privacy_request.id,
                 data=filtered_results,
                 storage_key=rule.storage_destination.key,  # type: ignore
             )
+            if download_url:
+                download_urls.append(download_url)
         except common_exceptions.StorageUploadError as exc:
             logging.error(
                 "Error uploading subject access data for rule %s on policy %s and privacy request %s : %s",
@@ -163,6 +168,7 @@ def upload_access_results(
                 Pii(str(exc)),
             )
             privacy_request.status = PrivacyRequestStatus.error
+    return download_urls
 
 
 def queue_privacy_request(
@@ -211,7 +217,7 @@ async def run_privacy_request(
     from_webhook_id: Optional[str] = None,
     from_step: Optional[str] = None,
 ) -> None:
-    # pylint: disable=too-many-locals, too-many-statements
+    # pylint: disable=too-many-locals, too-many-statements, too-many-return-statements, too-many-branches
     """
     Dispatch a privacy_request into the execution layer by:
         1. Generate a graph from all the currently configured datasets
@@ -264,11 +270,13 @@ async def run_privacy_request(
             dataset_graph = DatasetGraph(*dataset_graphs)
             identity_data = privacy_request.get_cached_identity_data()
             connection_configs = ConnectionConfig.all(db=session)
-            access_result_url: Optional[str] = None
+            access_result_urls: List[str] = []
+            is_access_request: bool = False
 
             if can_run_checkpoint(
                 request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
             ):
+                is_access_request = True
                 access_result: Dict[str, List[Row]] = await run_access_request(
                     privacy_request=privacy_request,
                     policy=policy,
@@ -277,8 +285,7 @@ async def run_privacy_request(
                     identity=identity_data,
                     session=session,
                 )
-
-                access_result_url = upload_access_results(
+                access_result_urls = upload_access_results(
                     session,
                     policy,
                     access_result,
@@ -348,40 +355,18 @@ async def run_privacy_request(
         )
         if not proceed:
             return
-
-        if access_result_url:
-            if not identity_data.get(ProvidedIdentityType.email.value):
-                # fatal bc user will not get results
-                msg = "Identity email was not found, so access request email could not be sent."
-                logger.error(msg)
+        if config.notifications.send_request_completion_notification:
+            try:
+                initiate_privacy_request_completion_email(session, is_access_request, access_result_urls, identity_data)
+            except IdentityNotFoundException as e:
+                logger.error(e)
                 privacy_request.error_processing(db=session)
                 # If dev mode, log traceback
                 await fideslog_graph_failure(
-                    failed_graph_analytics_event(privacy_request, msg)
+                    failed_graph_analytics_event(privacy_request, e)
                 )
-                _log_exception(msg, config.dev_mode)
+                _log_exception(e, config.dev_mode)
                 return
-
-            else:
-                dispatch_email(
-                    db=session,
-                    action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
-                    to_email=identity_data.get(ProvidedIdentityType.email.value),
-                    email_body_params=AccessRequestCompleteBodyParams(
-                        download_link=access_result_url
-                    ),
-                )
-        else:
-            if not identity_data.get(ProvidedIdentityType.email.value):
-                # not fatal bc data was deleted as requested
-                logger.error("Identity email was not found, so deletion complete email could not be sent.")
-            else:
-                dispatch_email(
-                    db=session,
-                    action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
-                    to_email=identity_data.get(ProvidedIdentityType.email.value),
-                    email_body_params=None
-                )
         privacy_request.finished_processing_at = datetime.utcnow()
         AuditLog.create(
             db=session,
@@ -395,6 +380,33 @@ async def run_privacy_request(
         privacy_request.status = PrivacyRequestStatus.complete
         logging.info("Privacy request %s run completed.", privacy_request.id)
         privacy_request.save(db=session)
+
+
+def initiate_privacy_request_completion_email(session: Session, is_access_request: bool, access_result_urls: List[str], identity_data: Dict[str, Any]) -> None:
+    if is_access_request:
+        if not identity_data.get(ProvidedIdentityType.email.value):
+            # fatal bc user will not get results
+            raise IdentityNotFoundException("Identity email was not found, so access request email could not be sent.")
+        dispatch_email(
+            db=session,
+            action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+            to_email=identity_data.get(ProvidedIdentityType.email.value),
+            email_body_params=AccessRequestCompleteBodyParams(
+                download_links=access_result_urls
+            ),
+        )
+    else:
+        if not identity_data.get(ProvidedIdentityType.email.value):
+            # not fatal bc data was deleted as requested
+            exc = IdentityNotFoundException("Identity email was not found, so deletion complete email could not be sent")
+            _log_exception(exc, config.dev_mode)
+        else:
+            dispatch_email(
+                db=session,
+                action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
+                to_email=identity_data.get(ProvidedIdentityType.email.value),
+                email_body_params=None,
+            )
 
 
 def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) -> None:

@@ -7,10 +7,11 @@ import secrets
 import zipfile
 from datetime import datetime
 from io import BytesIO
-from typing import Any, Dict, Union, Optional
+from typing import Any, Dict, Union
 
 import pandas as pd
 import requests
+from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
 from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 
@@ -57,7 +58,7 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
 
 
 def write_to_in_memory_buffer(
-        resp_format: str, data: Dict[str, Any], request_id: str
+    resp_format: str, data: Dict[str, Any], request_id: str
 ) -> BytesIO:
     """Write JSON/CSV data to in-memory file-like object to be passed to S3. Encrypt data if encryption key/nonce
     has been cached for the given privacy request id
@@ -95,32 +96,33 @@ def write_to_in_memory_buffer(
     raise NotImplementedError(f"No handling for response format {resp_format}.")
 
 
-def create_presigned_url_for_s3(s3_client, bucket_name, object_name) -> Optional[str]:
-    """"Generate a presigned URL to share an S3 object
+def create_presigned_url_for_s3(s3_client: Session, bucket_name: str, object_name: str) -> str:
+    """ "Generate a presigned URL to share an S3 object
 
+    :param s3_client: s3 base client
     :param bucket_name: string
     :param object_name: string
-    :param expiration: Time in seconds for a subject data package download link to remain valid, default to 1 day
-    :return: Presigned URL as string. If error, returns None.
+    :return: Presigned URL as string.
     """
 
-    response = s3_client.generate_presigned_url('get_object',
-                                                Params={'Bucket': bucket_name,
-                                                        'Key': object_name},
-                                                ExpiresIn=config.security.subject_request_download_link_ttl_seconds)
+    response = s3_client.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": bucket_name, "Key": object_name},
+        ExpiresIn=config.security.subject_request_download_link_ttl_seconds,
+    )
 
     # The response contains the presigned URL
     return response
 
 
 def upload_to_s3(  # pylint: disable=R0913
-        storage_secrets: Dict[StorageSecrets, Any],
-        data: Dict,
-        bucket_name: str,
-        file_key: str,
-        resp_format: str,
-        request_id: str,
-        auth_method: S3AuthMethod,
+    storage_secrets: Dict[StorageSecrets, Any],
+    data: Dict,
+    bucket_name: str,
+    file_key: str,
+    resp_format: str,
+    request_id: str,
+    auth_method: S3AuthMethod,
 ) -> str:
     """Uploads arbitrary data to s3 returned from an access request"""
     logger.info("Starting S3 Upload of %s", file_key)
@@ -136,23 +138,27 @@ def upload_to_s3(  # pylint: disable=R0913
                 Key=file_key,
             )
         except Exception as e:
-            logger.error(f"Encountered error while uploading s3 object: {e}")
+            logger.error("Encountered error while uploading s3 object: %s", e)
             raise e
 
-        presigned_url: str = create_presigned_url_for_s3(s3_client, bucket_name, file_key)
+        presigned_url: str = create_presigned_url_for_s3(
+            s3_client, bucket_name, file_key
+        )
 
         return presigned_url
     except ClientError as e:
-        logger.error(f"Encountered error while uploading and generating link for s3 object: {e}")
+        logger.error(
+            "Encountered error while uploading and generating link for s3 object: %s", e
+        )
         raise e
     except ParamValidationError as e:
         raise ValueError(f"The parameters you provided are incorrect: {e}")
 
 
 def upload_to_onetrust(
-        payload: Dict,
-        storage_secrets: Dict[StorageSecrets, Any],
-        ref_id: str,
+    payload: Dict,
+    storage_secrets: Dict[StorageSecrets, Any],
+    ref_id: str,
 ) -> str:
     """Uploads arbitrary data to onetrust returned from an access request"""
     logger.info("Starting OneTrust Upload for ref_id %s", ref_id)

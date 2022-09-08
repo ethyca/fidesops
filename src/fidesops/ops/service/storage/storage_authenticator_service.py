@@ -8,7 +8,8 @@ from fidesops.ops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
     S3AuthMethod,
     StorageSecretsOnetrust,
-    StorageType, StorageSecretsS3,
+    StorageSecretsS3,
+    StorageType,
 )
 from fidesops.ops.util.storage_authenticator import (
     get_onetrust_access_token,

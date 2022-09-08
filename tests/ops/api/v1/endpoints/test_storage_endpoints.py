@@ -558,7 +558,7 @@ class TestPutStorageConfigSecretsS3:
             {
                 "aws_access_key_id": payload["aws_access_key_id"],
                 "aws_secret_access_key": payload["aws_secret_access_key"],
-            }
+            },
         )
 
     @mock.patch(

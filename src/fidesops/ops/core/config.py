@@ -234,9 +234,7 @@ CONFIG_KEY_ALLOWLIST = {
         "require_manual_request_approval",
         "subject_identity_verification_required",
     ],
-    "notifications": [
-        "send_request_completion_notification"
-    ]
+    "notifications": ["send_request_completion_notification"],
 }
 
 

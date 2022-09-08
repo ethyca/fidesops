@@ -46,7 +46,7 @@ class SubjectIdentityVerificationBodyParams(BaseModel):
 class AccessRequestCompleteBodyParams(BaseModel):
     """Body params required for privacy request completion access email template"""
 
-    download_link: str
+    download_links: str
 
 
 class EmailForActionType(BaseModel):

@@ -13,7 +13,8 @@ from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
-    PrivacyRequestPaused, EmailDispatchException,
+    EmailDispatchException,
+    PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.config import CollectionAddress
@@ -58,7 +59,9 @@ PRIVACY_REQUEST_TASK_TIMEOUT = 5
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
 
 
-@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.dispatch_email")
+@mock.patch(
+    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+)
 @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
 def test_policy_upload_dispatch_email_called(
     upload_mock: Mock,
@@ -76,9 +79,9 @@ def test_policy_upload_dispatch_email_called(
 
 @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
 def test_policy_dispatch_email_no_config(
-        upload_mock: Mock,
-        privacy_request_status_pending: PrivacyRequest,
-        run_privacy_request_task,
+    upload_mock: Mock,
+    privacy_request_status_pending: PrivacyRequest,
+    run_privacy_request_task,
 ) -> None:
     upload_mock.return_value = "http://www.data-download-url"
     with pytest.raises(EmailDispatchException):
@@ -88,7 +91,9 @@ def test_policy_dispatch_email_no_config(
     assert upload_mock.called
 
 
-@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.dispatch_email")
+@mock.patch(
+    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+)
 @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
 def test_start_processing_sets_started_processing_at(
     upload_mock: Mock,
@@ -111,7 +116,9 @@ def test_start_processing_sets_started_processing_at(
     assert mock_email_dispatch.call_count == 1
 
 
-@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.dispatch_email")
+@mock.patch(
+    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+)
 @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
 def test_start_processing_doesnt_overwrite_started_processing_at(
     upload_mock: Mock,
@@ -158,7 +165,9 @@ def test_halts_proceeding_if_cancelled(
     assert not upload_access_results_mock.called
 
 
-@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.dispatch_email")
+@mock.patch(
+    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+)
 @mock.patch(
     "fidesops.ops.service.privacy_request.request_runner_service.upload_access_results"
 )
@@ -205,7 +214,9 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     assert mock_email_dispatch.call_count == 1
 
 
-@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.dispatch_email")
+@mock.patch(
+    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+)
 @mock.patch(
     "fidesops.ops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )

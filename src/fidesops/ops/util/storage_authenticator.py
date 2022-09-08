@@ -36,14 +36,13 @@ def get_s3_session(
         client.get_caller_identity()
         return session
 
-    elif auth_method == S3AuthMethod.AUTOMATIC.value:
+    if auth_method == S3AuthMethod.AUTOMATIC.value:
         session = boto3.session.Session()
         logger.info("Successfully created automatic session")
         return session
 
-    else:
-        logger.error("Auth method not supported for S3: %s", auth_method)
-        raise ValueError(f"Auth method not supported for S3: {auth_method}")
+    logger.error("Auth method not supported for S3: %s", auth_method)
+    raise ValueError(f"Auth method not supported for S3: {auth_method}")
 
 
 def get_onetrust_access_token(client_id: str, client_secret: str, hostname: str) -> str:
