@@ -427,6 +427,11 @@ class TestSaaSQueryConfig:
     def test_list_inputs(
         self, combined_traversal, saas_example_connection_config, policy
     ):
+        """
+        This demonstrates that multivalue connector params wont't generate
+        more prepared_requests if they are not used by the request
+        """
+
         saas_config: Optional[
             SaaSConfig
         ] = saas_example_connection_config.get_saas_config()
