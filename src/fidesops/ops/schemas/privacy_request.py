@@ -165,7 +165,7 @@ class PrivacyRequestResponse(BaseSchema):
     policy: PolicySchema
     action_required_details: Optional[CheckpointActionRequiredDetails] = None
     resume_endpoint: Optional[str]
-    days_left: Optional[str]
+    days_left: Optional[int]
 
     class Config:
         """Set orm_mode and use_enum_values"""

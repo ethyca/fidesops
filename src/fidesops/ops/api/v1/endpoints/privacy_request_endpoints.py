@@ -328,7 +328,7 @@ def privacy_request_csv_download(
     return response
 
 
-def get_days_left(self: PrivacyRequest):
+def get_days_left(self: PrivacyRequest) -> Union[int, None]:
     if self.due_date is None:
         return None
 
