@@ -103,6 +103,7 @@ from fidesops.ops.task.task_resources import TaskResources
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.cache import FidesopsRedis
 from fidesops.ops.util.collection_util import Row
+from fidesops.ops.util.enums import ColumnSort
 from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 
@@ -483,7 +484,17 @@ def _filter_privacy_request_queryset(
             PrivacyRequest.finished_processing_at > errored_gt,
         )
 
-    return query.order_by(PrivacyRequest.created_at.desc())
+    return query
+
+
+def _sort_privacy_request_queryset(query: Query, sort_due_date: ColumnSort) -> Query:
+    if sort_due_date is None:
+        return query.order_by(PrivacyRequest.created_at.desc())
+
+    if sort_due_date == ColumnSort.ASC.value:
+        return query.order_by(PrivacyRequest.due_date.asc())
+    else:
+        return query.order_by(PrivacyRequest.due_date.desc())
 
 
 def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
@@ -558,6 +569,7 @@ def get_request_status(
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
     download_csv: Optional[bool] = False,
+    sort_due_date: Optional[ColumnSort] = None,
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
     """Returns PrivacyRequest information. Supports a variety of optional query params.
 
@@ -583,6 +595,7 @@ def get_request_status(
         errored_gt,
         external_id,
     )
+    query = _sort_privacy_request_queryset(query, sort_due_date)
 
     if download_csv:
         # Returning here if download_csv param was specified
