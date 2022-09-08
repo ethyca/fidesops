@@ -12,6 +12,7 @@ from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.models.consent import Consent
 from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.models.email import EmailConfig
+from fidesops.ops.models.manual_webhook import AccessManualWebhook
 from fidesops.ops.models.policy import Policy, Rule, RuleTarget
 from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.models.storage import StorageConfig
