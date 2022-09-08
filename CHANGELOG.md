@@ -38,6 +38,7 @@ The types of changes are:
 * Added `days_left` field to Privacy request response [#1281](https://github.com/ethyca/fidesops/pull/1281)
 * Mapping Vault environment variables in docker-compose.yml [#1275](https://github.com/ethyca/fidesops/pull/1275)
 * Foundations for a new "manual_webhook" connector type [#1267](https://github.com/ethyca/fidesops/pull/1267)
+* Add Days left display to admin ui [#1283](https://github.com/ethyca/fidesops/pull/1283)
 
 ### Docs
 
