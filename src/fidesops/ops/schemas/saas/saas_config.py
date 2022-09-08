@@ -26,7 +26,7 @@ class ParamValue(BaseModel):
     identity: Optional[str]
     references: Optional[List[FidesopsDatasetReference]]
     connector_param: Optional[str]
-    flatten: Optional[bool] = False
+    unpack: Optional[bool] = False
 
     @validator("references")
     def check_reference_direction(

@@ -131,12 +131,12 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         filtered_secrets = self._filtered_secrets(current_request)
         grouped_inputs_list = input_data.pop(FIDESOPS_GROUPED_INPUTS, None)
 
-        # flatten the inputs
+        # unpack the inputs
         # list_ids: [[1,2,3]] -> list_ids: [1,2,3]
         for param_value in current_request.param_values or []:
-            if param_value.flatten:
+            if param_value.unpack:
                 value = param_value.name
-                input_data[value] = pydash.flatten(input_data.get(value))            
+                input_data[value] = pydash.flatten(input_data.get(value))
 
         # we want to preserve the grouped_input relationships so we take each
         # individual group and generate the product with the ungrouped inputs
