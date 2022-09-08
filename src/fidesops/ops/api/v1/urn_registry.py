@@ -82,6 +82,7 @@ CONNECTION_TEST = "/connection/{connection_key}/test"
 AUTHORIZE = "/connection/{connection_key}/authorize"
 
 # Manual Webhooks
+ACCESS_MANUAL_WEBHOOKS = "/access_manual_webhook"
 ACCESS_MANUAL_WEBHOOK = CONNECTION_BY_KEY + "/access_manual_webhook"
 
 # Collection URLs

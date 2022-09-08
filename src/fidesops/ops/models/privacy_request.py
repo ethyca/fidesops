@@ -497,18 +497,16 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             extra = "forbid"
 
         field_definitions: Dict[str, Any] = {
-                field["dsr_package_label"]: (Optional[str], None)
-                for field in manual_webhook.fields
-            }
+            field["dsr_package_label"]: (Optional[str], None)
+            for field in manual_webhook.fields
+        }
 
         ManualWebhookValidationModel = create_model(  # type: ignore
             __model_name="ManualWebhookValidationModel",
             __config__=Config,
             **field_definitions,
         )
-        ManualWebhookValidationModel.parse_obj(
-            input_data
-        )
+        ManualWebhookValidationModel.parse_obj(input_data)
 
         cache.set_encoded_object(
             f"WEBHOOK_MANUAL_INPUT__{self.id}__{manual_webhook.id}",
