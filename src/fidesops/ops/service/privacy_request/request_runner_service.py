@@ -1,7 +1,7 @@
 import logging
 import random
 from datetime import datetime, timedelta
-from typing import ContextManager, Dict, List, Optional, Set, Any
+from typing import Any, ContextManager, Dict, List, Optional, Set
 
 from celery import Task
 from celery.utils.log import get_task_logger
@@ -15,7 +15,8 @@ from fidesops.ops import common_exceptions
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
     EmailDispatchException,
-    PrivacyRequestPaused, IdentityNotFoundException,
+    IdentityNotFoundException,
+    PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.analytics_events import (
