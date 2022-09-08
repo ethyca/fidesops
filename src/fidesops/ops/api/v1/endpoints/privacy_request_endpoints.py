@@ -4,7 +4,7 @@ import csv
 import io
 import logging
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Union
 
 import sqlalchemy
@@ -328,6 +328,14 @@ def privacy_request_csv_download(
     return response
 
 
+def get_days_left(self: PrivacyRequest):
+    if self.due_date is None:
+        return None
+
+    delta = self.due_date - datetime.now(timezone.utc)
+    return delta.days
+
+
 def execution_and_audit_logs_by_dataset_name(
     self: PrivacyRequest,
 ) -> DefaultDict[str, List["ExecutionLog"]]:
@@ -597,6 +605,8 @@ def get_request_status(
         )
     else:
         PrivacyRequest.execution_and_audit_logs_by_dataset = property(lambda self: None)
+
+    PrivacyRequest.days_left = property(get_days_left)
 
     paginated = paginate(query, params)
     if include_identities:
