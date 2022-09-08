@@ -1871,13 +1871,15 @@ class TestPrivacyRequestsEmailNotifications:
         )
         pr.delete(db=db)
 
-        mailgun_send.assert_called_once_with(email_config, Any, customer_email)
+        mailgun_send.assert_called_once()
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access(
         self,
+        upload_mock,
         mailgun_send,
         postgres_integration_db,
         postgres_example_test_dataset_config,
@@ -1890,6 +1892,7 @@ class TestPrivacyRequestsEmailNotifications:
         privacy_request_complete_email_notification_enabled,
         run_privacy_request_task,
     ):
+        upload_mock.return_value = "http://www.data-download-url"
         customer_email = "customer-1@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
@@ -1905,13 +1908,15 @@ class TestPrivacyRequestsEmailNotifications:
         )
         pr.delete(db=db)
 
-        mailgun_send.assert_called_once_with(email_config, Any, customer_email)
+        mailgun_send.assert_called_once()
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_no_email_config(
         self,
+        upload_mock,
         mailgun_send,
         postgres_integration_db,
         postgres_example_test_dataset_config,
@@ -1923,6 +1928,7 @@ class TestPrivacyRequestsEmailNotifications:
         privacy_request_complete_email_notification_enabled,
         run_privacy_request_task,
     ):
+        upload_mock.return_value = "http://www.data-download-url"
         customer_email = "customer-1@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
