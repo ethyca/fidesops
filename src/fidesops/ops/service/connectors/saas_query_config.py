@@ -133,13 +133,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # flatten the inputs
         # list_ids: [[1,2,3]] -> list_ids: [1,2,3]
-        inputs_to_flatten = [
-            param_value.name
-            for param_value in current_request.param_values or []
-            if param_value.flatten
-        ]
-        for value in inputs_to_flatten:
-            input_data[value] = pydash.flatten(input_data.get(value))
+        for param_value in current_request.param_values or []:
+            if param_value.flatten:
+                value = param_value.name
+                input_data[value] = pydash.flatten(input_data.get(value))            
 
         # we want to preserve the grouped_input relationships so we take each
         # individual group and generate the product with the ungrouped inputs
