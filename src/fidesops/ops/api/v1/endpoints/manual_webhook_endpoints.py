@@ -139,7 +139,7 @@ def patch_access_manual_webhook(
 )
 def get_access_manual_webhook(
     connection_config: ConnectionConfig = Depends(_get_connection_config),
-) -> Optional[AccessManualWebhookResponse]:
+) -> AccessManualWebhookResponse:
     """
     Gets the Access Manual Webhook associated with this ConnectionConfig.
     """

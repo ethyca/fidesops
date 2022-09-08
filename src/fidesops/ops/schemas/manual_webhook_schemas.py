@@ -20,7 +20,7 @@ class ManualWebhookField(BaseSchema):
     """Schema to describe the attributes on a manual webhook field"""
 
     pii_field: ManualWebhookFieldType
-    dsr_package_label: Optional[ManualWebhookFieldType]
+    dsr_package_label: Optional[ManualWebhookFieldType] = None
 
     class Config:
         orm_mode = True
