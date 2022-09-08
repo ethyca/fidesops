@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
+    ManualWebhookDataDoesNotExist,
     PrivacyRequestPaused,
 )
 from fidesops.ops.graph.config import CollectionAddress
@@ -565,6 +566,54 @@ class TestCacheEmailConnectorTemplateContents:
                 ],
             )
         }
+
+
+class TestCacheManualWebhookInput:
+    def test_cache_manual_webhook_input(self, privacy_request, access_manual_webhook):
+        with pytest.raises(ManualWebhookDataDoesNotExist):
+            privacy_request.get_manual_webhook_input(access_manual_webhook)
+
+        privacy_request.cache_manual_webhook_input(
+            manual_webhook=access_manual_webhook,
+            input_data={"email": "customer-1@example.com", "last_name": "Customer"},
+        )
+
+        assert privacy_request.get_manual_webhook_input(access_manual_webhook) == {
+            "email": "customer-1@example.com",
+            "last_name": "Customer",
+        }
+
+    def test_cache_no_fields(self, privacy_request, access_manual_webhook):
+        privacy_request.cache_manual_webhook_input(
+            manual_webhook=access_manual_webhook,
+            input_data={},
+        )
+
+        assert privacy_request.get_manual_webhook_input(access_manual_webhook) == {}
+
+    def test_cache_field_missing(self, privacy_request, access_manual_webhook):
+        privacy_request.cache_manual_webhook_input(
+            manual_webhook=access_manual_webhook,
+            input_data={
+                "email": "customer-1@example.com",
+            },
+        )
+
+        assert privacy_request.get_manual_webhook_input(access_manual_webhook) == {
+            "email": "customer-1@example.com",
+        }
+
+    def test_cache_extra_fields_not_in_webhook_specs(
+        self, privacy_request, access_manual_webhook
+    ):
+        with pytest.raises(ValidationError):
+            privacy_request.cache_manual_webhook_input(
+                manual_webhook=access_manual_webhook,
+                input_data={
+                    "email": "customer-1@example.com",
+                    "bad_field": "not_specified",
+                },
+            )
 
 
 class TestCanRunFromCheckpoint:
