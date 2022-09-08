@@ -328,8 +328,6 @@ def privacy_request_csv_download(
     return response
 
 
-
-
 def execution_and_audit_logs_by_dataset_name(
     self: PrivacyRequest,
 ) -> DefaultDict[str, List["ExecutionLog"]]:
