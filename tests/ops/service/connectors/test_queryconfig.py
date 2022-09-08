@@ -21,7 +21,6 @@ from fidesops.ops.service.connectors.query_config import (
     SQLQueryConfig,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_hash import (
-    HASH_STRATEGY_NAME,
     HashMaskingStrategy,
 )
 from fidesops.ops.util.data_category import DataCategory
@@ -292,7 +291,7 @@ class TestSQLQueryConfig:
         # cache secrets for hash strategy
         secret = MaskingSecretCache[str](
             secret="adobo",
-            masking_strategy=HASH_STRATEGY_NAME,
+            masking_strategy=HashMaskingStrategy.name,
             secret_type=SecretType.salt,
         )
         cache_secret(secret, privacy_request.id)
@@ -591,7 +590,7 @@ class TestMongoQueryConfig:
         # cache secrets for hash strategy
         secret = MaskingSecretCache[str](
             secret="adobo",
-            masking_strategy=HASH_STRATEGY_NAME,
+            masking_strategy=HashMaskingStrategy.name,
             secret_type=SecretType.salt,
         )
         cache_secret(secret, privacy_request.id)
