@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, List
 
 from pydantic import BaseModel, Extra
 
@@ -46,7 +46,7 @@ class SubjectIdentityVerificationBodyParams(BaseModel):
 class AccessRequestCompleteBodyParams(BaseModel):
     """Body params required for privacy request completion access email template"""
 
-    download_links: str
+    download_links: List[str]
 
 
 class EmailForActionType(BaseModel):

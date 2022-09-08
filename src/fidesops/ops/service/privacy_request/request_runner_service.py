@@ -272,12 +272,10 @@ async def run_privacy_request(
             identity_data = privacy_request.get_cached_identity_data()
             connection_configs = ConnectionConfig.all(db=session)
             access_result_urls: List[str] = []
-            is_access_request: bool = False
 
             if can_run_checkpoint(
                 request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
             ):
-                is_access_request = True
                 access_result: Dict[str, List[Row]] = await run_access_request(
                     privacy_request=privacy_request,
                     policy=policy,
@@ -359,7 +357,7 @@ async def run_privacy_request(
         if config.notifications.send_request_completion_notification:
             try:
                 initiate_privacy_request_completion_email(
-                    session, is_access_request, access_result_urls, identity_data
+                    session, policy, access_result_urls, identity_data
                 )
             except IdentityNotFoundException as e:
                 logger.error(e)
@@ -376,7 +374,8 @@ async def run_privacy_request(
             data={
                 "user_id": "system",
                 "privacy_request_id": privacy_request.id,
-                "action": AuditLogAction.finished,  # fixme- this was existing code but "finished" isn't an AuditLogAction?
+                "action": AuditLogAction.finished,
+                # fixme- this was existing code but "finished" isn't an AuditLogAction?
                 "message": "",
             },
         )
@@ -387,11 +386,11 @@ async def run_privacy_request(
 
 def initiate_privacy_request_completion_email(
     session: Session,
-    is_access_request: bool,
+    policy: Policy,
     access_result_urls: List[str],
     identity_data: Dict[str, Any],
 ) -> None:
-    if is_access_request:
+    if policy.get_rules_for_action(action_type=ActionType.access):
         if not identity_data.get(ProvidedIdentityType.email.value):
             # fatal bc user will not get results
             raise IdentityNotFoundException(
@@ -405,7 +404,7 @@ def initiate_privacy_request_completion_email(
                 download_links=access_result_urls
             ),
         )
-    else:
+    if policy.get_rules_for_action(action_type=ActionType.erasure):
         if not identity_data.get(ProvidedIdentityType.email.value):
             # not fatal bc data was deleted as requested
             exc = IdentityNotFoundException(
