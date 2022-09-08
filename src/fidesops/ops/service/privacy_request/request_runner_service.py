@@ -358,7 +358,9 @@ async def run_privacy_request(
             return
         if config.notifications.send_request_completion_notification:
             try:
-                initiate_privacy_request_completion_email(session, is_access_request, access_result_urls, identity_data)
+                initiate_privacy_request_completion_email(
+                    session, is_access_request, access_result_urls, identity_data
+                )
             except IdentityNotFoundException as e:
                 logger.error(e)
                 privacy_request.error_processing(db=session)
@@ -383,11 +385,18 @@ async def run_privacy_request(
         privacy_request.save(db=session)
 
 
-def initiate_privacy_request_completion_email(session: Session, is_access_request: bool, access_result_urls: List[str], identity_data: Dict[str, Any]) -> None:
+def initiate_privacy_request_completion_email(
+    session: Session,
+    is_access_request: bool,
+    access_result_urls: List[str],
+    identity_data: Dict[str, Any],
+) -> None:
     if is_access_request:
         if not identity_data.get(ProvidedIdentityType.email.value):
             # fatal bc user will not get results
-            raise IdentityNotFoundException("Identity email was not found, so access request email could not be sent.")
+            raise IdentityNotFoundException(
+                "Identity email was not found, so access request email could not be sent."
+            )
         dispatch_email(
             db=session,
             action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
@@ -399,7 +408,9 @@ def initiate_privacy_request_completion_email(session: Session, is_access_reques
     else:
         if not identity_data.get(ProvidedIdentityType.email.value):
             # not fatal bc data was deleted as requested
-            exc = IdentityNotFoundException("Identity email was not found, so deletion complete email could not be sent")
+            exc = IdentityNotFoundException(
+                "Identity email was not found, so deletion complete email could not be sent"
+            )
             _log_exception(exc, config.dev_mode)
         else:
             dispatch_email(

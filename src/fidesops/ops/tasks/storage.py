@@ -96,7 +96,9 @@ def write_to_in_memory_buffer(
     raise NotImplementedError(f"No handling for response format {resp_format}.")
 
 
-def create_presigned_url_for_s3(s3_client: Session, bucket_name: str, object_name: str) -> str:
+def create_presigned_url_for_s3(
+    s3_client: Session, bucket_name: str, object_name: str
+) -> str:
     """ "Generate a presigned URL to share an S3 object
 
     :param s3_client: s3 base client
