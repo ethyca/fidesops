@@ -4,7 +4,7 @@ import csv
 import io
 import logging
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Union
 
 import sqlalchemy
