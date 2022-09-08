@@ -61,7 +61,10 @@ class AccessManualWebhooks(BaseSchema):
 
 
 class AccessManualWebhookResponse(AccessManualWebhooks):
-    """Expected response when creating Access Manual Webhooks"""
+    """Expected response for accessing Access Manual Webhooks"""
 
     connection_config: ConnectionConfigurationResponse
     id: str
+
+    class Config:
+        orm_mode = True

@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional
+from typing import Optional, Sequence
 
 from fastapi import Depends, Security
 from fastapi.encoders import jsonable_encoder
@@ -188,11 +188,11 @@ def delete_access_manual_webhook(
     ACCESS_MANUAL_WEBHOOKS,
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[WEBHOOK_READ])],
-    response_model=List[AccessManualWebhookResponse],
+    response_model=Sequence[AccessManualWebhookResponse],
 )
 def get_access_manual_webhooks(
     db: Session = Depends(deps.get_db),
-) -> List[AccessManualWebhookResponse]:
+) -> Sequence[AccessManualWebhookResponse]:
     """
     Get all enabled Access Manual Webhooks
     """

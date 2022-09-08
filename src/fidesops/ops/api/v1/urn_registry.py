@@ -48,6 +48,9 @@ PRIVACY_REQUEST_MANUAL_INPUT = "/privacy-request/{privacy_request_id}/manual_inp
 PRIVACY_REQUEST_MANUAL_ERASURE = "/privacy-request/{privacy_request_id}/erasure_confirm"
 PRIVACY_REQUEST_RETRY = "/privacy-request/{privacy_request_id}/retry"
 REQUEST_PREVIEW = "/privacy-request/preview"
+PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT = (
+    "/privacy-request/{privacy_request_id}/access_manual_webhook/{connection_key}"
+)
 
 # Identity Verification URLs
 ID_VERIFICATION_CONFIG = "/id-verification/config"

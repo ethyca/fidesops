@@ -15,6 +15,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslib.models.audit_log import AuditLog, AuditLogAction
 from fideslib.models.client import ClientDetail
+from pydantic import ValidationError as PydanticValidationError
 from pydantic import conlist
 from sqlalchemy import cast, column, null
 from sqlalchemy.orm import Query, Session
@@ -32,12 +33,17 @@ from fidesops.ops import common_exceptions
 from fidesops.ops.api import deps
 from fidesops.ops.api.v1 import scope_registry as scopes
 from fidesops.ops.api.v1 import urn_registry as urls
+from fidesops.ops.api.v1.endpoints.dataset_endpoints import _get_connection_config
+from fidesops.ops.api.v1.endpoints.manual_webhook_endpoints import (
+    get_access_manual_webhook_or_404,
+)
 from fidesops.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
 )
 from fidesops.ops.api.v1.urn_registry import (
+    PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_MANUAL_ERASURE,
@@ -60,6 +66,7 @@ from fidesops.ops.graph.graph import DatasetGraph, Node
 from fidesops.ops.graph.traversal import Traversal
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.manual_webhook import AccessManualWebhook
 from fidesops.ops.models.policy import CurrentStep, Policy, PolicyPreWebhook
 from fidesops.ops.models.privacy_request import (
     ExecutionLog,
@@ -723,7 +730,6 @@ async def resume_privacy_request(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
-    cache: FidesopsRedis = Depends(deps.get_cache),
     webhook: PolicyPreWebhook = Security(
         verify_callback_oauth, scopes=[scopes.PRIVACY_REQUEST_CALLBACK_RESUME]
     ),
@@ -881,7 +887,6 @@ async def resume_with_manual_input(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
-    cache: FidesopsRedis = Depends(deps.get_cache),
     manual_rows: List[Row],
 ) -> PrivacyRequestResponse:
     """Resume a privacy request by passing in manual input for the paused collection.
@@ -1151,4 +1156,53 @@ def deny_privacy_request(
         db=db,
         request_ids=privacy_requests.request_ids,
         process_request_function=_deny_request,
+    )
+
+
+@router.patch(
+    PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
+    status_code=HTTP_200_OK,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+    ],
+    response_model=None,
+)
+def add_manual_webhook_data(
+    *,
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+    privacy_request_id: str,
+    db: Session = Depends(deps.get_db),
+    input_data: Dict[str, Any],
+) -> None:
+    """Upload manual input for the privacy request for the fields defined on the access manual webhook.
+    The data collected here is not included in the graph but uploaded directly to the user at the end
+    of privacy request execution.
+
+    Because a 'manual_webhook' ConnectionConfig has one AccessManualWebhook associated with it,
+    we are using the ConnectionConfig key as the AccessManualWebhook identifier here.
+    """
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+    access_manual_webhook: AccessManualWebhook = get_access_manual_webhook_or_404(
+        connection_config
+    )
+
+    if not privacy_request.status == PrivacyRequestStatus.requires_input:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid access manual webhook upload request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
+        )
+
+    try:
+        privacy_request.cache_manual_webhook_input(access_manual_webhook, input_data)
+    except PydanticValidationError as exc:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.errors()
+        )
+
+    logger.info(
+        "Input saved for access manual webhook '%s' for privacy_request '%s'.",
+        access_manual_webhook,
+        privacy_request,
     )
