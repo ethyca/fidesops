@@ -677,7 +677,6 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
     privacy_request_id = Column(
         String,
         ForeignKey(PrivacyRequest.id_field_path),
-        nullable=False,
     )
     privacy_request = relationship(
         PrivacyRequest,
@@ -706,6 +705,9 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         ),
         nullable=True,
     )  # Type bytea in the db
+    consent = relationship(
+        "Consent", backref=backref("provided_identities", cascade="all, delete-orphan")
+    )
 
     @classmethod
     def hash_value(

@@ -442,7 +442,10 @@ def _filter_privacy_request_queryset(
             identity[0]
             for identity in ProvidedIdentity.filter(
                 db=db,
-                conditions=(ProvidedIdentity.hashed_value == hashed_identity),
+                conditions=(
+                    ProvidedIdentity.hashed_value == hashed_identity,
+                    ProvidedIdentity.privacy_request_id != None,
+                ),
             ).values(column("privacy_request_id"))
         }
         query = query.filter(PrivacyRequest.id.in_(identities))
