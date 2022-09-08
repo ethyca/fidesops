@@ -2034,7 +2034,7 @@ class TestResumePrivacyRequest:
         assert response_body == {
             "id": privacy_request.id,
             "created_at": stringify_date(privacy_request.created_at),
-            "days_left": None,
+            "days_left": -1341,
             "started_processing_at": stringify_date(
                 privacy_request.started_processing_at
             ),

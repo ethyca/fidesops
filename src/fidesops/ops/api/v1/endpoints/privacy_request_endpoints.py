@@ -328,12 +328,6 @@ def privacy_request_csv_download(
     return response
 
 
-def get_days_left(self: PrivacyRequest) -> Union[int, None]:
-    if self.due_date is None:
-        return None
-
-    delta = self.due_date - datetime.now(timezone.utc)
-    return delta.days
 
 
 def execution_and_audit_logs_by_dataset_name(
@@ -605,8 +599,6 @@ def get_request_status(
         )
     else:
         PrivacyRequest.execution_and_audit_logs_by_dataset = property(lambda self: None)
-
-    PrivacyRequest.days_left = property(get_days_left)
 
     paginated = paginate(query, params)
     if include_identities:

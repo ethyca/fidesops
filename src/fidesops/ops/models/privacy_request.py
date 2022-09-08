@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from celery.result import AsyncResult
 from fideslib.cryptography.cryptographic_util import hash_with_salt
@@ -137,6 +137,14 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
     return generate_jwe(json.dumps(jwe.dict()), config.security.app_encryption_key)
 
 
+def get_days_left(self: PrivacyRequest) -> Union[int, None]:
+    if self.due_date is None:
+        return None
+
+    delta = self.due_date - datetime.now(timezone.utc)
+    return delta.days
+
+
 class PrivacyRequest(Base):  # pylint: disable=R0904
     """
     The DB ORM model to describe current and historic PrivacyRequests. A privacy request is a
@@ -211,6 +219,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     paused_at = Column(DateTime(timezone=True), nullable=True)
     identity_verified_at = Column(DateTime(timezone=True), nullable=True)
     due_date = Column(DateTime(timezone=True), nullable=True)
+    days_left = property(get_days_left)
 
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
