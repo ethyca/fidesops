@@ -264,6 +264,7 @@ async def run_privacy_request(
             dataset_graph = DatasetGraph(*dataset_graphs)
             identity_data = privacy_request.get_cached_identity_data()
             connection_configs = ConnectionConfig.all(db=session)
+            access_result_url: Optional[str] = None
 
             if can_run_checkpoint(
                 request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
@@ -277,7 +278,7 @@ async def run_privacy_request(
                     session=session,
                 )
 
-                access_result_url: Optional[str] = upload_access_results(
+                access_result_url = upload_access_results(
                     session,
                     policy,
                     access_result,
@@ -349,7 +350,7 @@ async def run_privacy_request(
             return
 
         if access_result_url:
-            if not identity_data[ProvidedIdentityType.email.value]:
+            if not identity_data.get(ProvidedIdentityType.email.value):
                 # fatal bc user will not get results
                 msg = "Identity email was not found, so access request email could not be sent."
                 logger.error(msg)
@@ -365,20 +366,20 @@ async def run_privacy_request(
                 dispatch_email(
                     db=session,
                     action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
-                    to_email=identity_data[ProvidedIdentityType.email.value],
+                    to_email=identity_data.get(ProvidedIdentityType.email.value),
                     email_body_params=AccessRequestCompleteBodyParams(
                         download_link=access_result_url
                     ),
                 )
         else:
-            if not identity_data[ProvidedIdentityType.email.value]:
+            if not identity_data.get(ProvidedIdentityType.email.value):
                 # not fatal bc data was deleted as requested
                 logger.error("Identity email was not found, so deletion complete email could not be sent.")
             else:
                 dispatch_email(
                     db=session,
                     action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
-                    to_email=identity_data[ProvidedIdentityType.email.value],
+                    to_email=identity_data.get(ProvidedIdentityType.email.value),
                     email_body_params=None
                 )
         privacy_request.finished_processing_at = datetime.utcnow()

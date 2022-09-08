@@ -88,7 +88,7 @@ class FidesopsSecuritySettings(SecuritySettings):
 
     log_level: str = "INFO"
     root_user_scopes: Optional[List[str]] = SCOPE_REGISTRY
-    subject_request_download_link_ttl_seconds: int = 86400
+    subject_request_download_link_ttl_seconds: Optional[int] = 86400
 
     @validator("log_level", pre=True)
     def validate_log_level(cls, value: str) -> str:
@@ -153,7 +153,7 @@ class AdminUiSettings(FidesSettings):
 class FidesopsNotificationSettings(FidesSettings):
     """Configuration settings for data subject and/or data processor notifications"""
 
-    send_request_completion_notification: bool = True
+    send_request_completion_notification: Optional[bool] = True
 
     class Config:
         env_prefix = "FIDESOPS__NOTIFICATIONS__"

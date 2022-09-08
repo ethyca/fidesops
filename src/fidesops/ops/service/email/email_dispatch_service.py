@@ -26,11 +26,11 @@ def dispatch_email(
     db: Session,
     action_type: EmailActionType,
     to_email: Optional[str],
-    email_body_params: Union[
+    email_body_params: Optional[Union[
         SubjectIdentityVerificationBodyParams,
         EmailRequestFulfillmentBodyParams,
         AccessRequestCompleteBodyParams,
-    ],
+    ]],
 ) -> None:
     if not to_email:
         raise EmailDispatchException("No email supplied.")

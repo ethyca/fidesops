@@ -810,10 +810,13 @@ def _create_privacy_request_for_policy(
         db=db,
         data=data,
     )
+    email_identity = "test@example.com"
+    identity_kwargs = {"email": email_identity}
+    pr.cache_identity(identity_kwargs)
     pr.persist_identity(
         db=db,
         identity=PrivacyRequestIdentity(
-            email="test@example.com",
+            email=email_identity,
             phone_number="+1 234 567 8910",
         ),
     )

@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
-    PrivacyRequestPaused,
+    PrivacyRequestPaused, EmailDispatchException,
 )
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.config import CollectionAddress
@@ -58,23 +58,46 @@ PRIVACY_REQUEST_TASK_TIMEOUT = 5
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
 
 
+@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.dispatch_email")
 @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
-def test_policy_upload_called(
+def test_policy_upload_dispatch_email_called(
     upload_mock: Mock,
+    mock_email_dispatch: Mock,
     privacy_request_status_pending: PrivacyRequest,
     run_privacy_request_task,
 ) -> None:
+    upload_mock.return_value = "http://www.data-download-url"
     run_privacy_request_task.delay(privacy_request_status_pending.id).get(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
     assert upload_mock.called
+    assert mock_email_dispatch.call_count == 1
 
 
+@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+def test_policy_dispatch_email_no_config(
+        upload_mock: Mock,
+        privacy_request_status_pending: PrivacyRequest,
+        run_privacy_request_task,
+) -> None:
+    upload_mock.return_value = "http://www.data-download-url"
+    with pytest.raises(EmailDispatchException):
+        run_privacy_request_task.delay(privacy_request_status_pending.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+    assert upload_mock.called
+
+
+@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.dispatch_email")
+@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
 def test_start_processing_sets_started_processing_at(
+    upload_mock: Mock,
+    mock_email_dispatch: Mock,
     db: Session,
     privacy_request_status_pending: PrivacyRequest,
     run_privacy_request_task,
 ) -> None:
+    upload_mock.return_value = "http://www.data-download-url"
     updated_at = privacy_request_status_pending.updated_at
     assert privacy_request_status_pending.started_processing_at is None
     run_privacy_request_task.delay(privacy_request_status_pending.id).get(
@@ -85,12 +108,19 @@ def test_start_processing_sets_started_processing_at(
     assert privacy_request_status_pending.started_processing_at is not None
     assert privacy_request_status_pending.updated_at > updated_at
 
+    assert mock_email_dispatch.call_count == 1
 
+
+@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.dispatch_email")
+@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
 def test_start_processing_doesnt_overwrite_started_processing_at(
+    upload_mock: Mock,
+    mock_email_dispatch: Mock,
     db: Session,
     privacy_request: PrivacyRequest,
     run_privacy_request_task,
 ) -> None:
+    upload_mock.return_value = "http://www.data-download-url"
     before = privacy_request.started_processing_at
     assert before is not None
     updated_at = privacy_request.updated_at
@@ -102,6 +132,8 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
     db.refresh(privacy_request)
     assert privacy_request.started_processing_at == before
     assert privacy_request.updated_at > updated_at
+
+    assert mock_email_dispatch.call_count == 1
 
 
 @mock.patch(
@@ -126,6 +158,10 @@ def test_halts_proceeding_if_cancelled(
     assert not upload_access_results_mock.called
 
 
+@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.dispatch_email")
+@mock.patch(
+    "fidesops.ops.service.privacy_request.request_runner_service.upload_access_results"
+)
 @mock.patch(
     "fidesops.ops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
@@ -137,11 +173,14 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     run_erasure,
     run_access,
     run_webhooks,
+    upload_mock: Mock,
+    mock_email_dispatch,
     db: Session,
     privacy_request: PrivacyRequest,
     run_privacy_request_task,
     erasure_policy,
 ) -> None:
+    upload_mock.return_value = "http://www.data-download-url"
     privacy_request.started_processing_at = None
     privacy_request.policy = erasure_policy
     privacy_request.save(db)
@@ -163,7 +202,10 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     assert run_access.call_count == 1  # Access request runs
     assert run_erasure.call_count == 1  # Erasure request runs
 
+    assert mock_email_dispatch.call_count == 1
 
+
+@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.dispatch_email")
 @mock.patch(
     "fidesops.ops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
@@ -175,6 +217,7 @@ def test_resume_privacy_request_from_erasure(
     run_erasure,
     run_access,
     run_webhooks,
+    mock_email_dispatch,
     db: Session,
     privacy_request: PrivacyRequest,
     run_privacy_request_task,
@@ -200,6 +243,8 @@ def test_resume_privacy_request_from_erasure(
 
     assert run_access.call_count == 0  # Access request skipped
     assert run_erasure.call_count == 1  # Erasure request runs
+
+    assert mock_email_dispatch.call_count == 1
 
 
 def get_privacy_request_results(
