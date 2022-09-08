@@ -2,7 +2,7 @@ import ast
 import csv
 import io
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 from unittest import mock
 
@@ -1324,6 +1324,41 @@ class TestGetPrivacyRequests:
             "action_needed": None,
         }
         assert data["resume_endpoint"] == f"/privacy-request/{privacy_request.id}/retry"
+
+    @pytest.mark.parametrize(
+        "due_date, days_left",
+        [
+            (
+                datetime.utcnow() + timedelta(days=7),
+                7,
+            ),
+            (
+                datetime.utcnow(),
+                0,
+            ),
+            (
+                datetime.utcnow() + timedelta(days=-7),
+                -7,
+            ),
+        ],
+    )
+    def test_get_privacy_requests_sets_days_left(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        privacy_request,
+        due_date,
+        days_left,
+    ):
+        privacy_request.due_date = due_date
+        privacy_request.save(db)
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url, headers=auth_header)
+        data = response.json()["items"][0]
+        assert data["days_left"] == days_left
 
 
 class TestGetExecutionLogs:

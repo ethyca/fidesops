@@ -141,7 +141,7 @@ def get_days_left(self: PrivacyRequest) -> Union[int, None]:
     if self.due_date is None:
         return None
 
-    delta = self.due_date - datetime.now(timezone.utc)
+    delta = self.due_date.date() - datetime.now(timezone.utc).date()
     return delta.days
 
 
