@@ -16,6 +16,7 @@ from fidesops.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("datadog")
@@ -100,24 +101,15 @@ def datadog_dataset_config(
 
 @pytest.fixture(scope="session")
 def datadog_access_data(datadog_secrets, datadog_identity_email):
-    url = "https://api.datadoghq.com/api/v2/logs/events?filter[from]=0&filter[query]=noonari@xyz.com&filter[to]=now&page[limit]=1000"
 
-    payload = {}
-    headers = {
-        "DD-API-KEY": f'{datadog_secrets.get("api_key")}',
-        "DD-APPLICATION-KEY": f'{datadog_secrets.get("app_key")}',
-    }
-
-    response = requests.request("GET", url, headers=headers, data=payload)
-
-    if datadog_identity_email not in response.text:
+    if not _logs_exist(datadog_identity_email, datadog_secrets):
         url = "https://http-intake.logs.datadoghq.com/api/v2/logs"
         payload = [
             {
                 "ddsource": "nginx",
                 "ddtags": "env:staging,version:5.1",
                 "hostname": "i-012345678",
-                "message": f"2019-11-19T14:37:58,995 INFO [process.name][20081{i}] Hello noonari@xyz.com",
+                "message": f"2019-11-19T14:37:58,995 INFO [process.name][20081{i}] Hello {datadog_identity_email}",
                 "service": "payment",
             }
             for i in range(25)
@@ -125,6 +117,31 @@ def datadog_access_data(datadog_secrets, datadog_identity_email):
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "DD-API-KEY": f'{datadog_secrets.get("api_key")}',
+            "DD-API-KEY": datadog_secrets.get("api_key"),
         }
         requests.request("POST", url, headers=headers, json=payload)
+
+        poll_for_existence(
+            _logs_exist,
+            (datadog_identity_email, datadog_secrets),
+        )
+
+
+def _logs_exist(datadog_identity_email: str, datadog_secrets):
+    url = "https://api.datadoghq.com/api/v2/logs/events"
+    params = {
+        "filter[from]": 0,
+        "filter[query]": datadog_identity_email,
+        "filter[to]": "now",
+        "page[limit]": 1000,
+    }
+    headers = {
+        "DD-API-KEY": datadog_secrets.get("api_key"),
+        "DD-APPLICATION-KEY": datadog_secrets.get("app_key"),
+    }
+    response = requests.request("GET", url, params=params, headers=headers)
+
+    if datadog_identity_email not in response.text:
+        return None
+
+    return response.json()
