@@ -120,9 +120,12 @@ def patch_access_manual_webhook(
     access_manual_webhook: AccessManualWebhook = get_access_manual_webhook_or_404(
         connection_config
     )
-
     access_manual_webhook.fields = jsonable_encoder(request_body.fields)
-    access_manual_webhook.save(db=db)
+
+    try:
+        access_manual_webhook.save(db=db)
+    except IntegrityError as exc:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=Pii(str(exc)))
 
     logger.info(
         "Updated access manual webhook for connection config '%s'",
