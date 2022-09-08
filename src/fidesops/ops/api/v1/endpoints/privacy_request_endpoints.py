@@ -41,6 +41,8 @@ from fidesops.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
+    PRIVACY_REQUEST_UPLOAD_DATA,
+    PRIVACY_REQUEST_VIEW_DATA,
 )
 from fidesops.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
@@ -57,6 +59,7 @@ from fidesops.ops.common_exceptions import (
     EmailDispatchException,
     FunctionalityNotConfigured,
     IdentityVerificationException,
+    ManualWebhookDataDoesNotExist,
     TraversalError,
     ValidationError,
 )
@@ -1162,12 +1165,10 @@ def deny_privacy_request(
 @router.patch(
     PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
     status_code=HTTP_200_OK,
-    dependencies=[
-        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-    ],
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_UPLOAD_DATA])],
     response_model=None,
 )
-def add_manual_webhook_data(
+def upload_manual_webhook_data(
     *,
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     privacy_request_id: str,
@@ -1206,3 +1207,49 @@ def add_manual_webhook_data(
         access_manual_webhook,
         privacy_request,
     )
+
+
+@router.get(
+    PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_VIEW_DATA])],
+    response_model=None,
+)
+def view_uploaded_manual_webhook_data(
+    *,
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+    privacy_request_id: str,
+    db: Session = Depends(deps.get_db),
+) -> Optional[Dict[str, Any]]:
+    """
+    View uploaded data for this privacy request for the given access manual webhook
+    """
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+    access_manual_webhook: AccessManualWebhook = get_access_manual_webhook_or_404(
+        connection_config
+    )
+
+    if not privacy_request.status == PrivacyRequestStatus.requires_input:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid access manual webhook upload request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
+        )
+
+    try:
+        logger.info(
+            "Retrieving input data for access manual webhook '%s' for privacy request '%s'.",
+            connection_config.key,
+            privacy_request.id,
+        )
+        return privacy_request.get_manual_webhook_input(access_manual_webhook)
+    except ManualWebhookDataDoesNotExist as exc:
+        logger.info(exc)
+        return access_manual_webhook.empty_fields_dict
+    except PydanticValidationError:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Saved fields differ from fields specified on webhook '{access_manual_webhook.connection_config.key}'. "
+            f"Re-upload manual data using '{PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(connection_key=connection_config.key, privacy_request_id=privacy_request.id)}'.",
+        )

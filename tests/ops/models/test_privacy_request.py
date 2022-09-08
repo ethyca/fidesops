@@ -589,7 +589,10 @@ class TestCacheManualWebhookInput:
             input_data={},
         )
 
-        assert privacy_request.get_manual_webhook_input(access_manual_webhook) == {}
+        assert privacy_request.get_manual_webhook_input(access_manual_webhook) == {
+            "email": None,
+            "last_name": None,
+        }
 
     def test_cache_field_missing(self, privacy_request, access_manual_webhook):
         privacy_request.cache_manual_webhook_input(
@@ -601,6 +604,7 @@ class TestCacheManualWebhookInput:
 
         assert privacy_request.get_manual_webhook_input(access_manual_webhook) == {
             "email": "customer-1@example.com",
+            "last_name": None,
         }
 
     def test_cache_extra_fields_not_in_webhook_specs(
@@ -613,6 +617,20 @@ class TestCacheManualWebhookInput:
                     "email": "customer-1@example.com",
                     "bad_field": "not_specified",
                 },
+            )
+
+    def test_cache_manual_webhook_no_fields_defined(
+        self, db, privacy_request, access_manual_webhook
+    ):
+        access_manual_webhook.fields = (
+            None  # Specifically testing the None case to cover our bases
+        )
+        access_manual_webhook.save(db)
+
+        with pytest.raises(ValidationError):
+            privacy_request.cache_manual_webhook_input(
+                manual_webhook=access_manual_webhook,
+                input_data={"email": "customer-1@example.com", "last_name": "Customer"},
             )
 
 

@@ -195,6 +195,18 @@ class TestPostAccessManualWebhook:
             == "You can only create manual webhooks for ConnectionConfigs of type 'manual_webhook'."
         )
 
+    def test_post_webhook_no_fields(
+        self, connection_config, payload, generate_auth_header, api_client, url
+    ):
+        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
+        response = api_client.post(url, headers=auth_header, json={"fields": []})
+
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "ensure this value has at least 1 items"
+        )
+
     def test_post_manual_webhook(
         self,
         db: Session,

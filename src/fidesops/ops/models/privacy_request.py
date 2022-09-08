@@ -16,7 +16,6 @@ from fideslib.models.audit_log import AuditLog
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.jwt import generate_jwe
-from pydantic import create_model
 from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, String
@@ -492,30 +491,16 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
         """
         cache: FidesopsRedis = get_cache()
-
-        class Config:
-            extra = "forbid"
-
-        field_definitions: Dict[str, Any] = {
-            field["dsr_package_label"]: (Optional[str], None)
-            for field in manual_webhook.fields
-        }
-
-        ManualWebhookValidationModel = create_model(  # type: ignore
-            __model_name="ManualWebhookValidationModel",
-            __config__=Config,
-            **field_definitions,
-        )
-        ManualWebhookValidationModel.parse_obj(input_data)
+        parsed_data: BaseSchema = manual_webhook.fields_schema.parse_obj(input_data)
 
         cache.set_encoded_object(
             f"WEBHOOK_MANUAL_INPUT__{self.id}__{manual_webhook.id}",
-            input_data,
+            parsed_data.dict(),
         )
 
     def get_manual_webhook_input(
         self, manual_webhook: AccessManualWebhook
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Dict[str, Any]:
         """Retrieve manually added data that matches fields supplied in the specified manual webhook.
 
         This is for use by the *manual_webhook* connector which is *NOT* integrated with the garph.
@@ -527,7 +512,9 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             f"WEBHOOK_MANUAL_INPUT__{self.id}__{manual_webhook.id}"
         )
         if cached_results:
-            return list(cached_results.values())[0]
+            return manual_webhook.fields_schema.parse_obj(
+                list(cached_results.values())[0]
+            ).dict()
         raise ManualWebhookDataDoesNotExist(
             f"No data cached for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
         )
