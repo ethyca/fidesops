@@ -499,7 +499,7 @@ async def test_shopify_erasure_request_task(
         f"{dataset_name}:customers": 1,
         f"{dataset_name}:blogs": 0,
         f"{dataset_name}:customer_orders": 1,
-        f"{dataset_name}:customer_addresses": 0,
+        f"{dataset_name}:customer_addresses": 1,
         f"{dataset_name}:blog_articles": 0,
         f"{dataset_name}:blog_article_comments": 1,
         f"{dataset_name}:customer_order_transactions": 0,
