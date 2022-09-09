@@ -40,6 +40,7 @@ The types of changes are:
 * Foundations for a new "manual_webhook" connector type [#1267](https://github.com/ethyca/fidesops/pull/1267)
 * Data seeding for Datadog access tests [#1269](https://github.com/ethyca/fidesops/pull/1269)
 * Added support for one-to-many relationships for param_values in SaaS configs [#1253](https://github.com/ethyca/fidesops/pull/1253)
+* Added `due_date` sorting [#1284](https://github.com/ethyca/fidesops/pull/1284)
 
 ### Docs
 
