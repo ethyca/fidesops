@@ -176,15 +176,6 @@ def storage_config_onetrust(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def privacy_request_complete_email_notification_enabled():
-    """Enable request completion email"""
-    original_value = config.notifications.send_request_completion_notification
-    config.notifications.send_request_completion_notification = True
-    yield
-    config.notifications.send_request_completion_notification = original_value
-
-
-@pytest.fixture(scope="function")
 def email_config(db: Session) -> Generator:
     name = str(uuid4())
     email_config = EmailConfig.create(
