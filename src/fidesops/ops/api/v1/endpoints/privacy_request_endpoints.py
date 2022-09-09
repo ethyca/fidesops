@@ -18,7 +18,7 @@ from fideslib.models.client import ClientDetail
 from pydantic import conlist
 from sqlalchemy import cast, column, null
 from sqlalchemy.orm import Query, Session
-from sqlalchemy.sql.expression import nulls_last
+from sqlalchemy.sql.expression import nullslast
 from starlette.responses import StreamingResponse
 from starlette.status import (
     HTTP_200_OK,
@@ -495,9 +495,9 @@ def _sort_privacy_request_queryset(
         return query.order_by(PrivacyRequest.created_at.desc())
 
     if sort_due_date is ColumnSort.ASC:
-        return query.order_by(nulls_last(PrivacyRequest.due_date.asc()))
+        return query.order_by(nullslast(PrivacyRequest.due_date.asc()))
 
-    return query.order_by(nulls_last(PrivacyRequest.due_date.desc()))
+    return query.order_by(nullslast(PrivacyRequest.due_date.desc()))
 
 
 def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
