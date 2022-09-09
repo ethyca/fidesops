@@ -222,6 +222,14 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     due_date = Column(DateTime(timezone=True), nullable=True)
     days_left = property(get_days_left)
 
+    @property
+    def days_left(self: PrivacyRequest) -> Union[int, None]:
+        if self.due_date is None:
+            return None
+
+        delta = self.due_date.date() - datetime.utcnow().date()
+        return delta.days
+
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
         """

@@ -39,6 +39,8 @@ The types of changes are:
 * Mapping Vault environment variables in docker-compose.yml [#1275](https://github.com/ethyca/fidesops/pull/1275)
 * Foundations for a new "manual_webhook" connector type [#1267](https://github.com/ethyca/fidesops/pull/1267)
 * Add Days left display to admin ui [#1283](https://github.com/ethyca/fidesops/pull/1283)
+* Data seeding for Datadog access tests [#1269](https://github.com/ethyca/fidesops/pull/1269)
+* Added support for one-to-many relationships for param_values in SaaS configs [#1253](https://github.com/ethyca/fidesops/pull/1253)
 
 ### Docs
 
@@ -55,6 +57,10 @@ The types of changes are:
 * Fix download link in privacy center [#1264](https://github.com/ethyca/fidesops/pull/1264)
 * Make admin ui work when volumes are mounted [#1266](https://github.com/ethyca/fidesops/pull/1266)
 * Fixed typo in enum value [#1280](https://github.com/ethyca/fidesops/pull/1280)
+
+### Security
+
+* Bump python from 3.9.13 to 3.9.14 [#1287](https://github.com/ethyca/fidesops/pull/1287)
 
 ## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.7.2)
 
