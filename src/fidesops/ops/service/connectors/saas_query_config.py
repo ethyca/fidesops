@@ -169,21 +169,23 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
     def _generate_product_list(*args: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Accepts a variable number of dicts and produces the product of the values from all the dicts.
-        """
 
-        # Example:
-        #
-        # _generate_product_list({ "first": ["a", "b"] }, { "second": ["1", "2", "3"] })
-        #
-        # Returns:
-        # [
-        #     { "first": "a", "second": "1" }
-        #     { "first": "a", "second": "2" }
-        #     { "first": "a", "second": "3" }
-        #     { "first": "b", "second": "1" }
-        #     { "first": "b", "second": "2" }
-        #     { "first": "b", "second": "3" }
-        # ]
+        Example:
+
+            `_generate_product_list({ "first": ["a", "b"] }, { "second": ["1", "2", "3"] })`
+
+        Returns:
+        ```
+            [
+                { "first": "a", "second": "1" }
+                { "first": "a", "second": "2" }
+                { "first": "a", "second": "3" }
+                { "first": "b", "second": "1" }
+                { "first": "b", "second": "2" }
+                { "first": "b", "second": "3" }
+            ]
+        ```
+        """
 
         merged_dicts = merge_dicts(*args)
         return [
