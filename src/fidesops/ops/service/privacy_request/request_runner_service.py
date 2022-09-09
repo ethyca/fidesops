@@ -360,7 +360,6 @@ async def run_privacy_request(
                     session, policy, access_result_urls, identity_data
                 )
             except (IdentityNotFoundException, EmailDispatchException) as e:
-                logger.error(e)
                 privacy_request.error_processing(db=session)
                 # If dev mode, log traceback
                 await fideslog_graph_failure(

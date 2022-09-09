@@ -81,21 +81,6 @@ def test_policy_upload_dispatch_email_called(
     assert mock_email_dispatch.call_count == 1
 
 
-@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
-def test_policy_dispatch_email_no_config(
-    upload_mock: Mock,
-    privacy_request_status_pending: PrivacyRequest,
-    run_privacy_request_task,
-    privacy_request_complete_email_notification_enabled,
-) -> None:
-    upload_mock.return_value = "http://www.data-download-url"
-    with pytest.raises(EmailDispatchException):
-        run_privacy_request_task.delay(privacy_request_status_pending.id).get(
-            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
-        )
-    assert upload_mock.called
-
-
 @mock.patch(
     "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
 )
