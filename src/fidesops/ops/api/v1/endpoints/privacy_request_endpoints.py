@@ -487,14 +487,16 @@ def _filter_privacy_request_queryset(
     return query
 
 
-def _sort_privacy_request_queryset(query: Query, sort_due_date: ColumnSort) -> Query:
+def _sort_privacy_request_queryset(
+    query: Query, sort_due_date: Optional[ColumnSort]
+) -> Query:
     if sort_due_date is None:
         return query.order_by(PrivacyRequest.created_at.desc())
 
     if sort_due_date is ColumnSort.ASC:
         return query.order_by(nulls_last(PrivacyRequest.due_date.asc()))
-    else:
-        return query.order_by(nulls_last(PrivacyRequest.due_date.desc()))
+
+    return query.order_by(nulls_last(PrivacyRequest.due_date.desc()))
 
 
 def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
