@@ -62,6 +62,14 @@ PRIVACY_REQUEST_TASK_TIMEOUT = 5
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
 
 
+def privacy_request_complete_email_notification_enabled():
+    """Enable request completion email"""
+    original_value = config.notifications.send_request_completion_notification
+    config.notifications.send_request_completion_notification = True
+    yield
+    config.notifications.send_request_completion_notification = original_value
+
+
 @mock.patch(
     "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
 )
@@ -1830,7 +1838,7 @@ class TestPrivacyRequestsEmailConnector:
 
 class TestPrivacyRequestsEmailNotifications:
     @pytest.fixture(scope="function")
-    def privacy_request_complete_email_notification_enabled():
+    def privacy_request_complete_email_notification_enabled(self):
         """Enable request completion email"""
         original_value = config.notifications.send_request_completion_notification
         config.notifications.send_request_completion_notification = True
