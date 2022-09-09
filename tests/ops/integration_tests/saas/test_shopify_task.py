@@ -1,8 +1,7 @@
 import random
 
-import requests
-
 import pytest
+import requests
 
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.graph import DatasetGraph
