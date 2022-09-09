@@ -82,78 +82,6 @@ dataset:
             data_categories: [user.contact.phone_number]
             fidesops_meta:
               data_type: string
-          - name: addresses
-            fidesops_meta:
-              data_type: object[]
-            fields:
-              - name: id
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: integer
-              - name: customer_id
-                data_categories: [user.unique_id]
-                fidesops_meta:
-                  data_type: integer
-              - name: first_name
-                data_categories: [user.name]
-                fidesops_meta:
-                  data_type: string
-              - name: last_name
-                data_categories: [user.name]
-                fidesops_meta:
-                  data_type: string
-              - name: company
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: address1
-                data_categories: [user.contact.address.street]
-                fidesops_meta:
-                  data_type: string
-              - name: address2
-                data_categories: [user.contact.address.street]
-                fidesops_meta:
-                  data_type: string
-              - name: city
-                data_categories: [user.contact.address.city]
-                fidesops_meta:
-                  data_type: string
-              - name: province
-                data_categories: [user.contact.address.state]
-                fidesops_meta:
-                  data_type: string
-              - name: country
-                data_categories: [user.contact.address.country]
-                fidesops_meta:
-                  data_type: string
-              - name: zip
-                data_categories: [user.contact.address.postal_code]
-                fidesops_meta:
-                  data_type: string
-              - name: phone
-                data_categories: [user.contact.phone_number]
-                fidesops_meta:
-                  data_type: string
-              - name: name
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: province_code
-                data_categories: [user.contact.address.state]
-                fidesops_meta:
-                  data_type: string
-              - name: country_code
-                data_categories: [user.contact.address.country]
-                fidesops_meta:
-                  data_type: string
-              - name: country_name
-                data_categories: [user.contact.address.country]
-                fidesops_meta:
-                  data_type: string
-              - name: default
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: boolean
           - name: accepts_marketing_updated_at
             data_categories: [system.operations]
             fidesops_meta:
@@ -243,7 +171,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: name
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: province_code
@@ -1018,7 +946,7 @@ dataset:
                     fidesops_meta:
                       data_type: string
                   - name: name
-                    data_categories: [system.operations]
+                    data_categories: [user.name]
                     fidesops_meta:
                       data_type: string
                   - name: province_code
@@ -1390,7 +1318,7 @@ dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
-              # primary_key: True
+              primary_key: True
               data_type: integer
           - name: customer_id
             data_categories: [user.unique_id]
@@ -1437,7 +1365,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: name
-            data_categories: [system.operations]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: province_code
