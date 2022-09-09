@@ -1,5 +1,7 @@
 import random
 
+import requests
+
 import pytest
 
 from fidesops.ops.core.config import config
@@ -504,5 +506,52 @@ async def test_shopify_erasure_request_task(
         f"{dataset_name}:blog_article_comments": 1,
         f"{dataset_name}:customer_order_transactions": 0,
     }
+
+    # Verifying data is actually updated
+    shopify_secrets = shopify_connection_config.secrets
+    base_url = f"https://{shopify_secrets['domain']}"
+    headers = {"X-Shopify-Access-Token": f"{shopify_secrets['access_token']}"}
+    customer_response = requests.get(
+        url=f"{base_url}/admin/api/2022-07/customers.json?email={shopify_erasure_identity_email}",
+        headers=headers,
+    )
+    customer = customer_response.json()["customers"][0]
+    customer_id = customer["id"]
+    assert customer["first_name"] == "MASKED"
+    assert customer["last_name"] == "MASKED"
+    assert customer["default_address"]["first_name"] == "MASKED"
+    assert customer["default_address"]["last_name"] == "MASKED"
+    assert customer["default_address"]["name"] == "MASKED MASKED"
+
+    customer_order_response = requests.get(
+        url=f"{base_url}/admin/api/2022-07/customers/{customer_id}/orders.json?status=any",
+        headers=headers,
+    )
+
+    order = customer_order_response.json()["orders"][0]
+    assert order["customer"]["first_name"] == "MASKED"
+    assert order["customer"]["last_name"] == "MASKED"
+    assert order["customer"]["default_address"]["first_name"] == "MASKED"
+    assert order["customer"]["default_address"]["last_name"] == "MASKED"
+    assert order["customer"]["default_address"]["name"] == "MASKED MASKED"
+
+    customer_address_response = requests.get(
+        url=f"{base_url}/admin/api/2022-07/customers/{customer_id}/addresses.json",
+        headers=headers,
+    )
+
+    address = customer_address_response.json()["addresses"][0]
+    assert address["first_name"] == "MASKED"
+    assert address["last_name"] == "MASKED"
+    assert address["name"] == "MASKED MASKED"
+
+    # Please note that Shopify doesn't allow comments filtering by email so we are getting comment_id by dataset instead and verifying that it is masked
+    comment_id = v[f"{dataset_name}:blog_article_comments"][0]["id"]
+    blog_article_comment_response = requests.get(
+        url=f"{base_url}/admin/api/2022-07/comments/{comment_id}.json",
+        headers=headers,
+    )
+    comment = blog_article_comment_response.json()["comment"]
+    assert comment["author"] == "MASKED"
 
     config.execution.masking_strict = temp_masking

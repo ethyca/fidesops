@@ -112,7 +112,7 @@ def shopify_erasure_data(
 ) -> Generator:
     """
     Creates a dynamic test data record for erasure tests.
-    Yields customer ID as this may be useful to have in test scenarios
+    Yields customer, order, blog, article and comment as this may be useful to have in test scenarios
     """
     base_url = f"https://{shopify_secrets['domain']}"
     faker = Faker()
@@ -127,15 +127,12 @@ def shopify_erasure_data(
             "addresses": [
                 {
                     "address1": "123 Test",
-                    # "city": faker.city(),
                     "city": "Toronto",
                     "province": "ON",
                     "zip": "66777",
-                    # "zip": faker.postcode(),
                     "last_name": lastName,
                     "first_name": firstName,
                     "country": "Canada",
-                    # "country": faker.country(),
                 }
             ],
         }
