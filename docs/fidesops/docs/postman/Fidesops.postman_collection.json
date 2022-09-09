@@ -940,6 +940,35 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Restart failed node",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/retry",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"retry"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -2678,6 +2707,133 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get all Access Manual Webhooks",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/connection/{{manual_webhook_key}}/access_manual_webhook",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{manual_webhook_key}}",
+								"access_manual_webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Data for Access Manual Webhook",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"Jane\",\n    \"last_name\": \"Customer\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/access_manual_webhook/{{manual_webhook_key}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"access_manual_webhook",
+								"{{manual_webhook_key}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "View Manually Uploaded Data",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/access_manual_webhook/{{manual_webhook_key}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"access_manual_webhook",
+								"{{manual_webhook_key}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Resume Privacy Request after Manual Input",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/resume_from_requires_input",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"resume_from_requires_input"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -4162,40 +4318,6 @@
 								"privacy-request",
 								"{{privacy_request_id}}",
 								"erasure_confirm"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Restart from Failure",
-			"item": [
-				{
-					"name": "Restart failed node",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/retry",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"privacy-request",
-								"{{privacy_request_id}}",
-								"retry"
 							]
 						}
 					},
