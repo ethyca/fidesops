@@ -1220,6 +1220,24 @@ class TestGetPrivacyRequests:
             privacy_request.id
         )
 
+    def test_get_requires_input_privacy_request_resume_info(
+        self, db, privacy_request, generate_auth_header, api_client, url
+    ):
+        # Mock the privacy request being in a requires_input state
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(db)
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+
+        data = response.json()["items"][0]
+        assert data["status"] == "requires_input"
+        assert data["action_required_details"] is None
+        assert data[
+            "resume_endpoint"
+        ] == "/privacy-request/{}/resume_from_requires_input".format(privacy_request.id)
+
     def test_get_paused_erasure_privacy_request_resume_info(
         self, db, privacy_request, generate_auth_header, api_client, url
     ):

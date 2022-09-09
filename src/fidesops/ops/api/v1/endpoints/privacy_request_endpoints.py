@@ -499,7 +499,7 @@ def _filter_privacy_request_queryset(
 
 def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     """
-    Temporarily update a paused or errored privacy request object with instructions from the Redis cache
+    Temporarily update a paused/errored/requires_input privacy request object with instructions from the Redis cache
     about how to resume manually if applicable.
     """
     resume_endpoint: Optional[str] = None
@@ -522,6 +522,11 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     elif privacy_request.status == PrivacyRequestStatus.error:
         action_required_details = privacy_request.get_failed_checkpoint_details()
         resume_endpoint = PRIVACY_REQUEST_RETRY
+
+    elif privacy_request.status == PrivacyRequestStatus.requires_input:
+        # No action required details because this doesn't need to resume from a
+        # specific step or collection
+        resume_endpoint = PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT
 
     if action_required_details:
         action_required_details.step = action_required_details.step.value  # type: ignore
