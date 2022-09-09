@@ -62,6 +62,7 @@ PRIVACY_REQUEST_TASK_TIMEOUT = 5
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
 
 
+@pytest.fixture(scope="function")
 def privacy_request_complete_email_notification_enabled():
     """Enable request completion email"""
     original_value = config.notifications.send_request_completion_notification
