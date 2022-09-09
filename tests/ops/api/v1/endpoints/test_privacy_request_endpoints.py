@@ -2,7 +2,7 @@ import ast
 import csv
 import io
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 from unittest import mock
 
@@ -49,7 +49,7 @@ from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.policy import ActionType, CurrentStep
+from fidesops.ops.models.policy import ActionType, CurrentStep, Policy
 from fidesops.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -1321,6 +1321,45 @@ class TestGetPrivacyRequests:
             "action_needed": None,
         }
         assert data["resume_endpoint"] == f"/privacy-request/{privacy_request.id}/retry"
+
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_sort_privacy_request_by_due_date(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy: Policy,
+    ):
+        due_date_values = []
+        data = []
+        now = datetime.utcnow()
+        for i in range(0, 15, 3):
+            requested_at = now + timedelta(days=i)
+            data.append(
+                {
+                    "requested_at": str(requested_at),
+                    "policy_key": policy.key,
+                    "identity": {"email": "test@example.com"},
+                }
+            )
+            due_date_values.append(
+                requested_at + timedelta(days=policy.execution_timeframe)
+            )
+
+        resp = api_client.post(f"{url}?sort_due_date=ASC", json=data)
+        response_data = resp.json()["succeeded"]
+
+        for i, request in enumerate(response_data):
+            print(i)
+            print(request)
+            assert request["due_date"] == str(due_date_values[i])
+
+        # pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        # pr.delete(db=db)
+        # assert run_access_request_mock.called
 
 
 class TestGetExecutionLogs:
