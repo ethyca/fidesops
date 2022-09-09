@@ -1334,7 +1334,6 @@ class TestGetPrivacyRequests:
         }
         assert data["resume_endpoint"] == f"/privacy-request/{privacy_request.id}/retry"
 
-
     @pytest.mark.parametrize(
         "due_date, days_left",
         [
@@ -1370,22 +1369,22 @@ class TestGetPrivacyRequests:
         data = response.json()["items"][0]
         assert data["days_left"] == days_left
 
-
     @mock.patch(
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_sort_privacy_request_by_due_date(
         self,
         run_access_request_mock,
+        generate_auth_header,
         url,
         db,
         api_client: TestClient,
         policy: Policy,
     ):
-        due_date_values = []
+        days_left_values = []
         data = []
         now = datetime.utcnow()
-        for i in range(0, 15, 3):
+        for i in range(0, 10):
             requested_at = now + timedelta(days=i)
             data.append(
                 {
@@ -1394,21 +1393,30 @@ class TestGetPrivacyRequests:
                     "identity": {"email": "test@example.com"},
                 }
             )
-            due_date_values.append(
-                requested_at + timedelta(days=policy.execution_timeframe)
-            )
+            days_left_values.append(i + policy.execution_timeframe)
 
-        resp = api_client.post(f"{url}?sort_due_date=ASC", json=data)
-        response_data = resp.json()["succeeded"]
+        api_client.post(url, json=data)
 
-        for i, request in enumerate(response_data):
-            print(i)
-            print(request)
-            assert request["due_date"] == str(due_date_values[i])
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        resp = api_client.get(
+            f"{url}?sort_due_date=asc", json=data, headers=auth_header
+        )
+        asc_response_data = resp.json()["items"]
 
-        # pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        # pr.delete(db=db)
-        # assert run_access_request_mock.called
+        for i, request in enumerate(asc_response_data):
+            assert request["days_left"] == days_left_values[i]
+
+        resp = api_client.get(
+            f"{url}?sort_due_date=desc", json=data, headers=auth_header
+        )
+        desc_response_data = resp.json()["items"]
+        days_left_values.reverse()
+        for i, request in enumerate(desc_response_data):
+            assert request["days_left"] == days_left_values[i]
+
+        for request in desc_response_data:
+            pr = PrivacyRequest.get(db=db, object_id=request["id"])
+            pr.delete(db=db)
 
 
 class TestGetExecutionLogs:
