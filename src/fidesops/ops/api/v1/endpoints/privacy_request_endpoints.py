@@ -16,7 +16,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslib.models.audit_log import AuditLog, AuditLogAction
 from fideslib.models.client import ClientDetail
 from pydantic import conlist
-from sqlalchemy import cast, column, null, nulls_last
+from sqlalchemy import cast, column, null, nullslast
 from sqlalchemy.orm import Query, Session
 from starlette.responses import StreamingResponse
 from starlette.status import (
@@ -494,9 +494,9 @@ def _sort_privacy_request_queryset(
         return query.order_by(PrivacyRequest.created_at.desc())
 
     if sort_due_date is ColumnSort.ASC:
-        return query.order_by(nulls_last(PrivacyRequest.due_date.asc()))
+        return query.order_by(nullslast(PrivacyRequest.due_date.asc()))
 
-    return query.order_by(nulls_last(PrivacyRequest.due_date.desc()))
+    return query.order_by(nullslast(PrivacyRequest.due_date.desc()))
 
 
 def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
