@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from fideslib.db.base_class import Base
 from fideslib.schemas.base_class import BaseSchema
@@ -6,7 +6,7 @@ from pydantic import create_model
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableList
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import Session, backref, relationship
 
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 
@@ -57,3 +57,15 @@ class AccessManualWebhook(Base):
             key: None
             for key in (self.fields_schema.schema().get("properties") or {}).keys()
         }
+
+    @classmethod
+    def get_enabled(cls, db: Session) -> List["AccessManualWebhook"]:
+        """Get all enabled access manual webhooks"""
+        return (
+            db.query(cls)
+            .filter(
+                AccessManualWebhook.connection_config_id == ConnectionConfig.id,
+                ConnectionConfig.disabled.is_(False),
+            )
+            .all()
+        )

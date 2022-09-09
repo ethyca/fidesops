@@ -20,7 +20,7 @@ SAAS_CONNECTION_INSTANTIATE = "connection:instantiate"
 PRIVACY_REQUEST_READ = "privacy-request:read"
 PRIVACY_REQUEST_DELETE = "privacy-request:delete"
 PRIVACY_REQUEST_CALLBACK_RESUME = (
-    "privacy-request:resume"  # User has permission to restart a paused privacy request
+    "privacy-request:resume"  # User has permission to resume a privacy request
 )
 PRIVACY_REQUEST_REVIEW = "privacy-request:review"
 PRIVACY_REQUEST_UPLOAD_DATA = "privacy-request:upload_data"

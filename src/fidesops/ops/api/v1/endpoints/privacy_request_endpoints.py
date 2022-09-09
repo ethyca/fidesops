@@ -51,6 +51,7 @@ from fidesops.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_ERASURE,
     PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_RESUME,
+    PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     REQUEST_PREVIEW,
@@ -59,7 +60,7 @@ from fidesops.ops.common_exceptions import (
     EmailDispatchException,
     FunctionalityNotConfigured,
     IdentityVerificationException,
-    ManualWebhookDataDoesNotExist,
+    MissingManualWebhookData,
     TraversalError,
     ValidationError,
 )
@@ -1244,7 +1245,7 @@ def view_uploaded_manual_webhook_data(
             privacy_request.id,
         )
         return privacy_request.get_manual_webhook_input(access_manual_webhook)
-    except ManualWebhookDataDoesNotExist as exc:
+    except MissingManualWebhookData as exc:
         logger.info(exc)
         return access_manual_webhook.empty_fields_dict
     except PydanticValidationError:
@@ -1253,3 +1254,53 @@ def view_uploaded_manual_webhook_data(
             detail=f"Saved fields differ from fields specified on webhook '{access_manual_webhook.connection_config.key}'. "
             f"Re-upload manual data using '{PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(connection_key=connection_config.key, privacy_request_id=privacy_request.id)}'.",
         )
+
+
+@router.post(
+    PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestResponse,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+    ],
+)
+async def resume_privacy_request_from_requires_input(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> PrivacyRequestResponse:
+    """Resume a privacy request from 'requires_input' status."""
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+
+    if privacy_request.status != PrivacyRequestStatus.requires_input:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot resume privacy request from 'requires_input': privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
+        )
+
+    access_manual_webhooks: List[AccessManualWebhook] = AccessManualWebhook.get_enabled(
+        db
+    )
+    try:
+        for manual_webhook in access_manual_webhooks:
+            privacy_request.get_manual_webhook_input(manual_webhook)
+    except (MissingManualWebhookData, PydanticValidationError) as exc:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot resume privacy request. {exc}",
+        )
+
+    logger.info(
+        "Resuming privacy request '%s' after manual inputs verified",
+        privacy_request_id,
+    )
+
+    privacy_request.status = PrivacyRequestStatus.in_processing
+    privacy_request.save(db=db)
+    queue_privacy_request(
+        privacy_request_id=privacy_request.id,
+    )
+
+    return privacy_request

@@ -1773,3 +1773,56 @@ class TestPrivacyRequestsEmailConnector:
         assert (
             mailgun_send.called is False
         ), "Email not sent because no updates are needed. Data category doesn't apply to any of the collections."
+
+
+class TestPrivacyRequestsManualWebhooks:
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_privacy_request_needs_manual_input(
+        self,
+        mock_upload,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        policy,
+        run_privacy_request_task,
+        db,
+    ):
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.requires_input
+        assert not mock_upload.called
+
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_pass_on_manually_added_input(
+        self,
+        mock_upload,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        policy,
+        run_privacy_request_task,
+        privacy_request_requires_input: PrivacyRequest,
+        db,
+        cached_input,
+    ):
+        run_privacy_request_task.delay(privacy_request_requires_input.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+        db.refresh(privacy_request_requires_input)
+        assert privacy_request_requires_input.status == PrivacyRequestStatus.complete
+        assert mock_upload.called
+        assert mock_upload.call_args.kwargs["data"] == {
+            "manual_webhook_example": [
+                {"email": "customer-1@example.com", "last_name": "McCustomer"}
+            ]
+        }

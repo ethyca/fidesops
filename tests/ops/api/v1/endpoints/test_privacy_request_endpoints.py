@@ -41,6 +41,7 @@ from fidesops.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_ERASURE,
     PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_RESUME,
+    PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     PRIVACY_REQUESTS,
@@ -2851,13 +2852,6 @@ class TestGetManualWebhookInputs:
             connection_key=integration_manual_webhook_config.key,
         )
 
-    @pytest.fixture(scope="function")
-    def cache_input(self, privacy_request_requires_input, access_manual_webhook):
-        privacy_request_requires_input.cache_manual_webhook_input(
-            access_manual_webhook,
-            {"email": "customer-1@example.com", "last_name": "McCustomer"},
-        )
-
     def test_get_inputs_not_authenticated(self, api_client: TestClient, url):
         response = api_client.get(url, headers={})
         assert 401 == response.status_code
@@ -2970,7 +2964,7 @@ class TestGetManualWebhookInputs:
         access_manual_webhook,
         integration_manual_webhook_config,
         privacy_request_requires_input,
-        cache_input,
+        cached_input,
     ):
         auth_header = generate_auth_header([PRIVACY_REQUEST_VIEW_DATA])
 
@@ -2994,7 +2988,7 @@ class TestGetManualWebhookInputs:
         access_manual_webhook,
         integration_manual_webhook_config,
         privacy_request_requires_input,
-        cache_input,
+        cached_input,
     ):
         auth_header = generate_auth_header([PRIVACY_REQUEST_VIEW_DATA])
         response = api_client.get(url, headers=auth_header)
@@ -3003,3 +2997,115 @@ class TestGetManualWebhookInputs:
             "email": "customer-1@example.com",
             "last_name": "McCustomer",
         }
+
+
+class TestResumePrivacyRequestFromRequiresInput:
+    @pytest.fixture(scope="function")
+    def url(
+        self,
+        db,
+        privacy_request_requires_input,
+    ):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT.format(
+            privacy_request_id=privacy_request_requires_input.id,
+        )
+
+    def test_resume_from_requires_input_status_not_authenticated(self, url, api_client):
+        response = api_client.post(url, headers={})
+        assert response.status_code == 401
+
+    def test_resume_from_requires_input_status_not_authorized(
+        self, url, privacy_request, api_client, generate_auth_header
+    ):
+        auth_header = generate_auth_header([PRIVACY_REQUEST_READ])
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_resume_from_requires_input_status_wrong_status(
+        self, api_client, generate_auth_header, privacy_request
+    ):
+        auth_header = generate_auth_header([PRIVACY_REQUEST_CALLBACK_RESUME])
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT.format(
+            privacy_request_id=privacy_request.id,
+        )
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == f"Cannot resume privacy request from 'requires_input': privacy request '{privacy_request.id}' status = {privacy_request.status.value}."
+        )
+
+    def test_resume_from_requires_input_status_missing_cached_data(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+        privacy_request_requires_input,
+    ):
+        auth_header = generate_auth_header([PRIVACY_REQUEST_CALLBACK_RESUME])
+
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == f"Cannot resume privacy request. No data cached for privacy_request_id '{privacy_request_requires_input.id}' for connection config '{integration_manual_webhook_config.key}'"
+        )
+
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_resume_from_requires_input_status_data_empty_but_confirmed(
+        self,
+        run_privacy_request_mock,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+        privacy_request_requires_input,
+    ):
+        auth_header = generate_auth_header([PRIVACY_REQUEST_CALLBACK_RESUME])
+        privacy_request_requires_input.cache_manual_webhook_input(
+            access_manual_webhook,
+            {},
+        )
+
+        response = api_client.post(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert response.json()["status"] == PrivacyRequestStatus.in_processing
+        assert run_privacy_request_mock.called
+
+        call_kwargs = run_privacy_request_mock.call_args.kwargs
+        assert call_kwargs["privacy_request_id"] == privacy_request_requires_input.id
+        assert call_kwargs["from_webhook_id"] is None
+        assert call_kwargs["from_step"] is None
+
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_resume_from_requires_input_status(
+        self,
+        run_privacy_request_mock,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+        privacy_request_requires_input,
+        cached_input,
+    ):
+        auth_header = generate_auth_header([PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert response.json()["status"] == PrivacyRequestStatus.in_processing
+        assert run_privacy_request_mock.called
+
+        call_kwargs = run_privacy_request_mock.call_args.kwargs
+        assert call_kwargs["privacy_request_id"] == privacy_request_requires_input.id
+        assert call_kwargs["from_webhook_id"] is None
+        assert call_kwargs["from_step"] is None

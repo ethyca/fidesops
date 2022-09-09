@@ -51,6 +51,10 @@ REQUEST_PREVIEW = "/privacy-request/preview"
 PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT = (
     "/privacy-request/{privacy_request_id}/access_manual_webhook/{connection_key}"
 )
+PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT = (
+    "/privacy-request/{privacy_request_id}/resume_from_requires_input"
+)
+
 
 # Identity Verification URLs
 ID_VERIFICATION_CONFIG = "/id-verification/config"

@@ -199,11 +199,4 @@ def get_access_manual_webhooks(
     logger.info(
         "Retrieving all enabled access manual webhooks",
     )
-    return (
-        db.query(AccessManualWebhook)
-        .filter(
-            AccessManualWebhook.connection_config_id == ConnectionConfig.id,
-            ConnectionConfig.disabled.is_(False),
-        )
-        .all()
-    )
+    return AccessManualWebhook.get_enabled(db)
