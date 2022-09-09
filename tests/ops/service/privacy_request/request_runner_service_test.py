@@ -1,7 +1,7 @@
 import time
 from typing import Any, Dict, List, Set
 from unittest import mock
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 from uuid import uuid4
 
 import pydash
@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
     EmailDispatchException,
+    IdentityNotFoundException,
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
@@ -29,7 +30,11 @@ from fidesops.ops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fidesops.ops.schemas.email.email import EmailForActionType
+from fidesops.ops.schemas.email.email import (
+    AccessRequestCompleteBodyParams,
+    EmailActionType,
+    EmailForActionType,
+)
 from fidesops.ops.schemas.external_https import SecondPartyResponseFormat
 from fidesops.ops.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
@@ -1841,7 +1846,9 @@ class TestPrivacyRequestsEmailConnector:
 class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+    )
     def test_email_complete_send_erasure(
         self,
         mailgun_send,
@@ -1875,7 +1882,9 @@ class TestPrivacyRequestsEmailNotifications:
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+    )
     @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access(
         self,
@@ -1912,7 +1921,66 @@ class TestPrivacyRequestsEmailNotifications:
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+    )
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_email_complete_send_access_and_erasure(
+        self,
+        upload_mock,
+        mailgun_send,
+        postgres_integration_db,
+        postgres_example_test_dataset_config,
+        cache,
+        db,
+        generate_auth_header,
+        access_and_erasure_policy,
+        read_connection_config,
+        email_config,
+        privacy_request_complete_email_notification_enabled,
+        run_privacy_request_task,
+    ):
+        upload_mock.return_value = "http://www.data-download-url"
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": access_and_erasure_policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            access_and_erasure_policy,
+            run_privacy_request_task,
+            data,
+        )
+        pr.delete(db=db)
+
+        mailgun_send.assert_has_calls(
+            [
+                call(
+                    db=db,
+                    action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+                    to_email=customer_email,
+                    email_body_params=AccessRequestCompleteBodyParams(
+                        download_links=[upload_mock.return_value]
+                    ),
+                ),
+                call(
+                    db=db,
+                    action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
+                    to_email=customer_email,
+                    email_body_params=None,
+                ),
+            ],
+            any_order=True,
+        )
+
+    @pytest.mark.integration_postgres
+    @pytest.mark.integration
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+    )
     @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_no_email_config(
         self,
@@ -1944,6 +2012,49 @@ class TestPrivacyRequestsEmailNotifications:
                 run_privacy_request_task,
                 data,
             )
+            db.refresh(pr)
+            assert pr.status == PrivacyRequestStatus.error
+            pr.delete(db=db)
+
+        assert mailgun_send.called is False
+
+    @pytest.mark.integration_postgres
+    @pytest.mark.integration
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+    )
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_email_complete_send_access_no_email_identity(
+        self,
+        upload_mock,
+        mailgun_send,
+        postgres_integration_db,
+        postgres_example_test_dataset_config,
+        cache,
+        db,
+        generate_auth_header,
+        policy,
+        read_connection_config,
+        privacy_request_complete_email_notification_enabled,
+        run_privacy_request_task,
+    ):
+        upload_mock.return_value = "http://www.data-download-url"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": policy.key,
+            "identity": {"phone": "1231231233"},
+        }
+
+        with pytest.raises(IdentityNotFoundException):
+
+            pr = get_privacy_request_results(
+                db,
+                policy,
+                run_privacy_request_task,
+                data,
+            )
+            db.refresh(pr)
+            assert pr.status == PrivacyRequestStatus.error
             pr.delete(db=db)
 
         assert mailgun_send.called is False

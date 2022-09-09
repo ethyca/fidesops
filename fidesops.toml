@@ -47,4 +47,4 @@ analytics_opt_out = false
 enabled = true
 
 [notifications]
-send_request_completion_notification = true
+send_request_completion_notification = false

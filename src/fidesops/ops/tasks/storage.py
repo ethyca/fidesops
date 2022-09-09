@@ -178,7 +178,7 @@ def upload_to_onetrust(
         data=payload,
         headers=headers,
     )
-    return "success"
+    return "onetrust"
 
 
 def _handle_json_encoding(field: Any) -> str:
@@ -200,4 +200,4 @@ def upload_to_local(payload: Dict, file_key: str, request_id: str) -> str:
     with open(filename, "w") as file:  # pylint: disable=W1514
         file.write(data_str)
 
-    return "success"
+    return "your local fides_uploads folder"

@@ -304,6 +304,77 @@ def policy_post_execution_webhooks(
 
 
 @pytest.fixture(scope="function")
+def access_and_erasure_policy(
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config: StorageConfig,
+) -> Generator:
+    access_and_erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example access and erasure policy",
+            "key": "example_access_erasure_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+    access_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.access.value,
+            "client_id": oauth_client.id,
+            "name": "Access Request Rule",
+            "policy_id": access_and_erasure_policy.id,
+            "storage_destination_id": storage_config.id,
+        },
+    )
+    access_rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user").value,
+            "rule_id": access_rule.id,
+        },
+    )
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "Erasure Rule",
+            "policy_id": access_and_erasure_policy.id,
+            "masking_strategy": {
+                "strategy": "null_rewrite",
+                "configuration": {},
+            },
+        },
+    )
+
+    erasure_rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.name").value,
+            "rule_id": erasure_rule.id,
+        },
+    )
+    yield access_and_erasure_policy
+    try:
+        access_rule_target.delete(db)
+        erasure_rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        access_rule.delete(db)
+        erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        access_and_erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def erasure_policy(
     db: Session,
     oauth_client: ClientDetail,
