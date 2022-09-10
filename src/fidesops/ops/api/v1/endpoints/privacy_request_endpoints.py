@@ -489,15 +489,17 @@ def _filter_privacy_request_queryset(
 
 
 def _sort_privacy_request_queryset(
-    query: Query, sort_due_date: Optional[ColumnSort]
+    query: Query, sort_field: str, sort_direction: ColumnSort
 ) -> Query:
-    if sort_due_date is None:
-        return query.order_by(PrivacyRequest.created_at.desc())
+    if hasattr(PrivacyRequest, sort_field) is False:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"{sort_field} is not on PrivacyRequest",
+        )
 
-    if sort_due_date is ColumnSort.ASC:
-        return query.order_by(nullslast(PrivacyRequest.due_date.asc()))
-
-    return query.order_by(nullslast(PrivacyRequest.due_date.desc()))
+    sort_object_attribute = getattr(PrivacyRequest, sort_field)
+    sort_func = getattr(sort_object_attribute, sort_direction)
+    return query.order_by(nullslast(sort_func()))
 
 
 def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
@@ -572,7 +574,8 @@ def get_request_status(
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
     download_csv: Optional[bool] = False,
-    sort_due_date: Optional[ColumnSort] = None,
+    sort_field: str = "created_at",
+    sort_direction: ColumnSort = "desc",
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
     """Returns PrivacyRequest information. Supports a variety of optional query params.
 
@@ -599,7 +602,11 @@ def get_request_status(
         errored_gt,
         external_id,
     )
-    query = _sort_privacy_request_queryset(query, sort_due_date)
+    sort_field
+    logger.info(
+        "Sorting requests by field: %s and direction: %s" % (sort_field, sort_direction)
+    )
+    query = _sort_privacy_request_queryset(query, sort_field, sort_direction)
 
     if download_csv:
         # Returning here if download_csv param was specified
