@@ -575,7 +575,7 @@ def get_request_status(
     include_identities: Optional[bool] = False,
     download_csv: Optional[bool] = False,
     sort_field: str = "created_at",
-    sort_direction: ColumnSort = "desc",
+    sort_direction: ColumnSort = ColumnSort.DESC,
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
     """Returns PrivacyRequest information. Supports a variety of optional query params.
 
@@ -602,9 +602,9 @@ def get_request_status(
         errored_gt,
         external_id,
     )
-    sort_field
+
     logger.info(
-        "Sorting requests by field: %s and direction: %s" % (sort_field, sort_direction)
+        "Sorting requests by field: %s and direction: %s", sort_field, sort_direction
     )
     query = _sort_privacy_request_queryset(query, sort_field, sort_direction)
 
