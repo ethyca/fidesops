@@ -1,9 +1,9 @@
 from enum import Enum
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Extra
 
-from fidesops.ops.models.privacy_request import EmailRequestFulfillmentBodyParams
+from fidesops.ops.models.privacy_request import CheckpointActionRequired
 from fidesops.ops.schemas import Msg
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 
@@ -52,7 +52,7 @@ class FidesopsEmail(
     action_type: EmailActionType
     body_params: Union[
         SubjectIdentityVerificationBodyParams,
-        EmailRequestFulfillmentBodyParams,
+        List[CheckpointActionRequired],
     ]
 
 

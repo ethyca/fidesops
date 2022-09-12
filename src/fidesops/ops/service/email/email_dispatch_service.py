@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import requests
 from sqlalchemy.orm import Session
@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from fidesops.ops.common_exceptions import EmailDispatchException
 from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.models.email import EmailConfig
-from fidesops.ops.models.privacy_request import EmailRequestFulfillmentBodyParams
+from fidesops.ops.models.privacy_request import CheckpointActionRequired
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
     EmailForActionType,
@@ -48,7 +48,7 @@ def dispatch_email(
     to_email: Optional[str],
     email_body_params: Union[
         SubjectIdentityVerificationBodyParams,
-        EmailRequestFulfillmentBodyParams,
+        List[CheckpointActionRequired],
     ],
 ) -> None:
     """
