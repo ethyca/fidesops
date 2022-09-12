@@ -41,6 +41,7 @@ The types of changes are:
 * Data seeding for Datadog access tests [#1269](https://github.com/ethyca/fidesops/pull/1269)
 * Added support for one-to-many relationships for param_values in SaaS configs [#1253](https://github.com/ethyca/fidesops/pull/1253)
 * Added `due_date` sorting [#1284](https://github.com/ethyca/fidesops/pull/1284)
+* Added erasure endpoints for Shopify connector [#1289](https://github.com/ethyca/fidesops/pull/1289)
 
 ### Docs
 
@@ -57,6 +58,7 @@ The types of changes are:
 * Fix download link in privacy center [#1264](https://github.com/ethyca/fidesops/pull/1264)
 * Make admin ui work when volumes are mounted [#1266](https://github.com/ethyca/fidesops/pull/1266)
 * Fixed typo in enum value [#1280](https://github.com/ethyca/fidesops/pull/1280)
+* Remove masking of redis error log [#1288](https://github.com/ethyca/fidesops/pull/1288)
 
 ### Security
 
