@@ -82,8 +82,8 @@ def get_connection_types(
 
         for item in saas_types:
             human_readable_name: str = item
-            if registry.get_connector_template(item):
-                human_readable_name = registry.get_connector_template(
+            if registry.get_connector_template(item) is not None:
+                human_readable_name = registry.get_connector_template(  # type: ignore[union-attr]
                     item
                 ).human_readable
 
