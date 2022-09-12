@@ -445,11 +445,10 @@ def _filter_privacy_request_queryset(
                 db=db,
                 conditions=(
                     ProvidedIdentity.hashed_value == hashed_identity,
-                    # ProvidedIdentity.privacy_request_id != None,
+                    ProvidedIdentity.privacy_request_id != None,
                 ),
             ).values(column("privacy_request_id"))
         }
-        breakpoint()
         query = query.filter(PrivacyRequest.id.in_(identities))
     # Further restrict all PrivacyRequests by query params
     if request_id:
