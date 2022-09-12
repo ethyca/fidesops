@@ -2819,7 +2819,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        assert not mock_execute_request.called
+        assert mock_execute_request.called
 
         assert response_data[0]["status"] == PrivacyRequestStatus.identity_unverified
         assert mock_dispatch_email.called
