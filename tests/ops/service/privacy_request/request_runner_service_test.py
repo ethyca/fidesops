@@ -1961,7 +1961,7 @@ class TestPrivacyRequestsEmailNotifications:
         mailgun_send.assert_has_calls(
             [
                 call(
-                    ANY,
+                    db=ANY,
                     action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
                     to_email=customer_email,
                     email_body_params=AccessRequestCompleteBodyParams(
@@ -1969,7 +1969,7 @@ class TestPrivacyRequestsEmailNotifications:
                     ),
                 ),
                 call(
-                    ANY,
+                    db=ANY,
                     action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
                     to_email=customer_email,
                     email_body_params=None,
