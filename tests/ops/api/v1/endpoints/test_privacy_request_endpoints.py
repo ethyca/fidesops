@@ -3,6 +3,7 @@ import csv
 import io
 import json
 from datetime import datetime, timedelta
+from random import randint
 from typing import List
 from unittest import mock
 
@@ -1384,8 +1385,9 @@ class TestGetPrivacyRequests:
         days_left_values = []
         data = []
         now = datetime.utcnow()
-        for i in range(0, 10):
-            requested_at = now + timedelta(days=i)
+        for _ in range(0, 10):
+            days = randint(1, 100)
+            requested_at = now + timedelta(days=days)
             data.append(
                 {
                     "requested_at": str(requested_at),
@@ -1393,7 +1395,7 @@ class TestGetPrivacyRequests:
                     "identity": {"email": "test@example.com"},
                 }
             )
-            days_left_values.append(i + policy.execution_timeframe)
+            days_left_values.append(days + policy.execution_timeframe)
 
         api_client.post(url, json=data)
 
@@ -1404,7 +1406,7 @@ class TestGetPrivacyRequests:
             headers=auth_header,
         )
         asc_response_data = resp.json()["items"]
-
+        days_left_values.sort()
         for i, request in enumerate(asc_response_data):
             assert request["days_left"] == days_left_values[i]
 
