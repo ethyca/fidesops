@@ -60,7 +60,7 @@ from fidesops.ops.common_exceptions import (
     EmailDispatchException,
     FunctionalityNotConfigured,
     IdentityVerificationException,
-    MissingManualWebhookData,
+    NoCachedManualWebhookEntry,
     TraversalError,
     ValidationError,
 )
@@ -1250,7 +1250,7 @@ def view_uploaded_manual_webhook_data(
             privacy_request.id,
         )
         return privacy_request.get_manual_webhook_input(access_manual_webhook)
-    except MissingManualWebhookData as exc:
+    except NoCachedManualWebhookEntry as exc:
         logger.info(exc)
         return access_manual_webhook.empty_fields_dict
     except PydanticValidationError:
@@ -1291,7 +1291,7 @@ async def resume_privacy_request_from_requires_input(
     try:
         for manual_webhook in access_manual_webhooks:
             privacy_request.get_manual_webhook_input(manual_webhook)
-    except (MissingManualWebhookData, PydanticValidationError) as exc:
+    except (NoCachedManualWebhookEntry, PydanticValidationError) as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Cannot resume privacy request. {exc}",

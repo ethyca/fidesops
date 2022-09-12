@@ -1,12 +1,13 @@
 import logging
 import random
 from datetime import datetime, timedelta
-from typing import Any, ContextManager, Dict, List, Optional, Set, Tuple
+from typing import Any, ContextManager, Dict, List, Optional, Set
 
 from celery import Task
 from celery.utils.log import get_task_logger
 from fideslib.db.session import get_db_session
 from fideslib.models.audit_log import AuditLog, AuditLogAction
+from fideslib.schemas.base_class import BaseSchema
 from pydantic import ValidationError
 from redis.exceptions import DataError
 from sqlalchemy.orm import Session
@@ -16,7 +17,7 @@ from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
     EmailDispatchException,
     IdentityNotFoundException,
-    MissingManualWebhookData,
+    NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
@@ -69,11 +70,19 @@ from fidesops.ops.util.wrappers import sync
 logger = get_task_logger(__name__)
 
 
+class ManualWebhookResults(BaseSchema):
+    """Represents manual webhook data retrieved from the cache and whether privacy request execution should continue"""
+
+    manual_data: Dict[str, List[Dict[str, Optional[Any]]]]
+    proceed: bool
+
+
 def get_access_manual_webhook_inputs(
     db: Session, privacy_request: PrivacyRequest, policy: Policy
-) -> Tuple[Dict[str, List[Dict[str, Optional[Any]]]], bool]:
+) -> ManualWebhookResults:
+
     """Retrieves manually uploaded data for all AccessManualWebhooks and formats in a way
-    to match automatically retrieved data. Also returns if execution should proceed.
+    to match automatically retrieved data (a list of rows). Also returns if execution should proceed.
 
     This data will be uploaded to the user as-is, without filtering.
     """
@@ -81,20 +90,20 @@ def get_access_manual_webhook_inputs(
 
     if not policy.get_rules_for_action(action_type=ActionType.access):
         # Don't fetch manual inputs if this is an erasure-only request
-        return manual_inputs, True
+        return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
 
     try:
         for manual_webhook in AccessManualWebhook.get_enabled(db):
             manual_inputs[manual_webhook.connection_config.key] = [
                 privacy_request.get_manual_webhook_input(manual_webhook)
             ]
-    except (MissingManualWebhookData, ValidationError) as exc:
+    except (NoCachedManualWebhookEntry, ValidationError) as exc:
         logger.info(exc)
         privacy_request.status = PrivacyRequestStatus.requires_input
         privacy_request.save(db)
-        return manual_inputs, False
+        return ManualWebhookResults(manual_data=manual_inputs, proceed=False)
 
-    return manual_inputs, True
+    return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
 
 
 def run_webhooks_and_report_status(
@@ -282,10 +291,10 @@ async def run_privacy_request(
         privacy_request.start_processing(session)
 
         policy = privacy_request.policy
-        manual_data, proceed = get_access_manual_webhook_inputs(
+        manual_webhook_results: ManualWebhookResults = get_access_manual_webhook_inputs(
             session, privacy_request, policy
         )
-        if not proceed:
+        if not manual_webhook_results.proceed:
             return
 
         if can_run_checkpoint(
@@ -332,7 +341,7 @@ async def run_privacy_request(
                     access_result,
                     dataset_graph,
                     privacy_request,
-                    manual_data,
+                    manual_webhook_results.manual_data,
                 )
 
             if policy.get_rules_for_action(

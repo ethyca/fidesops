@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
-    MissingManualWebhookData,
+    NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
 from fidesops.ops.graph.config import CollectionAddress
@@ -570,7 +570,7 @@ class TestCacheEmailConnectorTemplateContents:
 
 class TestCacheManualWebhookInput:
     def test_cache_manual_webhook_input(self, privacy_request, access_manual_webhook):
-        with pytest.raises(MissingManualWebhookData):
+        with pytest.raises(NoCachedManualWebhookEntry):
             privacy_request.get_manual_webhook_input(access_manual_webhook)
 
         privacy_request.cache_manual_webhook_input(

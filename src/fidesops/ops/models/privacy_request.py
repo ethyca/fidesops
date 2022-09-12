@@ -30,7 +30,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.ops.common_exceptions import (
     IdentityVerificationException,
-    MissingManualWebhookData,
+    NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
@@ -523,7 +523,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             return manual_webhook.fields_schema.parse_obj(
                 list(cached_results.values())[0]
             ).dict()
-        raise MissingManualWebhookData(
+        raise NoCachedManualWebhookEntry(
             f"No data cached for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
         )
 

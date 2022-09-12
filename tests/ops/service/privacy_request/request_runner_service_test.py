@@ -2056,7 +2056,7 @@ class TestPrivacyRequestsEmailNotifications:
 
 class TestPrivacyRequestsManualWebhooks:
     @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
-    def test_privacy_request_needs_manual_input(
+    def test_privacy_request_needs_manual_input_key_in_cache(
         self,
         mock_upload,
         integration_manual_webhook_config,
@@ -2139,4 +2139,60 @@ class TestPrivacyRequestsManualWebhooks:
             "manual_webhook_example": [
                 {"email": "customer-1@example.com", "last_name": "McCustomer"}
             ]
+        }
+
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_pass_on_partial_manually_added_input(
+        self,
+        mock_upload,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        policy,
+        run_privacy_request_task,
+        privacy_request_requires_input: PrivacyRequest,
+        db,
+    ):
+        privacy_request_requires_input.cache_manual_webhook_input(
+            access_manual_webhook,
+            {"email": "customer-1@example.com"},
+        )
+
+        run_privacy_request_task.delay(privacy_request_requires_input.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        db.refresh(privacy_request_requires_input)
+        assert privacy_request_requires_input.status == PrivacyRequestStatus.complete
+        assert mock_upload.called
+        assert mock_upload.call_args.kwargs["data"] == {
+            "manual_webhook_example": [
+                {"email": "customer-1@example.com", "last_name": None}
+            ]
+        }
+
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_pass_on_empty_confirmed_input(
+        self,
+        mock_upload,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        policy,
+        run_privacy_request_task,
+        privacy_request_requires_input: PrivacyRequest,
+        db,
+    ):
+        privacy_request_requires_input.cache_manual_webhook_input(
+            access_manual_webhook,
+            {},
+        )
+
+        run_privacy_request_task.delay(privacy_request_requires_input.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        db.refresh(privacy_request_requires_input)
+        assert privacy_request_requires_input.status == PrivacyRequestStatus.complete
+        assert mock_upload.called
+        assert mock_upload.call_args.kwargs["data"] == {
+            "manual_webhook_example": [{"email": None, "last_name": None}]
         }

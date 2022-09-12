@@ -105,8 +105,8 @@ class PrivacyRequestPaused(BaseException):
     """Halt Instruction Received on Privacy Request"""
 
 
-class MissingManualWebhookData(BaseException):
-    """No manual data exists for this webhook on the given privacy request"""
+class NoCachedManualWebhookEntry(BaseException):
+    """No manual data exists for this webhook on the given privacy request."""
 
 
 class PrivacyRequestErasureEmailSendRequired(BaseException):
