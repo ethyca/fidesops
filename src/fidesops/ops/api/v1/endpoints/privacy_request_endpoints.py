@@ -52,7 +52,7 @@ from fidesops.ops.common_exceptions import (
     FunctionalityNotConfigured,
     IdentityVerificationException,
     TraversalError,
-    ValidationError,
+    ValidationError, IdentityNotFoundException,
 )
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.config import CollectionAddress
@@ -60,12 +60,12 @@ from fidesops.ops.graph.graph import DatasetGraph, Node
 from fidesops.ops.graph.traversal import Traversal
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.policy import CurrentStep, Policy, PolicyPreWebhook
+from fidesops.ops.models.policy import CurrentStep, Policy, PolicyPreWebhook, ActionType
 from fidesops.ops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestStatus,
-    ProvidedIdentity,
+    ProvidedIdentity, ProvidedIdentityType,
 )
 from fidesops.ops.schemas.dataset import (
     CollectionAddressResponse,
@@ -73,7 +73,7 @@ from fidesops.ops.schemas.dataset import (
 )
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
-    SubjectIdentityVerificationBodyParams,
+    SubjectIdentityVerificationBodyParams, RequestReceiptBodyParams,
 )
 from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fidesops.ops.schemas.privacy_request import (
@@ -216,7 +216,24 @@ async def create_privacy_request(
                 )
                 created.append(privacy_request)
                 continue  # Skip further processing for this privacy request
-
+            if config.notifications.send_request_receipt_notification:
+                if not privacy_request_data.identity.get(ProvidedIdentityType.email.value):
+                    logger.error(IdentityNotFoundException(
+                        "Identity email was not found, so request receipt email could not be sent."
+                    ))
+                request_types: Set[str] = set()
+                for action_type in ActionType:
+                    if policy.get_rules_for_action(action_type=ActionType(action_type)):
+                        request_types.add(ActionType.access.value)
+                try:
+                    dispatch_email(
+                        db=db,
+                        action_type=EmailActionType.PRIVACY_REQUEST_RECEIPT,
+                        to_email=privacy_request_data.identity.get(ProvidedIdentityType.email.value),
+                        email_body_params=RequestReceiptBodyParams(request_types=request_types)
+                    )
+                except EmailDispatchException as e:
+                    logger.error(e)
             if not config.execution.require_manual_request_approval:
                 AuditLog.create(
                     db=db,

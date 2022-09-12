@@ -20,6 +20,7 @@ class EmailActionType(Enum):
     # verify email upon acct creation
     SUBJECT_IDENTITY_VERIFICATION = "subject_identity_verification"
     EMAIL_ERASURE_REQUEST_FULFILLMENT = "email_erasure_fulfillment"
+    PRIVACY_REQUEST_RECEIPT = "privacy_request_receipt"
     PRIVACY_REQUEST_COMPLETE_ACCESS = "privacy_request_complete_access"
     PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion"
 
@@ -41,6 +42,12 @@ class SubjectIdentityVerificationBodyParams(BaseModel):
         if self.verification_code_ttl_seconds < 60:
             return 0
         return self.verification_code_ttl_seconds // 60
+
+
+class RequestReceiptBodyParams(BaseModel):
+    """Body params required for privacy request receipt email template"""
+
+    request_types: List[str]
 
 
 class AccessRequestCompleteBodyParams(BaseModel):
