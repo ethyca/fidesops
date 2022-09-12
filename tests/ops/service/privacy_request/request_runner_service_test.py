@@ -1804,6 +1804,41 @@ class TestPrivacyRequestsManualWebhooks:
         assert not mock_upload.called
 
     @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.run_erasure"
+    )
+    def test_manual_input_not_required_for_erasure_only_policies(
+        self,
+        mock_erasure,
+        mock_upload,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        erasure_policy,
+        run_privacy_request_task,
+        db,
+    ):
+        """Manual inputs are not tied to policies, but shouldn't hold up request if only erasures are requested"""
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            erasure_policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert (
+            pr.status == PrivacyRequestStatus.complete
+        )  # Privacy request not put in "requires_input" state
+        assert not mock_upload.called  # erasure only request, no data uploaded
+        assert mock_erasure.called
+
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
     def test_pass_on_manually_added_input(
         self,
         mock_upload,

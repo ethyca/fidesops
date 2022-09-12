@@ -63,7 +63,7 @@ logger = get_task_logger(__name__)
 
 
 def get_access_manual_webhook_inputs(
-    db: Session, privacy_request: PrivacyRequest
+    db: Session, privacy_request: PrivacyRequest, policy: Policy
 ) -> Tuple[Dict[str, List[Dict[str, Optional[Any]]]], bool]:
     """Retrieves manually uploaded data for all AccessManualWebhooks and formats in a way
     to match automatically retrieved data. Also returns if execution should proceed.
@@ -71,6 +71,10 @@ def get_access_manual_webhook_inputs(
     This data will be uploaded to the user as-is, without filtering.
     """
     manual_inputs: Dict[str, List[Dict[str, Optional[Any]]]] = {}
+
+    if not policy.get_rules_for_action(action_type=ActionType.access):
+        # Don't fetch manual inputs if this is an erasure-only request
+        return manual_inputs, True
 
     try:
         for manual_webhook in AccessManualWebhook.get_enabled(db):
@@ -171,7 +175,7 @@ def upload_access_results(
 
         filtered_results.update(
             manual_data
-        )  # Add manual data directly to the upload packet
+        )  # Add manual data directly to each upload packet
 
         logging.info(
             "Starting access request upload for rule %s for privacy request %s",
@@ -266,8 +270,9 @@ async def run_privacy_request(
         logging.info("Dispatching privacy request %s", privacy_request.id)
         privacy_request.start_processing(session)
 
+        policy = privacy_request.policy
         manual_data, proceed = get_access_manual_webhook_inputs(
-            session, privacy_request
+            session, privacy_request, policy
         )
         if not proceed:
             return
@@ -284,8 +289,6 @@ async def run_privacy_request(
             )
             if not proceed:
                 return
-
-        policy = privacy_request.policy
         try:
             policy.rules[0]
         except IndexError:
