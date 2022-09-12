@@ -16,7 +16,7 @@ Ensure nothing is running on ports `8080`, `5432`, or `6379` prior to these step
    
 2. Run `docker compose up` from the root of the fidesops project directory. The provided `docker-compose.yml` will create the necessary databases and spin up the server.
    
-3. Visit `http://0.0.0.0:8080/health` in your browser. A response of `{"webserver": "healthy", "database": "healthy", "cache": "healthy"}` indicates a successful deployment.
+3. Visit `http://0.0.0.0:8080/api/v1/health` in your browser. A response of `{"webserver": "healthy", "database": "healthy", "cache": "healthy"}` indicates a successful deployment.
    
 ## Build from your project
 
@@ -38,7 +38,7 @@ Ensure nothing is running on ports `8080`, `5432`, or `6379` prior to these step
         expose:
           - 8080
         healthcheck:
-          test: ["CMD", "curl", "-f", "http://0.0.0.0:8080/health"]
+          test: ["CMD", "curl", "-f", "http://0.0.0.0:8080/api/v1/health"]
           interval: 30s
           timeout: 10s
           retries: 3
@@ -86,4 +86,4 @@ Ensure nothing is running on ports `8080`, `5432`, or `6379` prior to these step
    
 2. Ensure Docker is running, and run `docker compose up` from the project's root directory. This will pull the latest fidesops Docker image, create the sample databases, and start the server.
 
-3. Visit `http://0.0.0.0:8080/health` in your browser. A response of `{"webserver": "healthy", "database": "healthy", "cache": "healthy"}` indicates a successful deployment.
+3. Visit `http://0.0.0.0:8080/api/v1/health` in your browser. A response of `{"webserver": "healthy", "database": "healthy", "cache": "healthy"}` indicates a successful deployment.

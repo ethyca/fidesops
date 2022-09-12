@@ -7,7 +7,7 @@ from redis.exceptions import ResponseError
 from sqlalchemy.orm import Session
 
 from fidesops.ops.api import deps
-from fidesops.ops.api.v1.urn_registry import HEALTH
+from fidesops.ops.api.v1 import urn_registry as urls
 from fidesops.ops.common_exceptions import RedisConnectionError
 from fidesops.ops.core.config import config
 from fidesops.ops.db.database import get_alembic_config
@@ -15,7 +15,7 @@ from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.cache import get_cache
 from fidesops.ops.util.logger import Pii
 
-router = APIRouter(tags=["Public"])
+router = APIRouter(tags=["Public"], prefix=urls.V1_URL_PREFIX)
 
 logger = logging.getLogger(__name__)
 # stops polluting logs with sqlalchemy / alembic info-level logs
@@ -23,7 +23,7 @@ logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
 logging.getLogger("alembic").setLevel(logging.WARNING)
 
 
-@router.get(HEALTH, response_model=Dict[str, Union[bool, str]])
+@router.get(urls.HEALTH, response_model=Dict[str, Union[bool, str]])
 def health_check(
     db: Session = Depends(deps.get_db_for_health_check),
 ) -> Dict[str, Union[bool, str]]:
