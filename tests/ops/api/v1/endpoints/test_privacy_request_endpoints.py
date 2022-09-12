@@ -45,7 +45,6 @@ from fidesops.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.ops.core.config import config
-from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.datasetconfig import DatasetConfig

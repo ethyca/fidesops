@@ -438,18 +438,19 @@ def _filter_privacy_request_queryset(
 
     if identity:
         hashed_identity = ProvidedIdentity.hash_value(value=identity)
+        breakpoint()
         identities: Set[str] = {
             identity[0]
             for identity in ProvidedIdentity.filter(
                 db=db,
                 conditions=(
                     ProvidedIdentity.hashed_value == hashed_identity,
-                    ProvidedIdentity.privacy_request_id != None,
+                    # ProvidedIdentity.privacy_request_id != None,
                 ),
             ).values(column("privacy_request_id"))
         }
+        breakpoint()
         query = query.filter(PrivacyRequest.id.in_(identities))
-
     # Further restrict all PrivacyRequests by query params
     if request_id:
         query = query.filter(PrivacyRequest.id.ilike(f"{request_id}%"))
@@ -567,7 +568,6 @@ def get_request_status(
     To fetch a single privacy request, use the request_id query param `?request_id=`.
     To see individual execution logs, use the verbose query param `?verbose=True`.
     """
-
     logger.info("Finding all request statuses with pagination params %s", params)
     query = db.query(PrivacyRequest)
     query = _filter_privacy_request_queryset(

@@ -9,7 +9,6 @@ from fideslib.models.fides_user_permissions import FidesUserPermissions
 
 from fidesops.ops.models.authentication_request import AuthenticationRequest
 from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.models.consent import Consent
 from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.models.manual_webhook import AccessManualWebhook

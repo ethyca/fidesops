@@ -16,7 +16,7 @@ from fideslib.models.audit_log import AuditLog
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.jwt import generate_jwe
-from sqlalchemy import Column, DateTime
+from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -66,6 +66,7 @@ from fidesops.ops.util.cache import (
 )
 from fidesops.ops.util.collection_util import Row
 from fidesops.ops.util.constants import API_DATE_FORMAT
+from fidesops.ops.util.regulations import Regulations
 
 logger = logging.getLogger(__name__)
 
@@ -275,9 +276,11 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         blind indexing for later searching and audit purposes.
         """
         identity_dict: Dict[str, Any] = dict(identity)
+        print(identity_dict)
         for key, value in identity_dict.items():
             if value is not None:
                 hashed_value = ProvidedIdentity.hash_value(value)
+
                 ProvidedIdentity.create(
                     db=db,
                     data={
@@ -713,9 +716,7 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         ),
         nullable=True,
     )  # Type bytea in the db
-    consent = relationship(
-        "Consent", backref=backref("provided_identities", cascade="all, delete-orphan")
-    )
+    consent = relationship("Consent", back_populates="provided_identity", uselist=False)
 
     @classmethod
     def hash_value(
@@ -730,6 +731,20 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
             SALT.encode(encoding),
         )
         return hashed_value
+
+
+class Consent(Base):
+    """The DB ORM model for Consent."""
+
+    provided_identity_id = Column(
+        String, ForeignKey(ProvidedIdentity.id), nullable=False, unique=True
+    )
+    regulation = Column(EnumColumn(Regulations))
+    data_use = Column(String)
+    data_use_description = Column(String)
+    opt_in = Column(Boolean, nullable=False)
+
+    provided_identity = relationship(ProvidedIdentity, back_populates="consent")
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.
