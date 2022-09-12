@@ -2006,17 +2006,15 @@ class TestPrivacyRequestsEmailNotifications:
             "identity": {"email": customer_email},
         }
 
-        with pytest.raises(EmailDispatchException):
-
-            pr = get_privacy_request_results(
-                db,
-                policy,
-                run_privacy_request_task,
-                data,
-            )
-            db.refresh(pr)
-            assert pr.status == PrivacyRequestStatus.error
-            pr.delete(db=db)
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.error
+        pr.delete(db=db)
 
         assert mailgun_send.called is False
 
@@ -2047,16 +2045,14 @@ class TestPrivacyRequestsEmailNotifications:
             "identity": {"phone": "1231231233"},
         }
 
-        with pytest.raises(IdentityNotFoundException):
-
-            pr = get_privacy_request_results(
-                db,
-                policy,
-                run_privacy_request_task,
-                data,
-            )
-            db.refresh(pr)
-            assert pr.status == PrivacyRequestStatus.error
-            pr.delete(db=db)
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.error
+        pr.delete(db=db)
 
         assert mailgun_send.called is False
