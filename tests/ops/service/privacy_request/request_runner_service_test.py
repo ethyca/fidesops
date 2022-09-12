@@ -1,7 +1,7 @@
 import time
 from typing import Any, Dict, List, Set
 from unittest import mock
-from unittest.mock import Mock, call
+from unittest.mock import Mock, call, ANY
 from uuid import uuid4
 
 import pydash
@@ -1961,7 +1961,7 @@ class TestPrivacyRequestsEmailNotifications:
         mailgun_send.assert_has_calls(
             [
                 call(
-                    db=db,
+                    ANY,
                     action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
                     to_email=customer_email,
                     email_body_params=AccessRequestCompleteBodyParams(
@@ -1969,7 +1969,7 @@ class TestPrivacyRequestsEmailNotifications:
                     ),
                 ),
                 call(
-                    db=db,
+                    ANY,
                     action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
                     to_email=customer_email,
                     email_body_params=None,
@@ -1980,9 +1980,7 @@ class TestPrivacyRequestsEmailNotifications:
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @mock.patch(
-        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
-    )
+    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
     @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_no_email_config(
         self,
@@ -2020,9 +2018,7 @@ class TestPrivacyRequestsEmailNotifications:
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @mock.patch(
-        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
-    )
+    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
     @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_no_email_identity(
         self,
