@@ -1,4 +1,4 @@
-# pylint: disable=too-many-branches,too-many-locals,too-many-lines
+# pylint: disable=too-many-branches,too-many-locals,too-many-lines, too-many-statements
 
 import csv
 import io
@@ -50,9 +50,10 @@ from fidesops.ops.api.v1.urn_registry import (
 from fidesops.ops.common_exceptions import (
     EmailDispatchException,
     FunctionalityNotConfigured,
+    IdentityNotFoundException,
     IdentityVerificationException,
     TraversalError,
-    ValidationError, IdentityNotFoundException,
+    ValidationError,
 )
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.config import CollectionAddress
@@ -60,12 +61,12 @@ from fidesops.ops.graph.graph import DatasetGraph, Node
 from fidesops.ops.graph.traversal import Traversal
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.policy import CurrentStep, Policy, PolicyPreWebhook, ActionType
+from fidesops.ops.models.policy import ActionType, CurrentStep, Policy, PolicyPreWebhook
 from fidesops.ops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestStatus,
-    ProvidedIdentity, ProvidedIdentityType,
+    ProvidedIdentity,
 )
 from fidesops.ops.schemas.dataset import (
     CollectionAddressResponse,
@@ -73,7 +74,8 @@ from fidesops.ops.schemas.dataset import (
 )
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
-    SubjectIdentityVerificationBodyParams, RequestReceiptBodyParams,
+    RequestReceiptBodyParams,
+    SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fidesops.ops.schemas.privacy_request import (
@@ -217,23 +219,9 @@ async def create_privacy_request(
                 created.append(privacy_request)
                 continue  # Skip further processing for this privacy request
             if config.notifications.send_request_receipt_notification:
-                if not privacy_request_data.identity.get(ProvidedIdentityType.email.value):
-                    logger.error(IdentityNotFoundException(
-                        "Identity email was not found, so request receipt email could not be sent."
-                    ))
-                request_types: Set[str] = set()
-                for action_type in ActionType:
-                    if policy.get_rules_for_action(action_type=ActionType(action_type)):
-                        request_types.add(ActionType.access.value)
-                try:
-                    dispatch_email(
-                        db=db,
-                        action_type=EmailActionType.PRIVACY_REQUEST_RECEIPT,
-                        to_email=privacy_request_data.identity.get(ProvidedIdentityType.email.value),
-                        email_body_params=RequestReceiptBodyParams(request_types=request_types)
-                    )
-                except EmailDispatchException as e:
-                    logger.error(e)
+                _send_privacy_request_receipt_email_to_user(
+                    db, policy, privacy_request_data.identity.email
+                )
             if not config.execution.require_manual_request_approval:
                 AuditLog.create(
                     db=db,
@@ -291,6 +279,32 @@ def _send_verification_code_to_user(
             verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
         ),
     )
+
+
+def _send_privacy_request_receipt_email_to_user(
+    db: Session, policy: Policy, email: Optional[str]
+) -> None:
+    """Generate and cache a verification code, and then email to the user"""
+    if not email:
+        logger.error(
+            IdentityNotFoundException(
+                "Identity email was not found, so request receipt email could not be sent."
+            )
+        )
+    request_types: Set[str] = set()
+    for action_type in ActionType:
+        if policy.get_rules_for_action(action_type=ActionType(action_type)):
+            request_types.add(action_type)
+    try:
+        dispatch_email(
+            db=db,
+            action_type=EmailActionType.PRIVACY_REQUEST_RECEIPT,
+            to_email=email,
+            email_body_params=RequestReceiptBodyParams(request_types=request_types),
+        )
+    except EmailDispatchException as e:
+        # catch early since this failure isn't fatal to privacy request, unlike the subject id verification email
+        logger.error(e)
 
 
 def privacy_request_csv_download(

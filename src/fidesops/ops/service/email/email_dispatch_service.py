@@ -81,9 +81,7 @@ def _build_email(
         base_template = get_email_template(action_type)
         return EmailForActionType(
             subject="Your request has been received",
-            body=base_template.render(
-                {"request_types": body_params.request_types}
-            ),
+            body=base_template.render({"request_types": body_params.request_types}),
         )
     if action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
         base_template = get_email_template(action_type)
