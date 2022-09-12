@@ -161,16 +161,22 @@ def upload_access_results(
             privacy_request.status = PrivacyRequestStatus.error
 
 
+default_queue_name = celery_app.conf.get("default_queue_name", "celery")
+
+
 def queue_privacy_request(
     privacy_request_id: str,
     from_webhook_id: Optional[str] = None,
     from_step: Optional[str] = None,
 ) -> str:
     cache: FidesopsRedis = get_cache()
-    task = run_privacy_request.delay(
-        privacy_request_id=privacy_request_id,
-        from_webhook_id=from_webhook_id,
-        from_step=from_step,
+    task = run_privacy_request.apply_async(
+        queue=default_queue_name,
+        kwargs={
+            "privacy_request_id": privacy_request_id,
+            "from_webhook_id": from_webhook_id,
+            "from_step": from_step,
+        },
     )
     try:
         cache.set(
