@@ -438,7 +438,6 @@ def _filter_privacy_request_queryset(
 
     if identity:
         hashed_identity = ProvidedIdentity.hash_value(value=identity)
-        breakpoint()
         identities: Set[str] = {
             identity[0]
             for identity in ProvidedIdentity.filter(
