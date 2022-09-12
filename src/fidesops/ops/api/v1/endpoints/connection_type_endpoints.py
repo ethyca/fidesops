@@ -81,11 +81,12 @@ def get_connection_types(
         registry: ConnectorRegistry = load_registry(registry_file)
 
         for item in saas_types:
-            human_readable_name = (
-                registry.get_connector_template(item).human_readable
-                if registry.get_connector_template(item)
-                else item
-            )
+            human_readable_name: str = item
+            if registry.get_connector_template(item):
+                human_readable_name = registry.get_connector_template(
+                    item
+                ).human_readable
+
             connection_system_types.append(
                 ConnectionSystemTypeMap(
                     identifier=item,
