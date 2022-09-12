@@ -24,6 +24,7 @@ The types of changes are:
 * Created a docker image for the privacy center [#1165](https://github.com/ethyca/fidesops/pull/1165)
 * Adds email scopes to postman collection [#1241](https://github.com/ethyca/fidesops/pull/1241)
 * Clean up docker build [#1252](https://github.com/ethyca/fidesops/pull/1252)
+* Add `Strategy` abstract base class for more extensible strategy development [1254](https://github.com/ethyca/fidesops/pull/1254)
 
 
 ### Added
@@ -35,6 +36,11 @@ The types of changes are:
 * Added `execution_timeframe` to Policy model and schema [#1244](https://github.com/ethyca/fidesops/pull/1244)
 * Added `due_date` to Privacy request model [#1259](https://github.com/ethyca/fidesops/pull/1259)
 * Wrap up the email connector - it sends an email with erasure instructions as part of request execution [#1246](https://github.com/ethyca/fidesops/pull/1246)
+* Added `days_left` field to Privacy request response [#1281](https://github.com/ethyca/fidesops/pull/1281)
+* Mapping Vault environment variables in docker-compose.yml [#1275](https://github.com/ethyca/fidesops/pull/1275)
+* Foundations for a new "manual_webhook" connector type [#1267](https://github.com/ethyca/fidesops/pull/1267)
+* Data seeding for Datadog access tests [#1269](https://github.com/ethyca/fidesops/pull/1269)
+* Added support for one-to-many relationships for param_values in SaaS configs [#1253](https://github.com/ethyca/fidesops/pull/1253)
 
 ### Docs
 
@@ -49,6 +55,13 @@ The types of changes are:
 * Allow worker to start up successfully for dev and dev_with_worker nox commands [#1250](https://github.com/ethyca/fidesops/pull/1250)
 * Fix for pytest-asyncio bug [#1260](https://github.com/ethyca/fidesops/pull/1260)
 * Fix download link in privacy center [#1264](https://github.com/ethyca/fidesops/pull/1264)
+* Make admin ui work when volumes are mounted [#1266](https://github.com/ethyca/fidesops/pull/1266)
+* Fixed typo in enum value [#1280](https://github.com/ethyca/fidesops/pull/1280)
+* Remove masking of redis error log [#1288](https://github.com/ethyca/fidesops/pull/1288)
+
+### Security
+
+* Bump python from 3.9.13 to 3.9.14 [#1287](https://github.com/ethyca/fidesops/pull/1287)
 
 ## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.7.2)
 
