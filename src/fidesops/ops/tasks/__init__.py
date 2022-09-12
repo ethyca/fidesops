@@ -72,7 +72,8 @@ def start_worker() -> None:
             "worker",
             "--loglevel=info",
             "--concurrency=2",
-            f"-Q {default_queue_name},{EMAIL_QUEUE_NAME}",
+            "--queues",
+            f"{default_queue_name},{EMAIL_QUEUE_NAME}",
         ]
     )
 
