@@ -2,7 +2,7 @@ import ast
 import csv
 import io
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 from unittest import mock
 
@@ -563,7 +563,10 @@ class TestGetPrivacyRequests:
         privacy_request,
         postgres_execution_log,
         mongo_execution_log,
+        db,
     ):
+        privacy_request.due_date = None
+        privacy_request.save(db=db)
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
             url + f"?request_id={privacy_request.id}", headers=auth_header
@@ -575,6 +578,7 @@ class TestGetPrivacyRequests:
                 {
                     "id": privacy_request.id,
                     "created_at": stringify_date(privacy_request.created_at),
+                    "days_left": None,
                     "started_processing_at": stringify_date(
                         privacy_request.started_processing_at
                     ),
@@ -619,7 +623,10 @@ class TestGetPrivacyRequests:
         privacy_request,
         postgres_execution_log,
         mongo_execution_log,
+        db,
     ):
+        privacy_request.due_date = None
+        privacy_request.save(db=db)
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
             url + f"?request_id={privacy_request.id[:5]}", headers=auth_header
@@ -631,6 +638,7 @@ class TestGetPrivacyRequests:
                 {
                     "id": privacy_request.id,
                     "created_at": stringify_date(privacy_request.created_at),
+                    "days_left": None,
                     "started_processing_at": stringify_date(
                         privacy_request.started_processing_at
                     ),
@@ -974,6 +982,9 @@ class TestGetPrivacyRequests:
         db,
     ):
         """Test privacy requests endpoint with verbose query param to show execution logs"""
+        privacy_request.due_date = None
+        privacy_request.save(db)
+
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(url + f"?verbose=True", headers=auth_header)
         assert 200 == response.status_code
@@ -987,6 +998,7 @@ class TestGetPrivacyRequests:
                 {
                     "id": privacy_request.id,
                     "created_at": stringify_date(privacy_request.created_at),
+                    "days_left": None,
                     "started_processing_at": stringify_date(
                         privacy_request.started_processing_at
                     ),
@@ -1343,6 +1355,41 @@ class TestGetPrivacyRequests:
             "action_needed": None,
         }
         assert data["resume_endpoint"] == f"/privacy-request/{privacy_request.id}/retry"
+
+    @pytest.mark.parametrize(
+        "due_date, days_left",
+        [
+            (
+                datetime.utcnow() + timedelta(days=7),
+                7,
+            ),
+            (
+                datetime.utcnow(),
+                0,
+            ),
+            (
+                datetime.utcnow() + timedelta(days=-7),
+                -7,
+            ),
+        ],
+    )
+    def test_get_privacy_requests_sets_days_left(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        privacy_request,
+        due_date,
+        days_left,
+    ):
+        privacy_request.due_date = due_date
+        privacy_request.save(db)
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url, headers=auth_header)
+        data = response.json()["items"][0]
+        assert data["days_left"] == days_left
 
 
 class TestGetExecutionLogs:
@@ -2040,6 +2087,7 @@ class TestResumePrivacyRequest:
         db,
     ):
         privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.due_date = None
         privacy_request.save(db=db)
         auth_header = generate_webhook_auth_header(
             webhook=policy_pre_execution_webhooks[0]
@@ -2053,6 +2101,7 @@ class TestResumePrivacyRequest:
         assert response_body == {
             "id": privacy_request.id,
             "created_at": stringify_date(privacy_request.created_at),
+            "days_left": None,
             "started_processing_at": stringify_date(
                 privacy_request.started_processing_at
             ),
