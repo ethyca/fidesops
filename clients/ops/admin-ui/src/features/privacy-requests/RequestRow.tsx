@@ -153,7 +153,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
         <RequestStatusBadge status={request.status} />
       </Td>
       <Td py={1}>
-        <DaysLeftTag days_left={request.days_left} include_text={false} />
+        <DaysLeftTag daysLeft={request.days_left} includeText={false} />
       </Td>
       <Td py={1}>
         <Tag

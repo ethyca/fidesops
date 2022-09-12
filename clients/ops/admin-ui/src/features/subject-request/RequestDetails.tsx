@@ -96,7 +96,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
             </Button>
           )}
 
-          <DaysLeftTag days_left={subjectRequest.days_left} include_text />
+          <DaysLeftTag daysLeft={subjectRequest.days_left} includeText />
         </HStack>
       </Flex>
     </>
