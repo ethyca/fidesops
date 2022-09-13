@@ -34,47 +34,43 @@ dataset:
               data_type: string
       - name: instances
         fields:
-          - name: instances
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+                  data_type: integer
+          - name: timestamp
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: data
             fidesops_meta:
               data_type: object
             fields:
-              - name: id
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: integer
-              - name: timestamp
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: integer
-              - name: data
+              - name: body
                 fidesops_meta:
                   data_type: object
                 fields:
-                  - name: body
+                  - name: message
                     fidesops_meta:
                       data_type: object
                     fields:
-                      - name: message
+                      - name: body
+                        data_categories: [system.operations]
                         fidesops_meta:
-                          data_type: object
-                        fields:
-                          - name: body
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: string
-                  - name: person
-                    fidesops_meta:
-                        data_type: object
-                    fields:
-                    - name: id
-                      data_categories: [system.operations]
-                      fidesops_meta:
-                        data_type: integer
-                    - name: username
-                      data_categories: [system.operations]
-                      fidesops_meta:
-                        data_type: string
-                    - name: email
-                      data_categories: [system.operations]
-                      fidesops_meta:
-                        data_type: string
+                          data_type: string
+              - name: person
+                fidesops_meta:
+                    data_type: object
+                fields:
+                - name: id
+                  data_categories: [system.operations]
+                  fidesops_meta:
+                    data_type: integer
+                - name: username
+                  data_categories: [system.operations]
+                  fidesops_meta:
+                    data_type: string
+                - name: email
+                  data_categories: [system.operations]
+                  fidesops_meta:
+                    data_type: string
