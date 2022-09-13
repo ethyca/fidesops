@@ -736,7 +736,6 @@ class Consent(Base):
     """The DB ORM model for Consent."""
 
     provided_identity_id = Column(String, ForeignKey(ProvidedIdentity.id), unique=True)
-    regulation = Column(EnumColumn(Regulations))
     data_use = Column(String)
     data_use_description = Column(String)
     opt_in = Column(Boolean, nullable=False)

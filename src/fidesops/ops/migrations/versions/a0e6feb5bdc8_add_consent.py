@@ -33,9 +33,6 @@ def upgrade():
             nullable=True,
         ),
         sa.Column("provided_identity_id", sa.String()),
-        sa.Column(
-            "regulation", sa.Enum("CCPA", "GDPR", name="regulations"), nullable=True
-        ),
         sa.Column("data_use", sa.String(), nullable=True),
         sa.Column("data_use_description", sa.String(), nullable=True),
         sa.Column("opt_in", sa.Boolean(), nullable=False),
