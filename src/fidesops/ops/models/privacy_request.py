@@ -714,7 +714,9 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         ),
         nullable=True,
     )  # Type bytea in the db
-    consent = relationship("Consent", back_populates="provided_identity", uselist=False)
+    consent = relationship(
+        "Consent", back_populates="provided_identity", cascade="delete, delete-orphan"
+    )
 
     @classmethod
     def hash_value(
@@ -734,8 +736,8 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
 class Consent(Base):
     """The DB ORM model for Consent."""
 
-    provided_identity_id = Column(String, ForeignKey(ProvidedIdentity.id), unique=True)
-    data_use = Column(String)
+    provided_identity_id = Column(String, ForeignKey(ProvidedIdentity.id))
+    data_use = Column(String, nullable=False, unique=True)
     data_use_description = Column(String)
     opt_in = Column(Boolean, nullable=False)
 

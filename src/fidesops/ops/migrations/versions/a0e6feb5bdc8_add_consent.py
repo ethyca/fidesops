@@ -32,8 +32,8 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("provided_identity_id", sa.String()),
-        sa.Column("data_use", sa.String(), nullable=True),
+        sa.Column("provided_identity_id", sa.String(), nullable=True),
+        sa.Column("data_use", sa.String(), nullable=False),
         sa.Column("data_use_description", sa.String(), nullable=True),
         sa.Column("opt_in", sa.Boolean(), nullable=False),
         sa.ForeignKeyConstraint(
@@ -41,7 +41,7 @@ def upgrade():
             ["providedidentity.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("provided_identity_id"),
+        sa.UniqueConstraint("data_use"),
     )
     op.create_index(op.f("ix_consent_id"), "consent", ["id"], unique=False)
     op.alter_column(

@@ -15,8 +15,10 @@ from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.models.policy import CurrentStep, Policy
 from fidesops.ops.models.privacy_request import (
     CheckpointActionRequired,
+    Consent,
     PrivacyRequest,
     PrivacyRequestStatus,
+    ProvidedIdentity,
     can_run_checkpoint,
 )
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
@@ -602,3 +604,31 @@ class TestCanRunFromCheckpoint:
             )
             is True
         )
+
+
+def test_consent(db):
+    privided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "email",
+        "encrypted_value": {"value": "test@email.com"},
+    }
+    provided_identity = ProvidedIdentity.create(db, data=privided_identity_data)
+
+    consent_data_1 = {
+        "provided_identity_id": provided_identity.id,
+        "data_use": "user.biometric_health",
+        "opt_in": True,
+    }
+    Consent.create(db, data=consent_data_1)
+
+    consent_data_2 = {
+        "provided_identity_id": provided_identity.id,
+        "data_use": "user.browsing_history",
+        "opt_in": False,
+    }
+    Consent.create(db, data=consent_data_2)
+    db.commit()
+    data_uses = [x.data_use for x in provided_identity.consent]
+
+    assert consent_data_1["data_use"] in data_uses
+    assert consent_data_2["data_use"] in data_uses
