@@ -76,7 +76,7 @@ system was searched for data related to the data subject.
 
 Once a PrivacyRequest with `requires_input` has had all of its manual data uploaded, prompt the privacy request to resume.
 
-```json title="/privacy-request/{{privacy_request_id}}/resume_from_requires_input</code>"
+```json title="<code>POST /privacy-request/{{privacy_request_id}}/resume_from_requires_input</code>"
 ```
 
 #### Example Upload
