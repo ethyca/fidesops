@@ -21,7 +21,8 @@ def test_rollbar_connection_test(rollbar_connection_config) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_rollbar
-def test_saas_access_request_task(
+@pytest.mark.asyncio
+async def test_rollbar_access_request_task(
     db,
     policy,
     rollbar_connection_config,
@@ -36,13 +37,15 @@ def test_saas_access_request_task(
     identity_attribute = "email"
     identity_value = rollbar_identity_email
     identity_kwargs = {identity_attribute: identity_value}
-    identity = PrivacyRequestIdentity(**identity_kwargs)
+
+    identity = PrivacyRequestIdentity(**{"email": rollbar_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = rollbar_connection_config.get_saas_config().fides_key
     merged_graph = rollbar_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-    v = graph_task.run_access_request(
+
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,

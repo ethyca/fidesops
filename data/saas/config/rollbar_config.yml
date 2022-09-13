@@ -33,7 +33,6 @@ saas_config:
             - name: placeholder
               identity: email
           data_path: result
-
     - name: project_access_token
       requests:
         read:
@@ -56,7 +55,6 @@ saas_config:
                 field: name
                 value: read
           data_path: result
-
     - name: instances
       requests:
         read:
@@ -83,7 +81,7 @@ saas_config:
           postprocessors:
             - strategy: filter
               configuration:
-                field: email
+                field: instances.data.person.email
                 value:
                   identity: email
           data_path: result
