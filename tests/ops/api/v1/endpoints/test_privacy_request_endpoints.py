@@ -65,7 +65,8 @@ from fidesops.ops.models.privacy_request import (
 from fidesops.ops.schemas.dataset import DryRunDatasetResponse
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
-    SubjectIdentityVerificationBodyParams, RequestReviewDenyBodyParams,
+    RequestReviewDenyBodyParams,
+    SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.schemas.masking.masking_secrets import SecretType
 from fidesops.ops.schemas.policy import PolicyResponse
@@ -1980,7 +1981,9 @@ class TestDenyPrivacyRequest:
         call_args = mock_dispatch_email.call_args[1]
         assert call_args["action_type"] == EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
         assert call_args["to_email"] == "test@example.com"
-        assert call_args["email_body_params"] == RequestReviewDenyBodyParams(rejection_reason=None)
+        assert call_args["email_body_params"] == RequestReviewDenyBodyParams(
+            rejection_reason=None
+        )
 
         assert denial_audit_log.message is None
 
@@ -2039,7 +2042,9 @@ class TestDenyPrivacyRequest:
         call_args = mock_dispatch_email.call_args[1]
         assert call_args["action_type"] == EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
         assert call_args["to_email"] == "test@example.com"
-        assert call_args["email_body_params"] == RequestReviewDenyBodyParams(rejection_reason=denial_reason)
+        assert call_args["email_body_params"] == RequestReviewDenyBodyParams(
+            rejection_reason=denial_reason
+        )
 
         assert denial_audit_log.message == denial_reason
 

@@ -104,9 +104,7 @@ def _build_email(
         return EmailForActionType(
             subject="Your request has been denied",
             body=base_template.render(
-                {
-                    "rejection_reason": body_params.rejection_reason
-                }
+                {"rejection_reason": body_params.rejection_reason}
             ),
         )
     logger.error("Email action type %s is not implemented", action_type)

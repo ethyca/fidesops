@@ -60,10 +60,11 @@ from fidesops.ops.api.v1.urn_registry import (
 from fidesops.ops.common_exceptions import (
     EmailDispatchException,
     FunctionalityNotConfigured,
+    IdentityNotFoundException,
     IdentityVerificationException,
     NoCachedManualWebhookEntry,
     TraversalError,
-    ValidationError, IdentityNotFoundException,
+    ValidationError,
 )
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.config import CollectionAddress
@@ -77,7 +78,8 @@ from fidesops.ops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestStatus,
-    ProvidedIdentity, ProvidedIdentityType,
+    ProvidedIdentity,
+    ProvidedIdentityType,
 )
 from fidesops.ops.schemas.dataset import (
     CollectionAddressResponse,
@@ -85,7 +87,8 @@ from fidesops.ops.schemas.dataset import (
 )
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
-    SubjectIdentityVerificationBodyParams, RequestReviewDenyBodyParams,
+    RequestReviewDenyBodyParams,
+    SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fidesops.ops.schemas.privacy_request import (
@@ -1064,7 +1067,10 @@ def review_privacy_request(
 
 
 def _send_privacy_request_review_email_to_user(
-        db: Session, action_type: EmailActionType, email: Optional[str], rejection_reason: Optional[str]
+    db: Session,
+    action_type: EmailActionType,
+    email: Optional[str],
+    rejection_reason: Optional[str],
 ) -> None:
     """Helper method to send review notification email to user, shared between approve and deny"""
     if not email:
@@ -1078,7 +1084,11 @@ def _send_privacy_request_review_email_to_user(
             db=db,
             action_type=action_type,
             to_email=email,
-            email_body_params=RequestReviewDenyBodyParams(rejection_reason=rejection_reason) if action_type is EmailActionType.PRIVACY_REQUEST_REVIEW_DENY else None,
+            email_body_params=RequestReviewDenyBodyParams(
+                rejection_reason=rejection_reason
+            )
+            if action_type is EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
+            else None,
         )
     except EmailDispatchException as e:
         # this failure isn't fatal to privacy request
@@ -1157,8 +1167,10 @@ def approve_privacy_request(
             _send_privacy_request_review_email_to_user(
                 db=db,
                 action_type=EmailActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
-                email=privacy_request.get_cached_identity_data().get(ProvidedIdentityType.email.value),
-                rejection_reason=None
+                email=privacy_request.get_cached_identity_data().get(
+                    ProvidedIdentityType.email.value
+                ),
+                rejection_reason=None,
             )
 
         AuditLog.create(
@@ -1214,8 +1226,10 @@ def deny_privacy_request(
             _send_privacy_request_review_email_to_user(
                 db=db,
                 action_type=EmailActionType.PRIVACY_REQUEST_REVIEW_DENY,
-                email=privacy_request.get_cached_identity_data().get(ProvidedIdentityType.email.value),
-                rejection_reason=privacy_requests.reason
+                email=privacy_request.get_cached_identity_data().get(
+                    ProvidedIdentityType.email.value
+                ),
+                rejection_reason=privacy_requests.reason,
             )
         privacy_request.status = PrivacyRequestStatus.denied
         privacy_request.reviewed_at = datetime.utcnow()
