@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Dict, List, Optional, Union
 
+
 import requests
 from sqlalchemy.orm import Session
 
@@ -101,6 +102,22 @@ def _build_email(
             body=base_template.render(
                 {"dataset_collection_action_required": body_params}
             ),
+        )
+    if action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Your data is ready to be downloaded",
+            body=base_template.render(
+                {
+                    "download_links": body_params.download_links,
+                }
+            ),
+        )
+    if action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Your data has been deleted",
+            body=base_template.render(),
         )
     logger.error("Email action type %s is not implemented", action_type)
     raise EmailDispatchException(f"Email action type {action_type} is not implemented")

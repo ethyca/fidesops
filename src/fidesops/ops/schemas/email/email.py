@@ -21,6 +21,8 @@ class EmailActionType(str, Enum):
     # verify email upon acct creation
     SUBJECT_IDENTITY_VERIFICATION = "subject_identity_verification"
     EMAIL_ERASURE_REQUEST_FULFILLMENT = "email_erasure_fulfillment"
+    PRIVACY_REQUEST_COMPLETE_ACCESS = "privacy_request_complete_access"
+    PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion"
 
 
 class EmailTemplateBodyParams(Enum):
@@ -54,6 +56,11 @@ class FidesopsEmail(
         SubjectIdentityVerificationBodyParams,
         List[CheckpointActionRequired],
     ]
+
+class AccessRequestCompleteBodyParams(BaseModel):
+    """Body params required for privacy request completion access email template"""
+
+    download_links: List[str]
 
 
 class EmailForActionType(BaseModel):

@@ -5,7 +5,7 @@
 
 The fidesops application configuration variables are provided in the `fidesops.toml` file in `.toml` format. Fidesops will take the first config file it finds from the following locations:
 
-- The location according to the `FIDESOPS__CONFIG_PATH` environment variable
+- The location according to the `FIDES__CONFIG_PATH` environment variable
 - The current working directory (`./fidesops.toml`)
 - The parent of the current working directory (`../fidesops.toml`)
 - The user's home directory (`~/fidesops.toml`)
@@ -47,6 +47,7 @@ The `fidesops.toml` file should specify the following variables:
 | `root_username` | `FIDESOPS__SECURITY__ROOT_USERNAME` | string | root_user | None | If set this can be used in conjunction with `root_password` to log in as a root user without first needing to create a user in the database. |
 | `root_password` | `FIDESOPS__SECURITY__ROOT_PASSWORD` | string | apassword | None | If set this can be used in conjunction with `root_username` to log in as a root user without first needing to create a user in the database. |
 | `root_user_scopes` | `FIDESOPS__SECURITY__ROOT_USER_SCOPES` | list of strings | ["client:create", "client:update"] | All available scopes | The scopes granted to the root user when logging in with `root_username` and `root_password`. |
+| `subject_request_download_link_ttl_seconds` | `FIDESOPS__SECURITY__SUBJECT_REQUEST_DOWNLOAD_LINK_TTL_SECONDS` | int | 86400 | 86400 | Time in seconds for a subject data package download link to remain valid, default to 1 day. |
 | Execution Variables |---|---|---|---|---|
 |`privacy_request_delay_timeout` | `FIDESOPS__EXECUTION__PRIVACY_REQUEST_DELAY_TIMEOUT` | int | 3600 | 3600 | The amount of time to wait for actions delaying privacy requests, for example pre and post processing webhooks.
 |`task_retry_count` | `FIDESOPS__EXECUTION__TASK_RETRY_COUNT` | int | 5 | 0 | The number of times a failed request will be retried
@@ -61,6 +62,9 @@ The `fidesops.toml` file should specify the following variables:
 |`analytics_opt_out` | `FIDESOPS__ROOT_USER__ANALYTICS_OPT_OUT` | bool | False | False | Opt out of sending anonymous usage data to Ethyca to improve the product experience.
 | Admin UI Variables|---|---|---|---|---|
 |`enabled` | `FIDESOPS__ADMIN_UI__ENABLED` | bool | False | True | Toggle whether the Admin UI is served from `/`
+| Fidesops Notification Variables|---|---|---|---|---|
+|`send_request_completion_notification` | `FIDESOPS__NOTIFICATIONS__SEND_REQUEST_COMPLETION_NOTIFICATION` | bool | True | True | Whether a notification will be sent to data subjects upon privacy request completion
+
 
 ### An example `fidesops.toml` configuration file
 
@@ -93,6 +97,7 @@ oauth_root_client_secret = "fidesopsadminsecret"
 log_level = "INFO"
 root_username = "root_user"
 root_password = "Testpassword1!"
+subject_request_download_link_ttl_seconds = 86400
 
 [execution]
 masking_strict = true
@@ -110,6 +115,9 @@ analytics_opt_out = false
 
 [admin_ui]
 enabled = true
+
+[notifications]
+send_request_completion_notification = true
 ```
 
 Note: The configuration is case-sensitive, so the variables must be specified in `lowercase`.
@@ -121,7 +129,7 @@ Note: The configuration is case-sensitive, so the variables must be specified in
 | `FIDESOPS__LOG_PII` | False | If this is set to "True", pii values will display unmasked in log output. This variable should always be set to "False" in production systems.
 | `FIDESOPS__HOT_RELOAD` | False | If "True", the fidesops server will reload code changes without you needing to restart the server. This variable should always be set to "False" in production systems.|
 | `FIDESOPS__DEV_MODE` | False | If "True", the fidesops server will log error tracebacks, and log details of third party requests. This variable should always be set to "False" in production systems.|
-| `FIDESOPS__CONFIG_PATH` | None | If this variable is set to a path, that path will be used to load .toml files first. That is, any .toml files on this path will override any installed .toml files. |
+| `FIDES__CONFIG_PATH` | None | If this variable is set to a path, that path will be used to load .toml files first. That is, any .toml files on this path will override any installed .toml files. |
 | `FIDESOPS__DATABASE__SQLALCHEMY_DATABASE_URI` | None | An optional override for the URI used for the database connection, in the form of `postgresql://<user>:<password>@<hostname>:<port>/<database>`. |
 | `TESTING` | False | This variable does not need to be set - Pytest will set it to True when running unit tests, so we run against the test database. |
 

@@ -85,6 +85,10 @@ class StorageConfigNotFoundException(BaseException):
     """Custom Exception - StorageConfig Not Found"""
 
 
+class IdentityNotFoundException(BaseException):
+    """Identity Not Found"""
+
+
 class WebhookOrderException(BaseException):
     """Custom Exception - Issue with webhooks order"""
 
@@ -99,6 +103,10 @@ class CollectionDisabled(BaseException):
 
 class PrivacyRequestPaused(BaseException):
     """Halt Instruction Received on Privacy Request"""
+
+
+class NoCachedManualWebhookEntry(BaseException):
+    """No manual data exists for this webhook on the given privacy request."""
 
 
 class PrivacyRequestErasureEmailSendRequired(BaseException):
