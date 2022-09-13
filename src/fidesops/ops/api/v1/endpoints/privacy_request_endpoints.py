@@ -297,7 +297,7 @@ def _send_verification_code_to_user(
 def _send_privacy_request_receipt_email_to_user(
     db: Session, policy: Policy, email: Optional[str]
 ) -> None:
-    """Generate and cache a verification code, and then email to the user"""
+    """Helper function to send request receipt email to the user"""
     if not email:
         logger.error(
             IdentityNotFoundException(
