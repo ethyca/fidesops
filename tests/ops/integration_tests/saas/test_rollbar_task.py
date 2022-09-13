@@ -63,7 +63,6 @@ async def test_rollbar_access_request_task(
             "name",
         ],
     )
-
     assert_rows_match(
         v[f"{dataset_name}:project_access_token"],
         min_size=1,
@@ -73,23 +72,12 @@ async def test_rollbar_access_request_task(
             "access_token",
         ],
     )
-    results = v[f"{dataset_name}:instances"]
-
     assert_rows_match(
-        results,
+        v[f"{dataset_name}:instances"],
         min_size=1,
         keys=[
-            "instances",
+            "id",
+            "timestamp",
+            "data",
         ],
     )
-    for instances in results:
-        for item in instances["instances"]:
-            assert_rows_match(
-                [item],
-                min_size=1,
-                keys=[
-                    "id",
-                    "timestamp",
-                    "data",
-                ],
-            )
