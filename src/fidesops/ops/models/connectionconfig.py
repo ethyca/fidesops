@@ -10,7 +10,7 @@ from fideslib.exceptions import KeyOrNameAlreadyExists
 from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -117,6 +117,13 @@ class ConnectionConfig(Base):
     # only applicable to ConnectionConfigs of connection type saas
     saas_config = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
+    )
+
+    access_manual_webhook = relationship(
+        "AccessManualWebhook",
+        back_populates="connection_config",
+        cascade="delete",
+        uselist=False,
     )
 
     @classmethod
