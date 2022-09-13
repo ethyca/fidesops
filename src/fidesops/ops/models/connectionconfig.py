@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import Any, Dict, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, Optional, Type
 
 from fideslib.db.base import Base
 from fideslib.db.base_class import get_key_from_data
@@ -19,6 +19,9 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fidesops.ops.core.config import config
 from fidesops.ops.db.base_class import JSONTypeOverride
 from fidesops.ops.schemas.saas.saas_config import SaaSConfig
+
+if TYPE_CHECKING:
+    from fidesops.ops.models.manual_webhook import AccessManualWebhook
 
 
 class ConnectionTestStatus(enum.Enum):
