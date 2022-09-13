@@ -66,7 +66,7 @@ celery_app = _create_celery()
 
 def start_worker() -> None:
     logger.info("Running Celery worker...")
-    default_queue_name = celery_app.conf.get("default_queue_name", "celery")
+    default_queue_name = celery_app.conf.get("task_default_queue", "celery")
     celery_app.worker_main(
         argv=[
             "worker",
