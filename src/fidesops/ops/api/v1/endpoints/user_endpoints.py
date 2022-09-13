@@ -5,9 +5,7 @@ from typing import Optional
 import jose.exceptions
 from fastapi import Depends, HTTPException, Security
 from fideslib.cryptography.cryptographic_util import b64_str_to_str
-from fideslib.cryptography.schemas.jwt import (
-    JWE_PAYLOAD_CLIENT_ID,
-)
+from fideslib.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
 from fideslib.exceptions import AuthenticationError
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
