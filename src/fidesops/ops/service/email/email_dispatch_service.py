@@ -93,6 +93,22 @@ def _build_email(
             subject="Your data has been deleted",
             body=base_template.render(),
         )
+    if action_type == EmailActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Your request has been approved",
+            body=base_template.render(),
+        )
+    if action_type == EmailActionType.PRIVACY_REQUEST_REVIEW_DENY:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Your request has been denied",
+            body=base_template.render(
+                {
+                    "rejection_reason": body_params.rejection_reason
+                }
+            ),
+        )
     logger.error("Email action type %s is not implemented", action_type)
     raise EmailDispatchException(f"Email action type {action_type} is not implemented")
 

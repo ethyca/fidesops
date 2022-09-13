@@ -64,6 +64,10 @@ to your users. If using a custom privacy center, ensure that you intake an email
 For security purposes, the data package download link is a one-time link and expires in 24 hrs by default. To change TTL, update the `subject_request_download_link_ttl_seconds`
 variable in your `fidesops.toml`.
 
+### Request Review
+
+An email will be sent to users to notify them when their privacy request has been reviewed. If the privacy request was rejected, the email will include rejection reason.
+
 
 ## Approve and deny Privacy Requests
 

@@ -22,6 +22,8 @@ class EmailActionType(Enum):
     EMAIL_ERASURE_REQUEST_FULFILLMENT = "email_erasure_fulfillment"
     PRIVACY_REQUEST_COMPLETE_ACCESS = "privacy_request_complete_access"
     PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion"
+    PRIVACY_REQUEST_REVIEW_DENY = "privacy_request_review_deny"
+    PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
 
 
 class EmailTemplateBodyParams(Enum):
@@ -47,6 +49,12 @@ class AccessRequestCompleteBodyParams(BaseModel):
     """Body params required for privacy request completion access email template"""
 
     download_links: List[str]
+
+
+class RequestReviewDenyBodyParams(BaseModel):
+    """Body params required for privacy request review deny email template"""
+
+    rejection_reason: Optional[str]
 
 
 class EmailForActionType(BaseModel):

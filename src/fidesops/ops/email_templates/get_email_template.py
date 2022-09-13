@@ -8,7 +8,8 @@ from fidesops.ops.email_templates.template_names import (
     EMAIL_ERASURE_REQUEST_FULFILLMENT,
     PRIVACY_REQUEST_COMPLETE_ACCESS_TEMPLATE,
     PRIVACY_REQUEST_COMPLETE_DELETION_TEMPLATE,
-    SUBJECT_IDENTITY_VERIFICATION_TEMPLATE,
+    SUBJECT_IDENTITY_VERIFICATION_TEMPLATE, PRIVACY_REQUEST_REVIEW_DENY_TEMPLATE,
+    PRIVACY_REQUEST_REVIEW_APPROVE_TEMPLATE,
 )
 from fidesops.ops.schemas.email.email import EmailActionType
 
@@ -31,6 +32,10 @@ def get_email_template(action_type: EmailActionType) -> Template:
         return template_env.get_template(PRIVACY_REQUEST_COMPLETE_ACCESS_TEMPLATE)
     if action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
         return template_env.get_template(PRIVACY_REQUEST_COMPLETE_DELETION_TEMPLATE)
+    if action_type == EmailActionType.PRIVACY_REQUEST_REVIEW_DENY:
+        return template_env.get_template(PRIVACY_REQUEST_REVIEW_DENY_TEMPLATE)
+    if action_type == EmailActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
+        return template_env.get_template(PRIVACY_REQUEST_REVIEW_APPROVE_TEMPLATE)
 
     logger.error("No corresponding template linked to the %s", action_type)
     raise EmailTemplateUnhandledActionType(

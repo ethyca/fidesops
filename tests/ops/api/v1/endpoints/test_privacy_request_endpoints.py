@@ -65,7 +65,7 @@ from fidesops.ops.models.privacy_request import (
 from fidesops.ops.schemas.dataset import DryRunDatasetResponse
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
-    SubjectIdentityVerificationBodyParams,
+    SubjectIdentityVerificationBodyParams, RequestReviewDenyBodyParams,
 )
 from fidesops.ops.schemas.masking.masking_secrets import SecretType
 from fidesops.ops.schemas.policy import PolicyResponse
@@ -1868,6 +1868,14 @@ class TestDenyPrivacyRequest:
     def url(self, db, privacy_request):
         return V1_URL_PREFIX + PRIVACY_REQUEST_DENY
 
+    @pytest.fixture(autouse=True, scope="function")
+    def privacy_request_review_email_notification_enabled(self):
+        """Enable request review email"""
+        original_value = config.notifications.send_request_review_notification
+        config.notifications.send_request_review_notification = True
+        yield
+        config.notifications.send_request_review_notification = original_value
+
     def test_deny_privacy_request_not_authenticated(self, url, api_client):
         response = api_client.patch(url)
         assert response.status_code == 401
@@ -1924,8 +1932,12 @@ class TestDenyPrivacyRequest:
     @mock.patch(
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
+    @mock.patch(
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
+    )
     def test_deny_privacy_request_without_denial_reason(
         self,
+        mock_dispatch_email,
         submit_mock,
         db,
         url,
@@ -1965,6 +1977,10 @@ class TestDenyPrivacyRequest:
                 & (AuditLog.user_id == user.id)
             ),
         ).first()
+        call_args = mock_dispatch_email.call_args[1]
+        assert call_args["action_type"] == EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
+        assert call_args["to_email"] == "test@example.com"
+        assert call_args["email_body_params"] == RequestReviewDenyBodyParams(rejection_reason=None)
 
         assert denial_audit_log.message is None
 
@@ -1975,8 +1991,12 @@ class TestDenyPrivacyRequest:
     @mock.patch(
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
+    @mock.patch(
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
+    )
     def test_deny_privacy_request_with_denial_reason(
         self,
+        mock_dispatch_email,
         submit_mock,
         db,
         url,
@@ -2016,6 +2036,10 @@ class TestDenyPrivacyRequest:
                 & (AuditLog.user_id == user.id)
             ),
         ).first()
+        call_args = mock_dispatch_email.call_args[1]
+        assert call_args["action_type"] == EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
+        assert call_args["to_email"] == "test@example.com"
+        assert call_args["email_body_params"] == RequestReviewDenyBodyParams(rejection_reason=denial_reason)
 
         assert denial_audit_log.message == denial_reason
 

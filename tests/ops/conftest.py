@@ -264,6 +264,15 @@ def privacy_request_complete_email_notification_disabled():
     config.notifications.send_request_completion_notification = original_value
 
 
+@pytest.fixture(autouse=True, scope="function")
+def privacy_request_review_email_notification_disabled():
+    """Disable request review email for most tests unless overridden"""
+    original_value = config.notifications.send_request_review_notification
+    config.notifications.send_request_review_notification = False
+    yield
+    config.notifications.send_request_review_notification = original_value
+
+
 @pytest.fixture(scope="session", autouse=True)
 def event_loop():
     try:
