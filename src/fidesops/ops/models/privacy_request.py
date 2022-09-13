@@ -66,7 +66,6 @@ from fidesops.ops.util.cache import (
 )
 from fidesops.ops.util.collection_util import Row
 from fidesops.ops.util.constants import API_DATE_FORMAT
-from fidesops.ops.util.regulations import Regulations
 
 logger = logging.getLogger(__name__)
 
