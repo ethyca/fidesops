@@ -57,6 +57,7 @@ class FidesopsEmail(
         List[CheckpointActionRequired],
     ]
 
+
 class AccessRequestCompleteBodyParams(BaseModel):
     """Body params required for privacy request completion access email template"""
 

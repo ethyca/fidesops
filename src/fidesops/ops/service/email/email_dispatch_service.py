@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Dict, List, Optional, Union
 
-
 import requests
 from sqlalchemy.orm import Session
 
@@ -10,6 +9,7 @@ from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.models.privacy_request import CheckpointActionRequired
 from fidesops.ops.schemas.email.email import (
+    AccessRequestCompleteBodyParams,
     EmailActionType,
     EmailForActionType,
     EmailServiceDetails,
@@ -47,10 +47,13 @@ def dispatch_email(
     db: Session,
     action_type: EmailActionType,
     to_email: Optional[str],
-    email_body_params: Union[
-        SubjectIdentityVerificationBodyParams,
-        List[CheckpointActionRequired],
-    ],
+    email_body_params: Optional[
+        Union[
+            AccessRequestCompleteBodyParams,
+            SubjectIdentityVerificationBodyParams,
+            List[CheckpointActionRequired],
+        ]
+    ] = None,
 ) -> None:
     """
     Sends an email to `to_email` with content supplied in `email_body_params`

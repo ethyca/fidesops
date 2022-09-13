@@ -3,7 +3,6 @@ import random
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set
 
-
 from celery.utils.log import get_task_logger
 from fideslib.db.session import get_db_session
 from fideslib.models.audit_log import AuditLog, AuditLogAction
@@ -451,7 +450,6 @@ def initiate_privacy_request_completion_email(
             db=session,
             action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
             to_email=identity_data.get(ProvidedIdentityType.email.value),
-            email_body_params=None,
         )
 
 
