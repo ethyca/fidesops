@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import logging
 from os.path import exists
-from typing import Dict, List, Optional
+from typing import Dict, Iterable, List, Optional, Union
 
 from fideslib.core.config import load_toml
+from fideslib.exceptions import KeyOrNameAlreadyExists
+from packaging.version import LegacyVersion, Version
+from packaging.version import parse as parse_version
 from pydantic import BaseModel, validator
 from sqlalchemy.orm import Session
 
+from fidesops.ops.api.v1.endpoints.connection_endpoints import validate_secrets
 from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -27,6 +32,8 @@ from fidesops.ops.util.saas_util import (
 
 _registry: Optional[ConnectorRegistry] = None
 registry_file = "data/saas/saas_connector_registry.toml"
+
+logger = logging.getLogger(__name__)
 
 
 class ConnectorTemplate(BaseModel):
@@ -133,3 +140,129 @@ def load_registry(config_file: str) -> ConnectorRegistry:
     if _registry is None:
         _registry = ConnectorRegistry.parse_obj(load_toml([config_file]))
     return _registry
+
+
+def update_saas_configs(registry: ConnectorRegistry, db: Session) -> None:
+    """
+    Updates SaaS config instances currently in the DB if to the
+    corresponding template in the registry are found.
+
+    Effectively an "update script" for SaaS config instances,
+    to be run on server bootstrap.
+    """
+    for connector_type in registry.connector_types():
+        logger.debug(
+            "Determining if any updates are needed for connectors of type %s based on templates...",
+            connector_type,
+        )
+        template: ConnectorTemplate = registry.get_connector_template(  # type: ignore
+            connector_type
+        )
+        saas_config_template = SaaSConfig.parse_obj(load_config(template.config))
+        template_version: Union[LegacyVersion, Version] = parse_version(
+            saas_config_template.version
+        )
+
+        connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
+            db=db,
+            conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
+        ).all()
+        for connection_config in connection_configs:
+            saas_config_instance = SaaSConfig.parse_obj(connection_config.saas_config)
+            if parse_version(saas_config_instance.version) < template_version:
+                logger.info(
+                    "Updating SaaS config instance '%s' of type '%s' as its version, %s, was found to be lower than the template version %s",
+                    saas_config_instance.fides_key,
+                    connector_type,
+                    saas_config_instance.version,
+                    template_version,
+                )
+                try:
+                    update_saas_instance(
+                        db,
+                        connection_config,
+                        template,
+                        saas_config_instance,
+                    )
+                except Exception:
+                    logger.error(
+                        "Encountered error attempting to update SaaS config instance %s",
+                        saas_config_instance.fides_key,
+                        exc_info=True,
+                    )
+
+
+def update_saas_instance(
+    db: Session,
+    connection_config: ConnectionConfig,
+    template: ConnectorTemplate,
+    saas_config_instance: SaaSConfig,
+) -> None:
+    """
+    Replace in the DB the existing SaaS instance configuration data
+    (SaaSConfig, DatasetConfig) associated with the given ConnectionConfig
+    with new instance configuration data based on the given ConnectorTemplate
+    """
+    template_vals = SaasConnectionTemplateValues(
+        name=connection_config.name,
+        key=connection_config.key,
+        description=connection_config.description,
+        secrets=connection_config.secrets,
+        instance_key=saas_config_instance.fides_key,
+    )
+    connection_config.delete(db)
+    add_saas_connector(db, template, template_vals, str(saas_config_instance.type))
+
+
+def add_saas_connector(
+    db: Session,
+    connector_template: ConnectorTemplate,
+    template_values: SaasConnectionTemplateValues,
+    saas_connector_type: str,
+) -> tuple[ConnectionConfig, DatasetConfig]:
+    """
+    Adds to the db the SaaS instance configuration data based
+    on the provided ConnectorTemplate and SaasConnectionTemplateValues
+
+    Returns a tuple - first element is the instantiated `ConnectionConfig`,
+    second element is the instantiated `DatasetConfig`.
+
+    Raises:
+        KeyOrNameAlreadyExists: if the key or instance_key of the given
+            SaasConnectionTemplateValues already exists in the db
+    """
+
+    if DatasetConfig.filter(
+        db=db,
+        conditions=(DatasetConfig.fides_key == template_values.instance_key),
+    ).count():
+        raise KeyOrNameAlreadyExists(
+            f"SaaS connector instance key '{template_values.instance_key}' already exists.",
+        )
+
+    connection_config: ConnectionConfig = (
+        create_connection_config_from_template_no_save(
+            db, connector_template, template_values
+        )
+    )
+
+    connection_config.secrets = validate_secrets(
+        template_values.secrets, connection_config
+    ).dict()
+    connection_config.save(db=db)  # Not persisted to db until secrets are validated
+
+    try:
+        dataset_config: DatasetConfig = create_dataset_config_from_template(
+            db, connection_config, connector_template, template_values
+        )
+    except Exception as e:
+        connection_config.delete(db)
+        raise e
+
+    logger.info(
+        "SaaS Connector and Dataset %s successfully created from '%s' template.",
+        template_values.instance_key,
+        saas_connector_type,
+    )
+
+    return connection_config, dataset_config
