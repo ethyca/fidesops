@@ -81,3 +81,6 @@ async def test_rollbar_access_request_task(
             "data",
         ],
     )
+    # verify we only returned data for our identity email
+    for instance in v[f"{dataset_name}:instances"]:
+        assert instance["data"]["person"]["email"] == rollbar_identity_email
