@@ -2658,7 +2658,6 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         db,
         api_client: TestClient,
         policy,
-        privacy_request_receipt_email_notification_enabled,
         subject_identity_verification_required,
     ):
         data = [
@@ -2778,6 +2777,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
 
         assert mock_execute_request.called
+        assert response_data[0]["status"] == PrivacyRequestStatus.pending
 
         assert mock_dispatch_email.called
 
@@ -2785,7 +2785,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         assert call_args["action_type"] == EmailActionType.PRIVACY_REQUEST_RECEIPT
         assert call_args["to_email"] == "test@example.com"
         assert call_args["email_body_params"] == RequestReceiptBodyParams(
-            request_types=set(ActionType.access.value)
+            request_types={ActionType.access.value}
         )
 
         pr.delete(db=db)
@@ -2821,14 +2821,14 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         assert mock_execute_request.called
 
-        assert response_data[0]["status"] == PrivacyRequestStatus.identity_unverified
+        assert response_data[0]["status"] == PrivacyRequestStatus.pending
         assert mock_dispatch_email.called
 
         call_args = mock_dispatch_email.call_args[1]
         assert call_args["action_type"] == EmailActionType.PRIVACY_REQUEST_RECEIPT
         assert call_args["to_email"] == "test@example.com"
         assert call_args["email_body_params"] == RequestReceiptBodyParams(
-            request_types=set(ActionType.access.value)
+            request_types={ActionType.access.value}
         )
 
         pr.delete(db=db)
