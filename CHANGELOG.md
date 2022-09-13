@@ -42,6 +42,7 @@ The types of changes are:
 * Added support for one-to-many relationships for param_values in SaaS configs [#1253](https://github.com/ethyca/fidesops/pull/1253)
 * Added erasure endpoints for Shopify connector [#1289](https://github.com/ethyca/fidesops/pull/1289)
 * Adds ability to send email notification upon privacy request completion [#1282](https://github.com/ethyca/fidesops/pull/1282)
+* Add table for consent (#1301)[https://github.com/ethyca/fidesops/pull/1301]
 
 ### Docs
 
