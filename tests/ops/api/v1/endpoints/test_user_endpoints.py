@@ -810,7 +810,7 @@ class TestUserLogout:
         # Assert user does not still have client reference
         assert user_search.client is None
 
-        # Outdated client token still gives a 401
+        # Outdated client token logout gives a 204
         payload = {
             JWE_PAYLOAD_SCOPES: scopes,
             JWE_PAYLOAD_CLIENT_ID: client_id,
