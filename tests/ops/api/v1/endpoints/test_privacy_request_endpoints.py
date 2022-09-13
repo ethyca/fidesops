@@ -783,7 +783,7 @@ class TestGetPrivacyRequests:
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == privacy_request.id
 
-    def test_filter_privacy_requests_by_identity_exact(
+    def test_filter_privacy_requests_by_identity_no_request_id(
         self,
         db,
         api_client,

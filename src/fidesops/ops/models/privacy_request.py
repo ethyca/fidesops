@@ -276,7 +276,6 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         blind indexing for later searching and audit purposes.
         """
         identity_dict: Dict[str, Any] = dict(identity)
-        print(identity_dict)
         for key, value in identity_dict.items():
             if value is not None:
                 hashed_value = ProvidedIdentity.hash_value(value)

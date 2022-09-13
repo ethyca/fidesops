@@ -443,8 +443,8 @@ def _filter_privacy_request_queryset(
             for identity in ProvidedIdentity.filter(
                 db=db,
                 conditions=(
-                    ProvidedIdentity.hashed_value == hashed_identity,
-                    ProvidedIdentity.privacy_request_id != None,
+                    (ProvidedIdentity.hashed_value == hashed_identity)
+                    & (ProvidedIdentity.privacy_request_id.isnot(None))
                 ),
             ).values(column("privacy_request_id"))
         }
