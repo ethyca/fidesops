@@ -111,13 +111,18 @@ def create_connection_config_from_template_no_save(
     return connection_config
 
 
-def create_dataset_config_from_template(
+def upsert_dataset_config_from_template(
     db: Session,
     connection_config: ConnectionConfig,
     template: ConnectorTemplate,
     template_values: SaasConnectionTemplateValues,
 ) -> DatasetConfig:
-    """Creates a DatasetConfig from a template and associates it with a ConnectionConfig"""
+    """
+    Creates a `DatasetConfig` from a template
+    and associates it with a ConnectionConfig.
+    If the `DatasetConfig` already exists in the db,
+    then the existing record is updated.
+    """
     # Load the dataset config from template and replace every instance of "<instance_fides_key>" with the fides_key
     # the user has chosen
     dataset_from_template: Dict = load_dataset_with_replacement(
@@ -215,4 +220,4 @@ def update_saas_instance(
 
     connection_config.update_saas_config(db, SaaSConfig(**config_from_template))
 
-    create_dataset_config_from_template(db, connection_config, template, template_vals)
+    upsert_dataset_config_from_template(db, connection_config, template, template_vals)

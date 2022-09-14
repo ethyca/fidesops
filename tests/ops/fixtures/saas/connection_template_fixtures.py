@@ -14,9 +14,9 @@ from fidesops.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     ConnectorTemplate,
     create_connection_config_from_template_no_save,
-    create_dataset_config_from_template,
     load_registry,
     registry_file,
+    upsert_dataset_config_from_template,
 )
 
 
@@ -138,7 +138,7 @@ def instantiate_connector(
     ).dict()
     connection_config.save(db=db)  # Not persisted to db until secrets are validated
 
-    dataset_config: DatasetConfig = create_dataset_config_from_template(
+    dataset_config: DatasetConfig = upsert_dataset_config_from_template(
         db, connection_config, connector_template, template_vals
     )
 
