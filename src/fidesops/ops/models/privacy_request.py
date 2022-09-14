@@ -16,7 +16,7 @@ from fideslib.models.audit_log import AuditLog
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.jwt import generate_jwe
-from sqlalchemy import Column, DateTime
+from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -30,12 +30,14 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.ops.common_exceptions import (
     IdentityVerificationException,
+    NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
 from fidesops.ops.db.base_class import JSONTypeOverride
 from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.graph.graph_differences import GraphRepr
+from fidesops.ops.models.manual_webhook import AccessManualWebhook
 from fidesops.ops.models.policy import (
     ActionType,
     CurrentStep,
@@ -278,6 +280,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         for key, value in identity_dict.items():
             if value is not None:
                 hashed_value = ProvidedIdentity.hash_value(value)
+
                 ProvidedIdentity.create(
                     db=db,
                     data={
@@ -418,20 +421,18 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
     def get_email_connector_template_contents_by_dataset(
         self, step: CurrentStep, dataset: str
-    ) -> EmailRequestFulfillmentBodyParams:
+    ) -> List[CheckpointActionRequired]:
         """Retrieve the raw details to populate an email template for collections on a given dataset."""
         cache: FidesopsRedis = get_cache()
         email_contents: Dict[str, Optional[Any]] = cache.get_encoded_objects_by_prefix(
             f"EMAIL_INFORMATION__{self.id}__{step.value}__{dataset}"
         )
-        return {
-            CollectionAddress(
-                k.split("__")[-2], k.split("__")[-1]
-            ): CheckpointActionRequired.parse_obj(v)
-            if v
-            else None
-            for k, v in email_contents.items()
-        }
+
+        actions: List[CheckpointActionRequired] = []
+        for email_content in email_contents.values():
+            if email_content:
+                actions.append(CheckpointActionRequired.parse_obj(email_content))
+        return actions
 
     def cache_paused_collection_details(
         self,
@@ -488,10 +489,47 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         """
         return get_action_required_details(cached_key=f"EN_FAILED_LOCATION__{self.id}")
 
+    def cache_manual_webhook_input(
+        self, manual_webhook: AccessManualWebhook, input_data: Optional[Dict[str, Any]]
+    ) -> None:
+        """Cache manually added data for the given manual webhook.  This is for use by the *manual_webhook* connector,
+        which is *NOT* integrated with the graph.
+
+        Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
+        """
+        cache: FidesopsRedis = get_cache()
+        parsed_data: BaseSchema = manual_webhook.fields_schema.parse_obj(input_data)
+
+        cache.set_encoded_object(
+            f"WEBHOOK_MANUAL_INPUT__{self.id}__{manual_webhook.id}",
+            parsed_data.dict(),
+        )
+
+    def get_manual_webhook_input(
+        self, manual_webhook: AccessManualWebhook
+    ) -> Dict[str, Any]:
+        """Retrieve manually added data that matches fields supplied in the specified manual webhook.
+
+        This is for use by the *manual_webhook* connector which is *NOT* integrated with the garph.
+        """
+        cache: FidesopsRedis = get_cache()
+        cached_results: Optional[
+            Optional[Dict[str, Any]]
+        ] = cache.get_encoded_objects_by_prefix(
+            f"WEBHOOK_MANUAL_INPUT__{self.id}__{manual_webhook.id}"
+        )
+        if cached_results:
+            return manual_webhook.fields_schema.parse_obj(
+                list(cached_results.values())[0]
+            ).dict()
+        raise NoCachedManualWebhookEntry(
+            f"No data cached for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
+        )
+
     def cache_manual_input(
         self, collection: CollectionAddress, manual_rows: Optional[List[Row]]
     ) -> None:
-        """Cache manually added rows for the given CollectionAddress"""
+        """Cache manually added rows for the given CollectionAddress. This is for use by the *manual* connector which is integrated with the graph."""
         cache: FidesopsRedis = get_cache()
         cache.set_encoded_object(
             f"MANUAL_INPUT__{self.id}__{collection.value}",
@@ -500,7 +538,9 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
     def get_manual_input(self, collection: CollectionAddress) -> Optional[List[Row]]:
         """Retrieve manually added rows from the cache for the given CollectionAddress.
-        Returns the manual data if it exists, otherwise None
+        Returns the manual data if it exists, otherwise None.
+
+        This is for use by the *manual* connector which is integrated with the graph.
         """
         cache: FidesopsRedis = get_cache()
         cached_results: Optional[
@@ -513,7 +553,10 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     def cache_manual_erasure_count(
         self, collection: CollectionAddress, count: int
     ) -> None:
-        """Cache the number of rows manually masked for a given collection."""
+        """Cache the number of rows manually masked for a given collection.
+
+        This is for use by the *manual* connector which is integrated with the graph.
+        """
         cache: FidesopsRedis = get_cache()
         cache.set_encoded_object(
             f"MANUAL_MASK__{self.id}__{collection.value}",
@@ -524,6 +567,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         """Retrieve number of rows manually masked for this collection from the cache.
 
         Cached as an integer to mimic what we return from erasures in an automated way.
+        This is for use by the *manual* connector which is integrated with the graph.
         """
         cache: FidesopsRedis = get_cache()
         prefix = f"MANUAL_MASK__{self.id}__{collection.value}"
@@ -685,7 +729,6 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
     privacy_request_id = Column(
         String,
         ForeignKey(PrivacyRequest.id_field_path),
-        nullable=False,
     )
     privacy_request = relationship(
         PrivacyRequest,
@@ -714,6 +757,9 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         ),
         nullable=True,
     )  # Type bytea in the db
+    consent = relationship(
+        "Consent", back_populates="provided_identity", cascade="delete, delete-orphan"
+    )
 
     @classmethod
     def hash_value(
@@ -728,6 +774,17 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
             SALT.encode(encoding),
         )
         return hashed_value
+
+
+class Consent(Base):
+    """The DB ORM model for Consent."""
+
+    provided_identity_id = Column(String, ForeignKey(ProvidedIdentity.id))
+    data_use = Column(String, nullable=False, unique=True)
+    data_use_description = Column(String)
+    opt_in = Column(Boolean, nullable=False)
+
+    provided_identity = relationship(ProvidedIdentity, back_populates="consent")
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.
