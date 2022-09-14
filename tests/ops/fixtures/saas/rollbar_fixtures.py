@@ -1,3 +1,4 @@
+import random
 from typing import Any, Dict, Generator
 
 import pydash
@@ -114,27 +115,88 @@ def rollbar_erasure_identity_email():
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 
-def rollbar_erasure_data(
+@pytest.fixture(scope="function")
+def rollbar_create_erasure_data(
     rollbar_connection_config: ConnectionConfig, rollbar_erasure_identity_email: str
 ) -> Generator:
     """
     Creates a dynamic test data record for erasure tests.
-    Yields User ID as this may be useful to have in test scenarios
     """
     rollbar_secrets = rollbar_connection_config.secrets
+    """
+        there are 3 steps to create data for erasure api
+        1) create a new project
+        2) get access token with scope post_server_item from project details
+        3) create item inside above created project
+        """
+
+    # 1) create a new project
+    random_num = random.randint(0, 99)
     base_url = f"https://{rollbar_secrets['domain']}"
-    body = {
-        "email": rollbar_erasure_identity_email,
-        "password": "k1UhfAg8hBu",
-        "email_verified": True,
-        "name": "Test",
-        "given_name": "First Name",
-        "family_name": "Last Name",
+    body = {"name": f"ethyca_test_project_{random_num}"}
+    headers = {
+        "Content-Type": "application/json",
+        "X-Rollbar-Access-Token": rollbar_secrets["write_access_token"],
+        # Use an Account Access Token with 'write' scope
     }
-    users_response = requests.post(
-        url=f"{base_url}/websso/signup?response_type=code&redirect_uri={base_url}/version",
-        json=body,
+
+    project_response = requests.post(
+        url=f"{base_url}/api/1/projects", json=body, headers=headers
     )
-    user = users_response.json()
-    assert users_response.ok
-    yield user
+    project = project_response.json()
+    assert project_response.ok
+    project_id = project["result"]["id"]
+
+    # 2) get access token with scope post_server_item, read from project details
+    headers = {
+        "Content-Type": "application/json",
+        "X-Rollbar-Access-Token": rollbar_secrets["read_access_token"],
+        #     Use an Account Access Token with 'read' scope
+    }
+    url = f"{base_url}/api/1/project/{project_id}/access_tokens"
+    access_token_response = requests.get(url=url, headers=headers)
+    assert access_token_response.ok
+    access_tokens = access_token_response.json()
+    access_tokens_result = access_tokens["result"]
+    import pdb
+
+    pdb.set_trace()
+    # fetch only specific tokens from token list
+    project_tokens = {"read": "", "post_server_item": ""}
+    for token in access_tokens_result:
+        if token["name"] == "read":
+            project_tokens["read"] = token["access_token"]
+        if token["name"] == "post_server_item":
+            project_tokens["post_server_item"] = token["access_token"]
+
+    # 3) create item inside above created project
+    # Use an access token with scope post_server_item
+    headers = {
+        "Content-Type": "application/json",
+        "X-Rollbar-Access-Token": project_tokens["post_server_item"],
+    }
+    body = {
+        "data": {
+            "environment": "production",
+            "body": {
+                "message": {
+                    "body": "Request over threshold of 10 seconds",
+                    "route": "home#index",
+                    "time_elapsed": 15.23,
+                },
+                "level": "error",
+            },
+            "person": {
+                "id": "1",
+                "username": "ethyca",
+                "email": rollbar_erasure_identity_email,
+            },
+        }
+    }
+    item_response = requests.post(
+        url=f"{base_url}/api/1/item/", json=body, headers=headers
+    )
+
+    assert item_response.ok
+    item = item_response.json()["result"]
+    yield item
