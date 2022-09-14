@@ -62,18 +62,16 @@ export const ConnectorParameters: React.FC = () => {
   return (
     <VStack align="stretch" gap="24px">
       <Box color="gray.700" fontSize="14px">
-        To begin setting up your new {connectionOption!.human_readable}
+        To begin setting up your new {connectionOption!.human_readable}{" "}
         connector you must first assign a name to the connector and a
-        description. You must also assign an owner/s to this new connector so
-        that they can be automatically contacted by their email when a new
-        manual subject request has been received.
+        description.
         <br />
         <br />
         Once you have completed this section you can then progress onto{" "}
         <Text display="inline-block" fontWeight="700">
           DSR customization
         </Text>{" "}
-        using the menu on the right hand side.
+        using the menu on the left hand side.
       </Box>
       <ConnectorParametersForm
         defaultValues={defaultValues}
