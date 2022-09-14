@@ -255,7 +255,7 @@ async def create_privacy_request(
                 queue_privacy_request(privacy_request.id)
         except EmailDispatchException as exc:
             kwargs["privacy_request_id"] = privacy_request.id
-            logger.error("EmailDispatchException: %s", Pii(exc))
+            logger.error("EmailDispatchException: %s", exc)
             failure = {
                 "message": "Verification email could not be sent.",
                 "data": kwargs,
@@ -339,7 +339,7 @@ def _send_privacy_request_receipt_email_to_user(
         )
     except EmailDispatchException as exc:
         # catch early since this failure isn't fatal to privacy request, unlike the subject id verification email
-        logger.info("Email dispatch failed with exception %s", Pii(exc))
+        logger.info("Email dispatch failed with exception %s", exc)
 
 
 def privacy_request_csv_download(
@@ -1149,7 +1149,7 @@ async def verify_identification_code(
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
     except EmailDispatchException as exc:
         # not fatal to request lifecycle, do not raise error, continue with request
-        logger.info("Email dispatch failed with exception %s", Pii(exc))
+        logger.info("Email dispatch failed with exception %s", exc)
     except PermissionError as exc:
         logger.info("Invalid verification code provided for %s.", privacy_request.id)
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])

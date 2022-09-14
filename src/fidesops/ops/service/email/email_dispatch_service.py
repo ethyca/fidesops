@@ -175,4 +175,4 @@ def _mailgun_dispatcher(
             )
     except Exception as e:
         logger.error("Email failed to send: %s", Pii(str(e)))
-        raise EmailDispatchException(f"Email failed to send due to: {e}")
+        raise EmailDispatchException(f"Email failed to send due to: {Pii(e)}")
