@@ -88,8 +88,8 @@ from fidesops.ops.schemas.dataset import (
 )
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
-    RequestReceiptBodyParams,
     FidesopsEmail,
+    RequestReceiptBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
@@ -1136,8 +1136,7 @@ async def verify_identification_code(
     try:
         privacy_request.verify_identity(db, provided_code.code)
         policy: Optional[Policy] = Policy.get(
-            db=db,
-            object_id=privacy_request.policy_id
+            db=db, object_id=privacy_request.policy_id
         )
         if config.notifications.send_request_receipt_notification:
             _send_privacy_request_receipt_email_to_user(
