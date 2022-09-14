@@ -49,6 +49,10 @@ The types of changes are:
 * Added human readable label to ConnectionType endpoint [#1297](https://github.com/ethyca/fidesops/pull/1297)
 * Add table for consent (#1301)[https://github.com/ethyca/fidesops/pull/1301]
 
+### Changed
+
+* Renamed `PrivacyRequestIdentity` to `Identity` [#1324](https://github.com/ethyca/fidesops/pull/1324)
+
 ### Docs
 
 * Fix analytics opt out environment variable name [#1170](https://github.com/ethyca/fidesops/pull/1170)
