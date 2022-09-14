@@ -9,18 +9,24 @@ from fidesops.ops.schemas.connection_configuration.connection_config import (
 )
 
 
-class ManualWebhookFieldType(ConstrainedStr):
+class PIIFieldType(ConstrainedStr):
     """Using ConstrainedStr instead of constr to keep mypy happy"""
 
     min_length = 1
     max_length = 200
 
 
+class DSRLabelFieldType(ConstrainedStr):
+    """Using ConstrainedStr instead of constr to keep mypy happy"""
+
+    max_length = 200
+
+
 class ManualWebhookField(BaseSchema):
     """Schema to describe the attributes on a manual webhook field"""
 
-    pii_field: ManualWebhookFieldType
-    dsr_package_label: Optional[ManualWebhookFieldType] = None
+    pii_field: PIIFieldType
+    dsr_package_label: Optional[DSRLabelFieldType] = None
 
     class Config:
         orm_mode = True

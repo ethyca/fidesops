@@ -26,14 +26,11 @@ class TestManualWebhook:
         integration_manual_webhook_config.save(db)
         assert AccessManualWebhook.get_enabled(db) == []
 
-    def test_get_enabled_webhooks_connection_config_fields_is_None(
+    def test_get_enabled_webhooks_connection_config_fields_is_none(
         self, db, access_manual_webhook
     ):
         access_manual_webhook.fields = None
         access_manual_webhook.save(db)
-        import pdb
-
-        pdb.set_trace()
         assert AccessManualWebhook.get_enabled(db) == []
 
     def test_get_enabled_webhooks_connection_config_fields_is_empty(
