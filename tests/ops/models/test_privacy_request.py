@@ -16,8 +16,10 @@ from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.models.policy import CurrentStep, Policy
 from fidesops.ops.models.privacy_request import (
     CheckpointActionRequired,
+    Consent,
     PrivacyRequest,
     PrivacyRequestStatus,
+    ProvidedIdentity,
     can_run_checkpoint,
 )
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
@@ -534,7 +536,7 @@ class TestCacheEmailConnectorTemplateContents:
             privacy_request.get_email_connector_template_contents_by_dataset(
                 CurrentStep.erasure, "email_dataset"
             )
-            == {}
+            == []
         )
 
         privacy_request.cache_email_connector_template_contents(
@@ -551,10 +553,8 @@ class TestCacheEmailConnectorTemplateContents:
 
         assert privacy_request.get_email_connector_template_contents_by_dataset(
             CurrentStep.erasure, "email_dataset"
-        ) == {
-            CollectionAddress(
-                "email_dataset", "test_collection"
-            ): CheckpointActionRequired(
+        ) == [
+            CheckpointActionRequired(
                 step=CurrentStep.erasure,
                 collection=CollectionAddress("email_dataset", "test_collection"),
                 action_needed=[
@@ -565,7 +565,7 @@ class TestCacheEmailConnectorTemplateContents:
                     )
                 ],
             )
-        }
+        ]
 
 
 class TestCacheManualWebhookInput:
@@ -669,3 +669,35 @@ class TestCanRunFromCheckpoint:
             )
             is True
         )
+
+
+def test_consent(db):
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "email",
+        "encrypted_value": {"value": "test@email.com"},
+    }
+    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
+    consent_data_1 = {
+        "provided_identity_id": provided_identity.id,
+        "data_use": "user.biometric_health",
+        "opt_in": True,
+    }
+    consent_1 = Consent.create(db, data=consent_data_1)
+
+    consent_data_2 = {
+        "provided_identity_id": provided_identity.id,
+        "data_use": "user.browsing_history",
+        "opt_in": False,
+    }
+    consent_2 = Consent.create(db, data=consent_data_2)
+    data_uses = [x.data_use for x in provided_identity.consent]
+
+    assert consent_data_1["data_use"] in data_uses
+    assert consent_data_2["data_use"] in data_uses
+
+    provided_identity.delete(db)
+
+    assert Consent.get(db, object_id=consent_1.id) is None
+    assert Consent.get(db, object_id=consent_2.id) is None
