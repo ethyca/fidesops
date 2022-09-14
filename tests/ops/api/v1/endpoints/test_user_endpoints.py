@@ -29,6 +29,7 @@ from starlette.testclient import TestClient
 
 from fidesops.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
+    SCOPE_REGISTRY,
     STORAGE_READ,
     USER_CREATE,
     USER_DELETE,
@@ -774,6 +775,19 @@ class TestUserLogout:
         # Verify client was deleted
         client_search = ClientDetail.get_by(db, field="id", value=client_id)
         assert client_search is None
+
+    def test_root_user_logout(self, db, url, api_client):
+        payload = {
+            JWE_PAYLOAD_SCOPES: SCOPE_REGISTRY,
+            JWE_PAYLOAD_CLIENT_ID: config.security.oauth_root_client_id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+        }
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == HTTP_204_NO_CONTENT
 
     def test_user_not_deleted_on_logout(self, db, url, api_client, user):
         user_id = user.id

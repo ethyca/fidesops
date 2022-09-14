@@ -132,7 +132,9 @@ def logout_oauth_client(
         return None
 
     client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
-    if not client_id:
+    if (
+        not client_id or client_id == config.security.oauth_root_client_id
+    ):  # The root client is not a persisted object
         return None
 
     client = ClientDetail.get(
