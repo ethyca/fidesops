@@ -106,7 +106,7 @@ from fidesops.ops.schemas.privacy_request import (
     RowCountRequest,
     VerificationCode,
 )
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task, dispatch_email
 from fidesops.ops.service.privacy_request.request_runner_service import (
     generate_id_verification_code,
     queue_privacy_request,
