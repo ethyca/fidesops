@@ -26,7 +26,6 @@ The types of changes are:
 * Clean up docker build [#1252](https://github.com/ethyca/fidesops/pull/1252)
 * Add `Strategy` abstract base class for more extensible strategy development [1254](https://github.com/ethyca/fidesops/pull/1254)
 
-
 ### Added
 
 * Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
@@ -42,6 +41,10 @@ The types of changes are:
 * Added support for one-to-many relationships for param_values in SaaS configs [#1253](https://github.com/ethyca/fidesops/pull/1253)
 * Added erasure endpoints for Shopify connector [#1289](https://github.com/ethyca/fidesops/pull/1289)
 * Adds ability to send email notification upon privacy request completion [#1282](https://github.com/ethyca/fidesops/pull/1282)
+* Add a Connector - upload a DB Dataset YAML [#923](https://github.com/ethyca/fidesops/pull/1247)
+* Add a Connector - DB connector configs [#922](https://github.com/ethyca/fidesops/pull/1247)
+* Add a Connector - SaaS Dataset Management (YAML method) [#1090](https://github.com/ethyca/fidesops/pull/1247)
+* Frontend - Configure a Manual entry connector [#1015](https://github.com/ethyca/fidesops/pull/1247)
 
 ### Docs
 
@@ -73,9 +76,6 @@ The types of changes are:
 * Adds endpoint for GET identity verification config [#1221](https://github.com/ethyca/fidesops/pull/1221)
 * Add user identification flow to privacy center [#1231](https://github.com/ethyca/fidesops/pull/1231)
 * Access support for Shopify [#1220](https://github.com/ethyca/fidesops/pull/1220)
-* Add a Connector - upload a DB Dataset YAML [#923](https://github.com/ethyca/fidesops/pull/1247)
-* Add a Connector - DB connector configs [#922](https://github.com/ethyca/fidesops/pull/1247)
-* Add a Connector - SaaS Dataset Management (YAML method) [#1090](https://github.com/ethyca/fidesops/pull/1247)
 
 ## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
 
