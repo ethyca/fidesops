@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from fidesops.ops.api.v1.scope_registry import (
+    CONNECTION_READ,
     STORAGE_READ,
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,
@@ -11,6 +12,7 @@ from fidesops.ops.api.v1.scope_registry import (
 from fidesops.ops.api.v1.urn_registry import (
     ACCESS_MANUAL_WEBHOOK,
     ACCESS_MANUAL_WEBHOOKS,
+    CONNECTION_TEST,
     V1_URL_PREFIX,
 )
 from fidesops.ops.models.manual_webhook import AccessManualWebhook
@@ -420,3 +422,74 @@ class TestGetAccessManualWebhooks:
         assert connection_config_details["created_at"] is not None
         assert connection_config_details["updated_at"] is not None
         assert "secrets" not in connection_config_details
+
+
+class TestManualWebhookTest:
+    @pytest.fixture(scope="function")
+    def url(self, integration_manual_webhook_config) -> str:
+        return V1_URL_PREFIX + CONNECTION_TEST.format(
+            connection_key=integration_manual_webhook_config.key
+        )
+
+    def test_connection_test_manual_webhook_not_authenticated(
+        self, api_client: TestClient, url
+    ):
+        response = api_client.get(url, headers={})
+        assert 401 == response.status_code
+
+    def test_connection_test_manual_webhook_wrong_scopes(
+        self, api_client: TestClient, url, generate_auth_header
+    ):
+        auth_header = generate_auth_header([STORAGE_READ])
+
+        response = api_client.get(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_connection_test_manual_webhook_no_webhook_resource(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        integration_manual_webhook_config,
+    ):
+        auth_header = generate_auth_header([CONNECTION_READ])
+
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert response.json()["test_status"] == "failed"
+        assert response.status_code == 200
+
+    def test_connection_test_manual_webhook_no_webhook_fields(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+    ):
+        auth_header = generate_auth_header([CONNECTION_READ])
+        access_manual_webhook.fields = None
+        access_manual_webhook.save(db)
+
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert response.json()["test_status"] == "failed"
+        assert response.status_code == 200
+
+    def test_connection_test_manual_webhook(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+    ):
+        auth_header = generate_auth_header([CONNECTION_READ])
+
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert response.json()["test_status"] == "succeeded"
+        assert response.status_code == 200
