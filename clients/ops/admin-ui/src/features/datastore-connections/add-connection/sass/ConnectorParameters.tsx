@@ -15,9 +15,9 @@ import {
   useUpdateDatastoreConnectionSecretsMutation,
 } from "datastore-connections/datastore-connection.slice";
 import {
+  CreateSassConnectionConfigRequest,
   DatastoreConnectionRequest,
   DatastoreConnectionSecretsRequest,
-  CreateSassConnectionConfigRequest,
 } from "datastore-connections/types";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";

@@ -42,7 +42,7 @@ export const ConnectorParameters: React.FC = () => {
         description: values.description,
         disabled: false,
         name: values.name,
-        key: connection?.key
+        key: connection?.key,
       };
       const payload = await patchDatastoreConnection(params).unwrap();
       if (payload.failed?.length > 0) {
