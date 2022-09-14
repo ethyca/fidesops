@@ -9,14 +9,17 @@ from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
+    NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
 from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.models.policy import CurrentStep, Policy
 from fidesops.ops.models.privacy_request import (
     CheckpointActionRequired,
+    Consent,
     PrivacyRequest,
     PrivacyRequestStatus,
+    ProvidedIdentity,
     can_run_checkpoint,
 )
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
@@ -533,7 +536,7 @@ class TestCacheEmailConnectorTemplateContents:
             privacy_request.get_email_connector_template_contents_by_dataset(
                 CurrentStep.erasure, "email_dataset"
             )
-            == {}
+            == []
         )
 
         privacy_request.cache_email_connector_template_contents(
@@ -550,10 +553,8 @@ class TestCacheEmailConnectorTemplateContents:
 
         assert privacy_request.get_email_connector_template_contents_by_dataset(
             CurrentStep.erasure, "email_dataset"
-        ) == {
-            CollectionAddress(
-                "email_dataset", "test_collection"
-            ): CheckpointActionRequired(
+        ) == [
+            CheckpointActionRequired(
                 step=CurrentStep.erasure,
                 collection=CollectionAddress("email_dataset", "test_collection"),
                 action_needed=[
@@ -564,7 +565,73 @@ class TestCacheEmailConnectorTemplateContents:
                     )
                 ],
             )
+        ]
+
+
+class TestCacheManualWebhookInput:
+    def test_cache_manual_webhook_input(self, privacy_request, access_manual_webhook):
+        with pytest.raises(NoCachedManualWebhookEntry):
+            privacy_request.get_manual_webhook_input(access_manual_webhook)
+
+        privacy_request.cache_manual_webhook_input(
+            manual_webhook=access_manual_webhook,
+            input_data={"email": "customer-1@example.com", "last_name": "Customer"},
+        )
+
+        assert privacy_request.get_manual_webhook_input(access_manual_webhook) == {
+            "email": "customer-1@example.com",
+            "last_name": "Customer",
         }
+
+    def test_cache_no_fields(self, privacy_request, access_manual_webhook):
+        privacy_request.cache_manual_webhook_input(
+            manual_webhook=access_manual_webhook,
+            input_data={},
+        )
+
+        assert privacy_request.get_manual_webhook_input(access_manual_webhook) == {
+            "email": None,
+            "last_name": None,
+        }
+
+    def test_cache_field_missing(self, privacy_request, access_manual_webhook):
+        privacy_request.cache_manual_webhook_input(
+            manual_webhook=access_manual_webhook,
+            input_data={
+                "email": "customer-1@example.com",
+            },
+        )
+
+        assert privacy_request.get_manual_webhook_input(access_manual_webhook) == {
+            "email": "customer-1@example.com",
+            "last_name": None,
+        }
+
+    def test_cache_extra_fields_not_in_webhook_specs(
+        self, privacy_request, access_manual_webhook
+    ):
+        with pytest.raises(ValidationError):
+            privacy_request.cache_manual_webhook_input(
+                manual_webhook=access_manual_webhook,
+                input_data={
+                    "email": "customer-1@example.com",
+                    "bad_field": "not_specified",
+                },
+            )
+
+    def test_cache_manual_webhook_no_fields_defined(
+        self, db, privacy_request, access_manual_webhook
+    ):
+        access_manual_webhook.fields = (
+            None  # Specifically testing the None case to cover our bases
+        )
+        access_manual_webhook.save(db)
+
+        with pytest.raises(ValidationError):
+            privacy_request.cache_manual_webhook_input(
+                manual_webhook=access_manual_webhook,
+                input_data={"email": "customer-1@example.com", "last_name": "Customer"},
+            )
 
 
 class TestCanRunFromCheckpoint:
@@ -602,3 +669,35 @@ class TestCanRunFromCheckpoint:
             )
             is True
         )
+
+
+def test_consent(db):
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "email",
+        "encrypted_value": {"value": "test@email.com"},
+    }
+    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
+    consent_data_1 = {
+        "provided_identity_id": provided_identity.id,
+        "data_use": "user.biometric_health",
+        "opt_in": True,
+    }
+    consent_1 = Consent.create(db, data=consent_data_1)
+
+    consent_data_2 = {
+        "provided_identity_id": provided_identity.id,
+        "data_use": "user.browsing_history",
+        "opt_in": False,
+    }
+    consent_2 = Consent.create(db, data=consent_data_2)
+    data_uses = [x.data_use for x in provided_identity.consent]
+
+    assert consent_data_1["data_use"] in data_uses
+    assert consent_data_2["data_use"] in data_uses
+
+    provided_identity.delete(db)
+
+    assert Consent.get(db, object_id=consent_1.id) is None
+    assert Consent.get(db, object_id=consent_2.id) is None

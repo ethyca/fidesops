@@ -31,16 +31,22 @@ The types of changes are:
 * Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
 * Foundations for a new email connector type [#1142](https://github.com/ethyca/fidesops/pull/1142)
 * Have the new email connector cache action needed for each collection [#1168](https://github.com/ethyca/fidesops/pull/1168)
+* Adds new Celery queue for async email dispatch [#1173](https://github.com/ethyca/fidesops/pull/1173)
 * Added `execution_timeframe` to Policy model and schema [#1244](https://github.com/ethyca/fidesops/pull/1244)
 * Added `due_date` to Privacy request model [#1259](https://github.com/ethyca/fidesops/pull/1259)
 * Wrap up the email connector - it sends an email with erasure instructions as part of request execution [#1246](https://github.com/ethyca/fidesops/pull/1246)
 * Added `days_left` field to Privacy request response [#1281](https://github.com/ethyca/fidesops/pull/1281)
 * Mapping Vault environment variables in docker-compose.yml [#1275](https://github.com/ethyca/fidesops/pull/1275)
 * Foundations for a new "manual_webhook" connector type [#1267](https://github.com/ethyca/fidesops/pull/1267)
+* Add Days left display to admin ui [#1283](https://github.com/ethyca/fidesops/pull/1283)
 * Data seeding for Datadog access tests [#1269](https://github.com/ethyca/fidesops/pull/1269)
 * Added support for one-to-many relationships for param_values in SaaS configs [#1253](https://github.com/ethyca/fidesops/pull/1253)
+* Added `due_date` sorting [#1284](https://github.com/ethyca/fidesops/pull/1284)
 * Added erasure endpoints for Shopify connector [#1289](https://github.com/ethyca/fidesops/pull/1289)
 * Adds ability to send email notification upon privacy request completion [#1282](https://github.com/ethyca/fidesops/pull/1282)
+* Enable new manual webhooks in privacy request execution [#1285](https://github.com/ethyca/fidesops/pull/1285)
+* Added human readable label to ConnectionType endpoint [#1297](https://github.com/ethyca/fidesops/pull/1297)
+* Add table for consent (#1301)[https://github.com/ethyca/fidesops/pull/1301]
 * Add a Connector - upload a DB Dataset YAML [#923](https://github.com/ethyca/fidesops/pull/1247)
 * Add a Connector - DB connector configs [#922](https://github.com/ethyca/fidesops/pull/1247)
 * Add a Connector - SaaS Dataset Management (YAML method) [#1090](https://github.com/ethyca/fidesops/pull/1247)
@@ -51,6 +57,7 @@ The types of changes are:
 * Fix analytics opt out environment variable name [#1170](https://github.com/ethyca/fidesops/pull/1170)
 * Added how to view a subject request history and reprocess a subject request [#1164](https://github.com/ethyca/fidesops/pull/1164)
 * Adds section on email communications, and exposes previously hidden guides in nav bar [#1233](https://github.com/ethyca/fidesops/pull/1233)
+* Change references to `FIDESOPS__CONFIG_PATH` to `FIDES__CONFIG_PATH` [#1302](https://github.com/ethyca/fidesops/pull/1302)
 
 ### Fixed
 
@@ -62,6 +69,7 @@ The types of changes are:
 * Make admin ui work when volumes are mounted [#1266](https://github.com/ethyca/fidesops/pull/1266)
 * Fixed typo in enum value [#1280](https://github.com/ethyca/fidesops/pull/1280)
 * Remove masking of redis error log [#1288](https://github.com/ethyca/fidesops/pull/1288)
+* Logout with malformed or expired token [#1305](https://github.com/ethyca/fidesops/pull/1305)
 
 ### Security
 

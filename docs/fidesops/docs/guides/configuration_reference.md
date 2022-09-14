@@ -5,7 +5,7 @@
 
 The fidesops application configuration variables are provided in the `fidesops.toml` file in `.toml` format. Fidesops will take the first config file it finds from the following locations:
 
-- The location according to the `FIDESOPS__CONFIG_PATH` environment variable
+- The location according to the `FIDES__CONFIG_PATH` environment variable
 - The current working directory (`./fidesops.toml`)
 - The parent of the current working directory (`../fidesops.toml`)
 - The user's home directory (`~/fidesops.toml`)
@@ -129,7 +129,7 @@ Note: The configuration is case-sensitive, so the variables must be specified in
 | `FIDESOPS__LOG_PII` | False | If this is set to "True", pii values will display unmasked in log output. This variable should always be set to "False" in production systems.
 | `FIDESOPS__HOT_RELOAD` | False | If "True", the fidesops server will reload code changes without you needing to restart the server. This variable should always be set to "False" in production systems.|
 | `FIDESOPS__DEV_MODE` | False | If "True", the fidesops server will log error tracebacks, and log details of third party requests. This variable should always be set to "False" in production systems.|
-| `FIDESOPS__CONFIG_PATH` | None | If this variable is set to a path, that path will be used to load .toml files first. That is, any .toml files on this path will override any installed .toml files. |
+| `FIDES__CONFIG_PATH` | None | If this variable is set to a path, that path will be used to load .toml files first. That is, any .toml files on this path will override any installed .toml files. |
 | `FIDESOPS__DATABASE__SQLALCHEMY_DATABASE_URI` | None | An optional override for the URI used for the database connection, in the form of `postgresql://<user>:<password>@<hostname>:<port>/<database>`. |
 | `TESTING` | False | This variable does not need to be set - Pytest will set it to True when running unit tests, so we run against the test database. |
 
@@ -142,14 +142,14 @@ The `celery.toml` file provided contains a brief configuration reference for man
 For a full list of possible variable overrides, see the [Celery configuration](https://docs.celeryq.dev/en/stable/userguide/configuration.html#new-lowercase-settings) documentation.
 
 ```sh title="Example <code>celery.toml</code>"
-default_queue_name = "fidesops"
+task_default_queue = "fidesops"
 broker_url = "redis://:testpassword@redis:6379/1"
 result_backend = "redis://:testpassword@redis:6379/1"
 ```
 
  Celery Variable | Example | Description |
 |---|---|---|
-| `default_queue_name` | `fidesops` | A name to use for your Celery task queue. |
+| `task_default_queue` | `fidesops` | A name to use for your Celery task queue. |
 | `broker_url` | redis://:testpassword@redis:6379/1  | The datastore to use as a [Celery broker](https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/), which maintains an ordered list of asynchronous tasks to execute. If not specified, fidesops will default to the `connection_url` or Redis config values specified in your `fidesops.toml`.
 | `result_backend` | redis://:testpassword@redis:6379/1 | The [backend datastore](https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/) where Celery will store results from asynchronously processed tasks. If not specified, fidesops will default to the `connection_url` or Redis config values specified in your `fidesops.toml`.
 

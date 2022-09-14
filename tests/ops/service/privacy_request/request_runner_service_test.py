@@ -18,7 +18,6 @@ from fidesops.ops.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
-from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.models.connectionconfig import AccessLevel
 from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.models.policy import CurrentStep, PolicyPostWebhook
@@ -1705,11 +1704,11 @@ class TestPrivacyRequestsEmailConnector:
         cached_email_contents = pr.get_email_connector_template_contents_by_dataset(
             CurrentStep.erasure, "email_dataset"
         )
-        assert set(cached_email_contents.keys()) == {
-            CollectionAddress("email_dataset", "payment"),
-            CollectionAddress("email_dataset", "children"),
-            CollectionAddress("email_dataset", "daycare_customer"),
-        }
+        assert len(cached_email_contents) == 3
+        assert {
+            contents.collection.collection for contents in cached_email_contents
+        } == {"payment", "children", "daycare_customer"}
+
         pr.delete(db=db)
         assert mailgun_send.called is False
 
@@ -1757,7 +1756,7 @@ class TestPrivacyRequestsEmailConnector:
             CurrentStep.erasure, "email_dataset"
         )
         assert (
-            set(cached_email_contents.keys()) == set()
+            len(cached_email_contents) == 0
         ), "No data cached to erase, because this connector is read-only"
 
         pr.delete(db=db)
@@ -1805,30 +1804,12 @@ class TestPrivacyRequestsEmailConnector:
         cached_email_contents = pr.get_email_connector_template_contents_by_dataset(
             CurrentStep.erasure, "email_dataset"
         )
-        assert set(cached_email_contents.keys()) == {
-            CollectionAddress("email_dataset", "payment"),
-            CollectionAddress("email_dataset", "children"),
-            CollectionAddress("email_dataset", "daycare_customer"),
-        }
-        assert (
-            cached_email_contents[CollectionAddress("email_dataset", "payment")]
-            .action_needed[0]
-            .update
-            is None
-        )
-        assert (
-            cached_email_contents[CollectionAddress("email_dataset", "children")]
-            .action_needed[0]
-            .update
-            is None
-        )
-        assert (
-            cached_email_contents[
-                CollectionAddress("email_dataset", "daycare_customer")
-            ]
-            .action_needed[0]
-            .update
-            is None
+        assert {
+            contents.collection.collection for contents in cached_email_contents
+        } == {"payment", "children", "daycare_customer"}
+
+        assert not any(
+            [contents.action_needed[0].update for contents in cached_email_contents]
         )
 
         pr.delete(db=db)
@@ -1972,7 +1953,6 @@ class TestPrivacyRequestsEmailNotifications:
                     db=ANY,
                     action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
                     to_email=customer_email,
-                    email_body_params=None,
                 ),
             ],
             any_order=True,
@@ -2052,3 +2032,147 @@ class TestPrivacyRequestsEmailNotifications:
         pr.delete(db=db)
 
         assert mailgun_send.called is False
+
+
+class TestPrivacyRequestsManualWebhooks:
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_privacy_request_needs_manual_input_key_in_cache(
+        self,
+        mock_upload,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        policy,
+        run_privacy_request_task,
+        db,
+    ):
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.requires_input
+        assert not mock_upload.called
+
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.run_erasure"
+    )
+    def test_manual_input_not_required_for_erasure_only_policies(
+        self,
+        mock_erasure,
+        mock_upload,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        erasure_policy,
+        run_privacy_request_task,
+        db,
+    ):
+        """Manual inputs are not tied to policies, but shouldn't hold up request if only erasures are requested"""
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            erasure_policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert (
+            pr.status == PrivacyRequestStatus.complete
+        )  # Privacy request not put in "requires_input" state
+        assert not mock_upload.called  # erasure only request, no data uploaded
+        assert mock_erasure.called
+
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_pass_on_manually_added_input(
+        self,
+        mock_upload,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        policy,
+        run_privacy_request_task,
+        privacy_request_requires_input: PrivacyRequest,
+        db,
+        cached_input,
+    ):
+        run_privacy_request_task.delay(privacy_request_requires_input.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+        db.refresh(privacy_request_requires_input)
+        assert privacy_request_requires_input.status == PrivacyRequestStatus.complete
+        assert mock_upload.called
+        assert mock_upload.call_args.kwargs["data"] == {
+            "manual_webhook_example": [
+                {"email": "customer-1@example.com", "last_name": "McCustomer"}
+            ]
+        }
+
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_pass_on_partial_manually_added_input(
+        self,
+        mock_upload,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        policy,
+        run_privacy_request_task,
+        privacy_request_requires_input: PrivacyRequest,
+        db,
+    ):
+        privacy_request_requires_input.cache_manual_webhook_input(
+            access_manual_webhook,
+            {"email": "customer-1@example.com"},
+        )
+
+        run_privacy_request_task.delay(privacy_request_requires_input.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        db.refresh(privacy_request_requires_input)
+        assert privacy_request_requires_input.status == PrivacyRequestStatus.complete
+        assert mock_upload.called
+        assert mock_upload.call_args.kwargs["data"] == {
+            "manual_webhook_example": [
+                {"email": "customer-1@example.com", "last_name": None}
+            ]
+        }
+
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_pass_on_empty_confirmed_input(
+        self,
+        mock_upload,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        policy,
+        run_privacy_request_task,
+        privacy_request_requires_input: PrivacyRequest,
+        db,
+    ):
+        privacy_request_requires_input.cache_manual_webhook_input(
+            access_manual_webhook,
+            {},
+        )
+
+        run_privacy_request_task.delay(privacy_request_requires_input.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        db.refresh(privacy_request_requires_input)
+        assert privacy_request_requires_input.status == PrivacyRequestStatus.complete
+        assert mock_upload.called
+        assert mock_upload.call_args.kwargs["data"] == {
+            "manual_webhook_example": [{"email": None, "last_name": None}]
+        }
