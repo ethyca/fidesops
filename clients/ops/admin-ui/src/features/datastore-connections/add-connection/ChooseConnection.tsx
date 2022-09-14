@@ -49,7 +49,9 @@ const ChooseConnection: React.FC = () => {
   const sortedItems = useMemo(
     () =>
       data?.items &&
-      [...data.items].sort((a, b) => (a.identifier > b.identifier ? 1 : -1)),
+      [...data.items].sort((a, b) =>
+        a.human_readable > b.human_readable ? 1 : -1
+      ),
     [data]
   );
 

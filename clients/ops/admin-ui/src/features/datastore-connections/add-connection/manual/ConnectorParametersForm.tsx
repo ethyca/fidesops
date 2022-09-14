@@ -1,7 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { VStack } from "@fidesui/react";
 import { useAppSelector } from "app/hooks";
-import { capitalize } from "common/utils";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
@@ -63,17 +62,17 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             isRequired
             label="Name"
             name="name"
-            placeholder={`Enter a friendly name for your new ${capitalize(
-              connectionOption!.identifier
-            )} connection`}
+            placeholder={`Enter a friendly name for your new ${
+              connectionOption!.human_readable
+            } connection`}
           />
           {/* Description */}
           <CustomInput
             label="Description"
             name="description"
-            placeholder={`Enter a description for your new ${capitalize(
-              connectionOption!.identifier
-            )} connection`}
+            placeholder={`Enter a description for your new ${
+              connectionOption!.human_readable
+            } connection`}
             type="textarea"
           />
           <ManualButtonGroup

@@ -9,7 +9,7 @@ import {
 } from "@fidesui/react";
 import { useAppSelector } from "app/hooks";
 import { ErrorWarningIcon, GreenCheckCircleIcon } from "common/Icon";
-import { capitalize, formatDate } from "common/utils";
+import { formatDate } from "common/utils";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import React from "react";
 
@@ -27,8 +27,7 @@ const TestConnection: React.FC<TestConnectionProps> = ({ response }) => {
           <>
             <HStack>
               <Heading as="h5" color="gray.700" size="xs">
-                Successfully connected to{" "}
-                {capitalize(connectionOption!.identifier)}
+                Successfully connected to {connectionOption!.human_readable}
               </Heading>
               <Tag colorScheme="green" size="sm" variant="solid">
                 Success
@@ -71,7 +70,7 @@ const TestConnection: React.FC<TestConnectionProps> = ({ response }) => {
           <>
             <HStack>
               <Heading as="h5" color="gray.700" size="xs">
-                Output error to {capitalize(connectionOption!.identifier)}
+                Output error to {connectionOption!.human_readable}
               </Heading>
               <Tag colorScheme="red" size="sm" variant="solid">
                 Error

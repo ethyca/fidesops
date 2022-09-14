@@ -2,7 +2,6 @@ import { Box } from "@fidesui/react";
 import { useAppSelector } from "app/hooks";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
-import { capitalize } from "common/utils";
 import {
   selectConnectionTypeState,
   setConnection,
@@ -102,8 +101,8 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   return (
     <>
       <Box color="gray.700" fontSize="14px" h="80px">
-        Connect to your {capitalize(connectionOption!.identifier)} environment
-        by providing credential information below. Once you have saved your
+        Connect to your {connectionOption!.human_readable} environment by
+        providing credential information below. Once you have saved your
         connector credentials, you can review what data is included when
         processing a privacy request in your Dataset configuration.
       </Box>

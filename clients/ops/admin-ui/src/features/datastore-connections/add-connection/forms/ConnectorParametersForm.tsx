@@ -19,7 +19,6 @@ import {
 import { useAppSelector } from "app/hooks";
 import { useAPIHelper } from "common/hooks";
 import { CircleHelpIcon } from "common/Icon";
-import { capitalize } from "common/utils";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
 import { ConnectionType } from "datastore-connections/constants";
@@ -218,9 +217,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                       autoComplete="off"
                       autoFocus
                       color="gray.700"
-                      placeholder={`Enter a friendly name for your new ${capitalize(
-                        connectionOption!.identifier
-                      )} connection`}
+                      placeholder={`Enter a friendly name for your new ${
+                        connectionOption!.human_readable
+                      } connection`}
                       size="sm"
                     />
                     <FormErrorMessage>{props.errors.name}</FormErrorMessage>
@@ -237,9 +236,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   <Textarea
                     {...field}
                     color="gray.700"
-                    placeholder={`Enter a description for your new ${capitalize(
-                      connectionOption!.identifier
-                    )} connection`}
+                    placeholder={`Enter a description for your new ${
+                      connectionOption!.human_readable
+                    } connection`}
                     resize="none"
                     size="sm"
                   />
@@ -268,9 +267,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                       autoComplete="off"
                       color="gray.700"
                       isDisabled={connection?.key}
-                      placeholder={`A a unique identifier for your new ${capitalize(
-                        connectionOption!.identifier
-                      )} connection`}
+                      placeholder={`A a unique identifier for your new ${
+                        connectionOption!.human_readable
+                      } connection`}
                       size="sm"
                     />
                     <FormErrorMessage>

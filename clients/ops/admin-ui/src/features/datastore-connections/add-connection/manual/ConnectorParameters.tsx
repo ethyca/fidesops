@@ -2,7 +2,6 @@ import { Box, Text, VStack } from "@fidesui/react";
 import { useAppSelector } from "app/hooks";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
-import { capitalize } from "common/utils";
 import {
   selectConnectionTypeState,
   setConnection,
@@ -63,7 +62,7 @@ export const ConnectorParameters: React.FC = () => {
   return (
     <VStack align="stretch" gap="24px">
       <Box color="gray.700" fontSize="14px">
-        To begin setting up your new {capitalize(connectionOption!.identifier)}
+        To begin setting up your new {connectionOption!.human_readable}
         connector you must first assign a name to the connector and a
         description. You must also assign an owner/s to this new connector so
         that they can be automatically contacted by their email when a new

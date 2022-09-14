@@ -1,6 +1,5 @@
 import { Box, Heading, Text } from "@fidesui/react";
 import { useAppSelector } from "app/hooks";
-import { capitalize } from "common/utils";
 import {
   selectConnectionTypeState,
   setConnectionOption,
@@ -78,7 +77,7 @@ const AddConnection: React.FC = () => {
         case 3:
           value = s.label.replace(
             "{identifier}",
-            capitalize(connectionOption!.identifier)
+            connectionOption!.human_readable
           );
           break;
         default:

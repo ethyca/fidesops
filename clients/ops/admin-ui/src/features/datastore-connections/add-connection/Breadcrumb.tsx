@@ -5,7 +5,6 @@ import {
   BreadcrumbLink,
 } from "@fidesui/react";
 import { useAppSelector } from "app/hooks";
-import { capitalize } from "common/utils";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import React, { useCallback } from "react";
 
@@ -26,7 +25,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ steps }) => {
         case 3:
           value = s.label.replace(
             "{identifier}",
-            capitalize(connectionOption!.identifier)
+            connectionOption!.human_readable
           );
           break;
         default:

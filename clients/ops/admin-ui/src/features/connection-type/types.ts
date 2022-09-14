@@ -15,6 +15,7 @@ export type AllConnectionTypesResponse = {
 
 export type ConnectionOption = {
   identifier: ConnectionType | SaasType;
+  human_readable: string;
   type: SystemType;
 };
 
