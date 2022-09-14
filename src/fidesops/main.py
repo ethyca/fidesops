@@ -11,7 +11,6 @@ import uvicorn
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
-from fideslib.db.session import get_db_session
 from fideslib.oauth.api.deps import get_config as lib_get_config
 from fideslib.oauth.api.deps import get_db as lib_get_db
 from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
@@ -27,7 +26,7 @@ from fidesops.ops.analytics import (
     in_docker_container,
     send_analytics_event,
 )
-from fidesops.ops.api.deps import get_config, get_db
+from fidesops.ops.api.deps import get_api_session, get_config, get_db
 from fidesops.ops.api.v1.api import api_router
 from fidesops.ops.api.v1.exception_handlers import ExceptionHandlers
 from fidesops.ops.api.v1.urn_registry import V1_URL_PREFIX
@@ -245,9 +244,9 @@ def start_webserver() -> None:
         logger.info("Running any pending DB migrations...")
         try:
             init_db(config.database.sqlalchemy_database_uri)
-            SessionLocal = get_db_session(config)
-            db = SessionLocal()
+            db = get_api_session()
             update_saas_configs(registry, db)
+            db.close()
         except Exception as error:  # pylint: disable=broad-except
             logger.error("Connection to database failed: %s", Pii(str(error)))
             return
