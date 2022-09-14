@@ -32,6 +32,7 @@ The types of changes are:
 * Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
 * Foundations for a new email connector type [#1142](https://github.com/ethyca/fidesops/pull/1142)
 * Have the new email connector cache action needed for each collection [#1168](https://github.com/ethyca/fidesops/pull/1168)
+* Adds new Celery queue for async email dispatch [#1173](https://github.com/ethyca/fidesops/pull/1173)
 * Added `execution_timeframe` to Policy model and schema [#1244](https://github.com/ethyca/fidesops/pull/1244)
 * Added `due_date` to Privacy request model [#1259](https://github.com/ethyca/fidesops/pull/1259)
 * Wrap up the email connector - it sends an email with erasure instructions as part of request execution [#1246](https://github.com/ethyca/fidesops/pull/1246)
@@ -45,8 +46,8 @@ The types of changes are:
 * Added erasure endpoints for Shopify connector [#1289](https://github.com/ethyca/fidesops/pull/1289)
 * Adds ability to send email notification upon privacy request completion [#1282](https://github.com/ethyca/fidesops/pull/1282)
 * Enable new manual webhooks in privacy request execution [#1285](https://github.com/ethyca/fidesops/pull/1285)
-
 * Added human readable label to ConnectionType endpoint [#1297](https://github.com/ethyca/fidesops/pull/1297)
+* Add table for consent (#1301)[https://github.com/ethyca/fidesops/pull/1301]
 * Utility to update SaaS config instances based on template updates [#1307](https://github.com/ethyca/fidesops/pull/1307)
 
 ### Docs
@@ -66,6 +67,7 @@ The types of changes are:
 * Make admin ui work when volumes are mounted [#1266](https://github.com/ethyca/fidesops/pull/1266)
 * Fixed typo in enum value [#1280](https://github.com/ethyca/fidesops/pull/1280)
 * Remove masking of redis error log [#1288](https://github.com/ethyca/fidesops/pull/1288)
+* Logout with malformed or expired token [#1305](https://github.com/ethyca/fidesops/pull/1305)
 
 ### Security
 
