@@ -36,14 +36,15 @@ export const ConnectorParameters: React.FC = () => {
   const handleSubmit = async (values: any, _actions: any) => {
     try {
       setIsSubmitting(true);
-      const params1: DatastoreConnectionRequest = {
+      const params: DatastoreConnectionRequest = {
         access: "write",
         connection_type: connectionOption?.identifier as ConnectionType,
         description: values.description,
         disabled: false,
         name: values.name,
+        key: connection?.key
       };
-      const payload = await patchDatastoreConnection(params1).unwrap();
+      const payload = await patchDatastoreConnection(params).unwrap();
       if (payload.failed?.length > 0) {
         errorAlert(payload.failed[0].message);
       } else {

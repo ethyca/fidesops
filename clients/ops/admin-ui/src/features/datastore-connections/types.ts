@@ -8,6 +8,47 @@ import {
   TestingStatus,
 } from "./constants";
 
+export type AccessManualHookField = {
+  pii_field: string;
+  dsr_package_label: string;
+};
+
+export type CreateAccessManualWebhookRequest = {
+  connection_key: string;
+  body: {
+    fields: AccessManualHookField[];
+  };
+};
+
+export type CreateAccessManualWebhookResponse = {
+  fields: AccessManualHookField[];
+  connection_config: {
+    name: string;
+    key: string;
+    description: string;
+    connection_type: string;
+    access: string;
+    created_at: string;
+    updated_at: string;
+    disabled: boolean;
+    last_test_timestamp: string;
+    last_test_succeeded: string;
+    saas_config: {
+      fides_key: string;
+      name: string;
+      type: string;
+    };
+  };
+  id: string;
+};
+
+export type GetAccessManualWebhookResponse = CreateAccessManualWebhookResponse;
+
+export type PatchAccessManualWebhookRequest = CreateAccessManualWebhookRequest;
+
+export type PatchAccessManualWebhookResponse =
+  CreateAccessManualWebhookResponse;
+
 export type PatchDatasetsRequest = {
   connection_key: string;
   datasets: Dataset[];
@@ -167,7 +208,7 @@ export type SaasConfig = {
   type: SaasType;
 };
 
-export type SassConnectionConfigRequest = {
+export type CreateSassConnectionConfigRequest = {
   name: string;
   description: string;
   instance_key: string;
@@ -177,7 +218,7 @@ export type SassConnectionConfigRequest = {
   };
 };
 
-export type SassConnectionConfigResponse = {
+export type CreateSassConnectionConfigResponse = {
   connection: DatastoreConnection;
   dataset: {
     fides_key: string;

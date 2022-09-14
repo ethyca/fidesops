@@ -17,7 +17,7 @@ import {
 import {
   DatastoreConnectionRequest,
   DatastoreConnectionSecretsRequest,
-  SassConnectionConfigRequest,
+  CreateSassConnectionConfigRequest,
 } from "datastore-connections/types";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -97,7 +97,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         }
       } else {
         // Create new Sass connector
-        const params: SassConnectionConfigRequest = {
+        const params: CreateSassConnectionConfigRequest = {
           description: values.description,
           name: values.name,
           instance_key: formatKey(values.instance_key as string),

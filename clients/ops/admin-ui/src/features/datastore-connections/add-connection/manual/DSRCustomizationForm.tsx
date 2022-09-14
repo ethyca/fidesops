@@ -12,11 +12,13 @@ import { ButtonGroup as ManualButtonGroup } from "./ButtonGroup";
 import { Field } from "./types";
 
 type DSRCustomizationFormProps = {
+  data: Field[];
   isSubmitting: boolean;
   onSaveClick: (values: any, actions: any) => void;
 };
 
 const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
+  data = [],
   isSubmitting = false,
   onSaveClick,
 }) => {
@@ -39,12 +41,15 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
   return (
     <Formik
       initialValues={{
-        fields: [
-          {
-            pii_field: "",
-            dsr_package_label: "",
-          },
-        ] as Field[],
+        fields:
+          data.length > 0
+            ? data
+            : ([
+                {
+                  pii_field: "",
+                  dsr_package_label: "",
+                },
+              ] as Field[]),
       }}
       onSubmit={handleSubmit}
       validateOnBlur={false}
