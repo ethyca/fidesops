@@ -506,7 +506,7 @@ class TestInstantiateConnectionFromTemplate:
         }
 
     @mock.patch(
-        "fidesops.ops.service.connectors.saas.connector_registry_service.create_dataset_config_from_template"
+        "fidesops.ops.api.v1.endpoints.saas_config_endpoints.create_dataset_config_from_template"
     )
     def test_dataset_config_saving_fails(
         self, mock_create_dataset, db, generate_auth_header, api_client, base_url
@@ -547,12 +547,59 @@ class TestInstantiateConnectionFromTemplate:
         ).first()
         assert dataset_config is None
 
-    def test_instantiate_connection_from_template(self, secondary_mailchimp_instance):
-        connection_config, dataset_config = secondary_mailchimp_instance
+    def test_instantiate_connection_from_template(
+        self, db, generate_auth_header, api_client, base_url
+    ):
+        connection_config = ConnectionConfig.filter(
+            db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")
+        ).first()
+        assert connection_config is None
+
+        dataset_config = DatasetConfig.filter(
+            db=db,
+            conditions=(DatasetConfig.fides_key == "secondary_mailchimp_instance"),
+        ).first()
+        assert dataset_config is None
+
+        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
+        request_body = {
+            "instance_key": "secondary_mailchimp_instance",
+            "secrets": {
+                "domain": "test_mailchimp_domain",
+                "username": "test_mailchimp_username",
+                "api_key": "test_mailchimp_api_key",
+            },
+            "name": "Mailchimp Connector",
+            "description": "Mailchimp ConnectionConfig description",
+            "key": "mailchimp_connection_config",
+        }
+        resp = api_client.post(
+            base_url.format(saas_connector_type="mailchimp"),
+            headers=auth_header,
+            json=request_body,
+        )
+
+        assert resp.status_code == 200
+        assert set(resp.json().keys()) == {"connection", "dataset"}
+        connection_data = resp.json()["connection"]
+        assert connection_data["key"] == "mailchimp_connection_config"
+        assert connection_data["name"] == "Mailchimp Connector"
+        assert "secrets" not in connection_data
+
+        dataset_data = resp.json()["dataset"]
+        assert dataset_data["fides_key"] == "secondary_mailchimp_instance"
+
+        connection_config = ConnectionConfig.filter(
+            db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")
+        ).first()
+        dataset_config = DatasetConfig.filter(
+            db=db,
+            conditions=(DatasetConfig.fides_key == "secondary_mailchimp_instance"),
+        ).first()
 
         assert connection_config is not None
         assert dataset_config is not None
-        assert connection_config.name == "mailchimp_connection_config_secondary"
+        assert connection_config.name == "Mailchimp Connector"
         assert connection_config.description == "Mailchimp ConnectionConfig description"
 
         assert connection_config.access == AccessLevel.write
@@ -565,3 +612,6 @@ class TestInstantiateConnectionFromTemplate:
 
         assert dataset_config.connection_config_id == connection_config.id
         assert dataset_config.dataset is not None
+
+        dataset_config.delete(db)
+        connection_config.delete(db)
