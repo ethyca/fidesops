@@ -16,7 +16,7 @@ from fidesops.ops.schemas.email.email import (
     EmailServiceSecrets,
     EmailServiceType,
     FidesopsEmail,
-    SubjectIdentityVerificationBodyParams,
+    SubjectIdentityVerificationBodyParams, RequestReceiptBodyParams,
 )
 from fidesops.ops.tasks import DatabaseTask, celery_app
 from fidesops.ops.util.logger import Pii
@@ -51,6 +51,7 @@ def dispatch_email(
         Union[
             AccessRequestCompleteBodyParams,
             SubjectIdentityVerificationBodyParams,
+            RequestReceiptBodyParams,
             List[CheckpointActionRequired],
         ]
     ] = None,
