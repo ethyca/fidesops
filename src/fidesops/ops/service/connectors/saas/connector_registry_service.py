@@ -212,9 +212,7 @@ def update_saas_instance(
     config_from_template: Dict = load_config_with_replacement(
         template.config, "<instance_fides_key>", template_vals.instance_key
     )
-    connection_config = ConnectionConfig.get_connection_config_or_error(
-        db, template_vals.key  # type: ignore
-    )
+
     connection_config.update_saas_config(db, SaaSConfig(**config_from_template))
 
     create_dataset_config_from_template(db, connection_config, template, template_vals)
