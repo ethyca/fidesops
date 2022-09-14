@@ -2,11 +2,9 @@ from typing import Callable, Dict
 from unittest import mock
 from unittest.mock import Mock
 
-import pytest
 import yaml
 from fideslib.core.config import load_file
 
-from fidesops.ops.api.v1.urn_registry import SAAS_CONNECTOR_FROM_TEMPLATE, V1_URL_PREFIX
 from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.service.connectors.saas.connector_registry_service import (
     ConnectorTemplate,
@@ -18,6 +16,7 @@ from fidesops.ops.util.saas_util import load_config, load_dataset, load_yaml_as_
 
 NEW_CONFIG_DESCRIPTION = "new test config description"
 NEW_DATASET_DESCRIPTION = "new test dataset description"
+NEW_CONNECTOR_PARAM = {"name": "new_param", "default_value": "new_param_default_value"}
 NEW_ENDPOINT = {
     "name": "new endpoint",
     "requests": {
@@ -65,21 +64,21 @@ class TestConnectionRegistry:
     )
     def test_update_config_additions(
         self,
-        load_config_mock: Mock,
-        load_config_with_replacement_mock: Mock,
-        load_dataset_with_replacement_mock: Mock,
+        load_config_mock_object: Mock,
+        load_config_with_replacement_mock_object: Mock,
+        load_dataset_with_replacement_mock_object: Mock,
         db,
         secondary_mailchimp_instance,
         tertiary_mailchimp_instance,
         secondary_sendgrid_instance,
     ):
         update_config(
-            load_config_mock,
-            load_config_mocked_additions,
-            load_config_with_replacement_mock,
-            load_config_with_replacement_mocked_additions,
-            load_dataset_with_replacement_mock,
-            load_dataset_with_replacement_mocked_additions,
+            load_config_mock_object,
+            load_config_mocked_additions_function,
+            load_config_with_replacement_mock_object,
+            load_config_with_replacement_mocked_additions_function,
+            load_dataset_with_replacement_mock_object,
+            load_dataset_with_replacement_mocked_additions_function,
             validate_updated_instances_additions,
             db,
             secondary_mailchimp_instance,
@@ -98,21 +97,21 @@ class TestConnectionRegistry:
     )
     def test_update_config_removals(
         self,
-        load_config_mock: Mock,
-        load_config_with_replacement_mock: Mock,
-        load_dataset_with_replacement_mock: Mock,
+        load_config_mock_object: Mock,
+        load_config_with_replacement_mock_object: Mock,
+        load_dataset_with_replacement_mock_object: Mock,
         db,
         secondary_mailchimp_instance,
         tertiary_mailchimp_instance,
         secondary_sendgrid_instance,
     ):
         update_config(
-            load_config_mock,
-            load_config_mocked_removals,
-            load_config_with_replacement_mock,
-            load_config_with_replacement_mocked_removals,
-            load_dataset_with_replacement_mock,
-            load_dataset_with_replacement_mocked_removals,
+            load_config_mock_object,
+            load_config_mocked_removals_function,
+            load_config_with_replacement_mock_object,
+            load_config_with_replacement_mocked_removals_function,
+            load_dataset_with_replacement_mock_object,
+            load_dataset_with_replacement_mocked_removals_function,
             validate_updated_instances_removals,
             db,
             secondary_mailchimp_instance,
@@ -122,12 +121,12 @@ class TestConnectionRegistry:
 
 
 def update_config(
-    load_config_mock,
-    load_config_mock_override: Callable,
-    load_config_with_replacement_mock,
-    load_config_with_replacement_mock_override: Callable,
-    load_dataset_with_replacement_mock,
-    load_dataset_with_replacement_mock_override: Callable,
+    load_config_mock_object,
+    load_config_mock_function: Callable,
+    load_config_with_replacement_mock_object,
+    load_config_with_replacement_mock_function: Callable,
+    load_dataset_with_replacement_mock_object,
+    load_dataset_with_replacement_mock_function: Callable,
     validation_function: Callable,
     db,
     secondary_mailchimp_instance,
@@ -218,12 +217,14 @@ def update_config(
 
     # mock methods within template instantiation workflow
     # to produce an updated saas config template
-    load_config_mock.side_effect = load_config_mock_override
-    load_config_with_replacement_mock.side_effect = (
-        load_config_with_replacement_mock_override
+    # this mimics "updates" made to SaaS config and dataset templates
+    # for mailchimp and sendgrid
+    load_config_mock_object.side_effect = load_config_mock_function
+    load_config_with_replacement_mock_object.side_effect = (
+        load_config_with_replacement_mock_function
     )
-    load_dataset_with_replacement_mock.side_effect = (
-        load_dataset_with_replacement_mock_override
+    load_dataset_with_replacement_mock_object.side_effect = (
+        load_dataset_with_replacement_mock_function
     )
 
     # run update "script"
@@ -281,7 +282,7 @@ def increment_ver(version):
 ### Additions helpers ###
 
 
-def load_config_mocked_additions(filename: str) -> Dict:
+def load_config_mocked_additions_function(filename: str) -> Dict:
     """
     Loads the saas config from the yaml file
     Mocked to make additions to mailchimp config template _only_ for testing
@@ -293,7 +294,7 @@ def load_config_mocked_additions(filename: str) -> Dict:
         return config
 
 
-def load_config_with_replacement_mocked_additions(
+def load_config_with_replacement_mocked_additions_function(
     filename: str, string_to_replace: str, replacement: str
 ) -> Dict:
     """
@@ -315,10 +316,11 @@ def update_config_additions(config: Dict, filename: str):
     ):
         config["version"] = increment_ver(config["version"])
         config["description"] = NEW_CONFIG_DESCRIPTION
+        config["connector_params"].append(NEW_CONNECTOR_PARAM)
         config["endpoints"].append(NEW_ENDPOINT)
 
 
-def load_dataset_with_replacement_mocked_additions(
+def load_dataset_with_replacement_mocked_additions_function(
     filename: str, string_to_replace: str, replacement: str
 ) -> Dict:
     """
@@ -340,41 +342,48 @@ def load_dataset_with_replacement_mocked_additions(
 
 
 def validate_updated_instances_additions(
-    dataset_config: DatasetConfig,
+    updated_dataset_config: DatasetConfig,
     original_template_config: Dict,
     original_template_dataset: Dict,
     key: str,
     fides_key: str,
 ):
     # check for dataset additions to template
-    assert dataset_config.dataset["description"] == NEW_DATASET_DESCRIPTION
+    assert updated_dataset_config.dataset["description"] == NEW_DATASET_DESCRIPTION
     assert (
-        len(dataset_config.dataset["collections"])
+        len(updated_dataset_config.dataset["collections"])
         == len(original_template_dataset["collections"]) + 1
     )
-    assert NEW_COLLECTION in dataset_config.dataset["collections"]
-    assert NEW_FIELD in dataset_config.dataset["collections"][0]["fields"]
+    assert NEW_COLLECTION in updated_dataset_config.dataset["collections"]
+    assert NEW_FIELD in updated_dataset_config.dataset["collections"][0]["fields"]
 
     # check for config additions to template
-    saas_config = dataset_config.connection_config.saas_config
-    assert saas_config["version"] == increment_ver(original_template_config["version"])
-    assert saas_config["description"] == NEW_CONFIG_DESCRIPTION
+    updated_saas_config = updated_dataset_config.connection_config.saas_config
+    assert updated_saas_config["version"] == increment_ver(
+        original_template_config["version"]
+    )
+    assert updated_saas_config["description"] == NEW_CONFIG_DESCRIPTION
+    assert any(
+        NEW_CONNECTOR_PARAM["name"] == param["name"]
+        for param in updated_saas_config["connector_params"]
+    )
     assert (
-        len(saas_config["endpoints"]) == len(original_template_config["endpoints"]) + 1
+        len(updated_saas_config["endpoints"])
+        == len(original_template_config["endpoints"]) + 1
     )
     assert any(
         NEW_ENDPOINT["name"] == endpoint["name"]
-        for endpoint in saas_config["endpoints"]
+        for endpoint in updated_saas_config["endpoints"]
     )
 
-    assert dataset_config.connection_config.key == key
-    assert saas_config["fides_key"] == fides_key
+    assert updated_dataset_config.connection_config.key == key
+    assert updated_saas_config["fides_key"] == fides_key
 
 
 ### Removals helpers ###
 
 
-def load_config_mocked_removals(filename: str) -> Dict:
+def load_config_mocked_removals_function(filename: str) -> Dict:
     """
     Loads the saas config from the yaml file
     Mocked to make removals to mailchimp config template _only_ for testing
@@ -386,7 +395,7 @@ def load_config_mocked_removals(filename: str) -> Dict:
         return config
 
 
-def load_config_with_replacement_mocked_removals(
+def load_config_with_replacement_mocked_removals_function(
     filename: str, string_to_replace: str, replacement: str
 ) -> Dict:
     """
@@ -408,9 +417,10 @@ def update_config_removals(config: Dict, filename: str):
     ):
         config["version"] = increment_ver(config["version"])
         config["endpoints"].pop()
+        config["connector_params"].pop()
 
 
-def load_dataset_with_replacement_mocked_removals(
+def load_dataset_with_replacement_mocked_removals_function(
     filename: str, string_to_replace: str, replacement: str
 ) -> Dict:
     """
@@ -430,7 +440,7 @@ def load_dataset_with_replacement_mocked_removals(
 
 
 def validate_updated_instances_removals(
-    dataset_config: DatasetConfig,
+    updated_dataset_config: DatasetConfig,
     original_template_config: Dict,
     original_template_dataset: Dict,
     key: str,
@@ -438,15 +448,20 @@ def validate_updated_instances_removals(
 ):
     # check for dataset removals to template
     assert (
-        len(dataset_config.dataset["collections"])
+        len(updated_dataset_config.dataset["collections"])
         == len(original_template_dataset["collections"]) - 1
     )
 
     # check for config removals to template
-    saas_config = dataset_config.connection_config.saas_config
+    updated_saas_config = updated_dataset_config.connection_config.saas_config
     assert (
-        len(saas_config["endpoints"]) == len(original_template_config["endpoints"]) - 1
+        len(updated_saas_config["endpoints"])
+        == len(original_template_config["endpoints"]) - 1
+    )
+    assert (
+        len(updated_saas_config["connector_params"])
+        == len(original_template_config["connector_params"]) - 1
     )
 
-    assert dataset_config.connection_config.key == key
-    assert saas_config["fides_key"] == fides_key
+    assert updated_dataset_config.connection_config.key == key
+    assert updated_saas_config["fides_key"] == fides_key
