@@ -70,6 +70,7 @@ from fidesops.ops.schemas.email.email import (
 from fidesops.ops.schemas.masking.masking_secrets import SecretType
 from fidesops.ops.schemas.policy import PolicyResponse
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 from fidesops.ops.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
@@ -794,7 +795,7 @@ class TestGetPrivacyRequests:
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == privacy_request.id
 
-    def test_filter_privacy_requests_by_identity_exact(
+    def test_filter_privacy_requests_by_identity_no_request_id(
         self,
         db,
         api_client,
@@ -2876,7 +2877,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
     )
     def test_create_privacy_request_with_email_config(
         self,
@@ -2915,12 +2916,22 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         assert mock_dispatch_email.called
 
         call_args = mock_dispatch_email.call_args[1]
-        assert call_args["action_type"] == EmailActionType.SUBJECT_IDENTITY_VERIFICATION
-        assert call_args["to_email"] == "test@example.com"
-        assert call_args["email_body_params"] == SubjectIdentityVerificationBodyParams(
-            verification_code=pr.get_cached_verification_code(),
-            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+        task_kwargs = call_args["kwargs"]
+        assert task_kwargs["to_email"] == "test@example.com"
+
+        email_meta = task_kwargs["email_meta"]
+        assert (
+            email_meta["action_type"] == EmailActionType.SUBJECT_IDENTITY_VERIFICATION
         )
+        assert (
+            email_meta["body_params"]
+            == SubjectIdentityVerificationBodyParams(
+                verification_code=pr.get_cached_verification_code(),
+                verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+            ).dict()
+        )
+        queue = call_args["queue"]
+        assert queue == EMAIL_QUEUE_NAME
 
         pr.delete(db=db)
 
