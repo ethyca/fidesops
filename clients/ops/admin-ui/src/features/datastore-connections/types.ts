@@ -83,7 +83,7 @@ export type FidesOpsMetaReference = {
 
 export type DatastoreConnectionRequest = {
   name: string;
-  key: string;
+  key?: string;
   connection_type: ConnectionType;
   access: string;
   disabled: boolean;

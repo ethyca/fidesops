@@ -37,6 +37,7 @@ const ConnectionTypeFilter: React.FC<ConnectionTypeFilterProps> = ({
 
   return (
     <SelectDropdown
+      enableSorting={false}
       hasClear={false}
       label="Show all connectors"
       list={CONNECTION_TYPE_FILTER_MAP}

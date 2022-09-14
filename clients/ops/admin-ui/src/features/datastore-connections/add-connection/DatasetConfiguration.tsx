@@ -1,16 +1,6 @@
-import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  Box,
-  Center,
-  Spinner,
-  useToast,
-  VStack,
-} from "@fidesui/react";
+import { Box, Center, Spinner, VStack } from "@fidesui/react";
 import { useAppSelector } from "app/hooks";
-import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
-import { capitalize } from "common/utils";
+import { useAlert, useAPIHelper } from "common/hooks";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {
   useGetDatasetsQuery,
@@ -24,64 +14,27 @@ import { replaceURL } from "./helpers";
 
 const DatasetConfiguration: React.FC = () => {
   const mounted = useRef(false);
-  const toast = useToast();
+  const { errorAlert, successAlert } = useAlert();
+  const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { connection, connectionOption, step } = useAppSelector(
-    selectConnectionTypeState
-  );
+  const { connection, step } = useAppSelector(selectConnectionTypeState);
   const { data, isFetching, isLoading, isSuccess } = useGetDatasetsQuery(
     connection!.key
   );
   const [patchDataset] = usePatchDatasetMutation();
-
-  const displayError = (content: string | JSX.Element) => {
-    toast({
-      position: "top",
-      render: () => (
-        <Alert status="error">
-          <AlertIcon />
-          <Box>
-            <AlertDescription>{content}</AlertDescription>
-          </Box>
-        </Alert>
-      ),
-    });
-  };
-
-  const displaySuccess = (content: string) => {
-    toast({
-      position: "top",
-      render: () => (
-        <Alert status="success" variant="subtle">
-          <AlertIcon />
-          {content}
-        </Alert>
-      ),
-    });
-  };
-
-  const handleError = (error: any) => {
-    let errorMsg = "An unexpected error occurred. Please try again.";
-    if (isErrorWithDetail(error)) {
-      errorMsg = error.data.detail;
-    } else if (isErrorWithDetailArray(error)) {
-      errorMsg = error.data.detail[0].msg;
-    }
-    displayError(errorMsg);
-  };
 
   const handleSubmit = async (value: any) => {
     try {
       setIsSubmitting(true);
       const params: PatchDatasetsRequest = {
         connection_key: connection?.key as string,
-        datasets: value,
+        datasets: Array.isArray(value) ? value : [value],
       };
       const payload = await patchDataset(params).unwrap();
       if (payload.failed?.length > 0) {
-        displayError(payload.failed[0].message);
+        errorAlert(payload.failed[0].message);
       } else {
-        displaySuccess("Dataset successfully updated!");
+        successAlert("Dataset successfully updated!");
       }
     } catch (error) {
       handleError(error);
@@ -102,11 +55,9 @@ const DatasetConfiguration: React.FC = () => {
 
   return (
     <VStack align="stretch" flex="1">
-      <Box color="gray.700" fontSize="14px" w="475px" mb={4}>
-        {step.description?.replace(
-          "{identifier}",
-          capitalize(connectionOption!.identifier)
-        )}
+      <Box color="gray.700" fontSize="14px" mb={4}>
+        View your system yaml below! You can also modify the yaml if you need to
+        assign any references between datasets.
       </Box>
       {(isFetching || isLoading) && (
         <Center>

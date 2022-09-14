@@ -6,7 +6,6 @@ import {
   setConnectionOption,
   setStep,
 } from "connection-type/connection-type.slice";
-import { AddConnectionStep } from "connection-type/types";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect } from "react";
@@ -15,6 +14,7 @@ import { useDispatch } from "react-redux";
 import ChooseConnection from "./ChooseConnection";
 import ConfigureConnector from "./ConfigureConnector";
 import { STEPS } from "./constants";
+import { AddConnectionStep } from "./types";
 
 const AddConnection: React.FC = () => {
   const dispatch = useDispatch();
@@ -68,7 +68,7 @@ const AddConnection: React.FC = () => {
       default:
         return <ChooseConnection />;
     }
-  }, [step]);
+  }, [step.stepId]);
 
   const getLabel = useCallback(
     (s: AddConnectionStep): string => {

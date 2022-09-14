@@ -1,10 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { isNumeric } from "@chakra-ui/utils";
 import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  Box,
   Button,
   ButtonGroup,
   FormControl,
@@ -18,11 +14,10 @@ import {
   NumberInputStepper,
   Textarea,
   Tooltip,
-  useToast,
   VStack,
 } from "@fidesui/react";
 import { useAppSelector } from "app/hooks";
-import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
+import { useAPIHelper } from "common/hooks";
 import { CircleHelpIcon } from "common/Icon";
 import { capitalize } from "common/utils";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
@@ -55,7 +50,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   onTestConnectionClick,
 }) => {
   const mounted = useRef(false);
-  const toast = useToast();
+  const { handleError } = useAPIHelper();
 
   const { connection, connectionOption } = useAppSelector(
     selectConnectionTypeState
@@ -80,20 +75,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       error = `${label} is required`;
     }
     return error;
-  };
-
-  const displayError = (content: string | JSX.Element) => {
-    toast({
-      position: "top",
-      render: () => (
-        <Alert status="error">
-          <AlertIcon />
-          <Box>
-            <AlertDescription>{content}</AlertDescription>
-          </Box>
-        </Alert>
-      ),
-    });
   };
 
   const getFormLabel = (id: string, value: string): JSX.Element => (
@@ -183,16 +164,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       });
     }
     return defaultValues;
-  };
-
-  const handleError = (error: any) => {
-    let errorMsg = "An unexpected error occurred. Please try again.";
-    if (isErrorWithDetail(error)) {
-      errorMsg = error.data.detail;
-    } else if (isErrorWithDetailArray(error)) {
-      errorMsg = error.data.detail[0].msg;
-    }
-    displayError(errorMsg);
   };
 
   const handleSubmit = (values: any, actions: any) => {

@@ -1,7 +1,4 @@
 import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
   Box,
   Button,
   ButtonGroup,
@@ -12,15 +9,18 @@ import {
   SlideFade,
   Tag,
   Text,
-  useToast,
   VStack,
 } from "@fidesui/react";
+import { useAlert } from "common/hooks/useAlert";
 import { ErrorWarningIcon } from "common/Icon";
 import { Dataset } from "datastore-connections/types";
 import yaml, { YAMLException } from "js-yaml";
 import { narrow } from "narrow-minded";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
+
+import { STEPS } from "../constants";
 
 const Editor = dynamic(
   // @ts-ignore
@@ -43,26 +43,13 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   onSubmit,
 }) => {
   const monacoRef = useRef(null);
-  const toast = useToast();
+  const router = useRouter();
+  const { errorAlert } = useAlert();
   const yamlData = data.length > 0 ? yaml.dump(data) : undefined;
   const [yamlError, setYamlError] = useState(
     undefined as unknown as YAMLException
   );
   const [isEmptyState, setIsEmptyState] = useState(!yamlData);
-
-  const displayError = (content: string | JSX.Element) => {
-    toast({
-      position: "top",
-      render: () => (
-        <Alert status="error">
-          <AlertIcon />
-          <Box>
-            <AlertDescription>{content}</AlertDescription>
-          </Box>
-        </Alert>
-      ),
-    });
-  };
 
   const validate = (value: string) => {
     yaml.load(value, { json: true });
@@ -77,14 +64,13 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
       if (isYamlException(error)) {
         setYamlError(error);
       } else {
-        displayError("Could not parse the supplied YAML");
+        errorAlert("Could not parse the supplied YAML");
       }
     }
   };
 
-  const handleReset = () => {
-    (monacoRef.current as any).setValue(yamlData);
-    setYamlError(undefined as unknown as YAMLException);
+  const handleCancel = () => {
+    router.push(STEPS[1].href);
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -106,7 +92,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
         <Editor
           defaultLanguage="yaml"
           defaultValue={yamlData}
-          height="calc(100vh - 450px)"
+          height="calc(100vh - 394px)"
           onChange={handleChange}
           onMount={handleMount}
           options={{
@@ -125,7 +111,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
           spacing="8px"
           variant="outline"
         >
-          <Button onClick={handleReset} variant="outline">
+          <Button onClick={handleCancel} variant="outline">
             Cancel
           </Button>
           <Button

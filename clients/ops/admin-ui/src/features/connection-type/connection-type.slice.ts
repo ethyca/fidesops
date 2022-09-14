@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 import { STEPS } from "datastore-connections/add-connection/constants";
+import { AddConnectionStep } from "datastore-connections/add-connection/types";
 import { SystemType } from "datastore-connections/constants";
 import { DatastoreConnection } from "datastore-connections/types";
 
@@ -9,7 +10,6 @@ import type { RootState } from "../../app/store";
 import { BASE_URL, CONNECTION_TYPE_ROUTE } from "../../constants";
 import { selectToken } from "../auth";
 import {
-  AddConnectionStep,
   AllConnectionTypesResponse,
   ConnectionOption,
   ConnectionTypeParams,

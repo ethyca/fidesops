@@ -1,13 +1,10 @@
-import { SaasType, SystemType } from "datastore-connections/constants";
+import { AddConnectionStep } from "datastore-connections/add-connection/types";
+import {
+  ConnectionType,
+  SaasType,
+  SystemType,
+} from "datastore-connections/constants";
 import { DatastoreConnection } from "datastore-connections/types";
-
-export type AddConnectionStep = {
-  stepId: number;
-  label: string;
-  href: string;
-  description?: string;
-  parentStepId?: number;
-};
 
 export type AllConnectionTypesResponse = {
   items: ConnectionOption[];

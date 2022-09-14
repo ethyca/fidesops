@@ -1,12 +1,8 @@
-import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  Box,
-  useToast,
-} from "@fidesui/react";
+import { Box } from "@fidesui/react";
 import { useAppSelector } from "app/hooks";
-import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
+import { useAPIHelper } from "common/hooks";
+import { useAlert } from "common/hooks/useAlert";
+import { capitalize } from "common/utils";
 import {
   selectConnectionTypeState,
   setConnection,
@@ -38,7 +34,8 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   onTestConnectionClick,
 }) => {
   const dispatch = useDispatch();
-  const toast = useToast();
+  const { errorAlert, successAlert } = useAlert();
+  const { handleError } = useAPIHelper();
   const defaultValues = {
     description: "",
     instance_key: "",
@@ -54,42 +51,6 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   const [updateDatastoreConnectionSecrets] =
     useUpdateDatastoreConnectionSecretsMutation();
 
-  const displayError = (content: string | JSX.Element) => {
-    toast({
-      position: "top",
-      render: () => (
-        <Alert status="error">
-          <AlertIcon />
-          <Box>
-            <AlertDescription>{content}</AlertDescription>
-          </Box>
-        </Alert>
-      ),
-    });
-  };
-
-  const displaySuccess = (content: string) => {
-    toast({
-      position: "top",
-      render: () => (
-        <Alert status="success" variant="subtle">
-          <AlertIcon />
-          {content}
-        </Alert>
-      ),
-    });
-  };
-
-  const handleError = (error: any) => {
-    let errorMsg = "An unexpected error occurred. Please try again.";
-    if (isErrorWithDetail(error)) {
-      errorMsg = error.data.detail;
-    } else if (isErrorWithDetailArray(error)) {
-      errorMsg = error.data.detail[0].msg;
-    }
-    displayError(errorMsg);
-  };
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSubmit = async (values: any, _actions: any) => {
     try {
@@ -104,7 +65,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       };
       const payload = await patchDatastoreConnection(params1).unwrap();
       if (payload.failed?.length > 0) {
-        displayError(payload.failed[0].message);
+        errorAlert(payload.failed[0].message);
       } else {
         dispatch(setConnection(payload.succeeded[0]));
         const params2: DatastoreConnectionSecretsRequest = {
@@ -118,7 +79,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
           params2
         ).unwrap();
         if (payload2.test_status === "failed") {
-          displayError(
+          errorAlert(
             <>
               <b>Message:</b> {payload2.msg}
               <br />
@@ -126,7 +87,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
             </>
           );
         } else {
-          displaySuccess(
+          successAlert(
             `Connector successfully ${connection?.key ? "updated" : "added"}!`
           );
         }
@@ -139,12 +100,20 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   };
 
   return (
-    <ConnectorParametersForm
-      data={data}
-      defaultValues={defaultValues}
-      isSubmitting={isSubmitting}
-      onSaveClick={handleSubmit}
-      onTestConnectionClick={onTestConnectionClick}
-    />
+    <>
+      <Box color="gray.700" fontSize="14px" h="80px">
+        Connect to your {capitalize(connectionOption!.identifier)} environment
+        by providing credential information below. Once you have saved your
+        connector credentials, you can review what data is included when
+        processing a privacy request in your Dataset configuration.
+      </Box>
+      <ConnectorParametersForm
+        data={data}
+        defaultValues={defaultValues}
+        isSubmitting={isSubmitting}
+        onSaveClick={handleSubmit}
+        onTestConnectionClick={onTestConnectionClick}
+      />
+    </>
   );
 };

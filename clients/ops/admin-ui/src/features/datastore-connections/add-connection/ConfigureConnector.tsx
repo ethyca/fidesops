@@ -1,5 +1,10 @@
 import { Flex } from "@fidesui/react";
-import { setConnection, setStep } from "connection-type/connection-type.slice";
+import { useAppSelector } from "app/hooks";
+import {
+  selectConnectionTypeState,
+  setConnection,
+  setStep,
+} from "connection-type/connection-type.slice";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 
@@ -8,22 +13,27 @@ import ConfigurationSettingsNav from "./ConfigurationSettingsNav";
 import { ConnectorParameters } from "./ConnectorParameters";
 import { CONNECTOR_PARAMETERS_OPTIONS, STEPS } from "./constants";
 import DatasetConfiguration from "./DatasetConfiguration";
+import DSRCustomization from "./manual/DSRCustomization";
 
 const ConfigureConnector: React.FC = () => {
   const dispatch = useDispatch();
   const mounted = useRef(false);
+  const { connectionOption } = useAppSelector(selectConnectionTypeState);
   const [steps, setSteps] = useState([STEPS[0], STEPS[1], STEPS[2]]);
-  const [selectedItem, setSelectedItem] = useState(
-    CONNECTOR_PARAMETERS_OPTIONS[0]
+  const connector = CONNECTOR_PARAMETERS_OPTIONS.find(
+    (o) => o.type === connectionOption?.type
   );
+  const [selectedItem, setSelectedItem] = useState(connector?.options[0]);
 
   const handleNavChange = (value: string) => {
     switch (value) {
-      case CONNECTOR_PARAMETERS_OPTIONS[1]:
+      case "Dataset configuration":
         dispatch(setStep(STEPS[3]));
         setSteps([STEPS[0], STEPS[1], STEPS[3]]);
         break;
-      case CONNECTOR_PARAMETERS_OPTIONS[0]:
+      case "DSR customization":
+        break;
+      case "Connector parameters":
       default:
         dispatch(setStep(STEPS[2]));
         break;
@@ -33,9 +43,9 @@ const ConfigureConnector: React.FC = () => {
 
   useEffect(() => {
     mounted.current = true;
-    dispatch(setConnection(undefined));
     return () => {
       mounted.current = false;
+      dispatch(setConnection(undefined));
     };
   }, [dispatch]);
 
@@ -44,15 +54,18 @@ const ConfigureConnector: React.FC = () => {
       <Breadcrumb steps={steps} />
       <Flex flex="1" gap="18px">
         <ConfigurationSettingsNav
+          menuOptions={connector?.options || []}
           onChange={handleNavChange}
-          selectedItem={selectedItem}
+          selectedItem={selectedItem || ""}
         />
-        {selectedItem === CONNECTOR_PARAMETERS_OPTIONS[0] && (
-          <ConnectorParameters />
-        )}
-        {selectedItem === CONNECTOR_PARAMETERS_OPTIONS[1] && (
-          <DatasetConfiguration />
-        )}
+        {
+          {
+            "Connector parameters": <ConnectorParameters />,
+            "Dataset configuration": <DatasetConfiguration />,
+            "DSR customization": <DSRCustomization />,
+            "": null,
+          }[selectedItem || ""]
+        }
       </Flex>
     </>
   );

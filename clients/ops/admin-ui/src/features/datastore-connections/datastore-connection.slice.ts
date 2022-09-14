@@ -158,6 +158,14 @@ export const datastoreConnectionApi = createApi({
   }),
   tagTypes: ["DatastoreConnection"],
   endpoints: (build) => ({
+    createAccessManualWebhook: build.mutation<any, any>({
+      query: (params) => ({
+        url: `${CONNECTION_ROUTE}/${params.connection_key}/access_manual_webhook`,
+        method: "POST",
+        body: params.body,
+      }),
+      invalidatesTags: () => ["DatastoreConnection"],
+    }),
     createSassConnectionConfig: build.mutation<
       SassConnectionConfigResponse,
       SassConnectionConfigRequest
@@ -286,6 +294,7 @@ export const datastoreConnectionApi = createApi({
 });
 
 export const {
+  useCreateAccessManualWebhookMutation,
   useCreateSassConnectionConfigMutation,
   useGetAllDatastoreConnectionsQuery,
   useGetDatasetsQuery,

@@ -3,9 +3,11 @@ import { useAppSelector } from "app/hooks";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import React from "react";
 
-import { CONNECTOR_PARAMETERS_OPTIONS } from "./constants";
-
 type ConfigurationSettingsNavProps = {
+  /**
+   * List of menu options
+   */
+  menuOptions: string[];
   /**
    * Parent callback event handler invoked when a menu option has changed
    */
@@ -17,13 +19,14 @@ type ConfigurationSettingsNavProps = {
 };
 
 const ConfigurationSettingsNav: React.FC<ConfigurationSettingsNavProps> = ({
+  menuOptions = [],
   onChange,
   selectedItem,
 }) => {
   const { connection } = useAppSelector(selectConnectionTypeState);
   const options = connection?.key
-    ? [...CONNECTOR_PARAMETERS_OPTIONS]
-    : [...CONNECTOR_PARAMETERS_OPTIONS].splice(0, 1);
+    ? [...menuOptions]
+    : [...menuOptions].splice(0, 1);
 
   return (
     <Box w="234px">

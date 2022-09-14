@@ -7,8 +7,9 @@ import {
 import { useAppSelector } from "app/hooks";
 import { capitalize } from "common/utils";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
-import { AddConnectionStep } from "connection-type/types";
 import React, { useCallback } from "react";
+
+import { AddConnectionStep } from "./types";
 
 type BreadcrumbProps = {
   steps: AddConnectionStep[];
@@ -38,7 +39,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ steps }) => {
   );
 
   return (
-    <Box mb="16px">
+    <Box mb="32px">
       <ChakraBreadcrumb fontSize="sm" fontWeight="medium">
         {steps.map((s) => (
           <BreadcrumbItem key={s.stepId}>
