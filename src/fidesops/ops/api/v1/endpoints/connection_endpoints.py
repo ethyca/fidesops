@@ -36,6 +36,7 @@ from fidesops.ops.api.v1.urn_registry import (
 )
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
+    ConnectionConfigNotFoundException,
     ConnectionException,
 )
 from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -71,12 +72,15 @@ def get_connection_config_or_error(
     db: Session, connection_key: FidesOpsKey
 ) -> ConnectionConfig:
     """Helper to load the ConnectionConfig object or throw a 404"""
-    connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
     logger.info("Finding connection configuration with key '%s'", connection_key)
-    if not connection_config:
+    try:
+        connection_config = ConnectionConfig.get_connection_config_or_error(
+            db, connection_key
+        )
+    except ConnectionConfigNotFoundException as e:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No connection configuration found with key '{connection_key}'.",
+            detail=str(e),
         )
     return connection_config
 

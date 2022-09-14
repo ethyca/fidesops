@@ -5,13 +5,11 @@ from os.path import exists
 from typing import Dict, Iterable, List, Optional, Union
 
 from fideslib.core.config import load_toml
-from fideslib.exceptions import KeyOrNameAlreadyExists
 from packaging.version import LegacyVersion, Version
 from packaging.version import parse as parse_version
 from pydantic import BaseModel, validator
 from sqlalchemy.orm import Session
 
-from fidesops.ops.api.v1.endpoints.connection_endpoints import validate_secrets
 from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -130,7 +128,7 @@ def create_dataset_config_from_template(
         "fides_key": template_values.instance_key,
         "dataset": dataset_from_template,
     }
-    dataset_config = DatasetConfig.create(db, data=data)
+    dataset_config = DatasetConfig.create_or_update(db, data=data)
     return dataset_config
 
 
@@ -210,59 +208,13 @@ def update_saas_instance(
         secrets=connection_config.secrets,
         instance_key=saas_config_instance.fides_key,
     )
-    connection_config.delete(db)
-    add_saas_connector(db, template, template_vals, str(saas_config_instance.type))
 
-
-def add_saas_connector(
-    db: Session,
-    connector_template: ConnectorTemplate,
-    template_values: SaasConnectionTemplateValues,
-    saas_connector_type: str,
-) -> tuple[ConnectionConfig, DatasetConfig]:
-    """
-    Adds to the db the SaaS instance configuration data based
-    on the provided ConnectorTemplate and SaasConnectionTemplateValues
-
-    Returns a tuple - first element is the instantiated `ConnectionConfig`,
-    second element is the instantiated `DatasetConfig`.
-
-    Raises:
-        KeyOrNameAlreadyExists: if the key or instance_key of the given
-            SaasConnectionTemplateValues already exists in the db
-    """
-
-    if DatasetConfig.filter(
-        db=db,
-        conditions=(DatasetConfig.fides_key == template_values.instance_key),
-    ).count():
-        raise KeyOrNameAlreadyExists(
-            f"SaaS connector instance key '{template_values.instance_key}' already exists.",
-        )
-
-    connection_config: ConnectionConfig = (
-        create_connection_config_from_template_no_save(
-            db, connector_template, template_values
-        )
+    config_from_template: Dict = load_config_with_replacement(
+        template.config, "<instance_fides_key>", template_vals.instance_key
     )
-
-    connection_config.secrets = validate_secrets(
-        template_values.secrets, connection_config
-    ).dict()
-    connection_config.save(db=db)  # Not persisted to db until secrets are validated
-
-    try:
-        dataset_config: DatasetConfig = create_dataset_config_from_template(
-            db, connection_config, connector_template, template_values
-        )
-    except Exception as e:
-        connection_config.delete(db)
-        raise e
-
-    logger.info(
-        "SaaS Connector and Dataset %s successfully created from '%s' template.",
-        template_values.instance_key,
-        saas_connector_type,
+    connection_config = ConnectionConfig.get_connection_config_or_error(
+        db, template_vals.key  # type: ignore
     )
+    connection_config.update_saas_config(db, SaaSConfig(**config_from_template))
 
-    return connection_config, dataset_config
+    create_dataset_config_from_template(db, connection_config, template, template_vals)

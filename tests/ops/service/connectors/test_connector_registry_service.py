@@ -362,7 +362,10 @@ def validate_updated_instances_additions(
     assert (
         len(saas_config["endpoints"]) == len(original_template_config["endpoints"]) + 1
     )
-    assert NEW_ENDPOINT in saas_config["endpoints"]
+    assert any(
+        NEW_ENDPOINT["name"] == endpoint["name"]
+        for endpoint in saas_config["endpoints"]
+    )
 
     assert dataset_config.connection_config.key == key
     assert saas_config["fides_key"] == fides_key

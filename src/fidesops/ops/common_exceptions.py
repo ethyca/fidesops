@@ -77,6 +77,10 @@ class ConnectorNotFoundException(Exception):
     """Connector could not be found"""
 
 
+class ConnectionConfigNotFoundException(Exception):
+    """Connection Config could not be found"""
+
+
 class DrpActionValidationError(Exception):
     """A resource already exists with this DRP Action."""
 

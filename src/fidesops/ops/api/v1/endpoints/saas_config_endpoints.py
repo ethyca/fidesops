@@ -15,6 +15,7 @@ from starlette.status import (
 )
 
 from fidesops.ops.api import deps
+from fidesops.ops.api.v1.endpoints.connection_endpoints import validate_secrets
 from fidesops.ops.api.v1.scope_registry import (
     CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
@@ -52,7 +53,8 @@ from fidesops.ops.service.authentication.authentication_strategy_oauth2_authoriz
 from fidesops.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     ConnectorTemplate,
-    add_saas_connector,
+    create_connection_config_from_template_no_save,
+    create_dataset_config_from_template,
     load_registry,
     registry_file,
 )
@@ -292,28 +294,47 @@ def instantiate_connection_from_template(
             detail=f"SaaS connector type '{saas_connector_type}' is not yet available in Fidesops. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
         )
 
+    if DatasetConfig.filter(
+        db=db,
+        conditions=(DatasetConfig.fides_key == template_values.instance_key),
+    ).count():
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"SaaS connector instance key '{template_values.instance_key}' already exists.",
+        )
+
     try:
-        connection_config, dataset_config = add_saas_connector(
-            db, connector_template, template_values, saas_connector_type
+        connection_config: ConnectionConfig = (
+            create_connection_config_from_template_no_save(
+                db, connector_template, template_values
+            )
         )
     except KeyOrNameAlreadyExists as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail=exc.args[0],
         )
-    except HTTPException as exc:
-        raise exc
-    except Exception:
-        logger.error(
-            "Generic error creating SaaS connector from the '%s' template",
-            saas_connector_type,
-            exc_info=True,
+
+    connection_config.secrets = validate_secrets(
+        template_values.secrets, connection_config
+    ).dict()
+    connection_config.save(db=db)  # Not persisted to db until secrets are validated
+
+    try:
+        dataset_config: DatasetConfig = create_dataset_config_from_template(
+            db, connection_config, connector_template, template_values
         )
+    except Exception:
+        connection_config.delete(db)
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"SaaS Connector could not be created from the '{saas_connector_type}' template at this time.",
         )
-
+    logger.info(
+        "SaaS Connector and Dataset %s successfully created from '%s' template.",
+        template_values.instance_key,
+        saas_connector_type,
+    )
     return SaasConnectionTemplateResponse(
         connection=connection_config, dataset=dataset_config.dataset
     )

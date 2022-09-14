@@ -16,9 +16,11 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
+from fidesops.ops.common_exceptions import ConnectionConfigNotFoundException
 from fidesops.ops.core.config import config
 from fidesops.ops.db.base_class import JSONTypeOverride
 from fidesops.ops.schemas.saas.saas_config import SaaSConfig
+from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 
 
 class ConnectionTestStatus(enum.Enum):
@@ -118,6 +120,21 @@ class ConnectionConfig(Base):
     saas_config = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
     )
+
+    @classmethod
+    def get_connection_config_or_error(
+        cls: Type[ConnectionConfig], db: Session, connection_key: FidesOpsKey
+    ) -> ConnectionConfig:
+        """
+        Helper to load the ConnectionConfig object
+        or throw a `ConnectionConfigNotFoundException`
+        """
+        connection_config = cls.get_by(db, field="key", value=connection_key)
+        if not connection_config:
+            raise ConnectionConfigNotFoundException(
+                f"No connection configuration found with key '{connection_key}'.",
+            )
+        return connection_config
 
     @classmethod
     def create_without_saving(
