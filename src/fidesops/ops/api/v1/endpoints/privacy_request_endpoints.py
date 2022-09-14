@@ -71,6 +71,7 @@ from fidesops.ops.graph.graph import DatasetGraph, Node
 from fidesops.ops.graph.traversal import Traversal
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.models.manual_webhook import AccessManualWebhook
 from fidesops.ops.models.policy import CurrentStep, Policy, PolicyPreWebhook
 from fidesops.ops.models.privacy_request import (
@@ -85,6 +86,7 @@ from fidesops.ops.schemas.dataset import (
 )
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
+    FidesopsEmail,
     SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
@@ -101,7 +103,7 @@ from fidesops.ops.schemas.privacy_request import (
     RowCountRequest,
     VerificationCode,
 )
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task
 from fidesops.ops.service.privacy_request.request_runner_service import (
     generate_id_verification_code,
     queue_privacy_request,
@@ -112,6 +114,7 @@ from fidesops.ops.service.privacy_request.request_service import (
 )
 from fidesops.ops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fidesops.ops.task.task_resources import TaskResources
+from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.cache import FidesopsRedis
 from fidesops.ops.util.collection_util import Row
@@ -276,16 +279,23 @@ def _send_verification_code_to_user(
     db: Session, privacy_request: PrivacyRequest, email: Optional[str]
 ) -> None:
     """Generate and cache a verification code, and then email to the user"""
+    EmailConfig.get_configuration(
+        db=db
+    )  # Validates Fidesops is currently configured to send emails
     verification_code: str = generate_id_verification_code()
     privacy_request.cache_identity_verification_code(verification_code)
-    dispatch_email(
-        db=db,
-        action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
-        to_email=email,
-        email_body_params=SubjectIdentityVerificationBodyParams(
-            verification_code=verification_code,
-            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
-        ),
+    dispatch_email_task.apply_async(
+        queue=EMAIL_QUEUE_NAME,
+        kwargs={
+            "email_meta": FidesopsEmail(
+                action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
+                body_params=SubjectIdentityVerificationBodyParams(
+                    verification_code=verification_code,
+                    verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+                ),
+            ).dict(),
+            "to_email": email,
+        },
     )
 
 
@@ -455,11 +465,13 @@ def _filter_privacy_request_queryset(
             identity[0]
             for identity in ProvidedIdentity.filter(
                 db=db,
-                conditions=(ProvidedIdentity.hashed_value == hashed_identity),
+                conditions=(
+                    (ProvidedIdentity.hashed_value == hashed_identity)
+                    & (ProvidedIdentity.privacy_request_id.isnot(None))
+                ),
             ).values(column("privacy_request_id"))
         }
         query = query.filter(PrivacyRequest.id.in_(identities))
-
     # Further restrict all PrivacyRequests by query params
     if request_id:
         query = query.filter(PrivacyRequest.id.ilike(f"{request_id}%"))
@@ -598,7 +610,6 @@ def get_request_status(
     To fetch a single privacy request, use the request_id query param `?request_id=`.
     To see individual execution logs, use the verbose query param `?verbose=True`.
     """
-
     logger.info("Finding all request statuses with pagination params %s", params)
 
     query = db.query(PrivacyRequest)
