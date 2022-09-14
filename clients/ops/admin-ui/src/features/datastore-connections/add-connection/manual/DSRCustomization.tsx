@@ -41,9 +41,6 @@ const DSRCustomization: React.FC = () => {
         | CreateAccessManualWebhookRequest
         | PatchAccessManualWebhookRequest = {
         connection_key: connection?.key as string,
-        // body: {
-        //   fields: values,
-        // },
         body: { ...values } as any,
       };
       let payload:
