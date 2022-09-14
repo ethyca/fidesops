@@ -249,7 +249,6 @@ async def create_privacy_request(
                         "message": "",
                     },
                 )
-                # do we want approval email sent for automatic approvals?
                 queue_privacy_request(privacy_request.id)
         except EmailDispatchException as exc:
             kwargs["privacy_request_id"] = privacy_request.id
@@ -1177,6 +1176,15 @@ def approve_privacy_request(
         privacy_request.reviewed_at = datetime.utcnow()
         privacy_request.reviewed_by = user_id
         privacy_request.save(db=db)
+        AuditLog.create(
+            db=db,
+            data={
+                "user_id": user_id,
+                "privacy_request_id": privacy_request.id,
+                "action": AuditLogAction.approved,
+                "message": "",
+            },
+        )
         if config.notifications.send_request_review_notification:
             _send_privacy_request_review_email_to_user(
                 db=db,
@@ -1187,15 +1195,6 @@ def approve_privacy_request(
                 rejection_reason=None,
             )
 
-        AuditLog.create(
-            db=db,
-            data={
-                "user_id": user_id,
-                "privacy_request_id": privacy_request.id,
-                "action": AuditLogAction.approved,
-                "message": "",
-            },
-        )
         queue_privacy_request(privacy_request_id=privacy_request.id)
 
     return review_privacy_request(
@@ -1226,7 +1225,10 @@ def deny_privacy_request(
         privacy_request: PrivacyRequest,
     ) -> None:
         """Method for how to process requests - denied"""
-
+        privacy_request.status = PrivacyRequestStatus.denied
+        privacy_request.reviewed_at = datetime.utcnow()
+        privacy_request.reviewed_by = user_id
+        privacy_request.save(db=db)
         AuditLog.create(
             db=db,
             data={
@@ -1245,10 +1247,6 @@ def deny_privacy_request(
                 ),
                 rejection_reason=privacy_requests.reason,
             )
-        privacy_request.status = PrivacyRequestStatus.denied
-        privacy_request.reviewed_at = datetime.utcnow()
-        privacy_request.reviewed_by = user_id
-        privacy_request.save(db=db)
 
     return review_privacy_request(
         db=db,
