@@ -1090,9 +1090,9 @@ def _send_privacy_request_review_email_to_user(
             if action_type is EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
             else None,
         )
-    except EmailDispatchException as e:
+    except EmailDispatchException as exc:
         # this failure isn't fatal to privacy request
-        logger.error(e)
+        logger.info("Email dispatch failed with exception %s", Pii(exc))
 
 
 @router.post(
