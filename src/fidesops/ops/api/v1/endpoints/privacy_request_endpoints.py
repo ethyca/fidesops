@@ -63,6 +63,7 @@ from fidesops.ops.common_exceptions import (
     IdentityNotFoundException,
     IdentityVerificationException,
     NoCachedManualWebhookEntry,
+    PolicyNotFoundException,
     TraversalError,
     ValidationError,
 )
@@ -248,7 +249,7 @@ async def create_privacy_request(
                 queue_privacy_request(privacy_request.id)
         except EmailDispatchException as exc:
             kwargs["privacy_request_id"] = privacy_request.id
-            logger.error("EmailDispatchException: %s", exc)
+            logger.error("EmailDispatchException: %s", Pii(exc))
             failure = {
                 "message": "Verification email could not be sent.",
                 "data": kwargs,
@@ -295,7 +296,7 @@ def _send_verification_code_to_user(
 
 
 def _send_privacy_request_receipt_email_to_user(
-    db: Session, policy: Policy, email: Optional[str]
+    db: Session, policy: Optional[Policy], email: Optional[str]
 ) -> None:
     """Helper function to send request receipt email to the user"""
     if not email:
@@ -304,6 +305,14 @@ def _send_privacy_request_receipt_email_to_user(
                 "Identity email was not found, so request receipt email could not be sent."
             )
         )
+        return
+    if not policy:
+        logger.error(
+            PolicyNotFoundException(
+                "Policy was not found, so request receipt email could not be sent."
+            )
+        )
+        return
     request_types: Set[str] = set()
     for action_type in ActionType:
         if policy.get_rules_for_action(action_type=ActionType(action_type)):
@@ -315,9 +324,9 @@ def _send_privacy_request_receipt_email_to_user(
             to_email=email,
             email_body_params=RequestReceiptBodyParams(request_types=request_types),
         )
-    except EmailDispatchException as e:
+    except EmailDispatchException as exc:
         # catch early since this failure isn't fatal to privacy request, unlike the subject id verification email
-        logger.error(e)
+        logger.info("Email dispatch failed with exception %s", Pii(exc))
 
 
 def privacy_request_csv_download(
@@ -1115,8 +1124,19 @@ async def verify_identification_code(
     )
     try:
         privacy_request.verify_identity(db, provided_code.code)
+        policy: Optional[Policy] = Policy.get(
+            db=db,
+            object_id=privacy_request.policy_id
+        )
+        if config.notifications.send_request_receipt_notification:
+            _send_privacy_request_receipt_email_to_user(
+                db, policy, privacy_request.get_persisted_identity().email
+            )
     except IdentityVerificationException as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
+    except EmailDispatchException as exc:
+        # not fatal to request lifecycle, do not raise error, continue with request
+        logger.info("Email dispatch failed with exception %s", Pii(exc))
     except PermissionError as exc:
         logger.info("Invalid verification code provided for %s.", privacy_request.id)
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
