@@ -9,17 +9,18 @@ import {
 } from "datastore-connections/datastore-connection.slice";
 import {
   CreateAccessManualWebhookRequest,
-  CreateAccessManualWebhookResponse,
   PatchAccessManualWebhookRequest,
-  PatchAccessManualWebhookResponse,
 } from "datastore-connections/types";
+import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
+import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 
 import DSRCustomizationForm from "./DSRCustomizationForm";
 import { Field } from "./types";
 
 const DSRCustomization: React.FC = () => {
   const mounted = useRef(false);
+  const router = useRouter();
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,18 +44,15 @@ const DSRCustomization: React.FC = () => {
         connection_key: connection?.key as string,
         body: { ...values } as any,
       };
-      let payload:
-        | CreateAccessManualWebhookResponse
-        | PatchAccessManualWebhookResponse;
       if (fields.length > 0) {
-        payload = await patchAccessManualWebhook(params).unwrap();
+        await patchAccessManualWebhook(params).unwrap();
       } else {
-        payload = await createAccessManualWebhook(params).unwrap();
+        await createAccessManualWebhook(params).unwrap();
       }
-      setFields(payload.fields);
       successAlert(
         `DSR customization ${fields.length > 0 ? "updated" : "added"}!`
       );
+      router.push(DATASTORE_CONNECTION_ROUTE);
     } catch (error) {
       handleError(error);
     } finally {

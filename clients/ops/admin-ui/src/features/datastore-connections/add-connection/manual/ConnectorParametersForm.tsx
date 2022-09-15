@@ -4,9 +4,9 @@ import { useAppSelector } from "app/hooks";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
+import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 import * as Yup from "yup";
 
-import { STEPS } from "../constants";
 import CustomInput from "../forms/CustomInput";
 import { BaseConnectorParametersFields } from "../types";
 import { ButtonGroup as ManualButtonGroup } from "./ButtonGroup";
@@ -36,7 +36,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   };
 
   const handleCancel = () => {
-    router.push(STEPS[1].href);
+    router.push(DATASTORE_CONNECTION_ROUTE);
   };
 
   const handleSubmit = (values: any, actions: any) => {

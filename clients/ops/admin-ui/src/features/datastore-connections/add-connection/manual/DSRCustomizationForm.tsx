@@ -4,9 +4,9 @@ import { TrashCanSolidIcon } from "common/Icon";
 import { FieldArray, Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React from "react";
+import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 import * as Yup from "yup";
 
-import { STEPS } from "../constants";
 import CustomInput from "../forms/CustomInput";
 import { ButtonGroup as ManualButtonGroup } from "./ButtonGroup";
 import { Field } from "./types";
@@ -26,7 +26,7 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
   const { errorAlert } = useAlert();
 
   const handleCancel = () => {
-    router.push(STEPS[1].href);
+    router.push(DATASTORE_CONNECTION_ROUTE);
   };
 
   const handleSubmit = (values: any, actions: any) => {

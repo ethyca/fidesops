@@ -19,8 +19,7 @@ import { narrow } from "narrow-minded";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
-
-import { STEPS } from "../constants";
+import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 
 const Editor = dynamic(
   // @ts-ignore
@@ -70,7 +69,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   };
 
   const handleCancel = () => {
-    router.push(STEPS[1].href);
+    router.push(DATASTORE_CONNECTION_ROUTE);
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

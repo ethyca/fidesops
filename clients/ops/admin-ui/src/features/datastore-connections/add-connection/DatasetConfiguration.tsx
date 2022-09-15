@@ -7,13 +7,16 @@ import {
   usePatchDatasetMutation,
 } from "datastore-connections/datastore-connection.slice";
 import { PatchDatasetsRequest } from "datastore-connections/types";
+import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
+import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 
 import YamlEditorForm from "./forms/YamlEditorForm";
 import { replaceURL } from "./helpers";
 
 const DatasetConfiguration: React.FC = () => {
   const mounted = useRef(false);
+  const router = useRouter();
   const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,6 +39,7 @@ const DatasetConfiguration: React.FC = () => {
       } else {
         successAlert("Dataset successfully updated!");
       }
+      router.push(DATASTORE_CONNECTION_ROUTE);
     } catch (error) {
       handleError(error);
     } finally {
