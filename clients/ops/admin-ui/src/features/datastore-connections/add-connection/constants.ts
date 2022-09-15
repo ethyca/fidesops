@@ -4,6 +4,12 @@ import { SystemType } from "datastore-connections/constants";
 import { DATASTORE_CONNECTION_ROUTE } from "../../../constants";
 import { AddConnectionStep, ConnectorParameterOption } from "./types";
 
+export enum ConfigurationSettings {
+  CONNECTOR_PARAMETERS = "Connector parameters",
+  DATASET_CONFIGURATION = "Dataset configuration",
+  DSR_CUSTOMIZATION = "DSR customization",
+}
+
 export const CONNECTION_TYPE_FILTER_MAP = new Map<string, ItemOption>([
   ["Manual connectors", { value: SystemType.MANUAL }],
   [
@@ -19,15 +25,24 @@ export const CONNECTION_TYPE_FILTER_MAP = new Map<string, ItemOption>([
 export const CONNECTOR_PARAMETERS_OPTIONS: ConnectorParameterOption[] = [
   {
     type: SystemType.DATABASE,
-    options: ["Connector parameters", "Dataset configuration"],
+    options: [
+      ConfigurationSettings.CONNECTOR_PARAMETERS,
+      ConfigurationSettings.DATASET_CONFIGURATION,
+    ],
   },
   {
     type: SystemType.MANUAL,
-    options: ["Connector parameters", "DSR customization"],
+    options: [
+      ConfigurationSettings.CONNECTOR_PARAMETERS,
+      ConfigurationSettings.DSR_CUSTOMIZATION,
+    ],
   },
   {
     type: SystemType.SAAS,
-    options: ["Connector parameters", "Dataset configuration"],
+    options: [
+      ConfigurationSettings.CONNECTOR_PARAMETERS,
+      ConfigurationSettings.DATASET_CONFIGURATION,
+    ],
   },
 ];
 

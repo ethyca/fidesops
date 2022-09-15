@@ -3,7 +3,7 @@ import { useAppSelector } from "app/hooks";
 import {
   selectConnectionTypeState,
   setConnection,
-  setStep,
+  setStep
 } from "connection-type/connection-type.slice";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -11,7 +11,11 @@ import { useDispatch } from "react-redux";
 import Breadcrumb from "./Breadcrumb";
 import ConfigurationSettingsNav from "./ConfigurationSettingsNav";
 import { ConnectorParameters } from "./ConnectorParameters";
-import { CONNECTOR_PARAMETERS_OPTIONS, STEPS } from "./constants";
+import {
+  ConfigurationSettings,
+  CONNECTOR_PARAMETERS_OPTIONS,
+  STEPS
+} from "./constants";
 import DatasetConfiguration from "./DatasetConfiguration";
 import DSRCustomization from "./manual/DSRCustomization";
 
@@ -27,13 +31,13 @@ const ConfigureConnector: React.FC = () => {
 
   const handleNavChange = (value: string) => {
     switch (value) {
-      case "Dataset configuration":
+      case ConfigurationSettings.DATASET_CONFIGURATION:
         dispatch(setStep(STEPS[3]));
         setSteps([STEPS[0], STEPS[1], STEPS[3]]);
         break;
-      case "DSR customization":
+      case ConfigurationSettings.DSR_CUSTOMIZATION:
         break;
-      case "Connector parameters":
+      case ConfigurationSettings.CONNECTOR_PARAMETERS:
       default:
         dispatch(setStep(STEPS[2]));
         break;
@@ -58,14 +62,18 @@ const ConfigureConnector: React.FC = () => {
           onChange={handleNavChange}
           selectedItem={selectedItem || ""}
         />
-        {
-          {
-            "Connector parameters": <ConnectorParameters />,
-            "Dataset configuration": <DatasetConfiguration />,
-            "DSR customization": <DSRCustomization />,
-            "": null,
-          }[selectedItem || ""]
-        }
+        {(() => {
+          switch (selectedItem || "") {
+            case ConfigurationSettings.CONNECTOR_PARAMETERS:
+              return <ConnectorParameters />;
+            case ConfigurationSettings.DATASET_CONFIGURATION:
+              return <DatasetConfiguration />;
+            case ConfigurationSettings.DSR_CUSTOMIZATION:
+              return <DSRCustomization />;
+            default:
+              return null;
+          }
+        })()}
       </Flex>
     </>
   );
