@@ -1684,7 +1684,7 @@ class TestApprovePrivacyRequest:
     def url(self, db, privacy_request):
         return V1_URL_PREFIX + PRIVACY_REQUEST_APPROVE
 
-    @pytest.fixture(autouse=True, scope="function")
+    @pytest.fixture(scope="function")
     def privacy_request_review_email_notification_enabled(self):
         """Enable request review email"""
         original_value = config.notifications.send_request_review_notification
