@@ -41,4 +41,5 @@ enabled = true
 
 [notifications]
 send_request_completion_notification = true
+send_request_receipt_notification = true
 send_request_review_notification = true

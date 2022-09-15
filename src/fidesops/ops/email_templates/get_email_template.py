@@ -8,6 +8,7 @@ from fidesops.ops.email_templates.template_names import (
     EMAIL_ERASURE_REQUEST_FULFILLMENT,
     PRIVACY_REQUEST_COMPLETE_ACCESS_TEMPLATE,
     PRIVACY_REQUEST_COMPLETE_DELETION_TEMPLATE,
+    PRIVACY_REQUEST_RECEIPT_TEMPLATE,
     PRIVACY_REQUEST_REVIEW_APPROVE_TEMPLATE,
     PRIVACY_REQUEST_REVIEW_DENY_TEMPLATE,
     SUBJECT_IDENTITY_VERIFICATION_TEMPLATE,
@@ -29,6 +30,8 @@ def get_email_template(action_type: EmailActionType) -> Template:
         return template_env.get_template(SUBJECT_IDENTITY_VERIFICATION_TEMPLATE)
     if action_type == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT:
         return template_env.get_template(EMAIL_ERASURE_REQUEST_FULFILLMENT)
+    if action_type == EmailActionType.PRIVACY_REQUEST_RECEIPT:
+        return template_env.get_template(PRIVACY_REQUEST_RECEIPT_TEMPLATE)
     if action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
         return template_env.get_template(PRIVACY_REQUEST_COMPLETE_ACCESS_TEMPLATE)
     if action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION:

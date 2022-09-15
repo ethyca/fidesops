@@ -42,6 +42,7 @@ from .fixtures.postgres_fixtures import *
 from .fixtures.redshift_fixtures import *
 from .fixtures.saas.adobe_campaign_fixtures import *
 from .fixtures.saas.auth0_fixtures import *
+from .fixtures.saas.connection_template_fixtures import *
 from .fixtures.saas.datadog_fixtures import *
 from .fixtures.saas.hubspot_fixtures import *
 from .fixtures.saas.logi_id_fixtures import *
@@ -262,6 +263,15 @@ def privacy_request_complete_email_notification_disabled():
     config.notifications.send_request_completion_notification = False
     yield
     config.notifications.send_request_completion_notification = original_value
+
+
+@pytest.fixture(autouse=True, scope="function")
+def privacy_request_receipt_email_notification_disabled():
+    """Disable request receipt email for most tests unless overridden"""
+    original_value = config.notifications.send_request_receipt_notification
+    config.notifications.send_request_receipt_notification = False
+    yield
+    config.notifications.send_request_receipt_notification = original_value
 
 
 @pytest.fixture(autouse=True, scope="function")

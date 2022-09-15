@@ -16,6 +16,7 @@ from fidesops.ops.schemas.email.email import (
     EmailServiceSecrets,
     EmailServiceType,
     FidesopsEmail,
+    RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
@@ -52,6 +53,7 @@ def dispatch_email(
         Union[
             AccessRequestCompleteBodyParams,
             SubjectIdentityVerificationBodyParams,
+            RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,
             List[CheckpointActionRequired],
         ]
@@ -107,6 +109,12 @@ def _build_email(
             body=base_template.render(
                 {"dataset_collection_action_required": body_params}
             ),
+        )
+    if action_type == EmailActionType.PRIVACY_REQUEST_RECEIPT:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Your request has been received",
+            body=base_template.render({"request_types": body_params.request_types}),
         )
     if action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
         base_template = get_email_template(action_type)
@@ -183,4 +191,4 @@ def _mailgun_dispatcher(
             )
     except Exception as e:
         logger.error("Email failed to send: %s", Pii(str(e)))
-        raise EmailDispatchException(f"Email failed to send due to: {e}")
+        raise EmailDispatchException(f"Email failed to send due to: {Pii(e)}")
