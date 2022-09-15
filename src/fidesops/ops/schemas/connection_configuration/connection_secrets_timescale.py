@@ -1,0 +1,12 @@
+from fidesops.ops.schemas.base_class import NoValidationSchema
+from fidesops.ops.schemas.connection_configuration.connection_secrets_postgres import (
+    PostgreSQLSchema,
+)
+
+
+class TimescaleSchema(PostgreSQLSchema):
+    """Schema to validate the secrets needed to connect to TimescaleDB"""
+
+
+class TimescaleDocsSchema(TimescaleSchema, NoValidationSchema):
+    """TimescaleDB Secrets Schema for API Docs"""

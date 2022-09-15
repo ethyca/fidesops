@@ -1,0 +1,13 @@
+services:
+  timescale_example:
+    image: timescale/timescaledb:latest-pg12
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    expose:
+      - 7432
+    ports:
+      - "0.0.0.0:7432:5432"
+    volumes:
+      - ./docker/sample_data/timescale_example.sql:/docker-entrypoint-initdb.d/timescale_example.sql
