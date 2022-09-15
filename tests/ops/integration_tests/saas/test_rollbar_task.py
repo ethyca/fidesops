@@ -94,7 +94,7 @@ async def test_rollbar_erasure_request_task(
     rollbar_connection_config,
     rollbar_dataset_config,
     rollbar_erasure_identity_email,
-    rollbar_create_erasure_data,
+    rollbar_erasure_data,
 ) -> None:
     """Full erasure request based on the zendesk SaaS config"""
     config.execution.masking_strict = False  # Allow Delete
@@ -151,14 +151,14 @@ async def test_rollbar_erasure_request_task(
     for instance in v[f"{dataset_name}:instances"]:
         assert instance["data"]["person"]["email"] == rollbar_erasure_identity_email
 
-
-#
-#     # x = await graph_task.run_erasure(
-#     #         privacy_request,
-#     #         erasure_policy_string_rewrite,
-#     #         graph,
-#     #         [rollbar_connection_config],
-#     #         identity_kwargs,
-#     #         get_cached_data_for_erasures(privacy_request.id),
-#     #         db,
-#     #     )
+    temp_masking = config.execution.masking_strict
+    config.execution.masking_strict = True
+    x = await graph_task.run_erasure(
+        privacy_request,
+        erasure_policy_string_rewrite,
+        graph,
+        [rollbar_connection_config],
+        identity_kwargs,
+        get_cached_data_for_erasures(privacy_request.id),
+        db,
+    )
