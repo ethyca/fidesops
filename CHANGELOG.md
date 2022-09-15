@@ -50,10 +50,15 @@ The types of changes are:
 * Adds ability to send email notification upon privacy request receipt [#1303](https://github.com/ethyca/fidesops/pull/1303)
 * Utility to update SaaS config instances based on template updates [#1307](https://github.com/ethyca/fidesops/pull/1307)
 * Added generic request sorting button [#1320](https://github.com/ethyca/fidesops/pull/1320)
+* Adds ability to send email notification upon privacy request review [#1306](https://github.com/ethyca/fidesops/pull/1306)
 * Add a Connector - upload a DB Dataset YAML [#923](https://github.com/ethyca/fidesops/pull/1247)
 * Add a Connector - DB connector configs [#922](https://github.com/ethyca/fidesops/pull/1247)
 * Add a Connector - SaaS Dataset Management (YAML method) [#1090](https://github.com/ethyca/fidesops/pull/1247)
 * Frontend - Configure a Manual entry connector [#1015](https://github.com/ethyca/fidesops/pull/1247)
+
+### Changed
+
+* Renamed `PrivacyRequestIdentity` to `Identity` [#1324](https://github.com/ethyca/fidesops/pull/1324)
 
 ### Docs
 
