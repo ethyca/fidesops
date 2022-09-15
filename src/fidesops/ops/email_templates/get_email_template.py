@@ -25,7 +25,7 @@ template_env = Environment(
 )
 
 
-def get_email_template(action_type: EmailActionType) -> Template:
+def get_email_template(action_type: EmailActionType) -> Template:  # pylint: disable=too-many-return-statements
     if action_type == EmailActionType.SUBJECT_IDENTITY_VERIFICATION:
         return template_env.get_template(SUBJECT_IDENTITY_VERIFICATION_TEMPLATE)
     if action_type == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT:

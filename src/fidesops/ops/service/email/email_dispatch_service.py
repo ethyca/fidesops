@@ -87,7 +87,7 @@ def dispatch_email(
     )
 
 
-def _build_email(
+def _build_email(  # pylint: disable=too-many-return-statements
     action_type: EmailActionType,
     body_params: Any,
 ) -> EmailForActionType:
