@@ -25,11 +25,19 @@ import { DatabaseConnectorParametersFormFields } from "../types";
 
 type ConnectorParametersProps = {
   data: ConnectionTypeSecretSchemaReponse;
+  /**
+   * Parent callback invoked when a connection is initially created
+   */
+  onConnectionCreated: () => void;
+  /**
+   * Parent callback when Test Connection is clicked
+   */
   onTestConnectionClick: (value: any) => void;
 };
 
 export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   data,
+  onConnectionCreated,
   onTestConnectionClick,
 }) => {
   const dispatch = useDispatch();
@@ -89,6 +97,9 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
           successAlert(
             `Connector successfully ${connection?.key ? "updated" : "added"}!`
           );
+          if (!connection?.key) {
+            onConnectionCreated();
+          }
         }
       }
     } catch (error) {

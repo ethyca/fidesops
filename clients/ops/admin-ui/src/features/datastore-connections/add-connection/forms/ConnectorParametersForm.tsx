@@ -37,7 +37,13 @@ type ConnectorParametersFormProps = {
     | DatabaseConnectorParametersFormFields
     | SaasConnectorParametersFormFields;
   isSubmitting: boolean;
+  /**
+   * Parent callback when Save is clicked
+   */
   onSaveClick: (values: any, actions: any) => void;
+  /**
+   * Parent callback when Test Connection is clicked
+   */
   onTestConnectionClick: (value: any) => void;
 };
 

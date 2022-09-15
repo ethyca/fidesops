@@ -15,7 +15,16 @@ import { useDispatch } from "react-redux";
 import { BaseConnectorParametersFields } from "../types";
 import ConnectorParametersForm from "./ConnectorParametersForm";
 
-export const ConnectorParameters: React.FC = () => {
+type ConnectorParametersProp = {
+  /**
+   * Parent callback invoked when a connection is initially created
+   */
+  onConnectionCreated: () => void;
+};
+
+export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
+  onConnectionCreated,
+}) => {
   const dispatch = useDispatch();
   const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();
@@ -51,6 +60,9 @@ export const ConnectorParameters: React.FC = () => {
         successAlert(
           `Connector successfully ${connection?.key ? "updated" : "added"}!`
         );
+        if (!connection?.key) {
+          onConnectionCreated();
+        }
       }
     } catch (error) {
       handleError(error);

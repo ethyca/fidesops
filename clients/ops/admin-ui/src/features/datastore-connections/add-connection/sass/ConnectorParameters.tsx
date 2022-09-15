@@ -27,11 +27,19 @@ import { SaasConnectorParametersFormFields } from "../types";
 
 type ConnectorParametersProps = {
   data: ConnectionTypeSecretSchemaReponse;
+  /**
+   * Parent callback invoked when a connection is initially created
+   */
+  onConnectionCreated: () => void;
+  /**
+   * Parent callback when Test Connection is clicked
+   */
   onTestConnectionClick: (value: any) => void;
 };
 
 export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   data,
+  onConnectionCreated,
   onTestConnectionClick,
 }) => {
   const dispatch = useDispatch();
@@ -111,6 +119,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         // Update the current browser url with the new key created
         replaceURL(payload.connection.key, step.href);
         successAlert(`Connector successfully added!`);
+        onConnectionCreated();
       }
     } catch (error) {
       handleError(error);

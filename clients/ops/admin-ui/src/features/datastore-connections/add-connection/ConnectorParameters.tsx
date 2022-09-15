@@ -13,7 +13,13 @@ import { ConnectorParameters as ManualConnectorParameters } from "./manual/Conne
 import { ConnectorParameters as SassConnectorParameters } from "./sass/ConnectorParameters";
 import TestConnection from "./TestConnection";
 
-export const ConnectorParameters: React.FC = () => {
+type ConnectorParametersProp = {
+  onConnectionCreated: () => void;
+};
+
+export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
+  onConnectionCreated,
+}) => {
   const mounted = useRef(false);
   const [skip, setSkip] = useState(true);
   const { connection, connectionOption, step } = useAppSelector(
@@ -39,26 +45,32 @@ export const ConnectorParameters: React.FC = () => {
           return (
             <DatabaseConnectorParameters
               data={data}
+              onConnectionCreated={onConnectionCreated}
               onTestConnectionClick={handleTestConnectionClick}
             />
           );
         }
         break;
       case SystemType.MANUAL:
-        return <ManualConnectorParameters />;
+        return (
+          <ManualConnectorParameters
+            onConnectionCreated={onConnectionCreated}
+          />
+        );
         break;
       case SystemType.SAAS:
         if (isSuccess && data) {
           return (
             <SassConnectorParameters
               data={data}
+              onConnectionCreated={onConnectionCreated}
               onTestConnectionClick={handleTestConnectionClick}
             />
           );
         }
         break;
     }
-  }, [connectionOption?.type, data, isSuccess]);
+  }, [connectionOption?.type, data, isSuccess, onConnectionCreated]);
 
   useEffect(() => {
     mounted.current = true;
