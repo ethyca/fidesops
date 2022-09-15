@@ -85,17 +85,20 @@ saas_config:
                 value:
                   identity: email
           data_path: result.instances
-#     - name: people
-#       requests:
-#         delete:
-#           method: POST
-#           path: api/1/people/delete_jobs/
-#           query_params:
-#             - name: email
-#               value: <email>
-#           headers:
-#             - name: X-Rollbar-Access-Token
-#               value: <write_access_token>
-#           param_values:
-#             - name: write_access_token
-#               connector_param: write_access_token
+        delete:
+          method: POST
+          path: /api/1/people/delete_jobs
+          query_params:
+            - name: email
+              value: <email>
+          headers:
+            - name: X-Rollbar-Access-Token
+              value: <write_access_token>
+          param_values:
+            - name: write_access_token
+              connector_param: write_access_token
+            - name: email
+              references:
+                - dataset: <instance_fides_key>
+                  field: instances.data.person.email
+                  direction: from
