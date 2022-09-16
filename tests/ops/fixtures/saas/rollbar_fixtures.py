@@ -131,9 +131,6 @@ class RollbarTestClient:
 
     def create_project(self) -> requests.Response:
         # create a new project
-        import pdb
-
-        pdb.set_trace()
         random_num = random.randint(0, 999)
         body = {"name": f"ethyca_test_project_{random_num}"}
         self.headers["X-Rollbar-Access-Token"] = self.rollbar_secrets[
