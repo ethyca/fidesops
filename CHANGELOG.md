@@ -55,6 +55,7 @@ The types of changes are:
 * Add a Connector - DB connector configs [#922](https://github.com/ethyca/fidesops/pull/1247)
 * Add a Connector - SaaS Dataset Management (YAML method) [#1090](https://github.com/ethyca/fidesops/pull/1247)
 * Frontend - Configure a Manual entry connector [#1015](https://github.com/ethyca/fidesops/pull/1247)
+* Manual webhook test functionality (#1323)[https://github.com/ethyca/fidesops/pull/1323/] 
 
 ### Changed
 
