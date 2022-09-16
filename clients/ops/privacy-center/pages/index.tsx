@@ -18,6 +18,7 @@ import {
   RequestModal,
 } from "../components/modals/RequestModal";
 import PrivacyCard from "../components/PrivacyCard";
+import ConsentCard from "../components/ConsentCard";
 import type { AlertState } from "../types/AlertState";
 
 import config from "../config/config.json";
@@ -58,6 +59,25 @@ const Home: NextPage = () => {
     };
     getConfig();
   }, [setIsVerificationRequired]);
+
+  const content: any = [];
+
+  config.actions.forEach((action) => {
+    content.push(
+      <PrivacyCard
+        key={action.title}
+        title={action.title}
+        policyKey={action.policy_key}
+        iconPath={action.icon_path}
+        description={action.description}
+        onOpen={onOpen}
+      />
+    );
+  });
+
+  if (config.includeConsent) {
+    content.push(<ConsentCard key="consentCard" onOpen={() => {}} />);
+  }
 
   return (
     <div>
@@ -124,16 +144,7 @@ const Home: NextPage = () => {
             </Text>
           </Stack>
           <Flex m={-2} flexDirection={["column", "column", "row"]}>
-            {config.actions.map((action) => (
-              <PrivacyCard
-                key={action.title}
-                title={action.title}
-                policyKey={action.policy_key}
-                iconPath={action.icon_path}
-                description={action.description}
-                onOpen={onOpen}
-              />
-            ))}
+            {content}
           </Flex>
         </Stack>
         <RequestModal
