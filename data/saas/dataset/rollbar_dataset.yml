@@ -28,7 +28,6 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
                 data_type: integer
-                primary_key: true
           - name: name
             data_categories: [system.operations]
             fidesops_meta:
