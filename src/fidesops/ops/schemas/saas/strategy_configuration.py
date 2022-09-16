@@ -1,9 +1,9 @@
 from enum import Enum
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, root_validator, validator
 
-from fidesops.ops.schemas.saas.saas_config import SaaSRequest
+from fidesops.ops.schemas.saas.saas_config import QueryParam, SaaSRequest
 from fidesops.ops.schemas.saas.shared_schemas import ConnectorParamRef, IdentityParamRef
 
 
@@ -85,6 +85,32 @@ class CursorPaginationConfiguration(StrategyConfiguration):
 
     cursor_param: str
     field: str
+
+
+class ApiKeyAuthenticationConfiguration(StrategyConfiguration):
+    """
+    API key parameter to be added in as a header or query param
+    """
+
+    header: Optional[Union[QueryParam, List[QueryParam]]]
+    query_param: Optional[Union[QueryParam, List[QueryParam]]]
+
+    @root_validator
+    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        header = values.get("header")
+        query_param = values.get("query_param")
+
+        if not header and not query_param:
+            raise ValueError(
+                "At least one 'header' or 'query_param' object must be defined in an 'api_key' auth configuration"
+            )
+
+        if isinstance(header, QueryParam):
+            values["header"] = [header]
+        if isinstance(query_param, QueryParam):
+            values["query_param"] = [query_param]
+
+        return values
 
 
 class BasicAuthenticationConfiguration(StrategyConfiguration):
