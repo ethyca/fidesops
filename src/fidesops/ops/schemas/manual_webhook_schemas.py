@@ -28,6 +28,14 @@ class ManualWebhookField(BaseSchema):
     pii_field: PIIFieldType
     dsr_package_label: Optional[DSRLabelFieldType] = None
 
+    @validator("dsr_package_label")
+    def convert_empty_string_dsr_package_label(cls, value: str) -> str:
+        """
+        We specifically allow the dsr_package_label to be submitted as an empty string on input,
+        so converting to None here.
+        """
+        return None if value == "" else value
+
     class Config:
         orm_mode = True
 

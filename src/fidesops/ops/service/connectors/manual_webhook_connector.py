@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from fidesops.ops.graph.traversal import TraversalNode
 from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
@@ -42,10 +42,11 @@ class ManualWebhookConnector(BaseConnector[None]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         input_data: Dict[str, List[Any]],
-    ) -> Optional[List[Row]]:
+    ) -> None:
         """
         Not applicable for a manual webhook.  Manual webhooks are not called as part of the traversal.
         """
+        return None
 
     def mask_data(  # type: ignore
         self,
@@ -54,7 +55,8 @@ class ManualWebhookConnector(BaseConnector[None]):
         privacy_request: PrivacyRequest,
         rows: List[Row],
         input_data: Dict[str, List[Any]],
-    ) -> Optional[int]:
+    ) -> None:
         """
         Not applicable for a manual webhook.  Manual webhooks are not called as part of the traversal.
         """
+        return None

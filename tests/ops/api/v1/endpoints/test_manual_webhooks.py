@@ -475,7 +475,6 @@ class TestManualWebhookTest:
         response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
         assert response.json()["test_status"] == "failed"
-        assert response.status_code == 200
 
     def test_connection_test_manual_webhook_no_webhook_fields(
         self,
@@ -493,7 +492,6 @@ class TestManualWebhookTest:
         response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
         assert response.json()["test_status"] == "failed"
-        assert response.status_code == 200
 
     def test_connection_test_manual_webhook(
         self,
@@ -509,4 +507,3 @@ class TestManualWebhookTest:
         response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
         assert response.json()["test_status"] == "succeeded"
-        assert response.status_code == 200
