@@ -85,6 +85,18 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     privilege: "View privacy request data",
     scope: "privacy-request:view_data",
   },
+  {
+    privilege: "Create manual webhooks",
+    scope: "webhook:create_or_update",
+  },
+  {
+    privilege: "Read manual webhooks",
+    scope: "webhook:read",
+  },
+  {
+    privilege: "Delete manual webhooks",
+    scope: "webhook:delete",
+  },
 ];
 
 // API ROUTES
