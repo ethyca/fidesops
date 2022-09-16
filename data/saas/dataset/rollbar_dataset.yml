@@ -68,6 +68,7 @@ dataset:
                   data_categories: [system.operations]
                   fidesops_meta:
                     data_type: integer
+                    primary_key: true
                 - name: username
                   data_categories: [system.operations]
                   fidesops_meta:
