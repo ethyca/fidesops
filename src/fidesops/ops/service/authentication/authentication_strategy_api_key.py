@@ -4,7 +4,7 @@ from requests import PreparedRequest
 
 from fidesops.ops.common_exceptions import FidesopsException
 from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.schemas.saas.saas_config import QueryParam
+from fidesops.ops.schemas.saas.saas_config import Header, QueryParam
 from fidesops.ops.schemas.saas.strategy_configuration import (
     ApiKeyAuthenticationConfiguration,
 )
@@ -25,7 +25,7 @@ class ApiKeyAuthenticationStrategy(AuthenticationStrategy):
     configuration_model = ApiKeyAuthenticationConfiguration
 
     def __init__(self, configuration: ApiKeyAuthenticationConfiguration):
-        self.headers: List[QueryParam] = configuration.headers  # type: ignore
+        self.headers: List[Header] = configuration.headers  # type: ignore
         self.query_params: List[QueryParam] = configuration.query_params  # type: ignore
 
     def add_authentication(

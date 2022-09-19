@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, root_validator, validator
 
-from fidesops.ops.schemas.saas.saas_config import QueryParam, SaaSRequest
+from fidesops.ops.schemas.saas.saas_config import Header, QueryParam, SaaSRequest
 from fidesops.ops.schemas.saas.shared_schemas import ConnectorParamRef, IdentityParamRef
 
 
@@ -92,7 +92,7 @@ class ApiKeyAuthenticationConfiguration(StrategyConfiguration):
     API key parameter to be added in as a header or query param
     """
 
-    headers: Optional[List[QueryParam]]
+    headers: Optional[List[Header]]
     query_params: Optional[List[QueryParam]]
 
     @root_validator
