@@ -55,11 +55,18 @@ The types of changes are:
 * Add a Connector - DB connector configs [#922](https://github.com/ethyca/fidesops/pull/1247)
 * Add a Connector - SaaS Dataset Management (YAML method) [#1090](https://github.com/ethyca/fidesops/pull/1247)
 * Frontend - Configure a Manual entry connector [#1015](https://github.com/ethyca/fidesops/pull/1247)
-* Manual webhook test functionality (#1323)[https://github.com/ethyca/fidesops/pull/1323/] 
+* Manual webhook test functionality [#1323](https://github.com/ethyca/fidesops/pull/1323/)
 
 ### Changed
 
 * Renamed `PrivacyRequestIdentity` to `Identity` [#1324](https://github.com/ethyca/fidesops/pull/1324)
+
+### Developer Experience
+
+* Created a docker image for the privacy center [#1165](https://github.com/ethyca/fidesops/pull/1165)
+* Adds email scopes to postman collection [#1241](https://github.com/ethyca/fidesops/pull/1241)
+* Clean up docker build [#1252](https://github.com/ethyca/fidesops/pull/1252)
+* Add `Strategy` abstract base class for more extensible strategy development [1254](https://github.com/ethyca/fidesops/pull/1254)
 
 ### Docs
 
@@ -79,6 +86,7 @@ The types of changes are:
 * Fixed typo in enum value [#1280](https://github.com/ethyca/fidesops/pull/1280)
 * Remove masking of redis error log [#1288](https://github.com/ethyca/fidesops/pull/1288)
 * Logout with malformed or expired token [#1305](https://github.com/ethyca/fidesops/pull/1305)
+* The `toml` package is now included in the list of direct dependencies (`requirements.txt`) [#1338](https://github.com/ethyca/fidesops/pull/1338)
 
 ### Security
 
@@ -125,7 +133,7 @@ The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order t
 * Bump fideslib to fix issue where the authenticate button in the FastAPI docs did not work [#1092](https://github.com/ethyca/fidesops/pull/1092)
 * Escape the Redis user and password to make them URL friendly [#1104](https://github.com/ethyca/fidesops/pull/1104)
 * Reduced number of connections opened against app db during health checks [#1107](https://github.com/ethyca/fidesops/pull/1107)
-* Fix FIDESOPS__ROOT_USER__ANALYTICS_ID generation when env var is set [#1113](https://github.com/ethyca/fidesops/pull/1113) 
+* Fix FIDESOPS__ROOT_USER__ANALYTICS_ID generation when env var is set [#1113](https://github.com/ethyca/fidesops/pull/1113)
 * Set localhost to None for non-endpoint events [#1130](https://github.com/ethyca/fidesops/pull/1130)
 * Fixed docs build in CI [#1138](https://github.com/ethyca/fidesops/pull/1138)
 * Added future annotations to privacy_request.py for backwards compatibility [#1136](https://github.com/ethyca/fidesops/pull/1136)
