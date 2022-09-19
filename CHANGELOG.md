@@ -88,6 +88,7 @@ The types of changes are:
 * Remove masking of redis error log [#1288](https://github.com/ethyca/fidesops/pull/1288)
 * Logout with malformed or expired token [#1305](https://github.com/ethyca/fidesops/pull/1305)
 * The `toml` package is now included in the list of direct dependencies (`requirements.txt`) [#1338](https://github.com/ethyca/fidesops/pull/1338)
+* Distinguish whether webhook has been visited and no fields were found, versus never visited [#1339](https://github.com/ethyca/fidesops/pull/1339)
 
 ### Security
 
