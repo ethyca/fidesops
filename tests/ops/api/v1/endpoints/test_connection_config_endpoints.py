@@ -24,6 +24,7 @@ from fidesops.ops.models.manual_webhook import AccessManualWebhook
 from fidesops.ops.models.policy import CurrentStep
 from fidesops.ops.models.privacy_request import CheckpointActionRequired, ManualAction
 from fidesops.ops.schemas.email.email import EmailActionType
+from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 
 page_size = Params().size
 
@@ -1209,7 +1210,9 @@ class TestPutConnectionConfigSecrets:
             == f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
         )
 
-    @mock.patch("fidesops.ops.service.connectors.email_connector.dispatch_email")
+    @mock.patch(
+        "fidesops.ops.service.connectors.email_connector.dispatch_email_task.apply_async"
+    )
     def test_put_email_connection_config_secrets(
         self,
         mock_dispatch_email,
@@ -1250,12 +1253,17 @@ class TestPutConnectionConfigSecrets:
         assert email_connection_config.last_test_succeeded is not None
 
         assert mock_dispatch_email.called
-        kwargs = mock_dispatch_email.call_args.kwargs
+
+        call_args = mock_dispatch_email.call_args[1]
+        task_kwargs = call_args["kwargs"]
+        assert task_kwargs["to_email"] == "test@example.com"
+
+        email_meta = task_kwargs["email_meta"]
         assert (
-            kwargs["action_type"] == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT
+            email_meta["action_type"]
+            == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT
         )
-        assert kwargs["to_email"] == "test@example.com"
-        assert kwargs["email_body_params"] == [
+        assert email_meta["body_params"] == [
             CheckpointActionRequired(
                 step=CurrentStep.erasure,
                 collection=CollectionAddress("test_dataset", "test_collection"),
@@ -1268,3 +1276,5 @@ class TestPutConnectionConfigSecrets:
                 ],
             )
         ]
+        queue = call_args["queue"]
+        assert queue == EMAIL_QUEUE_NAME

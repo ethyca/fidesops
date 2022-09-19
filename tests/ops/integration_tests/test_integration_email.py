@@ -21,7 +21,9 @@ from fidesops.ops.task import graph_task
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@mock.patch("fidesops.ops.service.connectors.email_connector.dispatch_email")
+@mock.patch(
+    "fidesops.ops.service.connectors.email_connector.dispatch_email_task.apply_async"
+)
 @pytest.mark.asyncio
 async def test_email_connector_cache_and_delayed_send(
     mock_email_dispatch,

@@ -108,10 +108,7 @@ from fidesops.ops.schemas.privacy_request import (
     RowCountRequest,
     VerificationCode,
 )
-from fidesops.ops.service.email.email_dispatch_service import (
-    dispatch_email,
-    dispatch_email_task,
-)
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task
 from fidesops.ops.service.privacy_request.request_runner_service import (
     generate_id_verification_code,
     queue_privacy_request,
@@ -333,11 +330,15 @@ def _send_privacy_request_receipt_email_to_user(
         if policy.get_rules_for_action(action_type=ActionType(action_type)):
             request_types.add(action_type)
     try:
-        dispatch_email(
-            db=db,
-            action_type=EmailActionType.PRIVACY_REQUEST_RECEIPT,
-            to_email=email,
-            email_body_params=RequestReceiptBodyParams(request_types=request_types),
+        dispatch_email_task.apply_async(
+            queue=EMAIL_QUEUE_NAME,
+            kwargs={
+                "email_meta": FidesopsEmail(
+                    action_type=EmailActionType.PRIVACY_REQUEST_RECEIPT,
+                    body_params=RequestReceiptBodyParams(request_types=request_types),
+                ).dict(),
+                "to_email": email,
+            },
         )
     except EmailDispatchException as exc:
         # catch early since this failure isn't fatal to privacy request, unlike the subject id verification email
@@ -1132,15 +1133,19 @@ def _send_privacy_request_review_email_to_user(
             )
         )
     try:
-        dispatch_email(
-            db=db,
-            action_type=action_type,
-            to_email=email,
-            email_body_params=RequestReviewDenyBodyParams(
-                rejection_reason=rejection_reason
-            )
-            if action_type is EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
-            else None,
+        dispatch_email_task.apply_async(
+            queue=EMAIL_QUEUE_NAME,
+            kwargs={
+                "email_meta": FidesopsEmail(
+                    action_type=action_type,
+                    body_params=RequestReviewDenyBodyParams(
+                        rejection_reason=rejection_reason
+                    )
+                    if action_type is EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
+                    else None,
+                ).dict(),
+                "to_email": email,
+            },
         )
     except EmailDispatchException as exc:
         # this failure isn't fatal to privacy request

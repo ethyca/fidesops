@@ -45,9 +45,10 @@ from fidesops.ops.models.privacy_request import (
 from fidesops.ops.schemas.email.email import (
     AccessRequestCompleteBodyParams,
     EmailActionType,
+    FidesopsEmail,
 )
 from fidesops.ops.service.connectors.email_connector import email_connector_erasure_send
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task
 from fidesops.ops.service.storage.storage_uploader_service import upload
 from fidesops.ops.task.filter_results import filter_data_categories
 from fidesops.ops.task.graph_task import (
@@ -55,7 +56,7 @@ from fidesops.ops.task.graph_task import (
     run_access_request,
     run_erasure,
 )
-from fidesops.ops.tasks import DatabaseTask, celery_app
+from fidesops.ops.tasks import EMAIL_QUEUE_NAME, DatabaseTask, celery_app
 from fidesops.ops.tasks.scheduled.scheduler import scheduler
 from fidesops.ops.util.cache import (
     FidesopsRedis,
@@ -395,7 +396,7 @@ async def run_privacy_request(
         if config.notifications.send_request_completion_notification:
             try:
                 initiate_privacy_request_completion_email(
-                    session, policy, access_result_urls, identity_data
+                    policy, access_result_urls, identity_data
                 )
             except (IdentityNotFoundException, EmailDispatchException) as e:
                 privacy_request.error_processing(db=session)
@@ -421,7 +422,6 @@ async def run_privacy_request(
 
 
 def initiate_privacy_request_completion_email(
-    session: Session,
     policy: Policy,
     access_result_urls: List[str],
     identity_data: Dict[str, Any],
@@ -437,19 +437,28 @@ def initiate_privacy_request_completion_email(
             "Identity email was not found, so request completion email could not be sent."
         )
     if policy.get_rules_for_action(action_type=ActionType.access):
-        dispatch_email(
-            db=session,
-            action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
-            to_email=identity_data.get(ProvidedIdentityType.email.value),
-            email_body_params=AccessRequestCompleteBodyParams(
-                download_links=access_result_urls
-            ),
+        dispatch_email_task.apply_async(
+            queue=EMAIL_QUEUE_NAME,
+            kwargs={
+                "email_meta": FidesopsEmail(
+                    action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+                    body_params=AccessRequestCompleteBodyParams(
+                        download_links=access_result_urls
+                    ),
+                ).dict(),
+                "to_email": identity_data.get(ProvidedIdentityType.email.value),
+            },
         )
     if policy.get_rules_for_action(action_type=ActionType.erasure):
-        dispatch_email(
-            db=session,
-            action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
-            to_email=identity_data.get(ProvidedIdentityType.email.value),
+        dispatch_email_task.apply_async(
+            queue=EMAIL_QUEUE_NAME,
+            kwargs={
+                "email_meta": FidesopsEmail(
+                    action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
+                    body_params=None,
+                ).dict(),
+                "to_email": identity_data.get(ProvidedIdentityType.email.value),
+            },
         )
 
 
