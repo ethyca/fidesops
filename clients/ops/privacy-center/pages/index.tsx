@@ -14,9 +14,9 @@ import {
 } from "@fidesui/react";
 
 import {
-  useRequestModal,
-  RequestModal,
-} from "../components/modals/RequestModal";
+  usePrivactRequestModal,
+  PrivacyRequestModal,
+} from "../components/modals/privacy-request-modal/PrivacyRequestModal";
 import PrivacyCard from "../components/PrivacyCard";
 import ConsentCard from "../components/ConsentCard";
 import type { AlertState } from "../types/AlertState";
@@ -37,7 +37,7 @@ const Home: NextPage = () => {
     setCurrentView,
     privacyRequestId,
     setPrivacyRequestId,
-  } = useRequestModal();
+  } = usePrivactRequestModal();
 
   useEffect(() => {
     if (alert?.status) {
@@ -147,7 +147,7 @@ const Home: NextPage = () => {
             {content}
           </Flex>
         </Stack>
-        <RequestModal
+        <PrivacyRequestModal
           isOpen={isOpen}
           onClose={onClose}
           openAction={openAction}

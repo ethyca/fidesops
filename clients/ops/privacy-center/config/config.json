@@ -33,8 +33,8 @@
     "consentOptions": [
       {
         "fidesDataUseKey": "third_party_sharing",
-        "name": "Do not sell",
-        "description": "...",
+        "name": "Do not sell my personal information",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit. Lorem ipsum dolor sit amet, consectetur.",
         "highlight": true,
         "url": "https://example.com/privacy#data-sales"
       },
