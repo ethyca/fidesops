@@ -229,12 +229,10 @@ class TestPostAccessManualWebhook:
         auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert response.status_code == 201
-        assert response.json()["fields"] == {
-            "fields": [
-                {"pii_field": "first_name", "dsr_package_label": "First Name"},
-                {"pii_field": "last_name", "dsr_package_label": "last_name"},
-            ]
-        }
+        assert response.json()["fields"] == [
+            {"pii_field": "first_name", "dsr_package_label": "First Name"},
+            {"pii_field": "last_name", "dsr_package_label": "last_name"},
+        ]
 
     def test_post_access_manual_webhook_wrong_connection_config_type(
         self, connection_config, payload, generate_auth_header, api_client
