@@ -25,8 +25,8 @@ class ApiKeyAuthenticationStrategy(AuthenticationStrategy):
     configuration_model = ApiKeyAuthenticationConfiguration
 
     def __init__(self, configuration: ApiKeyAuthenticationConfiguration):
-        self.header: List[QueryParam] = configuration.header  # type: ignore
-        self.query_param: List[QueryParam] = configuration.query_param  # type: ignore
+        self.headers: List[QueryParam] = configuration.headers  # type: ignore
+        self.query_params: List[QueryParam] = configuration.query_params  # type: ignore
 
     def add_authentication(
         self, request: PreparedRequest, connection_config: ConnectionConfig
@@ -39,16 +39,16 @@ class ApiKeyAuthenticationStrategy(AuthenticationStrategy):
             raise FidesopsException(
                 "Secrets are not configured for this SaaS connector. Secrets must be configured to use API key authentication"
             )
-        if self.header:
-            for header in self.header:
+        if self.headers:
+            for header in self.headers:
                 header_val = assign_placeholders(header.value, secrets)
                 if header_val is None:
                     raise FidesopsException(
                         f"Value for API key param '{header.value}' not found"
                     )
                 request.headers[header.name] = header_val
-        if self.query_param:
-            for query_param in self.query_param:
+        if self.query_params:
+            for query_param in self.query_params:
                 param_val = assign_placeholders(query_param.value, secrets)
                 if param_val is None:
                     raise FidesopsException(

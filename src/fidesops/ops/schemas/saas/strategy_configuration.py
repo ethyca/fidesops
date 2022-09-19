@@ -92,23 +92,18 @@ class ApiKeyAuthenticationConfiguration(StrategyConfiguration):
     API key parameter to be added in as a header or query param
     """
 
-    header: Optional[Union[QueryParam, List[QueryParam]]]
-    query_param: Optional[Union[QueryParam, List[QueryParam]]]
+    headers: Optional[List[QueryParam]]
+    query_params: Optional[List[QueryParam]]
 
     @root_validator
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        header = values.get("header")
-        query_param = values.get("query_param")
+        headers = values.get("headers")
+        query_params = values.get("query_params")
 
-        if not header and not query_param:
+        if not headers and not query_params:
             raise ValueError(
                 "At least one 'header' or 'query_param' object must be defined in an 'api_key' auth configuration"
             )
-
-        if isinstance(header, QueryParam):
-            values["header"] = [header]
-        if isinstance(query_param, QueryParam):
-            values["query_param"] = [query_param]
 
         return values
 

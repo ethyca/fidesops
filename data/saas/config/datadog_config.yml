@@ -17,7 +17,7 @@ saas_config:
     authentication:
       strategy: api_key
       configuration:
-        header:
+        headers:
         - name: DD-APPLICATION-KEY
           value: <app_key>
         - name: DD-API-KEY
