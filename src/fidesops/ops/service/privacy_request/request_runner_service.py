@@ -437,7 +437,8 @@ def initiate_privacy_request_completion_email(
             "Identity email was not found, so request completion email could not be sent."
         )
     if policy.get_rules_for_action(action_type=ActionType.access):
-        dispatch_email_task.apply_async(
+        # synchronous for now since failure to send complete emails is fatal to request
+        dispatch_email_task.apply(
             queue=EMAIL_QUEUE_NAME,
             kwargs={
                 "email_meta": FidesopsEmail(
@@ -450,7 +451,7 @@ def initiate_privacy_request_completion_email(
             },
         )
     if policy.get_rules_for_action(action_type=ActionType.erasure):
-        dispatch_email_task.apply_async(
+        dispatch_email_task.apply(
             queue=EMAIL_QUEUE_NAME,
             kwargs={
                 "email_meta": FidesopsEmail(

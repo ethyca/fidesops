@@ -71,7 +71,7 @@ def privacy_request_complete_email_notification_enabled():
 
 
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply_async"
+    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply"
 )
 @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
 def test_policy_upload_dispatch_email_called(
@@ -90,7 +90,7 @@ def test_policy_upload_dispatch_email_called(
 
 
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply_async"
+    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply"
 )
 @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
 def test_start_processing_sets_started_processing_at(
@@ -116,7 +116,7 @@ def test_start_processing_sets_started_processing_at(
 
 
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply_async"
+    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply"
 )
 @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
 def test_start_processing_doesnt_overwrite_started_processing_at(
@@ -167,7 +167,7 @@ def test_halts_proceeding_if_cancelled(
 
 
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply_async"
+    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply"
 )
 @mock.patch(
     "fidesops.ops.service.privacy_request.request_runner_service.upload_access_results"
@@ -217,7 +217,7 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
 
 
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply_async"
+    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply"
 )
 @mock.patch(
     "fidesops.ops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
@@ -1830,7 +1830,7 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch(
-        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply_async"
+        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply"
     )
     def test_email_complete_send_erasure(
         self,
@@ -1866,7 +1866,7 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch(
-        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply_async"
+        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply"
     )
     @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access(
@@ -1905,7 +1905,7 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch(
-        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply_async"
+        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email_task.apply"
     )
     @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_and_erasure(

@@ -54,7 +54,8 @@ class EmailConnector(BaseConnector[None]):
         logger.info("Starting test connection to %s", self.configuration.key)
 
         try:
-            dispatch_email_task.apply_async(
+            # synchronous for now since failure to send is considered a connection test failure
+            dispatch_email_task.apply(
                 queue=EMAIL_QUEUE_NAME,
                 kwargs={
                     "email_meta": FidesopsEmail(
@@ -197,7 +198,8 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
                 "No email sent: no masking needed on '%s'", ds.dataset.get("fides_key")
             )
             return
-        dispatch_email_task.apply_async(
+        # synchronous for now since failure to send erasure request is a failure for this connector
+        dispatch_email_task.apply(
             queue=EMAIL_QUEUE_NAME,
             kwargs={
                 "email_meta": FidesopsEmail(

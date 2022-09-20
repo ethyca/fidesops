@@ -1211,7 +1211,7 @@ class TestPutConnectionConfigSecrets:
         )
 
     @mock.patch(
-        "fidesops.ops.service.connectors.email_connector.dispatch_email_task.apply_async"
+        "fidesops.ops.service.connectors.email_connector.dispatch_email_task.apply"
     )
     def test_put_email_connection_config_secrets(
         self,
