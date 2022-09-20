@@ -6,6 +6,7 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
+from sqlalchemy import text
 
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.config import (
@@ -1089,3 +1090,235 @@ class TestRetryIntegration:
             ("postgres_example_test_dataset:address", "retrying"),
             ("postgres_example_test_dataset:address", "error"),
         ]
+
+
+@pytest.mark.integration_timescale
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_timescale_access_request_task(
+    db,
+    policy,
+    timescale_connection_config,
+    timescale_integration_db,
+) -> None:
+    database_name = "my_timescale_db_1"
+    privacy_request = PrivacyRequest(
+        id=f"test_timescale_access_request_task_{random.randint(0, 1000000)}"
+    )
+
+    v = await graph_task.run_access_request(
+        privacy_request,
+        policy,
+        integration_db_graph(database_name),
+        [timescale_connection_config],
+        {"email": "customer-1@example.com"},
+        db,
+    )
+
+    assert_rows_match(
+        v[f"{database_name}:address"],
+        min_size=2,
+        keys=["id", "street", "city", "state", "zip"],
+    )
+    assert_rows_match(
+        v[f"{database_name}:orders"],
+        min_size=3,
+        keys=["id", "customer_id", "shipping_address_id", "payment_card_id"],
+    )
+    assert_rows_match(
+        v[f"{database_name}:payment_card"],
+        min_size=2,
+        keys=["id", "name", "ccn", "customer_id", "billing_address_id"],
+    )
+    assert_rows_match(
+        v[f"{database_name}:customer"],
+        min_size=1,
+        keys=["id", "name", "email", "address_id"],
+    )
+
+    # links
+    assert v[f"{database_name}:customer"][0]["email"] == "customer-1@example.com"
+
+    logs = (
+        ExecutionLog.query(db=db)
+        .filter(ExecutionLog.privacy_request_id == privacy_request.id)
+        .all()
+    )
+
+    logs = [log.__dict__ for log in logs]
+
+    assert (
+        len(
+            records_matching_fields(
+                logs, dataset_name=database_name, collection_name="customer"
+            )
+        )
+        > 0
+    )
+
+    assert (
+        len(
+            records_matching_fields(
+                logs, dataset_name=database_name, collection_name="address"
+            )
+        )
+        > 0
+    )
+
+    assert (
+        len(
+            records_matching_fields(
+                logs, dataset_name=database_name, collection_name="orders"
+            )
+        )
+        > 0
+    )
+
+    assert (
+        len(
+            records_matching_fields(
+                logs,
+                dataset_name=database_name,
+                collection_name="payment_card",
+            )
+        )
+        > 0
+    )
+    import pdb
+
+    pdb.set_trace()
+
+
+@pytest.mark.integration_timescale
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_timescale_erasure_request_task(
+    db,
+    erasure_policy,
+    timescale_connection_config,
+    timescale_integration_db,
+) -> None:
+    rule = erasure_policy.rules[0]
+    target = rule.targets[0]
+    target.data_category = "user"
+    target.save(db)
+
+    database_name = "my_timescale_db_1"
+    privacy_request = PrivacyRequest(
+        id=f"test_timescale_access_request_task_{random.randint(0, 1000000)}"
+    )
+
+    dataset = integration_db_dataset(database_name, timescale_connection_config.key)
+
+    # Set some data categories on fields that will be targeted by the policy above
+    field([dataset], database_name, "customer", "name").data_categories = ["user.name"]
+    field([dataset], database_name, "address", "street").data_categories = ["user"]
+    field([dataset], database_name, "payment_card", "ccn").data_categories = ["user"]
+
+    graph = DatasetGraph(dataset)
+
+    access_results = {  # To avoid running a separate access request, just feed in what the access results would be
+        f"{database_name}:payment_card": [
+            {
+                "id": "pay_aaa-aaa",
+                "name": "Example Card 1",
+                "ccn": 123456789,
+                "customer_id": 1,
+                "billing_address_id": 1,
+            },
+            {
+                "id": "pay_bbb-bbb",
+                "name": "Example Card 2",
+                "ccn": 987654321,
+                "customer_id": 2,
+                "billing_address_id": 1,
+            },
+        ],
+        f"{database_name}:customer": [
+            {
+                "id": 1,
+                "name": "John Customer",
+                "email": "customer-1@example.com",
+                "address_id": 1,
+            }
+        ],
+        f"{database_name}:address": [
+            {
+                "id": 1,
+                "street": "Example Street",
+                "city": "Exampletown",
+                "state": "NY",
+                "zip": "12345",
+            },
+            {
+                "id": 2,
+                "street": "Example Lane",
+                "city": "Exampletown",
+                "state": "NY",
+                "zip": "12321",
+            },
+        ],
+        f"{database_name}:orders": [
+            {
+                "id": "ord_aaa-aaa",
+                "customer_id": 1,
+                "shipping_address_id": 2,
+                "payment_card_id": "pay_aaa-aaa",
+            },
+            {
+                "id": "ord_ccc-ccc",
+                "customer_id": 1,
+                "shipping_address_id": 1,
+                "payment_card_id": "pay_aaa-aaa",
+            },
+            {
+                "id": "ord_ddd-ddd",
+                "customer_id": 1,
+                "shipping_address_id": 1,
+                "payment_card_id": "pay_bbb-bbb",
+            },
+        ],
+    }
+
+    v = await graph_task.run_erasure(
+        privacy_request,
+        erasure_policy,
+        graph,
+        [timescale_connection_config],
+        {"email": "customer-1@example.com"},
+        access_results,
+        db,
+    )
+    assert v == {
+        f"{database_name}:customer": 1,
+        f"{database_name}:orders": 0,
+        f"{database_name}:payment_card": 2,
+        f"{database_name}:address": 2,
+    }, "No erasure on orders table - no data categories targeted"
+
+    # Verify masking in appropriate tables
+    address_cursor = timescale_integration_db.execute(
+        text("select * from address where id in (1, 2)")
+    )
+    for address in address_cursor:
+        assert address.street is None  # Masked due to matching data category
+        assert address.state is not None
+        assert address.city is not None
+        assert address.zip is not None
+
+    customer_cursor = timescale_integration_db.execute(
+        text("select * from customer where id = 1")
+    )
+    customer = [customer for customer in customer_cursor][0]
+    assert customer.name is None  # Masked due to matching data category
+    assert customer.email == "customer-1@example.com"
+    assert customer.address_id is not None
+
+    payment_card_cursor = timescale_integration_db.execute(
+        text("select * from payment_card where id in ('pay_aaa-aaa', 'pay_bbb-bbb')")
+    )
+    payment_cards = [card for card in payment_card_cursor]
+    assert all(
+        [card.ccn is None for card in payment_cards]
+    )  # Masked due to matching data category
+    assert not any([card.name is None for card in payment_cards]) is None

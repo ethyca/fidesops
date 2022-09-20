@@ -1,7 +1,7 @@
 """add timescale db
 
 Revision ID: cf88efa1ad89
-Revises: a0e6feb5bdc8
+Revises: 021d288d0ce3
 Create Date: 2022-09-14 21:26:43.721397
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "cf88efa1ad89"
-down_revision = "a0e6feb5bdc8"
+down_revision = "021d288d0ce3"
 branch_labels = None
 depends_on = None
 
