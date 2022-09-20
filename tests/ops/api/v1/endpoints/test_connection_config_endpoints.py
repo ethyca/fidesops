@@ -1210,9 +1210,7 @@ class TestPutConnectionConfigSecrets:
             == f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
         )
 
-    @mock.patch(
-        "fidesops.ops.service.connectors.email_connector.dispatch_email_task.apply"
-    )
+    @mock.patch("fidesops.ops.service.connectors.email_connector.dispatch_email")
     def test_put_email_connection_config_secrets(
         self,
         mock_dispatch_email,
@@ -1253,17 +1251,12 @@ class TestPutConnectionConfigSecrets:
         assert email_connection_config.last_test_succeeded is not None
 
         assert mock_dispatch_email.called
-
-        call_args = mock_dispatch_email.call_args[1]
-        task_kwargs = call_args["kwargs"]
-        assert task_kwargs["to_email"] == "test@example.com"
-
-        email_meta = task_kwargs["email_meta"]
+        kwargs = mock_dispatch_email.call_args.kwargs
         assert (
-            email_meta["action_type"]
-            == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT
+            kwargs["action_type"] == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT
         )
-        assert email_meta["body_params"] == [
+        assert kwargs["to_email"] == "test@example.com"
+        assert kwargs["email_body_params"] == [
             CheckpointActionRequired(
                 step=CurrentStep.erasure,
                 collection=CollectionAddress("test_dataset", "test_collection"),
@@ -1276,5 +1269,3 @@ class TestPutConnectionConfigSecrets:
                 ],
             )
         ]
-        queue = call_args["queue"]
-        assert queue == EMAIL_QUEUE_NAME

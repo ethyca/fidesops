@@ -108,7 +108,10 @@ from fidesops.ops.schemas.privacy_request import (
     RowCountRequest,
     VerificationCode,
 )
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task
+from fidesops.ops.service.email.email_dispatch_service import (
+    dispatch_email,
+    dispatch_email_task,
+)
 from fidesops.ops.service.privacy_request.request_runner_service import (
     generate_id_verification_code,
     queue_privacy_request,
@@ -293,18 +296,14 @@ def _send_verification_code_to_user(
     verification_code: str = generate_id_verification_code()
     privacy_request.cache_identity_verification_code(verification_code)
     # synchronous call for now since failure to send verification code is fatal to request
-    dispatch_email_task.apply(
-        queue=EMAIL_QUEUE_NAME,
-        kwargs={
-            "email_meta": FidesopsEmail(
-                action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
-                body_params=SubjectIdentityVerificationBodyParams(
-                    verification_code=verification_code,
-                    verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
-                ),
-            ).dict(),
-            "to_email": email,
-        },
+    dispatch_email(
+        db=db,
+        action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
+        to_email=email,
+        email_body_params=SubjectIdentityVerificationBodyParams(
+            verification_code=verification_code,
+            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+        ),
     )
 
 

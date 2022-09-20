@@ -2958,7 +2958,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
     )
     def test_create_privacy_request_with_email_config(
         self,
@@ -2994,25 +2994,15 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         assert not mock_execute_request.called
 
         assert response_data[0]["status"] == PrivacyRequestStatus.identity_unverified
+
         assert mock_dispatch_email.called
-
-        call_args = mock_dispatch_email.call_args[1]
-        task_kwargs = call_args["kwargs"]
-        assert task_kwargs["to_email"] == "test@example.com"
-
-        email_meta = task_kwargs["email_meta"]
-        assert (
-            email_meta["action_type"] == EmailActionType.SUBJECT_IDENTITY_VERIFICATION
+        kwargs = mock_dispatch_email.call_args.kwargs
+        assert kwargs["action_type"] == EmailActionType.SUBJECT_IDENTITY_VERIFICATION
+        assert kwargs["to_email"] == "test@example.com"
+        assert kwargs["email_body_params"] == SubjectIdentityVerificationBodyParams(
+            verification_code=pr.get_cached_verification_code(),
+            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
         )
-        assert (
-            email_meta["body_params"]
-            == SubjectIdentityVerificationBodyParams(
-                verification_code=pr.get_cached_verification_code(),
-                verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
-            ).dict()
-        )
-        queue = call_args["queue"]
-        assert queue == EMAIL_QUEUE_NAME
 
         pr.delete(db=db)
 

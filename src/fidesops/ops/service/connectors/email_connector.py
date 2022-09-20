@@ -23,11 +23,10 @@ from fidesops.ops.models.privacy_request import (
     PrivacyRequest,
 )
 from fidesops.ops.schemas.connection_configuration import EmailSchema
-from fidesops.ops.schemas.email.email import EmailActionType, FidesopsEmail
+from fidesops.ops.schemas.email.email import EmailActionType
 from fidesops.ops.service.connectors.base_connector import BaseConnector
 from fidesops.ops.service.connectors.query_config import ManualQueryConfig
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task
-from fidesops.ops.tasks import EMAIL_QUEUE_NAME
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email
 from fidesops.ops.util.collection_util import Row, append
 
 logger = logging.getLogger(__name__)
@@ -53,33 +52,29 @@ class EmailConnector(BaseConnector[None]):
         config = EmailSchema(**self.configuration.secrets or {})
         logger.info("Starting test connection to %s", self.configuration.key)
 
+        db = Session.object_session(self.configuration)
+
         try:
             # synchronous for now since failure to send is considered a connection test failure
-            dispatch_email_task.apply(
-                queue=EMAIL_QUEUE_NAME,
-                kwargs={
-                    "email_meta": FidesopsEmail(
-                        action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
-                        body_params=[
-                            CheckpointActionRequired(
-                                step=CurrentStep.erasure,
-                                collection=CollectionAddress(
-                                    "test_dataset", "test_collection"
-                                ),
-                                action_needed=[
-                                    ManualAction(
-                                        locators={"id": ["example_id"]},
-                                        get=None,
-                                        update={
-                                            "test_field": "null_rewrite",
-                                        },
-                                    )
-                                ],
+            dispatch_email(
+                db=db,
+                action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
+                to_email=config.test_email,
+                email_body_params=[
+                    CheckpointActionRequired(
+                        step=CurrentStep.erasure,
+                        collection=CollectionAddress("test_dataset", "test_collection"),
+                        action_needed=[
+                            ManualAction(
+                                locators={"id": ["example_id"]},
+                                get=None,
+                                update={
+                                    "test_field": "null_rewrite",
+                                },
                             )
                         ],
-                    ).dict(),
-                    "to_email": config.test_email,
-                },
+                    )
+                ],
             )
         except EmailDispatchException as exc:
             logger.info("Email connector test failed with exception %s", exc)
@@ -198,16 +193,12 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
                 "No email sent: no masking needed on '%s'", ds.dataset.get("fides_key")
             )
             return
-        # synchronous for now since failure to send erasure request is a failure for this connector
-        dispatch_email_task.apply(
-            queue=EMAIL_QUEUE_NAME,
-            kwargs={
-                "email_meta": FidesopsEmail(
-                    action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
-                    body_params=template_values,
-                ).dict(),
-                "to_email": cc.secrets.get("to_email"),
-            },
+
+        dispatch_email(
+            db,
+            action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
+            to_email=cc.secrets.get("to_email"),
+            email_body_params=template_values,
         )
 
         logger.info(
