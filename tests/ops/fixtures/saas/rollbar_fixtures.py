@@ -180,8 +180,8 @@ class RollbarTestClient:
                     "level": "error",
                 },
                 "person": {
-                    "id": "2022",
-                    "username": "ethyca-eraser-username",
+                    "id": f"{random.randint(0, 999)}",
+                    "username": f"ethyca-eraser-usernam-{random.randint(0, 999)}",
                     "email": email,
                 },
             }
