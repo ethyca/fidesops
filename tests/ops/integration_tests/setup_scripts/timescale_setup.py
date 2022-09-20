@@ -19,7 +19,7 @@ integration_config = load_toml(["fidesops-integration.toml"])
 
 def setup():
     """
-    Set up the Postgres Database for testing.
+    Set up the Timescale Database for testing - setup is identical to Postgres
     The query file must have each query on a separate line.
     Initial connection must be done to the master database.
     """

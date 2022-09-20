@@ -2355,7 +2355,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"host\": \"host.docker.internal\",\n    \"port\": 7432,\n    \"dbname\": \"postgres\",\n    \"username\": \"postgres\",\n    \"password\": \"postgres\"\n}",
+							"raw": "{\n    \"host\": \"host.docker.internal\",\n    \"port\": 7432,\n    \"dbname\": \"timescale_example\",\n    \"username\": \"postgres\",\n    \"password\": \"postgres\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
