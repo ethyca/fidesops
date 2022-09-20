@@ -1,4 +1,5 @@
 import random
+import time
 from typing import Any, Dict, Generator
 
 import pydash
@@ -152,14 +153,26 @@ class RollbarTestClient:
         )
         return project_response
 
-    def get_project(self, project_id: str) -> requests.Response:
-        # get a project
+    def get_project_tokens(self, project_id: str) -> requests.Response:
+        # get a project access tokens
         self.headers["X-Rollbar-Access-Token"] = self.rollbar_secrets[
             "read_access_token"
         ]
         #     Use an Account Access Token with 'read' scope
         project_response: requests.Response = requests.get(
             url=f"{self.base_url}/project/{project_id}/access_tokens",
+            headers=self.headers,
+        )
+        return project_response
+
+    def get_project(self, project_id: str) -> requests.Response:
+        # get a project details
+        self.headers["X-Rollbar-Access-Token"] = self.rollbar_secrets[
+            "read_access_token"
+        ]
+        #     Use an Account Access Token with 'read' scope
+        project_response: requests.Response = requests.get(
+            url=f"{self.base_url}/project/{project_id}",
             headers=self.headers,
         )
         return project_response
@@ -211,7 +224,6 @@ def rollbar_test_client(
 def _project_exists(project_id: str, rollbar_test_client: RollbarTestClient) -> Any:
     """ """
     project_response = rollbar_test_client.get_project(project_id=project_id)
-
     if not project_response.status_code == 404 and project_response.json()["result"]:
         return project_response.json()
 
@@ -253,7 +265,7 @@ def rollbar_erasure_data(
     )
 
     # 2) get access token with scope post_server_item, read from project details
-    project_access_token_response = rollbar_test_client.get_project(
+    project_access_token_response = rollbar_test_client.get_project_tokens(
         project_id=project_id
     )
     access_tokens = project_access_token_response.json()
@@ -274,9 +286,25 @@ def rollbar_erasure_data(
     error_message = (
         f"Item within project id [{project_id}] could not be added to Rollbar"
     )
+    time.sleep(5)
     poll_for_existence(
         _item_exists,
         (project_tokens, rollbar_test_client),
         error_message=error_message,
     )
-    yield item
+    yield item, project
+
+    # delete project
+    project_response = rollbar_test_client.delete_project(project_id)
+    assert project_response.ok
+
+    # verify project is deleted
+    error_message = (
+        f"Project with project id {project_id} could not be deleted from Rollbar"
+    )
+    poll_for_existence(
+        _project_exists,
+        (project_id, rollbar_test_client),
+        error_message=error_message,
+        existence_desired=False,
+    )

@@ -110,7 +110,6 @@ async def test_rollbar_erasure_request_task(
     dataset_name = rollbar_connection_config.get_saas_config().fides_key
     merged_graph = rollbar_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-
     v = await graph_task.run_access_request(
         privacy_request,
         policy,
@@ -163,10 +162,10 @@ async def test_rollbar_erasure_request_task(
         get_cached_data_for_erasures(privacy_request.id),
         db,
     )
-
-    # delete the created project
-    project_id = v[f"{dataset_name}:instances"][0]["project_id"]
-    project_response = rollbar_test_client.delete_project(project_id)
-    assert project_response.ok
-
     config.execution.masking_strict = temp_masking
+    # verify masking request was issued for endpoints with update actions
+    assert erasure == {
+        f"{dataset_name}:projects": 0,
+        f"{dataset_name}:project_access_token": 0,
+        f"{dataset_name}:instances": 1,
+    }
