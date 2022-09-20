@@ -161,7 +161,7 @@ async def test_rollbar_erasure_request_task(
     config.execution.masking_strict = temp_masking
     # verify masking request was issued for endpoints with update actions
     assert erasure == {
-        f"{dataset_name}:accounts": 1,
         f"{dataset_name}:projects": 0,
         f"{dataset_name}:project_access_token": 0,
+        f"{dataset_name}:instances": 1,
     }
