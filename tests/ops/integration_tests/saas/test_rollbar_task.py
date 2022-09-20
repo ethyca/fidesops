@@ -42,7 +42,6 @@ async def test_rollbar_access_request_task(
     dataset_name = rollbar_connection_config.get_saas_config().fides_key
     merged_graph = rollbar_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-
     v = await graph_task.run_access_request(
         privacy_request,
         policy,
@@ -85,7 +84,7 @@ async def test_rollbar_access_request_task(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_zendesk
+@pytest.mark.integration_rollbar
 @pytest.mark.asyncio
 async def test_rollbar_erasure_request_task(
     db,
@@ -95,9 +94,8 @@ async def test_rollbar_erasure_request_task(
     rollbar_dataset_config,
     rollbar_erasure_identity_email,
     rollbar_erasure_data,
+    rollbar_test_client,
 ) -> None:
-    """Full erasure request based on the zendesk SaaS config"""
-    config.execution.masking_strict = False  # Allow Delete
 
     privacy_request = PrivacyRequest(
         id=f"test_rollbar_erasure_request_task_{random.randint(0, 1000)}"
@@ -119,7 +117,6 @@ async def test_rollbar_erasure_request_task(
         identity_kwargs,
         db,
     )
-
     assert_rows_match(
         v[f"{dataset_name}:projects"],
         min_size=1,
@@ -152,8 +149,8 @@ async def test_rollbar_erasure_request_task(
         assert instance["data"]["person"]["email"] == rollbar_erasure_identity_email
 
     temp_masking = config.execution.masking_strict
-    config.execution.masking_strict = True
-    x = await graph_task.run_erasure(
+    config.execution.masking_strict = False  # Allow Delete
+    erasure = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
@@ -162,3 +159,10 @@ async def test_rollbar_erasure_request_task(
         get_cached_data_for_erasures(privacy_request.id),
         db,
     )
+
+    # delete the created project
+    project_id = v[f"{dataset_name}:instances"][0]["project_id"]
+    project_response = rollbar_test_client.delete_project(project_id)
+    assert project_response.ok
+
+    config.execution.masking_strict = temp_masking
