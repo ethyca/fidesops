@@ -10,5 +10,3 @@ services:
       - 7432
     ports:
       - "0.0.0.0:7432:5432"
-    volumes:
-      - ./docker/sample_data/timescale_example.sql:/docker-entrypoint-initdb.d/timescale_example.sql
