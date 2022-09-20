@@ -21,6 +21,13 @@ The types of changes are:
 * Access and erasure support for Rollbar [#1227](https://github.com/ethyca/fidesops/pull/1227)
 
 
+
+### Fixed
+* Distinguish whether webhook has been visited and no fields were found, versus never visited [#1339](https://github.com/ethyca/fidesops/pull/1339)
+* Fix Redis Cache Early Expiration in Tests [#1358](https://github.com/ethyca/fidesops/pull/1358)
+
+## [1.8.0](https://github.com/ethyca/fidesops/compare/1.8.0...main)
+
 ### Developer Experience
 
 * Created a docker image for the privacy center [#1165](https://github.com/ethyca/fidesops/pull/1165)
@@ -63,6 +70,7 @@ The types of changes are:
 ### Changed
 
 * Renamed `PrivacyRequestIdentity` to `Identity` [#1324](https://github.com/ethyca/fidesops/pull/1324)
+* Use existing Celery queue for all email dispatch calls [#1341](https://github.com/ethyca/fidesops/pull/1341)
 
 ### Developer Experience
 
@@ -96,7 +104,7 @@ The types of changes are:
 
 * Bump python from 3.9.13 to 3.9.14 [#1287](https://github.com/ethyca/fidesops/pull/1287)
 
-## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.7.2)
+## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.8.0)
 
 ### Added
 
