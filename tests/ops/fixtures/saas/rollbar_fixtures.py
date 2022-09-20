@@ -19,7 +19,6 @@ from fidesops.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from tests.ops.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
@@ -142,6 +141,17 @@ class RollbarTestClient:
         )
         return project_response
 
+    def delete_project(self, project_id) -> requests.Response:
+        # delete project created for erasure purposes
+        url = f"{self.base_url}/project/{project_id}"
+        self.headers["X-Rollbar-Access-Token"] = self.rollbar_secrets[
+            "write_access_token"
+        ]
+        project_response: requests.Response = requests.delete(
+            url=url, headers=self.headers
+        )
+        return project_response
+
     def get_project(self, project_id: str) -> requests.Response:
         # get a project
         self.headers["X-Rollbar-Access-Token"] = self.rollbar_secrets[
@@ -170,8 +180,8 @@ class RollbarTestClient:
                     "level": "error",
                 },
                 "person": {
-                    "id": "1",
-                    "username": "ethyca",
+                    "id": f"{random.randint(0, 999)}",
+                    "username": f"ethyca-erasure-username-{random.randint(0, 999)}",
                     "email": email,
                 },
             }
