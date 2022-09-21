@@ -44,10 +44,10 @@ from fidesops.ops.models.privacy_request import (
 )
 from fidesops.ops.schemas.email.email import (
     AccessRequestCompleteBodyParams,
-    EmailActionType,
+    EmailActionType, FidesopsEmail,
 )
 from fidesops.ops.service.connectors.email_connector import email_connector_erasure_send
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email, dispatch_email_task
 from fidesops.ops.service.storage.storage_uploader_service import upload
 from fidesops.ops.task.filter_results import filter_data_categories
 from fidesops.ops.task.graph_task import (
@@ -55,7 +55,7 @@ from fidesops.ops.task.graph_task import (
     run_access_request,
     run_erasure,
 )
-from fidesops.ops.tasks import DatabaseTask, celery_app
+from fidesops.ops.tasks import DatabaseTask, celery_app, EMAIL_QUEUE_NAME
 from fidesops.ops.tasks.scheduled.scheduler import scheduler
 from fidesops.ops.util.cache import (
     FidesopsRedis,
@@ -395,7 +395,7 @@ async def run_privacy_request(
         if config.notifications.send_request_completion_notification:
             try:
                 initiate_privacy_request_completion_email(
-                    session, policy, privacy_request, access_result_urls, identity_data
+                    session, privacy_request, policy, access_result_urls, identity_data
                 )
             except (IdentityNotFoundException, EmailDispatchException) as e:
                 privacy_request.error_processing(db=session)
@@ -439,8 +439,10 @@ def initiate_privacy_request_completion_email(
             "Identity email was not found, so request completion email could not be sent."
         )
 
-    @celery_app.task
-    def error_handler(request, exc, traceback):
+    @celery_app.task(base=DatabaseTask, bind=True)
+    async def error_handler(request, exc, traceback):
+        """Custom error callback"""
+        logger.error("in celery error callback")
         privacy_request.error_processing(db=session)
         # If dev mode, log traceback
         await fideslog_graph_failure(
@@ -448,14 +450,18 @@ def initiate_privacy_request_completion_email(
         )
         _log_exception(exc, config.dev_mode)
     if policy.get_rules_for_action(action_type=ActionType.access):
-        # synchronous for now since failure to send complete emails is fatal to request
-        dispatch_email(
-            db=session,
-            action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
-            to_email=identity_data.get(ProvidedIdentityType.email.value),
-            email_body_params=AccessRequestCompleteBodyParams(
-                download_links=access_result_urls
-            ),
+        dispatch_email_task.apply_async(
+            queue=EMAIL_QUEUE_NAME,
+            kwargs={
+                "email_meta": FidesopsEmail(
+                    action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+                    body_params=AccessRequestCompleteBodyParams(
+                        download_links=access_result_urls
+                    )
+                ).dict(),
+                "to_email": identity_data.get(ProvidedIdentityType.email.value),
+            },
+            link_error=error_handler.s(),
         )
     if policy.get_rules_for_action(action_type=ActionType.erasure):
         dispatch_email(
