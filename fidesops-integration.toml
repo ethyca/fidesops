@@ -50,4 +50,4 @@ server="timescale_example"
 user="postgres"
 password="postgres"
 db="timescale_example"
-port=7432
+port=5432
