@@ -35,7 +35,11 @@ from ..graph.graph_test_util import (
     field,
     records_matching_fields,
 )
-from ..task.traversal_data import integration_db_dataset, integration_db_graph
+from ..task.traversal_data import (
+    integration_db_dataset,
+    integration_db_graph,
+    str_converter,
+)
 
 logger = logging.getLogger(__name__)
 sample_postgres_configuration_policy = erasure_policy(
@@ -1184,6 +1188,55 @@ async def test_timescale_access_request_task(
         )
         > 0
     )
+
+
+@pytest.mark.integration_timescale
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_timescale_query_hypertable(
+    db,
+    policy,
+    timescale_connection_config,
+) -> None:
+    database_name = "my_timescale_db_1"
+    privacy_request = PrivacyRequest(
+        id=f"test_timescale_access_request_task_{random.randint(0, 1000000)}"
+    )
+
+    dataset = integration_db_dataset(database_name, timescale_connection_config.key)
+    # For this test, add a new collection to our standard dataset corresponding to the
+    # "onsite_personnel" timescale hypertable
+    onsite_personnel_collection = Collection(
+        name="onsite_personnel",
+        fields=[
+            ScalarField(
+                name="responsible", data_type_converter=str_converter, identity="email"
+            ),
+            ScalarField(
+                name="time", data_type_converter=str_converter, primary_key=True
+            ),
+        ],
+    )
+
+    dataset.collections.append(onsite_personnel_collection)
+    graph = DatasetGraph(dataset)
+
+    v = await graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [timescale_connection_config],
+        {"email": "employee-1@example.com"},
+        db,
+    )
+
+    # Demonstrate hypertable can be queried
+    assert v[f"{database_name}:onsite_personnel"] == [
+        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 1, 9, 0)},
+        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 2, 9, 0)},
+        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 3, 9, 0)},
+        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 5, 9, 0)},
+    ]
 
 
 @pytest.mark.integration_timescale
