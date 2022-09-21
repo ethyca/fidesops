@@ -1184,9 +1184,6 @@ async def test_timescale_access_request_task(
         )
         > 0
     )
-    import pdb
-
-    pdb.set_trace()
 
 
 @pytest.mark.integration_timescale
