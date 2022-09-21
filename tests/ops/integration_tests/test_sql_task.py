@@ -6,6 +6,7 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
+from sqlalchemy import text
 
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.config import (
@@ -359,6 +360,93 @@ async def test_postgres_access_request_task(
         )
         > 0
     )
+
+
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_postgres_privacy_requests_against_non_default_schema(
+    db,
+    policy,
+    postgres_connection_config_with_schema,
+    postgres_integration_db,
+    erasure_policy,
+) -> None:
+    """Assert that the postgres connector can make access and erasure requests against the non-default (public) schema"""
+
+    privacy_request = PrivacyRequest(
+        id=f"test_postgres_access_request_task_{random.randint(0, 100000)}"
+    )
+    database_name = "postgres_backup"
+    customer_email = "customer-500@example.com"
+
+    dataset = integration_db_dataset(
+        database_name, postgres_connection_config_with_schema.key
+    )
+    graph = DatasetGraph(dataset)
+
+    access_results = await graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [postgres_connection_config_with_schema],
+        {"email": customer_email},
+        db,
+    )
+
+    # Confirm data retrieved from backup_schema, not public schema. This data only exists in the backup_schema.
+    assert access_results == {
+        f"{database_name}:address": [
+            {
+                "id": 7,
+                "street": "Test Street",
+                "city": "Test Town",
+                "state": "TX",
+                "zip": "79843",
+            }
+        ],
+        f"{database_name}:payment_card": [],
+        f"{database_name}:orders": [],
+        f"{database_name}:customer": [
+            {
+                "id": 1,
+                "name": "Johanna Customer",
+                "email": "customer-500@example.com",
+                "address_id": 7,
+            }
+        ],
+    }
+
+    rule = erasure_policy.rules[0]
+    target = rule.targets[0]
+    target.data_category = "user"
+    target.save(db)
+    # Update data category on customer name
+    field([dataset], database_name, "customer", "name").data_categories = ["user.name"]
+
+    erasure_results = await graph_task.run_erasure(
+        privacy_request,
+        erasure_policy,
+        graph,
+        [postgres_connection_config_with_schema],
+        {"email": customer_email},
+        get_cached_data_for_erasures(privacy_request.id),
+        db,
+    )
+
+    # Confirm record masked in non-default schema
+    assert erasure_results == {
+        f"{database_name}:customer": 1,
+        f"{database_name}:payment_card": 0,
+        f"{database_name}:orders": 0,
+        f"{database_name}:address": 0,
+    }, "Only one record on customer table has targeted data category"
+    customer_records = postgres_integration_db.execute(
+        text("select * from backup_schema.customer where id = 1;")
+    )
+    johanna_record = [c for c in customer_records][0]
+    assert johanna_record.email == customer_email  # Not masked
+    assert johanna_record.name is None  # Masked by erasure request
 
 
 @pytest.mark.integration_mssql
