@@ -18,7 +18,6 @@ import {
   PrivacyRequestModal,
 } from "../components/modals/privacy-request-modal/PrivacyRequestModal";
 import PrivacyCard from "../components/PrivacyCard";
-import ConsentCard from "../components/ConsentCard";
 import type { AlertState } from "../types/AlertState";
 
 import config from "../config/config.json";
@@ -75,10 +74,6 @@ const Home: NextPage = () => {
       />
     );
   });
-
-  if (config.includeConsent) {
-    content.push(<ConsentCard key="consentCard" onOpen={() => {}} />);
-  }
 
   return (
     <div>
