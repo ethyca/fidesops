@@ -1193,55 +1193,6 @@ async def test_timescale_access_request_task(
 @pytest.mark.integration_timescale
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_timescale_query_hypertable(
-    db,
-    policy,
-    timescale_connection_config,
-) -> None:
-    database_name = "my_timescale_db_1"
-    privacy_request = PrivacyRequest(
-        id=f"test_timescale_access_request_task_{random.randint(0, 1000000)}"
-    )
-
-    dataset = integration_db_dataset(database_name, timescale_connection_config.key)
-    # For this test, add a new collection to our standard dataset corresponding to the
-    # "onsite_personnel" timescale hypertable
-    onsite_personnel_collection = Collection(
-        name="onsite_personnel",
-        fields=[
-            ScalarField(
-                name="responsible", data_type_converter=str_converter, identity="email"
-            ),
-            ScalarField(
-                name="time", data_type_converter=str_converter, primary_key=True
-            ),
-        ],
-    )
-
-    dataset.collections.append(onsite_personnel_collection)
-    graph = DatasetGraph(dataset)
-
-    v = await graph_task.run_access_request(
-        privacy_request,
-        policy,
-        graph,
-        [timescale_connection_config],
-        {"email": "employee-1@example.com"},
-        db,
-    )
-
-    # Demonstrate hypertable can be queried
-    assert v[f"{database_name}:onsite_personnel"] == [
-        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 1, 9, 0)},
-        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 2, 9, 0)},
-        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 3, 9, 0)},
-        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 5, 9, 0)},
-    ]
-
-
-@pytest.mark.integration_timescale
-@pytest.mark.integration
-@pytest.mark.asyncio
 async def test_timescale_erasure_request_task(
     db,
     erasure_policy,
@@ -1372,3 +1323,86 @@ async def test_timescale_erasure_request_task(
         [card.ccn is None for card in payment_cards]
     )  # Masked due to matching data category
     assert not any([card.name is None for card in payment_cards]) is None
+
+
+@pytest.mark.integration_timescale
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_timescale_query_and_mask_hypertable(
+    db, policy, erasure_policy, timescale_connection_config, timescale_integration_db
+) -> None:
+    database_name = "my_timescale_db_1"
+    privacy_request = PrivacyRequest(
+        id=f"test_timescale_access_request_task_{random.randint(0, 1000000)}"
+    )
+
+    dataset = integration_db_dataset(database_name, timescale_connection_config.key)
+    # For this test, add a new collection to our standard dataset corresponding to the
+    # "onsite_personnel" timescale hypertable
+    onsite_personnel_collection = Collection(
+        name="onsite_personnel",
+        fields=[
+            ScalarField(
+                name="responsible", data_type_converter=str_converter, identity="email"
+            ),
+            ScalarField(
+                name="time", data_type_converter=str_converter, primary_key=True
+            ),
+        ],
+    )
+
+    dataset.collections.append(onsite_personnel_collection)
+    graph = DatasetGraph(dataset)
+
+    access_results = await graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [timescale_connection_config],
+        {"email": "employee-1@example.com"},
+        db,
+    )
+
+    # Demonstrate hypertable can be queried
+    assert access_results[f"{database_name}:onsite_personnel"] == [
+        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 1, 9, 0)},
+        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 2, 9, 0)},
+        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 3, 9, 0)},
+        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 5, 9, 0)},
+    ]
+
+    rule = erasure_policy.rules[0]
+    target = rule.targets[0]
+    target.data_category = "user"
+    target.save(db)
+    # Update data category on responsible field
+    field(
+        [dataset], database_name, "onsite_personnel", "responsible"
+    ).data_categories = ["user.contact.email"]
+
+    # Run an erasure on the hypertable targeting the responsible field
+    v = await graph_task.run_erasure(
+        privacy_request,
+        erasure_policy,
+        graph,
+        [timescale_connection_config],
+        {"email": "employee-1@example.com"},
+        get_cached_data_for_erasures(privacy_request.id),
+        db,
+    )
+
+    assert v == {
+        f"{database_name}:customer": 0,
+        f"{database_name}:orders": 0,
+        f"{database_name}:payment_card": 0,
+        f"{database_name}:address": 0,
+        f"{database_name}:onsite_personnel": 4,
+    }, "onsite_personnel.responsible was the only targeted data category"
+
+    personnel_records = timescale_integration_db.execute(
+        text("select * from onsite_personnel")
+    )
+    for record in personnel_records:
+        assert (
+            record.responsible != "employee-1@example.com"
+        )  # These emails have all been masked
