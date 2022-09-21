@@ -15,16 +15,15 @@ from fideslib.oauth.api.deps import get_config as lib_get_config
 from fideslib.oauth.api.deps import get_db as lib_get_db
 from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
 from fideslib.oauth.api.routes.user_endpoints import router as user_router
-from fideslog.sdk.python.event import AnalyticsEvent
 from redis.exceptions import ResponseError
 from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from starlette.status import HTTP_404_NOT_FOUND
 
-from fidesops.ops.analytics import (
-    accessed_through_local_host,
-    in_docker_container,
-    send_analytics_event,
+from fidesops.ops.analytics import send_analytics_event
+from fidesops.ops.analytics_event_factory import (
+    endpoint_call_analytics_event,
+    server_start_analytics_event,
 )
 from fidesops.ops.api.deps import get_api_session, get_config, get_db
 from fidesops.ops.api.v1.api import api_router
@@ -36,7 +35,6 @@ from fidesops.ops.common_exceptions import (
 )
 from fidesops.ops.core.config import config
 from fidesops.ops.db.database import init_db
-from fidesops.ops.schemas.analytics import Event, ExtraData
 from fidesops.ops.service.connectors.saas.connector_registry_service import (
     load_registry,
     registry_file,
@@ -116,17 +114,13 @@ async def prepare_and_log_request(
     if config.root_user.analytics_opt_out:
         return
     await send_analytics_event(
-        AnalyticsEvent(
-            docker=in_docker_container(),
-            event=Event.endpoint_call.value,
-            event_created_at=event_created_at,
-            local_host=accessed_through_local_host(hostname),
-            endpoint=endpoint,
-            status_code=status_code,
-            error=error_class or None,
-            extra_data={ExtraData.fides_source.value: fides_source}
-            if fides_source
-            else None,
+        endpoint_call_analytics_event(
+            endpoint,
+            hostname,
+            status_code,
+            event_created_at,
+            fides_source,
+            error_class,
         )
     )
 
@@ -265,15 +259,7 @@ def start_webserver() -> None:
         logger.info("Starting scheduled request intake...")
         initiate_scheduled_request_intake()
 
-    asyncio.run(
-        send_analytics_event(
-            AnalyticsEvent(
-                docker=in_docker_container(),
-                event=Event.server_start.value,
-                event_created_at=datetime.now(tz=timezone.utc),
-            )
-        )
-    )
+    asyncio.run(send_analytics_event(server_start_analytics_event()))
 
     if not config.execution.worker_enabled:
         logger.info("Starting worker...")

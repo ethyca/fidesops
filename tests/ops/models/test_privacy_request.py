@@ -17,6 +17,7 @@ from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.models.policy import CurrentStep, Policy
 from fidesops.ops.models.privacy_request import (
     CheckpointActionRequired,
+    CheckpointActionRequiredBase,
     Consent,
     ConsentRequest,
     PrivacyRequest,
@@ -28,6 +29,7 @@ from fidesops.ops.schemas.redis_cache import Identity
 from fidesops.ops.service.connectors.manual_connector import ManualAction
 from fidesops.ops.util.cache import FidesopsRedis, get_identity_cache_key
 from fidesops.ops.util.constants import API_DATE_FORMAT
+from fidesops.ops.util.json import get_json
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
@@ -556,16 +558,17 @@ class TestCacheEmailConnectorTemplateContents:
         assert privacy_request.get_email_connector_template_contents_by_dataset(
             CurrentStep.erasure, "email_dataset"
         ) == [
-            CheckpointActionRequired(
-                step=CurrentStep.erasure,
-                collection=CollectionAddress("email_dataset", "test_collection"),
-                action_needed=[
-                    ManualAction(
-                        locators={"email": "test@example.com"},
-                        get=None,
-                        update={"phone": "null_rewrite"},
-                    )
-                ],
+            get_json(
+                CheckpointActionRequiredBase(
+                    collection=CollectionAddress("email_dataset", "test_collection"),
+                    action_needed=[
+                        ManualAction(
+                            locators={"email": "test@example.com"},
+                            get=None,
+                            update={"phone": "null_rewrite"},
+                        )
+                    ],
+                )
             )
         ]
 

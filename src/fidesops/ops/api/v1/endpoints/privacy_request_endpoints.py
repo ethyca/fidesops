@@ -74,6 +74,7 @@ from fidesops.ops.graph.graph import DatasetGraph, Node
 from fidesops.ops.graph.traversal import Traversal
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.models.manual_webhook import AccessManualWebhook
 from fidesops.ops.models.policy import ActionType, CurrentStep, Policy, PolicyPreWebhook
 from fidesops.ops.models.privacy_request import (
@@ -91,7 +92,7 @@ from fidesops.ops.schemas.email.email import (
     EmailActionType,
     FidesopsEmail,
     RequestReceiptBodyParams,
-    RequestReviewDenyBodyParams,
+    RequestReviewDenyBodyParams, SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fidesops.ops.schemas.privacy_request import (
@@ -109,9 +110,12 @@ from fidesops.ops.schemas.privacy_request import (
     VerificationCode,
 )
 from fidesops.ops.service._verification import send_verification_code_to_user
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task
+from fidesops.ops.service.email.email_dispatch_service import (
+    dispatch_email_task_generic,
+    dispatch_email_task_identity_verification,
+)
 from fidesops.ops.service.privacy_request.request_runner_service import (
-    queue_privacy_request,
+    queue_privacy_request, generate_id_verification_code,
 )
 from fidesops.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
@@ -283,6 +287,31 @@ async def create_privacy_request(
     )
 
 
+def _send_verification_code_to_user(
+    db: Session, privacy_request: PrivacyRequest, email: Optional[str]
+) -> None:
+    """Generate and cache a verification code, and then email to the user"""
+    EmailConfig.get_configuration(
+        db=db
+    )  # Validates Fidesops is currently configured to send emails
+    verification_code: str = generate_id_verification_code()
+    privacy_request.cache_identity_verification_code(verification_code)
+    dispatch_email_task_identity_verification.apply_async(
+        queue=EMAIL_QUEUE_NAME,
+        kwargs={
+            "email_meta": FidesopsEmail(
+                action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
+                body_params=SubjectIdentityVerificationBodyParams(
+                    verification_code=verification_code,
+                    verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+                ),
+            ).dict(),
+            "to_email": email,
+            "privacy_request_id": privacy_request.id,
+        },
+    )
+
+
 def _send_privacy_request_receipt_email_to_user(
     policy: Optional[Policy], email: Optional[str]
 ) -> None:
@@ -305,7 +334,7 @@ def _send_privacy_request_receipt_email_to_user(
     for action_type in ActionType:
         if policy.get_rules_for_action(action_type=ActionType(action_type)):
             request_types.add(action_type)
-    dispatch_email_task.apply_async(
+    dispatch_email_task_generic.apply_async(
         queue=EMAIL_QUEUE_NAME,
         kwargs={
             "email_meta": FidesopsEmail(
@@ -1103,7 +1132,7 @@ def _send_privacy_request_review_email_to_user(
                 "Identity email was not found, so request review email could not be sent."
             )
         )
-    dispatch_email_task.apply_async(
+    dispatch_email_task_generic.apply_async(
         queue=EMAIL_QUEUE_NAME,
         kwargs={
             "email_meta": FidesopsEmail(

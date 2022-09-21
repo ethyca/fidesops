@@ -9,6 +9,7 @@ from fideslog.sdk.python.exceptions import AnalyticsError
 
 from fidesops import __version__ as fidesops_version
 from fidesops.ops.core.config import config
+from fidesops.ops.util.wrappers import sync
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +36,17 @@ analytics_client = AnalyticsClient(
 )
 
 
+@sync
+async def sync_send_analytics_event_wrapper(event: AnalyticsEvent) -> None:
+    """
+    Calling async functions within Celery tasks is not yet supported: https://github.com/celery/celery/issues/6552
+    so this sync wrapper is a workaround for that.
+    """
+    await send_analytics_event(event)
+
+
 async def send_analytics_event(event: AnalyticsEvent) -> None:
-    if config.root_user.analytics_opt_out:
+    if config.root_user.analytics_opt_out or not event:
         return
     try:
         await analytics_client._AnalyticsClient__send(  # pylint: disable=protected-access

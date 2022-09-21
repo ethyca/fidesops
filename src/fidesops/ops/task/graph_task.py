@@ -10,16 +10,14 @@ import dask
 from dask.threaded import get
 from sqlalchemy.orm import Session
 
+from fidesops.ops.analytics import send_analytics_event
 from fidesops.ops.common_exceptions import (
     CollectionDisabled,
     PrivacyRequestErasureEmailSendRequired,
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
-from fidesops.ops.graph.analytics_events import (
-    fideslog_graph_rerun,
-    prepare_rerun_graph_analytics_event,
-)
+from fidesops.ops.graph.analytics_events import prepare_rerun_graph_analytics_event
 from fidesops.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -642,7 +640,7 @@ async def run_access_request(
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
         update_mapping_from_cache(dsk, resources, start_function)
 
-        await fideslog_graph_rerun(
+        await send_analytics_event(
             prepare_rerun_graph_analytics_event(
                 privacy_request, env, end_nodes, resources, ActionType.access
             )
@@ -740,7 +738,7 @@ async def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
         # terminator function waits for all keys
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
         update_erasure_mapping_from_cache(dsk, resources, start_function)
-        await fideslog_graph_rerun(
+        await send_analytics_event(
             prepare_rerun_graph_analytics_event(
                 privacy_request, env, end_nodes, resources, ActionType.erasure
             )

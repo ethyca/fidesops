@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Extra
 
-from fidesops.ops.models.privacy_request import CheckpointActionRequired
+from fidesops.ops.models.privacy_request import ManualAction
 from fidesops.ops.schemas import Msg
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 
@@ -66,6 +66,23 @@ class RequestReviewDenyBodyParams(BaseModel):
     rejection_reason: Optional[str]
 
 
+class CollectionAddress(BaseModel):
+    dataset: str
+    collection: str
+    value: str
+
+
+class EmailConnectorErasureBodyParams(BaseModel):
+    collection: Optional[CollectionAddress]
+    action_needed: Optional[List[ManualAction]] = None
+
+
+class EmailConnectorEmail(BaseModel):
+    email_meta: Dict[str, Any]
+    to_email: str
+    dataset_key: FidesOpsKey
+
+
 class FidesopsEmail(
     BaseModel,
     smart_union=True,
@@ -80,7 +97,7 @@ class FidesopsEmail(
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,
             AccessRequestCompleteBodyParams,
-            List[CheckpointActionRequired],
+            List[EmailConnectorErasureBodyParams],
         ]
     ]
 

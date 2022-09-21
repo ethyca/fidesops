@@ -1,10 +1,8 @@
-from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 from fideslog.sdk.python.event import AnalyticsEvent
 
-from fidesops.ops.analytics import in_docker_container, send_analytics_event
-from fidesops.ops.core.config import config
+from fidesops.ops.analytics_event_factory import rerun_graph_analytics_event
 from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.graph.graph_differences import (
     GraphDiffSummary,
@@ -19,22 +17,6 @@ from fidesops.ops.util.collection_util import Row
 
 if TYPE_CHECKING:
     from fidesops.ops.task.graph_task import GraphTask
-
-
-async def fideslog_graph_failure(event: Optional[AnalyticsEvent]) -> None:
-    """Send an Analytics Event if privacy request execution has failed"""
-    if config.root_user.analytics_opt_out or not event:
-        return
-
-    await send_analytics_event(event)
-
-
-async def fideslog_graph_rerun(event: Optional[AnalyticsEvent]) -> None:
-    """Send an Analytics Event if a privacy request has been reprocessed, comparing its graph to the previous graph"""
-    if config.root_user.analytics_opt_out or not event:
-        return
-
-    await send_analytics_event(event)
 
 
 def prepare_rerun_graph_analytics_event(
@@ -73,34 +55,4 @@ def prepare_rerun_graph_analytics_event(
     data = graph_diff_summary.dict()
     data["privacy_request"] = privacy_request.id
 
-    return AnalyticsEvent(
-        docker=in_docker_container(),
-        event="rerun_access_graph"
-        if step == ActionType.access
-        else "rerun_erasure_graph",
-        event_created_at=datetime.now(tz=timezone.utc),
-        local_host=None,
-        endpoint=None,
-        status_code=None,
-        error=None,
-        extra_data=data,
-    )
-
-
-def failed_graph_analytics_event(
-    privacy_request: PrivacyRequest, exc: Optional[BaseException]
-) -> Optional[AnalyticsEvent]:
-    """Prepares an AnalyticsEvent to send to Fideslog if privacy request execution has failed."""
-
-    data = {"privacy_request": privacy_request.id}
-
-    return AnalyticsEvent(
-        docker=in_docker_container(),
-        event="privacy_request_execution_failure",
-        event_created_at=datetime.now(tz=timezone.utc),
-        local_host=None,
-        endpoint=None,
-        status_code=500,
-        error=exc.__class__.__name__ if exc else None,
-        extra_data=data,
-    )
+    return rerun_graph_analytics_event(data=data, step=step)

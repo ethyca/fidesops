@@ -649,7 +649,7 @@ async def test_restart_graph_from_failure(
 
     # Rerun access request using cached results
     with mock.patch(
-        "fidesops.ops.task.graph_task.fideslog_graph_rerun"
+        "fidesops.ops.task.graph_task.send_analytics_event"
     ) as mock_log_event:
         await graph_task.run_access_request(
             privacy_request,
@@ -780,7 +780,7 @@ async def test_restart_graph_from_failure_during_erasure(
 
     # Rerun erasure portion of request using cached results
     with mock.patch(
-        "fidesops.ops.task.graph_task.fideslog_graph_rerun"
+        "fidesops.ops.task.graph_task.send_analytics_event"
     ) as mock_log_event:
         await graph_task.run_erasure(
             privacy_request,
