@@ -45,6 +45,11 @@ export interface ExecutionLog {
   updated_at: string;
 }
 
+export type GetUpdloadedManualWebhookDataRequest = {
+  connection_key: string;
+  privacy_request_id: string;
+};
+
 export interface Rule {
   name: string;
   key: string;
