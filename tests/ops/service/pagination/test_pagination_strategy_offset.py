@@ -112,7 +112,7 @@ def test_offset_with_unparsable_string_connector_param_reference(response_with_b
             request_params, connector_params, response_with_body, "conversations"
         )
     assert (
-        f"The value 'ten' of the 'limit' connector_param could not be converted to an int"
+        f"The value 'ten' of the 'limit' connector_param could not be cast to an int"
         == str(exc.value)
     )
 
