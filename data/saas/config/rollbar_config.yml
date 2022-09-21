@@ -80,7 +80,8 @@ saas_config:
             configuration:
               incremental_param: page
               increment_by: 1
-              limit: page_limit
+              limit:
+                connector_param: page_limit
           postprocessors:
             - strategy: filter
               configuration:

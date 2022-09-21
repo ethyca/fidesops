@@ -28,6 +28,8 @@ def rollbar_secrets(saas_config):
         or secrets["read_access_token"],
         "write_access_token": pydash.get(saas_config, "rollbar.write_access_token")
         or secrets["write_access_token"],
+        "page_limit": pydash.get(saas_config, "rollbar.page_limit")
+        or secrets["page_limit"],
     }
 
 
