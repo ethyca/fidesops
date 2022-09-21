@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   ButtonGroup,
+  Divider,
   Drawer,
   DrawerBody,
   DrawerCloseButton,
@@ -19,19 +20,19 @@ import {
   VStack,
 } from "@fidesui/react";
 import { useAlert, useAPIHelper } from "common/hooks";
-import {
-  AccessManualHookField,
-  GetAccessManualWebhookResponse,
-} from "datastore-connections/types";
 import { Field, Form, Formik } from "formik";
 import React, { useRef, useState } from "react";
 import * as Yup from "yup";
 
+import { ManualInputData } from "./types";
+
 type ManualProcessingDetailProps = {
-  data: GetAccessManualWebhookResponse;
+  connectorName: string;
+  data: ManualInputData;
 };
 
 const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
+  connectorName,
   data,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -54,28 +55,32 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
 
   return (
     <>
-      {/* <Button
-        color="gray.700"
-        fontSize="xs"
-        h="24px"
-        onClick={onOpen}
-        variant="outline"
-        w="58px"
-      >
-        Review
-      </Button> */}
-      <Button
-        color="white"
-        bg="primary.800"
-        fontSize="xs"
-        h="24px"
-        onClick={onOpen}
-        w="127px"
-        _hover={{ bg: "primary.400" }}
-        _active={{ bg: "primary.500" }}
-      >
-        Begin manual input
-      </Button>
+      {data?.checked && (
+        <Button
+          color="gray.700"
+          fontSize="xs"
+          h="24px"
+          onClick={onOpen}
+          variant="outline"
+          w="58px"
+        >
+          Review
+        </Button>
+      )}
+      {!data?.checked && (
+        <Button
+          color="white"
+          bg="primary.800"
+          fontSize="xs"
+          h="24px"
+          onClick={onOpen}
+          w="127px"
+          _hover={{ bg: "primary.400" }}
+          _active={{ bg: "primary.500" }}
+        >
+          Begin manual input
+        </Button>
+      )}
       <Drawer
         isOpen={isOpen}
         placement="right"
@@ -87,8 +92,14 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          <DrawerHeader color="gray.900" fontSize="18px">
-            PII Requirements
+          <DrawerHeader color="gray.900">
+            <Text fontSize="xl" mb={4}>
+              {connectorName}
+            </Text>
+            <Divider />
+            <Text fontSize="md" mt="8">
+              PII Requirements
+            </Text>
             <Box mt="8px">
               <Text color="gray.700" fontSize="sm" fontWeight="normal">
                 Please complete the following PII fields that have been
@@ -96,11 +107,9 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
               </Text>
             </Box>
           </DrawerHeader>
-          <DrawerBody mt="40px">
+          <DrawerBody mt="24px">
             <Formik
-              initialValues={{
-                fields: data.fields,
-              }}
+              initialValues={{ ...data.fields }}
               onSubmit={handleSubmit}
               validateOnBlur={false}
               validateOnChange={false}
@@ -110,38 +119,36 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
               {(props: FormikProps<Values>) => (
                 <Form id="manual-detail-form" noValidate>
                   <VStack align="stretch" gap="16px">
-                    {data.fields.map(
-                      (f: AccessManualHookField, index: number) => (
-                        <HStack key={f.pii_field}>
-                          <Field name={f.pii_field}>
-                            {({ field }: { field: any }) => (
-                              <FormControl
-                                alignItems="baseline"
-                                display="inline-flex"
+                    {Object.entries(data.fields).map(([key, _value], index) => (
+                      <HStack key={key}>
+                        <Field id={key} name={key}>
+                          {({ field }: { field: any }) => (
+                            <FormControl
+                              alignItems="baseline"
+                              display="inline-flex"
+                            >
+                              <FormLabel
+                                color="gray.900"
+                                fontSize="14px"
+                                fontWeight="semibold"
+                                htmlFor={key}
+                                w="50%"
                               >
-                                <FormLabel
-                                  color="gray.900"
-                                  fontSize="14px"
-                                  fontWeight="semibold"
-                                  htmlFor={f.pii_field}
-                                  w="50%"
-                                >
-                                  {f.pii_field}
-                                </FormLabel>
-                                <Input
-                                  {...field}
-                                  autoComplete="off"
-                                  color="gray.700"
-                                  placeholder={`Please enter ${f.pii_field}`}
-                                  ref={index === 0 ? firstField : undefined}
-                                  size="sm"
-                                />
-                              </FormControl>
-                            )}
-                          </Field>
-                        </HStack>
-                      )
-                    )}
+                                {key}
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                autoComplete="off"
+                                color="gray.700"
+                                placeholder={`Please enter ${key}`}
+                                ref={index === 0 ? firstField : undefined}
+                                size="sm"
+                              />
+                            </FormControl>
+                          )}
+                        </Field>
+                      </HStack>
+                    ))}
                   </VStack>
                 </Form>
               )}

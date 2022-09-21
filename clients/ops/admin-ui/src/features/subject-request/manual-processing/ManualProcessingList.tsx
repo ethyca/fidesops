@@ -60,11 +60,16 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
           result.value.isSuccess &&
           result.value.data
         ) {
-          list.push({
+          const item = {
             checked: result.value.data.checked,
-            fields: result.value.data.fields,
+            fields: [],
             key: result.value.originalArgs.connection_key,
+          } as ManualInputData;
+          Object.entries(result.value.data.fields).forEach(([key, value]) => {
+            // @ts-ignore
+            item.fields[key] = value || "";
           });
+          list.push(item);
         }
       });
       setDataList(list);
@@ -127,7 +132,16 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
                       <Td pl="0">{item.connection_config.name}</Td>
                       <Td>{item.connection_config.description}</Td>
                       <Td>
-                        <ManualProcessingDetail data={item} />
+                        {dataList.length > 0 ? (
+                          <ManualProcessingDetail
+                            connectorName={item.connection_config.name}
+                            data={
+                              dataList.find(
+                                (i) => i.key === item.connection_config.key
+                              ) as ManualInputData
+                            }
+                          />
+                        ) : null}
                       </Td>
                     </Tr>
                   ))}
@@ -144,7 +158,7 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
                   </Tr>
                 )}
               </Tbody>
-              {data.length > 0 && (
+              {dataList.length > 0 && dataList.every((item) => item.checked) ? (
                 <Tfoot>
                   <Tr>
                     <Th />
@@ -164,7 +178,7 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
                     </Th>
                   </Tr>
                 </Tfoot>
-              )}
+              ) : null}
             </Table>
           </TableContainer>
         ) : null}

@@ -1,7 +1,9 @@
-import { Field } from "datastore-connections/add-connection/manual/types";
-
 export type ManualInputData = {
   checked: boolean;
+  fields: ManualInputDataField[];
   key: string;
-  fields: Field;
+};
+
+export type ManualInputDataField = {
+  [key: string]: any;
 };
