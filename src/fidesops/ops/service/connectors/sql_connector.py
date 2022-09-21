@@ -56,6 +56,7 @@ class SQLConnector(BaseConnector[Engine]):
     secrets_schema: Type[ConnectionConfigSecretsSchema]
 
     def __init__(self, configuration: ConnectionConfig):
+        """Instantiate a SQL-based connector"""
         super().__init__(configuration)
         if not self.secrets_schema:
             raise NotImplementedError(
@@ -174,7 +175,7 @@ class SQLConnector(BaseConnector[Engine]):
 
     def set_schema(self, connection: Connection) -> None:
         """Optionally override to set the schema for a given database that
-        persist through the entire session"""
+        persists through the entire session"""
 
 
 class PostgreSQLConnector(SQLConnector):
