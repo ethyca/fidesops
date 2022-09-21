@@ -194,6 +194,7 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
             )
             return
 
+        # fixme: synchronous
         dispatch_email(
             db,
             action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
