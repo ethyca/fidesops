@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import RequestModal from "../RequestModal";
 
 import type { AlertState } from "../../../types/AlertState";
@@ -9,7 +9,7 @@ import PrivacyRequestForm from "./PrivacyRequestForm";
 import VerificationForm from "../VerificationForm";
 import RequestSubmitted from "./RequestSubmitted";
 
-import { ModalViews } from "../types";
+import { ModalViews, VerificationType } from "../types";
 
 export const usePrivactRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,6 +31,10 @@ export const usePrivactRequestModal = () => {
     setPrivacyRequestId("");
   };
 
+  const successHandler = useCallback(() => {
+    setCurrentView(ModalViews.RequestSubmitted);
+  }, [setCurrentView]);
+
   return {
     isOpen,
     onClose,
@@ -40,6 +44,7 @@ export const usePrivactRequestModal = () => {
     setCurrentView,
     privacyRequestId,
     setPrivacyRequestId,
+    successHandler,
   };
 };
 
@@ -53,6 +58,7 @@ export type RequestModalProps = {
   privacyRequestId: string;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
+  successHandler: () => void;
 };
 
 export const PrivacyRequestModal: React.FC<RequestModalProps> = ({
@@ -65,6 +71,7 @@ export const PrivacyRequestModal: React.FC<RequestModalProps> = ({
   privacyRequestId,
   setPrivacyRequestId,
   isVerificationRequired,
+  successHandler,
 }) => {
   const action = openAction
     ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
@@ -93,10 +100,12 @@ export const PrivacyRequestModal: React.FC<RequestModalProps> = ({
       <VerificationForm
         isOpen={isOpen}
         onClose={onClose}
-        openAction={openAction}
         setAlert={setAlert}
-        privacyRequestId={privacyRequestId}
+        requestId={privacyRequestId}
         setCurrentView={setCurrentView}
+        resetView={ModalViews.PrivacyRequest}
+        verificationType={VerificationType.PrivacyRequest}
+        successHandler={successHandler}
       />
     );
   }

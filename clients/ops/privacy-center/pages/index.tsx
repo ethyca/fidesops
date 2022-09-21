@@ -37,6 +37,7 @@ const Home: NextPage = () => {
     setCurrentView,
     privacyRequestId,
     setPrivacyRequestId,
+    successHandler,
   } = usePrivactRequestModal();
 
   useEffect(() => {
@@ -157,6 +158,7 @@ const Home: NextPage = () => {
           privacyRequestId={privacyRequestId}
           setPrivacyRequestId={setPrivacyRequestId}
           isVerificationRequired={isVerificationRequired}
+          successHandler={successHandler}
         />
       </main>
     </div>
