@@ -22,6 +22,9 @@ The types of changes are:
 ### Changed
 * Refactor privacy center to be more modular [#1363](https://github.com/ethyca/fidesops/pull/1363)
 
+### Docs
+* Added saas config override docs [#1229](https://github.com/ethyca/fidesops/pull/1229)
+
 ### Fixed
 * Distinguish whether webhook has been visited and no fields were found, versus never visited [#1339](https://github.com/ethyca/fidesops/pull/1339)
 * Fix Redis Cache Early Expiration in Tests [#1358](https://github.com/ethyca/fidesops/pull/1358)

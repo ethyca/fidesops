@@ -33,6 +33,7 @@ nav:
       - Connect to SaaS Applications: saas_connectors/saas_connectors.md
       - SaaS Configuration: saas_connectors/saas_config.md
       - SaaS OAuth2 Configuration: saas_connectors/saas_oauth2.md
+      - Custom SaaS Requests: saas_connectors/custom_requests.md
       - SaaS Post-Processors: saas_connectors/saas_postprocessors.md
       - SaaS Pagination: saas_connectors/saas_pagination.md
       - Connection Examples:
