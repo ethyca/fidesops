@@ -53,7 +53,9 @@ def timescale_integration_session_cls(timescale_connection_config):
 
 @pytest.fixture(scope="function")
 def timescale_integration_session(timescale_integration_session_cls):
-    yield timescale_integration_session_cls()
+    session = timescale_integration_session_cls()
+    yield session
+    session.close()
 
 
 @pytest.fixture(scope="function")
