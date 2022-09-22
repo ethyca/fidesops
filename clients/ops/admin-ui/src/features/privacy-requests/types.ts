@@ -56,6 +56,12 @@ export interface Rule {
   action_type: ActionType;
 }
 
+export type PatchUploadManualWebhookDataRequest = {
+  body: object;
+  connection_key: string;
+  privacy_request_id: string;
+};
+
 export type PrivacyRequestResults = Record<string, ExecutionLog[]>;
 
 export interface PrivacyRequest {

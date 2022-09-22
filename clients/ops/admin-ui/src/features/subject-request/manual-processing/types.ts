@@ -1,9 +1,15 @@
 export type ManualInputData = {
   checked: boolean;
-  fields: ManualInputDataField[];
-  key: string;
+  connection_key: string;
+  fields: ManualInputDataFieldMap;
+  privacy_request_id: string;
 };
 
-export type ManualInputDataField = {
+export type ManualInputDataFieldMap = {
   [key: string]: any;
+};
+
+export type SaveCompleteResponse = {
+  connection_key: string;
+  fields: ManualInputDataFieldMap;
 };

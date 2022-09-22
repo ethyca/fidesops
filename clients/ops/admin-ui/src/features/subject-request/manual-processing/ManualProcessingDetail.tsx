@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Box,
   Button,
@@ -19,9 +18,10 @@ import {
   useDisclosure,
   VStack,
 } from "@fidesui/react";
-import { useAlert, useAPIHelper } from "common/hooks";
 import { Field, Form, Formik } from "formik";
-import React, { useRef, useState } from "react";
+import { PatchUploadManualWebhookDataRequest } from "privacy-requests/types";
+import React, { useRef } from "react";
+import { shallowEqual } from "react-redux";
 import * as Yup from "yup";
 
 import { ManualInputData } from "./types";
@@ -29,28 +29,30 @@ import { ManualInputData } from "./types";
 type ManualProcessingDetailProps = {
   connectorName: string;
   data: ManualInputData;
+  isSubmitting: boolean;
+  onSaveClick: (params: PatchUploadManualWebhookDataRequest) => void;
 };
 
 const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
   connectorName,
   data,
+  isSubmitting = false,
+  onSaveClick,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const firstField = useRef();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { errorAlert, successAlert } = useAlert();
-  const { handleError } = useAPIHelper();
 
-  const handleSubmit = (values: any, _actions: any) => {
-    try {
-      setIsSubmitting(true);
-      onClose();
-      successAlert(`Manual input successfully saved`);
-    } catch (error) {
-      handleError(error);
-    } finally {
-      setIsSubmitting(false);
-    }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleSubmit = async (values: any, _actions: any) => {
+    const hasChanged = !shallowEqual(data.fields, values);
+    if (!hasChanged) return;
+    const params: PatchUploadManualWebhookDataRequest = {
+      connection_key: data.connection_key,
+      privacy_request_id: data.privacy_request_id,
+      body: { ...values } as object,
+    };
+    onSaveClick(params);
+    onClose();
   };
 
   return (
@@ -115,43 +117,40 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
               validateOnChange={false}
               validationSchema={Yup.object().shape({})}
             >
-              {/* @ts-ignore */}
-              {(props: FormikProps<Values>) => (
-                <Form id="manual-detail-form" noValidate>
-                  <VStack align="stretch" gap="16px">
-                    {Object.entries(data.fields).map(([key, _value], index) => (
-                      <HStack key={key}>
-                        <Field id={key} name={key}>
-                          {({ field }: { field: any }) => (
-                            <FormControl
-                              alignItems="baseline"
-                              display="inline-flex"
+              <Form id="manual-detail-form" noValidate>
+                <VStack align="stretch" gap="16px">
+                  {Object.entries(data.fields).map(([key], index) => (
+                    <HStack key={key}>
+                      <Field id={key} name={key}>
+                        {({ field }: { field: any }) => (
+                          <FormControl
+                            alignItems="baseline"
+                            display="inline-flex"
+                          >
+                            <FormLabel
+                              color="gray.900"
+                              fontSize="14px"
+                              fontWeight="semibold"
+                              htmlFor={key}
+                              w="50%"
                             >
-                              <FormLabel
-                                color="gray.900"
-                                fontSize="14px"
-                                fontWeight="semibold"
-                                htmlFor={key}
-                                w="50%"
-                              >
-                                {key}
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                autoComplete="off"
-                                color="gray.700"
-                                placeholder={`Please enter ${key}`}
-                                ref={index === 0 ? firstField : undefined}
-                                size="sm"
-                              />
-                            </FormControl>
-                          )}
-                        </Field>
-                      </HStack>
-                    ))}
-                  </VStack>
-                </Form>
-              )}
+                              {key}
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              autoComplete="off"
+                              color="gray.700"
+                              placeholder={`Please enter ${key}`}
+                              ref={index === 0 ? firstField : undefined}
+                              size="sm"
+                            />
+                          </FormControl>
+                        )}
+                      </Field>
+                    </HStack>
+                  ))}
+                </VStack>
+              </Form>
             </Formik>
           </DrawerBody>
           <DrawerFooter justifyContent="flex-start">

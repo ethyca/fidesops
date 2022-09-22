@@ -16,10 +16,18 @@ import {
   Tr,
   VStack,
 } from "@fidesui/react";
+import { useAlert, useAPIHelper } from "common/hooks";
 import { useGetAllEnabledAccessManualHooksQuery } from "datastore-connections/datastore-connection.slice";
-import { privacyRequestApi } from "privacy-requests/privacy-requests.slice";
-import { PrivacyRequest } from "privacy-requests/types";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/router";
+import {
+  privacyRequestApi,
+  useUploadManualWebhookDataMutation,
+} from "privacy-requests/privacy-requests.slice";
+import {
+  PatchUploadManualWebhookDataRequest,
+  PrivacyRequest,
+} from "privacy-requests/types";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
 import ManualProcessingDetail from "./ManualProcessingDetail";
@@ -33,58 +41,91 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
   subjectRequest,
 }) => {
   const dispatch = useDispatch();
-  const mounted = useRef(false);
+  const router = useRouter();
+  const { successAlert } = useAlert();
+  const { handleError } = useAPIHelper();
   const [dataList, setDataList] = useState([] as unknown as ManualInputData[]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data, isFetching, isLoading, isSuccess } =
     useGetAllEnabledAccessManualHooksQuery();
 
-  const fetchUploadedManuaWebhookData = useCallback(() => {
-    const promises: any[] = [];
-    const keys = data?.map((item) => item.connection_config.key);
-    keys?.every((k) =>
-      promises.push(
-        dispatch(
-          privacyRequestApi.endpoints.getUploadedManualWebhookData.initiate({
-            connection_key: k,
-            privacy_request_id: subjectRequest.id,
-          })
-        )
-      )
-    );
-    Promise.allSettled(promises).then((results) => {
-      const list: ManualInputData[] = [];
-      results.forEach((result) => {
-        if (
-          result.status === "fulfilled" &&
-          result.value.isSuccess &&
-          result.value.data
-        ) {
-          const item = {
-            checked: result.value.data.checked,
-            fields: [],
-            key: result.value.originalArgs.connection_key,
-          } as ManualInputData;
-          Object.entries(result.value.data.fields).forEach(([key, value]) => {
-            // @ts-ignore
-            item.fields[key] = value || "";
-          });
-          list.push(item);
-        }
+  const [uploadManualWebhookData] = useUploadManualWebhookDataMutation();
+
+  const handleSubmit = async (params: PatchUploadManualWebhookDataRequest) => {
+    try {
+      setIsSubmitting(true);
+      await uploadManualWebhookData(params).unwrap();
+      const response = {
+        connection_key: params.connection_key,
+        fields: {},
+      };
+      Object.entries(params.body).forEach(([key, value]) => {
+        // @ts-ignore
+        response.fields[key] = value || "";
       });
-      setDataList(list);
-    });
-  }, [data, dispatch, subjectRequest.id]);
+      // Update the manual input data state
+      const newState = dataList.map((item) => {
+        if (item.connection_key === response.connection_key) {
+          return { ...item, checked: true, fields: { ...response.fields } };
+        }
+        return item;
+      });
+      setDataList(newState);
+      successAlert(`Manual input successfully saved`);
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
-    mounted.current = true;
-    if (isSuccess && data!.length > 0) {
+    const fetchUploadedManuaWebhookData = () => {
+      if (dataList.length > 0) return;
+      const promises: any[] = [];
+      const keys = data?.map((item) => item.connection_config.key);
+      keys?.every((k) =>
+        promises.push(
+          dispatch(
+            privacyRequestApi.endpoints.getUploadedManualWebhookData.initiate({
+              connection_key: k,
+              privacy_request_id: subjectRequest.id,
+            })
+          )
+        )
+      );
+      Promise.allSettled(promises).then((results) => {
+        const list: ManualInputData[] = [];
+        results.forEach((result) => {
+          if (
+            result.status === "fulfilled" &&
+            result.value.isSuccess &&
+            result.value.data
+          ) {
+            const item = {
+              checked: result.value.data.checked,
+              fields: {},
+              connection_key: result.value.originalArgs.connection_key,
+              privacy_request_id: result.value.originalArgs.privacy_request_id,
+            } as ManualInputData;
+            Object.entries(result.value.data.fields).forEach(([key, value]) => {
+              // @ts-ignore
+              item.fields[key] = value || "";
+            });
+            list.push(item);
+          }
+        });
+        setDataList(list);
+      });
+    };
+
+    if (isSuccess && data!.length > 0 && dataList.length === 0) {
       fetchUploadedManuaWebhookData();
     }
-    return () => {
-      mounted.current = false;
-    };
-  }, [fetchUploadedManuaWebhookData, data, isSuccess]);
+
+    return () => {};
+  }, [data, dataList.length, dispatch, isSuccess, subjectRequest.id]);
 
   return (
     <VStack align="stretch" spacing={8}>
@@ -137,9 +178,13 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
                             connectorName={item.connection_config.name}
                             data={
                               dataList.find(
-                                (i) => i.key === item.connection_config.key
+                                (i) =>
+                                  i.connection_key ===
+                                  item.connection_config.key
                               ) as ManualInputData
                             }
+                            isSubmitting={isSubmitting}
+                            onSaveClick={handleSubmit}
                           />
                         ) : null}
                       </Td>

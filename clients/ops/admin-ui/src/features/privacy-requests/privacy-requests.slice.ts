@@ -8,6 +8,7 @@ import { selectToken } from "../auth";
 import {
   DenyPrivacyRequest,
   GetUpdloadedManualWebhookDataRequest,
+  PatchUploadManualWebhookDataRequest,
   PrivacyRequest,
   PrivacyRequestParams,
   PrivacyRequestResponse,
@@ -116,6 +117,17 @@ export const privacyRequestApi = createApi({
       }),
       invalidatesTags: ["Request"],
     }),
+    uploadManualWebhookData: build.mutation<
+      any,
+      PatchUploadManualWebhookDataRequest
+    >({
+      query: (params) => ({
+        url: `privacy-request/${params.privacy_request_id}/access_manual_webhook/${params.connection_key}`,
+        method: "PATCH",
+        body: params.body,
+      }),
+      invalidatesTags: ["Request"],
+    }),
   }),
 });
 
@@ -125,6 +137,7 @@ export const {
   useGetAllPrivacyRequestsQuery,
   useGetUploadedManualWebhookDataQuery,
   useRetryMutation,
+  useUploadManualWebhookDataMutation,
 } = privacyRequestApi;
 
 export const requestCSVDownload = async ({
