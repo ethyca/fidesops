@@ -5,9 +5,11 @@ import requests
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import EmailDispatchException
+from fidesops.ops.core.config import config
 from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.models.email import EmailConfig
-from fidesops.ops.models.privacy_request import CheckpointActionRequired
+from fidesops.ops.models.policy import CurrentStep
+from fidesops.ops.models.privacy_request import CheckpointActionRequired, PrivacyRequest
 from fidesops.ops.schemas.email.email import (
     AccessRequestCompleteBodyParams,
     EmailActionType,
@@ -21,7 +23,7 @@ from fidesops.ops.schemas.email.email import (
     SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.tasks import DatabaseTask, celery_app
-from fidesops.ops.util.logger import Pii
+from fidesops.ops.util.logger import Pii, _log_exception
 
 logger = logging.getLogger(__name__)
 
