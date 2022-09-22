@@ -81,8 +81,7 @@ class AuthenticatedClient:
         # otherwise just return the prepared request
         return req
 
-    def retry_send(
-        self,
+    def retry_send(  # type: ignore
         retry_count: int,
         backoff_factor: float,
         retry_status_codes: List[int] = [429, 502, 503, 504],
@@ -117,7 +116,7 @@ class AuthenticatedClient:
 
                         if status_code not in retry_status_codes:
                             break
-                        
+
                         # override sleep time if retry after header is found
                         retry_after_time = get_retry_after(response)
                         sleep_time = (
@@ -141,7 +140,7 @@ class AuthenticatedClient:
 
         return decorator
 
-    @retry_send(backoff_factor=1,retry_count=4)
+    @retry_send(backoff_factor=1, retry_count=4)
     def send(
         self, request_params: SaaSRequestParams, ignore_errors: Optional[bool] = False
     ) -> Response:
