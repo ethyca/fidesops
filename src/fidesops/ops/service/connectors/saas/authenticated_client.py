@@ -140,7 +140,7 @@ class AuthenticatedClient:
 
         return decorator
 
-    @retry_send(backoff_factor=1, retry_count=4)
+    @retry_send(retry_count=4, backoff_factor=1.0)  # pylint: disable=E1124
     def send(
         self, request_params: SaaSRequestParams, ignore_errors: Optional[bool] = False
     ) -> Response:
