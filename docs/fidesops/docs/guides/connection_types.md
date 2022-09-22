@@ -72,11 +72,6 @@ which fidesops can communicate.
             "human_readable": "HubSpot"
         },
         {
-            "identifier": "logi_id",
-            "type": "saas",
-            "human_readable": "Logi ID"
-        },
-        {
             "identifier": "mailchimp",
             "type": "saas",
             "human_readable": "Mailchimp"

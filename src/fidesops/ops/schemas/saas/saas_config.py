@@ -250,7 +250,6 @@ class SaaSType(Enum):
 
     adobe_campaign = "adobe_campaign"
     auth0 = "auth0"
-    logi_id = "logi_id"
     shopify = "shopify"
     mailchimp = "mailchimp"
     hubspot = "hubspot"
@@ -263,6 +262,7 @@ class SaaSType(Enum):
     custom = "custom"
     sendgrid = "sendgrid"
     datadog = "datadog"
+    rollbar = "rollbar"
 
 
 class SaaSConfigBase(BaseModel):

@@ -19,13 +19,18 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
 
+### Changed
+* Refactor privacy center to be more modular [#1363](https://github.com/ethyca/fidesops/pull/1363)
+
 ### Fixed
 * Distinguish whether webhook has been visited and no fields were found, versus never visited [#1339](https://github.com/ethyca/fidesops/pull/1339)
 * Fix Redis Cache Early Expiration in Tests [#1358](https://github.com/ethyca/fidesops/pull/1358)
+* Limit values for the offset pagination strategy are now cast to integers before use [#1364](https://github.com/ethyca/fidesops/pull/1364)
 
 ### Added
 
 * `api_key` auth strategy for SaaS connectors [#1331](https://github.com/ethyca/fidesops/pull/1331)
+* Access support for Rollbar [#1361](https://github.com/ethyca/fidesops/pull/1361)
 
 ### Removed
 
@@ -127,7 +132,6 @@ The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order t
 ### Added
 
 * Access support for Datadog Logs [#1060](https://github.com/ethyca/fidesops/pull/1060)
-* Access and erasure support for Logi ID [#1074](https://github.com/ethyca/fidesops/pull/1074)
 * Adds infra for email config and dispatch [#1059](https://github.com/ethyca/fidesops/pull/1059)
 * Add an endpoint that allows you to create a Saas connector and all supporting resources with a single request [#1076](https://github.com/ethyca/fidesops/pull/1076)
 * Add a Connection - SaaS connector's configuration parameters [#761](https://github.com/ethyca/fidesops/pull/1099)

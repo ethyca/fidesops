@@ -22,13 +22,6 @@ dataset = "data/saas/dataset/hubspot_dataset.yml"
 icon = "data/saas/icon/hubspot.svg"
 human_readable = "HubSpot"
 
-
-[logi_id]
-config = "data/saas/config/logi_id_config.yml"
-dataset = "data/saas/dataset/logi_id_dataset.yml"
-icon = "data/saas/icon/default.svg"
-human_readable = "Logi ID"
-
 [mailchimp]
 config = "data/saas/config/mailchimp_config.yml"
 dataset = "data/saas/dataset/mailchimp_dataset.yml"
@@ -82,3 +75,9 @@ config = "data/saas/config/zendesk_config.yml"
 dataset = "data/saas/dataset/zendesk_dataset.yml"
 icon = "data/saas/icon/zendesk.svg"
 human_readable = "Zendesk"
+
+[rollbar]
+config = "data/saas/config/rollbar_config.yml"
+dataset = "data/saas/dataset/rollbar_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Rollbar"

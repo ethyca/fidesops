@@ -44,10 +44,10 @@ from fidesops.ops.models.privacy_request import (
 )
 from fidesops.ops.schemas.email.email import (
     AccessRequestCompleteBodyParams,
-    EmailActionType, FidesopsEmail,
+    EmailActionType,
 )
 from fidesops.ops.service.connectors.email_connector import email_connector_erasure_send
-from fidesops.ops.service.email.email_dispatch_service import EmailTaskRequestCompletion
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email
 from fidesops.ops.service.storage.storage_uploader_service import upload
 from fidesops.ops.task.filter_results import filter_data_categories
 from fidesops.ops.task.graph_task import (
@@ -55,7 +55,7 @@ from fidesops.ops.task.graph_task import (
     run_access_request,
     run_erasure,
 )
-from fidesops.ops.tasks import DatabaseTask, celery_app, EMAIL_QUEUE_NAME
+from fidesops.ops.tasks import DatabaseTask, celery_app
 from fidesops.ops.tasks.scheduled.scheduler import scheduler
 from fidesops.ops.util.cache import (
     FidesopsRedis,
