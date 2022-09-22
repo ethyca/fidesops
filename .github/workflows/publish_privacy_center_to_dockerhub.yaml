@@ -2,10 +2,6 @@ name: Docker Build & Push Privacy Center
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - "clients/ops/privacy-center
     tags:
       - "*"
 
@@ -14,7 +10,7 @@ env:
   DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
 
 jobs:
-  push-fidesops-privacy-center-image:
+  push-fides-privacy-center-image:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -22,22 +18,19 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
-          username: ${{ env.DOCKER_USER }}  # Needs updating for fidesops privacy center
-          password: ${{ env.DOCKER_TOKEN }}  # Needs updating for fidesops privacy center
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@4
+        uses: docker/metadata-action@v4
         with:
-          images: ethyca/fidesops-privacy-center
-
-      - name: Change to privacy center directory
-        run: cd clients/ops/privacy-center
+          images: ethyca/fides-privacy-center
 
       - name: Build and publish
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ./clients/ops/privacy-center
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          labes: ${{ steps.metadata.outputs.labesl }}
+          labels: ${{ steps.metadata.outputs.labels }}

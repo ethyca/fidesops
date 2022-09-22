@@ -5,7 +5,7 @@ import pytest
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.redis_cache import Identity
 from fidesops.ops.service.connectors import get_connector
 from fidesops.ops.task import graph_task
 from fidesops.ops.task.filter_results import filter_data_categories
@@ -23,7 +23,8 @@ def test_hubspot_connection_test(connection_config_hubspot) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_hubspot
-def test_saas_access_request_task(
+@pytest.mark.asyncio
+async def test_saas_access_request_task(
     db,
     policy,
     connection_config_hubspot,
@@ -38,14 +39,14 @@ def test_saas_access_request_task(
     identity_attribute = "email"
     identity_value = hubspot_identity_email
     identity_kwargs = {identity_attribute: identity_value}
-    identity = PrivacyRequestIdentity(**identity_kwargs)
+    identity = Identity(**identity_kwargs)
     privacy_request.cache_identity(identity)
 
     dataset_name = connection_config_hubspot.get_saas_config().fides_key
     merged_graph = dataset_config_hubspot.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -128,7 +129,8 @@ def test_saas_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_hubspot
-def test_saas_erasure_request_task(
+@pytest.mark.asyncio
+async def test_saas_erasure_request_task(
     db,
     policy,
     erasure_policy_string_rewrite,
@@ -145,14 +147,14 @@ def test_saas_erasure_request_task(
     )
     identity_attribute = "email"
     identity_kwargs = {identity_attribute: (hubspot_erasure_identity_email)}
-    identity = PrivacyRequestIdentity(**identity_kwargs)
+    identity = Identity(**identity_kwargs)
     privacy_request.cache_identity(identity)
 
     dataset_name = connection_config_hubspot.get_saas_config().fides_key
     merged_graph = dataset_config_hubspot.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request, policy, graph, [connection_config_hubspot], identity_kwargs, db
     )
 
@@ -169,7 +171,7 @@ def test_saas_erasure_request_task(
 
     temp_masking = config.execution.masking_strict
     config.execution.masking_strict = False  # Allow delete
-    erasure = graph_task.run_erasure(
+    erasure = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

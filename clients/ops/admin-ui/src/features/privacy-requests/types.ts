@@ -7,7 +7,8 @@ export type PrivacyRequestStatus =
   | "paused"
   | "canceled"
   | "pending"
-  | "identity_unverified";
+  | "identity_unverified"
+  | "requires_input";
 
 export enum ActionType {
   ACCESS = "access",
@@ -71,6 +72,7 @@ export interface PrivacyRequest {
   created_at: string;
   reviewed_by: string;
   id: string;
+  days_left?: number;
 }
 
 export interface PrivacyRequestResponse {
@@ -86,4 +88,6 @@ export interface PrivacyRequestParams {
   page: number;
   size: number;
   verbose?: boolean;
+  sort_field?: string;
+  sort_direction?: string;
 }

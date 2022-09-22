@@ -5,7 +5,7 @@ import pytest
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.redis_cache import Identity
 from fidesops.ops.task import graph_task
 from fidesops.ops.task.filter_results import filter_data_categories
 from fidesops.ops.task.graph_task import get_cached_data_for_erasures
@@ -15,7 +15,8 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_segment
-def test_segment_saas_access_request_task(
+@pytest.mark.asyncio
+async def test_segment_saas_access_request_task(
     db,
     policy,
     segment_connection_config,
@@ -27,14 +28,14 @@ def test_segment_saas_access_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": segment_identity_email})
+    identity = Identity(**{"email": segment_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = segment_connection_config.get_saas_config().fides_key
     merged_graph = segment_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -140,7 +141,8 @@ def test_segment_saas_access_request_task(
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_segment
-def test_segment_saas_erasure_request_task(
+@pytest.mark.asyncio
+async def test_segment_saas_erasure_request_task(
     db,
     policy,
     segment_connection_config,
@@ -156,14 +158,14 @@ def test_segment_saas_erasure_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": erasure_email})
+    identity = Identity(**{"email": erasure_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = segment_connection_config.get_saas_config().fides_key
     merged_graph = segment_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -209,7 +211,7 @@ def test_segment_saas_erasure_request_task(
         ],
     )
 
-    x = graph_task.run_erasure(
+    x = await graph_task.run_erasure(
         privacy_request,
         policy,
         graph,

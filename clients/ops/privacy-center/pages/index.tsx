@@ -6,7 +6,6 @@ import {
   Heading,
   Text,
   Stack,
-  Box,
   Alert,
   AlertIcon,
   AlertDescription,
@@ -14,14 +13,31 @@ import {
   Image,
 } from "@fidesui/react";
 
-import { useRequestModal, RequestModal } from "../components/RequestModal";
+import {
+  usePrivactRequestModal,
+  PrivacyRequestModal,
+} from "../components/modals/privacy-request-modal/PrivacyRequestModal";
+import PrivacyCard from "../components/PrivacyCard";
 import type { AlertState } from "../types/AlertState";
 
 import config from "../config/config.json";
+import { hostUrl } from "../constants";
 
 const Home: NextPage = () => {
   const [alert, setAlert] = useState<AlertState | null>(null);
-  const { isOpen, onClose, onOpen, openAction } = useRequestModal();
+  const [isVerificationRequired, setIsVerificationRequired] =
+    useState<boolean>(false);
+  const {
+    isOpen,
+    onClose,
+    onOpen,
+    openAction,
+    currentView,
+    setCurrentView,
+    privacyRequestId,
+    setPrivacyRequestId,
+    successHandler,
+  } = usePrivactRequestModal();
 
   useEffect(() => {
     if (alert?.status) {
@@ -30,6 +46,34 @@ const Home: NextPage = () => {
     }
     return () => false;
   }, [alert]);
+
+  useEffect(() => {
+    const getConfig = async () => {
+      const response = await fetch(`${hostUrl}/id-verification/config`, {
+        headers: {
+          "X-Fides-Source": "fidesops-privacy-center",
+        },
+      });
+      const data = await response.json();
+      setIsVerificationRequired(data.identity_verification_required);
+    };
+    getConfig();
+  }, [setIsVerificationRequired]);
+
+  const content: any = [];
+
+  config.actions.forEach((action) => {
+    content.push(
+      <PrivacyCard
+        key={action.title}
+        title={action.title}
+        policyKey={action.policy_key}
+        iconPath={action.icon_path}
+        description={action.description}
+        onOpen={onOpen}
+      />
+    );
+  });
 
   return (
     <div>
@@ -96,59 +140,20 @@ const Home: NextPage = () => {
             </Text>
           </Stack>
           <Flex m={-2} flexDirection={["column", "column", "row"]}>
-            {config.actions.map((action) => (
-              <Box
-                as="button"
-                key={action.title}
-                bg="white"
-                py={8}
-                px={6}
-                borderRadius={4}
-                boxShadow="base"
-                maxWidth={["100%", "100%", "100%", 304]}
-                transition="box-shadow 50ms"
-                cursor="pointer"
-                userSelect="none"
-                m={2}
-                _hover={{
-                  boxShadow: "complimentary-2xl",
-                }}
-                _focus={{
-                  outline: "none",
-                  boxShadow: "complimentary-2xl",
-                }}
-                onClick={() => onOpen(action.policy_key)}
-              >
-                <Stack spacing={7}>
-                  <Image
-                    src={action.icon_path}
-                    alt={action.description}
-                    width="54px"
-                    height="54px"
-                  />
-                  <Stack spacing={1} textAlign="center">
-                    <Heading
-                      fontSize="large"
-                      fontWeight="semibold"
-                      lineHeight="28px"
-                      color="gray.600"
-                    >
-                      {action.title}
-                    </Heading>
-                    <Text fontSize="xs" color="gray.600">
-                      {action.description}
-                    </Text>
-                  </Stack>
-                </Stack>
-              </Box>
-            ))}
+            {content}
           </Flex>
         </Stack>
-        <RequestModal
+        <PrivacyRequestModal
           isOpen={isOpen}
           onClose={onClose}
           openAction={openAction}
           setAlert={setAlert}
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+          privacyRequestId={privacyRequestId}
+          setPrivacyRequestId={setPrivacyRequestId}
+          isVerificationRequired={isVerificationRequired}
+          successHandler={successHandler}
         />
       </main>
     </div>

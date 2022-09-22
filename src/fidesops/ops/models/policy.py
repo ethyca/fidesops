@@ -26,9 +26,12 @@ from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.util.data_category import _validate_data_category
 
 
-class PausedStep(EnumType):
+class CurrentStep(EnumType):
+    pre_webhooks = "pre_webhooks"
     access = "access"
     erasure = "erasure"
+    erasure_email_post_send = "erasure_email_post_send"
+    post_webhooks = "post_webhooks"
 
 
 class ActionType(str, EnumType):
@@ -104,6 +107,7 @@ class Policy(Base):
     name = Column(String, unique=True, nullable=False)
     key = Column(String, index=True, unique=True, nullable=False)
     drp_action = Column(EnumColumn(DrpAction), index=True, unique=True, nullable=True)
+    execution_timeframe = Column(Integer, nullable=True)
     client_id = Column(
         String,
         ForeignKey(ClientDetail.id_field_path),

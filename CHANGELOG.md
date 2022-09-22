@@ -19,23 +19,113 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
 
+### Changed
+* Refactor privacy center to be more modular [#1363](https://github.com/ethyca/fidesops/pull/1363)
+
+### Docs
+* Added saas config override docs [#1229](https://github.com/ethyca/fidesops/pull/1229)
+
+### Fixed
+* Distinguish whether webhook has been visited and no fields were found, versus never visited [#1339](https://github.com/ethyca/fidesops/pull/1339)
+* Fix Redis Cache Early Expiration in Tests [#1358](https://github.com/ethyca/fidesops/pull/1358)
+* Limit values for the offset pagination strategy are now cast to integers before use [#1364](https://github.com/ethyca/fidesops/pull/1364)
+
+### Added
+
+* `api_key` auth strategy for SaaS connectors [#1331](https://github.com/ethyca/fidesops/pull/1331)
+* Access support for Rollbar [#1361](https://github.com/ethyca/fidesops/pull/1361)
+
+### Removed
+
+* Removed `query_param` auth strategy as `api_key` auth strategy now supersedes it [#1331](https://github.com/ethyca/fidesops/pull/1331)
+
+## [1.8.0](https://github.com/ethyca/fidesops/compare/1.8.0...main)
+
 ### Developer Experience
 
-* Created a docker image for the privacy center [1165](https://github.com/ethyca/fidesops/pull/1165)
+* Created a docker image for the privacy center [#1165](https://github.com/ethyca/fidesops/pull/1165)
+* Adds email scopes to postman collection [#1241](https://github.com/ethyca/fidesops/pull/1241)
+* Clean up docker build [#1252](https://github.com/ethyca/fidesops/pull/1252)
+* Add `Strategy` abstract base class for more extensible strategy development [1254](https://github.com/ethyca/fidesops/pull/1254)
+
+### Added
+
+* Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
+* Foundations for a new email connector type [#1142](https://github.com/ethyca/fidesops/pull/1142)
+* Have the new email connector cache action needed for each collection [#1168](https://github.com/ethyca/fidesops/pull/1168)
+* Adds new Celery queue for async email dispatch [#1173](https://github.com/ethyca/fidesops/pull/1173)
+* Added `execution_timeframe` to Policy model and schema [#1244](https://github.com/ethyca/fidesops/pull/1244)
+* Added `due_date` to Privacy request model [#1259](https://github.com/ethyca/fidesops/pull/1259)
+* Wrap up the email connector - it sends an email with erasure instructions as part of request execution [#1246](https://github.com/ethyca/fidesops/pull/1246)
+* Added `days_left` field to Privacy request response [#1281](https://github.com/ethyca/fidesops/pull/1281)
+* Mapping Vault environment variables in docker-compose.yml [#1275](https://github.com/ethyca/fidesops/pull/1275)
+* Foundations for a new "manual_webhook" connector type [#1267](https://github.com/ethyca/fidesops/pull/1267)
+* Add Days left display to admin ui [#1283](https://github.com/ethyca/fidesops/pull/1283)
+* Data seeding for Datadog access tests [#1269](https://github.com/ethyca/fidesops/pull/1269)
+* Added support for one-to-many relationships for param_values in SaaS configs [#1253](https://github.com/ethyca/fidesops/pull/1253)
+* Added `due_date` sorting [#1284](https://github.com/ethyca/fidesops/pull/1284)
+* Added erasure endpoints for Shopify connector [#1289](https://github.com/ethyca/fidesops/pull/1289)
+* Adds ability to send email notification upon privacy request completion [#1282](https://github.com/ethyca/fidesops/pull/1282)
+* Added human readable label to ConnectionType endpoint [#1297](https://github.com/ethyca/fidesops/pull/1297)
+* Enable new manual webhooks in privacy request execution [#1285](https://github.com/ethyca/fidesops/pull/1285)
+* Add table for consent [#1301](https://github.com/ethyca/fidesops/pull/1301)
+* Adds ability to send email notification upon privacy request receipt [#1303](https://github.com/ethyca/fidesops/pull/1303)
+* Utility to update SaaS config instances based on template updates [#1307](https://github.com/ethyca/fidesops/pull/1307)
+* Added generic request sorting button [#1320](https://github.com/ethyca/fidesops/pull/1320)
+* Adds ability to send email notification upon privacy request review [#1306](https://github.com/ethyca/fidesops/pull/1306)
+* Add a Connector - upload a DB Dataset YAML [#923](https://github.com/ethyca/fidesops/pull/1247)
+* Add a Connector - DB connector configs [#922](https://github.com/ethyca/fidesops/pull/1247)
+* Add a Connector - SaaS Dataset Management (YAML method) [#1090](https://github.com/ethyca/fidesops/pull/1247)
+* Frontend - Configure a Manual entry connector [#1015](https://github.com/ethyca/fidesops/pull/1247)
+* Manual webhook test functionality [#1323](https://github.com/ethyca/fidesops/pull/1323/)
+* Added change request table [#1340](https://github.com/ethyca/fidesops/pull/1340)
+
+### Changed
+
+* Renamed `PrivacyRequestIdentity` to `Identity` [#1324](https://github.com/ethyca/fidesops/pull/1324)
+* Use existing Celery queue for all email dispatch calls [#1341](https://github.com/ethyca/fidesops/pull/1341)
+
+### Developer Experience
+
+* Created a docker image for the privacy center [#1165](https://github.com/ethyca/fidesops/pull/1165)
+* Adds email scopes to postman collection [#1241](https://github.com/ethyca/fidesops/pull/1241)
+* Clean up docker build [#1252](https://github.com/ethyca/fidesops/pull/1252)
+* Add `Strategy` abstract base class for more extensible strategy development [1254](https://github.com/ethyca/fidesops/pull/1254)
 
 ### Docs
 
 * Fix analytics opt out environment variable name [#1170](https://github.com/ethyca/fidesops/pull/1170)
 * Added how to view a subject request history and reprocess a subject request [#1164](https://github.com/ethyca/fidesops/pull/1164)
-* Added saas config override docs [#1229](https://github.com/ethyca/fidesops/pull/1229)
+* Adds section on email communications, and exposes previously hidden guides in nav bar [#1233](https://github.com/ethyca/fidesops/pull/1233)
+* Change references to `FIDESOPS__CONFIG_PATH` to `FIDES__CONFIG_PATH` [#1302](https://github.com/ethyca/fidesops/pull/1302)
 
-## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.7.2)
+### Fixed
+
+* Fix issue with fideslog event loop errors [#1174](https://github.com/ethyca/fidesops/pull/1174)
+* Allow passwords to be sent either base64 encode or as plaintext. [#1236](https://github.com/ethyca/fidesops/pull/1236)
+* Allow worker to start up successfully for dev and dev_with_worker nox commands [#1250](https://github.com/ethyca/fidesops/pull/1250)
+* Fix for pytest-asyncio bug [#1260](https://github.com/ethyca/fidesops/pull/1260)
+* Fix download link in privacy center [#1264](https://github.com/ethyca/fidesops/pull/1264)
+* Make admin ui work when volumes are mounted [#1266](https://github.com/ethyca/fidesops/pull/1266)
+* Fixed typo in enum value [#1280](https://github.com/ethyca/fidesops/pull/1280)
+* Remove masking of redis error log [#1288](https://github.com/ethyca/fidesops/pull/1288)
+* Logout with malformed or expired token [#1305](https://github.com/ethyca/fidesops/pull/1305)
+* The `toml` package is now included in the list of direct dependencies (`requirements.txt`) [#1338](https://github.com/ethyca/fidesops/pull/1338)
+* Fix bug where erasure counts instead of access results may be retrieved for certain collections on request retry [#1349](https://github.com/ethyca/fidesops/pull/1349)
+
+### Security
+
+* Bump python from 3.9.13 to 3.9.14 [#1287](https://github.com/ethyca/fidesops/pull/1287)
+
+## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.8.0)
 
 ### Added
 
 * Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
 * Foundations for a new email connector type [#1142](https://github.com/ethyca/fidesops/pull/1142)
 * Adds endpoint for GET identity verification config [#1221](https://github.com/ethyca/fidesops/pull/1221)
+* Add user identification flow to privacy center [#1231](https://github.com/ethyca/fidesops/pull/1231)
+* Access support for Shopify [#1220](https://github.com/ethyca/fidesops/pull/1220)
 
 ## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
 
@@ -45,7 +135,6 @@ The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order t
 ### Added
 
 * Access support for Datadog Logs [#1060](https://github.com/ethyca/fidesops/pull/1060)
-* Access and erasure support for Logi ID [#1074](https://github.com/ethyca/fidesops/pull/1074)
 * Adds infra for email config and dispatch [#1059](https://github.com/ethyca/fidesops/pull/1059)
 * Add an endpoint that allows you to create a Saas connector and all supporting resources with a single request [#1076](https://github.com/ethyca/fidesops/pull/1076)
 * Add a Connection - SaaS connector's configuration parameters [#761](https://github.com/ethyca/fidesops/pull/1099)
@@ -68,7 +157,7 @@ The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order t
 * Bump fideslib to fix issue where the authenticate button in the FastAPI docs did not work [#1092](https://github.com/ethyca/fidesops/pull/1092)
 * Escape the Redis user and password to make them URL friendly [#1104](https://github.com/ethyca/fidesops/pull/1104)
 * Reduced number of connections opened against app db during health checks [#1107](https://github.com/ethyca/fidesops/pull/1107)
-* Fix FIDESOPS__ROOT_USER__ANALYTICS_ID generation when env var is set [#1113](https://github.com/ethyca/fidesops/pull/1113) 
+* Fix FIDESOPS__ROOT_USER__ANALYTICS_ID generation when env var is set [#1113](https://github.com/ethyca/fidesops/pull/1113)
 * Set localhost to None for non-endpoint events [#1130](https://github.com/ethyca/fidesops/pull/1130)
 * Fixed docs build in CI [#1138](https://github.com/ethyca/fidesops/pull/1138)
 * Added future annotations to privacy_request.py for backwards compatibility [#1136](https://github.com/ethyca/fidesops/pull/1136)

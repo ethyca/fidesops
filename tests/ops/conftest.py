@@ -1,5 +1,6 @@
 # pylint: disable=unused-wildcard-import, wildcard-import
 
+import asyncio
 import json
 import logging
 from typing import Any, Callable, Dict, Generator, List
@@ -32,6 +33,7 @@ from .fixtures.bigquery_fixtures import *
 from .fixtures.email_fixtures import *
 from .fixtures.integration_fixtures import *
 from .fixtures.manual_fixtures import *
+from .fixtures.manual_webhook_fixtures import *
 from .fixtures.mariadb_fixtures import *
 from .fixtures.mongodb_fixtures import *
 from .fixtures.mssql_fixtures import *
@@ -40,16 +42,18 @@ from .fixtures.postgres_fixtures import *
 from .fixtures.redshift_fixtures import *
 from .fixtures.saas.adobe_campaign_fixtures import *
 from .fixtures.saas.auth0_fixtures import *
+from .fixtures.saas.connection_template_fixtures import *
 from .fixtures.saas.datadog_fixtures import *
 from .fixtures.saas.hubspot_fixtures import *
-from .fixtures.saas.logi_id_fixtures import *
 from .fixtures.saas.mailchimp_fixtures import *
 from .fixtures.saas.outreach_fixtures import *
 from .fixtures.saas.request_override.mailchimp_override_fixtures import *
+from .fixtures.saas.rollbar_fixtures import *
 from .fixtures.saas.salesforce_fixtures import *
 from .fixtures.saas.segment_fixtures import *
 from .fixtures.saas.sendgrid_fixtures import *
 from .fixtures.saas.sentry_fixtures import *
+from .fixtures.saas.shopify_fixtures import *
 from .fixtures.saas.stripe_fixtures import *
 from .fixtures.saas.zendesk_fixtures import *
 from .fixtures.saas_example_fixtures import *
@@ -250,3 +254,40 @@ def subject_identity_verification_not_required():
     config.execution.subject_identity_verification_required = False
     yield
     config.execution.subject_identity_verification_required = original_value
+
+
+@pytest.fixture(autouse=True, scope="function")
+def privacy_request_complete_email_notification_disabled():
+    """Disable request completion email for most tests unless overridden"""
+    original_value = config.notifications.send_request_completion_notification
+    config.notifications.send_request_completion_notification = False
+    yield
+    config.notifications.send_request_completion_notification = original_value
+
+
+@pytest.fixture(autouse=True, scope="function")
+def privacy_request_receipt_email_notification_disabled():
+    """Disable request receipt email for most tests unless overridden"""
+    original_value = config.notifications.send_request_receipt_notification
+    config.notifications.send_request_receipt_notification = False
+    yield
+    config.notifications.send_request_receipt_notification = original_value
+
+
+@pytest.fixture(autouse=True, scope="function")
+def privacy_request_review_email_notification_disabled():
+    """Disable request review email for most tests unless overridden"""
+    original_value = config.notifications.send_request_review_notification
+    config.notifications.send_request_review_notification = False
+    yield
+    config.notifications.send_request_review_notification = original_value
+
+
+@pytest.fixture(scope="session", autouse=True)
+def event_loop():
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()

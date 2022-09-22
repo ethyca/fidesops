@@ -7,7 +7,8 @@ import requests
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.redis_cache import Identity
+from fidesops.ops.service.connectors import get_connector
 from fidesops.ops.task import graph_task
 from fidesops.ops.task.filter_results import filter_data_categories
 from fidesops.ops.task.graph_task import get_cached_data_for_erasures
@@ -16,7 +17,14 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_stripe
-def test_stripe_access_request_task(
+def test_stripe_connection_test(stripe_connection_config) -> None:
+    get_connector(stripe_connection_config).test_connection()
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_stripe
+@pytest.mark.asyncio
+async def test_stripe_access_request_task(
     db,
     policy,
     stripe_connection_config,
@@ -28,14 +36,14 @@ def test_stripe_access_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_stripe_access_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": stripe_identity_email})
+    identity = Identity(**{"email": stripe_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = stripe_connection_config.get_saas_config().fides_key
     merged_graph = stripe_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -68,7 +76,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:card"],
-        min_size=2,
+        min_size=1,
         keys=[
             "address_city",
             "address_country",
@@ -97,7 +105,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:charge"],
-        min_size=3,
+        min_size=2,
         keys=[
             "amount",
             "amount_captured",
@@ -203,7 +211,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:customer_balance_transaction"],
-        min_size=5,
+        min_size=2,
         keys=[
             "amount",
             "created",
@@ -222,7 +230,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:dispute"],
-        min_size=2,
+        min_size=3,
         keys=[
             "amount",
             "balance_transactions",
@@ -243,7 +251,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:invoice"],
-        min_size=4,
+        min_size=2,
         keys=[
             "account_country",
             "account_name",
@@ -314,7 +322,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:invoice_item"],
-        min_size=4,
+        min_size=1,
         keys=[
             "amount",
             "currency",
@@ -341,7 +349,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:payment_intent"],
-        min_size=5,
+        min_size=1,
         keys=[
             "amount",
             "amount_capturable",
@@ -634,7 +642,8 @@ def test_stripe_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_stripe
-def test_stripe_erasure_request_task(
+@pytest.mark.asyncio
+async def test_stripe_erasure_request_task(
     db,
     policy,
     erasure_policy_string_rewrite,
@@ -648,14 +657,14 @@ def test_stripe_erasure_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_stripe_erasure_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": stripe_erasure_identity_email})
+    identity = Identity(**{"email": stripe_erasure_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = stripe_connection_config.get_saas_config().fides_key
     merged_graph = stripe_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -1076,7 +1085,7 @@ def test_stripe_erasure_request_task(
     # Run erasure with masking_strict = False so both update and delete actions can be used
     config.execution.masking_strict = False
 
-    x = graph_task.run_erasure(
+    x = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

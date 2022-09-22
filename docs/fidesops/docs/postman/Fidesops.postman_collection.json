@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "20bfd0a9-15a2-4333-8c3c-2cc3d8ed31f5",
+		"_postman_id": "8ba07963-3895-4ace-a8f7-645554cd9fd3",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "13396647"
@@ -73,7 +73,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection_type:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"connection:instantiate\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\",\n    \"privacy-request:resume\",\n    \"webhook:create_or_update\",\n    \"webhook:read\",\n    \"webhook:delete\",\n    \"saas_config:create_or_update\",\n    \"saas_config:read\",\n    \"saas_config:delete\",\n    \"privacy-request:review\",\n    \"user:create\",\n    \"user:delete\"\n]",
+							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection_type:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"connection:instantiate\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"email:create_or_update\",\n    \"email:read\",\n    \"email:delete\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\",\n    \"privacy-request:resume\",\n    \"webhook:create_or_update\",\n    \"webhook:read\",\n    \"webhook:delete\",\n    \"saas_config:create_or_update\",\n    \"saas_config:read\",\n    \"saas_config:delete\",\n    \"privacy-request:review\",\n    \"user:create\",\n    \"user:delete\"\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -786,7 +786,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/privacy-request/?id={{privacy_request_id}}&verbose=True",
+							"raw": "{{host}}/privacy-request/?request_id={{privacy_request_id}}&verbose=True",
 							"host": [
 								"{{host}}"
 							],
@@ -796,7 +796,7 @@
 							],
 							"query": [
 								{
-									"key": "id",
+									"key": "request_id",
 									"value": "{{privacy_request_id}}"
 								},
 								{
@@ -936,6 +936,35 @@
 								"privacy-request",
 								"{{privacy_request_id}}",
 								"verify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restart failed node",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/retry",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"retry"
 							]
 						}
 					},
@@ -2391,7 +2420,7 @@
 			"name": "Email ConnectionConfig",
 			"item": [
 				{
-					"name": "Create/Update Connection Configs: BigQuery Copy",
+					"name": "Create/Update Email ConnectionConfig",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2407,7 +2436,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\"name\": \"Email ConnectionConfig\",\n    \"key\": \"{{email_connection_config_key}}\",\n    \"connection_type\": \"email\",\n    \"access\": \"read\",\n    \"email_service_type\": \"mailgun\"\n}]",
+							"raw": "[\n    {\"name\": \"Email ConnectionConfig\",\n    \"key\": \"{{email_connection_config_key}}\",\n    \"connection_type\": \"email\",\n    \"access\": \"write\"\n}]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2428,7 +2457,7 @@
 					"response": []
 				},
 				{
-					"name": "Update Connection Secrets: BigQuery Copy",
+					"name": "Update Email Connection Config Secrets",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2444,7 +2473,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"to_email\": \"customer-1@example.com\"\n}",
+							"raw": "{\n    \"to_email\": \"customer-1@example.com\",\n    \"test_email\": \"\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2498,6 +2527,309 @@
 								"connection",
 								"{{email_connection_config_key}}",
 								"dataset"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Manual Webhooks",
+			"item": [
+				{
+					"name": "Create/Update Manual Webhook ConnectionConfig",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\"name\": \"Manual Webhook ConnectionConfig\",\n    \"key\": \"{{manual_webhook_key}}\",\n    \"connection_type\": \"manual_webhook\",\n    \"access\": \"read\"\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a Manual Webhook",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fields\": [\n        {\"pii_field\": \"First Name\", \"dsr_package_label\": \"first_name\"}\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{manual_webhook_key}}/access_manual_webhook",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{manual_webhook_key}}",
+								"access_manual_webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update a Manual Webhook",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fields\": [\n        {\"pii_field\": \"First Name\", \"dsr_package_label\": \"first_name\"},\n        {\"pii_field\": \"Last Name\", \"dsr_package_label\": \"last_name\"},\n        {\"pii_field\": \"Phone Number\", \"dsr_package_label\": null},\n        {\"pii_field\": \"Height\", \"dsr_package_label\": \"height\"}\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{manual_webhook_key}}/access_manual_webhook",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{manual_webhook_key}}",
+								"access_manual_webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a Manual Webhook",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/connection/{{manual_webhook_key}}/access_manual_webhook",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{manual_webhook_key}}",
+								"access_manual_webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a Manual Webhook",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/connection/{{manual_webhook_key}}/access_manual_webhook",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{manual_webhook_key}}",
+								"access_manual_webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all Access Manual Webhooks",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/connection/{{manual_webhook_key}}/access_manual_webhook",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{manual_webhook_key}}",
+								"access_manual_webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Data for Access Manual Webhook",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"Jane\",\n    \"last_name\": \"Customer\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/access_manual_webhook/{{manual_webhook_key}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"access_manual_webhook",
+								"{{manual_webhook_key}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "View Manually Uploaded Data",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/access_manual_webhook/{{manual_webhook_key}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"access_manual_webhook",
+								"{{manual_webhook_key}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Resume Privacy Request after Manual Input",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/resume_from_requires_input",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"resume_from_requires_input"
 							]
 						}
 					},
@@ -3994,40 +4326,6 @@
 			]
 		},
 		{
-			"name": "Restart from Failure",
-			"item": [
-				{
-					"name": "Restart failed node",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/retry",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"privacy-request",
-								"{{privacy_request_id}}",
-								"retry"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
 			"name": "ConnectionType",
 			"item": [
 				{
@@ -4597,6 +4895,11 @@
 		{
 			"key": "mailgun_api_key",
 			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manual_webhook_key",
+			"value": "manual_webhook_key",
 			"type": "string"
 		}
 	]

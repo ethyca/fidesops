@@ -1,7 +1,7 @@
 import time
 from typing import Any, Dict, List, Set
 from unittest import mock
-from unittest.mock import Mock
+from unittest.mock import ANY, Mock, call
 from uuid import uuid4
 
 import pydash
@@ -16,13 +16,21 @@ from fidesops.ops.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
-from fidesops.ops.models.policy import PausedStep, PolicyPostWebhook
+from fidesops.ops.models.connectionconfig import AccessLevel
+from fidesops.ops.models.email import EmailConfig
+from fidesops.ops.models.policy import CurrentStep, PolicyPostWebhook
 from fidesops.ops.models.privacy_request import (
     ActionType,
+    CheckpointActionRequired,
     ExecutionLog,
     PolicyPreWebhook,
     PrivacyRequest,
     PrivacyRequestStatus,
+)
+from fidesops.ops.schemas.email.email import (
+    AccessRequestCompleteBodyParams,
+    EmailActionType,
+    EmailForActionType,
 )
 from fidesops.ops.schemas.external_https import SecondPartyResponseFormat
 from fidesops.ops.schemas.masking.masking_configuration import (
@@ -37,9 +45,7 @@ from fidesops.ops.service.connectors.sql_connector import (
     RedshiftConnector,
     SnowflakeConnector,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
-    MaskingStrategyFactory,
-)
+from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
     HmacMaskingStrategy,
 )
@@ -53,23 +59,47 @@ PRIVACY_REQUEST_TASK_TIMEOUT = 5
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
 
 
+@pytest.fixture(scope="function")
+def privacy_request_complete_email_notification_enabled():
+    """Enable request completion email"""
+    original_value = config.notifications.send_request_completion_notification
+    config.notifications.send_request_completion_notification = True
+    yield
+    config.notifications.send_request_completion_notification = original_value
+
+
+@mock.patch(
+    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+)
 @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
-def test_policy_upload_called(
+def test_policy_upload_dispatch_email_called(
     upload_mock: Mock,
+    mock_email_dispatch: Mock,
     privacy_request_status_pending: PrivacyRequest,
     run_privacy_request_task,
+    privacy_request_complete_email_notification_enabled,
 ) -> None:
+    upload_mock.return_value = "http://www.data-download-url"
     run_privacy_request_task.delay(privacy_request_status_pending.id).get(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
     assert upload_mock.called
+    assert mock_email_dispatch.call_count == 1
 
 
+@mock.patch(
+    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+)
+@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
 def test_start_processing_sets_started_processing_at(
+    upload_mock: Mock,
+    mock_email_dispatch: Mock,
     db: Session,
     privacy_request_status_pending: PrivacyRequest,
     run_privacy_request_task,
+    privacy_request_complete_email_notification_enabled,
 ) -> None:
+    upload_mock.return_value = "http://www.data-download-url"
     updated_at = privacy_request_status_pending.updated_at
     assert privacy_request_status_pending.started_processing_at is None
     run_privacy_request_task.delay(privacy_request_status_pending.id).get(
@@ -80,12 +110,22 @@ def test_start_processing_sets_started_processing_at(
     assert privacy_request_status_pending.started_processing_at is not None
     assert privacy_request_status_pending.updated_at > updated_at
 
+    assert mock_email_dispatch.call_count == 1
 
+
+@mock.patch(
+    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+)
+@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
 def test_start_processing_doesnt_overwrite_started_processing_at(
+    upload_mock: Mock,
+    mock_email_dispatch: Mock,
     db: Session,
     privacy_request: PrivacyRequest,
     run_privacy_request_task,
+    privacy_request_complete_email_notification_enabled,
 ) -> None:
+    upload_mock.return_value = "http://www.data-download-url"
     before = privacy_request.started_processing_at
     assert before is not None
     updated_at = privacy_request.updated_at
@@ -98,6 +138,8 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
     assert privacy_request.started_processing_at == before
     assert privacy_request.updated_at > updated_at
 
+    assert mock_email_dispatch.call_count == 1
+
 
 @mock.patch(
     "fidesops.ops.service.privacy_request.request_runner_service.upload_access_results"
@@ -107,6 +149,7 @@ def test_halts_proceeding_if_cancelled(
     db: Session,
     privacy_request_status_canceled: PrivacyRequest,
     run_privacy_request_task,
+    privacy_request_complete_email_notification_enabled,
 ) -> None:
     assert privacy_request_status_canceled.status == PrivacyRequestStatus.canceled
     run_privacy_request_task.delay(privacy_request_status_canceled.id).get(
@@ -122,6 +165,12 @@ def test_halts_proceeding_if_cancelled(
 
 
 @mock.patch(
+    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+)
+@mock.patch(
+    "fidesops.ops.service.privacy_request.request_runner_service.upload_access_results"
+)
+@mock.patch(
     "fidesops.ops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
 @mock.patch(
@@ -132,11 +181,15 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     run_erasure,
     run_access,
     run_webhooks,
+    upload_mock: Mock,
+    mock_email_dispatch,
     db: Session,
     privacy_request: PrivacyRequest,
     run_privacy_request_task,
     erasure_policy,
+    privacy_request_complete_email_notification_enabled,
 ) -> None:
+    upload_mock.return_value = "http://www.data-download-url"
     privacy_request.started_processing_at = None
     privacy_request.policy = erasure_policy
     privacy_request.save(db)
@@ -144,7 +197,7 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
 
     run_privacy_request_task.delay(
         privacy_request_id=privacy_request.id,
-        from_step=PausedStep.access.value,
+        from_step=CurrentStep.access.value,
     ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
 
     db.refresh(privacy_request)
@@ -158,7 +211,12 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     assert run_access.call_count == 1  # Access request runs
     assert run_erasure.call_count == 1  # Erasure request runs
 
+    assert mock_email_dispatch.call_count == 1
 
+
+@mock.patch(
+    "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+)
 @mock.patch(
     "fidesops.ops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
@@ -170,10 +228,12 @@ def test_resume_privacy_request_from_erasure(
     run_erasure,
     run_access,
     run_webhooks,
+    mock_email_dispatch,
     db: Session,
     privacy_request: PrivacyRequest,
     run_privacy_request_task,
     erasure_policy,
+    privacy_request_complete_email_notification_enabled,
 ) -> None:
     privacy_request.started_processing_at = None
     privacy_request.policy = erasure_policy
@@ -182,7 +242,7 @@ def test_resume_privacy_request_from_erasure(
 
     run_privacy_request_task.delay(
         privacy_request_id=privacy_request.id,
-        from_step=PausedStep.erasure.value,
+        from_step=CurrentStep.erasure.value,
     ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
 
     db.refresh(privacy_request)
@@ -195,6 +255,8 @@ def test_resume_privacy_request_from_erasure(
 
     assert run_access.call_count == 0  # Access request skipped
     assert run_erasure.call_count == 1  # Erasure request runs
+
+    assert mock_email_dispatch.call_count == 1
 
 
 def get_privacy_request_results(
@@ -234,9 +296,7 @@ def get_privacy_request_results(
         if strategy_name in unique_masking_strategies_by_name:
             continue
         unique_masking_strategies_by_name.add(strategy_name)
-        masking_strategy = MaskingStrategyFactory.get_strategy(
-            strategy_name, configuration
-        )
+        masking_strategy = MaskingStrategy.get_strategy(strategy_name, configuration)
         if masking_strategy.secrets_required():
             masking_secrets: List[
                 MaskingSecretCache
@@ -1410,10 +1470,8 @@ class TestRunPrivacyRequestRunsWebhooks:
         db,
         privacy_request,
         policy_pre_execution_webhooks,
+        short_redis_cache_expiration,  # Fixture forces cache to expire quickly
     ):
-        config.redis.default_ttl_seconds = (
-            1  # Set redis cache to expire very quickly for testing purposes
-        )
         mock_trigger_policy_webhook.side_effect = PrivacyRequestPaused(
             "Request received to halt"
         )
@@ -1446,6 +1504,10 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert not proceed
         assert privacy_request.status == PrivacyRequestStatus.error
         assert privacy_request.finished_processing_at is not None
+        assert (
+            privacy_request.get_failed_checkpoint_details()
+            == CheckpointActionRequired(step=CurrentStep.pre_webhooks)
+        )
         assert privacy_request.paused_at is None
 
     @mock.patch(
@@ -1550,3 +1612,564 @@ def test_privacy_request_log_failure(
         assert sent_event.status_code == 500
         assert sent_event.error == "KeyError"
         assert sent_event.extra_data == {"privacy_request": pr.id}
+
+
+class TestPrivacyRequestsEmailConnector:
+    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    @pytest.mark.integration
+    def test_create_and_process_erasure_request_email_connector(
+        self,
+        mailgun_send,
+        email_connection_config,
+        erasure_policy,
+        integration_postgres_config,
+        run_privacy_request_task,
+        email_dataset_config,
+        postgres_example_test_dataset_config_read_access,
+        email_config,
+        db,
+    ):
+        """
+        Asserts that mailgun was called and verifies email template renders without error
+        """
+        rule = erasure_policy.rules[0]
+        target = rule.targets[0]
+        target.data_category = "user.childrens"
+        target.save(db=db)
+
+        email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            erasure_policy,
+            run_privacy_request_task,
+            data,
+        )
+        pr.delete(db=db)
+        assert mailgun_send.called
+        kwargs = mailgun_send.call_args.kwargs
+        assert type(kwargs["email_config"]) == EmailConfig
+        assert type(kwargs["email"]) == EmailForActionType
+
+    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    @pytest.mark.integration
+    def test_create_and_process_erasure_request_email_connector_email_send_error(
+        self,
+        mailgun_send,
+        email_connection_config,
+        erasure_policy,
+        integration_postgres_config,
+        run_privacy_request_task,
+        email_dataset_config,
+        postgres_example_test_dataset_config_read_access,
+        db,
+    ):
+        """
+        Force error by having no email config setup
+        """
+        rule = erasure_policy.rules[0]
+        target = rule.targets[0]
+        target.data_category = "user.childrens"
+        target.save(db=db)
+
+        email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            erasure_policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.error
+        assert pr.get_failed_checkpoint_details() == CheckpointActionRequired(
+            step=CurrentStep.erasure_email_post_send,
+            collection=None,
+            action_needed=None,
+        )
+        cached_email_contents = pr.get_email_connector_template_contents_by_dataset(
+            CurrentStep.erasure, "email_dataset"
+        )
+        assert len(cached_email_contents) == 3
+        assert {
+            contents.collection.collection for contents in cached_email_contents
+        } == {"payment", "children", "daycare_customer"}
+
+        pr.delete(db=db)
+        assert mailgun_send.called is False
+
+    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    @pytest.mark.integration
+    def test_email_connector_read_only_permissions(
+        self,
+        mailgun_send,
+        email_connection_config,
+        erasure_policy,
+        integration_postgres_config,
+        run_privacy_request_task,
+        email_dataset_config,
+        email_config,
+        postgres_example_test_dataset_config_read_access,
+        db,
+    ):
+        """
+        Set email config to read only - don't send email in this case.
+        """
+        rule = erasure_policy.rules[0]
+        target = rule.targets[0]
+        target.data_category = "user.childrens"
+        target.save(db=db)
+
+        email_connection_config.access = AccessLevel.read
+        email_connection_config.save(db)
+
+        email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            erasure_policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.complete
+        cached_email_contents = pr.get_email_connector_template_contents_by_dataset(
+            CurrentStep.erasure, "email_dataset"
+        )
+        assert (
+            len(cached_email_contents) == 0
+        ), "No data cached to erase, because this connector is read-only"
+
+        pr.delete(db=db)
+        assert (
+            mailgun_send.called is False
+        ), "Email not sent because the connection was read only"
+
+    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    @pytest.mark.integration
+    def test_email_connector_no_updates_needed(
+        self,
+        mailgun_send,
+        email_connection_config,
+        erasure_policy,
+        integration_postgres_config,
+        run_privacy_request_task,
+        email_dataset_config,
+        email_config,
+        postgres_example_test_dataset_config_read_access,
+        db,
+    ):
+        """
+        Don't send an email when there are no erasures needed
+        """
+        rule = erasure_policy.rules[0]
+        target = rule.targets[0]
+        target.data_category = "user.job_title"  # Add a data category that does not apply to the email dataset
+        target.save(db=db)
+
+        email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            erasure_policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.complete
+        cached_email_contents = pr.get_email_connector_template_contents_by_dataset(
+            CurrentStep.erasure, "email_dataset"
+        )
+        assert {
+            contents.collection.collection for contents in cached_email_contents
+        } == {"payment", "children", "daycare_customer"}
+
+        assert not any(
+            [contents.action_needed[0].update for contents in cached_email_contents]
+        )
+
+        pr.delete(db=db)
+        assert (
+            mailgun_send.called is False
+        ), "Email not sent because no updates are needed. Data category doesn't apply to any of the collections."
+
+
+class TestPrivacyRequestsEmailNotifications:
+    @pytest.fixture(scope="function")
+    def privacy_request_complete_email_notification_enabled(self):
+        """Enable request completion email"""
+        original_value = config.notifications.send_request_completion_notification
+        config.notifications.send_request_completion_notification = True
+        yield
+        config.notifications.send_request_completion_notification = original_value
+
+    @pytest.mark.integration_postgres
+    @pytest.mark.integration
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+    )
+    def test_email_complete_send_erasure(
+        self,
+        mailgun_send,
+        postgres_integration_db,
+        postgres_example_test_dataset_config,
+        cache,
+        db,
+        generate_auth_header,
+        erasure_policy,
+        read_connection_config,
+        email_config,
+        privacy_request_complete_email_notification_enabled,
+        run_privacy_request_task,
+    ):
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            erasure_policy,
+            run_privacy_request_task,
+            data,
+        )
+        pr.delete(db=db)
+
+        mailgun_send.assert_called_once()
+
+    @pytest.mark.integration_postgres
+    @pytest.mark.integration
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+    )
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_email_complete_send_access(
+        self,
+        upload_mock,
+        mailgun_send,
+        postgres_integration_db,
+        postgres_example_test_dataset_config,
+        cache,
+        db,
+        generate_auth_header,
+        policy,
+        read_connection_config,
+        email_config,
+        privacy_request_complete_email_notification_enabled,
+        run_privacy_request_task,
+    ):
+        upload_mock.return_value = "http://www.data-download-url"
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+        )
+        pr.delete(db=db)
+
+        mailgun_send.assert_called_once()
+
+    @pytest.mark.integration_postgres
+    @pytest.mark.integration
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.dispatch_email"
+    )
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_email_complete_send_access_and_erasure(
+        self,
+        upload_mock,
+        mailgun_send,
+        postgres_integration_db,
+        postgres_example_test_dataset_config,
+        cache,
+        db,
+        generate_auth_header,
+        access_and_erasure_policy,
+        read_connection_config,
+        email_config,
+        privacy_request_complete_email_notification_enabled,
+        run_privacy_request_task,
+    ):
+        upload_mock.return_value = "http://www.data-download-url"
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": access_and_erasure_policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            access_and_erasure_policy,
+            run_privacy_request_task,
+            data,
+        )
+        pr.delete(db=db)
+
+        mailgun_send.assert_has_calls(
+            [
+                call(
+                    db=ANY,
+                    action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+                    to_email=customer_email,
+                    email_body_params=AccessRequestCompleteBodyParams(
+                        download_links=[upload_mock.return_value]
+                    ),
+                ),
+                call(
+                    db=ANY,
+                    action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
+                    to_email=customer_email,
+                    email_body_params=None,
+                ),
+            ],
+            any_order=True,
+        )
+
+    @pytest.mark.integration_postgres
+    @pytest.mark.integration
+    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_email_complete_send_access_no_email_config(
+        self,
+        upload_mock,
+        mailgun_send,
+        postgres_integration_db,
+        postgres_example_test_dataset_config,
+        cache,
+        db,
+        generate_auth_header,
+        policy,
+        read_connection_config,
+        privacy_request_complete_email_notification_enabled,
+        run_privacy_request_task,
+    ):
+        upload_mock.return_value = "http://www.data-download-url"
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.error
+        pr.delete(db=db)
+
+        assert mailgun_send.called is False
+
+    @pytest.mark.integration_postgres
+    @pytest.mark.integration
+    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_email_complete_send_access_no_email_identity(
+        self,
+        upload_mock,
+        mailgun_send,
+        postgres_integration_db,
+        postgres_example_test_dataset_config,
+        cache,
+        db,
+        generate_auth_header,
+        policy,
+        read_connection_config,
+        privacy_request_complete_email_notification_enabled,
+        run_privacy_request_task,
+    ):
+        upload_mock.return_value = "http://www.data-download-url"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": policy.key,
+            "identity": {"phone": "1231231233"},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.error
+        pr.delete(db=db)
+
+        assert mailgun_send.called is False
+
+
+class TestPrivacyRequestsManualWebhooks:
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_privacy_request_needs_manual_input_key_in_cache(
+        self,
+        mock_upload,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        policy,
+        run_privacy_request_task,
+        db,
+    ):
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.requires_input
+        assert not mock_upload.called
+
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.run_erasure"
+    )
+    def test_manual_input_not_required_for_erasure_only_policies(
+        self,
+        mock_erasure,
+        mock_upload,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        erasure_policy,
+        run_privacy_request_task,
+        db,
+    ):
+        """Manual inputs are not tied to policies, but shouldn't hold up request if only erasures are requested"""
+        customer_email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": customer_email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            erasure_policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert (
+            pr.status == PrivacyRequestStatus.complete
+        )  # Privacy request not put in "requires_input" state
+        assert not mock_upload.called  # erasure only request, no data uploaded
+        assert mock_erasure.called
+
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_pass_on_manually_added_input(
+        self,
+        mock_upload,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        policy,
+        run_privacy_request_task,
+        privacy_request_requires_input: PrivacyRequest,
+        db,
+        cached_input,
+    ):
+        run_privacy_request_task.delay(privacy_request_requires_input.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+        db.refresh(privacy_request_requires_input)
+        assert privacy_request_requires_input.status == PrivacyRequestStatus.complete
+        assert mock_upload.called
+        assert mock_upload.call_args.kwargs["data"] == {
+            "manual_webhook_example": [
+                {"email": "customer-1@example.com", "last_name": "McCustomer"}
+            ]
+        }
+
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_pass_on_partial_manually_added_input(
+        self,
+        mock_upload,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        policy,
+        run_privacy_request_task,
+        privacy_request_requires_input: PrivacyRequest,
+        db,
+    ):
+        privacy_request_requires_input.cache_manual_webhook_input(
+            access_manual_webhook,
+            {"email": "customer-1@example.com"},
+        )
+
+        run_privacy_request_task.delay(privacy_request_requires_input.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        db.refresh(privacy_request_requires_input)
+        assert privacy_request_requires_input.status == PrivacyRequestStatus.complete
+        assert mock_upload.called
+        assert mock_upload.call_args.kwargs["data"] == {
+            "manual_webhook_example": [
+                {"email": "customer-1@example.com", "last_name": None}
+            ]
+        }
+
+    @mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+    def test_pass_on_empty_confirmed_input(
+        self,
+        mock_upload,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        policy,
+        run_privacy_request_task,
+        privacy_request_requires_input: PrivacyRequest,
+        db,
+    ):
+        privacy_request_requires_input.cache_manual_webhook_input(
+            access_manual_webhook,
+            {},
+        )
+
+        run_privacy_request_task.delay(privacy_request_requires_input.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        db.refresh(privacy_request_requires_input)
+        assert privacy_request_requires_input.status == PrivacyRequestStatus.complete
+        assert mock_upload.called
+        assert mock_upload.call_args.kwargs["data"] == {
+            "manual_webhook_example": [{"email": None, "last_name": None}]
+        }

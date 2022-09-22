@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import re
@@ -25,7 +26,7 @@ from fidesops.ops.analytics import (
     in_docker_container,
     send_analytics_event,
 )
-from fidesops.ops.api.deps import get_config, get_db
+from fidesops.ops.api.deps import get_api_session, get_config, get_db
 from fidesops.ops.api.v1.api import api_router
 from fidesops.ops.api.v1.exception_handlers import ExceptionHandlers
 from fidesops.ops.api.v1.urn_registry import V1_URL_PREFIX
@@ -39,6 +40,7 @@ from fidesops.ops.schemas.analytics import Event, ExtraData
 from fidesops.ops.service.connectors.saas.connector_registry_service import (
     load_registry,
     registry_file,
+    update_saas_configs,
 )
 from fidesops.ops.tasks.scheduled.scheduler import scheduler
 from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
@@ -92,13 +94,13 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
         return response
 
     except Exception as e:
-        prepare_and_log_request(
+        await prepare_and_log_request(
             endpoint, request.url.hostname, 500, now, fides_source, e.__class__.__name__
         )
         raise
 
 
-def prepare_and_log_request(
+async def prepare_and_log_request(
     endpoint: str,
     hostname: Optional[str],
     status_code: int,
@@ -113,7 +115,7 @@ def prepare_and_log_request(
     # this check prevents AnalyticsEvent from being called with invalid endpoint during unit tests
     if config.root_user.analytics_opt_out:
         return
-    send_analytics_event(
+    await send_analytics_event(
         AnalyticsEvent(
             docker=in_docker_container(),
             event=Event.endpoint_call.value,
@@ -138,7 +140,7 @@ app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 for handler in ExceptionHandlers.get_handlers():
     app.add_exception_handler(FunctionalityNotConfigured, handler)
 
-WEBAPP_DIRECTORY = Path("src/fidesops/ops/build/static")
+WEBAPP_DIRECTORY = Path("/admin_ui")
 WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
 if config.admin_ui.enabled:
@@ -154,7 +156,10 @@ if config.admin_ui.enabled:
         nested_pattern_replacement = "[a-zA-Z10-9-_/]+"
 
         for filepath in WEBAPP_DIRECTORY.glob("**/*.html"):
-            relative_web_dir_path = str(filepath.relative_to(WEBAPP_DIRECTORY))[:-5]
+            # Strip off the file extenstion and convert to a string
+            relative_web_dir_path = str(
+                filepath.relative_to(WEBAPP_DIRECTORY).with_suffix("")
+            )
             if filepath != WEBAPP_INDEX:
                 path = None
                 if re.search(exact_pattern, str(filepath)):
@@ -172,7 +177,9 @@ if config.admin_ui.enabled:
 
                 rule = re.compile(r"^" + path)
 
-                route_file_map[rule] = FileResponse(str(filepath.relative_to(".")))
+                route_file_map[rule] = FileResponse(
+                    f"{WEBAPP_DIRECTORY}/{str(filepath.relative_to(WEBAPP_DIRECTORY))}"
+                )
 
     @app.on_event("startup")
     def check_if_admin_ui_index_exists() -> None:
@@ -231,12 +238,15 @@ def start_webserver() -> None:
         config.log_all_config_values()
 
     logger.info("Validating SaaS connector templates...")
-    load_registry(registry_file)
+    registry = load_registry(registry_file)
 
     if config.database.enabled:
         logger.info("Running any pending DB migrations...")
         try:
             init_db(config.database.sqlalchemy_database_uri)
+            db = get_api_session()
+            update_saas_configs(registry, db)
+            db.close()
         except Exception as error:  # pylint: disable=broad-except
             logger.error("Connection to database failed: %s", Pii(str(error)))
             return
@@ -246,7 +256,7 @@ def start_webserver() -> None:
         try:
             get_cache()
         except (RedisConnectionError, ResponseError) as e:
-            logger.error("Connection to cache failed: %s", Pii(str(e)))
+            logger.error("Connection to cache failed: %s", e)
             return
 
     scheduler.start()
@@ -255,11 +265,13 @@ def start_webserver() -> None:
         logger.info("Starting scheduled request intake...")
         initiate_scheduled_request_intake()
 
-    send_analytics_event(
-        AnalyticsEvent(
-            docker=in_docker_container(),
-            event=Event.server_start.value,
-            event_created_at=datetime.now(tz=timezone.utc),
+    asyncio.run(
+        send_analytics_event(
+            AnalyticsEvent(
+                docker=in_docker_container(),
+                event=Event.server_start.value,
+                event_created_at=datetime.now(tz=timezone.utc),
+            )
         )
     )
 

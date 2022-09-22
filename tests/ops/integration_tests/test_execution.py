@@ -15,11 +15,11 @@ from fidesops.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.ops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.ops.models.policy import PausedStep
+from fidesops.ops.models.policy import CurrentStep
 from fidesops.ops.models.privacy_request import (
+    CheckpointActionRequired,
     ExecutionLog,
     PrivacyRequest,
-    StoppedCollection,
 )
 from fidesops.ops.schemas.dataset import FidesopsDataset
 from fidesops.ops.task import graph_task
@@ -97,7 +97,8 @@ class TestDeleteCollection:
         assert pr.get_results() == {}
 
     @mock.patch("fidesops.ops.task.graph_task.GraphTask.log_start")
-    def test_delete_collection_while_in_progress(
+    @pytest.mark.asyncio
+    async def test_delete_collection_while_in_progress(
         self,
         mocked_log_start,
         db,
@@ -150,7 +151,7 @@ class TestDeleteCollection:
             id=f"test_postgres_access_request_task_{uuid.uuid4()}"
         )
 
-        results = graph_task.run_access_request(
+        results = await graph_task.run_access_request(
             privacy_request,
             policy,
             dataset_graph,
@@ -183,7 +184,8 @@ class TestDeleteCollection:
 
         db.delete(mongo_connection_config)
 
-    def test_collection_omitted_on_restart_from_failure(
+    @pytest.mark.asyncio
+    async def test_collection_omitted_on_restart_from_failure(
         self,
         db,
         policy,
@@ -204,7 +206,7 @@ class TestDeleteCollection:
         )
 
         with pytest.raises(ValidationError):
-            graph_task.run_access_request(
+            await graph_task.run_access_request(
                 privacy_request,
                 policy,
                 mongo_postgres_dataset_graph,
@@ -238,7 +240,7 @@ class TestDeleteCollection:
         )
         postgres_only_dataset_graph = DatasetGraph(*[graph])
 
-        results = graph_task.run_access_request(
+        results = await graph_task.run_access_request(
             privacy_request,
             policy,
             postgres_only_dataset_graph,
@@ -314,7 +316,8 @@ class TestDeleteCollection:
 
 @pytest.mark.integration
 class TestSkipDisabledCollection:
-    def test_skip_collection_new_request(
+    @pytest.mark.asyncio
+    async def test_skip_collection_new_request(
         self,
         db,
         policy,
@@ -332,7 +335,7 @@ class TestSkipDisabledCollection:
             id=f"test_postgres_access_request_task_{uuid.uuid4()}"
         )
 
-        results = graph_task.run_access_request(
+        results = await graph_task.run_access_request(
             privacy_request,
             policy,
             mongo_postgres_dataset_graph,
@@ -359,7 +362,8 @@ class TestSkipDisabledCollection:
         assert mongo_logs.filter_by(status="skipped").count() == 9
 
     @mock.patch("fidesops.ops.task.graph_task.GraphTask.log_start")
-    def test_run_disabled_collections_in_progress(
+    @pytest.mark.asyncio
+    async def test_run_disabled_collections_in_progress(
         self,
         mocked_log_start,
         db,
@@ -416,7 +420,7 @@ class TestSkipDisabledCollection:
             id=f"test_postgres_access_request_task_{uuid.uuid4()}"
         )
 
-        results = graph_task.run_access_request(
+        results = await graph_task.run_access_request(
             privacy_request,
             policy,
             dataset_graph,
@@ -449,7 +453,8 @@ class TestSkipDisabledCollection:
 
         db.delete(mongo_connection_config)
 
-    def test_skip_collection_on_restart(
+    @pytest.mark.asyncio
+    async def test_skip_collection_on_restart(
         self,
         db,
         policy,
@@ -468,7 +473,7 @@ class TestSkipDisabledCollection:
         )
 
         with pytest.raises(ValidationError):
-            graph_task.run_access_request(
+            await graph_task.run_access_request(
                 privacy_request,
                 policy,
                 mongo_postgres_dataset_graph,
@@ -496,7 +501,7 @@ class TestSkipDisabledCollection:
         integration_mongodb_config.disabled = True
         integration_mongodb_config.save(db)
 
-        results = graph_task.run_access_request(
+        results = await graph_task.run_access_request(
             privacy_request,
             policy,
             mongo_postgres_dataset_graph,
@@ -581,7 +586,8 @@ class TestSkipDisabledCollection:
 
 
 @pytest.mark.integration
-def test_restart_graph_from_failure(
+@pytest.mark.asyncio
+async def test_restart_graph_from_failure(
     db,
     policy,
     example_datasets,
@@ -602,7 +608,7 @@ def test_restart_graph_from_failure(
 
     # Attempt to run the graph; execution will stop when we reach one of the mongo nodes
     with pytest.raises(Exception) as exc:
-        graph_task.run_access_request(
+        await graph_task.run_access_request(
             privacy_request,
             policy,
             mongo_postgres_dataset_graph,
@@ -632,8 +638,8 @@ def test_restart_graph_from_failure(
         ("mongo_test:customer_details", "in_processing"),
         ("mongo_test:customer_details", "error"),
     ]
-    assert privacy_request.get_failed_collection_details() == StoppedCollection(
-        step=PausedStep.access,
+    assert privacy_request.get_failed_checkpoint_details() == CheckpointActionRequired(
+        step=CurrentStep.access,
         collection=CollectionAddress("mongo_test", "customer_details"),
     )
 
@@ -645,7 +651,7 @@ def test_restart_graph_from_failure(
     with mock.patch(
         "fidesops.ops.task.graph_task.fideslog_graph_rerun"
     ) as mock_log_event:
-        graph_task.run_access_request(
+        await graph_task.run_access_request(
             privacy_request,
             policy,
             mongo_postgres_dataset_graph,
@@ -717,7 +723,8 @@ def test_restart_graph_from_failure(
 
 
 @pytest.mark.integration
-def test_restart_graph_from_failure_during_erasure(
+@pytest.mark.asyncio
+async def test_restart_graph_from_failure_during_erasure(
     db,
     policy,
     example_datasets,
@@ -736,7 +743,7 @@ def test_restart_graph_from_failure_during_erasure(
     )
 
     # Run access portion like normal
-    graph_task.run_access_request(
+    await graph_task.run_access_request(
         privacy_request,
         policy,
         mongo_postgres_dataset_graph,
@@ -752,7 +759,7 @@ def test_restart_graph_from_failure_during_erasure(
 
     # Attempt to run the erasure graph; execution will stop when we reach one of the mongo nodes
     with pytest.raises(Exception) as exc:
-        graph_task.run_erasure(
+        await graph_task.run_erasure(
             privacy_request,
             policy,
             mongo_postgres_dataset_graph,
@@ -775,7 +782,7 @@ def test_restart_graph_from_failure_during_erasure(
     with mock.patch(
         "fidesops.ops.task.graph_task.fideslog_graph_rerun"
     ) as mock_log_event:
-        graph_task.run_erasure(
+        await graph_task.run_erasure(
             privacy_request,
             policy,
             mongo_postgres_dataset_graph,

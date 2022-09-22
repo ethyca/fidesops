@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
+from fidesops.ops.core.config import FidesopsConfig, config
 from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -40,7 +41,7 @@ from fidesops.ops.schemas.email.email import (
     EmailServiceSecretsMailgun,
     EmailServiceType,
 )
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.redis_cache import Identity
 from fidesops.ops.schemas.storage.storage import (
     FileNaming,
     S3AuthMethod,
@@ -49,13 +50,13 @@ from fidesops.ops.schemas.storage.storage import (
     StorageType,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
-    HMAC_STRATEGY_NAME,
+    HmacMaskingStrategy,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
-    NULL_REWRITE_STRATEGY_NAME,
+    NullMaskingStrategy,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_string_rewrite import (
-    STRING_REWRITE_STRATEGY_NAME,
+    StringRewriteMaskingStrategy,
 )
 from fidesops.ops.util.data_category import DataCategory
 
@@ -294,6 +295,77 @@ def policy_post_execution_webhooks(
 
 
 @pytest.fixture(scope="function")
+def access_and_erasure_policy(
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config: StorageConfig,
+) -> Generator:
+    access_and_erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example access and erasure policy",
+            "key": "example_access_erasure_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+    access_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.access.value,
+            "client_id": oauth_client.id,
+            "name": "Access Request Rule",
+            "policy_id": access_and_erasure_policy.id,
+            "storage_destination_id": storage_config.id,
+        },
+    )
+    access_rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user").value,
+            "rule_id": access_rule.id,
+        },
+    )
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "Erasure Rule",
+            "policy_id": access_and_erasure_policy.id,
+            "masking_strategy": {
+                "strategy": "null_rewrite",
+                "configuration": {},
+            },
+        },
+    )
+
+    erasure_rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.name").value,
+            "rule_id": erasure_rule.id,
+        },
+    )
+    yield access_and_erasure_policy
+    try:
+        access_rule_target.delete(db)
+        erasure_rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        access_rule.delete(db)
+        erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        access_and_erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def erasure_policy(
     db: Session,
     oauth_client: ClientDetail,
@@ -417,7 +489,7 @@ def erasure_policy_string_rewrite_long(
             "name": "Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": STRING_REWRITE_STRATEGY_NAME,
+                "strategy": StringRewriteMaskingStrategy.name,
                 "configuration": {
                     "rewrite_value": "some rewrite value that is very long and goes on and on"
                 },
@@ -461,7 +533,7 @@ def erasure_policy_two_rules(
             "name": "Second Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": NULL_REWRITE_STRATEGY_NAME,
+                "strategy": NullMaskingStrategy.name,
                 "configuration": {},
             },
         },
@@ -469,7 +541,7 @@ def erasure_policy_two_rules(
 
     # TODO set masking strategy in Rule.create() call above, once more masking strategies beyond NULL_REWRITE are supported.
     second_erasure_rule.masking_strategy = {
-        "strategy": STRING_REWRITE_STRATEGY_NAME,
+        "strategy": StringRewriteMaskingStrategy.name,
         "configuration": {"rewrite_value": "*****"},
     }
 
@@ -508,6 +580,7 @@ def policy(
             "name": "example access request policy",
             "key": "example_access_request_policy",
             "client_id": oauth_client.id,
+            "execution_timeframe": 7,
         },
     )
 
@@ -615,7 +688,7 @@ def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Genera
             "name": "Erasure Request Rule DRP",
             "policy_id": erasure_request_policy.id,
             "masking_strategy": {
-                "strategy": STRING_REWRITE_STRATEGY_NAME,
+                "strategy": StringRewriteMaskingStrategy.name,
                 "configuration": {"rewrite_value": "MASKED"},
             },
         },
@@ -667,7 +740,7 @@ def erasure_policy_string_rewrite(
             "name": "string rewrite erasure rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": STRING_REWRITE_STRATEGY_NAME,
+                "strategy": StringRewriteMaskingStrategy.name,
                 "configuration": {"rewrite_value": "MASKED"},
             },
         },
@@ -720,7 +793,7 @@ def erasure_policy_hmac(
             "name": "hmac erasure rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": HMAC_STRATEGY_NAME,
+                "strategy": HmacMaskingStrategy.name,
                 "configuration": {},
             },
         },
@@ -810,10 +883,13 @@ def _create_privacy_request_for_policy(
         db=db,
         data=data,
     )
+    email_identity = "test@example.com"
+    identity_kwargs = {"email": email_identity}
+    pr.cache_identity(identity_kwargs)
     pr.persist_identity(
         db=db,
-        identity=PrivacyRequestIdentity(
-            email="test@example.com",
+        identity=Identity(
+            email=email_identity,
             phone_number="+1 234 567 8910",
         ),
     )
@@ -826,6 +902,18 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
         db,
         policy,
     )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_requires_input(db: Session, policy: Policy) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+    )
+    privacy_request.status = PrivacyRequestStatus.requires_input
+    privacy_request.save(db)
     yield privacy_request
     privacy_request.delete(db)
 
@@ -900,7 +988,7 @@ def succeeded_privacy_request(cache, db: Session, policy: Policy) -> PrivacyRequ
     pr.cache_identity(identity_kwargs)
     pr.persist_identity(
         db=db,
-        identity=PrivacyRequestIdentity(**identity_kwargs),
+        identity=Identity(**identity_kwargs),
     )
     yield pr
     pr.delete(db)
@@ -1169,3 +1257,13 @@ def application_user(
     oauth_client.save(db=db)
     yield user
     user.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def short_redis_cache_expiration() -> FidesopsConfig:
+    original_value: int = config.redis.default_ttl_seconds
+    config.redis.default_ttl_seconds = (
+        1  # Set redis cache to expire very quickly for testing purposes
+    )
+    yield config
+    config.redis.default_ttl_seconds = original_value

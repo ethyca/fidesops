@@ -10,7 +10,11 @@ import dask
 from dask.threaded import get
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
+from fidesops.ops.common_exceptions import (
+    CollectionDisabled,
+    PrivacyRequestErasureEmailSendRequired,
+    PrivacyRequestPaused,
+)
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.analytics_events import (
     fideslog_graph_rerun,
@@ -63,7 +67,7 @@ def retry(
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def result(*args: Any, **kwargs: Any) -> List[Optional[Row]]:
+        def result(*args: Any, **kwargs: Any) -> Any:
             func_delay = config.execution.task_retry_delay
             method_name = func.__name__
             self = args[0]
@@ -88,6 +92,12 @@ def retry(
                     self.log_paused(action_type, ex)
                     # Re-raise to stop privacy request execution on pause.
                     raise
+                except PrivacyRequestErasureEmailSendRequired as exc:
+                    self.log_end(action_type, ex=None, success_override_msg=exc)
+                    self.resources.cache_erasure(
+                        f"{self.traversal_node.address.value}", 0
+                    )  # Cache that the erasure was performed in case we need to restart
+                    return 0
                 except CollectionDisabled as exc:
                     logger.warning(
                         "Skipping disabled collection %s for privacy_request: %s",
@@ -108,7 +118,7 @@ def retry(
                     raised_ex = ex
 
             self.log_end(action_type, raised_ex)
-            self.resources.request.cache_failed_collection_details(
+            self.resources.request.cache_failed_checkpoint_details(
                 step=action_type, collection=self.traversal_node.address
             )
             # Re-raise to stop privacy request execution on failure.
@@ -363,7 +373,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.update_status(str(ex), [], action_type, ExecutionLogStatus.skipped)
 
     def log_end(
-        self, action_type: ActionType, ex: Optional[BaseException] = None
+        self,
+        action_type: ActionType,
+        ex: Optional[BaseException] = None,
+        success_override_msg: Optional[BaseException] = None,
     ) -> None:
         """On completion activities"""
         if ex:
@@ -378,7 +391,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         else:
             logger.info("Ending %s, %s", self.resources.request.id, self.key)
             self.update_status(
-                "success",
+                str(success_override_msg) if success_override_msg else "success",
                 build_affected_field_logs(
                     self.traversal_node.node, self.resources.policy, action_type
                 ),
@@ -492,7 +505,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return filtered_output
 
     @retry(action_type=ActionType.erasure, default_return=0)
-    def erasure_request(self, retrieved_data: List[Row]) -> int:
+    def erasure_request(self, retrieved_data: List[Row], *inputs: List[Row]) -> int:
         """Run erasure request"""
         # if there is no primary key specified in the graph node configuration
         # note this in the execution log and perform no erasures on this node
@@ -523,11 +536,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
             return 0
 
+        formatted_input_data: NodeInput = self.pre_process_input_data(
+            *inputs, group_dependent_fields=True
+        )
+
         output = self.connector.mask_data(
             self.traversal_node,
             self.resources.policy,
             self.resources.request,
             retrieved_data,
+            formatted_input_data,
         )
         self.log_end(ActionType.erasure)
         self.resources.cache_erasure(
@@ -584,7 +602,7 @@ def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, An
     return g
 
 
-def run_access_request(
+async def run_access_request(
     privacy_request: PrivacyRequest,
     policy: Policy,
     graph: DatasetGraph,
@@ -624,7 +642,7 @@ def run_access_request(
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
         update_mapping_from_cache(dsk, resources, start_function)
 
-        fideslog_graph_rerun(
+        await fideslog_graph_rerun(
             prepare_rerun_graph_analytics_event(
                 privacy_request, env, end_nodes, resources, ActionType.access
             )
@@ -668,7 +686,7 @@ def update_erasure_mapping_from_cache(
         )
 
 
-def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
+async def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
     privacy_request: PrivacyRequest,
     policy: Policy,
     graph: DatasetGraph,
@@ -701,13 +719,28 @@ def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
             The termination function just returns this tuple of ints."""
             return dependent_values
 
+        access_request_data[ROOT_COLLECTION_ADDRESS.value] = [identity]
+
         dsk: Dict[CollectionAddress, Any] = {
-            k: (t.erasure_request, access_request_data[str(k)]) for k, t in env.items()
+            k: (
+                t.erasure_request,
+                access_request_data[
+                    str(k)
+                ],  # Pass in the results of the access request for this collection
+                *[
+                    access_request_data[
+                        str(upstream_key)
+                    ]  # Additionally pass in the original input data we used for the access request. It's helpful in
+                    # cases like the EmailConnector where the access request doesn't actually retrieve data.
+                    for upstream_key in t.input_keys
+                ],
+            )
+            for k, t in env.items()
         }
         # terminator function waits for all keys
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
         update_erasure_mapping_from_cache(dsk, resources, start_function)
-        fideslog_graph_rerun(
+        await fideslog_graph_rerun(
             prepare_rerun_graph_analytics_event(
                 privacy_request, env, end_nodes, resources, ActionType.erasure
             )
