@@ -196,7 +196,7 @@ dataset:
           - name: closed
             data_categories: [system.operations]
           - name: email
-            data_categories: [system.operations]
+            data_categories: [user.contact.email]
             fidesops_meta:
               identity: email
               data_type: string
