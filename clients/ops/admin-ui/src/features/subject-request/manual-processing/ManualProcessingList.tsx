@@ -21,6 +21,7 @@ import { useGetAllEnabledAccessManualHooksQuery } from "datastore-connections/da
 import { useRouter } from "next/router";
 import {
   privacyRequestApi,
+  useResumePrivacyRequestFromRequiresInputMutation,
   useUploadManualWebhookDataMutation,
 } from "privacy-requests/privacy-requests.slice";
 import {
@@ -29,6 +30,7 @@ import {
 } from "privacy-requests/types";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import { INDEX_ROUTE } from "src/constants";
 
 import ManualProcessingDetail from "./ManualProcessingDetail";
 import { ManualInputData } from "./types";
@@ -42,15 +44,32 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
 }) => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { successAlert } = useAlert();
+  const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const [dataList, setDataList] = useState([] as unknown as ManualInputData[]);
+  const [isCompleteDSRLoading, setIsCompleteDSRLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data, isFetching, isLoading, isSuccess } =
     useGetAllEnabledAccessManualHooksQuery();
 
+  const [resumePrivacyRequestFromRequiresInput] =
+    useResumePrivacyRequestFromRequiresInputMutation();
+
   const [uploadManualWebhookData] = useUploadManualWebhookDataMutation();
+
+  const handleCompleteDSRClick = async () => {
+    try {
+      setIsCompleteDSRLoading(true);
+      await resumePrivacyRequestFromRequiresInput(subjectRequest.id).unwrap();
+      successAlert(`Manual request has been received. Request now processing.`);
+      router.push(INDEX_ROUTE);
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setIsCompleteDSRLoading(false);
+    }
+  };
 
   const handleSubmit = async (params: PatchUploadManualWebhookDataRequest) => {
     try {
@@ -72,7 +91,7 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
         return item;
       });
       setDataList(newState);
-      successAlert(`Manual input successfully saved`);
+      successAlert(`Manual input successfully saved!`);
     } catch (error) {
       handleError(error);
     } finally {
@@ -97,7 +116,7 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
       );
       Promise.allSettled(promises).then((results) => {
         const list: ManualInputData[] = [];
-        results.forEach((result) => {
+        results.forEach((result, index) => {
           if (
             result.status === "fulfilled" &&
             result.value.isSuccess &&
@@ -114,6 +133,12 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
               item.fields[key] = value || "";
             });
             list.push(item);
+          } else {
+            errorAlert(
+              `An error occurred while loading manual input data for ${
+                data![index].connection_config.name
+              }`
+            );
           }
         });
         setDataList(list);
@@ -125,7 +150,14 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
     }
 
     return () => {};
-  }, [data, dataList.length, dispatch, isSuccess, subjectRequest.id]);
+  }, [
+    data,
+    dataList.length,
+    dispatch,
+    errorAlert,
+    isSuccess,
+    subjectRequest.id,
+  ]);
 
   return (
     <VStack align="stretch" spacing={8}>
@@ -214,6 +246,9 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
                         bg="primary.800"
                         fontSize="xs"
                         h="24px"
+                        isLoading={isCompleteDSRLoading}
+                        loadingText="Completing DSR"
+                        onClick={handleCompleteDSRClick}
                         w="127px"
                         _hover={{ bg: "primary.400" }}
                         _active={{ bg: "primary.500" }}

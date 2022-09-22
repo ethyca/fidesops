@@ -108,7 +108,13 @@ export const privacyRequestApi = createApi({
       query: (params) => ({
         url: `privacy-request/${params.privacy_request_id}/access_manual_webhook/${params.connection_key}`,
       }),
-      providesTags: () => ["Request"],
+    }),
+    resumePrivacyRequestFromRequiresInput: build.mutation<any, string>({
+      query: (privacy_request_id) => ({
+        url: `privacy-request/${privacy_request_id}/resume_from_requires_input`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Request"],
     }),
     retry: build.mutation<PrivacyRequest, Pick<PrivacyRequest, "id">>({
       query: ({ id }) => ({
@@ -126,7 +132,6 @@ export const privacyRequestApi = createApi({
         method: "PATCH",
         body: params.body,
       }),
-      invalidatesTags: ["Request"],
     }),
   }),
 });
@@ -136,6 +141,7 @@ export const {
   useDenyRequestMutation,
   useGetAllPrivacyRequestsQuery,
   useGetUploadedManualWebhookDataQuery,
+  useResumePrivacyRequestFromRequiresInputMutation,
   useRetryMutation,
   useUploadManualWebhookDataMutation,
 } = privacyRequestApi;
