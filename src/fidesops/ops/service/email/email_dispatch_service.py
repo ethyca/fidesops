@@ -5,9 +5,11 @@ import requests
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import EmailDispatchException
+from fidesops.ops.core.config import config
 from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.models.email import EmailConfig
-from fidesops.ops.models.privacy_request import CheckpointActionRequired
+from fidesops.ops.models.policy import CurrentStep
+from fidesops.ops.models.privacy_request import CheckpointActionRequired, PrivacyRequest
 from fidesops.ops.schemas.email.email import (
     AccessRequestCompleteBodyParams,
     EmailActionType,
@@ -21,28 +23,78 @@ from fidesops.ops.schemas.email.email import (
     SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.tasks import DatabaseTask, celery_app
-from fidesops.ops.util.logger import Pii
+from fidesops.ops.util.logger import Pii, _log_exception
 
 logger = logging.getLogger(__name__)
 
 
-@celery_app.task(base=DatabaseTask, bind=True)
-def dispatch_email_task(
-    self: DatabaseTask,
-    email_meta: Dict[str, Any],
-    to_email: str,
-) -> None:
+class EmailTaskBase(DatabaseTask):
+
+    @celery_app.task(base=DatabaseTask, bind=True)
+    def dispatch_email_task(
+        self: DatabaseTask,
+        email_meta: Dict[str, Any],
+        to_email: str,
+    ) -> None:
+        """
+        A wrapper function to dispatch an email task into the Celery queues
+        """
+        schema = FidesopsEmail.parse_obj(email_meta)
+        with self.session as db:
+            dispatch_email(
+                db,
+                schema.action_type,
+                to_email,
+                schema.body_params,
+            )
+
+
+class EmailTaskRequestCompletion(EmailTaskBase):
     """
-    A wrapper function to dispatch an email task into the Celery queues
+    A wrapper class to handle specific failure case for request completion emails
     """
-    schema = FidesopsEmail.parse_obj(email_meta)
-    with self.session as db:
-        dispatch_email(
-            db,
-            schema.action_type,
-            to_email,
-            schema.body_params,
-        )
+
+    def __init__(
+            self,
+            privacy_request: PrivacyRequest,
+    ):
+        self.privacy_request = privacy_request
+
+    async def on_failure(self, exc, task_id, args, kwargs, einfo) -> None:
+        from fidesops.ops.graph.analytics_events import fideslog_graph_failure, failed_graph_analytics_event
+        with super().session as db:
+            logger.error("in celery error callback")
+            self.privacy_request.error_processing(db=db)
+            # If dev mode, log traceback
+            await fideslog_graph_failure(
+                failed_graph_analytics_event(self.privacy_request, exc)
+            )
+            _log_exception(exc, config.dev_mode)
+
+
+class EmailTaskEmailConnector(EmailTaskBase):
+    """
+    A wrapper class to handle specific failure case for email connectors
+    """
+
+    def __init__(
+            self,
+            privacy_request: PrivacyRequest,
+    ):
+        self.privacy_request = privacy_request
+
+    async def on_failure(self, exc, task_id, args, kwargs, einfo) -> None:
+        from fidesops.ops.graph.analytics_events import fideslog_graph_failure, failed_graph_analytics_event
+        with super().session as db:
+            self.privacy_request.cache_failed_checkpoint_details(
+                step=CurrentStep.erasure_email_post_send, collection=None
+            )
+            self.privacy_request.error_processing(db=db)
+            await fideslog_graph_failure(
+                failed_graph_analytics_event(self.privacy_request, exc)
+            )
+            # If dev mode, log traceback
+            _log_exception(exc, config.dev_mode)
 
 
 def dispatch_email(

@@ -110,8 +110,7 @@ from fidesops.ops.schemas.privacy_request import (
     VerificationCode,
 )
 from fidesops.ops.service.email.email_dispatch_service import (
-    dispatch_email,
-    dispatch_email_task,
+    dispatch_email, EmailTaskRequestCompletion, EmailTaskBase,
 )
 from fidesops.ops.service.privacy_request.request_runner_service import (
     generate_id_verification_code,
@@ -296,15 +295,20 @@ def _send_verification_code_to_user(
     )  # Validates Fidesops is currently configured to send emails
     verification_code: str = generate_id_verification_code()
     privacy_request.cache_identity_verification_code(verification_code)
-    # synchronous call for now since failure to send verification code is fatal to request
-    dispatch_email(
-        db=db,
-        action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
-        to_email=email,
-        email_body_params=SubjectIdentityVerificationBodyParams(
-            verification_code=verification_code,
-            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
-        ),
+    # fixme- what should err case be in terms of api resp?
+    email_task = EmailTaskBase()
+    email_task.dispatch_email_task.apply_async(
+        queue=EMAIL_QUEUE_NAME,
+        kwargs={
+            "email_meta": FidesopsEmail(
+                action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
+                body_params=SubjectIdentityVerificationBodyParams(
+                    verification_code=verification_code,
+                    verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+                ),
+            ).dict(),
+            "to_email": email,
+        },
     )
 
 
@@ -330,7 +334,8 @@ def _send_privacy_request_receipt_email_to_user(
     for action_type in ActionType:
         if policy.get_rules_for_action(action_type=ActionType(action_type)):
             request_types.add(action_type)
-    dispatch_email_task.apply_async(
+    email_task = EmailTaskBase()
+    email_task.dispatch_email_task.apply_async(
         queue=EMAIL_QUEUE_NAME,
         kwargs={
             "email_meta": FidesopsEmail(
@@ -1128,7 +1133,8 @@ def _send_privacy_request_review_email_to_user(
                 "Identity email was not found, so request review email could not be sent."
             )
         )
-    dispatch_email_task.apply_async(
+    email_task = EmailTaskBase()
+    email_task.dispatch_email_task.apply_async(
         queue=EMAIL_QUEUE_NAME,
         kwargs={
             "email_meta": FidesopsEmail(
