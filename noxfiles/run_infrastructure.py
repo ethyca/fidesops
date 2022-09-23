@@ -170,7 +170,9 @@ def _run_configscript(
     """
     _run_cmd_or_err('echo "Running the quickstart..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f"docker-compose run {service_name} python scripts/configuration/{configscript_args['script_name']}.py")
+    _run_cmd_or_err(
+        f"docker-compose run {service_name} python scripts/configuration/{configscript_args['script_name']}.py"
+    )
 
 
 def _run_quickstart(

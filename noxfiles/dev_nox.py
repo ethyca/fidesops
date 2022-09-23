@@ -45,11 +45,23 @@ def dev_with_worker(session: nox.Session) -> None:
 
 
 @nox.session()
+def setup_demo(session: nox.Session) -> None:
+    """Run the quickstart tutorial."""
+    run_infrastructure(
+        datastores=["postgres", "mongodb"],
+        run_application=True,
+    )
+
+
+@nox.session()
 def quickstart(session: nox.Session) -> None:
     """Run the quickstart tutorial."""
     build(session, "dev")
     session.notify("teardown")
-    run_infrastructure(datastores=["mongodb", "postgres"], run_quickstart=True)
+    run_infrastructure(
+        datastores=["mongodb", "postgres"],
+        run_quickstart=True,
+    )
 
 
 @nox.session()
