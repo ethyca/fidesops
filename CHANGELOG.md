@@ -31,6 +31,7 @@ The types of changes are:
 
 * `api_key` auth strategy for SaaS connectors [#1331](https://github.com/ethyca/fidesops/pull/1331)
 * Access support for Rollbar [#1361](https://github.com/ethyca/fidesops/pull/1361)
+* Enable retries on saas connectors for failures at the http request level [#1376](https://github.com/ethyca/fidesops/pull/1376)
 
 ### Removed
 
