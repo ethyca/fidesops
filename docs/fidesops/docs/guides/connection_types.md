@@ -107,6 +107,11 @@ which fidesops can communicate.
             "human_readable": "Shopify"
         },
         {
+            "identifier": "fullstory",
+            "type": "fullstory",
+            "human_readable": "Fullstory"
+        },
+        {
             "identifier": "stripe",
             "type": "saas",
             "human_readable": "Stripe"

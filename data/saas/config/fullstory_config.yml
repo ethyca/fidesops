@@ -1,0 +1,58 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Fullstory SaaS Config
+  type: fullstory
+  description: A sample schema representing the Fullstory connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: access_token
+    - name: uid
+
+  client_config:
+    protocol: https
+    host: <domain>
+
+  test_request:
+    method: GET
+    path: /users/v1/individual/1234
+    headers:
+      - name: Authorization
+        value: Basic <access_token>
+    param_values:
+      - name: access_token
+        connector_param: access_token
+
+  endpoints:
+    - name: users
+      requests:
+        read:
+          method: GET
+          path: /users/v1/individual/<uid>
+          headers:
+            - name: Authorization
+              value: Basic <access_token>
+          param_values:
+            - name: access_token
+              connector_param: access_token
+            - name: uid
+              identity: uid
+        # update:
+        #   method: POST
+        #   path: /users/v1/individual/<uid>/customvars
+        #   headers:
+        #     - name: Authorization
+        #       value: Basic <access_token>
+        #   body: |
+        #     {
+        #       <masked_object_fields>
+        #     }
+        #   param_values:
+        #     - name: access_token
+        #       connector_param: access_token
+        #     - name: uid
+        #       references:
+        #         - dataset: <instance_fides_key>
+        #           field: users.uid
+        #           direction: from

@@ -81,3 +81,8 @@ config = "data/saas/config/rollbar_config.yml"
 dataset = "data/saas/dataset/rollbar_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Rollbar"
+[fullstory]
+config = "data/saas/config/fullstory_config.yml"
+dataset = "data/saas/dataset/fullstory_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Fullstory"

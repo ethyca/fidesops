@@ -1,0 +1,8 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: Fullstory Dataset
+    description: A sample dataset representing the Fullstory connector for Fidesops
+    collections:
+      - name: users
+        fields: 
+          []
