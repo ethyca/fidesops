@@ -1,7 +1,8 @@
 from datetime import datetime
 import logging
-from sqlite3 import connect
 import requests
+from time import sleep
+import uuid
 import yaml
 
 logger = logging.getLogger(__name__)
@@ -13,12 +14,15 @@ from fidesops.ops.api.v1 import urn_registry as urls
 import secrets
 
 
-class QuickstartBase():
+class QuickstartBase:
 
     FIDESOPS_URL = "http://webserver:8080"
     BASE_URL = FIDESOPS_URL + urls.V1_URL_PREFIX
     ROOT_CLIENT_ID = "fidesopsadmin"
     ROOT_CLIENT_SECRET = "fidesopsadminsecret"
+
+    ACCESS_POLICY_KEY = "download"
+    ERASURE_POLICY_KEY = "delete"
 
     # These are external datastores so don't read them from the config
     POSTGRES_SERVER = "host.docker.internal"
@@ -32,6 +36,8 @@ class QuickstartBase():
         for key, value in config.items():
             setattr(self, key, value)
 
+        sleep(2)
+        self.check_health()
         self.configure_oauth_client()
         self.configure_user()
         self.configure_email()
@@ -39,6 +45,14 @@ class QuickstartBase():
         self.configure_s3_storage()
         self.configure_mailchimp_connector()
         self.create_access_request()
+
+    def check_health(self):
+        url = f"{self.FIDESOPS_URL}{urls.HEALTH}"
+        response = requests.get(url)
+        if not response.ok:
+            raise RuntimeError(
+                f"fidesops health check failed! response.status_code={response.status_code}, response.json()={response.json()} at url {url}"
+            )
 
     def get_access_token(self, client_id: str, client_secret: str) -> str:
         """
@@ -79,7 +93,7 @@ class QuickstartBase():
             created_client = response.json()
             if created_client["client_id"] and created_client["client_secret"]:
                 logger.info("Created fidesops oauth client via /api/v1/oauth/client")
-                return created_client
+                return created_client["client_id"], created_client["client_secret"]
 
         raise RuntimeError(
             f"fidesops oauth client creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
@@ -95,17 +109,19 @@ class QuickstartBase():
         auth_token = self.get_access_token(client_id, client_secret)
         self.auth_header = {"Authorization": f"Bearer {auth_token}"}
 
-
-    def configure_user(self):
+    def configure_user(self, username=None, password="Atestpassword1!"):
         """Adds a user with full permissions"""
+        if not username:
+            username = str(uuid.uuid4())
+
         response = requests.post(
             f"{self.BASE_URL}{urls.USERS}",
             headers=self.auth_header,
             json={
                 "first_name": "Atest",
                 "last_name": "User",
-                "username": "atestuser",  # TODO: Randomise this
-                "password": "Atestpassword1!",
+                "username": username,
+                "password": password,
             },
         )
 
@@ -117,15 +133,22 @@ class QuickstartBase():
         user_id = response.json()["id"]
 
         user_permissions_url = urls.USER_PERMISSIONS.format(user_id=user_id)
-        response = requests.post(
+        response = requests.put(
             f"{self.BASE_URL}{user_permissions_url}",
             headers=self.auth_header,
-            json={"scopes": SCOPE_REGISTRY},
+            json={
+                "id": user_id,  # TODO: Remove this from the schema
+                "scopes": SCOPE_REGISTRY,
+            },
         )
 
         if not response.ok:
             raise RuntimeError(
                 f"fidesops user permissions creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            )
+        else:
+            logger.info(
+                f"Created user with username: {username} and password: {password}"
             )
 
     def configure_email(self, key="fidesops_email"):
@@ -141,18 +164,21 @@ class QuickstartBase():
                     "api_version": "v3",
                     # TODO: Where do we find this value? Can we be more specific in the docs?
                     "domain": "testmail.ethyca.com",
-                }
+                },
             },
         )
 
         if not response.ok:
-            if response.json()["detail"] != f"Only one email config is supported at a time. Config with key {key} is already configured.":
+            if (
+                response.json()["detail"]
+                != f"Only one email config is supported at a time. Config with key {key} is already configured."
+            ):
                 raise RuntimeError(
                     f"fidesops email config creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
                 )
 
         # Now add secrets
-        email_secrets_path = urls.EMAIL_SECRETS.format(key=key)
+        email_secrets_path = urls.EMAIL_SECRETS.format(config_key=key)
         response = requests.put(
             f"{self.BASE_URL}{email_secrets_path}",
             headers=self.auth_header,
@@ -184,9 +210,7 @@ class QuickstartBase():
         if response.ok:
             datasets = (response.json())["succeeded"]
             if len(datasets) > 0:
-                logger.info(
-                    f"Created fidesops dataset via {url}"
-                )
+                logger.info(f"Created fidesops dataset via {url}")
                 return response.json()
 
         raise RuntimeError(
@@ -213,18 +237,19 @@ class QuickstartBase():
                 f"fidesops connection creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
             )
 
-        connection_secrets_path = urls.CONNECTION_SECRETS.format(key=key)
+        connection_secrets_path = urls.CONNECTION_SECRETS.format(connection_key=key)
         url = f"{self.BASE_URL}{connection_secrets_path}"
+        postgres_secrets_data = {
+            "host": self.POSTGRES_SERVER,
+            "port": self.POSTGRES_PORT,
+            "dbname": self.POSTGRES_DB_NAME,
+            "username": self.POSTGRES_USER,
+            "password": self.POSTGRES_PASSWORD,
+        }
         response = requests.put(
             url,
             headers=self.auth_header,
-            json={
-                "host": self.POSTGRES_SERVER,
-                "post": self.POSTGRES_PORT,
-                "dbname": self.POSTGRES_DB_NAME,
-                "username": self.POSTGRES_USER,
-                "password": self.POSTGRES_PASSWORD,
-            },
+            json=postgres_secrets_data,
         )
 
         if not response.ok:
@@ -237,27 +262,28 @@ class QuickstartBase():
                 f"fidesops connection test failed! response.status_code={response.status_code}, response.json()={response.json()}"
             )
 
-        logger.info(
-            f"Configured fidesops postgres connection secrets for via {url}"
-        )
+        logger.info(f"Configured fidesops postgres connection secrets for via {url}")
 
         self.create_dataset(
             connection_key=key,
             yaml_path="data/dataset/postgres_example_test_dataset.yml",
         )
 
-    def configure_mailchimp_connector(self):
+    def configure_mailchimp_connector(self, key=None):
+        if not key:
+            key = str(uuid.uuid4())
+
         path = urls.SAAS_CONNECTOR_FROM_TEMPLATE.format(saas_connector_type="mailchimp")
         url = f"{self.BASE_URL}{path}"
-        response = requests.put(
+        response = requests.post(
             url,
             headers=self.auth_header,
             json={
-                "instance_key": "mailchimp_instance",
+                "instance_key": f"{key}_instance",
                 "secrets": secrets.MAILCHIMP_SECRETS,
-                "name": "Mailchimp Connector",
+                "name": f"Mailchimp Connector {key}",
                 "description": "Mailchimp ConnectionConfig description",
-                "key": "mailchimp_connection_config",
+                "key": key,
             },
         )
 
@@ -266,7 +292,7 @@ class QuickstartBase():
                 f"fidesops mailchimp connector configuration failed! response.status_code={response.status_code}, response.json()={response.json()}"
             )
 
-    def configure_s3_storage(self, key="s3_storage"):
+    def configure_s3_storage(self, key="s3_storage", policy_key=ACCESS_POLICY_KEY):
         url = f"{self.BASE_URL}{urls.STORAGE_CONFIG}"
         response = requests.patch(
             url,
@@ -281,7 +307,8 @@ class QuickstartBase():
                         "auth_method": "secret_keys",
                         "bucket": "fidesops-demo-10-04-2021",
                         "naming": "request_id",
-                    }
+                        "object_name": "test",
+                    },
                 },
             ],
         )
@@ -293,9 +320,7 @@ class QuickstartBase():
         else:
             storage = (response.json())["succeeded"]
             if len(storage) > 0:
-                logger.info(
-                    f"Created fidesops storage with key={key} via {url}"
-                )
+                logger.info(f"Created fidesops storage with key={key} via {url}")
 
         storage_secrets_path = urls.STORAGE_SECRETS.format(config_key=key)
         url = f"{self.BASE_URL}{storage_secrets_path}"
@@ -305,29 +330,98 @@ class QuickstartBase():
             json={
                 "aws_access_key_id": secrets.AWS_ACCESS_KEY_ID,
                 "aws_access_secret_id": secrets.AWS_ACCESS_SECRET_ID,
-            }
+            },
         )
-    
-    def create_access_request(self, user_email="sean+engdemo@ethyca.com"):
+
+        rule_key = f"{key}_rule"
+        rule_create_data = {
+            "name": rule_key,
+            "key": rule_key,
+            "action_type": "access",
+            "storage_destination_key": key,
+        }
+
+        policy_path = urls.RULE_LIST.format(policy_key=policy_key)
+        url = f"{self.BASE_URL}{policy_path}"
+        response = requests.patch(
+            url,
+            headers=self.auth_header,
+            json=[rule_create_data],
+        )
+
+        if not response.ok:
+            raise RuntimeError(
+                f"fidesops policy rule creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            )
+
+        rule_target_path = urls.RULE_TARGET_LIST.format(
+            policy_key=self.ACCESS_POLICY_KEY,
+            rule_key=rule_key,
+        )
+        url = f"{self.BASE_URL}{rule_target_path}"
+        data_category = "user"
+        response = requests.patch(
+            url,
+            headers=self.auth_header,
+            json=[{"data_category": data_category}],
+        )
+
+        if response.ok:
+            targets = (response.json())["succeeded"]
+            if len(targets) > 0:
+                logger.info(
+                    f"Created fidesops policy rule target for '{data_category}' via {url}"
+                )
+
+    def create_policy(self, key, execution_timeframe=45):
+        policy_create_data = [
+            {
+                "name": key,
+                "key": key,
+                "execution_timeframe": execution_timeframe,
+            },
+        ]
+        response = requests.patch(
+            f"{self.BASE_URL}{urls.POLICY_LIST}",
+            headers=self.auth_header,
+            json=policy_create_data,
+        )
+
+        if response.ok:
+            policies = (response.json())["succeeded"]
+            if len(policies) > 0:
+                logger.info(
+                    "Created fidesops policy with key=%s via /api/v1/policy", key
+                )
+                return
+
+        raise RuntimeError(
+            f"fidesops policy creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
+        )
+
+    def create_access_request(
+        self,
+        user_email="sean+engdemo@ethyca.com",
+        policy_key=ACCESS_POLICY_KEY,
+    ):
         response = requests.post(
-            f"{self.BASE_URL}{urls.PRIVACY_REQUEST}",
+            f"{self.BASE_URL}{urls.PRIVACY_REQUESTS}",
             json=[
                 {
                     "requested_at": str(datetime.utcnow()),
-                    "policy_key": "download",
+                    "policy_key": policy_key,
                     "identity": {"email": user_email},
                 },
             ],
         )
 
-        if response.ok:
-            created_privacy_requests = (response.json())["succeeded"]
-            if len(created_privacy_requests) > 0:
-                logger.info(
-                    f"Created fidesops privacy request for email={user_email} via /api/v1/privacy-request"
-                )
-                return response.json()
+        if not response.ok:
+            raise RuntimeError(
+                f"fidesops privacy request creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            )
 
-        raise RuntimeError(
-            f"fidesops privacy request creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
-        )
+        created_privacy_requests = (response.json())["succeeded"]
+        if len(created_privacy_requests) > 0:
+            logger.info(
+                f"Created fidesops privacy request for email={user_email} via /api/v1/privacy-request"
+            )

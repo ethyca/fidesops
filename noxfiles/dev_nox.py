@@ -57,6 +57,8 @@ def quickstart(session: nox.Session) -> None:
     "script_name",
     [
         nox.param("base_config", id="base_config"),
+        nox.param("q3_dsr_countdown", id="q3_dsr_countdown"),
+        nox.param("q3_reprocess_request", id="q3_reprocess_request"),
     ],
 )
 def config_script(session: nox.Session, script_name: str) -> None:
@@ -64,5 +66,6 @@ def config_script(session: nox.Session, script_name: str) -> None:
     build(session, "dev")
     session.notify("teardown")
     run_infrastructure(
+        datastores=["postgres"],
         configscript_args={"script_name": script_name},
     )
