@@ -91,7 +91,7 @@ class AuthenticatedClient:
 
         Exponential backoff factor uses the following formula:
         backoff_factor * (2 ** (retry_attempt))
-        For an backoff_factor of 1 it will sleep for 2,4,8,16 seconds
+        For an backoff_factor of 1 it will sleep for 2,4,8 seconds
 
         General exceptions are always retried. RequestFailureResponseException exceptions are only retried
         if the status code is in retry_status_codes.
@@ -103,8 +103,8 @@ class AuthenticatedClient:
                 self = args[0]
                 last_exception: Optional[Union[BaseException, Exception]] = None
 
-                for attempt in range(retry_count):
-                    sleep_time = backoff_factor * (2 ** (attempt - 1))
+                for attempt in range(retry_count + 1):
+                    sleep_time = backoff_factor * (2 ** (attempt + 1))
                     try:
                         return func(*args, **kwargs)
                     except RequestFailureResponseException as exc:  # pylint: disable=W0703
@@ -140,7 +140,7 @@ class AuthenticatedClient:
 
         return decorator
 
-    @retry_send(retry_count=4, backoff_factor=1.0)  # pylint: disable=E1124
+    @retry_send(retry_count=3, backoff_factor=1.0)  # pylint: disable=E1124
     def send(
         self, request_params: SaaSRequestParams, ignore_errors: Optional[bool] = False
     ) -> Response:
