@@ -16,7 +16,8 @@ import secrets
 
 class QuickstartBase:
 
-    FIDESOPS_URL = "http://webserver:8080"
+    # FIDESOPS_URL = "http://webserver:8080"
+    FIDESOPS_URL = "http://localhost:8080"
     BASE_URL = FIDESOPS_URL + urls.V1_URL_PREFIX
     ROOT_CLIENT_ID = "fidesopsadmin"
     ROOT_CLIENT_SECRET = "fidesopsadminsecret"
@@ -26,6 +27,7 @@ class QuickstartBase:
 
     # These are external datastores so don't read them from the config
     POSTGRES_SERVER = "host.docker.internal"
+    # POSTGRES_SERVER = "postgres_example"
     POSTGRES_USER = "postgres"
     POSTGRES_PASSWORD = "postgres"
     POSTGRES_PORT = 6432
@@ -39,20 +41,19 @@ class QuickstartBase:
         sleep(2)
         self.check_health()
         self.configure_oauth_client()
-        self.configure_user()
-        self.configure_email()
-        self.configure_postgres_connector()
-        self.configure_s3_storage()
-        self.configure_mailchimp_connector()
-        self.create_access_request()
 
     def check_health(self):
+        self.connection_retry_count = 0
         url = f"{self.FIDESOPS_URL}{urls.HEALTH}"
         try:
             response = requests.get(url)
         except requests.exceptions.ConnectionError:
             sleep(2)
-            return self.check_health()
+            self.connection_retry_count += 1
+            if self.connection_retry_count < 4:
+                return self.check_health()
+            else:
+                raise
 
         if not response.ok:
             raise RuntimeError(
@@ -222,7 +223,7 @@ class QuickstartBase:
             f"fidesops dataset creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
         )
 
-    def configure_postgres_connector(self, key="postgres_connector"):
+    def configure_postgres_connector(self, key="postgres_connector", verify=True):
         connection_create_data = [
             {
                 "name": key,
@@ -243,7 +244,7 @@ class QuickstartBase:
             )
 
         connection_secrets_path = urls.CONNECTION_SECRETS.format(connection_key=key)
-        url = f"{self.BASE_URL}{connection_secrets_path}"
+        url = f"{self.BASE_URL}{connection_secrets_path}?verify={verify}"
         postgres_secrets_data = {
             "host": self.POSTGRES_SERVER,
             "port": self.POSTGRES_PORT,
@@ -284,7 +285,7 @@ class QuickstartBase:
             url,
             headers=self.auth_header,
             json={
-                "instance_key": f"{key}_instance",
+                "instance_key": f"mailchimp_instance_{key}",
                 "secrets": secrets.MAILCHIMP_SECRETS,
                 "name": f"Mailchimp Connector {key}",
                 "description": "Mailchimp ConnectionConfig description",
