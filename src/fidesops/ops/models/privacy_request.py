@@ -806,6 +806,36 @@ class ConsentRequest(Base):
         back_populates="consent_request",
     )
 
+    def cache_identity_verification_code(self, value: str) -> None:
+        """Cache the generated identity verification code for later comparison"""
+        cache: FidesopsRedis = get_cache()
+        cache.set_with_autoexpire(
+            f"IDENTITY_VERIFICATION_CODE__{self.id}",
+            value,
+            config.redis.identity_verification_code_ttl_seconds,
+        )
+
+    def verify_identity(self, db: Session, provided_code: str) -> ConsentRequest:
+        """Verify the identification code supplied by the user."""
+        if not self.status == PrivacyRequestStatus.identity_unverified:
+            raise IdentityVerificationException(
+                f"Invalid identity verification request. Privacy request '{self.id}' status = {self.status.value}."  # type: ignore # pylint: disable=no-member
+            )
+
+        code: Optional[str] = self.get_cached_verification_code()
+        if not code:
+            raise IdentityVerificationException(
+                f"Identification code expired for {self.id}."
+            )
+
+        if code != provided_code:
+            raise PermissionError(f"Incorrect identification code for '{self.id}'")
+
+        self.status = PrivacyRequestStatus.pending
+        self.identity_verified_at = datetime.utcnow()
+        self.save(db)
+        return self
+
 
 # Unique text to separate a step from a collection address, so we can store two values in one.
 PAUSED_SEPARATOR = "__fidesops_paused_sep__"
