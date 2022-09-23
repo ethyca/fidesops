@@ -1,14 +1,14 @@
 db.createUser(
-        {
-            user: "mongo_user",
-            pwd: "mongo_pass",
-            roles: [
-                {
-                    role: "readWrite",
-                    db: "mongo_test"
-                }
-            ]
-        }
+    {
+        user: "mongo_user",
+        pwd: "mongo_pass",
+        roles: [
+            {
+                role: "readWrite",
+                db: "mongo_test"
+            }
+        ]
+    }
 );
 
 db.customer_details.insert([
@@ -22,14 +22,14 @@ db.customer_details.insert([
             "direct_reports": ["Robbie Margo", "Sully Hunter"]  // Discovered nested array of scalars
         },
         "emergency_contacts": [  // Discovered array of objects
-            {"name": "June Customer", "relationship": "mother", "phone": "444-444-4444"},
-            {"name": "Josh Customer", "relationship": "brother", "phone": "111-111-111"},
+            { "name": "June Customer", "relationship": "mother", "phone": "444-444-4444" },
+            { "name": "Josh Customer", "relationship": "brother", "phone": "111-111-111" },
         ],
         "children": ["Christopher Customer", "Courtney Customer"],  // Discovered array of scalars
         "travel_identifiers": ["A111-11111", "B111-11111"], // References a nested array field, flights.passenger_information.passenger_ids
-        "comments": [{"comment_id": "com_0001"}, {"comment_id": "com_0003"}, {"comment_id": "com_0005"}] // Array of objects references a nested object field, mongo_test.conversations.thread.comment
+        "comments": [{ "comment_id": "com_0001" }, { "comment_id": "com_0003" }, { "comment_id": "com_0005" }] // Array of objects references a nested object field, mongo_test.conversations.thread.comment
     },
-     {
+    {
         "customer_id": 2,
         "gender": "female",
         "birthday": new ISODate("1985-03-05"),
@@ -39,10 +39,10 @@ db.customer_details.insert([
             "direct_reports": ["Langdon Jeanne", "Dorothy Faron"]
         },
         "emergency_contacts": [
-            {"name": "Jesse Customer", "relationship": "spouse", "phone": "111-111-1111"},
-            {"name": "Jonathan Customer", "relationship": "brother", "phone": "222-222-2222"}
+            { "name": "Jesse Customer", "relationship": "spouse", "phone": "111-111-1111" },
+            { "name": "Jonathan Customer", "relationship": "brother", "phone": "222-222-2222" }
         ],
-         "children": ["Connie Customer"],
+        "children": ["Connie Customer"],
         "travel_identifiers": ["C222-222222"]
     },
     {
@@ -51,7 +51,7 @@ db.customer_details.insert([
         "birthday": new ISODate("1990-02-28"),
         "travel_identifiers": ["D111-11111"],
         "children": ["Erica Example"],
-        "comments": [{"comment_id": "com_0002"}, {"comment_id": "com_0004"}, {"comment_id": "com_0006"}]
+        "comments": [{ "comment_id": "com_0002" }, { "comment_id": "com_0004" }, { "comment_id": "com_0006" }]
     }
 ]);
 
@@ -86,7 +86,7 @@ db.internal_customer_profile.insert([
         "derived_interests": ["marketing", "food"]  // Discovered simple array
     },
     {
-         "customer_identifiers": {
+        "customer_identifiers": {
             "internal_id": "cust_002",
             "derived_phone": ["757-499-5508"]
         },
@@ -99,28 +99,36 @@ db.internal_customer_profile.insert([
             "derived_phone": ["530-486-6983", "254-344-9868"]
         },
         "derived_interests": ["interior design", "travel", "photography"]
+    },
+    {
+        "customer_identifiers": {
+            "internal_id": "cust_004",
+            "derived_emails": ["sean+engdemo@ethyca.com"],  // Identity within an array field
+            "derived_phone": []
+        },
+        "derived_interests": ["computers"]
     }
 ]);
 
 db.conversations.insert([
     {
         "thread": [
-            {"comment": "com_0001", "message": "hello, testing in-flight chat feature", "chat_name": "John C", "ccn": "123456789"}, // ccn points to mongo_test:payment_card
-            {"comment": "com_0002", "message": "yep, got your message, looks like it works", "chat_name": "Jane C", "ccn": "987654321"}
+            { "comment": "com_0001", "message": "hello, testing in-flight chat feature", "chat_name": "John C", "ccn": "123456789" }, // ccn points to mongo_test:payment_card
+            { "comment": "com_0002", "message": "yep, got your message, looks like it works", "chat_name": "Jane C", "ccn": "987654321" }
         ]
     },
     {
         "thread": [
-            {"comment": "com_0003", "message": "can I borrow your headphones?", "chat_name": "John C", "ccn": "123456789"},
-            {"comment": "com_0004", "message": "no, sorry I'm using them.", "chat_name": "Jane C", "ccn": "987654321"},
-            {"comment": "com_0005", "message": "did you bring anything to read?", "chat_name": "John C", "ccn": "123456789"},
-            {"comment": "com_0006", "message": "try reading the informational brochure in the seat pouch.", "chat_name": "Jane C"}
+            { "comment": "com_0003", "message": "can I borrow your headphones?", "chat_name": "John C", "ccn": "123456789" },
+            { "comment": "com_0004", "message": "no, sorry I'm using them.", "chat_name": "Jane C", "ccn": "987654321" },
+            { "comment": "com_0005", "message": "did you bring anything to read?", "chat_name": "John C", "ccn": "123456789" },
+            { "comment": "com_0006", "message": "try reading the informational brochure in the seat pouch.", "chat_name": "Jane C" }
         ]
     },
     {
-       "thread": [
-            {"comment": "com_0007", "message": "Flight attendants, prepare for take-off please.", "chat_name": "Pilot 1"},
-            {"comment": "com_0008", "message": "Airliner A, runway 12 cleared for takeoff", "chat_name": "ATC 2"},
+        "thread": [
+            { "comment": "com_0007", "message": "Flight attendants, prepare for take-off please.", "chat_name": "Pilot 1" },
+            { "comment": "com_0008", "message": "Airliner A, runway 12 cleared for takeoff", "chat_name": "ATC 2" },
         ]
     }
 ]);
@@ -150,8 +158,8 @@ db.flights.insert([
 
 
 db.aircraft.insert([
-    {"model": "Airbus A350", "planes": ["10001", "10002", "10003", "10004", "10005"]},
-    {"model": "Boeing 747-8", "planes": ["30005", "30006", "30007"]}
+    { "model": "Airbus A350", "planes": ["10001", "10002", "10003", "10004", "10005"] },
+    { "model": "Boeing 747-8", "planes": ["30005", "30006", "30007"] }
 ]);
 
 
@@ -167,7 +175,7 @@ db.employee.insert([
             "state": "NY",
             "zip": "12000"
         },
-	"foreign_id": "000000000000000000000001"
+        "foreign_id": "000000000000000000000001"
     },
     {
         "email": "employee-2@example.com",
@@ -180,7 +188,7 @@ db.employee.insert([
             "state": "NY",
             "zip": "12000"
         },
-	"foreign_id": "000000000000000000000002"
+        "foreign_id": "000000000000000000000002"
     }
 ]);
 
@@ -198,17 +206,17 @@ db.customer.insert([
             "zip": "12345"
         },
         "login": [
-            {"time": Date("2021-01-01 01:00:00")},
-            {"time": Date("2021-01-02 01:00:00")},
-            {"time": Date("2021-01-03 01:00:00")},
-            {"time": Date("2021-01-04 01:00:00")},
-            {"time": Date("2021-01-05 01:00:00")},
-            {"time": Date("2021-01-06 01:00:00")},
+            { "time": Date("2021-01-01 01:00:00") },
+            { "time": Date("2021-01-02 01:00:00") },
+            { "time": Date("2021-01-03 01:00:00") },
+            { "time": Date("2021-01-04 01:00:00") },
+            { "time": Date("2021-01-05 01:00:00") },
+            { "time": Date("2021-01-06 01:00:00") },
         ],
         "last_visit": Date("2021-01-06 01:00:00"),
         "alt_email": "customer-1-alt@example.com",
         "service_request": [
-            {"id": "ser_aaa-aaa", "opened": Date("2021-01-01"), "closed": Date("2021-01-03"), "employee_id": "1"}
+            { "id": "ser_aaa-aaa", "opened": Date("2021-01-01"), "closed": Date("2021-01-03"), "employee_id": "1" }
         ]
     },
     {
@@ -223,16 +231,16 @@ db.customer.insert([
             "state": "NY",
             "zip": "12321"
         },
-         "login": [
-            {"time": Date("2021-01-06 01:00:00")},
+        "login": [
+            { "time": Date("2021-01-06 01:00:00") },
         ],
         "last_visit": Date("2021-01-06 01:00:00"),
         "alt_email": null,
-         "service_request": [
-            {"id": "ser_bbb-bbb", "opened": Date("2021-01-04"), "closed": null, "employee_id": "1"}
+        "service_request": [
+            { "id": "ser_bbb-bbb", "opened": Date("2021-01-04"), "closed": null, "employee_id": "1" }
         ]
     },
-     {
+    {
         "id": NumberInt(3),
         "email": "customer-3@example.com",
         "name": null,
@@ -240,18 +248,18 @@ db.customer.insert([
         "login": null,
         "last_visit": null,
         "alt_email": null,
-         "service_request": [
-            {"id": "ser_ccc-ccc", "opened": Date("2021-01-05"), "closed": Date("2021-01-07"), "employee_id": "1"},
-            {"id": "ser_ddd-ddd", "opened": Date("2021-05-05"), "closed": Date("2021-05-08"), "employee_id": "2"}
+        "service_request": [
+            { "id": "ser_ccc-ccc", "opened": Date("2021-01-05"), "closed": Date("2021-01-07"), "employee_id": "1" },
+            { "id": "ser_ddd-ddd", "opened": Date("2021-05-05"), "closed": Date("2021-05-08"), "employee_id": "2" }
 
         ]
     }
 ]);
 
 db.rewards.insert([
-    {"owner": [{"phone": "530-486-6983", "shopper_name": "janec"}, {"phone": "818-695-1881", "shopper_name": "janec"}], "points": 95, "expiration": Date("2023-01-05")},
-    {"owner": [{"phone": "254-344-9868", "shopper_name": "janec"}], "points": 50, "expiration": Date("2023-02-05")},
-    {"owner": [{"phone": "304-969-7140", "shopper-name": "timc"}], "points": 3, "expiration": Date("2022-02-05")}
+    { "owner": [{ "phone": "530-486-6983", "shopper_name": "janec" }, { "phone": "818-695-1881", "shopper_name": "janec" }], "points": 95, "expiration": Date("2023-01-05") },
+    { "owner": [{ "phone": "254-344-9868", "shopper_name": "janec" }], "points": 50, "expiration": Date("2023-02-05") },
+    { "owner": [{ "phone": "304-969-7140", "shopper-name": "timc" }], "points": 3, "expiration": Date("2022-02-05") }
 ])
 
 
@@ -289,9 +297,9 @@ db.payment_card.insert([
 ]);
 
 db.product.insert([
-    {"id": "1", "name": "Example Product 1", "price": 10},
-    {"id": "2", "name": "Example Product 2", "price": 20},
-    {"id": "3", "name": "Example Product 2", "price": 50}
+    { "id": "1", "name": "Example Product 1", "price": 10 },
+    { "id": "2", "name": "Example Product 2", "price": 20 },
+    { "id": "3", "name": "Example Product 2", "price": 50 }
 
 ]);
 
@@ -308,13 +316,13 @@ db.orders.insert([
         },
         "payment_card_id": "pay_aaa-aaa",
         "order_item": [
-            {"item_no": 1, "product_id": "1", "quantity": 1},
+            { "item_no": 1, "product_id": "1", "quantity": 1 },
         ]
     },
     {
         "id": "ord_bbb-bbb",
         "customer_id": NumberInt(2),
-            "shipping_address":  {
+        "shipping_address": {
             "house": 123,
             "street": "Example Street",
             "city": "Exampletown",
@@ -323,13 +331,13 @@ db.orders.insert([
         },
         "payment_card_id": "pay_bbb-bbb",
         "order_item": [
-            {"item_no": 1, "product_id": "1", "quantity": 1},
+            { "item_no": 1, "product_id": "1", "quantity": 1 },
         ]
     },
-      {
+    {
         "id": "ord_ccc-ccc",
         "customer_id": NumberInt(1),
-            "shipping_address":  {
+        "shipping_address": {
             "house": 123,
             "street": "Example Street",
             "city": "Exampletown",
@@ -337,17 +345,17 @@ db.orders.insert([
             "zip": "12345"
         },
         "payment_card_id": "pay_aaa-aaa",
-         "order_item": [
-            {"item_no": 1, "product_id": "1", "quantity": 1},
-            {"item_no": 2, "product_id": "2", "quantity": 1},
+        "order_item": [
+            { "item_no": 1, "product_id": "1", "quantity": 1 },
+            { "item_no": 2, "product_id": "2", "quantity": 1 },
 
         ]
 
     },
-      {
+    {
         "id": "ord_ddd-ddd",
         "customer_id": NumberInt(1),
-            "shipping_address":  {
+        "shipping_address": {
             "house": 123,
             "street": "Example Street",
             "city": "Exampletown",
@@ -356,29 +364,29 @@ db.orders.insert([
         },
         "payment_card_id": "pay_bbb-bbb",
         "order_item": [
-            {"item_no": 1, "product_id": "1", "quantity": 1},
+            { "item_no": 1, "product_id": "1", "quantity": 1 },
         ]
 
     },
 ]);
 
 db.reports.insert([
-    {"email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 8, "total_visits": 100},
-    {"email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 9, "total_visits": 100},
-    {"email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 10, "total_visits": 100},
-    {"email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 11, "total_visits": 100}
+    { "email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 8, "total_visits": 100 },
+    { "email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 9, "total_visits": 100 },
+    { "email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 10, "total_visits": 100 },
+    { "email": "admin-account@example.com", "name": "Monthly Report", "year": 2021, "month": 11, "total_visits": 100 }
 ]);
 
 db.composite_pk_test.insert([
-    {"id_a":1, "id_b":10, "description":"linked to customer 1", "customer_id": NumberInt(1)},
-    {"id_a":1, "id_b":11, "description":"linked to customer 2", "customer_id": NumberInt(2)},
-    {"id_a":2, "id_b":10, "description":"linked to customer 3", "customer_id": NumberInt(3)}
+    { "id_a": 1, "id_b": 10, "description": "linked to customer 1", "customer_id": NumberInt(1) },
+    { "id_a": 1, "id_b": 11, "description": "linked to customer 2", "customer_id": NumberInt(2) },
+    { "id_a": 2, "id_b": 10, "description": "linked to customer 3", "customer_id": NumberInt(3) }
 ]);
 
 //values to support test by specific objectId search
 
 db.type_link_test.insert([
-    {"_id":ObjectId("000000000000000000000001"), "name":"v1", "key":1, "email":"test1@example.com"},
-    {"_id":ObjectId("000000000000000000000002"), "name":"v2", "key":2, "email":"test1@example.com"},
-    {"_id":ObjectId("000000000000000000000003"), "name":"v3", "key":3, "email":"test1@example.com"}
+    { "_id": ObjectId("000000000000000000000001"), "name": "v1", "key": 1, "email": "test1@example.com" },
+    { "_id": ObjectId("000000000000000000000002"), "name": "v2", "key": 2, "email": "test1@example.com" },
+    { "_id": ObjectId("000000000000000000000003"), "name": "v3", "key": 3, "email": "test1@example.com" }
 ]);

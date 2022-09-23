@@ -120,7 +120,8 @@ INSERT INTO public.address VALUES
 INSERT INTO public.customer VALUES
 (1, 'customer-1@example.com', 'John Customer', '2020-04-01 11:47:42', 1),
 (2, 'customer-2@example.com', 'Jill Customer', '2020-04-01 11:47:42', 2),
-(3, 'jane@example.com', 'Jane Customer', '2020-04-01 11:47:42', 4);
+(3, 'jane@example.com', 'Jane Customer', '2020-04-01 11:47:42', 3),
+(4, 'sean+engdemo@ethyca.com', 'Sean Engdemo', '2020-04-01 11:47:42', 4);
 
 INSERT INTO public.employee VALUES
 (1, 'employee-1@example.com', 'Jack Employee', 3),
