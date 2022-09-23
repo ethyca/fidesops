@@ -81,3 +81,9 @@ config = "data/saas/config/rollbar_config.yml"
 dataset = "data/saas/dataset/rollbar_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Rollbar"
+
+[square]
+config = "data/saas/config/square_config.yml"
+dataset = "data/saas/dataset/square_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Square"
