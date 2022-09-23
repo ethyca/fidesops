@@ -63,8 +63,6 @@ def quickstart(session: nox.Session) -> None:
 )
 def config_script(session: nox.Session, script_name: str) -> None:
     """Run a configuration script."""
-    build(session, "dev")
-    session.notify("teardown")
     run_infrastructure(
         datastores=["postgres"],
         configscript_args={"script_name": script_name},
