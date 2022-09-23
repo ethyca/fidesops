@@ -1,0 +1,17 @@
+dataset:
+  - fides_key: marketo_connector_example
+    name: Marketo Dataset
+    description: A sample dataset representing the Marketo connector for Fidesops
+    collections:
+      - name: leads
+        field: []
+      - name: salespersons
+        field: []
+      - name: lists
+        field: []
+      - name: activities
+        field: []
+      - name: activity-types
+        field: []
+      - name: listMemberships
+        field: []

@@ -1,0 +1,126 @@
+saas_config:
+    fides_key: marketo_connector_example
+    name: Marketo SaaS Config
+    type: marketo
+    description: A sample schema representing the Marketo connector for Fidesops
+    version: 0.0.1
+
+    connector_params:
+      - name: domain
+      - name: access_token
+
+    client_config:
+      protocol: https
+      host: <domain>
+      authentication:
+          strategy: bearer
+          configuration:
+            token: <access_token>
+
+    test_request:
+      method: GET
+      path: /rest/v1/leads.json
+      param_values:
+        - name: filterType
+          value: email
+        - name: filterValues
+          value: test@test.com
+        # - name: fields
+        #   value: 
+
+    endpoints:
+      - name: leads
+        requests:
+          read:
+            method: GET
+            path: /rest/v1/leads.json
+            param_values:
+              - name: filterType
+                value: email
+              - name: filterValues
+                id: test@test.com
+              # - name: fields
+              #   value: 
+          delete:
+            method: POST
+            path: /rest/v1/leads/delete.json
+            param_values:
+              - name: id
+                references:
+                  - dataset: marketo_connector_example
+                    field: leads.id
+                    direction: from
+      - name: salespersons
+        requests:
+          read:
+            method: GET
+            path: /rest/v1/salespersons.json
+            param_values:
+              - name: filterType
+                defaultValue: email
+              - name: filterValues
+                identity: email
+              # - name: fields
+              #   defaultValue: email,phone,firstName,lastName,mobilePhone,fax,title,createdAt,updatedAt,externalSalesPersonId
+          delete:
+            method: POST
+            path: /rest/v1/salespersons/delete.json
+            param_values:
+              - name: externalsalespersonid
+                references:
+                  - dataset: marketo_connector_example
+                    field: salespersons.id
+                    direction: from
+      - name: lists
+        requests:
+          read:
+            method: GET
+            path: /rest/v1/leads/<leadId>/listMembership.json
+            param_values:
+              - name: leadId
+                references:
+                  - dataset: marketo_connector_example
+                    field: leads.id
+                    direction: from
+      - name: activities
+        requests:
+          read:
+            method: GET
+            path: /rest/v1/activities.json
+            param_values:
+              - name: leadIds
+                references:
+                  - dataset: marketo_connector_example
+                    field: leads.id
+                    direction: from
+      - name: activity-types
+        requests:
+          read:
+            method: GET
+            path: /rest/v1/activities/types.json
+            param_values:
+              - name: leadId
+                references:
+                  - dataset: marketo_connector_example
+                    field: leads.id
+                    direction: from
+      - name: listMemberships
+        requests:
+          read:
+            method: GET
+            path: /rest/v1/lists/<listId>.json
+            param_values:
+              - name: listId
+                references:
+                  - dataset: marketo_connector_example
+                    field: lists.id
+                    direction: from
+          delete:
+            method: POST
+            path: /rest/v1/lists/<listId>/leads.json
+            param_values:
+              - name: externalsalespersonid
+                references:
+                  - dataset: marketo_connector_example
+                    field: lists.id
+                    direction: from

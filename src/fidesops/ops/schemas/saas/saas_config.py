@@ -263,6 +263,7 @@ class SaaSType(Enum):
     sendgrid = "sendgrid"
     datadog = "datadog"
     rollbar = "rollbar"
+    marketo = "marketo"
 
 
 class SaaSConfigBase(BaseModel):
