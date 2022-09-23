@@ -48,7 +48,12 @@ class QuickstartBase:
 
     def check_health(self):
         url = f"{self.FIDESOPS_URL}{urls.HEALTH}"
-        response = requests.get(url)
+        try:
+            response = requests.get(url)
+        except requests.exceptions.ConnectionError:
+            sleep(2)
+            return self.check_health()
+
         if not response.ok:
             raise RuntimeError(
                 f"fidesops health check failed! response.status_code={response.status_code}, response.json()={response.json()} at url {url}"
