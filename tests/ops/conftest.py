@@ -41,6 +41,7 @@ from .fixtures.mysql_fixtures import *
 from .fixtures.postgres_fixtures import *
 from .fixtures.redshift_fixtures import *
 from .fixtures.saas.adobe_campaign_fixtures import *
+from .fixtures.saas.amplitude_fixtures import *
 from .fixtures.saas.auth0_fixtures import *
 from .fixtures.saas.connection_template_fixtures import *
 from .fixtures.saas.datadog_fixtures import *

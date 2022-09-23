@@ -1,0 +1,60 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Amplitude SaaS Config
+  type: Amplitude
+  description: A sample schema representing the Amplitude connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: api_key
+    - name: secret_key
+    - name: rate_limit
+
+  client_config:
+    protocol: https
+    authorization:
+      strategy: Basic
+      configuration:
+        name: <api_key>
+        value: <secret_key>
+
+  test_request:
+    method: GET
+    path: amplitude.com/api/2/users
+
+
+  endpoints:
+    - name: user-profile
+      requests:
+        read:
+          method: GET
+          path: profile-api.amplitude.com/v1/userprofile
+          query_params:
+            - name: get_amp_props
+              value: <get_amp_props>
+            - name: user_id
+              value: <user_id>
+          param_values:
+            - name: get_amp_props
+              connector_param: get_amp_props
+            - name: user_id
+              connector_param: user_id
+          data_path: userData
+    - name: scim-users
+      requests:
+        read:
+          method: GET
+          path: core.amplitude.com/scim/1/Users/<user_id>
+        param_values:
+          - name: user_id
+            connector_params: user_id
+    - name: delete-users
+      request:
+        update:
+          method: DELETE
+          path: amplitude.com/api/2/deletions/users/<user_id>/<date>
+        param_values:
+          - name: user_id
+            value: user_id
+          - name: date
+            value: now

@@ -1,0 +1,133 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: Amplitude Dataset
+    description: A sample dataset representing the Amplitude connector for Fidesops
+    collections:
+      - name: user-profile
+        fields:
+          - name: user_id
+            data_categories: [ user ]
+            fides_meta:
+              data_type: string
+          - name: device_id
+            data_categories: [ user ]
+            fides_meta:
+              data_type: string
+          - name: amp_props
+            fides_meta:
+              data_type: object
+          - name: cohort_ids
+            fides_meta:
+              data_type: object
+          - name: recommendations
+            fides_meta:
+              data_type: object
+            fields:
+              - name: rec_id
+                data_categories: [ system.operations ]
+                fides_meta:
+                  data_type: string
+              - name: rec_id
+                data_categories: [ system.operations ]
+                fides_meta:
+                  data_type: string
+              - name: items
+                data_categories: [ system.operations ]
+                fides_meta:
+                  data_type: string[]
+              - name: is_control
+                data_categories: [ system.operations ]
+                fides_meta:
+                  data_type: boolean
+              - name: recommendation_source
+                data_categories: [ system.operations ]
+                fides_meta:
+                  data_type: string
+              - name: last_updated
+                data_categories: [ system.operations ]
+                fides_meta:
+                  data_type: integer
+      - name: scim-users
+        fields:
+          - name: schemas
+            data_categories: [ system.operations ]
+            fides_meta:
+              data_type: string[]
+          - name: startIndex
+            data_categories: [ system.operations ]
+            fides_meta:
+              data_type: integer
+          - name: itemsPerPage
+            data_categories: [ system.operations ]
+            fides_meta:
+              data_type: integer
+          - name: totalResults
+            data_categories: [ system.operations ]
+            fides_meta:
+              data_type: integer
+          - name: Resources
+            fides_meta:
+              data_type: object
+            fields:
+              - name: schemas
+                data_categories: [ system.operations ]
+                fides_meta:
+                  data_type: string[]
+              - name: id
+                data_categories: [ user.contact.email ]
+                fides_meta:
+                  data_types: string
+              - name: userName
+                data_categories: [ user.contact.username ]
+                fides_meta:
+                  data_types: string
+              - name: name
+                fides_meta:
+                  data_type: object
+                fields:
+                  - name: givenName
+                    data_categories: [ user.contact.first_name ]
+                    fides_meta:
+                      data_type: string
+                  - name: familyName
+                    data_categories: [ user.contact.last_name ]
+                    fides_meta:
+                      data_type: string
+              - name: active
+                data_categories: [ system.operations ]
+                fides_meta:
+                  data_type: boolean
+              - name: emails
+                fides_meta:
+                  data_type: object
+                fields:
+                  - name: value
+                    data_categories: [ user.contact.email ]
+                    fides_meta:
+                      data_type: string
+                  - name: primary
+                    data_categories: [ system.operations ]
+                    fides_meta:
+                      data_type: boolean
+              - name: meta
+                fides_meta:
+                  data_type: object
+                fields:
+                  - name: resourceType
+                    data_categories: [ system.operations ]
+                    fides_meta:
+                      data_type: string
+      - name: delete-users
+        fields:
+          - name: amplitude_id
+            data_categories: [user]
+            fidesops_meta:
+              data_type: integer
+          - name: request_on_day
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: requester
+            data_categories: [system.operations]
+            fides_meta:
+              data_type: string
