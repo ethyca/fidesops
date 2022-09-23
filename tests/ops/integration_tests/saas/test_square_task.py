@@ -53,5 +53,19 @@ async def test_square_access_request_task(
     assert_rows_match(
         v[f"{dataset_name}:customer"],
         min_size=1,
-        keys=["id", "email_address", "given_name"],
+        keys=["id", "email_address"],
+    )
+    # verify we only returned data for our identity email
+    for customer in v[f"{dataset_name}:customer"]:
+        assert customer["email_address"] == square_identity_email
+
+    assert_rows_match(
+        v[f"{dataset_name}:locations"],
+        min_size=1,
+        keys=["id", "name"],
+    )
+    assert_rows_match(
+        v[f"{dataset_name}:orders"],
+        min_size=1,
+        keys=["id", "location_id", "customer_id", "state"],
     )
