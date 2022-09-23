@@ -7,7 +7,7 @@ import argparse
 import subprocess
 import sys
 from time import sleep
-from typing import List
+from typing import Dict, List
 
 from constants_nox import COMPOSE_SERVICE_NAME
 
@@ -37,6 +37,7 @@ def run_infrastructure(
     run_quickstart: bool = False,  # Should we run the quickstart command?
     run_tests: bool = False,  # Should we run the tests after creating the infra?
     run_create_test_data: bool = False,  # Should we run the create_test_data command?
+    configscript_args: Dict[str, str] = None,  # Should we run a configscript?
     analytics_opt_out: bool = False,  # Should we opt out of analytics?
 ) -> None:
     """
@@ -80,6 +81,14 @@ def run_infrastructure(
         path,
         service_name=COMPOSE_SERVICE_NAME,
     )
+
+    if configscript_args:
+        # Dynamically load a script to run against the server
+        return _run_configscript(
+            path,
+            COMPOSE_SERVICE_NAME,
+            configscript_args,
+        )
 
     if open_shell:
         return _open_shell(path, COMPOSE_SERVICE_NAME)
@@ -149,6 +158,19 @@ def _run_cmd_or_err(cmd: str) -> None:
     with subprocess.Popen(cmd, shell=True) as result:
         if result.wait() > 0:
             raise Exception(f"Error executing command: {cmd}")
+
+
+def _run_configscript(
+    path: str,
+    service_name: str,
+    configscript_args: Dict[str, str],
+) -> None:
+    """
+    Invokes the Fidesops command line quickstart
+    """
+    _run_cmd_or_err('echo "Running the quickstart..."')
+    _run_cmd_or_err(f"docker-compose {path} up -d")
+    _run_cmd_or_err(f"docker-compose run {service_name} python scripts/configuration/{configscript_args['script_name']}.py")
 
 
 def _run_quickstart(
