@@ -1,9 +1,9 @@
 import copy
 import logging
-import random
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock
+from uuid import uuid4
 
 import pytest
 from sqlalchemy import text
@@ -79,9 +79,7 @@ async def test_sql_erasure_ignores_collections_without_pk(
     field([dataset], "postgres_example", "customer", "name").data_categories = ["A"]
 
     graph = DatasetGraph(dataset)
-    privacy_request = PrivacyRequest(
-        id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=str(uuid4()))
     await graph_task.run_access_request(
         privacy_request,
         policy,
@@ -134,7 +132,7 @@ async def test_composite_key_erasure(
     integration_postgres_config: ConnectionConfig,
 ) -> None:
 
-    privacy_request = PrivacyRequest(id=f"test_postgres_task_{random.randint(0,1000)}")
+    privacy_request = PrivacyRequest(id=str(uuid4()))
     policy = erasure_policy("A")
     customer = Collection(
         name="customer",
@@ -214,7 +212,7 @@ async def test_composite_key_erasure(
 
     # re-run access request. Description has been
     # nullified here.
-    privacy_request = PrivacyRequest(id=f"test_postgres_task_{random.randint(0,1000)}")
+    privacy_request = PrivacyRequest(id=str(uuid4()))
     access_request_data = await graph_task.run_access_request(
         privacy_request,
         policy,
@@ -247,9 +245,7 @@ async def test_sql_erasure_task(db, postgres_inserts, integration_postgres_confi
     field([dataset], "postgres_example", "address", "zip").data_categories = ["C"]
     field([dataset], "postgres_example", "customer", "name").data_categories = ["A"]
     graph = DatasetGraph(dataset)
-    privacy_request = PrivacyRequest(
-        id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=str(uuid4()))
     await graph_task.run_access_request(
         privacy_request,
         policy,
@@ -286,9 +282,7 @@ async def test_postgres_access_request_task(
     postgres_integration_db,
 ) -> None:
 
-    privacy_request = PrivacyRequest(
-        id=f"test_postgres_access_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=str(uuid4()))
 
     v = await graph_task.run_access_request(
         privacy_request,
@@ -376,9 +370,7 @@ async def test_mssql_access_request_task(
     mssql_integration_db,
 ) -> None:
 
-    privacy_request = PrivacyRequest(
-        id=f"test_mssql_access_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=str(uuid4()))
 
     v = await graph_task.run_access_request(
         privacy_request,
@@ -466,9 +458,7 @@ async def test_mysql_access_request_task(
     mysql_integration_db,
 ) -> None:
 
-    privacy_request = PrivacyRequest(
-        id=f"test_mysql_access_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=str(uuid4()))
 
     v = await graph_task.run_access_request(
         privacy_request,
@@ -555,9 +545,7 @@ async def test_mariadb_access_request_task(
     connection_config_mariadb,
     mariadb_integration_db,
 ) -> None:
-    privacy_request = PrivacyRequest(
-        id=f"test_mariadb_access_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=str(uuid4()))
 
     v = await graph_task.run_access_request(
         privacy_request,
@@ -785,7 +773,7 @@ async def test_access_erasure_type_conversion(
     """Retrieve data from the type_link table. This requires retrieving data from
     the employee id field, which is an int, and converting it into a string to query
     against the type_link_test.id field."""
-    privacy_request = PrivacyRequest(id=f"test_postgtres_task_{random.randint(0,1000)}")
+    privacy_request = PrivacyRequest(id=str(uuid4()))
     policy = erasure_policy("A")
     employee = Collection(
         name="employee",
@@ -1099,16 +1087,14 @@ class TestRetryIntegration:
 @pytest.mark.integration_timescale
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_timescale_access_request_task(
+async def test_postgres_access_request_task(
     db,
     policy,
     timescale_connection_config,
     timescale_integration_db,
 ) -> None:
     database_name = "my_timescale_db_1"
-    privacy_request = PrivacyRequest(
-        id=f"test_timescale_access_request_task_{random.randint(0, 1000000)}"
-    )
+    privacy_request = PrivacyRequest(id=str(uuid4()))
 
     v = await graph_task.run_access_request(
         privacy_request,
@@ -1205,9 +1191,7 @@ async def test_timescale_erasure_request_task(
     target.save(db)
 
     database_name = "my_timescale_db_1"
-    privacy_request = PrivacyRequest(
-        id=f"test_timescale_access_request_task_{random.randint(0, 1000000)}"
-    )
+    privacy_request = PrivacyRequest(id=str(uuid4()))
 
     dataset = integration_db_dataset(database_name, timescale_connection_config.key)
 
@@ -1332,9 +1316,7 @@ async def test_timescale_query_and_mask_hypertable(
     db, policy, erasure_policy, timescale_connection_config, timescale_integration_db
 ) -> None:
     database_name = "my_timescale_db_1"
-    privacy_request = PrivacyRequest(
-        id=f"test_timescale_access_request_task_{random.randint(0, 1000000)}"
-    )
+    privacy_request = PrivacyRequest(id=str(uuid4()))
 
     dataset = integration_db_dataset(database_name, timescale_connection_config.key)
     # For this test, add a new collection to our standard dataset corresponding to the
