@@ -104,13 +104,6 @@ class TestRetryAfterHeaderParsing:
         retry_after_sleep = get_retry_after(test_response)
         assert retry_after_sleep == 30
 
-    def test_retry_after_parses_seconds_response(self):
-        test_response = Response()
-        test_response.status_code = 429
-        test_response.headers = {"Retry-After": "30"}
-        retry_after_sleep = get_retry_after(test_response)
-        assert retry_after_sleep == 30
-
     def test_retry_after_parses_timestamp_in_future(self):
         test_response = Response()
         test_response.status_code = 429

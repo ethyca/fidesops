@@ -128,7 +128,7 @@ class AuthenticatedClient:
                             f"Operational Error connecting to '{self.key}'{dev_mode_log}"
                         )
 
-                    if attempt < retry_count - 1:
+                    if attempt < retry_count:
                         logger.warning(
                             "Retrying http request in %s seconds", sleep_time
                         )
