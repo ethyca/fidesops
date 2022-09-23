@@ -372,9 +372,7 @@ async def test_postgres_privacy_requests_against_non_default_schema(
 ) -> None:
     """Assert that the postgres connector can make access and erasure requests against the non-default (public) schema"""
 
-    privacy_request = PrivacyRequest(
-        id=f"test_postgres_access_request_task_{random.randint(0, 100000)}"
-    )
+    privacy_request = PrivacyRequest(id=str(uuid4()))
     database_name = "postgres_backup"
     customer_email = "customer-500@example.com"
 
