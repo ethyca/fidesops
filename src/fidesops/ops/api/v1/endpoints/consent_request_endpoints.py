@@ -62,7 +62,7 @@ def create_consent_request(
     db: Session = Depends(get_db),
     data: Identity,
 ) -> ConsentRequestResponse:
-    """Record the users consent preference."""
+    """Creates a verification code for the user to verify access to manange consent preferences."""
     if not config.redis.enabled:
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
@@ -111,6 +111,7 @@ def consent_request_verify(
     db: Session = Depends(get_db),
     data: VerificationCode,
 ) -> ConsentPreferences:
+    """Verifies the verification code and returns the current consent preferences if successful."""
     consent_request = ConsentRequest.get_by_key_or_id(
         db=db, data={"id": consent_request_id}
     )
