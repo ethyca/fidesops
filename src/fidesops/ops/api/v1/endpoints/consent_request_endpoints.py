@@ -2,18 +2,25 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import Body, Depends, HTTPException, Security
+from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+)
 
 from fidesops.ops.api.deps import get_db
 from fidesops.ops.api.v1.urn_registry import (
     CONSENT_REQUEST,
-    CONSENT_REQUEST_PREFERENCES,
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
-from fidesops.ops.common_exceptions import FunctionalityNotConfigured
+from fidesops.ops.common_exceptions import (
+    FunctionalityNotConfigured,
+    IdentityVerificationException,
+)
 from fidesops.ops.core.config import config
 from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.models.privacy_request import (
@@ -25,27 +32,20 @@ from fidesops.ops.models.privacy_request import (
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
     FidesopsEmail,
-    RequestReceiptBodyParams,
-    RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
-from fidesops.ops.schemas.privacy_request import ConsentRequest as ConsentRequestSchema
 from fidesops.ops.schemas.privacy_request import (
+    ConsentPreferences,
     ConsentRequestResponse,
-    ConsentRequestVerification,
+    VerificationCode,
 )
 from fidesops.ops.schemas.redis_cache import Identity
-from fidesops.ops.service.email.email_dispatch_service import (
-    dispatch_email,
-    dispatch_email_task,
-)
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task
 from fidesops.ops.service.privacy_request.request_runner_service import (
     generate_id_verification_code,
-    queue_privacy_request,
 )
 from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.cache import FidesopsRedis
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
@@ -57,7 +57,7 @@ logger = logging.getLogger(__name__)
     status_code=HTTP_200_OK,
     response_model=ConsentRequestResponse,
 )
-def consent_request(
+def create_consent_request(
     *,
     db: Session = Depends(get_db),
     data: Identity,
@@ -92,10 +92,10 @@ def consent_request(
         }
         identity = ProvidedIdentity.create(db, data=provided_identity_data)
 
-    consent_request = {
+    consent_request_data = {
         "provided_identity_id": identity.id,
     }
-    consent_request = ConsentRequest.create(db, data=consent_request)
+    consent_request = ConsentRequest.create(db, data=consent_request_data)
     verificaiton_code = _send_verification_code_to_user(db, consent_request, data.email)
     return ConsentRequestResponse(identity=data, verification_code=verificaiton_code)
 
@@ -103,14 +103,67 @@ def consent_request(
 @router.post(
     CONSENT_REQUEST_VERIFY,
     status_code=HTTP_200_OK,
-    response_model=ConsentRequestResponse,
+    response_model=ConsentPreferences,
 )
-def consent_request(
+def consent_request_verify(
     *,
+    consent_request_id: str,
     db: Session = Depends(get_db),
-    data: Identity,
-) -> ConsentRequest:
-    ...
+    data: VerificationCode,
+) -> ConsentPreferences:
+    consent_request = ConsentRequest.get_by_key_or_id(
+        db=db, data={"id": consent_request_id}
+    )
+
+    if not consent_request:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND, detail="Consent request not found"
+        )
+
+    try:
+        consent_request.verify_identity(data.code)
+    except IdentityVerificationException as exc:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
+    except PermissionError as exc:
+        logger.info("Invalid verification code provided for %s.", consent_request.id)
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
+
+    provided_identity = ProvidedIdentity.get_by_key_or_id(
+        db, data={"id": consent_request.provided_identity_id}
+    )
+
+    # It shouldn't be possible to hit this because the cascade delete of the identity
+    # data would also delete the consent_request, but including this as a safety net.
+    if not provided_identity:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="No identity found for consent request id",
+        )
+
+    consent = Consent.filter(
+        db=db, conditions=Consent.provided_identity_id == provided_identity.id
+    ).all()
+
+    identity = (
+        Identity(email=provided_identity.encrypted_value["value"])
+        if provided_identity.field_name == ProvidedIdentityType.email
+        else Identity(phone_number=provided_identity.encrypted_value["value"])
+    )
+
+    if not consent:
+        return ConsentPreferences(identity=identity, consent=None)
+
+    return ConsentPreferences(
+        identity=identity,
+        consent=[
+            Consent(
+                data_use=x.data_use,
+                data_use_description=x.data_use_description,
+                opt_in=x.opt_in,
+            )
+            for x in consent
+        ],
+    )
 
 
 def _send_verification_code_to_user(

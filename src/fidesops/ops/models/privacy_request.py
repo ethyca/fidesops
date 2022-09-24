@@ -807,7 +807,7 @@ class ConsentRequest(Base):
     )
 
     def cache_identity_verification_code(self, value: str) -> None:
-        """Cache the generated identity verification code for later comparison"""
+        """Cache the generated identity verification code for later comparison."""
         cache: FidesopsRedis = get_cache()
         cache.set_with_autoexpire(
             f"IDENTITY_VERIFICATION_CODE__{self.id}",
@@ -815,13 +815,24 @@ class ConsentRequest(Base):
             config.redis.identity_verification_code_ttl_seconds,
         )
 
-    def verify_identity(self, db: Session, provided_code: str) -> ConsentRequest:
-        """Verify the identification code supplied by the user."""
-        if not self.status == PrivacyRequestStatus.identity_unverified:
-            raise IdentityVerificationException(
-                f"Invalid identity verification request. Privacy request '{self.id}' status = {self.status.value}."  # type: ignore # pylint: disable=no-member
-            )
+    def get_cached_identity_data(self) -> Dict[str, Any]:
+        """Retrieves any identity data pertaining to this request from the cache."""
+        prefix = f"id-{self.id}-identity-*"
+        cache: FidesopsRedis = get_cache()
+        keys = cache.keys(prefix)
+        return {key.split("-")[-1]: cache.get(key) for key in keys}
 
+    def get_cached_verification_code(self) -> Optional[str]:
+        """Retrieve the generated identity verification code if it exists"""
+        cache = get_cache()
+        values = cache.get_values([f"IDENTITY_VERIFICATION_CODE__{self.id}"]) or {}
+        if not values:
+            return None
+
+        return values.get(f"IDENTITY_VERIFICATION_CODE__{self.id}", None)
+
+    def verify_identity(self, provided_code: str) -> ConsentRequest:
+        """Verify the identification code supplied by the user."""
         code: Optional[str] = self.get_cached_verification_code()
         if not code:
             raise IdentityVerificationException(
@@ -831,9 +842,6 @@ class ConsentRequest(Base):
         if code != provided_code:
             raise PermissionError(f"Incorrect identification code for '{self.id}'")
 
-        self.status = PrivacyRequestStatus.pending
-        self.identity_verified_at = datetime.utcnow()
-        self.save(db)
         return self
 
 
