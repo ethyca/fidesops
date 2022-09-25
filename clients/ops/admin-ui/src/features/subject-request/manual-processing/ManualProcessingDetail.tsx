@@ -21,7 +21,6 @@ import {
 import { Field, Form, Formik } from "formik";
 import { PatchUploadManualWebhookDataRequest } from "privacy-requests/types";
 import React, { useRef } from "react";
-import { shallowEqual } from "react-redux";
 import * as Yup from "yup";
 
 import { ManualInputData } from "./types";
@@ -44,8 +43,6 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSubmit = async (values: any, _actions: any) => {
-    const hasChanged = !shallowEqual(data.fields, values);
-    if (!hasChanged) return;
     const params: PatchUploadManualWebhookDataRequest = {
       connection_key: data.connection_key,
       privacy_request_id: data.privacy_request_id,
@@ -83,100 +80,104 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
           Begin manual input
         </Button>
       )}
-      <Drawer
-        isOpen={isOpen}
-        placement="right"
-        // @ts-ignore
-        initialFocusRef={firstField}
-        onClose={onClose}
-        size="lg"
+      <Formik
+        enableReinitialize
+        initialValues={{ ...data.fields }}
+        onSubmit={handleSubmit}
+        validateOnBlur={false}
+        validateOnChange={false}
+        validationSchema={Yup.object().shape({})}
       >
-        <DrawerOverlay />
-        <DrawerContent>
-          <DrawerCloseButton />
-          <DrawerHeader color="gray.900">
-            <Text fontSize="xl" mb={4}>
-              {connectorName}
-            </Text>
-            <Divider />
-            <Text fontSize="md" mt="8">
-              PII Requirements
-            </Text>
-            <Box mt="8px">
-              <Text color="gray.700" fontSize="sm" fontWeight="normal">
-                Please complete the following PII fields that have been
-                collected for the selected subject.
-              </Text>
-            </Box>
-          </DrawerHeader>
-          <DrawerBody mt="24px">
-            <Formik
-              initialValues={{ ...data.fields }}
-              onSubmit={handleSubmit}
-              validateOnBlur={false}
-              validateOnChange={false}
-              validationSchema={Yup.object().shape({})}
-            >
-              <Form id="manual-detail-form" noValidate>
-                <VStack align="stretch" gap="16px">
-                  {Object.entries(data.fields).map(([key], index) => (
-                    <HStack key={key}>
-                      <Field id={key} name={key}>
-                        {({ field }: { field: any }) => (
-                          <FormControl
-                            alignItems="baseline"
-                            display="inline-flex"
-                          >
-                            <FormLabel
-                              color="gray.900"
-                              fontSize="14px"
-                              fontWeight="semibold"
-                              htmlFor={key}
-                              w="50%"
+        {/* @ts-ignore */}
+        {(props: FormikProps<Values>) => (
+          <Drawer
+            isOpen={isOpen}
+            placement="right"
+            // @ts-ignore
+            initialFocusRef={firstField}
+            onClose={onClose}
+            size="lg"
+          >
+            <DrawerOverlay />
+            <DrawerContent>
+              <DrawerCloseButton />
+              <DrawerHeader color="gray.900">
+                <Text fontSize="xl" mb={4}>
+                  {connectorName}
+                </Text>
+                <Divider />
+                <Text fontSize="md" mt="8">
+                  PII Requirements
+                </Text>
+                <Box mt="8px">
+                  <Text color="gray.700" fontSize="sm" fontWeight="normal">
+                    Please complete the following PII fields that have been
+                    collected for the selected subject.
+                  </Text>
+                </Box>
+              </DrawerHeader>
+              <DrawerBody mt="24px">
+                <Form id="manual-detail-form" noValidate>
+                  <VStack align="stretch" gap="16px">
+                    {Object.entries(data.fields).map(([key], index) => (
+                      <HStack key={key}>
+                        <Field id={key} name={key}>
+                          {({ field }: { field: any }) => (
+                            <FormControl
+                              alignItems="baseline"
+                              display="inline-flex"
                             >
-                              {key}
-                            </FormLabel>
-                            <Input
-                              {...field}
-                              autoComplete="off"
-                              color="gray.700"
-                              placeholder={`Please enter ${key}`}
-                              ref={index === 0 ? firstField : undefined}
-                              size="sm"
-                            />
-                          </FormControl>
-                        )}
-                      </Field>
-                    </HStack>
-                  ))}
-                </VStack>
-              </Form>
-            </Formik>
-          </DrawerBody>
-          <DrawerFooter justifyContent="flex-start">
-            <ButtonGroup size="sm" spacing="8px" variant="outline">
-              <Button onClick={onClose} variant="outline">
-                Cancel
-              </Button>
-              <Button
-                bg="primary.800"
-                color="white"
-                form="manual-detail-form"
-                isLoading={isSubmitting}
-                loadingText="Submitting"
-                size="sm"
-                variant="solid"
-                type="submit"
-                _active={{ bg: "primary.500" }}
-                _disabled={{ opacity: "inherit" }}
-                _hover={{ bg: "primary.400" }}
-              >
-                Save
-              </Button>
-            </ButtonGroup>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+                              <FormLabel
+                                color="gray.900"
+                                fontSize="14px"
+                                fontWeight="semibold"
+                                htmlFor={key}
+                                w="50%"
+                              >
+                                {key}
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                autoComplete="off"
+                                color="gray.700"
+                                placeholder={`Please enter ${key}`}
+                                ref={index === 0 ? firstField : undefined}
+                                size="sm"
+                              />
+                            </FormControl>
+                          )}
+                        </Field>
+                      </HStack>
+                    ))}
+                  </VStack>
+                </Form>
+              </DrawerBody>
+              <DrawerFooter justifyContent="flex-start">
+                <ButtonGroup size="sm" spacing="8px" variant="outline">
+                  <Button onClick={onClose} variant="outline">
+                    Cancel
+                  </Button>
+                  <Button
+                    bg="primary.800"
+                    color="white"
+                    form="manual-detail-form"
+                    isDisabled={!props.dirty}
+                    isLoading={isSubmitting}
+                    loadingText="Submitting"
+                    size="sm"
+                    variant="solid"
+                    type="submit"
+                    _active={{ bg: "primary.500" }}
+                    _hover={{ bg: "primary.400" }}
+                  >
+                    Save
+                  </Button>
+                </ButtonGroup>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+        )}
+      </Formik>
     </>
   );
 };
