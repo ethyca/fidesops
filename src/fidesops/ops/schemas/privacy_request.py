@@ -231,6 +231,10 @@ class ConsentPreferences(BaseSchema):
     consent: Optional[List[Consent]] = None
 
 
+class ConsentPreferencesWithVerificationCode(ConsentPreferences):
+    code: str
+
+
 class ConsentRequestResponse(BaseSchema):
     """Schema for consent request response."""
 
