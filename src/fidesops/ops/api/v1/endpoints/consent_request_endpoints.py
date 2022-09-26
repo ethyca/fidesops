@@ -43,7 +43,7 @@ from fidesops.ops.schemas.privacy_request import (
     VerificationCode,
 )
 from fidesops.ops.schemas.redis_cache import Identity
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email
 from fidesops.ops.service.privacy_request.request_runner_service import (
     generate_id_verification_code,
 )
@@ -259,18 +259,14 @@ def _send_verification_code_to_user(
     )  # Validates Fidesops is currently configured to send emails
     verification_code = generate_id_verification_code()
     request.cache_identity_verification_code(verification_code)
-    dispatch_email_task.apply_async(
-        queue=EMAIL_QUEUE_NAME,
-        kwargs={
-            "email_meta": FidesopsEmail(
-                action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
-                body_params=SubjectIdentityVerificationBodyParams(
-                    verification_code=verification_code,
-                    verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
-                ),
-            ).dict(),
-            "to_email": email,
-        },
+    dispatch_email(
+        db,
+        action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
+        to_email=email,
+        email_body_params=SubjectIdentityVerificationBodyParams(
+            verification_code=verification_code,
+            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+        ),
     )
 
     return verification_code
