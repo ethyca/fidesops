@@ -142,14 +142,14 @@ def test_consent_verify_consent_preferences(
 
     consent_data: list[dict[str, Any]] = [
         {
-            "data_use": "location",
-            "data_use_description": "Location data",
-            "opt_in": False,
-        },
-        {
             "data_use": "email",
             "data_use_description": None,
             "opt_in": True,
+        },
+        {
+            "data_use": "location",
+            "data_use_description": "Location data",
+            "opt_in": False,
         },
     ]
 
@@ -279,14 +279,14 @@ def test_set_consent_consent_preferences(
 
     consent_data: list[dict[str, Any]] = [
         {
-            "data_use": "location",
-            "data_use_description": "Location data",
-            "opt_in": False,
-        },
-        {
             "data_use": "email",
             "data_use_description": None,
             "opt_in": True,
+        },
+        {
+            "data_use": "location",
+            "data_use_description": "Location data",
+            "opt_in": False,
         },
     ]
 

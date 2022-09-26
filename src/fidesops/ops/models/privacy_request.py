@@ -18,7 +18,7 @@ from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.jwt import generate_jwe
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Session, backref, relationship
@@ -787,11 +787,13 @@ class Consent(Base):
     provided_identity_id = Column(
         String, ForeignKey(ProvidedIdentity.id), nullable=False
     )
-    data_use = Column(String, nullable=False, unique=True)
+    data_use = Column(String, nullable=False)
     data_use_description = Column(String)
     opt_in = Column(Boolean, nullable=False)
 
     provided_identity = relationship(ProvidedIdentity, back_populates="consent")
+
+    UniqueConstraint(provided_identity_id, data_use, name="uix_identity_data_use")
 
 
 class ConsentRequest(Base):
