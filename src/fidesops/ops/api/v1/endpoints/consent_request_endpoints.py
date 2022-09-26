@@ -32,7 +32,6 @@ from fidesops.ops.models.privacy_request import (
 )
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
-    FidesopsEmail,
     SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.schemas.privacy_request import Consent as ConsentSchema
@@ -47,7 +46,6 @@ from fidesops.ops.service.email.email_dispatch_service import dispatch_email
 from fidesops.ops.service.privacy_request.request_runner_service import (
     generate_id_verification_code,
 )
-from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 from fidesops.ops.util.api_router import APIRouter
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
