@@ -4802,7 +4802,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/{{consent_request_id}}/consent-request",
+							"raw": "{{host}}/consent-request/{{consent_request_id}}/verify",
 							"host": [
 								"{{host}}"
 							],
@@ -4815,7 +4815,7 @@
 					"response": []
 				},
 				{
-					"name": "Verify Code and Return Current Preferences Copy",
+					"name": "Verify Code and Save Preferences",
 					"request": {
 						"method": "PATCH",
 						"header": [],
@@ -4829,7 +4829,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/{{consent_request_id}}/preferences",
+							"raw": "{{host}}/consent-request/{{consent_request_id}}/preferences",
 							"host": [
 								"{{host}}"
 							],
