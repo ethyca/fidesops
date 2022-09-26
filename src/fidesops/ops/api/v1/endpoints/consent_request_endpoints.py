@@ -63,7 +63,7 @@ def create_consent_request(
     db: Session = Depends(get_db),
     data: Identity,
 ) -> ConsentRequestResponse:
-    """Creates a verification code for the user to verify access to manange consent preferences."""
+    """Creates a verification code for the user to verify access to manage consent preferences."""
     if not config.redis.enabled:
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
@@ -97,8 +97,8 @@ def create_consent_request(
         "provided_identity_id": identity.id,
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
-    verificaiton_code = _send_verification_code_to_user(db, consent_request, data.email)
-    return ConsentRequestResponse(identity=data, verification_code=verificaiton_code)
+    verification_code = _send_verification_code_to_user(db, consent_request, data.email)
+    return ConsentRequestResponse(identity=data, verification_code=verification_code)
 
 
 @router.post(
