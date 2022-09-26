@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Box,
   Button,
@@ -41,7 +42,6 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const firstField = useRef();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSubmit = async (values: any, _actions: any) => {
     const params: PatchUploadManualWebhookDataRequest = {
       connection_key: data.connection_key,
@@ -89,7 +89,7 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
         validationSchema={Yup.object().shape({})}
       >
         {/* @ts-ignore */}
-        {(props: FormikProps<Values>) => (
+        {(_props: FormikProps<Values>) => (
           <Drawer
             isOpen={isOpen}
             placement="right"
@@ -161,7 +161,6 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
                     bg="primary.800"
                     color="white"
                     form="manual-detail-form"
-                    isDisabled={!props.dirty}
                     isLoading={isSubmitting}
                     loadingText="Submitting"
                     size="sm"
