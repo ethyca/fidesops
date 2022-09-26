@@ -231,8 +231,12 @@ class ConsentPreferences(BaseSchema):
     consent: Optional[List[Consent]] = None
 
 
-class ConsentPreferencesWithVerificationCode(ConsentPreferences):
+class ConsentPreferencesWithVerificationCode(BaseSchema):
+    """scheam for consent preferences including the verification code."""
+
     code: str
+    identity: Identity
+    consent: List[Consent]
 
 
 class ConsentRequestResponse(BaseSchema):

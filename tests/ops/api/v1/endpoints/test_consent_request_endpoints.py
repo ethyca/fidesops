@@ -267,8 +267,7 @@ def test_set_consent_preferences_no_consent_present(
         f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES.format(consent_request_id=consent_request.id)}",
         json=data,
     )
-    assert response.status_code == 400
-    assert "No consent" in response.json()["detail"]
+    assert response.status_code == 422
 
 
 def test_set_consent_consent_preferences(

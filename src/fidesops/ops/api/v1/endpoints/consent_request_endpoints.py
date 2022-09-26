@@ -176,10 +176,10 @@ def set_consent_preferences(
     data: ConsentPreferencesWithVerificationCode,
 ) -> ConsentPreferences:
     """Verifies the verification code and saves the user's consent preferences if successful."""
-    if not data.consent:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST, detail="No consent preferences provided"
-        )
+    # if not data.consent:
+    #     raise HTTPException(
+    #         status_code=HTTP_400_BAD_REQUEST, detail="No consent preferences provided"
+    #     )
 
     provided_identity = _get_consent_request_and_provided_identity(
         db=db,
