@@ -202,7 +202,7 @@ def set_consent_preferences(
     return ConsentPreferences(
         identity=data.identity,
         consent=[
-            Consent(
+            ConsentSchema(
                 data_use=x.data_use,
                 data_use_description=x.data_use_description,
                 opt_in=x.opt_in,
