@@ -51,7 +51,7 @@ def test_consent_request(mock_dispatch_email, api_client):
     assert not mock_dispatch_email.called
 
 
-def test_consent_verify_no_cosent_request_id(
+def test_consent_verify_no_consent_request_id(
     api_client,
 ):
     data = {"code": "12345"}
@@ -64,7 +64,7 @@ def test_consent_verify_no_cosent_request_id(
     assert "not found" in response.json()["detail"]
 
 
-def test_consent_verify_no_cosent_code(
+def test_consent_verify_no_consent_code(
     provided_identity_and_consent_request, api_client
 ):
     data = {"code": "12345"}
@@ -169,7 +169,7 @@ def test_consent_verify_consent_preferences(
     assert response.json()["consent"] == consent_data
 
 
-def test_set_consent_preferences_no_cosent_request_id(api_client):
+def test_set_consent_preferences_no_consent_request_id(api_client):
     data = {
         "code": "12345",
         "identity": {"email": "test@email.com"},
