@@ -9,6 +9,7 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
+    HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
 from fidesops.ops.api.deps import get_db
@@ -19,6 +20,7 @@ from fidesops.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.ops.common_exceptions import (
+    EmailDispatchException,
     FunctionalityNotConfigured,
     IdentityVerificationException,
 )
@@ -47,6 +49,7 @@ from fidesops.ops.service.privacy_request.request_runner_service import (
     generate_id_verification_code,
 )
 from fidesops.ops.util.api_router import APIRouter
+from fidesops.ops.util.logger import Pii
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
@@ -97,7 +100,16 @@ def create_consent_request(
         "provided_identity_id": identity.id,
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
-    verification_code = _send_verification_code_to_user(db, consent_request, data.email)
+    try:
+        verification_code = _send_verification_code_to_user(
+            db, consent_request, data.email
+        )
+    except EmailDispatchException as exc:
+        logger.error("Error sending the verification code email: %s", Pii(str(exc)))
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error sending the verification code email",
+        )
     return ConsentRequestResponse(identity=data, verification_code=verification_code)
 
 
