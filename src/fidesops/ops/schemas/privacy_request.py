@@ -239,6 +239,7 @@ class ConsentRequestResponse(BaseSchema):
     """Schema for consent request response."""
 
     identity: Identity
+    consent_request_id: str
     verification_code: str
 
 

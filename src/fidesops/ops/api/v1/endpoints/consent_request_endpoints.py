@@ -110,7 +110,11 @@ def create_consent_request(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error sending the verification code email",
         )
-    return ConsentRequestResponse(identity=data, verification_code=verification_code)
+    return ConsentRequestResponse(
+        identity=data,
+        consent_request_id=consent_request.id,
+        verification_code=verification_code,
+    )
 
 
 @router.post(
