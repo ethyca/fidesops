@@ -84,7 +84,7 @@ def create_consent_request(
         db=db,
         conditions=(
             (ProvidedIdentity.field_name == ProvidedIdentityType.email)
-            & (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(data.email))
+            & (ProvidedIdentity.encrypted_value == data.email)
         ),
     ).first()
 
@@ -92,7 +92,7 @@ def create_consent_request(
         provided_identity_data = {
             "privacy_request_id": None,
             "field_name": "email",
-            "encrypted_value": {"value": "test@email.com"},
+            "encrypted_value": {"value": data.email},
         }
         identity = ProvidedIdentity.create(db, data=provided_identity_data)
 
