@@ -127,7 +127,7 @@ class RootUserSettings(FidesSettings):
         cls,
         v: Optional[str],
         values: Dict[str, str],
-    ) -> str:
+    ) -> Optional[str]:
         """
         Populates the appropriate value for analytics id based on config
         """
