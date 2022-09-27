@@ -53,7 +53,23 @@ async def test_square_access_request_task(
     assert_rows_match(
         v[f"{dataset_name}:customer"],
         min_size=1,
-        keys=["id", "email_address"],
+        keys=[
+            "id",
+            "created_at",
+            "updated_at",
+            "given_name",
+            "family_name",
+            "nickname",
+            "email_address",
+            "address",
+            "phone_number",
+            "company_name",
+            "preferences",
+            "creation_source",
+            "birthday",
+            "segment_ids",
+            "version",
+        ],
     )
     # verify we only returned data for our identity email
     for customer in v[f"{dataset_name}:customer"]:
@@ -62,7 +78,23 @@ async def test_square_access_request_task(
     assert_rows_match(
         v[f"{dataset_name}:locations"],
         min_size=1,
-        keys=["id", "name"],
+        keys=[
+            "id",
+            "name",
+            "address",
+            "timezone",
+            "capabilities",
+            "status",
+            "created_at",
+            "merchant_id",
+            "country",
+            "language_code",
+            "currency",
+            "business_name",
+            "type",
+            "business_hours",
+            "mcc",
+        ],
     )
     assert_rows_match(
         v[f"{dataset_name}:orders"],
