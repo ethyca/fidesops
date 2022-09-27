@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class FidesopsDatabaseSettings(DatabaseSettings):
     """Configuration settings for Postgres."""
 
-    ENABLED: bool = True
+    enabled: bool = True
 
     class Config:
         env_prefix = "FIDESOPS__DATABASE__"
@@ -174,10 +174,12 @@ class FidesopsConfig(FidesSettings):
     database: FidesopsDatabaseSettings
     redis: RedisSettings
     security: FidesopsSecuritySettings
-    execution: Optional[ExecutionSettings]
-    root_user: Optional[RootUserSettings]
-    admin_ui: Optional[AdminUiSettings]
-    notifications: Optional[FidesopsNotificationSettings]
+    execution: Optional[ExecutionSettings] = ExecutionSettings()
+    root_user: Optional[RootUserSettings] = RootUserSettings()
+    admin_ui: Optional[AdminUiSettings] = AdminUiSettings()
+    notifications: Optional[
+        FidesopsNotificationSettings
+    ] = FidesopsNotificationSettings()
 
     port: int = 8080  # Run the webserver on port 8080 by default
     is_test_mode: bool = os.getenv("TESTING", "").lower() == "true"
