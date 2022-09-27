@@ -126,10 +126,6 @@ def test_consent_verify_no_consent_present(
         json={"code": verification_code},
     )
     assert response.status_code == 200
-    assert (
-        response.json()["identity"]["email"]
-        == provided_identity.encrypted_value["value"]
-    )
     assert response.json()["consent"] is None
 
 
@@ -162,10 +158,6 @@ def test_consent_verify_consent_preferences(
         json={"code": verification_code},
     )
     assert response.status_code == 200
-    assert (
-        response.json()["identity"]["email"]
-        == provided_identity.encrypted_value["value"]
-    )
     assert response.json()["consent"] == consent_data
 
 
@@ -306,8 +298,4 @@ def test_set_consent_consent_preferences(
         json=data,
     )
     assert response.status_code == 200
-    assert (
-        response.json()["identity"]["email"]
-        == provided_identity.encrypted_value["value"]
-    )
     assert response.json()["consent"] == consent_data

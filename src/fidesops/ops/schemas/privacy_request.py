@@ -227,7 +227,6 @@ class Consent(BaseSchema):
 class ConsentPreferences(BaseSchema):
     """Schema for consent prefernces."""
 
-    identity: Identity
     consent: Optional[List[Consent]] = None
 
 

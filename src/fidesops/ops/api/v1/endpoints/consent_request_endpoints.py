@@ -152,7 +152,6 @@ def consent_request_verify(
         return ConsentPreferences(identity=identity, consent=None)
 
     return ConsentPreferences(
-        identity=identity,
         consent=[
             Consent(
                 data_use=x.data_use,
