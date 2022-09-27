@@ -58,6 +58,9 @@ from fidesops.ops.schemas.connection_configuration.connection_secrets import (
 )
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.service.connectors import get_connector
+from fidesops.ops.service.privacy_request.request_service import (
+    queue_requires_input_requests,
+)
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.oauth_util import verify_oauth_client
@@ -222,6 +225,9 @@ def patch_connections(
                 )
             )
 
+    # Check if possibly disabling a manual webhook here causes us to need to queue affected privacy requests
+    queue_requires_input_requests(db)
+
     return BulkPutConnectionConfiguration(
         succeeded=created_or_updated,
         failed=failed,
@@ -238,8 +244,14 @@ def delete_connection(
 ) -> None:
     """Removes the connection configuration with matching key."""
     connection_config = get_connection_config_or_error(db, connection_key)
+    connection_type = connection_config.connection_type
     logger.info("Deleting connection config with key '%s'.", connection_key)
     connection_config.delete(db)
+
+    # Access Manual Webhooks are cascade deleted if their ConnectionConfig is deleted,
+    # so we queue any privacy requests that are no longer blocked by webhooks
+    if connection_type == ConnectionType.manual_webhook:
+        queue_requires_input_requests(db)
 
 
 def validate_secrets(
