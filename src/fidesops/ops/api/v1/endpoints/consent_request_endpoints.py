@@ -78,7 +78,10 @@ def create_consent_request(
         conditions=(
             (ProvidedIdentity.field_name == ProvidedIdentityType.email)
             & (ProvidedIdentity.encrypted_value == data.email)
-            & (ProvidedIdentity.privacy_request == None)
+            & (
+                ProvidedIdentity.privacy_request
+                == None  # pylint: disable=singleton-comparison
+            )
         ),
     ).first()
 
