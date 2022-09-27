@@ -174,10 +174,10 @@ class FidesopsConfig(FidesSettings):
     database: FidesopsDatabaseSettings
     redis: RedisSettings
     security: FidesopsSecuritySettings
-    execution: ExecutionSettings
-    root_user: RootUserSettings
-    admin_ui: AdminUiSettings
-    notifications: FidesopsNotificationSettings
+    execution: Optional[ExecutionSettings]
+    root_user: Optional[RootUserSettings]
+    admin_ui: Optional[AdminUiSettings]
+    notifications: Optional[FidesopsNotificationSettings]
 
     port: int = 8080  # Run the webserver on port 8080 by default
     is_test_mode: bool = os.getenv("TESTING", "").lower() == "true"
