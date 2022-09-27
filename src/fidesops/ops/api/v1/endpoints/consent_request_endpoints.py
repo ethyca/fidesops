@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 
 from fastapi import Depends, HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -180,7 +181,12 @@ def set_consent_preferences(
         else:
             preference_dict = dict(preference)
             preference_dict["provided_identity_id"] = provided_identity.id
-            Consent.create(db, data=preference_dict)
+            try:
+                Consent.create(db, data=preference_dict)
+            except IntegrityError as exc:
+                raise HTTPException(
+                    status_code=HTTP_400_BAD_REQUEST, detail=Pii(str(exc))
+                )
 
     consent = Consent.filter(
         db, conditions=(Consent.provided_identity_id == provided_identity.id)
