@@ -77,7 +77,7 @@ def create_consent_request(
         db=db,
         conditions=(
             (ProvidedIdentity.field_name == ProvidedIdentityType.email)
-            & (ProvidedIdentity.encrypted_value == data.email)
+            & (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(data.email))
             & (
                 ProvidedIdentity.privacy_request  # pylint: disable=singleton-comparison
                 == None
@@ -89,6 +89,7 @@ def create_consent_request(
         provided_identity_data = {
             "privacy_request_id": None,
             "field_name": "email",
+            "hashed_value": ProvidedIdentity.hash_value(data.email),
             "encrypted_value": {"value": data.email},
         }
         identity = ProvidedIdentity.create(db, data=provided_identity_data)
@@ -130,7 +131,7 @@ def consent_request_verify(
         db=db, consent_request_id=consent_request_id, verification_code=data.code
     )
 
-    if not provided_identity.encrypted_value:
+    if not provided_identity.hashed_value:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing email"
         )
@@ -160,7 +161,7 @@ def set_consent_preferences(
         verification_code=data.code,
     )
 
-    if not provided_identity.encrypted_value:
+    if not provided_identity.hashed_value:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing email"
         )

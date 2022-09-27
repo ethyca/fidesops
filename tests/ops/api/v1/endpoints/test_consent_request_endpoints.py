@@ -24,6 +24,7 @@ def provided_identity_and_consent_request(db):
     provided_identity_data = {
         "privacy_request_id": None,
         "field_name": "email",
+        "hashed_value": ProvidedIdentity.hash_value("test@email.com"),
         "encrypted_value": {"value": "test@email.com"},
     }
     provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
@@ -94,6 +95,7 @@ def test_consent_verify_no_email_provided(db, api_client):
     provided_identity_data = {
         "privacy_request_id": None,
         "field_name": "email",
+        "hashed_value": None,
         "encrypted_value": None,
     }
     provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
@@ -218,6 +220,7 @@ def test_set_consent_preferences_no_email_provided(db, api_client):
     provided_identity_data = {
         "privacy_request_id": None,
         "field_name": "email",
+        "hashed_value": None,
         "encrypted_value": None,
     }
     provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
