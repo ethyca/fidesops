@@ -42,7 +42,7 @@ def provided_identity_and_consent_request(db):
     "email_dataset_config",
     "subject_identity_verification_required",
 )
-@patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+@patch("fidesops.ops.service._verification.dispatch_email")
 def test_consent_request(mock_dispatch_email, api_client):
     data = {"email": "test@example.com"}
     response = api_client.post(f"{V1_URL_PREFIX}{CONSENT_REQUEST}", json=data)
