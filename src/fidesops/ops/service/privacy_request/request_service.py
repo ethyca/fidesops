@@ -2,19 +2,13 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 
-from sqlalchemy.orm import Session
-
 from fidesops.ops.core.config import config
-from fidesops.ops.models.manual_webhook import AccessManualWebhook
 from fidesops.ops.models.policy import ActionType, Policy
 from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.ops.schemas.redis_cache import Identity
 from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.ops.service.privacy_request.request_runner_service import (
-    queue_privacy_request,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -71,25 +65,3 @@ def cache_data(
                 privacy_request.cache_masking_secret(masking_secret)
     if drp_request_body:
         privacy_request.cache_drp_request_body(drp_request_body)
-
-
-def queue_requires_input_requests(db: Session) -> None:
-    """
-    Queue privacy requests with request status "requires_input" if they are no longer blocked by
-    webhooks.
-    """
-    if not AccessManualWebhook.get_enabled(db):
-        for pr in PrivacyRequest.filter(
-            db=db,
-            conditions=(PrivacyRequest.status == PrivacyRequestStatus.requires_input),
-        ):
-            logger.info(
-                "Queuing privacy request '%s with '%s' status now that manual inputs are no longer required.",
-                pr.id,
-                pr.status.value,
-            )
-            pr.status = PrivacyRequestStatus.in_processing
-            pr.save(db=db)
-            queue_privacy_request(
-                privacy_request_id=pr.id,
-            )
