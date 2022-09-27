@@ -93,7 +93,7 @@ class AuthenticatedClient:
         backoff_factor * (2 ** (retry_attempt))
         For an backoff_factor of 1 it will sleep for 2,4,8 seconds
 
-        General exceptions are always retried. RequestFailureResponseException exceptions are only retried
+        General exceptions are not retried. RequestFailureResponseException exceptions are only retried
         if the status code is in retry_status_codes.
         """
 
@@ -127,6 +127,9 @@ class AuthenticatedClient:
                         last_exception = ConnectionException(
                             f"Operational Error connecting to '{self.key}'{dev_mode_log}"
                         )
+                        # requests library can raise ConnectionError, Timeout or TooManyRedirects
+                        # we will not retry these as they don't usually point to intermittent issues
+                        break
 
                     if attempt < retry_count:
                         logger.warning(

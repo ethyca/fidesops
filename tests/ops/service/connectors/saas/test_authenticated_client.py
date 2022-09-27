@@ -6,7 +6,10 @@ from typing import Any, Dict
 import pytest
 from requests import ConnectionError, Response, Session
 
-from fidesops.ops.common_exceptions import ClientUnsuccessfulException
+from fidesops.ops.common_exceptions import (
+    ClientUnsuccessfulException,
+    ConnectionException,
+)
 from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.ops.service.connectors.saas.authenticated_client import (
@@ -83,16 +86,14 @@ class TestAuthenticatedClient:
         returned_response == test_response_2
         assert send.call_count == 2
 
-    def test_client_retries_connection_error_with_success(
+    def test_client_does_not_retry_connection_error(
         self, send, test_authenticated_client, test_saas_request
     ):
         test_side_effect_1 = ConnectionError()
-        test_response_2 = Response()
-        test_response_2.status_code = 200
-        send.side_effect = [test_side_effect_1, test_response_2]
-        returned_response = test_authenticated_client.send(test_saas_request)
-        returned_response == test_response_2
-        assert send.call_count == 2
+        send.side_effect = [test_side_effect_1]
+        with pytest.raises(ConnectionException):
+            test_authenticated_client.send(test_saas_request)
+        assert send.call_count == 1
 
 
 @pytest.mark.unit_saas
