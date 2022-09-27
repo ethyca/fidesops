@@ -35,9 +35,10 @@ class ExecutionSettings(FidesSettings):
     """Configuration settings for execution."""
 
     privacy_request_delay_timeout: int = 3600
-    task_retry_count: int
-    task_retry_delay: int  # In seconds
-    task_retry_backoff: int
+    # By default Fidesops will not retry graph nodes
+    task_retry_count: int = 0
+    task_retry_delay: int = 0  # In seconds
+    task_retry_backoff: int = 0
     subject_identity_verification_required: bool = False
     require_manual_request_approval: bool = False
     masking_strict: bool = True
@@ -118,15 +119,21 @@ class FidesopsSecuritySettings(SecuritySettings):
 class RootUserSettings(FidesSettings):
     """Configuration settings for Analytics variables."""
 
-    analytics_opt_out: Optional[bool]
-    analytics_id: Optional[str]
+    analytics_opt_out: Optional[bool] = True
+    analytics_id: Optional[str] = None
 
     @validator("analytics_id", pre=True)
-    def populate_analytics_id(cls, v: Optional[str]) -> str:
+    def populate_analytics_id(
+        cls,
+        v: Optional[str],
+        values: Dict[str, str],
+    ) -> str:
         """
         Populates the appropriate value for analytics id based on config
         """
-        return v or cls.generate_and_store_client_id()
+        if not v and not values.get("analytics_opt_out"):
+            v = cls.generate_and_store_client_id()
+        return v
 
     @staticmethod
     def generate_and_store_client_id() -> str:
@@ -172,7 +179,7 @@ class FidesopsConfig(FidesSettings):
     admin_ui: AdminUiSettings
     notifications: FidesopsNotificationSettings
 
-    port: int
+    port: int = 8080  # Run the webserver on port 8080 by default
     is_test_mode: bool = os.getenv("TESTING", "").lower() == "true"
     hot_reloading: bool = os.getenv("FIDESOPS__HOT_RELOAD", "").lower() == "true"
     dev_mode: bool = os.getenv("FIDESOPS__DEV_MODE", "").lower() == "true"
