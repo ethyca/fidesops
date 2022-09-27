@@ -70,6 +70,7 @@ class RuleResponse(RuleBase):
 
     storage_destination: Optional[StorageDestinationResponse]
     masking_strategy: Optional[PolicyMaskingSpecResponse]
+    targets: Optional[List[RuleTarget]]
 
 
 class Rule(RuleBase):

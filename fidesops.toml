@@ -33,12 +33,12 @@ subject_request_download_link_ttl_seconds = 86400
 
 [execution]
 masking_strict = true
-require_manual_request_approval = false
+require_manual_request_approval = true
 subject_identity_verification_required = false
 task_retry_count = 0
 task_retry_delay = 1
 task_retry_backoff = 1
-worker_enabled = false
+worker_enabled = true
 
 [root_user]
 analytics_opt_out = false
@@ -47,6 +47,6 @@ analytics_opt_out = false
 enabled = true
 
 [notifications]
-send_request_completion_notification = false
-send_request_receipt_notification = false
-send_request_review_notification = false
+send_request_completion_notification = true
+send_request_receipt_notification = true
+send_request_review_notification = true

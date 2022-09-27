@@ -3,7 +3,7 @@ server="postgres_example"
 user="postgres"
 password="postgres"
 db="postgres_example"
-port= 5432
+port=5432
 
 [mongodb_example]
 server= "mongodb_example"

@@ -275,9 +275,27 @@ class QuickstartBase:
             yaml_path="data/dataset/postgres_example_test_dataset.yml",
         )
 
-    def configure_mailchimp_connector(self, key=None):
+    def get_policy(self, policy_key):
+        response = requests.get(
+            f"{self.BASE_URL}{urls.POLICY_DETAIL.format(policy_key=policy_key)}",
+            headers=self.auth_header,
+        )
+
+        import pdb
+
+        pdb.set_trace()
+
+    def configure_mailchimp_connector(self, key="mailchimp"):
         if not key:
             key = str(uuid.uuid4())
+
+        response = requests.get(
+            f"{self.BASE_URL}{urls.CONNECTION_BY_KEY.format(connection_key=key)}",
+            headers=self.auth_header,
+        )
+        if response.status_code != 404:
+            # No need to create a new connector for the given key
+            return
 
         path = urls.SAAS_CONNECTOR_FROM_TEMPLATE.format(saas_connector_type="mailchimp")
         url = f"{self.BASE_URL}{path}"
@@ -299,6 +317,7 @@ class QuickstartBase:
             )
 
     def configure_s3_storage(self, key="s3_storage", policy_key=ACCESS_POLICY_KEY):
+        logger.info(f"Configuring S3 storage for policy {policy_key}")
         url = f"{self.BASE_URL}{urls.STORAGE_CONFIG}"
         response = requests.patch(
             url,
@@ -311,9 +330,8 @@ class QuickstartBase:
                     "format": "json",
                     "details": {
                         "auth_method": "secret_keys",
-                        "bucket": "fidesops-demo-10-04-2021",
-                        "naming": "request_id",
-                        "object_name": "test",
+                        "bucket": "subjectrequests",
+                        "object_name": "test_name",
                     },
                 },
             ],
@@ -354,7 +372,6 @@ class QuickstartBase:
             headers=self.auth_header,
             json=[rule_create_data],
         )
-
         if not response.ok:
             raise RuntimeError(
                 f"fidesops policy rule creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
@@ -430,4 +447,19 @@ class QuickstartBase:
         if len(created_privacy_requests) > 0:
             logger.info(
                 f"Created fidesops privacy request for email={user_email} via /api/v1/privacy-request"
+            )
+        return response.json()["succeeded"][0]["id"]
+
+    def verify_subject_identity(self, privacy_request_id, code):
+        verification_path = urls.PRIVACY_REQUEST_VERIFY_IDENTITY.format(
+            privacy_request_id=privacy_request_id
+        )
+        response = requests.post(
+            f"{self.BASE_URL}{verification_path}",
+            headers=self.auth_header,
+            json={"code": code},
+        )
+        if not response.ok:
+            raise RuntimeError(
+                f"fidesops privacy request verification failed! response.status_code={response.status_code}, response.json()={response.json()}"
             )

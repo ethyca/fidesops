@@ -5,7 +5,8 @@ base = QuickstartBase()
 
 
 for num in [45, 14, 9, 4]:
-    key = f"dsr_countdown_{num}"
+    # key = f"dsr_countdown_{num}"
+    key = "download"
     base.create_policy(
         key=key,
         execution_timeframe=num,
