@@ -142,14 +142,8 @@ def consent_request_verify(
         db=db, conditions=Consent.provided_identity_id == provided_identity.id
     ).all()
 
-    identity = (
-        Identity(email=provided_identity.encrypted_value["value"])
-        if provided_identity.field_name == ProvidedIdentityType.email
-        else Identity(phone_number=provided_identity.encrypted_value["value"])
-    )
-
     if not consent:
-        return ConsentPreferences(identity=identity, consent=None)
+        return ConsentPreferences(consent=None)
 
     return ConsentPreferences(
         consent=[
@@ -210,10 +204,9 @@ def set_consent_preferences(
     ).all()
 
     if not preferences:
-        return ConsentPreferences(identity=data.identity, consent=None)
+        return ConsentPreferences(consent=None)
 
     return ConsentPreferences(
-        identity=data.identity,
         consent=[
             ConsentSchema(
                 data_use=x.data_use,
