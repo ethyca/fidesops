@@ -65,6 +65,12 @@ class RequestReviewDenyBodyParams(BaseModel):
     rejection_reason: Optional[str]
 
 
+class EmailConnectorEmail(BaseModel):
+    email_meta: Dict[str, Any]
+    to_email: str
+    dataset_key: FidesOpsKey
+
+
 class FidesopsEmail(
     BaseModel,
     smart_union=True,

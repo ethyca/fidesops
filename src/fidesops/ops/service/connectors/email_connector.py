@@ -23,10 +23,11 @@ from fidesops.ops.models.privacy_request import (
     PrivacyRequest,
 )
 from fidesops.ops.schemas.connection_configuration import EmailSchema
-from fidesops.ops.schemas.email.email import EmailActionType
+from fidesops.ops.schemas.email.email import EmailActionType, FidesopsEmail
 from fidesops.ops.service.connectors.base_connector import BaseConnector
 from fidesops.ops.service.connectors.query_config import ManualQueryConfig
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email, dispatch_email_task_email_connector
+from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 from fidesops.ops.util.collection_util import Row, append
 
 logger = logging.getLogger(__name__)
@@ -158,15 +159,18 @@ class EmailConnector(BaseConnector[None]):
         return ManualAction(locators=locators, update=mask_map if mask_map else None)
 
 
-def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -> None:
+def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest, policy: Policy, identity_data: Dict[str, Any], access_result_urls: List[str] = None) -> bool:
     """
     Send emails to configured third-parties with instructions on how to erase remaining data.
     Combined all the collections on each email-based dataset into one email.
+    Returns true if one or more emails were attempted
     """
     email_dataset_configs = db.query(DatasetConfig, ConnectionConfig).filter(
         DatasetConfig.connection_config_id == ConnectionConfig.id,
         ConnectionConfig.connection_type == ConnectionType.email,
     )
+
+    emails_to_send: List[Dict[str, Any]] = []
     for ds, cc in email_dataset_configs:
         template_values: List[
             CheckpointActionRequired
@@ -179,7 +183,7 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
                 "No email sent: no template values saved for '%s'",
                 ds.dataset.get("fides_key"),
             )
-            return
+            continue
 
         if not any(
             (
@@ -192,27 +196,26 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
             logger.info(
                 "No email sent: no masking needed on '%s'", ds.dataset.get("fides_key")
             )
-            return
+            continue
 
-        # fixme: synchronous
-        dispatch_email(
-            db,
-            action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
-            to_email=cc.secrets.get("to_email"),
-            email_body_params=template_values,
-        )
-
-        logger.info(
-            "Email send succeeded for request '%s' for dataset: '%s'",
-            privacy_request.id,
-            ds.dataset.get("fides_key"),
-        )
-        AuditLog.create(
-            db=db,
-            data={
-                "user_id": "system",
+        emails_to_send.append({
+            "email_meta": FidesopsEmail(
+                action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
+                body_params=template_values
+            ).dict(),
+            "to_email": cc.secrets.get("to_email"),
+            "dataset_key": ds.dataset.get("fides_key"),
+        })
+    if len(emails_to_send):
+        dispatch_email_task_email_connector.apply_async(
+            queue=EMAIL_QUEUE_NAME,
+            kwargs={
+                "emails_to_send": emails_to_send,
+                "policy_key": policy.key,
                 "privacy_request_id": privacy_request.id,
-                "action": AuditLogAction.email_sent,
-                "message": f"Erasure email instructions dispatched for '{ds.dataset.get('fides_key')}'",
-            },
+                "access_result_urls": access_result_urls,
+                "identity_data": identity_data,
+            }
         )
+        return True
+    return False

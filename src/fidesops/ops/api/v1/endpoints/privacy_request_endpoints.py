@@ -58,7 +58,6 @@ from fidesops.ops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
 )
 from fidesops.ops.common_exceptions import (
-    EmailDispatchException,
     FunctionalityNotConfigured,
     IdentityNotFoundException,
     IdentityVerificationException,
@@ -109,9 +108,8 @@ from fidesops.ops.schemas.privacy_request import (
     RowCountRequest,
     VerificationCode,
 )
-from fidesops.ops.service.email.email_dispatch_service import (
-    dispatch_email, EmailTaskRequestCompletion, EmailTaskBase,
-)
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task_generic, \
+    dispatch_email_task_identity_verification
 from fidesops.ops.service.privacy_request.request_runner_service import (
     generate_id_verification_code,
     queue_privacy_request,
@@ -255,14 +253,6 @@ async def create_privacy_request(
                     },
                 )
                 queue_privacy_request(privacy_request.id)
-        except EmailDispatchException as exc:
-            kwargs["privacy_request_id"] = privacy_request.id
-            logger.error("EmailDispatchException: %s", exc)
-            failure = {
-                "message": "Verification email could not be sent.",
-                "data": kwargs,
-            }
-            failed.append(failure)
         except common_exceptions.RedisConnectionError as exc:
             logger.error("RedisConnectionError: %s", Pii(str(exc)))
             # Thrown when cache.ping() fails on cache connection retrieval
@@ -295,9 +285,7 @@ def _send_verification_code_to_user(
     )  # Validates Fidesops is currently configured to send emails
     verification_code: str = generate_id_verification_code()
     privacy_request.cache_identity_verification_code(verification_code)
-    # fixme- what should err case be in terms of api resp?
-    email_task = EmailTaskBase()
-    email_task.dispatch_email_task.apply_async(
+    dispatch_email_task_identity_verification.apply_async(
         queue=EMAIL_QUEUE_NAME,
         kwargs={
             "email_meta": FidesopsEmail(
@@ -308,6 +296,7 @@ def _send_verification_code_to_user(
                 ),
             ).dict(),
             "to_email": email,
+            "privacy_request_id": privacy_request.id
         },
     )
 
@@ -334,8 +323,7 @@ def _send_privacy_request_receipt_email_to_user(
     for action_type in ActionType:
         if policy.get_rules_for_action(action_type=ActionType(action_type)):
             request_types.add(action_type)
-    email_task = EmailTaskBase()
-    email_task.dispatch_email_task.apply_async(
+    dispatch_email_task_generic.apply_async(
         queue=EMAIL_QUEUE_NAME,
         kwargs={
             "email_meta": FidesopsEmail(
@@ -1133,8 +1121,7 @@ def _send_privacy_request_review_email_to_user(
                 "Identity email was not found, so request review email could not be sent."
             )
         )
-    email_task = EmailTaskBase()
-    email_task.dispatch_email_task.apply_async(
+    dispatch_email_task_generic.apply_async(
         queue=EMAIL_QUEUE_NAME,
         kwargs={
             "email_meta": FidesopsEmail(

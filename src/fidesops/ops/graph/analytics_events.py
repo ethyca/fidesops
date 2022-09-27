@@ -16,12 +16,22 @@ from fidesops.ops.models.policy import ActionType
 from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.task.task_resources import TaskResources
 from fidesops.ops.util.collection_util import Row
+from fidesops.ops.util.wrappers import sync
 
 if TYPE_CHECKING:
     from fidesops.ops.task.graph_task import GraphTask
 
 
 async def fideslog_graph_failure(event: Optional[AnalyticsEvent]) -> None:
+    """Send an Analytics Event if privacy request execution has failed"""
+    if config.root_user.analytics_opt_out or not event:
+        return
+
+    await send_analytics_event(event)
+
+
+@sync
+async def fideslog_graph_failure_sync(event: Optional[AnalyticsEvent]) -> None:
     """Send an Analytics Event if privacy request execution has failed"""
     if config.root_user.analytics_opt_out or not event:
         return

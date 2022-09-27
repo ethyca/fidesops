@@ -14,7 +14,6 @@ from sqlalchemy.orm import Session
 from fidesops.ops import common_exceptions
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
-    EmailDispatchException,
     IdentityNotFoundException,
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
@@ -42,12 +41,8 @@ from fidesops.ops.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
-from fidesops.ops.schemas.email.email import (
-    AccessRequestCompleteBodyParams,
-    EmailActionType, FidesopsEmail,
-)
 from fidesops.ops.service.connectors.email_connector import email_connector_erasure_send
-from fidesops.ops.service.email.email_dispatch_service import EmailTaskRequestCompletion
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task_request_completion
 from fidesops.ops.service.storage.storage_uploader_service import upload
 from fidesops.ops.task.filter_results import filter_data_categories
 from fidesops.ops.task.graph_task import (
@@ -214,7 +209,7 @@ def upload_access_results(
                 privacy_request.id,
                 Pii(str(exc)),
             )
-            privacy_request.status = PrivacyRequestStatus.error
+            privacy_request.error_processing(db=session)
     return download_urls
 
 
@@ -321,7 +316,7 @@ async def run_privacy_request(
                     identity=identity_data,
                     session=session,
                 )
-                access_result_urls = upload_access_results(
+                access_result_urls: List[str] = upload_access_results(
                     session,
                     policy,
                     access_result,
@@ -364,60 +359,45 @@ async def run_privacy_request(
             return
 
         # Send erasure requests via email to third parties where applicable
+        has_email_connector_email: bool = False
         if can_run_checkpoint(
             request_checkpoint=CurrentStep.erasure_email_post_send,
             from_checkpoint=resume_step,
         ):
-            try:
-                email_connector_erasure_send(
-                    db=session, privacy_request=privacy_request
-                )
-            except EmailDispatchException as exc:
-                privacy_request.cache_failed_checkpoint_details(
-                    step=CurrentStep.erasure_email_post_send, collection=None
-                )
-                privacy_request.error_processing(db=session)
-                await fideslog_graph_failure(
-                    failed_graph_analytics_event(privacy_request, exc)
-                )
-                # If dev mode, log traceback
-                _log_exception(exc, config.dev_mode)
-                return
+            logger.info("sending erasure email")
+            has_email_connector_email = email_connector_erasure_send(
+                db=session, privacy_request=privacy_request, policy=policy, identity_data=identity_data, access_result_urls=access_result_urls
+            )
+        if not has_email_connector_email:
 
-        # Run post-execution webhooks
-        proceed = run_webhooks_and_report_status(
-            db=session,
-            privacy_request=privacy_request,
-            webhook_cls=PolicyPostWebhook,  # type: ignore
-        )
-        if not proceed:
-            return
-        if config.notifications.send_request_completion_notification:
-            try:
+            # Run post-execution webhooks
+            proceed = run_webhooks_and_report_status(
+                db=session,
+                privacy_request=privacy_request,
+                webhook_cls=PolicyPostWebhook,  # type: ignore
+            )
+            if not proceed:
+                logger.info("not proceeding")
+                return
+            if config.notifications.send_request_completion_notification:
+                logger.info("config send notification")
                 initiate_privacy_request_completion_email(
                     privacy_request, policy, access_result_urls, identity_data
                 )
-            except (IdentityNotFoundException, EmailDispatchException) as e:
-                privacy_request.error_processing(db=session)
-                # If dev mode, log traceback
-                await fideslog_graph_failure(
-                    failed_graph_analytics_event(privacy_request, e)
+            else:
+                privacy_request.finished_processing_at = datetime.utcnow()
+                AuditLog.create(
+                    db=session,
+                    data={
+                        "user_id": "system",
+                        "privacy_request_id": privacy_request.id,
+                        "action": AuditLogAction.finished,
+                        "message": "",
+                    },
                 )
-                _log_exception(e, config.dev_mode)
-                return
-        privacy_request.finished_processing_at = datetime.utcnow()
-        AuditLog.create(
-            db=session,
-            data={
-                "user_id": "system",
-                "privacy_request_id": privacy_request.id,
-                "action": AuditLogAction.finished,
-                "message": "",
-            },
-        )
-        privacy_request.status = PrivacyRequestStatus.complete
-        logging.info("Privacy request %s run completed.", privacy_request.id)
-        privacy_request.save(db=session)
+                privacy_request.status = PrivacyRequestStatus.complete
+                logging.info("Privacy request %s run completed.", privacy_request.id)
+                privacy_request.save(db=session)
 
 
 def initiate_privacy_request_completion_email(
@@ -436,32 +416,16 @@ def initiate_privacy_request_completion_email(
         raise IdentityNotFoundException(
             "Identity email was not found, so request completion email could not be sent."
         )
-    if policy.get_rules_for_action(action_type=ActionType.access):
-        email_task = EmailTaskRequestCompletion(privacy_request=privacy_request)
-        email_task.dispatch_email_task.apply_async(
-            queue=EMAIL_QUEUE_NAME,
-            kwargs={
-                "email_meta": FidesopsEmail(
-                    action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
-                    body_params=AccessRequestCompleteBodyParams(
-                        download_links=access_result_urls
-                    )
-                ).dict(),
-                "to_email": identity_data.get(ProvidedIdentityType.email.value),
-            },
-        )
-    if policy.get_rules_for_action(action_type=ActionType.erasure):
-        email_task = EmailTaskRequestCompletion(privacy_request=privacy_request)
-        email_task.dispatch_email_task.apply_async(
-            queue=EMAIL_QUEUE_NAME,
-            kwargs={
-                "email_meta": FidesopsEmail(
-                    action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
-                    body_params=None
-                ).dict(),
-                "to_email": identity_data.get(ProvidedIdentityType.email.value),
-            },
-        )
+    logger.info("Calling dispatch email for request completion")
+    dispatch_email_task_request_completion.apply_async(
+        queue=EMAIL_QUEUE_NAME,
+        kwargs={
+            "privacy_request_id": privacy_request.id,
+            "to_email": identity_data.get(ProvidedIdentityType.email.value),
+            "access_result_urls": access_result_urls,
+            "policy_id": policy.id
+        }
+    )
 
 
 def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) -> None:
