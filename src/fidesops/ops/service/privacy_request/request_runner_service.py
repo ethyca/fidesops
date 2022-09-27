@@ -16,6 +16,7 @@ from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
     EmailDispatchException,
     IdentityNotFoundException,
+    ManualWebhookFieldsUnset,
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
@@ -96,7 +97,11 @@ def get_access_manual_webhook_inputs(
             manual_inputs[manual_webhook.connection_config.key] = [
                 privacy_request.get_manual_webhook_input_strict(manual_webhook)
             ]
-    except (NoCachedManualWebhookEntry, ValidationError) as exc:
+    except (
+        NoCachedManualWebhookEntry,
+        ValidationError,
+        ManualWebhookFieldsUnset,
+    ) as exc:
         logger.info(exc)
         privacy_request.status = PrivacyRequestStatus.requires_input
         privacy_request.save(db)
