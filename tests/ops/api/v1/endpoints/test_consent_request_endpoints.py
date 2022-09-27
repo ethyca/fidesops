@@ -117,7 +117,7 @@ def test_consent_verify_no_email_provided(db, api_client):
 def test_consent_verify_no_consent_present(
     provided_identity_and_consent_request, api_client
 ):
-    provided_identity, consent_request = provided_identity_and_consent_request
+    _, consent_request = provided_identity_and_consent_request
     verification_code = "abcd"
     consent_request.cache_identity_verification_code(verification_code)
 
