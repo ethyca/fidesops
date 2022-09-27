@@ -142,19 +142,7 @@ def consent_request_verify(
         db=db, conditions=Consent.provided_identity_id == provided_identity.id
     ).all()
 
-    if not consent:
-        return ConsentPreferences(consent=None)
-
-    return ConsentPreferences(
-        consent=[
-            Consent(
-                data_use=x.data_use,
-                data_use_description=x.data_use_description,
-                opt_in=x.opt_in,
-            )
-            for x in consent
-        ],
-    )
+    return _prepare_consent_preferences(consent)
 
 
 @router.patch(
@@ -169,11 +157,6 @@ def set_consent_preferences(
     data: ConsentPreferencesWithVerificationCode,
 ) -> ConsentPreferences:
     """Verifies the verification code and saves the user's consent preferences if successful."""
-    # if not data.consent:
-    #     raise HTTPException(
-    #         status_code=HTTP_400_BAD_REQUEST, detail="No consent preferences provided"
-    #     )
-
     provided_identity = _get_consent_request_and_provided_identity(
         db=db,
         consent_request_id=consent_request_id,
@@ -199,23 +182,11 @@ def set_consent_preferences(
             preference_dict["provided_identity_id"] = provided_identity.id
             Consent.create(db, data=preference_dict)
 
-    preferences = Consent.filter(
+    consent = Consent.filter(
         db, conditions=(Consent.provided_identity_id == provided_identity.id)
     ).all()
 
-    if not preferences:
-        return ConsentPreferences(consent=None)
-
-    return ConsentPreferences(
-        consent=[
-            ConsentSchema(
-                data_use=x.data_use,
-                data_use_description=x.data_use_description,
-                opt_in=x.opt_in,
-            )
-            for x in preferences
-        ],
-    )
+    return _prepare_consent_preferences(consent)
 
 
 def _get_consent_request_and_provided_identity(
@@ -254,6 +225,22 @@ def _get_consent_request_and_provided_identity(
         )
 
     return provided_identity
+
+
+def _prepare_consent_preferences(consent: Consent) -> ConsentPreferences:
+    if not consent:
+        return ConsentPreferences(consent=None)
+
+    return ConsentPreferences(
+        consent=[
+            ConsentSchema(
+                data_use=x.data_use,
+                data_use_description=x.data_use_description,
+                opt_in=x.opt_in,
+            )
+            for x in consent
+        ],
+    )
 
 
 def _send_verification_code_to_user(
