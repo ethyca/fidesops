@@ -6,9 +6,10 @@ dataset:
   - name: customer
     fields:
     - name: id
-      data_categories: [system.operations]
+      data_categories: [user.unique_id]
       fidesops_meta:
-        data_type: string
+        primary_key: True
+        data_type: integer
     - name: created_at
       data_categories: [system.operations]
       fidesops_meta:
@@ -18,19 +19,19 @@ dataset:
       fidesops_meta:
         data_type: string
     - name: given_name
-      data_categories: [system.operations]
+      data_categories: [user.name]
       fidesops_meta:
         data_type: string
     - name: family_name
-      data_categories: [system.operations]
+      data_categories: [user.name]
       fidesops_meta:
         data_type: string
     - name: nickname
-      data_categories: [system.operations]
+      data_categories: [user.name]
       fidesops_meta:
         data_type: string
     - name: email_address
-      data_categories: [system.operations]
+      data_categories: [user.contact.email]
       fidesops_meta:
         data_type: string
     - name: address
@@ -38,23 +39,23 @@ dataset:
         data_type: object
       fields:
       - name: address_line_1
-        data_categories: [system.operations]
+        data_categories: [user.contact.address.street]
         fidesops_meta:
           data_type: string
       - name: address_line_2
-        data_categories: [system.operations]
+        data_categories: [user.contact.address.street]
         fidesops_meta:
           data_type: string
       - name: locality
-        data_categories: [system.operations]
+        data_categories: [user.contact.address.city]
         fidesops_meta:
           data_type: string
       - name: postal_code
-        data_categories: [system.operations]
+        data_categories: [user.contact.address.postal_code]
         fidesops_meta:
           data_type: string
     - name: phone_number
-      data_categories: [system.operations]
+      data_categories: [user.contact.phone_number]
       fidesops_meta:
         data_type: string
     - name: company_name
@@ -74,7 +75,7 @@ dataset:
       fidesops_meta:
         data_type: string
     - name: birthday
-      data_categories: [system.operations]
+      data_categories:  [user.date_of_birth]
       fidesops_meta:
         data_type: string
     - name: segment_ids
