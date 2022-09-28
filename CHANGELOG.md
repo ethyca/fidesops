@@ -22,7 +22,8 @@ The types of changes are:
 
 ### Changed
 * Refactor privacy center to be more modular [#1363](https://github.com/ethyca/fidesops/pull/1363)
- * Access support for Square [#1378](https://github.com/ethyca/fidesops/pull/1378)
+* Access support for Square [#1378](https://github.com/ethyca/fidesops/pull/1378)
+* Erasure support for Square [#1398](https://github.com/ethyca/fidesops/pull/1398)
 
 ### Fixed
 * Distinguish whether webhook has been visited and no fields were found, versus never visited [#1339](https://github.com/ethyca/fidesops/pull/1339)
