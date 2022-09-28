@@ -171,9 +171,9 @@ class FidesopsNotificationSettings(FidesSettings):
 class FidesopsConfig(FidesSettings):
     """Configuration variables for the FastAPI project"""
 
-    database: FidesopsDatabaseSettings
-    redis: RedisSettings
-    security: FidesopsSecuritySettings
+    database: FidesopsDatabaseSettings = FidesopsDatabaseSettings()
+    redis: RedisSettings = RedisSettings()
+    security: FidesopsSecuritySettings = FidesopsSecuritySettings()
     execution: Optional[ExecutionSettings] = ExecutionSettings()
     root_user: Optional[RootUserSettings] = RootUserSettings()
     admin_ui: Optional[AdminUiSettings] = AdminUiSettings()
