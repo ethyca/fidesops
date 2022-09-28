@@ -33,6 +33,7 @@ The types of changes are:
 * Access support for Rollbar [#1361](https://github.com/ethyca/fidesops/pull/1361)
 * Adds a new Timescale connector [#1327](https://github.com/ethyca/fidesops/pull/1327)
 * Allow querying the non-default schema with the Postgres Connector [#1375](https://github.com/ethyca/fidesops/pull/1375)
+* Access and erasure support for Braze [#1248](https://github.com/ethyca/fidesops/pull/1248)
 
 ### Removed
 
@@ -78,7 +79,6 @@ The types of changes are:
 * Frontend - Configure a Manual entry connector [#1015](https://github.com/ethyca/fidesops/pull/1247)
 * Manual webhook test functionality [#1323](https://github.com/ethyca/fidesops/pull/1323/)
 * Added change request table [#1340](https://github.com/ethyca/fidesops/pull/1340)
-* Adds Access Endpoints for Braze [#1248](https://github.com/ethyca/fidesops/pull/1248)
 
 ### Changed
 

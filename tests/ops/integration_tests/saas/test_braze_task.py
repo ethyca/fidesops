@@ -30,7 +30,7 @@ async def test_saas_access_request_task(
     braze_dataset_config,
     braze_identity_email,
 ) -> None:
-    """Full access request based on the braze SaaS config"""
+    """Full access request based on the Braze SaaS config"""
 
     privacy_request = PrivacyRequest(
         id=f"test_braze_access_request_task_{random.randint(0, 250)}"

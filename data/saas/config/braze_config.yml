@@ -2,14 +2,12 @@ saas_config:
   fides_key: <instance_fides_key>
   name: Braze SaaS Config
   type: braze
-  description: A sample schema representing the braze connector for Fidesops
+  description: A sample schema representing the Braze connector for Fidesops
   version: 0.0.1
 
   connector_params:
     - name: domain
     - name: api_key
-    - name: identity_email
-    - name: subscription_group_id
 
   client_config:
     protocol: https
@@ -22,15 +20,9 @@ saas_config:
   test_request:
     method: GET
     path: /email/hard_bounces/
-    headers:
-      - name: Authorization
-        value: Bearer <api_key>
     query_params:
       - name: email
         value: test@test.com
-    param_values:
-      - name: api_key
-        connector_param: api_key
 
   endpoints:
     - name: users
@@ -40,7 +32,7 @@ saas_config:
           path: /users/export/ids
           body: |
             {
-              "email_address": "<identity_email>",
+              "email_address": "<email>",
               "fields_to_export": [
                   "apps",
                   "attributed_campaign",
@@ -78,7 +70,7 @@ saas_config:
               ]
             }
           param_values:
-            - name: identity_email
+            - name: email
               identity: email
           data_path: users
         update:

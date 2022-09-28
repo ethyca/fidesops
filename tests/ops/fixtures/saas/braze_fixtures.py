@@ -29,8 +29,6 @@ def braze_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "braze.domain") or secrets["domain"],
         "api_key": pydash.get(saas_config, "braze.api_key") or secrets["api_key"],
-        "external_id": pydash.get(saas_config, "braze.external_id")
-        or secrets["external_id"],
     }
 
 
@@ -174,7 +172,7 @@ def braze_erasure_data(
     assert response.ok
 
     error_message = (
-        f"User with email {braze_erasure_identity_email} could not be added to braze"
+        f"User with email {braze_erasure_identity_email} could not be added to Braze"
     )
     poll_for_existence(
         _user_exists,
