@@ -18,11 +18,11 @@ The types of changes are:
 
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
-* Access support for Square [#1378](https://github.com/ethyca/fidesops/pull/1378)
 
 
 ### Changed
 * Refactor privacy center to be more modular [#1363](https://github.com/ethyca/fidesops/pull/1363)
+ * Access support for Square [#1378](https://github.com/ethyca/fidesops/pull/1378)
 
 ### Fixed
 * Distinguish whether webhook has been visited and no fields were found, versus never visited [#1339](https://github.com/ethyca/fidesops/pull/1339)
