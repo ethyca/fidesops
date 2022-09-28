@@ -78,7 +78,7 @@ class RedisSettings(FidesSettings):
             # If the whole URL is provided via the config, preference that
             return v
 
-        return f"redis://{quote_plus(values.get('user', ''))}:{quote_plus(values['password'])}@{values['host']}:{values['port']}/{values.get('db_index', '')}"
+        return f"redis://{quote_plus(values.get('user', ''))}:{quote_plus(values.get('password', ''))}@{values.get('host', '')}:{values.get('port', '')}/{values.get('db_index', '')}"
 
     class Config:
         env_prefix = "FIDESOPS__REDIS__"
@@ -173,7 +173,7 @@ class FidesopsConfig(FidesSettings):
 
     # Pydantic doesn't initialise subsections automatically if
     # only environment variables are provided at runtime. If the
-    # subsection class is instantiated with no args, Pydantic runs
+    # config subclass is instantiated with no args, Pydantic runs
     # validation before loading in environment variables, which
     # always fails if any config vars in the subsection are non-optional.
     # Using the empty dict allows Python to load in the environment
