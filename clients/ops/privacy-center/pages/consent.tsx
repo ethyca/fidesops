@@ -1,14 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
-import { Flex, Heading, Text, Stack, Image } from "@fidesui/react";
+import { Flex, Heading, Text, Stack, Image, Button } from "@fidesui/react";
 
 import ConsentItem from "../components/ConsentItem";
 
 import config from "../config/config.json";
 
+type UserConsent = {
+  data_use: string;
+  data_use_description?: string;
+  opt_in: boolean;
+}
+
 const Consent: NextPage = () => {
   const content: any = [];
+  const [ userConsents, setUserConsents] = useState();
 
   config.consent.consentOptions.forEach((option) => {
     content.push(
@@ -76,6 +83,7 @@ const Consent: NextPage = () => {
             {content}
           </Flex>
         </Stack>
+        <Button onClick={()=>{console.log()}}>Save</Button>
       </main>
     </div>
   );

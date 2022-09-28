@@ -17,6 +17,7 @@ export const useConsentRequestModal = () => {
   const router = useRouter();
 
   const successHandler = useCallback(() => {
+    localStorage.setItem("consentRequestId", consentRequestId)
     router.push("consent");
   }, [router]);
 

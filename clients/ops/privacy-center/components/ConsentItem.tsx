@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 import {
   Flex,
   Box,
@@ -10,6 +10,7 @@ import {
   HStack,
 } from "@fidesui/react";
 import { ExternalLinkIcon } from "@chakra-ui/icons";
+import { set } from "msw/lib/types/context";
 
 type ConsentItemProps = {
   fidesDataUseKey: string;
@@ -17,7 +18,9 @@ type ConsentItemProps = {
   description: string;
   highlight: boolean;
   url: string;
-  defaultValue?: boolean;
+  defaultValue: boolean;
+  // eslint-disable-next-line react/require-default-props
+  consentValue?: boolean;
 };
 
 const ConsentItem: React.FC<ConsentItemProps> = ({
@@ -26,10 +29,18 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
   description,
   highlight,
   defaultValue,
+  consentValue,
   url,
 }) => {
-  const [value, setValue] = React.useState("false");
+  const [value, setValue] = useState("false");
   const backgroundColor = highlight ? "gray.100" : "";
+  useEffect(()=>{
+    if (consentValue){
+      setValue(consentValue ? "true": "false")
+    }else{
+      setValue(defaultValue? "true": "false")
+    }
+  },[consentValue, defaultValue, setValue])
 
   return (
     <Flex
