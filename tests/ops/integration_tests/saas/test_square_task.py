@@ -116,6 +116,7 @@ async def test_square_erasure_request_task(
     square_dataset_config,
     square_erasure_identity_email,
     square_erasure_data,
+    square_test_client,
 ) -> None:
     """Full erasure request based on the Square SaaS config"""
 
@@ -202,8 +203,15 @@ async def test_square_erasure_request_task(
         db,
     )
     assert x == {
-        f"{dataset_name}:customer": 0,
+        f"{dataset_name}:customer": 1,
         f"{dataset_name}:orders": 0,
         f"{dataset_name}:locations": 0,
     }
+    customer_response = square_test_client.get_customer(square_erasure_identity_email)
+    customer = customer_response.json()
+    customer = customer["customers"][0]
+    assert customer["given_name"] == "MASKED"
+    assert customer["family_name"] == "MASKED"
+    assert customer["nickname"] == "MASKED"
+
     config.execution.masking_strict = temp_masking
