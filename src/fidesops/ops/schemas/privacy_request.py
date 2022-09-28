@@ -243,7 +243,6 @@ class ConsentRequestResponse(BaseSchema):
 
     identity: Identity
     consent_request_id: str
-    verification_code: str
 
 
 class ConsentRequestVerification(BaseSchema):

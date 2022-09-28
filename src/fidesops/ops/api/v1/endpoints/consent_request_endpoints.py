@@ -78,10 +78,7 @@ def create_consent_request(
         conditions=(
             (ProvidedIdentity.field_name == ProvidedIdentityType.email)
             & (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(data.email))
-            & (
-                ProvidedIdentity.privacy_request  # pylint: disable=singleton-comparison
-                == None
-            )
+            & (ProvidedIdentity.privacy_request_id.is_(None))
         ),
     ).first()
 
@@ -99,19 +96,16 @@ def create_consent_request(
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
     try:
-        verification_code = send_verification_code_to_user(
-            db, consent_request, data.email
-        )
+        send_verification_code_to_user(db, consent_request, data.email)
     except EmailDispatchException as exc:
-        logger.error("Error sending the verification code email: %s", Pii(str(exc)))
+        logger.error("Error sending the verification code email: %s", str(exc))
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error sending the verification code email",
+            detail=f"Error sending the verification code email: {str(exc)}",
         )
     return ConsentRequestResponse(
         identity=data,
         consent_request_id=consent_request.id,
-        verification_code=verification_code,
     )
 
 
@@ -136,11 +130,7 @@ def consent_request_verify(
             status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing email"
         )
 
-    consent = Consent.filter(
-        db=db, conditions=Consent.provided_identity_id == provided_identity.id
-    ).all()
-
-    return _prepare_consent_preferences(consent)
+    return _prepare_consent_preferences(db, provided_identity)
 
 
 @router.patch(
@@ -185,11 +175,7 @@ def set_consent_preferences(
                     status_code=HTTP_400_BAD_REQUEST, detail=Pii(str(exc))
                 )
 
-    consent = Consent.filter(
-        db, conditions=(Consent.provided_identity_id == provided_identity.id)
-    ).all()
-
-    return _prepare_consent_preferences(consent)
+    return _prepare_consent_preferences(db, provided_identity)
 
 
 def _get_consent_request_and_provided_identity(
@@ -230,7 +216,13 @@ def _get_consent_request_and_provided_identity(
     return provided_identity
 
 
-def _prepare_consent_preferences(consent: Consent) -> ConsentPreferences:
+def _prepare_consent_preferences(
+    db: Session, provided_identity: ProvidedIdentity
+) -> ConsentPreferences:
+    consent = Consent.filter(
+        db=db, conditions=Consent.provided_identity_id == provided_identity.id
+    ).all()
+
     if not consent:
         return ConsentPreferences(consent=None)
 

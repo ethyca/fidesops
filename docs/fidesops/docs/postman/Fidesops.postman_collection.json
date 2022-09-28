@@ -4807,8 +4807,9 @@
 								"{{host}}"
 							],
 							"path": [
+								"consent-request",
 								"{{consent_request_id}}",
-								"consent-request"
+								"verify"
 							]
 						}
 					},
@@ -4821,7 +4822,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"identity\": {\n    \"phone_number\": \"{{phone_number}}\",\n    \"email\": \"{{email}}\"\n  },\n  \"consent\": [\n    {\n      \"data_use\": \"{{data_use}}\",\n      \"data_use_description\": \"{{data_use_description}}\",\n      \"opt_in\": {{opt_in}}\n    }\n  ],\n  \"code\": \"string\"\n}",
+							"raw": "{\n  \"identity\": {\n    \"phone_number\": \"{{phone_number}}\",\n    \"email\": \"{{email}}\"\n  },\n  \"consent\": [\n    {\n      \"data_use\": \"{{data_use}}\",\n      \"data_use_description\": \"{{data_use_description}}\",\n      \"opt_in\": {{opt_in}}\n    }\n  ],\n  \"code\": \"{{verification_code}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4834,6 +4835,7 @@
 								"{{host}}"
 							],
 							"path": [
+								"consent-request",
 								"{{consent_request_id}}",
 								"preferences"
 							]
@@ -5136,19 +5138,24 @@
 			"key": "consent_request_id",
 			"value": "",
 			"type": "default"
-    },
-    {
+		},
+		{
 			"key": "timescale_key",
 			"value": "",
 			"type": "string"
 		},
-    {
+		{
 			"key": "phone_number",
 			"value": "",
 			"type": "string"
 		},
-    {
+		{
 			"key": "email",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "verification_code",
 			"value": "",
 			"type": "string"
 		}

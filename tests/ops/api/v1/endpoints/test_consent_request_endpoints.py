@@ -12,6 +12,7 @@ from fidesops.ops.api.v1.urn_registry import (
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
+from fidesops.ops.core.config import config
 from fidesops.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
@@ -37,6 +38,14 @@ def provided_identity_and_consent_request(db):
     yield provided_identity, consent_request
 
 
+@pytest.fixture
+def disable_redis():
+    current = config.redis.enabled
+    config.redis.enabled = False
+    yield
+    config.redis.enabled = current
+
+
 @pytest.mark.usefixtures(
     "email_config",
     "email_connection_config",
@@ -50,6 +59,63 @@ def test_consent_request(mock_dispatch_email, api_client):
     assert response.status_code == 200
     assert response.json()["identity"]["email"] == data["email"]
     assert mock_dispatch_email.called
+
+
+@pytest.mark.usefixtures(
+    "email_config",
+    "email_connection_config",
+    "email_dataset_config",
+    "subject_identity_verification_required",
+)
+@patch("fidesops.ops.service._verification.dispatch_email")
+def test_consent_request_identity_present(
+    mock_dispatch_email, provided_identity_and_consent_request, api_client
+):
+    provided_identity, _ = provided_identity_and_consent_request
+    data = {"email": provided_identity.encrypted_value["value"]}
+    response = api_client.post(f"{V1_URL_PREFIX}{CONSENT_REQUEST}", json=data)
+    assert response.status_code == 200
+    assert response.json()["identity"]["email"] == data["email"]
+    assert mock_dispatch_email.called
+
+
+@pytest.mark.usefixtures(
+    "email_config",
+    "email_connection_config",
+    "email_dataset_config",
+    "subject_identity_verification_required",
+    "disable_redis",
+)
+def test_consent_request_redis_disabled(api_client):
+    data = {"email": "test@example.com"}
+    response = api_client.post(f"{V1_URL_PREFIX}{CONSENT_REQUEST}", json=data)
+    assert response.status_code == 500
+    assert "redis cache required" in response.json()["message"]
+
+
+@pytest.mark.usefixtures(
+    "email_config",
+    "email_connection_config",
+    "email_dataset_config",
+)
+def test_consent_request_subject_verification_disabled(api_client):
+    data = {"email": "test@example.com"}
+    response = api_client.post(f"{V1_URL_PREFIX}{CONSENT_REQUEST}", json=data)
+    assert response.status_code == 500
+    assert "identity verification" in response.json()["message"]
+
+
+@pytest.mark.usefixtures(
+    "email_config",
+    "email_connection_config",
+    "email_dataset_config",
+    "subject_identity_verification_required",
+)
+def test_consent_request_no_email(api_client):
+    data = {"phone_number": "336-867-5309"}
+    response = api_client.post(f"{V1_URL_PREFIX}{CONSENT_REQUEST}", json=data)
+    assert response.status_code == 400
+    assert "email address is required" in response.json()["detail"]
 
 
 def test_consent_verify_no_consent_request_id(
