@@ -16,56 +16,35 @@ import { useFormik } from "formik";
 
 import { Headers } from "headers-polyfill";
 import type { AlertState } from "../../../types/AlertState";
-import { PrivacyRequestStatus } from "../../../types";
 import { addCommonHeaders } from "../../../common/CommonHeaders";
 
-import config from "../../../config/config.json";
-
-import { ModalViews } from "../types";
+import { ModalViews, VerificationType } from "../types";
 import { hostUrl } from "../../../constants";
 
-const usePrivacyRequestForm = ({
+const useConsentRequestForm = ({
   onClose,
-  action,
   setAlert,
   setCurrentView,
-  setPrivacyRequestId,
+  setConsentRequestId,
   isVerificationRequired,
 }: {
   onClose: () => void;
-  action: typeof config.actions[0] | null;
   setAlert: (state: AlertState) => void;
   setCurrentView: (view: ModalViews) => void;
-  setPrivacyRequestId: (id: string) => void;
+  setConsentRequestId: (id: string) => void;
   isVerificationRequired: boolean;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const formik = useFormik({
     initialValues: {
-      name: "",
       email: "",
-      phone: "",
     },
     onSubmit: async (values) => {
-      if (!action) {
-        // somehow we've reached a broken state, return
-        return;
-      }
-
       setIsLoading(true);
 
-      const body = [
-        {
-          identity: {
-            email: values.email,
-            phone_number: values.phone,
-            // enable this when name field is supported on the server
-            // name: values.name
-          },
-          policy_key: action.policy_key,
-        },
-      ];
-
+      const body = {
+        email: values.email,
+      };
       const handleError = () => {
         setAlert({
           status: "error",
@@ -78,11 +57,14 @@ const usePrivacyRequestForm = ({
         const headers: Headers = new Headers();
         addCommonHeaders(headers, null);
 
-        const response = await fetch(`${hostUrl}/privacy-request`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(body),
-        });
+        const response = await fetch(
+          `${hostUrl}/${VerificationType.ConsentRequest}`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(body),
+          }
+        );
 
         if (!response.ok) {
           handleError();
@@ -91,18 +73,14 @@ const usePrivacyRequestForm = ({
 
         const data = await response.json();
 
-        if (!isVerificationRequired && data.succeeded.length) {
+        if (!isVerificationRequired && data.consent_request_id) {
           setAlert({
             status: "success",
             description:
               "Your request was successful, please await further instructions.",
           });
-        } else if (
-          isVerificationRequired &&
-          data.succeeded.length &&
-          data.succeeded[0].status === PrivacyRequestStatus.IDENTITY_UNVERIFIED
-        ) {
-          setPrivacyRequestId(data.succeeded[0].id);
+        } else if (isVerificationRequired && data.consent_request_id) {
+          setConsentRequestId(data.consent_request_id);
           setCurrentView(ModalViews.IdentityVerification);
         } else {
           handleError();
@@ -117,23 +95,13 @@ const usePrivacyRequestForm = ({
       }
     },
     validate: (values) => {
-      if (!action) return {};
       const errors: {
-        name?: string;
         email?: string;
         phone?: string;
       } = {};
 
-      if (!values.email && action.identity_inputs.email === "required") {
+      if (!values.email) {
         errors.email = "Required";
-      }
-
-      if (!values.name && action.identity_inputs.name === "required") {
-        errors.name = "Required";
-      }
-
-      if (!values.phone && action.identity_inputs.phone === "required") {
-        errors.phone = "Required";
       }
 
       return errors;
@@ -143,29 +111,23 @@ const usePrivacyRequestForm = ({
   return { ...formik, isLoading };
 };
 
-type PrivacyRequestFormProps = {
+type ConsentRequestFormProps = {
   isOpen: boolean;
   onClose: () => void;
-  openAction: string | null;
   setAlert: (state: AlertState) => void;
   setCurrentView: (view: ModalViews) => void;
-  setPrivacyRequestId: (id: string) => void;
+  setConsentRequestId: (id: string) => void;
   isVerificationRequired: boolean;
 };
 
-const ConsentRequestForm: React.FC<PrivacyRequestFormProps> = ({
+const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
   isOpen,
   onClose,
-  openAction,
   setAlert,
   setCurrentView,
-  setPrivacyRequestId,
+  setConsentRequestId,
   isVerificationRequired,
 }) => {
-  const action = openAction
-    ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
-    : null;
-
   const {
     errors,
     handleBlur,
@@ -176,101 +138,45 @@ const ConsentRequestForm: React.FC<PrivacyRequestFormProps> = ({
     isValid,
     dirty,
     resetForm,
-  } = usePrivacyRequestForm({
+  } = useConsentRequestForm({
     onClose,
-    action,
     setAlert,
     setCurrentView,
-    setPrivacyRequestId,
+    setConsentRequestId,
     isVerificationRequired,
   });
 
   useEffect(() => resetForm(), [isOpen, resetForm]);
 
-  if (!action) return null;
-
   return (
     <>
       <ModalHeader pt={6} pb={0}>
-        {action.title}
+        Manage your consent
       </ModalHeader>
       <chakra.form onSubmit={handleSubmit}>
         <ModalBody>
           <Text fontSize="sm" color="gray.500" mb={4}>
-            {action.description}
+            We will email you a report of the data from your account.
           </Text>
           <Stack spacing={3}>
-            {action.identity_inputs.name ? (
-              <FormControl
-                id="name"
-                isInvalid={touched.name && Boolean(errors.name)}
-              >
-                <Input
-                  id="name"
-                  name="name"
-                  focusBorderColor="primary.500"
-                  placeholder={
-                    action.identity_inputs.name === "required"
-                      ? "Name*"
-                      : "Name"
-                  }
-                  isRequired={action.identity_inputs.name === "required"}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.name}
-                  isInvalid={touched.name && Boolean(errors.name)}
-                />
-                <FormErrorMessage>{errors.name}</FormErrorMessage>
-              </FormControl>
-            ) : null}
-            {action.identity_inputs.email ? (
-              <FormControl
+            <FormControl
+              id="email"
+              isInvalid={touched.email && Boolean(errors.email)}
+            >
+              <Input
                 id="email"
+                name="email"
+                type="email"
+                focusBorderColor="primary.500"
+                placeholder="Email*"
+                isRequired
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.email}
                 isInvalid={touched.email && Boolean(errors.email)}
-              >
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  focusBorderColor="primary.500"
-                  placeholder={
-                    action.identity_inputs.email === "required"
-                      ? "Email*"
-                      : "Email"
-                  }
-                  isRequired={action.identity_inputs.email === "required"}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.email}
-                  isInvalid={touched.email && Boolean(errors.email)}
-                />
-                <FormErrorMessage>{errors.email}</FormErrorMessage>
-              </FormControl>
-            ) : null}
-            {action.identity_inputs.phone ? (
-              <FormControl
-                id="phone"
-                isInvalid={touched.phone && Boolean(errors.phone)}
-              >
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="phone"
-                  focusBorderColor="primary.500"
-                  placeholder={
-                    action.identity_inputs.phone === "required"
-                      ? "Phone*"
-                      : "Phone"
-                  }
-                  isRequired={action.identity_inputs.phone === "required"}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.phone}
-                  isInvalid={touched.phone && Boolean(errors.phone)}
-                />
-                <FormErrorMessage>{errors.phone}</FormErrorMessage>
-              </FormControl>
-            ) : null}
+              />
+              <FormErrorMessage>{errors.email}</FormErrorMessage>
+            </FormControl>
           </Stack>
         </ModalBody>
 

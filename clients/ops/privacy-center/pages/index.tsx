@@ -17,6 +17,10 @@ import {
   usePrivactRequestModal,
   PrivacyRequestModal,
 } from "../components/modals/privacy-request-modal/PrivacyRequestModal";
+import {
+  useConsentRequestModal,
+  ConsentRequestModal,
+} from "../components/modals/consent-request-modal/ConsentRequestModal";
 import PrivacyCard from "../components/PrivacyCard";
 import ConsentCard from "../components/ConsentCard";
 import type { AlertState } from "../types/AlertState";
@@ -39,6 +43,17 @@ const Home: NextPage = () => {
     setPrivacyRequestId,
     successHandler,
   } = usePrivactRequestModal();
+
+  const {
+    isOpen: isConsentModalOpen,
+    onOpen: onConsentModalOpen,
+    onClose: onConsentModalClose,
+    currentView: currentConsentModalView,
+    setCurrentView: setCurrentConsentModalView,
+    consentRequestId,
+    setConsentRequestId,
+    successHandler: consentModalSuccessHandler,
+  } = useConsentRequestModal();
 
   useEffect(() => {
     if (alert?.status) {
@@ -77,7 +92,7 @@ const Home: NextPage = () => {
   });
 
   if (config.includeConsent) {
-    content.push(<ConsentCard key="consentCard" onOpen={() => {}} />);
+    content.push(<ConsentCard key="consentCard" onOpen={onConsentModalOpen} />);
   }
 
   return (
@@ -159,6 +174,18 @@ const Home: NextPage = () => {
           setPrivacyRequestId={setPrivacyRequestId}
           isVerificationRequired={isVerificationRequired}
           successHandler={successHandler}
+        />
+
+        <ConsentRequestModal
+          isOpen={isConsentModalOpen}
+          onClose={onConsentModalClose}
+          setAlert={setAlert}
+          currentView={currentConsentModalView}
+          setCurrentView={setCurrentConsentModalView}
+          consentRequestId={consentRequestId}
+          setConsentRequestId={setConsentRequestId}
+          isVerificationRequired={isVerificationRequired}
+          successHandler={consentModalSuccessHandler}
         />
       </main>
     </div>
