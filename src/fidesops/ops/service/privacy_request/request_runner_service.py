@@ -12,6 +12,8 @@ from redis.exceptions import DataError
 from sqlalchemy.orm import Session
 
 from fidesops.ops import common_exceptions
+from fidesops.ops.analytics import send_analytics_event
+from fidesops.ops.analytics_event_factory import failed_graph_analytics_event
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
     IdentityNotFoundException,
@@ -19,10 +21,6 @@ from fidesops.ops.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
-from fidesops.ops.graph.analytics_events import (
-    failed_graph_analytics_event,
-    fideslog_graph_failure,
-)
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.models.datasetconfig import DatasetConfig
@@ -42,7 +40,9 @@ from fidesops.ops.models.privacy_request import (
     can_run_checkpoint,
 )
 from fidesops.ops.service.connectors.email_connector import email_connector_erasure_send
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task_request_completion
+from fidesops.ops.service.email.email_dispatch_service import (
+    dispatch_email_task_request_completion,
+)
 from fidesops.ops.service.storage.storage_uploader_service import upload
 from fidesops.ops.task.filter_results import filter_data_categories
 from fidesops.ops.task.graph_task import (
@@ -50,7 +50,7 @@ from fidesops.ops.task.graph_task import (
     run_access_request,
     run_erasure,
 )
-from fidesops.ops.tasks import DatabaseTask, celery_app, EMAIL_QUEUE_NAME
+from fidesops.ops.tasks import EMAIL_QUEUE_NAME, DatabaseTask, celery_app
 from fidesops.ops.tasks.scheduled.scheduler import scheduler
 from fidesops.ops.util.cache import (
     FidesopsRedis,
@@ -351,7 +351,7 @@ async def run_privacy_request(
         except BaseException as exc:  # pylint: disable=broad-except
             privacy_request.error_processing(db=session)
             # Send analytics to Fideslog
-            await fideslog_graph_failure(
+            await send_analytics_event(
                 failed_graph_analytics_event(privacy_request, exc)
             )
             # If dev mode, log traceback
@@ -366,7 +366,11 @@ async def run_privacy_request(
         ):
             logger.info("sending erasure email")
             has_email_connector_email = email_connector_erasure_send(
-                db=session, privacy_request=privacy_request, policy=policy, identity_data=identity_data, access_result_urls=access_result_urls
+                db=session,
+                privacy_request=privacy_request,
+                policy=policy,
+                identity_data=identity_data,
+                access_result_urls=access_result_urls,
             )
         if not has_email_connector_email:
 
@@ -423,8 +427,8 @@ def initiate_privacy_request_completion_email(
             "privacy_request_id": privacy_request.id,
             "to_email": identity_data.get(ProvidedIdentityType.email.value),
             "access_result_urls": access_result_urls,
-            "policy_id": policy.id
-        }
+            "policy_id": policy.id,
+        },
     )
 
 

@@ -173,7 +173,9 @@ async def test_email_connector_cache_and_delayed_send(
         log.status for log in children_logs
     }
 
-    email_connector_erasure_send(db, privacy_request)
+    email_connector_erasure_send(
+        db, privacy_request, erasure_policy, {"email": "customer-1@example.com"}, []
+    )
     assert mock_email_dispatch.called
     call_args = mock_email_dispatch.call_args[1]
     assert call_args["action_type"] == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT

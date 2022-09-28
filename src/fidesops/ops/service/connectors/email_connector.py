@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-from fideslib.models.audit_log import AuditLog, AuditLogAction
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import (
@@ -26,7 +25,10 @@ from fidesops.ops.schemas.connection_configuration import EmailSchema
 from fidesops.ops.schemas.email.email import EmailActionType, FidesopsEmail
 from fidesops.ops.service.connectors.base_connector import BaseConnector
 from fidesops.ops.service.connectors.query_config import ManualQueryConfig
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email, dispatch_email_task_email_connector
+from fidesops.ops.service.email.email_dispatch_service import (
+    dispatch_email,
+    dispatch_email_task_email_connector,
+)
 from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 from fidesops.ops.util.collection_util import Row, append
 
@@ -159,7 +161,13 @@ class EmailConnector(BaseConnector[None]):
         return ManualAction(locators=locators, update=mask_map if mask_map else None)
 
 
-def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest, policy: Policy, identity_data: Dict[str, Any], access_result_urls: List[str] = None) -> bool:
+def email_connector_erasure_send(
+    db: Session,
+    privacy_request: PrivacyRequest,
+    policy: Policy,
+    identity_data: Dict[str, Any],
+    access_result_urls: List[str] = None,
+) -> bool:
     """
     Send emails to configured third-parties with instructions on how to erase remaining data.
     Combined all the collections on each email-based dataset into one email.
@@ -198,15 +206,17 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest, p
             )
             continue
 
-        emails_to_send.append({
-            "email_meta": FidesopsEmail(
-                action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
-                body_params=template_values
-            ).dict(),
-            "to_email": cc.secrets.get("to_email"),
-            "dataset_key": ds.dataset.get("fides_key"),
-        })
-    if len(emails_to_send):
+        emails_to_send.append(
+            {
+                "email_meta": FidesopsEmail(
+                    action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
+                    body_params=template_values,
+                ).dict(),
+                "to_email": cc.secrets.get("to_email"),
+                "dataset_key": ds.dataset.get("fides_key"),
+            }
+        )
+    if len(emails_to_send) > 0:
         dispatch_email_task_email_connector.apply_async(
             queue=EMAIL_QUEUE_NAME,
             kwargs={
@@ -215,7 +225,7 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest, p
                 "privacy_request_id": privacy_request.id,
                 "access_result_urls": access_result_urls,
                 "identity_data": identity_data,
-            }
+            },
         )
         return True
     return False

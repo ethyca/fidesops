@@ -1,3 +1,4 @@
+# pylint: disable=W0223
 import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
@@ -6,16 +7,23 @@ import requests
 from fideslib.models.audit_log import AuditLog, AuditLogAction
 from sqlalchemy.orm import Session
 
+from fidesops.ops.analytics import sync_send_analytics_event_wrapper
+from fidesops.ops.analytics_event_factory import failed_graph_analytics_event
 from fidesops.ops.common_exceptions import EmailDispatchException
 from fidesops.ops.core.config import config
 from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.models.email import EmailConfig
-from fidesops.ops.models.policy import CurrentStep, ActionType, Policy
-from fidesops.ops.models.privacy_request import CheckpointActionRequired, PrivacyRequest, PrivacyRequestStatus, \
-    ProvidedIdentityType
+from fidesops.ops.models.policy import ActionType, CurrentStep, Policy, PolicyPostWebhook
+from fidesops.ops.models.privacy_request import (
+    CheckpointActionRequired,
+    PrivacyRequest,
+    PrivacyRequestStatus,
+    ProvidedIdentityType,
+)
 from fidesops.ops.schemas.email.email import (
     AccessRequestCompleteBodyParams,
     EmailActionType,
+    EmailConnectorEmail,
     EmailForActionType,
     EmailServiceDetails,
     EmailServiceSecrets,
@@ -23,9 +31,9 @@ from fidesops.ops.schemas.email.email import (
     FidesopsEmail,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
-    SubjectIdentityVerificationBodyParams, EmailConnectorEmail,
+    SubjectIdentityVerificationBodyParams,
 )
-from fidesops.ops.tasks import DatabaseTask, celery_app, EMAIL_QUEUE_NAME
+from fidesops.ops.tasks import EMAIL_QUEUE_NAME, DatabaseTask, celery_app
 from fidesops.ops.util.logger import Pii, _log_exception
 
 logger = logging.getLogger(__name__)
@@ -39,12 +47,12 @@ class RequestCompletionBase(DatabaseTask):
     def on_failure(self, exc, task_id, args, kwargs, einfo) -> None:
         logger.error("in celery error callback")
         privacy_request_id = kwargs["privacy_request_id"]
-        from fidesops.ops.graph.analytics_events import fideslog_graph_failure_sync, failed_graph_analytics_event
+
         with self.session as db:
             privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
             privacy_request.error_processing(db=db)
             # If dev mode, log traceback
-            fideslog_graph_failure_sync(
+            sync_send_analytics_event_wrapper(
                 failed_graph_analytics_event(privacy_request, exc)
             )
             _log_exception(exc, config.dev_mode)
@@ -70,11 +78,11 @@ class RequestCompletionBase(DatabaseTask):
 
 @celery_app.task(base=RequestCompletionBase, bind=True)
 def dispatch_email_task_request_completion(
-        self: DatabaseTask,
-        privacy_request_id: str,
-        to_email: str,
-        access_result_urls: List[str],
-        policy_id: str,
+    self: DatabaseTask,
+    privacy_request_id: str,
+    to_email: str,
+    access_result_urls: List[str],
+    policy_id: str,
 ) -> None:
     """
     A wrapper function to dispatch an email task into the Celery queues
@@ -87,9 +95,7 @@ def dispatch_email_task_request_completion(
                 db,
                 EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
                 to_email,
-                AccessRequestCompleteBodyParams(
-                    download_links=access_result_urls
-                ),
+                AccessRequestCompleteBodyParams(download_links=access_result_urls),
             )
         if policy.get_rules_for_action(action_type=ActionType.erasure):
             dispatch_email(
@@ -118,10 +124,10 @@ class IdentityVerificationBase(DatabaseTask):
 
 @celery_app.task(base=IdentityVerificationBase, bind=True)
 def dispatch_email_task_identity_verification(
-        self: DatabaseTask,
-        email_meta: Dict[str, Any],
-        to_email: str,
-        privacy_request_id: str,
+    self: DatabaseTask,
+    email_meta: Dict[str, Any],
+    to_email: str,
+    privacy_request_id: str,
 ) -> None:
     """
     A wrapper function to dispatch an email task into the Celery queues
@@ -142,7 +148,7 @@ class EmailTaskEmailConnector(DatabaseTask):
     """
 
     def on_failure(self, exc, task_id, args, kwargs, einfo) -> None:
-        from fidesops.ops.graph.analytics_events import fideslog_graph_failure_sync, failed_graph_analytics_event
+
         privacy_request_id = kwargs["privacy_request_id"]
         with self.session as db:
             # fixme: net new functionality- needs review. Previously we didn't set privacy request to error state upon email failure
@@ -151,7 +157,7 @@ class EmailTaskEmailConnector(DatabaseTask):
                 step=CurrentStep.erasure_email_post_send, collection=None
             )
             privacy_request.error_processing(db=db)
-            fideslog_graph_failure_sync(
+            sync_send_analytics_event_wrapper(
                 failed_graph_analytics_event(privacy_request, exc)
             )
             # If dev mode, log traceback
@@ -165,7 +171,10 @@ class EmailTaskEmailConnector(DatabaseTask):
         with self.session as db:
             privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
 
-            from fidesops.ops.service.privacy_request.request_runner_service import run_webhooks_and_report_status
+            from fidesops.ops.service.privacy_request.request_runner_service import (  # pylint: disable=R0401
+                run_webhooks_and_report_status,
+            )
+
             # Run post-execution webhooks
             proceed = run_webhooks_and_report_status(
                 db=db,
@@ -181,8 +190,8 @@ class EmailTaskEmailConnector(DatabaseTask):
                         "privacy_request_id": privacy_request.id,
                         "to_email": identity_data.get(ProvidedIdentityType.email.value),
                         "access_result_urls": access_result_urls,
-                        "policy_id": policy_id
-                    }
+                        "policy_id": policy_id,
+                    },
                 )
             else:
                 privacy_request.finished_processing_at = datetime.utcnow()
@@ -202,53 +211,56 @@ class EmailTaskEmailConnector(DatabaseTask):
 
 @celery_app.task(base=EmailTaskEmailConnector, bind=True)
 def dispatch_email_task_email_connector(
-        self: DatabaseTask,
-        emails_to_send: List[Dict[str, Any]],
-        policy_key: str,
-        privacy_request_id: str,
-        access_result_urls: List[str],
-        identity_data: Dict[str, Any],
+    self: DatabaseTask,
+    emails_to_send: List[Dict[str, Any]],
+    policy_key: str,
+    privacy_request_id: str,
+    access_result_urls: List[str],
+    identity_data: Dict[str, Any],
 ) -> None:
     """
     A wrapper function to dispatch an email task into the Celery queues
     """
+
+    # The on_success celery handler only runs once, after success of entire task,
+    # but here we need know which dataset(s) to log upon success of each email in batch.
+    # so we need to pass in an on_success for each dispatch call
+    def on_success(session: Session, kwargs: Dict[str, Any]):
+        logger.info(
+            "Email send succeeded for request '%s' for dataset: '%s'",
+            privacy_request_id,
+            kwargs["dataset_key"],
+        )
+        AuditLog.create(
+            db=session,
+            data={
+                "user_id": "system",
+                "privacy_request_id": kwargs["pr_id"],
+                "action": AuditLogAction.email_sent,
+                "message": f"Erasure email instructions dispatched for '{kwargs['dataset_key']}'",
+            },
+        )
     for email in emails_to_send:
         parsed: EmailConnectorEmail = EmailConnectorEmail.parse_obj(email)
         schema = FidesopsEmail.parse_obj(parsed.email_meta)
 
-        # The on_success celery handler only runs once, after success of entire task,
-        # but here we need know which dataset(s) to log upon success of each email in batch.
-        # so we need to pass in an on_success for each dispatch call
-        def on_success():
-            logger.info(
-                "Email send succeeded for request '%s' for dataset: '%s'",
-                privacy_request_id,
-                parsed.dataset_key,
-            )
-            AuditLog.create(
-                db=db,
-                data={
-                    "user_id": "system",
-                    "privacy_request_id": privacy_request_id,
-                    "action": AuditLogAction.email_sent,
-                    "message": f"Erasure email instructions dispatched for '{parsed.dataset_key}'",
-                },
-            )
         with self.session as db:
             dispatch_email(
                 db,
                 schema.action_type,
                 parsed.to_email,
                 schema.body_params,
-                on_success=on_success
+                on_success=on_success,
+                on_success_kwargs={
+                    "pr_id": privacy_request_id,
+                    "dataset_key": parsed.dataset_key
+                }
             )
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
 def dispatch_email_task_generic(
-        self: DatabaseTask,
-        email_meta: Dict[str, Any],
-        to_email: str
+    self: DatabaseTask, email_meta: Dict[str, Any], to_email: str
 ) -> None:
     """
     A wrapper function to dispatch an email task into the Celery queues
@@ -276,7 +288,8 @@ def dispatch_email(
             List[CheckpointActionRequired],
         ]
     ] = None,
-    on_success: Any = None
+    on_success: Any = None,
+    on_success_kwargs: Dict[str, Any] = None,
 ) -> None:
     """
     Sends an email to `to_email` with content supplied in `email_body_params`
@@ -306,7 +319,7 @@ def dispatch_email(
         to_email=to_email,
     )
     if on_success:
-        on_success()
+        on_success(db, on_success_kwargs)
 
 
 def _build_email(  # pylint: disable=too-many-return-statements

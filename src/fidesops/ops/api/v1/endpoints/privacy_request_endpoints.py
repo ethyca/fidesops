@@ -108,8 +108,10 @@ from fidesops.ops.schemas.privacy_request import (
     RowCountRequest,
     VerificationCode,
 )
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task_generic, \
-    dispatch_email_task_identity_verification
+from fidesops.ops.service.email.email_dispatch_service import (
+    dispatch_email_task_generic,
+    dispatch_email_task_identity_verification,
+)
 from fidesops.ops.service.privacy_request.request_runner_service import (
     generate_id_verification_code,
     queue_privacy_request,
@@ -296,7 +298,7 @@ def _send_verification_code_to_user(
                 ),
             ).dict(),
             "to_email": email,
-            "privacy_request_id": privacy_request.id
+            "privacy_request_id": privacy_request.id,
         },
     )
 
