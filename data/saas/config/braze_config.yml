@@ -88,7 +88,7 @@ saas_config:
             {
               "attributes": [
                 {
-                  <masked_object_fields>
+                  <all_object_fields>
                 }
               ]
             }
