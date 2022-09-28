@@ -263,6 +263,7 @@ class SaaSType(Enum):
     sendgrid = "sendgrid"
     datadog = "datadog"
     rollbar = "rollbar"
+    firebase_auth = "firebase_auth"
 
 
 class SaaSConfigBase(BaseModel):
