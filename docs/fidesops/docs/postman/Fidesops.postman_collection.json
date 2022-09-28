@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "8f48b8e3-0a39-4e5e-b505-8087064dc1af",
+		"_postman_id": "002813f4-12b7-4467-9377-a57706b6dbc8",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -4810,6 +4810,38 @@
 								"consent-request",
 								"{{consent_request_id}}",
 								"verify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authenticated Get Consent Preferences",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone_number\": \"{{phone_number}}\",\n  \"email\": \"{{email}}\"\n}"
+						},
+						"url": {
+							"raw": "{{host}}/consent-request/preferences",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"consent-request",
+								"preferences"
 							]
 						}
 					},
