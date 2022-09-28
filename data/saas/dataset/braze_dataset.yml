@@ -160,6 +160,12 @@ dataset:
           - name: custom_attributes
             fides_meta:
               data_type: object
+          - name: campaigns_received
+            fides_meta:
+              - data_type: object
+          - name: canvases_received
+            fides_meta:
+              - data_type: object
       - name: subscription_groups_email
         fields:
           - name: email
