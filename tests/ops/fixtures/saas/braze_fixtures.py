@@ -30,7 +30,7 @@ def braze_secrets(saas_config):
         "domain": pydash.get(saas_config, "braze.domain") or secrets["domain"],
         "api_key": pydash.get(saas_config, "braze.api_key") or secrets["api_key"],
         "external_id": pydash.get(saas_config, "braze.external_id")
-                       or secrets["external_id"],
+        or secrets["external_id"],
     }
 
 
@@ -82,10 +82,10 @@ def braze_connection_config(db: session, braze_config, braze_secrets) -> Generat
 
 @pytest.fixture
 def braze_dataset_config(
-        db: Session,
-        braze_connection_config: ConnectionConfig,
-        braze_dataset,
-        braze_config,
+    db: Session,
+    braze_connection_config: ConnectionConfig,
+    braze_dataset,
+    braze_config,
 ) -> Generator:
     fides_key = braze_config["fides_key"]
     braze_connection_config.name = fides_key
@@ -105,9 +105,7 @@ def braze_dataset_config(
 
 @pytest.fixture(scope="function")
 def braze_erasure_data(
-        braze_connection_config,
-        braze_erasure_identity_email,
-        braze_secrets
+    braze_connection_config, braze_erasure_identity_email, braze_secrets
 ) -> Generator:
     base_url = f"https://{braze_secrets['domain']}"
     external_id = uuid.uuid4().hex
@@ -131,10 +129,10 @@ def braze_erasure_data(
                     {
                         "external_id": external_id,
                         "alias_name": "Breaking",
-                        "alias_label": "Bad"
+                        "alias_label": "Bad",
                     }
                 ],
-                "app_id": f"app_identifier.{external_id}"
+                "app_id": f"app_identifier.{external_id}",
             }
         ],
         "events": [
@@ -142,14 +140,14 @@ def braze_erasure_data(
                 "external_id": external_id,
                 "app_id": f"app_identifier.{external_id}",
                 "name": "watched_trailer",
-                "time": "2013-07-16T19:20:30+1:00"
+                "time": "2013-07-16T19:20:30+1:00",
             },
             {
                 "external_id": external_id,
                 "app_id": "app_identifier.{{external_id}}",
                 "name": "this is test event to create",
-                "time": "2022-07-16T19:20:30+1:00"
-            }
+                "time": "2022-07-16T19:20:30+1:00",
+            },
         ],
         "purchases": [
             {
@@ -162,21 +160,16 @@ def braze_erasure_data(
                 "properties": {
                     "integer_property": 3,
                     "string_property": "Some Property",
-                    "date_property": "2014-02-02T00:00:00Z"
-                }
+                    "date_property": "2014-02-02T00:00:00Z",
+                },
             }
-        ]
+        ],
     }
 
     headers = {"Authorization": f"Bearer {braze_secrets['api_key']}"}
 
-    response = requests.post(
-        url=f"{base_url}/users/track",
-        json=body,
-        headers=headers
-    )
+    response = requests.post(url=f"{base_url}/users/track", json=body, headers=headers)
     response_data = response.json()
-
 
     assert response.ok
 
@@ -192,25 +185,24 @@ def braze_erasure_data(
     yield response_data
 
     # Remove Data
-    export_data = requests.get(
+
+    export_data = requests.post(
         url=f"{base_url}/users/export/ids",
         json={
-            "external_ids": [external_id, ],
+            "external_ids": [
+                external_id,
+            ],
             "fields_to_export": [
-                "braze_id"
-            ]
+                "braze_id",
+            ],
         },
-        headers=headers
+        headers=headers,
     )
     assert export_data.ok
 
-    braze_ids = [i["braze_id"] for i in export_data.json().get('users')]
+    braze_ids = [i["braze_id"] for i in export_data.json().get("users")]
     delete_user = requests.post(
-        url=f"{base_url}/users/delete",
-        json={
-            "braze_ids": braze_ids
-        },
-        headers=headers
+        url=f"{base_url}/users/delete", json={"braze_ids": braze_ids}, headers=headers
     )
     assert delete_user.status_code == 201
 
@@ -226,13 +218,14 @@ def _user_exists(braze_erasure_identity_email: str, braze_secrets):
     }
     body = {
         "email_address": braze_erasure_identity_email,
-        "fields_to_export": [
-            "email"
-        ]
+        "fields_to_export": ["email"],
     }
 
-    user_response = requests.post(url=f"{base_url}/users/export/ids", json=body, headers=headers,)
-
+    user_response = requests.post(
+        url=f"{base_url}/users/export/ids",
+        json=body,
+        headers=headers,
+    )
 
     # we expect 404 if user doesn't exist
     if 404 == user_response.status_code:

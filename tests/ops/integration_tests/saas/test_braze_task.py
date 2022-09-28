@@ -1,4 +1,5 @@
 import random
+import time
 
 import pytest
 import requests
@@ -23,11 +24,11 @@ def test_braze_connection_test(braze_connection_config) -> None:
 @pytest.mark.integration_braze
 @pytest.mark.asyncio
 async def test_saas_access_request_task(
-        db,
-        policy,
-        braze_connection_config,
-        braze_dataset_config,
-        braze_identity_email,
+    db,
+    policy,
+    braze_connection_config,
+    braze_dataset_config,
+    braze_identity_email,
 ) -> None:
     """Full access request based on the braze SaaS config"""
 
@@ -95,13 +96,13 @@ async def test_saas_access_request_task(
 @pytest.mark.integration_braze
 @pytest.mark.asyncio
 async def test_saas_erasure_task(
-        db,
-        policy,
-        erasure_policy_string_rewrite,
-        braze_connection_config,
-        braze_dataset_config,
-        braze_erasure_identity_email,
-        braze_erasure_data
+    db,
+    policy,
+    erasure_policy_string_rewrite,
+    braze_connection_config,
+    braze_dataset_config,
+    braze_erasure_identity_email,
+    braze_erasure_data,
 ) -> None:
     privacy_request = PrivacyRequest(
         id=f"test_braze_erasure_request_task_{random.randint(0, 1000)}"
@@ -116,9 +117,6 @@ async def test_saas_erasure_task(
     dataset_name = braze_connection_config.get_saas_config().fides_key
     merged_graph = braze_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-
-    temp_masking = config.execution.masking_strict
-    config.execution.masking_strict = True
 
     v = await graph_task.run_access_request(
         privacy_request,
@@ -148,6 +146,9 @@ async def test_saas_erasure_task(
         ],
     )
 
+    temp_masking = config.execution.masking_strict
+    config.execution.masking_strict = True
+
     x = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
@@ -158,7 +159,12 @@ async def test_saas_erasure_task(
         db,
     )
 
-    assert x == {f"{dataset_name}:users": 0, f"{dataset_name}:subscription_groups_email": 0}
+    assert x == {
+        f"{dataset_name}:users": 1,
+        f"{dataset_name}:subscription_groups_email": 0,
+    }
+
+    time.sleep(5)
 
     # Verifying field is masked
     braze_secrets = braze_connection_config.secrets
@@ -180,8 +186,8 @@ async def test_saas_erasure_task(
             "language",
             "last_name",
             "phone",
-            "user_aliases"
-        ]
+            "user_aliases",
+        ],
     }
 
     user_response = requests.post(
@@ -189,9 +195,10 @@ async def test_saas_erasure_task(
         json=body,
         headers=headers,
     )
-    user = user_response.json().get('users')
-    assert user[0]["first_name"] == "MASKED"
-    assert user[0]["first_name"] == "MASKED"
-    assert user[0]["first_name"] == "MASKED"
+    users = user_response.json().get("users")
+
+    for user in users:
+        assert user["first_name"] == "MASKED"
+        assert user["last_name"] == "MASKED"
 
     config.execution.masking_strict = temp_masking
