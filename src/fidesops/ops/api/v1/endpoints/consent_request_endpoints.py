@@ -18,6 +18,7 @@ from fidesops.ops.api.v1.scope_registry import CONSENT_READ
 from fidesops.ops.api.v1.urn_registry import (
     CONSENT_REQUEST,
     CONSENT_REQUEST_PREFERENCES,
+    CONSENT_REQUEST_PREFERENCES_WITH_ID,
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
@@ -184,7 +185,7 @@ def get_consent_preferences(
 
 
 @router.patch(
-    CONSENT_REQUEST_PREFERENCES,
+    CONSENT_REQUEST_PREFERENCES_WITH_ID,
     status_code=HTTP_200_OK,
     response_model=ConsentPreferences,
 )

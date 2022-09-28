@@ -10,6 +10,7 @@ from fidesops.ops.api.v1.scope_registry import CONNECTION_READ, CONSENT_READ
 from fidesops.ops.api.v1.urn_registry import (
     CONSENT_REQUEST,
     CONSENT_REQUEST_PREFERENCES,
+    CONSENT_REQUEST_PREFERENCES_WITH_ID,
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
@@ -233,7 +234,7 @@ class TestSaveConsent:
         }
 
         response = api_client.patch(
-            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES.format(consent_request_id='abcd')}",
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id='abcd')}",
             json=data,
         )
         assert response.status_code == 404
@@ -251,7 +252,7 @@ class TestSaveConsent:
         }
 
         response = api_client.patch(
-            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES.format(consent_request_id=consent_request.id)}",
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
             json=data,
         )
         assert response.status_code == 400
@@ -269,7 +270,7 @@ class TestSaveConsent:
             "consent": [{"data_use": "email", "opt_in": True}],
         }
         response = api_client.patch(
-            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES.format(consent_request_id=consent_request.id)}",
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
             json=data,
         )
         assert response.status_code == 403
@@ -297,7 +298,7 @@ class TestSaveConsent:
             "consent": [{"data_use": "email", "opt_in": True}],
         }
         response = api_client.patch(
-            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES.format(consent_request_id=consent_request.id)}",
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
             json=data,
         )
 
@@ -317,7 +318,7 @@ class TestSaveConsent:
             "consent": None,
         }
         response = api_client.patch(
-            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES.format(consent_request_id=consent_request.id)}",
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
             json=data,
         )
         assert response.status_code == 422
@@ -354,7 +355,7 @@ class TestSaveConsent:
             "consent": consent_data,
         }
         response = api_client.patch(
-            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES.format(consent_request_id=consent_request.id)}",
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
             json=data,
         )
         assert response.status_code == 200
