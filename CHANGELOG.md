@@ -22,8 +22,7 @@ The types of changes are:
 
 ### Changed
 * Refactor privacy center to be more modular [#1363](https://github.com/ethyca/fidesops/pull/1363)
-* Access support for Square [#1378](https://github.com/ethyca/fidesops/pull/1378)
-* Erasure support for Square [#1398](https://github.com/ethyca/fidesops/pull/1398)
+
 
 ### Fixed
 * Distinguish whether webhook has been visited and no fields were found, versus never visited [#1339](https://github.com/ethyca/fidesops/pull/1339)
@@ -36,6 +35,7 @@ The types of changes are:
 * Access support for Rollbar [#1361](https://github.com/ethyca/fidesops/pull/1361)
 * Adds a new Timescale connector [#1327](https://github.com/ethyca/fidesops/pull/1327)
 * Allow querying the non-default schema with the Postgres Connector [#1375](https://github.com/ethyca/fidesops/pull/1375)
+* Access and Erasure support for Square [#1378](https://github.com/ethyca/fidesops/pull/1378)
 
 ### Removed
 
