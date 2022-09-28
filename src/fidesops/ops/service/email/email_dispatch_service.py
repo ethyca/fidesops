@@ -97,7 +97,7 @@ def _build_email(  # pylint: disable=too-many-return-statements
     if action_type == EmailActionType.CONSENT_REQUEST:
         template = get_email_template(action_type)
         return EmailForActionType(
-            subject="your one-time code",
+            subject="Your one-time code",
             body=template.render(
                 {
                     "code": body_params.verification_code,
