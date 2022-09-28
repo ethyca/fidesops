@@ -43,7 +43,7 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
   },
   {
     privilege: "View user consent preferences",
-    scope: "consent:read"
+    scope: "consent:read",
   },
   {
     privilege: "View Datasets",
