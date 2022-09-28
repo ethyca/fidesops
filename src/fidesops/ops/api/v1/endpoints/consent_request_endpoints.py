@@ -159,30 +159,14 @@ def get_consent_preferences(
         db,
         conditions=(
             (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(lookup))
-            & (
-                ProvidedIdentity.privacy_request  # pylint: disable=singleton-comparison
-                == None
-            )
+            & (ProvidedIdentity.privacy_request_id.is_(None))
         ),
     ).first()
 
     if not identity:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Identity not found")
 
-    consent = Consent.filter(
-        db, conditions=(Consent.provided_identity_id == identity.id)
-    ).all()
-
-    return ConsentPreferences(
-        consent=[
-            ConsentSchema(
-                data_use=x.data_use,
-                data_use_description=x.data_use_description,
-                opt_in=x.opt_in,
-            )
-            for x in consent
-        ]
-    )
+    return _prepare_consent_preferences(db, identity)
 
 
 @router.patch(
