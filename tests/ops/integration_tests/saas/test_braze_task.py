@@ -164,7 +164,7 @@ async def test_saas_erasure_task(
         f"{dataset_name}:subscription_groups_email": 0,
     }
 
-    time.sleep(5)
+    time.sleep(10)
 
     # Verifying field is masked
     braze_secrets = braze_connection_config.secrets
