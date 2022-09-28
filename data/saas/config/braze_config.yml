@@ -81,6 +81,17 @@ saas_config:
             - name: identity_email
               identity: email
           data_path: users
+        update:
+          method: POST
+          path: /users/track
+          body: |
+            {
+              "attributes": [
+                {
+                  <all_object_fields>
+                }
+              ]
+            }
     - name: subscription_groups_email
       requests:
         read:

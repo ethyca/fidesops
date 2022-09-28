@@ -10,13 +10,15 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: external_id
-            data_categories: [ system.operations ]
+            data_categories: [ user.unique_id ]
             fidesops_meta:
               data_type: string
+              read_only: True
           - name: braze_id
-            data_categories: [ system.operations ]
+            data_categories: [ user.unique_id ]
             fidesops_meta:
               data_type: string
+              primary_key: True
           - name: first_name
             data_categories: [ user.name ]
             fidesops_meta:
@@ -80,6 +82,7 @@ dataset:
           - name: user_aliases
             fidesops_meta:
               data_type: object[]
+              read_only: True
             fields:
               - name: alias_name
                 data_categories: [ system.operations ]
@@ -89,77 +92,6 @@ dataset:
                 data_categories: [ system.operations ]
                 fides_meta:
                   data_type: string
-          - name: apps
-            fidesops_meta:
-              data_type: object[]
-            fields:
-              - name: name
-                data_category: [ system.operations ]
-                fides_meta:
-                  data_type: string
-              - name: platform
-                data_category: [ system.operations ]
-                fides_meta:
-                  data_type: string
-              - name: version
-                data_category: [ system.operations ]
-                fides_meta:
-                  data_type: string
-              - name: sessions
-                data_category: [ system.operations ]
-                fides_meta:
-                  data_type: string
-              - name: first_used
-                data_category: [ system.operations ]
-                fides_meta:
-                  data_type: string
-              - name: last_used
-                data_category: [ system.operations ]
-                fides_meta:
-                  data_type: string
-          - name: custom_events
-            fidesops_meta:
-              data_type: object[]
-            fields:
-              - name: name
-                data_category: [ system.operations ]
-                fides_meta:
-                    data_type: string
-              - name: first
-                data_category: [ system.operations ]
-                fides_meta:
-                    data_type: string
-              - name: last
-                data_category: [ system.operations ]
-                fides_meta:
-                  data_type: string
-              - name: count
-                data_category: [ system.operations ]
-                fides_meta:
-                  data_type: string
-          - name: purchases
-            fides_meta:
-              data_type: object[]
-            fields:
-              - name: name
-                data_category: [ system.operations ]
-                fides_meta:
-                  data_type: string
-              - name: first
-                data_category: [ system.operations ]
-                fides_meta:
-                  data_type: string
-              - name: last
-                data_category: [ system.operations ]
-                fides_meta:
-                  data_type: string
-              - name: count
-                data_category: [ system.operations ]
-                fides_meta:
-                  data_type: string
-          - name: custom_attributes
-            fides_meta:
-              data_type: object
       - name: subscription_groups_email
         fields:
           - name: email

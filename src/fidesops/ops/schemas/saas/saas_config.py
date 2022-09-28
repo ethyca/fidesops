@@ -263,7 +263,7 @@ class SaaSType(Enum):
     sendgrid = "sendgrid"
     datadog = "datadog"
     rollbar = "rollbar"
-    braze = 'braze'
+    braze = "braze"
 
 
 class SaaSConfigBase(BaseModel):
