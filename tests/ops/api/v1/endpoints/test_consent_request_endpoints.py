@@ -58,7 +58,6 @@ class TestConsentRequest:
         data = {"email": "test@example.com"}
         response = api_client.post(f"{V1_URL_PREFIX}{CONSENT_REQUEST}", json=data)
         assert response.status_code == 200
-        assert response.json()["identity"]["email"] == data["email"]
         assert mock_dispatch_email.called
 
     @pytest.mark.usefixtures(
@@ -75,7 +74,6 @@ class TestConsentRequest:
         data = {"email": provided_identity.encrypted_value["value"]}
         response = api_client.post(f"{V1_URL_PREFIX}{CONSENT_REQUEST}", json=data)
         assert response.status_code == 200
-        assert response.json()["identity"]["email"] == data["email"]
         assert mock_dispatch_email.called
 
     @pytest.mark.usefixtures(

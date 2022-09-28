@@ -234,14 +234,12 @@ class ConsentPreferencesWithVerificationCode(BaseSchema):
     """scheam for consent preferences including the verification code."""
 
     code: str
-    identity: Identity
     consent: List[Consent]
 
 
 class ConsentRequestResponse(BaseSchema):
     """Schema for consent request response."""
 
-    identity: Identity
     consent_request_id: str
 
 
