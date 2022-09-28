@@ -181,9 +181,11 @@ class FidesopsConfig(FidesSettings):
         FidesopsNotificationSettings
     ] = FidesopsNotificationSettings()
 
-    port: int = os.getenv(
-        "FIDESOPS__PORT",
-        8080,  # Run the webserver on port 8080 by default
+    port: int = int(
+        os.getenv(
+            "FIDESOPS__PORT",
+            "8080",  # Run the webserver on port 8080 by default
+        )
     )
     is_test_mode: bool = os.getenv("TESTING", "").lower() == "true"
     hot_reloading: bool = os.getenv("FIDESOPS__HOT_RELOAD", "").lower() == "true"
