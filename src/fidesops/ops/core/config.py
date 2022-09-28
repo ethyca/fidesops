@@ -171,9 +171,16 @@ class FidesopsNotificationSettings(FidesSettings):
 class FidesopsConfig(FidesSettings):
     """Configuration variables for the FastAPI project"""
 
-    database: FidesopsDatabaseSettings = FidesopsDatabaseSettings()
-    redis: RedisSettings = RedisSettings()
-    security: FidesopsSecuritySettings = FidesopsSecuritySettings()
+    # Pydantic doesn't initialise subsections automatically if
+    # only environment variables are provided at runtime. If the
+    # subsection class is instantiated with no args, Pydantic runs
+    # validation before loading in environment variables, which
+    # always fails if any config vars in the subsection are non-optional.
+    # Using the empty dict allows Python to load in the environment
+    # variables _before_ validating them against the Pydantic schema.
+    database: FidesopsDatabaseSettings = {}  # type: ignore
+    redis: RedisSettings = {}  # type: ignore
+    security: FidesopsSecuritySettings = {}  # type: ignore
     execution: Optional[ExecutionSettings] = ExecutionSettings()
     root_user: Optional[RootUserSettings] = RootUserSettings()
     admin_ui: Optional[AdminUiSettings] = AdminUiSettings()
