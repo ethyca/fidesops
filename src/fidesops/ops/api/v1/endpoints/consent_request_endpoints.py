@@ -145,6 +145,7 @@ def consent_request_verify(
 def get_consent_preferences(
     *, db: Session = Depends(get_db), data: Identity
 ) -> ConsentPreferences:
+    """Gets the consent preferences for the specified user."""
     if data.email:
         lookup = data.email
     elif data.phone_number:
