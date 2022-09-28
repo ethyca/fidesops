@@ -376,6 +376,9 @@ def requeue_requires_input_requests(db: Session) -> None:
     """
     Queue privacy requests with request status "requires_input" if they are no longer blocked by
     access manual webhooks.
+
+    For use when all access manual webhooks have been either disabled or deleted, leaving privacy requests
+    lingering in a "requires_input" state.
     """
     if not AccessManualWebhook.get_enabled(db):
         for pr in PrivacyRequest.filter(
