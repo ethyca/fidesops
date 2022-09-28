@@ -22,7 +22,6 @@ saas_config:
     path: /v2/customers
 
   endpoints:
-#
     - name: customer
       requests:
         read:
@@ -42,7 +41,19 @@ saas_config:
               }
             }
           data_path: customers
-
+        update:
+          method: PUT
+          path: /v2/customers/<customer_id>
+          body: |
+            {
+              <masked_object_fields>
+            }
+          param_values:
+            - name: customer_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: customer.id
+                  direction: from
     - name: locations
       requests:
         read:
@@ -56,7 +67,6 @@ saas_config:
             - name: email
               identity: email
           data_path: locations
-          
     - name: orders
       requests:
         read:
