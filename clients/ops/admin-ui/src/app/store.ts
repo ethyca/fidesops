@@ -1,13 +1,24 @@
-import { configureStore, StateFromReducersMapObject } from "@reduxjs/toolkit";
-import { setupListeners } from "@reduxjs/toolkit/query/react";
-
-import { STORED_CREDENTIALS_KEY } from "../constants";
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-  authApi,
-  AuthState,
-  credentialStorage,
-  reducer as authReducer,
-} from "../features/auth";
+  AnyAction,
+  combineReducers,
+  configureStore,
+  StateFromReducersMapObject,
+} from "@reduxjs/toolkit";
+import { setupListeners } from "@reduxjs/toolkit/query/react";
+import {
+  FLUSH,
+  PAUSE,
+  PERSIST,
+  persistReducer,
+  persistStore,
+  PURGE,
+  REGISTER,
+  REHYDRATE,
+} from "redux-persist";
+import createWebStorage from "redux-persist/lib/storage/createWebStorage";
+
+import { authApi, reducer as authReducer } from "../features/auth";
 import {
   connectionTypeApi,
   reducer as connectionTypeReducer,
@@ -25,6 +36,23 @@ import {
   userApi,
 } from "../features/user-management";
 
+const createNoopStorage = () => ({
+  getItem(_key: any) {
+    return Promise.resolve(null);
+  },
+  setItem(_key: any, value: any) {
+    return Promise.resolve(value);
+  },
+  removeItem(_key: any) {
+    return Promise.resolve();
+  },
+});
+
+const storage =
+  typeof window !== "undefined"
+    ? createWebStorage("local")
+    : createNoopStorage();
+
 const reducer = {
   [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
   subjectRequests: privacyRequestsReducer,
@@ -38,41 +66,49 @@ const reducer = {
   connectionType: connectionTypeReducer,
 };
 
+const rootReducer = (state: any, action: AnyAction) =>
+  combineReducers(reducer)(
+    action.type === "auth/logout" ? undefined : state,
+    action
+  );
+
+const persistConfig = {
+  key: "root",
+  storage,
+  blacklist: [
+    privacyRequestApi.reducerPath,
+    userApi.reducerPath,
+    authApi.reducerPath,
+    datastoreConnectionApi.reducerPath,
+    connectionTypeApi.reducerPath,
+  ],
+};
+
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
 export type RootState = StateFromReducersMapObject<typeof reducer>;
 
-export const makeStore = (preloadedState?: Partial<RootState>) =>
+export const makeStore = () =>
   configureStore({
-    reducer,
+    reducer: persistedReducer,
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware().concat(
-        credentialStorage.middleware,
+      getDefaultMiddleware({
+        serializableCheck: {
+          ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+        },
+      }).concat(
         privacyRequestApi.middleware,
         userApi.middleware,
         authApi.middleware,
         datastoreConnectionApi.middleware,
         connectionTypeApi.middleware
       ),
-    devTools: true,
-    preloadedState,
+    devTools: process.env.NODE_ENV !== "production",
   });
 
-let storedAuthState: AuthState | undefined;
-if (typeof window !== "undefined" && "localStorage" in window) {
-  const storedAuthStateString = localStorage.getItem(STORED_CREDENTIALS_KEY);
-  if (storedAuthStateString) {
-    try {
-      storedAuthState = JSON.parse(storedAuthStateString);
-    } catch (error) {
-      // TODO: build in formal error logging system
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
-  }
-}
+const store = makeStore();
 
-const store = makeStore({
-  auth: storedAuthState,
-});
+export const persistor = persistStore(store);
 
 setupListeners(store.dispatch);
 

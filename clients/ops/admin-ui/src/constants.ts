@@ -6,8 +6,6 @@ const API_URL = process.env.NEXT_PUBLIC_FIDESOPS_API
   : "";
 export const BASE_URL = API_URL + BASE_API_URN;
 
-export const STORED_CREDENTIALS_KEY = "auth.fidesops-admin-ui";
-
 export const USER_PRIVILEGES: UserPrivileges[] = [
   {
     privilege: "View subject requests",
