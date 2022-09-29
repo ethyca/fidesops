@@ -37,7 +37,6 @@ const Consent: NextPage = () => {
   }, [consentRequestId, verificationCode, router]);
 
   const [consentItems, setConsentItems] = useState<ConsentItem[]>([]);
-  // const [userConsents, setUserConsents] = useState<ApiUserConsent[]>();
 
   useEffect(() => {
     const getUserConsents = async () => {

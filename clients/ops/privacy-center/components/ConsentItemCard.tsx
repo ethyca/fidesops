@@ -47,8 +47,6 @@ const ConsentItemCard: React.FC<ConsentItemProps> = ({
     >
       <Flex mb="24px" mt="24px" mr="35px" ml="35px">
         <Box
-          // border="1px solid red"
-          // boxSizing="border-box"
           width="100%"
           pr="60px"
         >
@@ -91,8 +89,6 @@ const ConsentItemCard: React.FC<ConsentItemProps> = ({
             setConsentValue(e === "true");
           }}
           value={value}
-          // display="flex"
-          // alignItems="center"
         >
           <Stack direction="row">
             <Radio value="true" colorScheme="whatsapp">
