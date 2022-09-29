@@ -87,7 +87,7 @@ const Consent: NextPage = () => {
               highlight: d.highlight,
               url: d.url,
               defaultValue: d.default ? d.default : false,
-            })
+            });
           }
         });
 
@@ -204,21 +204,30 @@ const Consent: NextPage = () => {
           <Flex m={-2} flexDirection="column">
             {content}
           </Flex>
+          <Stack direction="row" justifyContent="flex-start" width="720px">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                router.push("/");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              bg="primary.800"
+              _hover={{ bg: "primary.400" }}
+              _active={{ bg: "primary.500" }}
+              colorScheme="primary"
+              size="sm"
+              onClick={() => {
+                saveUserConsentOptions();
+              }}
+            >
+              Save
+            </Button>
+          </Stack>
         </Stack>
-        <Button
-          onClick={() => {
-
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={() => {
-            saveUserConsentOptions();
-          }}
-        >
-          Save
-        </Button>
       </main>
     </div>
   );
