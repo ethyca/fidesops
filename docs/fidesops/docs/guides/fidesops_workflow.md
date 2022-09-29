@@ -32,14 +32,14 @@ Request execution involves gathering data from multiple sources, and/or masking 
 
 ### Respond to manual webhooks
 
-Manual webhooks allow data pertaining to be manually uploaded by a fidesops admin. If manual webhooks are enabled, request execution will exit with a status of `requires_input` until a submission has been received for each manual webhook configured. The privacy request can then be resumed, and request execution will continue from this step.  See [Manual Webhooks](manual_webhooks.md) for more information on configuration options and resuming a `requires_input` request.
+Manual webhooks allow data pertaining a subject to be manually uploaded by a fidesops admin. If manual webhooks are enabled, request execution will exit with a status of `requires_input` until a submission has been received for each manual webhook configured. The privacy request can then be resumed, and request execution will continue from this step.  See [Manual Webhooks](manual_webhooks.md) for more information on configuration options and resuming a `requires_input` request.
 
 Data uploaded for manual webhooks will be returned to the data subject directly at the end of request execution. Data gathered here is not used to locate data from other sources.
 
 ### Run pre-execution webhooks
 Policy pre-execution webhooks let your system take care of prerequisite tasks, or locate additional identities for the data subject. Examples include turning on a specific database in your infrastructure, or locating a phone number for a subject from a table for which you do not want to give Fidesops direct access. Configuration involves defining endpoint(s) for fidesops to call in order. See [Policy Webhooks](policy_webhooks.md) for more details.
 
-Fidesops sends a request to each pre-execution webhook with a [policy webhooks request format](policy_webhooks.md#policy-webhook-request-format), which your endpoints should be prepared to unpack. If you need more time to carry out an action, your webhook can instruct Fidesops to `halt`, which will cause execution to exit with a status of `paused`. Request execution can be continued when ready using a token supplied in the original request.
+Fidesops sends a request to each pre-execution webhook with a [policy webhooks request format](policy_webhooks.md#policy-webhook-request-format), which your endpoints should be prepared to unpack. If you need more time to carry out an action, your webhook can instruct fidesops to `halt`, which will cause execution to exit with a status of `paused`. Request execution can be continued when ready using a token supplied in the original request.
 
 No data uploaded by policy webhooks is returned to the data subject, but identities discovered can be used to later locate data pertaining to the subject during access request automation.
 
@@ -52,7 +52,7 @@ Access request automation is performed regardless of whether there are access or
 This step visits all Collections and retrieves all Fields that you've defined in your [Datasets](datasets.md). Fidesops builds a graph in accordance with how you've designated your Collections are related, visits each Collection in turn, and gathers all the results together.
 
 #### Graph building
-Fidesops builds a Directed Acyclic Graph, or DAG, where each location or node corresponds to a Collection in one of your Datasets. The graph helps determine the order in which nodes will be visited. Fidesops begins with any Collections that can be queried using the supplied identity data, and then points those Collections toward dependent Collections, etc. If fidesops can't determine out how to reach a Collection, it will exit early with a status of `error`.  To remedy an errored access request, you update how your Collections are related to each other in your Datasets, and resubmit the privacy request. 
+Fidesops builds a Directed Acyclic Graph, or DAG, where each location or node corresponds to a Collection in one of your Datasets. The graph helps determine the order in which nodes will be visited. Fidesops begins with any Collections that can be queried using the supplied identity data, and then points those Collections toward dependent Collections, etc. If fidesops can't determine how to reach a Collection, it will exit early with a status of `error`.  To remedy an errored access request, you update how your Collections are related to each other in your Datasets, and resubmit the privacy request. 
 
 ![Access Graph](../img/access_graph.png)
 
