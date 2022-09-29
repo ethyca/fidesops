@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   AnyAction,
   combineReducers,
@@ -36,13 +35,20 @@ import {
   userApi,
 } from "../features/user-management";
 
+/**
+ * To prevent the "redux-perist failed to create sync storage. falling back to noop storage"
+ * console message within Next.js, the following snippet is required.
+ * {@https://mightycoders.xyz/redux-persist-failed-to-create-sync-storage-falling-back-to-noop-storage}
+ */
 const createNoopStorage = () => ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getItem(_key: any) {
     return Promise.resolve(null);
   },
   setItem(_key: any, value: any) {
     return Promise.resolve(value);
   },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   removeItem(_key: any) {
     return Promise.resolve();
   },
@@ -66,11 +72,14 @@ const reducer = {
   connectionType: connectionTypeReducer,
 };
 
-const rootReducer = (state: any, action: AnyAction) =>
-  combineReducers(reducer)(
-    action.type === "auth/logout" ? undefined : state,
-    action
-  );
+const rootReducer = (state: any, action: AnyAction) => {
+  if (action.type === "auth/logout") {
+    storage.removeItem("persist:root");
+    // eslint-disable-next-line no-param-reassign
+    state = {};
+  }
+  return combineReducers(reducer)(state, action);
+};
 
 const persistConfig = {
   key: "root",
@@ -103,7 +112,7 @@ export const makeStore = () =>
         datastoreConnectionApi.middleware,
         connectionTypeApi.middleware
       ),
-    devTools: process.env.NODE_ENV !== "production",
+    devTools: true,
   });
 
 const store = makeStore();

@@ -55,6 +55,7 @@ const useRequestTable = () => {
 };
 
 const RequestTable: React.FC<RequestTableProps> = () => {
+  const mounted = useRef(false);
   const {
     requests,
     total,
@@ -65,7 +66,14 @@ const RequestTable: React.FC<RequestTableProps> = () => {
     isFetching,
   } = useRequestTable();
 
-  return (
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  return mounted.current ? (
     <>
       <Table size="sm">
         <Thead>
@@ -102,7 +110,7 @@ const RequestTable: React.FC<RequestTableProps> = () => {
         handlePreviousPage={handlePreviousPage}
       />
     </>
-  );
+  ): null;
 };
 
 RequestTable.defaultProps = {
