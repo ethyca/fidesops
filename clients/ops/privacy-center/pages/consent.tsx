@@ -1,34 +1,156 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { Flex, Heading, Text, Stack, Image, Button } from "@fidesui/react";
+import { useRouter } from "next/router";
 
-import ConsentItem from "../components/ConsentItem";
+import { Headers } from "headers-polyfill";
+import ConsentItemCard from "../components/ConsentItemCard";
 
 import config from "../config/config.json";
+import { hostUrl } from "../constants";
+import { addCommonHeaders } from "../common/CommonHeaders";
+import { VerificationType } from "../components/modals/types";
+import { useLocalStorage } from "../common/hooks";
+import { ConsentItem } from "../types";
 
-type UserConsent = {
+type ApiUserConsent = {
   data_use: string;
   data_use_description?: string;
   opt_in: boolean;
-}
+};
+
+type ApiUserConcents = {
+  consent: ApiUserConsent[];
+};
 
 const Consent: NextPage = () => {
   const content: any = [];
-  const [ userConsents, setUserConsents] = useState();
+  const [consentRequestId] = useLocalStorage("consentRequestId", "");
+  const [verificationCode] = useLocalStorage("verificationCode", "");
+  const router = useRouter();
 
-  config.consent.consentOptions.forEach((option) => {
+  useEffect(() => {
+    if (!consentRequestId || !verificationCode) {
+      router.push("/");
+    }
+  }, [consentRequestId, verificationCode, router]);
+
+  const [consentItems, setConsentItems] = useState<ConsentItem[]>([]);
+  // const [userConsents, setUserConsents] = useState<ApiUserConsent[]>();
+
+  useEffect(() => {
+    const getUserConsents = async () => {
+      const headers: Headers = new Headers();
+      addCommonHeaders(headers, null);
+
+      const response = await fetch(
+        `${hostUrl}/${VerificationType.ConsentRequest}/${consentRequestId}/verify`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ code: verificationCode }),
+        }
+      );
+      const data = (await response.json()) as ApiUserConcents;
+      if (!response.ok) {
+        router.push("/");
+      }
+      if (data.consent) {
+        const temp: ConsentItem[] = [];
+        const userConsentMap: { [key: string]: ApiUserConsent } = {};
+        data.consent.forEach((option) => {
+          const key = option.data_use as string;
+          userConsentMap[key] = option;
+        });
+
+        config.consent.consentOptions.forEach((d) => {
+          if (d.fidesDataUseKey in userConsentMap) {
+            const currentConsent = userConsentMap[d.fidesDataUseKey];
+
+            temp.push({
+              consentValue: currentConsent.opt_in,
+              defaultValue: d.default ? d.default : false,
+              description: currentConsent.data_use_description
+                ? currentConsent.data_use_description
+                : "",
+              fidesDataUseKey: currentConsent.data_use,
+              highlight: d.highlight,
+              name: d.name,
+              url: d.url,
+            });
+          } else {
+            temp.push({
+              fidesDataUseKey: d.fidesDataUseKey,
+              name: d.name,
+              description: d.description,
+              highlight: d.highlight,
+              url: d.url,
+              defaultValue: d.default ? d.default : false,
+            })
+          }
+        });
+
+        setConsentItems(temp);
+      } else {
+        const temp = config.consent.consentOptions.map((option) => ({
+          fidesDataUseKey: option.fidesDataUseKey,
+          name: option.name,
+          description: option.description,
+          highlight: option.highlight,
+          url: option.url,
+          defaultValue: option.default ? option.default : false,
+        }));
+        setConsentItems(temp);
+      }
+    };
+    getUserConsents();
+  }, [router, consentRequestId, verificationCode]);
+
+  consentItems.forEach((option) => {
     content.push(
-      <ConsentItem
+      <ConsentItemCard
+        key={option.fidesDataUseKey}
         fidesDataUseKey={option.fidesDataUseKey}
         name={option.name}
         description={option.description}
         highlight={option.highlight}
         url={option.url}
-        defaultValue={option.default}
+        defaultValue={option.defaultValue}
+        consentValue={option.consentValue}
+        setConsentValue={(value) => {
+          /* eslint-disable-next-line no-param-reassign */
+          option.consentValue = value;
+        }}
       />
     );
   });
+
+  const saveUserConsentOptions = useCallback(async () => {
+    const headers: Headers = new Headers();
+    addCommonHeaders(headers, null);
+
+    const body = {
+      code: verificationCode,
+      consent: consentItems.map((d) => ({
+        data_use: d.fidesDataUseKey,
+        data_use_description: d.description,
+        opt_in: d.consentValue,
+      })),
+    };
+
+    const response = await fetch(
+      `${hostUrl}/${VerificationType.ConsentRequest}/${consentRequestId}/preferences`,
+      {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify(body),
+      }
+    );
+    (await response.json()) as ApiUserConcents;
+    // if (!response.ok) {
+    // }
+  }, [consentItems, consentRequestId, verificationCode]);
 
   return (
     <div>
@@ -83,7 +205,20 @@ const Consent: NextPage = () => {
             {content}
           </Flex>
         </Stack>
-        <Button onClick={()=>{console.log()}}>Save</Button>
+        <Button
+          onClick={() => {
+
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          onClick={() => {
+            saveUserConsentOptions();
+          }}
+        >
+          Save
+        </Button>
       </main>
     </div>
   );

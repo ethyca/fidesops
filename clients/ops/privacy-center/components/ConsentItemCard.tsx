@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import {
   Flex,
   Box,
@@ -10,37 +10,33 @@ import {
   HStack,
 } from "@fidesui/react";
 import { ExternalLinkIcon } from "@chakra-ui/icons";
-import { set } from "msw/lib/types/context";
+import { ConsentItem } from "../types";
 
-type ConsentItemProps = {
-  fidesDataUseKey: string;
-  name: string;
-  description: string;
-  highlight: boolean;
-  url: string;
-  defaultValue: boolean;
-  // eslint-disable-next-line react/require-default-props
-  consentValue?: boolean;
+type SetConsentValueProp = {
+  setConsentValue: (x: boolean) => void;
 };
 
-const ConsentItem: React.FC<ConsentItemProps> = ({
-  fidesDataUseKey,
+type ConsentItemProps = ConsentItem & SetConsentValueProp;
+
+const ConsentItemCard: React.FC<ConsentItemProps> = ({
   name,
   description,
   highlight,
   defaultValue,
   consentValue,
   url,
+  setConsentValue,
 }) => {
   const [value, setValue] = useState("false");
   const backgroundColor = highlight ? "gray.100" : "";
-  useEffect(()=>{
-    if (consentValue){
-      setValue(consentValue ? "true": "false")
-    }else{
-      setValue(defaultValue? "true": "false")
+  useEffect(() => {
+    if (consentValue !== undefined) {
+      setValue(consentValue ? "true" : "false");
+    } else {
+      setValue(defaultValue ? "true" : "false");
+      setConsentValue(defaultValue);
     }
-  },[consentValue, defaultValue, setValue])
+  }, [consentValue, defaultValue, setValue, setConsentValue]);
 
   return (
     <Flex
@@ -90,7 +86,10 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
           </Link>
         </Box>
         <RadioGroup
-          onChange={setValue}
+          onChange={(e) => {
+            setValue(e);
+            setConsentValue(e === "true");
+          }}
           value={value}
           // display="flex"
           // alignItems="center"
@@ -109,4 +108,4 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
   );
 };
 
-export default ConsentItem;
+export default ConsentItemCard;

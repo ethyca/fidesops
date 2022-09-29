@@ -7,19 +7,23 @@ import type { AlertState } from "../../../types/AlertState";
 import { ModalViews, VerificationType } from "../types";
 import ConsentRequestForm from "./ConsentRequestForm";
 import VerificationForm from "../VerificationForm";
+import { useLocalStorage } from "../../../common/hooks";
 
 export const useConsentRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentView, setCurrentView] = useState<ModalViews>(
     ModalViews.ConsentRequest
   );
-  const [consentRequestId, setConsentRequestId] = useState<string>("");
   const router = useRouter();
+  const [consentRequestId, setConsentRequestId] = useLocalStorage(
+    "consentRequestId",
+    ""
+  );
 
   const successHandler = useCallback(() => {
-    localStorage.setItem("consentRequestId", consentRequestId)
+    setConsentRequestId(consentRequestId);
     router.push("consent");
-  }, [router]);
+  }, [router, setConsentRequestId, consentRequestId]);
 
   const onOpen = () => {
     setCurrentView(ModalViews.ConsentRequest);
