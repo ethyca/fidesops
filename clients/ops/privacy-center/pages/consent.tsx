@@ -56,18 +56,17 @@ const Consent: NextPage = () => {
         router.push("/");
       }
       if (data.consent) {
-        const temp: ConsentItem[] = [];
+        const newConsentItems: ConsentItem[] = [];
         const userConsentMap: { [key: string]: ApiUserConsent } = {};
         data.consent.forEach((option) => {
           const key = option.data_use as string;
           userConsentMap[key] = option;
         });
-
         config.consent.consentOptions.forEach((d) => {
           if (d.fidesDataUseKey in userConsentMap) {
             const currentConsent = userConsentMap[d.fidesDataUseKey];
 
-            temp.push({
+            newConsentItems.push({
               consentValue: currentConsent.opt_in,
               defaultValue: d.default ? d.default : false,
               description: currentConsent.data_use_description
@@ -79,7 +78,7 @@ const Consent: NextPage = () => {
               url: d.url,
             });
           } else {
-            temp.push({
+            newConsentItems.push({
               fidesDataUseKey: d.fidesDataUseKey,
               name: d.name,
               description: d.description,
@@ -90,7 +89,7 @@ const Consent: NextPage = () => {
           }
         });
 
-        setConsentItems(temp);
+        setConsentItems(newConsentItems);
       } else {
         const temp = config.consent.consentOptions.map((option) => ({
           fidesDataUseKey: option.fidesDataUseKey,
@@ -147,8 +146,8 @@ const Consent: NextPage = () => {
       }
     );
     (await response.json()) as ApiUserConcents;
-    // if (!response.ok) {
-    // }
+    // TODO: display alert on successful patch
+    // TODO: display error alert on failed patch
   }, [consentItems, consentRequestId, verificationCode]);
 
   return (

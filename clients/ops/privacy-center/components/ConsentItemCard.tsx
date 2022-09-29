@@ -46,10 +46,7 @@ const ConsentItemCard: React.FC<ConsentItemProps> = ({
       justifyContent="center"
     >
       <Flex mb="24px" mt="24px" mr="35px" ml="35px">
-        <Box
-          width="100%"
-          pr="60px"
-        >
+        <Box width="100%" pr="60px">
           <Text
             fontSize="lg"
             fontWeight="bold"
