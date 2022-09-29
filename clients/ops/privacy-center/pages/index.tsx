@@ -33,15 +33,15 @@ const Home: NextPage = () => {
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
   const {
-    isOpen,
-    onClose,
-    onOpen,
+    isOpen: isPrivacyModalOpen,
+    onClose: onPrivacyModalClose,
+    onOpen: onPrivacyModalOpen,
     openAction,
-    currentView,
-    setCurrentView,
+    currentView: currentPrivacyModalView,
+    setCurrentView: setCurrentPrivacyModalView,
     privacyRequestId,
     setPrivacyRequestId,
-    successHandler,
+    successHandler: privacyModalSuccessHandler,
   } = usePrivactRequestModal();
 
   const {
@@ -86,7 +86,7 @@ const Home: NextPage = () => {
         policyKey={action.policy_key}
         iconPath={action.icon_path}
         description={action.description}
-        onOpen={onOpen}
+        onOpen={onPrivacyModalOpen}
       />
     );
   });
@@ -164,16 +164,16 @@ const Home: NextPage = () => {
           </Flex>
         </Stack>
         <PrivacyRequestModal
-          isOpen={isOpen}
-          onClose={onClose}
+          isOpen={isPrivacyModalOpen}
+          onClose={onPrivacyModalClose}
           openAction={openAction}
           setAlert={setAlert}
-          currentView={currentView}
-          setCurrentView={setCurrentView}
+          currentView={currentPrivacyModalView}
+          setCurrentView={setCurrentPrivacyModalView}
           privacyRequestId={privacyRequestId}
           setPrivacyRequestId={setPrivacyRequestId}
           isVerificationRequired={isVerificationRequired}
-          successHandler={successHandler}
+          successHandler={privacyModalSuccessHandler}
         />
 
         <ConsentRequestModal
