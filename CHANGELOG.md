@@ -27,6 +27,7 @@ The types of changes are:
 * Distinguish whether webhook has been visited and no fields were found, versus never visited [#1339](https://github.com/ethyca/fidesops/pull/1339)
 * Fix Redis Cache Early Expiration in Tests [#1358](https://github.com/ethyca/fidesops/pull/1358)
 * Limit values for the offset pagination strategy are now cast to integers before use [#1364](https://github.com/ethyca/fidesops/pull/1364)
+* Allow `requires_input` PrivacyRequests to be addressed if a webhook is deleted, disabled, or updated [#1394](https://github.com/ethyca/fidesops/pull/1394)
 
 ### Added
 
@@ -37,10 +38,17 @@ The types of changes are:
 * Frontend - ability for users to manually enter PII to an IN PROGRESS subject request [#1016](https://github.com/ethyca/fidesops/pull/1377)
 * Enable retries on saas connectors for failures at the http request level [#1376](https://github.com/ethyca/fidesops/pull/1376)
 * Add consent request api [#1387](https://github.com/ethyca/fidesops/pull/1387)
+* Add authenticated route to get consent preferences [#1402](https://github.com/ethyca/fidesops/pull/1402)
+* Access and erasure support for Braze [#1248](https://github.com/ethyca/fidesops/pull/1248)
 
 ### Removed
 
 * Removed `query_param` auth strategy as `api_key` auth strategy now supersedes it [#1331](https://github.com/ethyca/fidesops/pull/1331)
+
+### Developer Experience
+
+* Update Fidesops config with sane defaults where necessary [#1393](https://github.com/ethyca/fidesops/pull/1395)
+
 
 ## [1.8.0](https://github.com/ethyca/fidesops/compare/1.8.0...main)
 
