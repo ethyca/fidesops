@@ -22,7 +22,7 @@ The types of changes are:
 
 * Refactor privacy center to be more modular [#1363](https://github.com/ethyca/fidesops/pull/1363)
 
-### 
+### Docs
 * Update docs footer links [#1406](https://github.com/ethyca/fidesops/pull/1406)
 ### Fixed
 
