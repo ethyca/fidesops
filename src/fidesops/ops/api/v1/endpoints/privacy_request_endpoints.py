@@ -62,6 +62,7 @@ from fidesops.ops.common_exceptions import (
     FunctionalityNotConfigured,
     IdentityNotFoundException,
     IdentityVerificationException,
+    ManualWebhookFieldsUnset,
     NoCachedManualWebhookEntry,
     PolicyNotFoundException,
     TraversalError,
@@ -91,8 +92,7 @@ from fidesops.ops.schemas.email.email import (
     EmailActionType,
     FidesopsEmail,
     RequestReceiptBodyParams,
-    RequestReviewDenyBodyParams,
-    SubjectIdentityVerificationBodyParams,
+    RequestReviewDenyBodyParams, SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fidesops.ops.schemas.privacy_request import (
@@ -109,13 +109,13 @@ from fidesops.ops.schemas.privacy_request import (
     RowCountRequest,
     VerificationCode,
 )
+from fidesops.ops.service._verification import send_verification_code_to_user
 from fidesops.ops.service.email.email_dispatch_service import (
     dispatch_email_task_generic,
     dispatch_email_task_identity_verification,
 )
 from fidesops.ops.service.privacy_request.request_runner_service import (
-    generate_id_verification_code,
-    queue_privacy_request,
+    queue_privacy_request, generate_id_verification_code,
 )
 from fidesops.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
@@ -236,7 +236,7 @@ async def create_privacy_request(
             )
 
             if config.execution.subject_identity_verification_required:
-                _send_verification_code_to_user(
+                send_verification_code_to_user(
                     db, privacy_request, privacy_request_data.identity.email
                 )
                 created.append(privacy_request)
@@ -1361,6 +1361,11 @@ def view_uploaded_manual_webhook_data(
 ) -> Optional[ManualWebhookData]:
     """
     View uploaded data for this privacy request for the given access manual webhook
+
+    If no data exists for this webhook, we just return all fields as None.
+    If we have missing or extra fields saved, we'll just return the overlap between what is saved and what is defined on the webhook.
+
+    If checked=False, data must be reviewed before submission. The privacy request should not be submitted as-is.
     """
     privacy_request: PrivacyRequest = get_privacy_request_or_error(
         db, privacy_request_id
@@ -1372,7 +1377,8 @@ def view_uploaded_manual_webhook_data(
     if not privacy_request.status == PrivacyRequestStatus.requires_input:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid access manual webhook upload request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
+            detail=f"Invalid access manual webhook upload request: privacy request "
+            f"'{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
     try:
@@ -1381,20 +1387,20 @@ def view_uploaded_manual_webhook_data(
             connection_config.key,
             privacy_request.id,
         )
-        data: Dict[str, Any] = privacy_request.get_manual_webhook_input(
+        data: Dict[str, Any] = privacy_request.get_manual_webhook_input_strict(
             access_manual_webhook
         )
         checked = True
-    except NoCachedManualWebhookEntry as exc:
+    except (
+        PydanticValidationError,
+        ManualWebhookFieldsUnset,
+        NoCachedManualWebhookEntry,
+    ) as exc:
         logger.info(exc)
-        data = access_manual_webhook.empty_fields_dict
-        checked = False
-    except PydanticValidationError:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Saved fields differ from fields specified on webhook '{access_manual_webhook.connection_config.key}'. "
-            f"Re-upload manual data using '{PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(connection_key=connection_config.key, privacy_request_id=privacy_request.id)}'.",
+        data = privacy_request.get_manual_webhook_input_non_strict(
+            manual_webhook=access_manual_webhook
         )
+        checked = False
 
     return ManualWebhookData(checked=checked, fields=data)
 
@@ -1428,8 +1434,12 @@ async def resume_privacy_request_from_requires_input(
     )
     try:
         for manual_webhook in access_manual_webhooks:
-            privacy_request.get_manual_webhook_input(manual_webhook)
-    except (NoCachedManualWebhookEntry, PydanticValidationError) as exc:
+            privacy_request.get_manual_webhook_input_strict(manual_webhook)
+    except (
+        NoCachedManualWebhookEntry,
+        PydanticValidationError,
+        ManualWebhookFieldsUnset,
+    ) as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Cannot resume privacy request. {exc}",

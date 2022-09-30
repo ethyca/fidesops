@@ -42,6 +42,7 @@ from .fixtures.postgres_fixtures import *
 from .fixtures.redshift_fixtures import *
 from .fixtures.saas.adobe_campaign_fixtures import *
 from .fixtures.saas.auth0_fixtures import *
+from .fixtures.saas.braze_fixtures import *
 from .fixtures.saas.connection_template_fixtures import *
 from .fixtures.saas.datadog_fixtures import *
 from .fixtures.saas.hubspot_fixtures import *
@@ -58,6 +59,7 @@ from .fixtures.saas.stripe_fixtures import *
 from .fixtures.saas.zendesk_fixtures import *
 from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
+from .fixtures.timescale_fixtures import *
 
 logger = logging.getLogger(__name__)
 
@@ -245,6 +247,15 @@ def require_manual_request_approval():
     config.execution.require_manual_request_approval = True
     yield
     config.execution.require_manual_request_approval = original_value
+
+
+@pytest.fixture(scope="function")
+def subject_identity_verification_required():
+    """Enable identity verification."""
+    original_value = config.execution.subject_identity_verification_required
+    config.execution.subject_identity_verification_required = True
+    yield
+    config.execution.subject_identity_verification_required = original_value
 
 
 @pytest.fixture(autouse=True, scope="function")
