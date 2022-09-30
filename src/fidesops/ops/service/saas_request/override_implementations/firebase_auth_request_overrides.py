@@ -37,14 +37,18 @@ def firebase_auth_user_access(
     for email in emails:
         user: UserRecord = auth.get_user_by_email(email, app=app)
         row = {"email": user.email, "uid": user.uid}
-        if user.display_name is not None:
-            row["display_name"] = user.display_name
-        if user.phone_number is not None:
-            row["phone_number"] = user.phone_number
-        if user.disabled is not None:
-            row["disabled"] = user.disabled
-        if user.email_verified is not None:
-            row["email_verified"] = user.email_verified
+        keys = [
+            "email",
+            "uid",
+            "display_name",
+            "phone_number",
+            "photo_url",
+            "disabled",
+            "email_verified",
+        ]
+        for key in keys:
+            row[key] = getattr(user, key, None)
+
         if user.provider_data:
             pds = []
             for pd in user.provider_data:
@@ -81,14 +85,15 @@ def firebase_auth_user_update(
         masked_fields = row_param_values["masked_object_fields"]
         display_name = masked_fields.get("display_name", user.display_name)
         phone_number = masked_fields.get("phone_number", user.phone_number)
+        photo_url = masked_fields.get("photo_url", user.photo_url)
         disabled = masked_fields.get("disabled", user.disabled)
         email_verified = masked_fields.get("email_verified", user.email_verified)
-
         auth.update_user(
             user.uid,
             email=email,
             display_name=display_name,
             phone_number=phone_number,
+            photo_url=photo_url,
             disabled=disabled,
             email_verified=email_verified,
             app=app,
