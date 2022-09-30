@@ -11,18 +11,18 @@
             Please locate and erase personally identifiable information for the data subject and records listed below:
          </p>
          {% for action_required in dataset_collection_action_required -%}
-         <p><b>{{ action_required.collection.collection }}</b></p>
+         <p><b>{{ action_required["collection"]["collection"] }}</b></p>
          {% for action in action_required.action_needed -%}
          <p>Locate the relevant records with:</p>
          <ul>
-            {% for field, values in action.locators.items() -%}
+            {% for field, values in action["locators"].items() -%}
             <li> Field: <i>{{ field }}</i>, Values: {{ values|join(', ') }} </li>
             {%- endfor %}
          </ul>
          <p>Erase the following fields:</p>
-            {% if action.update -%}
+            {% if action["update"] -%}
             <ul>
-               {% for field_name, masking_strategy in action.update.items() -%}
+               {% for field_name, masking_strategy in action["update"].items() -%}
                <li><i>{{field_name}}</i></li>
                {%- endfor %}
             </ul>

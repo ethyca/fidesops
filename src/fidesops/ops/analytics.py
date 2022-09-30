@@ -38,6 +38,10 @@ analytics_client = AnalyticsClient(
 
 @sync
 async def sync_send_analytics_event_wrapper(event: AnalyticsEvent) -> None:
+    """
+    Calling async functions within Celery tasks is not yet supported: https://github.com/celery/celery/issues/6552
+    so this sync wrapper is a workaround for that.
+    """
     await send_analytics_event(event)
 
 

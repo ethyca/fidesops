@@ -25,6 +25,7 @@ from fidesops.ops.models.policy import CurrentStep
 from fidesops.ops.models.privacy_request import CheckpointActionRequired, ManualAction
 from fidesops.ops.schemas.email.email import EmailActionType
 from fidesops.ops.tasks import EMAIL_QUEUE_NAME
+from fidesops.ops.util.json import get_json
 
 page_size = Params().size
 
@@ -1256,16 +1257,20 @@ class TestPutConnectionConfigSecrets:
             kwargs["action_type"] == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT
         )
         assert kwargs["to_email"] == "test@example.com"
+
         assert kwargs["email_body_params"] == [
-            CheckpointActionRequired(
-                step=CurrentStep.erasure,
-                collection=CollectionAddress("test_dataset", "test_collection"),
-                action_needed=[
-                    ManualAction(
-                        locators={"id": ["example_id"]},
-                        get=None,
-                        update={"test_field": "null_rewrite"},
-                    )
-                ],
+            get_json(
+                CheckpointActionRequired(
+                    step=CurrentStep.erasure,
+                    collection=CollectionAddress("test_dataset", "test_collection"),
+                    action_needed=[
+                        ManualAction(
+                            locators={"id": ["example_id"]},
+                            get=None,
+                            update={"test_field": "null_rewrite"},
+                        )
+                    ],
+                )
             )
         ]
+        assert kwargs["to_email"] == "test@example.com"

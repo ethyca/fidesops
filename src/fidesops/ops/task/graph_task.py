@@ -17,9 +17,7 @@ from fidesops.ops.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
-from fidesops.ops.graph.analytics_events import (
-    prepare_rerun_graph_analytics_event,
-)
+from fidesops.ops.graph.analytics_events import prepare_rerun_graph_analytics_event
 from fidesops.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,

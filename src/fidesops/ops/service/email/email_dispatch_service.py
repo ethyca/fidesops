@@ -1,7 +1,7 @@
 # pylint: disable=W0223
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import requests
 from fideslib.models.audit_log import AuditLog, AuditLogAction
@@ -13,9 +13,13 @@ from fidesops.ops.common_exceptions import EmailDispatchException
 from fidesops.ops.core.config import config
 from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.models.email import EmailConfig
-from fidesops.ops.models.policy import ActionType, CurrentStep, Policy, PolicyPostWebhook
+from fidesops.ops.models.policy import (
+    ActionType,
+    CurrentStep,
+    Policy,
+    PolicyPostWebhook,
+)
 from fidesops.ops.models.privacy_request import (
-    CheckpointActionRequired,
     PrivacyRequest,
     PrivacyRequestStatus,
     ProvidedIdentityType,
@@ -24,6 +28,7 @@ from fidesops.ops.schemas.email.email import (
     AccessRequestCompleteBodyParams,
     EmailActionType,
     EmailConnectorEmail,
+    EmailConnectorErasureBodyParams,
     EmailForActionType,
     EmailServiceDetails,
     EmailServiceSecrets,
@@ -44,8 +49,14 @@ class RequestCompletionBase(DatabaseTask):
     A wrapper class to handle specific success/failure cases for request completion emails
     """
 
-    def on_failure(self, exc, task_id, args, kwargs, einfo) -> None:
-        logger.error("in celery error callback")
+    def on_failure(
+        self,
+        exc: Exception,
+        task_id: str,
+        args: Tuple,
+        kwargs: Dict[str, Any],
+        einfo: Any,
+    ) -> None:
         privacy_request_id = kwargs["privacy_request_id"]
 
         with self.session as db:
@@ -57,7 +68,9 @@ class RequestCompletionBase(DatabaseTask):
             )
             _log_exception(exc, config.dev_mode)
 
-    def on_success(self, retval, task_id, args, kwargs):
+    def on_success(
+        self, retval: Any, task_id: str, args: Tuple, kwargs: Dict[str, Any]
+    ) -> None:
         privacy_request_id = kwargs["privacy_request_id"]
         with self.session as db:
             privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
@@ -111,7 +124,14 @@ class IdentityVerificationBase(DatabaseTask):
     A wrapper class to handle specific success/failure cases for identity verification emails
     """
 
-    def on_failure(self, exc, task_id, args, kwargs, einfo) -> None:
+    def on_failure(
+        self,
+        exc: Exception,
+        task_id: str,
+        args: Tuple,
+        kwargs: Dict[str, Any],
+        einfo: Any,
+    ) -> None:
         privacy_request_id = kwargs["privacy_request_id"]
         with self.session as db:
             # fixme: net new functionality- needs review. Previously we didn't set privacy request to error upon failure to send verification emil
@@ -147,7 +167,14 @@ class EmailTaskEmailConnector(DatabaseTask):
     A wrapper class to handle specific failure case for email connectors
     """
 
-    def on_failure(self, exc, task_id, args, kwargs, einfo) -> None:
+    def on_failure(
+        self,
+        exc: Exception,
+        task_id: str,
+        args: Tuple,
+        kwargs: Dict[str, Any],
+        einfo: Any,
+    ) -> None:
 
         privacy_request_id = kwargs["privacy_request_id"]
         with self.session as db:
@@ -163,7 +190,9 @@ class EmailTaskEmailConnector(DatabaseTask):
             # If dev mode, log traceback
             _log_exception(exc, config.dev_mode)
 
-    def on_success(self, retval, task_id, args, kwargs):
+    def on_success(
+        self, retval: Any, task_id: str, args: Tuple, kwargs: Dict[str, Any]
+    ) -> None:
         privacy_request_id = kwargs["privacy_request_id"]
         policy_id = kwargs["policy_id"]
         access_result_urls = kwargs["access_result_urls"]
@@ -225,7 +254,7 @@ def dispatch_email_task_email_connector(
     # The on_success celery handler only runs once, after success of entire task,
     # but here we need know which dataset(s) to log upon success of each email in batch.
     # so we need to pass in an on_success for each dispatch call
-    def on_success(session: Session, kwargs: Dict[str, Any]):
+    def on_success(session: Session, kwargs: Dict[str, Any]) -> None:
         logger.info(
             "Email send succeeded for request '%s' for dataset: '%s'",
             privacy_request_id,
@@ -240,6 +269,7 @@ def dispatch_email_task_email_connector(
                 "message": f"Erasure email instructions dispatched for '{kwargs['dataset_key']}'",
             },
         )
+
     for email in emails_to_send:
         parsed: EmailConnectorEmail = EmailConnectorEmail.parse_obj(email)
         schema = FidesopsEmail.parse_obj(parsed.email_meta)
@@ -249,12 +279,12 @@ def dispatch_email_task_email_connector(
                 db,
                 schema.action_type,
                 parsed.to_email,
-                schema.body_params,
+                schema.body_params,  # fixme: update usages to not expect python class
                 on_success=on_success,
                 on_success_kwargs={
                     "pr_id": privacy_request_id,
-                    "dataset_key": parsed.dataset_key
-                }
+                    "dataset_key": parsed.dataset_key,
+                },
             )
 
 
@@ -285,7 +315,7 @@ def dispatch_email(
             SubjectIdentityVerificationBodyParams,
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,
-            List[CheckpointActionRequired],
+            List[EmailConnectorErasureBodyParams],
         ]
     ] = None,
     on_success: Any = None,

@@ -31,6 +31,7 @@ from fidesops.ops.service.email.email_dispatch_service import (
 )
 from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 from fidesops.ops.util.collection_util import Row, append
+from fidesops.ops.util.json import get_json
 
 logger = logging.getLogger(__name__)
 
@@ -58,24 +59,28 @@ class EmailConnector(BaseConnector[None]):
         db = Session.object_session(self.configuration)
 
         try:
-            # synchronous for now since failure to send is considered a connection test failure
+            # synchronous since failure to send is considered a connection test failure
             dispatch_email(
                 db=db,
                 action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
                 to_email=config.test_email,
                 email_body_params=[
-                    CheckpointActionRequired(
-                        step=CurrentStep.erasure,
-                        collection=CollectionAddress("test_dataset", "test_collection"),
-                        action_needed=[
-                            ManualAction(
-                                locators={"id": ["example_id"]},
-                                get=None,
-                                update={
-                                    "test_field": "null_rewrite",
-                                },
-                            )
-                        ],
+                    get_json(
+                        CheckpointActionRequired(
+                            step=CurrentStep.erasure,
+                            collection=CollectionAddress(
+                                "test_dataset", "test_collection"
+                            ),
+                            action_needed=[
+                                ManualAction(
+                                    locators={"id": ["example_id"]},
+                                    get=None,
+                                    update={
+                                        "test_field": "null_rewrite",
+                                    },
+                                )
+                            ],
+                        )
                     )
                 ],
             )
@@ -180,8 +185,9 @@ def email_connector_erasure_send(
 
     emails_to_send: List[Dict[str, Any]] = []
     for ds, cc in email_dataset_configs:
+        #  coerce to dicts so that email task can ingest
         template_values: List[
-            CheckpointActionRequired
+            Dict[str, Optional[Any]]
         ] = privacy_request.get_email_connector_template_contents_by_dataset(
             CurrentStep.erasure, ds.dataset.get("fides_key")
         )
@@ -195,8 +201,8 @@ def email_connector_erasure_send(
 
         if not any(
             (
-                action_required.action_needed[0].update
-                if action_required and action_required.action_needed
+                action_required["action_needed"][0].update
+                if action_required and action_required["action_needed"]
                 else False
                 for action_required in template_values
             )
@@ -217,6 +223,7 @@ def email_connector_erasure_send(
             }
         )
     if len(emails_to_send) > 0:
+        print("calling email task")
         dispatch_email_task_email_connector.apply_async(
             queue=EMAIL_QUEUE_NAME,
             kwargs={

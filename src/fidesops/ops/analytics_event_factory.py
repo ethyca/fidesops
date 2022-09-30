@@ -1,16 +1,17 @@
 from datetime import datetime, timezone
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 from fideslog.sdk.python.event import AnalyticsEvent
 
-from fidesops.ops.analytics import in_docker_container, accessed_through_local_host
+from fidesops.ops.analytics import accessed_through_local_host, in_docker_container
 from fidesops.ops.models.policy import ActionType
 from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.schemas.analytics import Event, ExtraData
 
 
 def rerun_graph_analytics_event(
-        data: Dict[str, Any], step: ActionType,
+    data: Dict[str, Any],
+    step: ActionType,
 ) -> Optional[AnalyticsEvent]:
     """Sends an AnalyticsEvent to send to Fideslog with stats on how an access graph
     has changed from the previous run if applicable"""
@@ -30,7 +31,7 @@ def rerun_graph_analytics_event(
 
 
 def failed_graph_analytics_event(
-        privacy_request: PrivacyRequest, exc: Optional[BaseException]
+    privacy_request: PrivacyRequest, exc: Optional[BaseException]
 ) -> Optional[AnalyticsEvent]:
     """Sends an AnalyticsEvent to send to Fideslog if privacy request execution has failed."""
 
@@ -59,12 +60,12 @@ def server_start_analytics_event() -> Optional[AnalyticsEvent]:
 
 
 def endpoint_call_analytics_event(
-        endpoint: str,
-        hostname: Optional[str],
-        status_code: int,
-        event_created_at: datetime,
-        fides_source: Optional[str],
-        error_class: Optional[str],
+    endpoint: str,
+    hostname: Optional[str],
+    status_code: int,
+    event_created_at: datetime,
+    fides_source: Optional[str],
+    error_class: Optional[str],
 ) -> Optional[AnalyticsEvent]:
     """Sends an AnalyticsEvent to send to Fideslog upon endpoint calls"""
 

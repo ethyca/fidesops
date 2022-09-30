@@ -1,14 +1,15 @@
+import json
+from typing import Any, Dict, List, Optional
 from unittest import mock
 
 import pytest as pytest
-from fideslib.models.audit_log import AuditLog, AuditLogAction
 
 from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.ops.models.policy import CurrentStep
 from fidesops.ops.models.privacy_request import (
-    CheckpointActionRequired,
+    CheckpointActionRequiredBase,
     ExecutionLog,
     ExecutionLogStatus,
     ManualAction,
@@ -17,11 +18,14 @@ from fidesops.ops.schemas.dataset import FidesopsDataset
 from fidesops.ops.schemas.email.email import EmailActionType
 from fidesops.ops.service.connectors.email_connector import email_connector_erasure_send
 from fidesops.ops.task import graph_task
+from fidesops.ops.util.json import get_json
 
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@mock.patch("fidesops.ops.service.connectors.email_connector.dispatch_email")
+@mock.patch(
+    "fidesops.ops.service.connectors.email_connector.dispatch_email_task_email_connector.apply_async"
+)
 @pytest.mark.asyncio
 async def test_email_connector_cache_and_delayed_send(
     mock_email_dispatch,
@@ -103,58 +107,58 @@ async def test_email_connector_cache_and_delayed_send(
         "postgres_example_test_dataset:product": 0,
     }, "No data masked by Fidesops for the email collections"
 
-    raw_email_template_values = (
-        privacy_request.get_email_connector_template_contents_by_dataset(
-            CurrentStep.erasure, "email_dataset"
-        )
+    raw_email_template_values: List[
+        Dict[str, Optional[Any]]
+    ] = privacy_request.get_email_connector_template_contents_by_dataset(
+        CurrentStep.erasure, "email_dataset"
     )
 
     expected = [
-        CheckpointActionRequired(
-            step=CurrentStep.erasure,
-            collection=CollectionAddress("email_dataset", "daycare_customer"),
-            action_needed=[
-                ManualAction(
-                    locators={
-                        "customer_id": [1]
-                    },  # We have some data from postgres they can use to locate the customer_id
-                    get=None,
-                    update={"scholarship": "null_rewrite"},
-                )
-            ],
-        ),
-        CheckpointActionRequired(
-            step=CurrentStep.erasure,
-            collection=CollectionAddress("email_dataset", "payment"),
-            action_needed=[
-                ManualAction(
-                    locators={"payer_email": ["customer-1@example.com"]},
-                    get=None,
-                    update=None,  # Nothing to mask on this collection
-                )
-            ],
-        ),
-        CheckpointActionRequired(
-            step=CurrentStep.erasure,
-            collection=CollectionAddress("email_dataset", "children"),
-            action_needed=[
-                ManualAction(
-                    locators={
-                        "parent_id": ["email_dataset:daycare_customer:id"]
-                    },  # The only locator is on a separate collection on their end. We don't have data for it.
-                    get=None,
-                    update={
-                        "birthday": "null_rewrite",
-                        "first_name": "null_rewrite",
-                        "last_name": "null_rewrite",
-                        "report_card.grades": "null_rewrite",
-                        "report_card.behavior_issues": "null_rewrite",
-                        "report_card.disciplinary_action": "null_rewrite",
-                        "report_card.test_scores": "null_rewrite",
-                    },
-                )
-            ],
-        ),
+        get_json(obj)
+        for obj in [
+            CheckpointActionRequiredBase(
+                collection=CollectionAddress("email_dataset", "daycare_customer"),
+                action_needed=[
+                    ManualAction(
+                        locators={
+                            "customer_id": [1]
+                        },  # We have some data from postgres they can use to locate the customer_id
+                        get=None,
+                        update={"scholarship": "null_rewrite"},
+                    )
+                ],
+            ),
+            CheckpointActionRequiredBase(
+                collection=CollectionAddress("email_dataset", "payment"),
+                action_needed=[
+                    ManualAction(
+                        locators={"payer_email": ["customer-1@example.com"]},
+                        get=None,
+                        update=None,  # Nothing to mask on this collection
+                    )
+                ],
+            ),
+            CheckpointActionRequiredBase(
+                collection=CollectionAddress("email_dataset", "children"),
+                action_needed=[
+                    ManualAction(
+                        locators={
+                            "parent_id": ["email_dataset:daycare_customer:id"]
+                        },  # The only locator is on a separate collection on their end. We don't have data for it.
+                        get=None,
+                        update={
+                            "birthday": "null_rewrite",
+                            "first_name": "null_rewrite",
+                            "last_name": "null_rewrite",
+                            "report_card.grades": "null_rewrite",
+                            "report_card.behavior_issues": "null_rewrite",
+                            "report_card.disciplinary_action": "null_rewrite",
+                            "report_card.test_scores": "null_rewrite",
+                        },
+                    )
+                ],
+            ),
+        ]
     ]
     for action in raw_email_template_values:
         assert (
@@ -177,19 +181,14 @@ async def test_email_connector_cache_and_delayed_send(
         db, privacy_request, erasure_policy, {"email": "customer-1@example.com"}, []
     )
     assert mock_email_dispatch.called
-    call_args = mock_email_dispatch.call_args[1]
-    assert call_args["action_type"] == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT
-    assert call_args["to_email"] == "test@example.com"
-    assert call_args["email_body_params"] == raw_email_template_values
-
-    created_email_audit_log = (
-        db.query(AuditLog)
-        .filter(AuditLog.privacy_request_id == privacy_request.id)
-        .all()[0]
+    call_args = mock_email_dispatch.call_args[1]["kwargs"]
+    assert (
+        call_args["emails_to_send"][0]["email_meta"]["action_type"]
+        == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT
     )
     assert (
-        created_email_audit_log.message
-        == "Erasure email instructions dispatched for 'email_dataset'"
+        call_args["emails_to_send"][0]["email_meta"]["body_params"]
+        == raw_email_template_values
     )
-    assert created_email_audit_log.user_id == "system"
-    assert created_email_audit_log.action == AuditLogAction.email_sent
+    assert call_args["emails_to_send"][0]["to_email"] == "test@example.com"
+    assert call_args["emails_to_send"][0]["dataset_key"] == "email_dataset"

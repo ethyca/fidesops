@@ -316,7 +316,7 @@ async def run_privacy_request(
                     identity=identity_data,
                     session=session,
                 )
-                access_result_urls: List[str] = upload_access_results(
+                access_result_urls = upload_access_results(
                     session,
                     policy,
                     access_result,
@@ -364,7 +364,6 @@ async def run_privacy_request(
             request_checkpoint=CurrentStep.erasure_email_post_send,
             from_checkpoint=resume_step,
         ):
-            logger.info("sending erasure email")
             has_email_connector_email = email_connector_erasure_send(
                 db=session,
                 privacy_request=privacy_request,
@@ -381,10 +380,8 @@ async def run_privacy_request(
                 webhook_cls=PolicyPostWebhook,  # type: ignore
             )
             if not proceed:
-                logger.info("not proceeding")
                 return
             if config.notifications.send_request_completion_notification:
-                logger.info("config send notification")
                 initiate_privacy_request_completion_email(
                     privacy_request, policy, access_result_urls, identity_data
                 )
@@ -420,7 +417,6 @@ def initiate_privacy_request_completion_email(
         raise IdentityNotFoundException(
             "Identity email was not found, so request completion email could not be sent."
         )
-    logger.info("Calling dispatch email for request completion")
     dispatch_email_task_request_completion.apply_async(
         queue=EMAIL_QUEUE_NAME,
         kwargs={

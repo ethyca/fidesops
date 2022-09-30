@@ -94,7 +94,7 @@ class TestCreatePrivacyRequest:
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task_generic.apply_async"
     )
     def test_create_privacy_request(
         self,
@@ -1799,7 +1799,7 @@ class TestApprovePrivacyRequest:
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task_generic.apply_async"
     )
     def test_approve_privacy_request(
         self,
@@ -1847,7 +1847,7 @@ class TestApprovePrivacyRequest:
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task_generic.apply_async"
     )
     def test_approve_privacy_request_creates_audit_log_and_sends_email(
         self,
@@ -1970,7 +1970,7 @@ class TestDenyPrivacyRequest:
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task_generic.apply_async"
     )
     def test_deny_privacy_request_without_denial_reason(
         self,
@@ -2037,7 +2037,7 @@ class TestDenyPrivacyRequest:
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task_generic.apply_async"
     )
     def test_deny_privacy_request_with_denial_reason(
         self,
@@ -2702,7 +2702,7 @@ class TestVerifyIdentity:
         )
 
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task_generic.apply_async"
     )
     def test_verification_code_expired(
         self,
@@ -2726,7 +2726,7 @@ class TestVerifyIdentity:
         assert not mock_dispatch_email.called
 
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task_generic.apply_async"
     )
     def test_invalid_code(
         self,
@@ -2754,7 +2754,7 @@ class TestVerifyIdentity:
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task_generic.apply_async"
     )
     def test_verify_identity_no_admin_approval_needed(
         self,
@@ -2812,7 +2812,7 @@ class TestVerifyIdentity:
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task_generic.apply_async"
     )
     def test_verify_identity_no_admin_approval_needed_email_disabled(
         self,
@@ -2857,7 +2857,7 @@ class TestVerifyIdentity:
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task_generic.apply_async"
     )
     def test_verify_identity_admin_approval_needed(
         self,
@@ -2958,7 +2958,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task_identity_verification.apply_async"
     )
     def test_create_privacy_request_with_email_config(
         self,
@@ -2996,10 +2996,16 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         assert response_data[0]["status"] == PrivacyRequestStatus.identity_unverified
 
         assert mock_dispatch_email.called
-        kwargs = mock_dispatch_email.call_args.kwargs
-        assert kwargs["action_type"] == EmailActionType.SUBJECT_IDENTITY_VERIFICATION
+        kwargs = mock_dispatch_email.call_args[1]["kwargs"]
+        assert (
+            kwargs["email_meta"]["action_type"]
+            == EmailActionType.SUBJECT_IDENTITY_VERIFICATION
+        )
         assert kwargs["to_email"] == "test@example.com"
-        assert kwargs["email_body_params"] == SubjectIdentityVerificationBodyParams(
+        assert kwargs["privacy_request_id"] == pr.id
+        assert kwargs["email_meta"][
+            "body_params"
+        ] == SubjectIdentityVerificationBodyParams(
             verification_code=pr.get_cached_verification_code(),
             verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
         )
@@ -3453,7 +3459,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task_generic.apply_async"
     )
     def test_create_privacy_request_no_email_config(
         self,
@@ -3501,7 +3507,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task_generic.apply_async"
     )
     def test_create_privacy_request_with_email_config(
         self,

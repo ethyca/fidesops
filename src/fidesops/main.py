@@ -20,10 +20,11 @@ from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from starlette.status import HTTP_404_NOT_FOUND
 
-from fidesops.ops.analytics import (
-    send_analytics_event,
+from fidesops.ops.analytics import send_analytics_event
+from fidesops.ops.analytics_event_factory import (
+    endpoint_call_analytics_event,
+    server_start_analytics_event,
 )
-from fidesops.ops.analytics_event_factory import server_start_analytics_event, endpoint_call_analytics_event
 from fidesops.ops.api.deps import get_api_session, get_config, get_db
 from fidesops.ops.api.v1.api import api_router
 from fidesops.ops.api.v1.exception_handlers import ExceptionHandlers
@@ -258,11 +259,7 @@ def start_webserver() -> None:
         logger.info("Starting scheduled request intake...")
         initiate_scheduled_request_intake()
 
-    asyncio.run(
-        send_analytics_event(
-            server_start_analytics_event()
-        )
-    )
+    asyncio.run(send_analytics_event(server_start_analytics_event()))
 
     if not config.execution.worker_enabled:
         logger.info("Starting worker...")

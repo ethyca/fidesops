@@ -58,6 +58,7 @@ from fidesops.ops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
 )
 from fidesops.ops.common_exceptions import (
+    EmailDispatchException,
     FunctionalityNotConfigured,
     IdentityNotFoundException,
     IdentityVerificationException,
@@ -255,6 +256,14 @@ async def create_privacy_request(
                     },
                 )
                 queue_privacy_request(privacy_request.id)
+        except EmailDispatchException as exc:
+            kwargs["privacy_request_id"] = privacy_request.id
+            logger.error("EmailDispatchException: %s", exc)
+            failure = {
+                "message": "Verification email could not be sent.",
+                "data": kwargs,
+            }
+            failed.append(failure)
         except common_exceptions.RedisConnectionError as exc:
             logger.error("RedisConnectionError: %s", Pii(str(exc)))
             # Thrown when cache.ping() fails on cache connection retrieval

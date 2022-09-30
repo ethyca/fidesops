@@ -68,6 +68,7 @@ from fidesops.ops.util.cache import (
 )
 from fidesops.ops.util.collection_util import Row
 from fidesops.ops.util.constants import API_DATE_FORMAT
+from fidesops.ops.util.json import get_json
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +95,19 @@ class ManualAction(BaseSchema):
     update: Optional[Dict[str, Any]]
 
 
-class CheckpointActionRequired(BaseSchema):
+class CheckpointActionRequiredBase(BaseSchema):
+    """Base actions needed for particular checkpoint
+    Used for async task execution, where Enums cannot be parsed
+    """
+
+    collection: Optional[CollectionAddress]
+    action_needed: Optional[List[ManualAction]] = None
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class CheckpointActionRequired(CheckpointActionRequiredBase):
     """Describes actions needed on a particular checkpoint.
 
     Examples are a paused collection that needs manual input, a failed collection that
@@ -103,11 +116,6 @@ class CheckpointActionRequired(BaseSchema):
     """
 
     step: CurrentStep
-    collection: Optional[CollectionAddress]
-    action_needed: Optional[List[ManualAction]] = None
-
-    class Config:
-        arbitrary_types_allowed = True
 
 
 EmailRequestFulfillmentBodyParams = Dict[
@@ -421,17 +429,18 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
     def get_email_connector_template_contents_by_dataset(
         self, step: CurrentStep, dataset: str
-    ) -> List[CheckpointActionRequired]:
+    ) -> List[Dict[str, Optional[Any]]]:
         """Retrieve the raw details to populate an email template for collections on a given dataset."""
         cache: FidesopsRedis = get_cache()
         email_contents: Dict[str, Optional[Any]] = cache.get_encoded_objects_by_prefix(
             f"EMAIL_INFORMATION__{self.id}__{step.value}__{dataset}"
         )
 
-        actions: List[CheckpointActionRequired] = []
+        actions: List[Dict[str, Optional[Any]]] = []
         for email_content in email_contents.values():
             if email_content:
-                actions.append(CheckpointActionRequired.parse_obj(email_content))
+                email_content.pop("step", None)
+                actions.append(get_json(email_content))
         return actions
 
     def cache_paused_collection_details(
