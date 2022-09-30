@@ -42,15 +42,13 @@ import {
  * {@https://mightycoders.xyz/redux-persist-failed-to-create-sync-storage-falling-back-to-noop-storage}
  */
 const createNoopStorage = () => ({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getItem(_key: any) {
+  getItem() {
     return Promise.resolve(null);
   },
   setItem(_key: any, value: any) {
     return Promise.resolve(value);
   },
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  removeItem(_key: any) {
+  removeItem() {
     return Promise.resolve();
   },
 });
@@ -60,36 +58,51 @@ const storage =
     ? createWebStorage("local")
     : createNoopStorage();
 
-const reducer = {
-  [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
-  subjectRequests: privacyRequestsReducer,
-  [userApi.reducerPath]: userApi.reducer,
+const reducerMap = {
   [authApi.reducerPath]: authApi.reducer,
-  userManagement: userManagementReducer,
-  [datastoreConnectionApi.reducerPath]: datastoreConnectionApi.reducer,
-  datastoreConnections: datastoreConnectionReducer,
   auth: authReducer,
   [connectionTypeApi.reducerPath]: connectionTypeApi.reducer,
   connectionType: connectionTypeReducer,
+  [datastoreConnectionApi.reducerPath]: datastoreConnectionApi.reducer,
+  datastoreConnections: datastoreConnectionReducer,
+  [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
+  subjectRequests: privacyRequestsReducer,
+  [userApi.reducerPath]: userApi.reducer,
+  userManagement: userManagementReducer,
 };
 
+const allReducers = combineReducers(reducerMap);
+
 const rootReducer = (state: any, action: AnyAction) => {
+  let newState = { ...state };
   if (action.type === "auth/logout") {
     storage.removeItem(STORAGE_ROOT_KEY);
-    // eslint-disable-next-line no-param-reassign
-    state = {};
+    newState = undefined;
   }
-  return combineReducers(reducer)(state, action);
+  return allReducers(newState, action);
 };
 
 const persistConfig = {
   key: "root",
   storage,
+  /*
+    NOTE: It is also strongly recommended to blacklist any api(s) that you have configured with RTK Query.
+    If the api slice reducer is not blacklisted, the api cache will be automatically persisted 
+    and restored which could leave you with phantom subscriptions from components that do not exist any more.
+    (https://redux-toolkit.js.org/usage/usage-guide#use-with-redux-persist)
+  */
+  blacklist: [
+    authApi.reducerPath,
+    connectionTypeApi.reducerPath,
+    datastoreConnectionApi.reducerPath,
+    privacyRequestApi.reducerPath,
+    userApi.reducerPath,
+  ],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-export type RootState = StateFromReducersMapObject<typeof reducer>;
+export type RootState = StateFromReducersMapObject<typeof reducerMap>;
 
 export const makeStore = (preloadedState?: Partial<RootState>) =>
   configureStore({
