@@ -25,14 +25,8 @@ saas_config:
 
 
   client_config:
-    protocol: https
-    host: <domain>
-    authentication:
-      strategy: api_key
-      configuration:
-        query_param:
-        - name: key
-          value: <api_key>
+    protocol: NOT_USED
+    host: NOT_USED
 
   test_request:
     method: POST
