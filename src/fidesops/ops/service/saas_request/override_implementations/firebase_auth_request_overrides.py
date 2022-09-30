@@ -112,6 +112,11 @@ def firebase_auth_user_delete(
     """
     SaaS Request Override function used to integrate delete requests with
     Firebase Auth service. Specifically, it deletes `User` records.
+
+    Currently, this function is not invoked by any default configuration -
+    instead, Firebase erasures are done via updates, and the update function
+    defined above. We've kept this function implementation here so that
+    it can be easily leveraged without code changes and by a simple config update.
     """
     app = initialize_firebase(secrets)
     rows_updated = 0
