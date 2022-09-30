@@ -85,13 +85,6 @@ const rootReducer = (state: any, action: AnyAction) => {
 const persistConfig = {
   key: "root",
   storage,
-  blacklist: [
-    privacyRequestApi.reducerPath,
-    userApi.reducerPath,
-    authApi.reducerPath,
-    datastoreConnectionApi.reducerPath,
-    connectionTypeApi.reducerPath,
-  ],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
