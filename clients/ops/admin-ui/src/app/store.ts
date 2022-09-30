@@ -17,7 +17,8 @@ import {
 } from "redux-persist";
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
-import { authApi, reducer as authReducer } from "../features/auth";
+import { STORAGE_ROOT_KEY } from "../constants";
+import { authApi, AuthState, reducer as authReducer } from "../features/auth";
 import {
   connectionTypeApi,
   reducer as connectionTypeReducer,
@@ -74,7 +75,7 @@ const reducer = {
 
 const rootReducer = (state: any, action: AnyAction) => {
   if (action.type === "auth/logout") {
-    storage.removeItem("persist:root");
+    storage.removeItem(STORAGE_ROOT_KEY);
     // eslint-disable-next-line no-param-reassign
     state = {};
   }
@@ -97,7 +98,7 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;
 
-export const makeStore = () =>
+export const makeStore = (preloadedState?: Partial<RootState>) =>
   configureStore({
     reducer: persistedReducer,
     middleware: (getDefaultMiddleware) =>
@@ -113,9 +114,26 @@ export const makeStore = () =>
         connectionTypeApi.middleware
       ),
     devTools: true,
+    preloadedState,
   });
 
-const store = makeStore();
+let storedAuthState: AuthState | undefined;
+if (typeof window !== "undefined" && "localStorage" in window) {
+  const storedAuthStateString = localStorage.getItem(STORAGE_ROOT_KEY);
+  if (storedAuthStateString) {
+    try {
+      storedAuthState = JSON.parse(storedAuthStateString);
+    } catch (error) {
+      // TODO: build in formal error logging system
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+}
+
+const store = makeStore({
+  auth: storedAuthState,
+});
 
 export const persistor = persistStore(store);
 

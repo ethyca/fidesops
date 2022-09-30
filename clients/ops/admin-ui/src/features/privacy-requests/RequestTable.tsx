@@ -110,7 +110,7 @@ const RequestTable: React.FC<RequestTableProps> = () => {
         handlePreviousPage={handlePreviousPage}
       />
     </>
-  ): null;
+  ) : null;
 };
 
 RequestTable.defaultProps = {

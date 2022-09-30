@@ -6,6 +6,11 @@ const API_URL = process.env.NEXT_PUBLIC_FIDESOPS_API
   : "";
 export const BASE_URL = API_URL + BASE_API_URN;
 
+/**
+ * Redux-persist storage root key
+ */
+export const STORAGE_ROOT_KEY = "persist:root";
+
 export const USER_PRIVILEGES: UserPrivileges[] = [
   {
     privilege: "View subject requests",
