@@ -18,6 +18,19 @@ class RedshiftSchema(ConnectionConfigSecretsSchema):
 
     _required_components: List[str] = ["host", "user", "password"]
 
+    class Config:
+        """Add example for each field"""
+        schema_extra = {
+            "example": {
+                "host": "localhost",
+                "port": 5439,
+                "database": "my_db",
+                "user": "Mahmoud",
+                "password": "my_super_duper_secret_password",
+                "db_schema": "test_schema",
+            }
+        }
+
 
 class RedshiftDocsSchema(RedshiftSchema, NoValidationSchema):
     """Redshift Secrets Schema for API Docs"""
