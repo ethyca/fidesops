@@ -20,6 +20,19 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
 
     _required_components: List[str] = ["host"]
 
+    class Config:
+        """Add example for each field"""
+        schema_extra = {
+            "example": {
+                "username": "Mahmoud",
+                "password": "my_super_duper_secret_password",
+                "dbname": "my_db",
+                "db_schema": "test_schema",
+                "host": "localhost",
+                "port": 5432,
+            }
+        }
+
 
 class PostgreSQLDocsSchema(PostgreSQLSchema, NoValidationSchema):
     """Postgres Secrets Schema for API Docs"""
