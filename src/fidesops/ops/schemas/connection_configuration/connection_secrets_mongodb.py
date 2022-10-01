@@ -17,6 +17,18 @@ class MongoDBSchema(ConnectionConfigSecretsSchema):
 
     _required_components: List[str] = ["host"]
 
+    class Config:
+        """Add example for each field"""
+        schema_extra = {
+            "example": {
+                "username": "Mahmoud",
+                "password": "my_super_duper_secret_password",
+                "host": "localhost",
+                "port": 27017,
+                "defaultauthdb": "SCRAM-SHA-256"
+            }
+        }
+
 
 class MongoDBDocsSchema(MongoDBSchema, NoValidationSchema):
     """Mongo DB Secrets Schema for API docs"""
