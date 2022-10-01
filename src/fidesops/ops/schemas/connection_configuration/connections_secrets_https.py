@@ -14,6 +14,15 @@ class HttpsSchema(ConnectionConfigSecretsSchema):
 
     _required_components: List[str] = ["url", "authorization"]
 
+    class Config:
+        """Add example for each field"""
+        schema_extra = {
+            "example": {
+                "url": "https://username:password@www.example.com/",
+                "authorization": "Basic SAHdhdtfqywtef1256ftSADqw"
+            }
+        }
+
 
 class HttpsDocsSchema(HttpsSchema, NoValidationSchema):
     """HTTPS Secrets Schema for API Docs"""
