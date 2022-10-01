@@ -7,6 +7,7 @@ from pydantic import BaseModel, Extra
 from fidesops.ops.models.connectionconfig import AccessLevel, ConnectionType
 from fidesops.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.ops.schemas.connection_configuration import connection_secrets_schemas
+from fidesops.ops.schemas.connection_configuration.connection_secrets_postgres import PostgreSQLSchema
 from fidesops.ops.schemas.dataset import FidesopsDataset
 from fidesops.ops.schemas.saas.saas_config import SaaSConfigBase, SaaSType
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
@@ -32,6 +33,16 @@ class CreateConnectionConfiguration(BaseModel):
         orm_mode = True
         use_enum_values = True
         extra = Extra.forbid
+        schema_extra = {
+            "example": {
+                "name": "Foo",
+                "key": FidesOpsKey("eb65d06059de1c30aa2b973a33075"),
+                "connection_type": ConnectionType.postgres,
+                "access": AccessLevel.read,
+                "disabled": False,
+                "description": "A schema for creating a ConnectionConfiguration."
+            }
+        }
 
 
 class TestStatus(Enum):
@@ -69,6 +80,13 @@ class ConnectionSystemTypeMap(BaseModel):
 
         use_enum_values = True
         orm_mode = True
+        schema_extra = {
+            "example": {
+                "identifier": ConnectionType.postgres,
+                "type": SystemType.database,
+                "human_readable": "foo"
+            }
+        }
 
 
 class ConnectionConfigurationResponse(BaseModel):
@@ -94,6 +112,21 @@ class ConnectionConfigurationResponse(BaseModel):
         """Set orm_mode to support mapping to ConnectionConfig"""
 
         orm_mode = True
+        schema_extra = {
+            "example": {
+                "name": "Foo",
+                "key": FidesOpsKey("eb65d06059de1c30aa2b973a33075"),
+                "description": "A schema that describes the returned schema for a ConnectionConfiguration.",
+                "connection_type": ConnectionType.postgres,
+                "access": AccessLevel.read,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "disabled": False,
+                "last_test_timestamp": None,
+                "last_test_succeeded": True,
+                "saas_config": None
+            }
+        }
 
 
 class BulkPutConnectionConfiguration(BulkResponse):
@@ -101,6 +134,15 @@ class BulkPutConnectionConfiguration(BulkResponse):
 
     succeeded: List[ConnectionConfigurationResponse]
     failed: List[BulkUpdateFailed]
+
+    class Config:
+        """Add examples for each field"""
+        schema_extra = {
+            "example": {
+                "succeeded": [ConnectionConfigurationResponse(name="Foo", key=FidesOpsKey("eb65d06059de1c30aa2b973a33075"), connection_type=ConnectionType.postgres, access=AccessLevel.read, created_at=datetime.utcnow()), ],
+                "failed": [BulkUpdateFailed(message="Schema for use when Bulk Create/Update fails.", data={"succeeded": False, "failed": True}), ]
+            }
+        }
 
 
 class SaasConnectionTemplateValues(BaseModel):
@@ -112,7 +154,28 @@ class SaasConnectionTemplateValues(BaseModel):
     secrets: connection_secrets_schemas  # For ConnectionConfig
     instance_key: FidesOpsKey  # For DatasetConfig.fides_key
 
+    class Config:
+        """Add examples for each field"""
+        schema_extra = {
+            "example": {
+                "name": "Foo",
+                "key": FidesOpsKey("eb65d06059de1c30aa2b973a33075"),
+                "description": "A Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template.",
+                "secrets": PostgreSQLSchema(username="Mahmoud", password="S3c11R3P@ssW0rd", _required_components=["host", ]),
+                "instance_key": FidesOpsKey("eb65d06059de1c30aa2b973a33075")
+            }
+        }
+
 
 class SaasConnectionTemplateResponse(BaseModel):
     connection: ConnectionConfigurationResponse
     dataset: FidesopsDataset
+
+    class Config:
+        """Add examples for each field"""
+        schema_extra = {
+            "example": {
+                "connection": ConnectionConfigurationResponse(name="Foo", key=FidesOpsKey("eb65d06059de1c30aa2b973a33075"), connection_type=ConnectionType.postgres, access=AccessLevel.read, created_at=datetime.utcnow()),
+                "dataset": FidesopsDataset(fides_key=FidesOpsKey("eb65d06059de1c30aa2b973a33075"), collections=["FidesopsDatasetCollection instance",])
+            }
+        }
