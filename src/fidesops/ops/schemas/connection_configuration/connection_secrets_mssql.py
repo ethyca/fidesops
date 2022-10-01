@@ -22,6 +22,18 @@ class MicrosoftSQLServerSchema(ConnectionConfigSecretsSchema):
 
     _required_components: List[str] = ["host"]
 
+    class Config:
+        """Add example for each field"""
+        schema_extra = {
+            "example": {
+                "username": "Mahmoud",
+                "password": "my_super_duper_secret_password",
+                "host": "localhost",
+                "port": 1433,
+                "dbname": "my_db",
+            }
+        }
+
 
 class MSSQLDocsSchema(MicrosoftSQLServerSchema, NoValidationSchema):
     """MS SQL Secrets Schema for API Docs"""
