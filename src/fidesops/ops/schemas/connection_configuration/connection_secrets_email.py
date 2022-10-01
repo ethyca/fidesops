@@ -14,6 +14,14 @@ class EmailSchema(ConnectionConfigSecretsSchema):
 
     _required_components: List[str] = ["to_email"]
 
+    class Config:
+        """Add example for each field"""
+        schema_extra = {
+            "example": {
+                "to_email": "business@wiseai.dev",
+                "test_email": "eastandwestwind@gmail.com"
+            }
+        }
 
 class EmailDocsSchema(EmailSchema, NoValidationSchema):
     """EmailDocsSchema Secrets Schema for API Docs"""
