@@ -45,6 +45,11 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
 
         extra = Extra.forbid
         orm_mode = True
+        schema_extra = {
+            "example": {
+                "url": "http://wiseai.dev/"
+            }
+        }
 
 
 class TestStatusMessage(Msg):
@@ -52,3 +57,12 @@ class TestStatusMessage(Msg):
 
     test_status: Optional[ConnectionTestStatus] = None
     failure_reason: Optional[str] = None
+
+    class Config:
+        """Schema examples."""
+        schema_extra = {
+            "example": {
+                "test_status": ConnectionTestStatus.failed,
+                "failure_reason": "Unknown reason!"
+            }
+        }
