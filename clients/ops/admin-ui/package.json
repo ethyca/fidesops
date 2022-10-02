@@ -43,6 +43,7 @@
     "react-dom": "^17.0.2",
     "react-feature-flags": "^1.0.0",
     "react-redux": "^7.2.6",
+    "redux-persist": "^6.0.0",
     "whatwg-fetch": "^3.6.2",
     "yup": "^0.32.11"
   },
@@ -56,7 +57,7 @@
     "@types/react-redux": "^7.1.24",
     "@typescript-eslint/eslint-plugin": "^5.12.0",
     "@typescript-eslint/parser": "^5.12.0",
-    "babel-jest": "^27.5.1",
+    "babel-jest": "^29.1.2",
     "cross-env": "^7.0.3",
     "eslint": "^8.9.0",
     "eslint-config-airbnb": "^19.0.4",
