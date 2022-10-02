@@ -43,6 +43,7 @@
     "react-dom": "^17.0.2",
     "react-feature-flags": "^1.0.0",
     "react-redux": "^7.2.6",
+    "redux-persist": "^6.0.0",
     "whatwg-fetch": "^3.6.2",
     "yup": "^0.32.11"
   },
@@ -71,7 +72,7 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^27.5.1",
     "prettier": "^2.6.2",
-    "typescript": "4.5.5"
+    "typescript": "4.8.4"
   },
   "msw": {
     "workerDirectory": "public"
