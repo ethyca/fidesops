@@ -90,9 +90,7 @@ async def test_firebase_auth_access_request(
         == firebase_auth_user.provider_data[1].display_name
     )
     assert provider_data[1]["email"] == firebase_auth_user.provider_data[1].email
-    assert (
-        provider_data[1]["photo_url"] == firebase_auth_user.provider_data[1].photo_url
-    )
+    assert "photo_url" not in provider_data[1].keys()
 
 
 @pytest.mark.integration_saas
