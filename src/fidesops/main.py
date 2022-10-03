@@ -100,6 +100,20 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
         raise
 
 
+@app.on_event("startup")
+async def load_saas_registry():
+    """
+    Load the SaaS registry on a startup hook to get the registry initialized
+    within the app's runtime
+    """
+    if config.database.enabled:
+        logger.info("Validating SaaS connector templates...")
+        registry = load_registry(registry_file)
+        db = get_api_session()
+        update_saas_configs(registry, db)
+        db.close()
+
+
 async def prepare_and_log_request(
     endpoint: str,
     hostname: Optional[str],
@@ -237,16 +251,10 @@ def start_webserver() -> None:
         )
         config.log_all_config_values()
 
-    logger.info("Validating SaaS connector templates...")
-    registry = load_registry(registry_file)
-
     if config.database.enabled:
         logger.info("Running any pending DB migrations...")
         try:
             init_db(config.database.sqlalchemy_database_uri)
-            db = get_api_session()
-            update_saas_configs(registry, db)
-            db.close()
         except Exception as error:  # pylint: disable=broad-except
             logger.error("Connection to database failed: %s", Pii(str(error)))
             return
