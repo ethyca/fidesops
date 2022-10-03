@@ -92,7 +92,8 @@ from fidesops.ops.schemas.email.email import (
     EmailActionType,
     FidesopsEmail,
     RequestReceiptBodyParams,
-    RequestReviewDenyBodyParams, SubjectIdentityVerificationBodyParams,
+    RequestReviewDenyBodyParams,
+    SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fidesops.ops.schemas.privacy_request import (
@@ -115,7 +116,8 @@ from fidesops.ops.service.email.email_dispatch_service import (
     dispatch_email_task_identity_verification,
 )
 from fidesops.ops.service.privacy_request.request_runner_service import (
-    queue_privacy_request, generate_id_verification_code,
+    generate_id_verification_code,
+    queue_privacy_request,
 )
 from fidesops.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
