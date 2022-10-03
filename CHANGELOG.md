@@ -40,11 +40,17 @@ The types of changes are:
 * Add consent request api [#1387](https://github.com/ethyca/fidesops/pull/1387)
 * Add authenticated route to get consent preferences [#1402](https://github.com/ethyca/fidesops/pull/1402)
 * Access and erasure support for Braze [#1248](https://github.com/ethyca/fidesops/pull/1248)
+* Admin UI: Persist Redux store to localStorage [#1401](https://github.com/ethyca/fidesops/pull/1409)
 * Access and update support for Firebase Auth [#1339](https://github.com/ethyca/fidesops/pull/1399)
 
 ### Removed
 
 * Removed `query_param` auth strategy as `api_key` auth strategy now supersedes it [#1331](https://github.com/ethyca/fidesops/pull/1331)
+
+### Developer Experience
+
+* Update Fidesops config with sane defaults where necessary [#1393](https://github.com/ethyca/fidesops/pull/1395)
+
 
 ## [1.8.0](https://github.com/ethyca/fidesops/compare/1.8.0...main)
 
