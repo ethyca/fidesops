@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 @register("firebase_auth_user_access", [SaaSRequestType.READ])
-def firebase_auth_user_access(
+def firebase_auth_user_access(  # pylint: disable=R0914
     node: TraversalNode,
     policy: Policy,
     privacy_request: PrivacyRequest,
