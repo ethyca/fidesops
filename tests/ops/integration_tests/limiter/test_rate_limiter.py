@@ -9,6 +9,7 @@ from fidesops.ops.service.connectors.limiter.rate_limiter import (
 )
 
 
+@pytest.mark.integration
 def test_limiter_respecsts_rate_limit() -> None:
     """Make a number of calls which requires limiter slow down and verify limit is not breached"""
     limiter: RateLimiter = RateLimiter()
@@ -30,6 +31,7 @@ def test_limiter_respecsts_rate_limit() -> None:
         assert value < 105
 
 
+@pytest.mark.integration
 def test_limiter_times_out_when_bucket_full() -> None:
     """Fill up hourly bucket and verify any calls over limit time out"""
     limiter: RateLimiter = RateLimiter()

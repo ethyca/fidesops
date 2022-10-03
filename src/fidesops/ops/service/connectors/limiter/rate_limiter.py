@@ -18,7 +18,7 @@ class RateLimiterPeriod(Enum):
     HOURS = ("hours", 3600)
     DAYS = ("days", 86400)
 
-    def __init__(self, label, factor):
+    def __init__(self, label: str, factor: str):
         self.label = label
         self.factor = factor
 
@@ -27,8 +27,6 @@ class RateLimiterTimeoutException(Exception):
     """
     Exception that is thrown when rate limiter times out waiting for an available time bucket
     """
-
-    pass
 
 
 class RateLimiter:
@@ -55,7 +53,7 @@ class RateLimiter:
         try:
             redis: FidesopsRedis = get_cache()
         except RedisConnectionError as exc:
-            logger.warn(f"Failed to connect to redis, skipping limiter. {exc}")
+            logger.warning("Failed to connect to redis, skipping limiter. %s", exc)
             return
 
         start_time = time.time()
@@ -72,7 +70,7 @@ class RateLimiter:
             if int(response[0]) > rate_limit:
                 time.sleep(0.1)
             else:
-                logger.debug(f"Used {response[0]} of rate limit {rate_limit}")
+                logger.debug("Used %s of rate limit %s", response[0], rate_limit)
                 return
 
         logger.error("Timeout waiting for rate limiter")
