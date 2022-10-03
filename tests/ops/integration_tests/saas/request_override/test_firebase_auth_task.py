@@ -53,6 +53,7 @@ async def test_firebase_auth_access_request(
             "uid",
             "email",
             "display_name",
+            "photo_url",
             "disabled",
             "email_verified",
         ],

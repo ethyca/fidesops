@@ -57,6 +57,7 @@ def firebase_auth_user_access(
                         "display_name": pd.display_name,
                         "provider_id": pd.provider_id,
                         "email": pd.email,
+                        "photo_url": pd.photo_url,
                     }
                 )
             row["provider_data"] = pds

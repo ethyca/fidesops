@@ -50,4 +50,8 @@ dataset:
                 data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
+              - name: photo_url
+                data_categories: [user]
+                fidesops_meta:
+                  data_type: string
 
