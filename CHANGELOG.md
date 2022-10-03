@@ -22,6 +22,8 @@ The types of changes are:
 
 * Refactor privacy center to be more modular [#1363](https://github.com/ethyca/fidesops/pull/1363)
 
+### Docs
+* Update docs footer links [#1406](https://github.com/ethyca/fidesops/pull/1406)
 ### Fixed
 
 * Distinguish whether webhook has been visited and no fields were found, versus never visited [#1339](https://github.com/ethyca/fidesops/pull/1339)
@@ -40,6 +42,8 @@ The types of changes are:
 * Add consent request api [#1387](https://github.com/ethyca/fidesops/pull/1387)
 * Add authenticated route to get consent preferences [#1402](https://github.com/ethyca/fidesops/pull/1402)
 * Access and erasure support for Braze [#1248](https://github.com/ethyca/fidesops/pull/1248)
+* Admin UI: Persist Redux store to localStorage [#1401](https://github.com/ethyca/fidesops/pull/1409)
+* Adds SaaS Connector Registry for Braze Connector [1418](https://github.com/ethyca/fidesops/pull/1418/files)
 
 ### Removed
 

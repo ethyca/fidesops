@@ -85,5 +85,5 @@ human_readable = "Rollbar"
 [braze]
 config = "data/saas/config/braze_config.yml"
 dataset = "data/saas/dataset/braze_dataset.yml"
-icon = "data/saas/icon/braze.svg"
+icon = "data/saas/icon/default.svg"
 human_readable = "Braze"
