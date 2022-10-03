@@ -5,7 +5,8 @@ import pytest
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from firebase_admin import auth
-from firebase_admin.auth import UserRecord
+from firebase_admin.auth import UserNotFoundError
+from firebase_admin.exceptions import FirebaseError
 from sqlalchemy.orm import Session
 
 from fidesops.ops.models.connectionconfig import (
@@ -76,21 +77,56 @@ def firebase_auth_secrets(saas_config):
 
 
 @pytest.fixture(scope="session")
-def firebase_auth_user(firebase_auth_secrets) -> str:
+def firebase_auth_user(firebase_auth_secrets) -> Generator:
     app = initialize_firebase(firebase_auth_secrets)
+
+    # create a user provider
+    uid = cryptographic_util.generate_secure_random_string(28)
     email = f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
-    user: UserRecord = auth.create_user(
+    provider_id = "facebook.com"
+    display_name = "John Doe #1"
+    photo_url = "http://www.facebook.com/12345678/photo.png"
+    up1 = auth.UserProvider(
+        uid,
+        email=email,
+        provider_id=provider_id,
+        display_name=display_name,
+        photo_url=photo_url,
+    )
+
+    # create another user provider
+    uid = cryptographic_util.generate_secure_random_string(28)
+    email = f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+    provider_id = "google.com"
+    display_name = "John Doe #2"
+    up2 = auth.UserProvider(
+        uid,
+        email=email,
+        provider_id=provider_id,
+        display_name=display_name,
+    )
+    # create the user
+    email = f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+    uid = cryptographic_util.generate_secure_random_string(28)
+    user = auth.ImportUserRecord(
+        uid=uid,
         email=email,
         email_verified=False,
-        password="secretPassword",
         display_name="John Doe",
         photo_url="http://www.example.com/12345678/photo.png",
         disabled=False,
-        app=app,
+        provider_data=[up1, up2],
     )
+    auth.import_users([user], app=app)
 
     yield user
-    auth.delete_user(user.uid, app=app)
+
+    try:
+        auth.delete_user(user.uid, app=app)
+    except FirebaseError as e:
+        # user may have already been deleted, so catch the possible exception
+        if not isinstance(e, UserNotFoundError):
+            raise e
 
 
 @pytest.fixture(scope="function")

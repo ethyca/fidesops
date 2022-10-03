@@ -36,7 +36,7 @@ dataset:
               data_type: boolean
           - name: provider_data
             fidesops_meta:
-              data_type: object
+              data_type: object[]
             fields:
               - name: provider_id
                 data_categories: [system.operations]
