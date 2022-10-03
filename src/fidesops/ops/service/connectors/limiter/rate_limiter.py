@@ -18,7 +18,7 @@ class RateLimiterPeriod(Enum):
     HOURS = ("hours", 3600)
     DAYS = ("days", 86400)
 
-    def __init__(self, label: str, factor: str):
+    def __init__(self, label: str, factor: int):
         self.label = label
         self.factor = factor
 
