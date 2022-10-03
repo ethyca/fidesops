@@ -17,6 +17,8 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
+* Access support for Square [#]()
+
 
 ### Changed
 
