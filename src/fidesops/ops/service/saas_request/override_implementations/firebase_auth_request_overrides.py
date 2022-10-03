@@ -57,8 +57,9 @@ def firebase_auth_user_access(
                 pd_keys = ["display_name", "provider_id", "email", "photo_url"]
                 pd_to_add = {}
                 for key in pd_keys:
-                    if hasattr(pd, key):
-                        pd_to_add[key] = getattr(pd, key)
+                    value = getattr(pd, key)
+                    if value is not None:
+                        pd_to_add[key] = value
                 pds.append(pd_to_add)
             row["provider_data"] = pds
         processed_data.append(row)
