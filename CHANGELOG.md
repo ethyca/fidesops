@@ -16,16 +16,20 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
 
 ### Changed
+
 * Refactor privacy center to be more modular [#1363](https://github.com/ethyca/fidesops/pull/1363)
 
+### Docs
+* Update docs footer links [#1406](https://github.com/ethyca/fidesops/pull/1406)
 ### Fixed
+
 * Distinguish whether webhook has been visited and no fields were found, versus never visited [#1339](https://github.com/ethyca/fidesops/pull/1339)
 * Fix Redis Cache Early Expiration in Tests [#1358](https://github.com/ethyca/fidesops/pull/1358)
 * Limit values for the offset pagination strategy are now cast to integers before use [#1364](https://github.com/ethyca/fidesops/pull/1364)
+* Allow `requires_input` PrivacyRequests to be addressed if a webhook is deleted, disabled, or updated [#1394](https://github.com/ethyca/fidesops/pull/1394)
 
 ### Added
 
@@ -33,10 +37,23 @@ The types of changes are:
 * Access support for Rollbar [#1361](https://github.com/ethyca/fidesops/pull/1361)
 * Adds a new Timescale connector [#1327](https://github.com/ethyca/fidesops/pull/1327)
 * Allow querying the non-default schema with the Postgres Connector [#1375](https://github.com/ethyca/fidesops/pull/1375)
+* Frontend - ability for users to manually enter PII to an IN PROGRESS subject request [#1016](https://github.com/ethyca/fidesops/pull/1377)
+* Enable retries on saas connectors for failures at the http request level [#1376](https://github.com/ethyca/fidesops/pull/1376)
+* Add consent request api [#1387](https://github.com/ethyca/fidesops/pull/1387)
+* Add authenticated route to get consent preferences [#1402](https://github.com/ethyca/fidesops/pull/1402)
+* Access and erasure support for Braze [#1248](https://github.com/ethyca/fidesops/pull/1248)
+* Admin UI: Persist Redux store to localStorage [#1401](https://github.com/ethyca/fidesops/pull/1409)
+* Access and update support for Firebase Auth [#1339](https://github.com/ethyca/fidesops/pull/1399)
+* Adds the Braze connector to the SaaS connector registry [#1418](https://github.com/ethyca/fidesops/pull/1418)
 
 ### Removed
 
 * Removed `query_param` auth strategy as `api_key` auth strategy now supersedes it [#1331](https://github.com/ethyca/fidesops/pull/1331)
+
+### Developer Experience
+
+* Update Fidesops config with sane defaults where necessary [#1393](https://github.com/ethyca/fidesops/pull/1395)
+
 
 ## [1.8.0](https://github.com/ethyca/fidesops/compare/1.8.0...main)
 
@@ -129,6 +146,7 @@ The types of changes are:
 ## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
 
 ### Breaking Changes
+
 The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order to make a distinction between the newly introduced `oauth2_client_credentials` strategy [#1159](https://github.com/ethyca/fidesops/pull/1159)
 
 ### Added
@@ -141,7 +159,7 @@ The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order t
 * SaaS Connector Configuration - Testing a Connection [#985](https://github.com/ethyca/fidesops/pull/1099)
 * Add an endpoint for verifying the user's identity before queuing the privacy request. [#1111](https://github.com/ethyca/fidesops/pull/1111)
 * Adds tests for email endpoints and service [#1112](https://github.com/ethyca/fidesops/pull/1112)
-* Adds the ability to verify a subject's identity before processing a Privacy Request  [#1115](https://github.com/ethyca/fidesops/pull/1115)
+* Adds the ability to verify a subject's identity before processing a Privacy Request [#1115](https://github.com/ethyca/fidesops/pull/1115)
 * Add option to login as root user from config[#1116](https://github.com/ethyca/fidesops/pull/1116)
 * Added email templates [#1123](https://github.com/ethyca/fidesops/pull/1123)
 * Add Retry button back into the subject request detail view [#1128](https://github.com/ethyca/fidesops/pull/1131)
@@ -156,7 +174,7 @@ The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order t
 * Bump fideslib to fix issue where the authenticate button in the FastAPI docs did not work [#1092](https://github.com/ethyca/fidesops/pull/1092)
 * Escape the Redis user and password to make them URL friendly [#1104](https://github.com/ethyca/fidesops/pull/1104)
 * Reduced number of connections opened against app db during health checks [#1107](https://github.com/ethyca/fidesops/pull/1107)
-* Fix FIDESOPS__ROOT_USER__ANALYTICS_ID generation when env var is set [#1113](https://github.com/ethyca/fidesops/pull/1113)
+* Fix FIDESOPS**ROOT_USER**ANALYTICS_ID generation when env var is set [#1113](https://github.com/ethyca/fidesops/pull/1113)
 * Set localhost to None for non-endpoint events [#1130](https://github.com/ethyca/fidesops/pull/1130)
 * Fixed docs build in CI [#1138](https://github.com/ethyca/fidesops/pull/1138)
 * Added future annotations to privacy_request.py for backwards compatibility [#1136](https://github.com/ethyca/fidesops/pull/1136)
@@ -469,7 +487,7 @@ The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order t
 
 * GET routes for users [#405](https://github.com/ethyca/fidesops/pull/405)
 * Username based search on GET route [#444](https://github.com/ethyca/fidesops/pull/444)
-* FIDESOPS__DEV_MODE for Easier SaaS Request Debugging [#363](https://github.com/ethyca/fidesops/pull/363)
+* FIDESOPS\_\_DEV_MODE for Easier SaaS Request Debugging [#363](https://github.com/ethyca/fidesops/pull/363)
 * Track user privileges across sessions [#425](https://github.com/ethyca/fidesops/pull/425)
 * Add first_name and last_name fields. Also add them along with created_at to FidesUser response [#465](https://github.com/ethyca/fidesops/pull/465)
 * Denial reasons for DSR and user `AuditLog` [#463](https://github.com/ethyca/fidesops/pull/463)

@@ -42,11 +42,13 @@ from .fixtures.postgres_fixtures import *
 from .fixtures.redshift_fixtures import *
 from .fixtures.saas.adobe_campaign_fixtures import *
 from .fixtures.saas.auth0_fixtures import *
+from .fixtures.saas.braze_fixtures import *
 from .fixtures.saas.connection_template_fixtures import *
 from .fixtures.saas.datadog_fixtures import *
 from .fixtures.saas.hubspot_fixtures import *
 from .fixtures.saas.mailchimp_fixtures import *
 from .fixtures.saas.outreach_fixtures import *
+from .fixtures.saas.request_override.firebase_auth_fixtures import *
 from .fixtures.saas.request_override.mailchimp_override_fixtures import *
 from .fixtures.saas.rollbar_fixtures import *
 from .fixtures.saas.salesforce_fixtures import *
@@ -246,6 +248,15 @@ def require_manual_request_approval():
     config.execution.require_manual_request_approval = True
     yield
     config.execution.require_manual_request_approval = original_value
+
+
+@pytest.fixture(scope="function")
+def subject_identity_verification_required():
+    """Enable identity verification."""
+    original_value = config.execution.subject_identity_verification_required
+    config.execution.subject_identity_verification_required = True
+    yield
+    config.execution.subject_identity_verification_required = original_value
 
 
 @pytest.fixture(autouse=True, scope="function")
