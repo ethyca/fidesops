@@ -47,22 +47,21 @@ def firebase_auth_user_access(
             "email_verified",
         ]
         for key in keys:
-            row[key] = getattr(user, key, None)
+            value = getattr(user, key)
+            if value is not None:
+                row[key] = value
 
         if user.provider_data:
             pds = []
             for pd in user.provider_data:
-                pds.append(
-                    {
-                        "display_name": pd.display_name,
-                        "provider_id": pd.provider_id,
-                        "email": pd.email,
-                        "photo_url": pd.photo_url,
-                    }
-                )
+                pd_keys = ["display_name", "provider_id", "email", "photo_url"]
+                pd_to_add = {}
+                for key in pd_keys:
+                    if hasattr(pd, key):
+                        pd_to_add[key] = getattr(pd, key)
+                pds.append(pd_to_add)
             row["provider_data"] = pds
         processed_data.append(row)
-
     return processed_data
 
 

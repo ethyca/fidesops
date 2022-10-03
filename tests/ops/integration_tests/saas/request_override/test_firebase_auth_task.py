@@ -59,7 +59,6 @@ async def test_firebase_auth_access_request(
             "email_verified",
         ],
     )
-
     response_user = v[f"{dataset_name}:user"][0]
     assert response_user["uid"] == firebase_auth_user.uid
     assert response_user["email"] == firebase_auth_user.email
@@ -67,6 +66,7 @@ async def test_firebase_auth_access_request(
     assert response_user["photo_url"] == firebase_auth_user.photo_url
     assert response_user["disabled"] == firebase_auth_user.disabled
     assert response_user["email_verified"] == firebase_auth_user.email_verified
+    assert "phone_number" not in response_user.keys()
 
     provider_data = response_user["provider_data"]
     assert (
