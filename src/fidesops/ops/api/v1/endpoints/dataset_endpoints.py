@@ -253,7 +253,6 @@ def create_or_update_dataset(
         dataset_config = DatasetConfig.create_or_update(db, data=data)
         created_or_updated.append(dataset_config.dataset)
     except (
-        IntegrityError,
         SaaSConfigNotFoundException,
         ValidationError,
     ) as exception:
@@ -264,11 +263,12 @@ def create_or_update_dataset(
                 data=data,
             )
         )
-    except IntegrityError as exception:
-        logger.warning(exception.message)
+    except IntegrityError:
+        message = "Dataset with key '%s' already exists." % data["fides_key"]
+        logger.warning(message)
         failed.append(
             BulkUpdateFailed(
-                message=exception.message,
+                message=message,
                 data=data,
             )
         )
