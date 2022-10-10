@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Dict, Generator, List
 from uuid import uuid4
@@ -14,6 +15,8 @@ from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.schemas.connection_configuration.connection_secrets_snowflake import (
     SnowflakeSchema,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="function")
@@ -55,6 +58,8 @@ def snowflake_connection_config(
         schema = SnowflakeSchema(url=uri)
         snowflake_connection_config.secrets = schema.dict()
         snowflake_connection_config.save(db=db)
+        schema.password = None
+        logger.info(schema.dict())
     yield snowflake_connection_config
 
 
