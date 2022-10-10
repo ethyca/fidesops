@@ -184,6 +184,7 @@ def pytest_integration_external(session: nox.Session) -> None:
         OPS_TEST_DIR,
         "-m",
         "integration_external",
+        "-s",
     )
     session.run(*run_command, external=True)
 
