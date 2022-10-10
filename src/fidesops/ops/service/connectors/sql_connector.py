@@ -382,6 +382,7 @@ class SnowflakeConnector(SQLConnector):
             kwargs["role"] = config.role_name
 
         url: str = Snowflake_URL(**kwargs)
+        logger.info(f"here is the URL {[*url]}")
         return url
 
     def query_config(self, node: TraversalNode) -> SQLQueryConfig:
