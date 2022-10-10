@@ -59,7 +59,7 @@ def snowflake_connection_config(
         snowflake_connection_config.secrets = schema.dict()
         snowflake_connection_config.save(db=db)
         schema.password = None
-        logger.warning(schema.dict())
+        logger.info(schema.dict())
     yield snowflake_connection_config
 
 
