@@ -17,7 +17,8 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.8.1...main)
-
+### Changed
+* Fix redis `db_index` config issue [#1427](https://github.com/ethyca/fidesops/pull/1427)
 
 ## [1.8.0](https://github.com/ethyca/fidesops/compare/1.8.0...1.8.1)
 
