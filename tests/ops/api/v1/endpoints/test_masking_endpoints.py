@@ -254,3 +254,18 @@ class TestMaskValues:
         assert response.json()["masked_values"] == [
             rewrite_val
         ], "Final value is rewrite value, because that was the last strategy specified"
+
+    def test_flexible_config(self, api_client: TestClient):
+        """Test that this request is allowed.  Allow the configuration to be
+        very flexible so different configuration requirements by many masking strategies are supported"""
+        value = "my_email"
+        request = {
+            "values": [value],
+            "masking_strategy": {
+                "strategy": NullMaskingStrategy.name,
+                "configuration": {"test_val": {"test": [["test"]]}},
+            },
+        }
+
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
+        assert 200 == response.status_code
