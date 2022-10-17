@@ -235,6 +235,10 @@ if config.admin_ui.enabled:
 
 def start_webserver() -> None:
     """Run any pending DB migrations and start the webserver."""
+    logger.warning(
+        "Fidesops has been deprecated. The codebase has merged into the Fides repo. Located at "
+        "https://github.com/ethyca/fides"
+    )
     logger.info("****************fidesops****************")
 
     if logger.getEffectiveLevel() == logging.DEBUG:
