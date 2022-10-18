@@ -31,9 +31,9 @@ def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
 
     """
     try:
-        values = request.values or []
-        masked_values: Optional[List[Any]] = request.values.copy()
-        masking_strategies: List[PolicyMaskingSpec] = request.masking_strategies or []
+        values: List[Any] = request.values
+        masked_values: List[Any] = request.values.copy()
+        masking_strategies: List[PolicyMaskingSpec] = request.masking_strategies
 
         num_strat: int = len(masking_strategies)
 
@@ -52,7 +52,7 @@ def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
                 len(values),
                 strategy.strategy,
             )
-            masked_values = masking_strategy.mask(
+            masked_values = masking_strategy.mask(  # type: ignore
                 masked_values, None
             )  # passing in masked values from previous strategy
 

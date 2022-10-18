@@ -25,11 +25,10 @@ class MaskingAPIRequest(BaseModel):
         Masking_strategies should not be supplied directly.
         """
         strategy = values.get("masking_strategy")
-        if not strategy:
-            return values
         values["masking_strategies"] = (
             strategy if isinstance(strategy, list) else [strategy]
         )
+
         return values
 
 

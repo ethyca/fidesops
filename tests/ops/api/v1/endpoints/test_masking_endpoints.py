@@ -43,6 +43,27 @@ class TestGetMaskingStrategies:
 
 
 class TestMaskValues:
+    def test_no_strategies_specified(self, api_client: TestClient):
+        value = "my_email"
+        request = {
+            "values": [value],
+        }
+
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
+        assert 422 == response.status_code
+
+    def test_mask_nothing(self, api_client: TestClient):
+        request = {
+            "values": None,
+            "masking_strategy": {
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "MASKED"},
+            },
+        }
+
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
+        assert 422 == response.status_code
+
     def test_mask_value_string_rewrite(self, api_client: TestClient):
         value = "check"
         rewrite_val = "mate"
