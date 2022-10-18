@@ -1,5 +1,5 @@
 import logging
-from typing import Any, List, Optional
+from typing import Any, List
 
 from fastapi import HTTPException
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
