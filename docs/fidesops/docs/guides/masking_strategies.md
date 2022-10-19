@@ -64,6 +64,39 @@ The email has been replaced with a random string of 20 characters, while still p
 
 See the [masking values](/fidesops/api#operations-tag-Masking) API on how to use fidesops to as a masking service.
 
+### Specifying Multiple Strategies
+
+If you would like multiple strategies to be applied in sequence when using fides as a masking service, 
+supply a list of strategies under "strategy". Each strategy will be applied across all values in order.
+In this example, the `random_string_rewrite` strategy will be run on both values first, and then the `hash` masking strategy 
+will be run on both values output from `random_string_rewrite`. 
+
+```json title="<code>PUT /masking/mask</code>"
+{
+   "values":[
+      "111-111-1111",
+      "customer-1@example.com"
+   ],
+   "masking_strategy":[
+      {
+         "strategy":"random_string_rewrite",
+         "configuration":{
+            "length":20,
+            "format_preservation":{
+               "suffix":"@masked.com"
+            }
+         }
+      },
+      {
+         "strategy":"hash",
+         "configuration":{
+            
+         }
+      }
+   ]
+}
+```
+
 ## Configuration
 
 Erasure requests will mask data with the chosen masking strategy.
