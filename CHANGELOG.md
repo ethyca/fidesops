@@ -19,8 +19,10 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.8.1...main)
 ### Added
 - Add deprecation warning [#1429](https://github.com/ethyca/fidesops/pull/1429)
+
 ### Changed
 * Fix redis `db_index` config issue [#1427](https://github.com/ethyca/fidesops/pull/1427)
+* Allow multiple masking strategies to be specified when using fides as a masking engine [#1428](https://github.com/ethyca/fidesops/pull/1428)
 
 ## [1.8.0](https://github.com/ethyca/fidesops/compare/1.8.0...1.8.1)
 
