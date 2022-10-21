@@ -1,4 +1,8 @@
-# Meet Fidesops: Privacy as Code for DSAR Orchestration
+# Deprecation Notice
+Fidesops is deprecated now. The codebase has been merged in into [Fides](https://github.com/ethyca/fides). 
+Visit the Fides [Documentation](https://ethyca.github.io/fides) to learn more.
+
+## Meet Fidesops: Privacy as Code for DSAR Orchestration
 
 _A part of the [greater Fides ecosystem](https://github.com/ethyca/fides)._
 

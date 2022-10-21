@@ -17,6 +17,8 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.8.1...main)
+### Added
+- Add deprecation warning [#1429](https://github.com/ethyca/fidesops/pull/1429)
 
 ### Changed
 * Fix redis `db_index` config issue [#1427](https://github.com/ethyca/fidesops/pull/1427)
