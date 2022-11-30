@@ -23,7 +23,7 @@
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@fidesui/react": "^0.0.9",
-    "@fontsource/inter": "^4.5.4",
+    "@fontsource/inter": "^4.5.14",
     "formik": "^2.2.9",
     "framer-motion": "^5",
     "headers-polyfill": "^3.0.10",
